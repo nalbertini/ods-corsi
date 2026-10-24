@@ -45,6 +45,8 @@ export interface SessioneVista {
   istruttore?: string
   /** I kanji di chi fa la lezione, uno per istruttore che ce l'ha (vedi `kanji.ts`). */
   kanji?: string
+  /** Uno di chi fa la lezione compie gli anni oggi (108-compleanni.sql): solo un sì/no, mai la data. */
+  compleannoIstruttore?: boolean
   /** Cosa si fa in questa lezione (vedi «Attività» in segreteria): assente se niente. */
   attivita?: string
   inizio: string

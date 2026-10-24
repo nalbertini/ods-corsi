@@ -70,7 +70,13 @@ console.log('\n1. la sala e il calendario')
   const l = await t.lezioni(new Date(2026, 8, 23), new Date(2026, 8, 23))
   ok('le lezioni di mercoledì in Lotta', l.map((x) => x.corso), ['Lotta 2', 'Lotta 3'])
   ok('coi kanji di chi le fa', l.map((x) => [...(x.kanji ?? '')].sort().join('')), ['山桜', '山桜'])
+  // Il seme ha un'istruttrice (Maura, in tutte le lezioni di Lotta) che compie gli anni oggi: un sì/no per lezione.
+  ok('il compleanno di un istruttore: le lezioni di Lotta', l.map((x) => x.compleannoIstruttore), [true, true])
   const tatami = await alle('2026-09-23T16:40', 'Tatami')
+  ok('...e quelle di chi non compie gli anni', (await tatami.lezioni(new Date(2026, 8, 23), new Date(2026, 8, 23))).some((x) => x.compleannoIstruttore), false)
+  const dati = m.creaDatiProva()
+  ok('nell\'appello dell\'istruttore, la stessa cosa', (await dati.dettaglio(LEZIONE))?.sessione.compleannoIstruttore, true)
+  ok('...e per un\'altra lezione no', !!(await dati.dettaglio('s@judo-2@2026-09-23@17:00'))?.sessione.compleannoIstruttore, false)
   ok('una lezione di un\'altra sala', await errore(() => tatami.elenco(LEZIONE)), "lezione di un'altra sala")
 }
 
@@ -84,8 +90,8 @@ console.log('\n2. le finestre di tempo')
   // `compleanno` è solo un sì/no di oggi (108-compleanni.sql): mai la data né l'età.
   ok('solo nome, sigla e se oggi è il compleanno', Object.keys(nomi[0]).sort(), ['compleanno', 'nome', 'personaId', 'segnato', 'sigla'])
   ok('il compleanno è un sì/no', typeof nomi[0].compleanno, 'boolean')
-  // Il seme di prova ha un adulto che compie gli anni oggi: nell'elenco del tablet è l'unico `true`.
-  const fest = Object.entries(m.archivio.dati.anagrafiche ?? {}).filter(([, an]) => m.compleannoOggi(an.natoIl, new Date())).map(([id]) => id)
+  // Il seme di prova ha un iscritto adulto che compie gli anni oggi: nell'elenco del tablet è l'unico `true`.
+  const fest = Object.entries(m.archivio.dati.anagrafiche ?? {}).filter(([id, an]) => !id.startsWith('i-') && m.compleannoOggi(an.natoIl, new Date())).map(([id]) => id)
   ok('il seme ha un solo festeggiato', fest.length, 1)
   const tutti = []
   // Le lezioni fuori dalla finestra del tablet non aprono l'elenco: si saltano.

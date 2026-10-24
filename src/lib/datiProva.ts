@@ -536,6 +536,7 @@ export function creaDatiProva(): Dati {
       sala: k.sala,
       istruttore: k.istruttori.length ? k.istruttori.map(nomeIstruttore).join(', ') : undefined,
       kanji: k.istruttori.map(kanjiIstruttore).join('') || undefined,
+      compleannoIstruttore: k.istruttori.some((i) => compleannoOggi(archivio.dati.anagrafiche?.[i]?.natoIl, new Date())),
       attivita: nomeAttivita(attivitaDi(l)),
       insegnanti: k.istruttori,
       inizio: l.inizio.toISOString(),

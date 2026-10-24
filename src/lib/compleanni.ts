@@ -40,15 +40,16 @@ export function nascitaOggi(anni: number, oggi: Date): string {
 }
 
 /**
- * Gli id di chi festeggia, dalla risposta di `compleanni_sala` o `compleanni_lezione`.
+ * Gli id di chi festeggia, dalla risposta di `compleanni_sala` o `compleanni_lezione`
+ * (`persona_id`), o delle lezioni con un istruttore in festa (`sessione_id`).
  * L'avviso è facoltativo: senza 108-compleanni.sql, con un errore o a rete rotta l'elenco è quello di prima.
  */
-export async function festeggiatiDa(risposta: PromiseLike<{ data: unknown; error: unknown }>): Promise<string[]> {
+export async function festeggiatiDa(risposta: PromiseLike<{ data: unknown; error: unknown }>, campo: 'persona_id' | 'sessione_id' = 'persona_id'): Promise<string[]> {
   try {
     const r = await risposta
     if (r.error) return []
-    // Il database restituisce righe `{ persona_id }` (108-compleanni.sql): il tipo generato non le descrive.
-    return ((r.data ?? []) as Array<{ persona_id: string }>).map((x) => x.persona_id)
+    // Il database restituisce righe con un solo campo (108-compleanni.sql): il tipo generato non le descrive.
+    return ((r.data ?? []) as Array<Record<string, string>>).map((x) => x[campo])
   } catch {
     return []
   }

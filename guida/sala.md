@@ -157,7 +157,9 @@ Chi non trova il suo nome non è iscritto a quel corso: va detto alla segreteria
 
 **COMPLEANNO.** Se la segreteria ha acceso l'avviso per quella sala, il nome di
 chi compie gli anni oggi porta un segno giallo con la torta e la scritta
-**COMPLEANNO**. Dice solo che è il suo giorno: mai età né data. Per
+**COMPLEANNO**. Dice solo che è il suo giorno: mai età né data. Lo stesso
+segno compare sotto il nome di chi fa la lezione quando è il compleanno
+dell'istruttore (senza dire chi dei due, se sono più d'uno). Per
 impostazione è spento. La segreteria lo accende dal database (colonna
 `compleanni` della postazione: non c'è ancora una schermata).
 

@@ -191,6 +191,7 @@ export function creaTabletProva(): DatiTablet {
           colore: l.colore,
           istruttori: l.istruttore,
           kanji: l.kanji,
+          compleannoIstruttore: l.compleannoIstruttore,
           attivita: l.attivita,
           inizio: l.inizio,
           fine: l.fine,
