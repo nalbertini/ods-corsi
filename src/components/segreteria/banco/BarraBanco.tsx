@@ -7,8 +7,9 @@ import { luoghiPer, luogoDi, voceDelLuogo, voceInLista } from '../../../lib/luog
 /** Il numero da mostrare accanto a una voce: cose che aspettano, con la parola per chi non vede il colore. */
 const Segno = ({ n, detto }: { n: number; detto: string }) =>
   n > 0 ? (
-    <span className="num sg-tag" data-tipo="presto" aria-label={`${n} ${detto}`}>
-      {n}
+    <span className="num sg-tag" data-tipo="presto">
+      <span aria-hidden="true">{n}</span>
+      <span className="vh"> {detto}</span>
     </span>
   ) : null
 
