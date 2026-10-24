@@ -74,7 +74,7 @@ import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { ImportaBanca } from './ImportaBanca'
 import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica } from './comune'
-import { ICONE_CONTI } from '../Icons'
+import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri } from './CollegaPersona'
 import { Bilancio } from './Bilancio'
 import { ScaricoSatispay } from './ScaricoSatispay'
@@ -148,11 +148,15 @@ export function Contabilita({ d, movimento, onPersona }: { d: DatiSegreteria; mo
           e.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]')[SCHEDE.findIndex(([s]) => s === dove)]?.focus()
         }}
       >
-        {SCHEDE.map(([s, nome]) => (
-          <button key={s} type="button" role="tab" aria-selected={scheda === s} tabIndex={scheda === s ? 0 : -1} className="scheda" data-on={scheda === s} onClick={() => setScheda(s)}>
-            {nome}
-          </button>
-        ))}
+        {SCHEDE.map(([s, nome]) => {
+          const Icona = ICONE_SCHEDE[s]
+          return (
+            <button key={s} type="button" role="tab" aria-selected={scheda === s} tabIndex={scheda === s ? 0 : -1} className="scheda" data-on={scheda === s} onClick={() => setScheda(s)}>
+              <Icona size={18} />
+              {nome}
+            </button>
+          )
+        })}
       </div>
       {guaio && <Guaio testo={guaio} />}
       {nonInRegola.map((k) => (

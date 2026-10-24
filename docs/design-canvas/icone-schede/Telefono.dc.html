@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Linguette con icone, telefono</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+<style>* { box-sizing: border-box; } body { margin: 0; }</style>
+</helmet>
+<div style="width: 390px; height: 1080px; padding: 28px 16px; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Arial, sans-serif; display: flex; flex-direction: column; gap: 22px">
+<div style="font-size: 14px; line-height: 1.45; color: #c9c9c4">Sul telefono (sotto i 560px) l'icona sta sopra la parola: quattro linguette fianco a fianco con l'icona accanto non ci starebbero. Nessun a capo, nessuna barra di scorrimento.</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8c8c88">CONTABILITÀ · OGGI</div>
+<dc-import name="SchedeIcone" barra="contabilita" acceso="{{ 0 }}" conIcone="{{ false }}" telefono="{{ true }}" hint-size="358px,48px"></dc-import>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #f4c31b; margin-top: 6px">CONTABILITÀ · CON LE ICONE</div>
+<dc-import name="SchedeIcone" barra="contabilita" acceso="{{ 0 }}" telefono="{{ true }}" hint-size="358px,60px"></dc-import>
+<dc-import name="SchedeIcone" barra="contabilita" acceso="{{ 2 }}" telefono="{{ true }}" hint-size="358px,60px"></dc-import>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8c8c88">CORSO · OGGI</div>
+<dc-import name="SchedeIcone" barra="corso" acceso="{{ 0 }}" conIcone="{{ false }}" telefono="{{ true }}" hint-size="358px,48px"></dc-import>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #f4c31b; margin-top: 6px">CORSO · CON LE ICONE</div>
+<dc-import name="SchedeIcone" barra="corso" acceso="{{ 0 }}" telefono="{{ true }}" hint-size="358px,60px"></dc-import>
+<dc-import name="SchedeIcone" barra="corso" acceso="{{ 1 }}" telefono="{{ true }}" hint-size="358px,60px"></dc-import>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8c8c88">PRESENZE · OGGI</div>
+<dc-import name="SchedeIcone" barra="presenze" acceso="{{ 0 }}" conIcone="{{ false }}" telefono="{{ true }}" hint-size="358px,48px"></dc-import>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #f4c31b; margin-top: 6px">PRESENZE · CON LE ICONE</div>
+<dc-import name="SchedeIcone" barra="presenze" acceso="{{ 0 }}" telefono="{{ true }}" hint-size="358px,60px"></dc-import>
+<dc-import name="SchedeIcone" barra="presenze" acceso="{{ 1 }}" telefono="{{ true }}" hint-size="358px,60px"></dc-import>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

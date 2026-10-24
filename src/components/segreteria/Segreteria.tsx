@@ -3,7 +3,7 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
 import { TastoTema } from '../TastoTema'
-import { Cursori, ICONE_MENU } from '../Icons'
+import { Cursori, ICONE_MENU, ICONE_SCHEDE } from '../Icons'
 import { Settimana } from './Settimana'
 import { datiVestiario } from '../../lib/vestiarioDati'
 import { tastoLinguette } from '../../lib/schedaSezioni'
@@ -415,9 +415,11 @@ export function Segreteria({
       }}
     >
       <button type="button" role="tab" aria-selected={voce === 'presenze'} tabIndex={voce === 'presenze' ? 0 : -1} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
+        <ICONE_SCHEDE.mese size={18} />
         Il mese
       </button>
       <button type="button" role="tab" aria-selected={voce === 'segnalate'} tabIndex={voce === 'segnalate' ? 0 : -1} className="scheda" data-on={voce === 'segnalate'} onClick={() => vai('segnalate')}>
+        <ICONE_SCHEDE.segnalate size={18} />
         Segnalate{segno(segnalateDaVedere, 'da vedere')}
       </button>
     </div>
