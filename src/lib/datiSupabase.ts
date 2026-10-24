@@ -347,8 +347,11 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       ], conti)
 
       // Facoltativo come i kanji della sala: senza 108-compleanni.sql, o se non risponde, l'appello è quello di prima.
-      const compleanni = await festeggiatiDa(db.rpc('compleanni_lezione', { sessione: sessioneId }))
-      return { sessione: viste, note: riga.note ?? undefined, elenco, compleanni } as DettaglioSessione
+      const [compleanni, inFesta] = await Promise.all([
+        festeggiatiDa(db.rpc('compleanni_lezione', { sessione: sessioneId })),
+        festeggiatiDa(db.rpc('compleanni_istruttori_lezione', { sessione: sessioneId })),
+      ])
+      return { sessione: { ...viste, compleannoIstruttore: inFesta.length > 0 }, note: riga.note ?? undefined, elenco, compleanni } as DettaglioSessione
     },
 
     async segna(sessioneId, personaId, stato) {

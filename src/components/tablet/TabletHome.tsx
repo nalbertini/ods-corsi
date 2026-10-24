@@ -6,6 +6,7 @@ import { Lucchetto, Recupero } from '../Icons'
 import { EtichettaAttivita } from '../ds'
 import { Guaio, orario, Riquadro } from './comune'
 import { Kanji } from '../Kanji'
+import { SegnoCompleanno } from '../SegnoCompleanno'
 import { AppelloVeloce } from './AppelloVeloce'
 
 /**
@@ -75,6 +76,7 @@ export function TabletHome({
                   <span>{piuTardi.istruttori}</span>
                 </span>
               )}
+              {piuTardi.compleannoIstruttore && <SegnoCompleanno />}
             </div>
             <div className="tb-dalle">
               <span className="tb-etichetta">SI SEGNA DALLE</span>
@@ -96,6 +98,7 @@ export function TabletHome({
                   <Kanji segni={l.kanji} medio />
                   <span>{[l.istruttori, `${contoSala(l).presenti} ${contoSala(l).presenti === 1 ? 'segnato' : 'segnati'} su ${l.iscritti}`].filter(Boolean).join(' · ')}</span>
                 </span>
+                {l.compleannoIstruttore && <SegnoCompleanno />}
               </button>
               <button type="button" className="tb-btn tb-btn-linea" onClick={onPin}>
                 <Lucchetto />

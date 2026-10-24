@@ -47,6 +47,7 @@ export function TabletPresenza({
               {/* Il nome di chi la fa non si spazia: è il nome di una persona. */}
               {lezione.istruttori && <span style={{ letterSpacing: 0 }}> · {lezione.istruttori}</span>}
             </span>
+            {lezione.compleannoIstruttore && <SegnoCompleanno />}
             <EtichettaAttivita nome={lezione.attivita} grande />
           </span>
         </div>

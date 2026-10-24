@@ -410,6 +410,7 @@ export function AppelloScreen({
                   .filter(Boolean)
                   .join(' · ')}
               </span>
+              {d.sessione.compleannoIstruttore && <SegnoCompleanno misura="telefono" />}
             </span>
             {/* Il nome intero, qui c'è posto: nel calendario si accorcia. */}
             <EtichettaAttivita nome={d.sessione.attivita} intera />

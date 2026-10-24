@@ -87,6 +87,8 @@ ok('nessuno', await m.festeggiatiDa(Promise.resolve({ data: [], error: null })),
 ok('senza dati', await m.festeggiatiDa(Promise.resolve({ data: null, error: null })), [])
 ok('funzione non ancora sul database (errore)', await m.festeggiatiDa(Promise.resolve({ data: null, error: { code: '42883' } })), [])
 ok('rete rotta (la promessa fallisce)', await m.festeggiatiDa(Promise.reject(new Error('rete'))), [])
+ok('le lezioni con un istruttore in festa', await m.festeggiatiDa(Promise.resolve({ data: [{ sessione_id: 's1' }], error: null }), 'sessione_id'), ['s1'])
+ok('...senza il database nuovo: nessuna', await m.festeggiatiDa(Promise.resolve({ data: null, error: { code: '42883' } }), 'sessione_id'), [])
 
 console.log('\n6. Chi è nato oggi (per i dati di prova)')
 ok('nascitaOggi compie gli anni oggi', m.compleannoOggi(m.nascitaOggi(28, new Date('2026-10-24T10:00:00Z')), new Date('2026-10-24T10:00:00Z')), true)

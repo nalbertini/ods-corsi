@@ -151,6 +151,10 @@ auguri. Non dice mai l'età né la data. Lo vedete solo sulle lezioni che fate o
 insegnate; la segreteria le vede tutte. Conta chi è iscritto al corso quel
 giorno (anche con la quota da pagare); il segno non cambia l'ordine né il tocco.
 
+Se il compleanno è di chi fa la lezione (voi o un collega), lo stesso segno
+sta sotto il giorno e il nome nell'intestazione dell'appello, senza nome:
+dice solo che oggi qualcuno di chi la fa compie gli anni.
+
 Non c'è niente da salvare: ogni tocco parte subito.
 
 ### Chiudere l'appello

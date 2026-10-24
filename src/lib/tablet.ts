@@ -53,6 +53,8 @@ export interface LezioneSala {
   istruttori?: string
   /** I loro kanji, nello stesso ordine (vedi `kanji.ts`). */
   kanji?: string
+  /** Uno di loro compie gli anni oggi: un sì/no, solo se la postazione ha i compleanni accesi (108-compleanni.sql). */
+  compleannoIstruttore?: boolean
   /** Cosa si fa in questa lezione, se la segreteria l'ha scelto. */
   attivita?: string
   inizio: string

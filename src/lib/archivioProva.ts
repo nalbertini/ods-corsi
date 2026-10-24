@@ -441,6 +441,8 @@ function iniziale(): Archivio {
   // Un adulto del primo corso compie gli anni oggi, così nella prova il segno COMPLEANNO si vede.
   const festeggiato = iscrizioni.find((i) => !piccoli.includes(i.personaId))
   if (festeggiato) anagrafiche[festeggiato.personaId] = { natoIl: nascitaOggi(28, new Date()) }
+  // ...e Maura, che fa le lezioni di Lotta, così si vede anche il segno accanto a chi insegna.
+  anagrafiche['i-maura'] = { natoIl: nascitaOggi(41, new Date()) }
   // Il primo senza certificato (NON SERVE), il secondo con quello valido già segnato.
   if (piccoli[0]) persone.get(piccoli[0])!.certificato = undefined
   if (piccoli[2]) {

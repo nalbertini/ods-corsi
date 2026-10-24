@@ -1,8 +1,10 @@
--- Chi compie gli anni oggi (108-compleanni.sql): due letture che restituiscono SOLO l'id della persona.
+-- Chi compie gli anni oggi (108-compleanni.sql): letture che restituiscono SOLO un id (della persona o della lezione).
 --   · `compleanni_sala(sessione)`: per il tablet, nella stessa finestra di `elenco_sala`, e solo se la postazione ha
 --     `compleanni` acceso (di default spento: lo accende la segreteria);
 --   · `compleanni_lezione(sessione)`: per chi lavora in palestra; l'istruttore solo per le lezioni che fa o insegna
 --     (come `insegna()` e `istruttore_id` di sessioni_aggiorna), la segreteria per tutte.
+--   · `compleanni_istruttori_sala(da, a)` e `compleanni_istruttori_lezione(sessione)`: lo stesso per chi fa la lezione
+--     (il sostituto se c'è, altrimenti chi insegna il corso), con gli stessi cancelli delle due sopra.
 -- Fonte: `chat_nato_il` (la più recente fra scheda e richiesta accolta), giorno e mese di Roma, il 29 febbraio si
 -- festeggia il 1° marzo negli anni non bisestili. Solo persone attive con l'iscrizione valida il giorno della lezione.
 -- Si lancia dopo tablet.sql (sale, postazioni, corsi e lezioni) (e lo schema di 75-chat-segreteria.sql), su un database suo.
@@ -19,6 +21,8 @@ begin
 end $$;
 select (to_regprocedure('public.compleanni_sala(uuid)') is not null
     and to_regprocedure('public.compleanni_lezione(uuid)') is not null
+    and to_regprocedure('public.compleanni_istruttori_sala(date, date)') is not null
+    and to_regprocedure('public.compleanni_istruttori_lezione(uuid)') is not null
     and exists (select 1 from information_schema.columns where table_name = 'postazioni' and column_name = 'compleanni'))::text as c107 \gset
 select atteso('108-compleanni.sql è stato lanciato: compleanni_sala, compleanni_lezione, postazioni.compleanni', :'c107', 'true');
 
@@ -81,7 +85,10 @@ insert into anagrafiche (persona_id, nato_il, codice_fiscale, cambiata_il) value
   ('ffffffff-0000-0000-0000-000000000016', nato(1), null, now()),
   ('ffffffff-0000-0000-0000-000000000017', nato(0), null, now()),
   ('ffffffff-0000-0000-0000-000000000018', nato(0), null, now()),
-  ('ffffffff-0000-0000-0000-000000000019', nato(0), null, now());
+  ('ffffffff-0000-0000-0000-000000000019', nato(0), null, now()),
+  -- Gli istruttori: Maura (Lotta 2) compie gli anni oggi, Giorgio (Judo 2) domani.
+  ('aaaaaaaa-0000-0000-0000-000000000002', nato(0), null, now()),
+  ('ffffffff-0000-0000-0000-000000000001', nato(1), null, now());
 alter table anagrafiche enable trigger anagrafiche_cambiata;
 create or replace function richiesta(persona uuid, nato date, gestita timestamptz) returns void
   language sql as $$
@@ -176,3 +183,71 @@ select atteso('un iscritto qualunque',
   elenca('dddddddd-1111-1111-1111-111111111111', 'authenticated', $$select array_agg(persona_id) from compleanni_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), '42501');
 select atteso('anon',
   elenca('', 'anon', $$select array_agg(persona_id) from compleanni_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), '42501');
+
+\echo ''
+\echo '--- 6. gli istruttori: chi fa la lezione ---'
+-- Le lezioni (le ultime due cifre dell'id) che il tablet segnala con un istruttore in festa, o il codice dell'errore.
+create or replace function lezioni_in_festa(utente text, ruolo text, sql text) returns text language plpgsql as $$
+declare ids uuid[];
+begin
+  perform set_config('prova.utente', utente, false);
+  execute format('set role %I', ruolo);
+  begin execute sql into ids;
+  exception when others then reset role; return sqlstate; end;
+  reset role;
+  return coalesce((select string_agg(right(i::text, 2), ', ' order by i) from unnest(ids) i), '(nessuna)');
+end $$;
+select atteso('compleanni_istruttori_sala restituisce solo sessione_id', pg_get_function_result('compleanni_istruttori_sala(date, date)'::regprocedure), 'TABLE(sessione_id uuid)');
+select atteso('compleanni_istruttori_lezione restituisce solo persona_id', pg_get_function_result('compleanni_istruttori_lezione(uuid)'::regprocedure), 'TABLE(persona_id uuid)');
+select atteso('security definer e stable', (select bool_and(prosecdef and provolatile = 's')::text from pg_proc
+  where oid in ('compleanni_istruttori_sala(date, date)'::regprocedure, 'compleanni_istruttori_lezione(uuid)'::regprocedure, 'istruttori_in_festa(uuid)'::regprocedure)), 'true');
+select atteso('anon non può eseguirle', (has_function_privilege('anon', 'compleanni_istruttori_sala(date, date)', 'execute')
+  or has_function_privilege('anon', 'compleanni_istruttori_lezione(uuid)', 'execute'))::text, 'false');
+select atteso('le funzioni interne non le esegue nessuno', (has_function_privilege('authenticated', 'istruttori_in_festa(uuid)', 'execute')
+  or has_function_privilege('authenticated', 'compleanno_oggi(date)', 'execute'))::text, 'false');
+
+-- Il tablet: la postazione della sala Lotta ha i compleanni accesi (sezione 2). Maura insegna Lotta 2 e compie gli anni oggi.
+select atteso('il tablet: le lezioni di Lotta 2 (non quella di tre settimane fa, né il Judo di un''altra sala)',
+  lezioni_in_festa('66666666-6666-6666-6666-666666666666', 'authenticated', $$select array_agg(sessione_id) from compleanni_istruttori_sala(current_date - 2, current_date + 2)$$), '01, 02, 04, 06');
+update postazioni set compleanni = false where id = 'dddddddd-0000-0000-0000-000000000001';
+select atteso('postazione spenta: nessuna lezione, anche se Maura compie gli anni',
+  lezioni_in_festa('66666666-6666-6666-6666-666666666666', 'authenticated', $$select array_agg(sessione_id) from compleanni_istruttori_sala(current_date - 2, current_date + 2)$$), '(nessuna)');
+update postazioni set compleanni = true where id = 'dddddddd-0000-0000-0000-000000000001';
+update postazioni set compleanni = true where id = 'dddddddd-0000-0000-0000-000000000002';
+select atteso('l''altra sala, accesa: il Judo di Giorgio (domani) non c''è',
+  lezioni_in_festa('55555555-5555-5555-5555-555555555555', 'authenticated', $$select array_agg(sessione_id) from compleanni_istruttori_sala(current_date - 2, current_date + 2)$$), '(nessuna)');
+update postazioni set compleanni = false where id = 'dddddddd-0000-0000-0000-000000000002';
+select atteso('la segreteria non è un tablet', lezioni_in_festa('11111111-1111-1111-1111-111111111111', 'authenticated', $$select array_agg(sessione_id) from compleanni_istruttori_sala(current_date - 2, current_date + 2)$$), '42501');
+select atteso('anon non è un tablet', lezioni_in_festa('', 'anon', $$select array_agg(sessione_id) from compleanni_istruttori_sala(current_date - 2, current_date + 2)$$), '42501');
+
+-- Chi lavora in palestra: gli istruttori in festa della lezione, con gli stessi cancelli di compleanni_lezione.
+select atteso('la segreteria, Lotta 2',
+  elenca('11111111-1111-1111-1111-111111111111', 'authenticated', $$select array_agg(persona_id) from compleanni_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), 'Maura');
+select atteso('Maura stessa',
+  elenca('22222222-2222-2222-2222-222222222222', 'authenticated', $$select array_agg(persona_id) from compleanni_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), 'Maura');
+select atteso('Federico, che insegna Lotta 2 con lei',
+  elenca('44444444-4444-4444-4444-444444444444', 'authenticated', $$select array_agg(persona_id) from compleanni_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), 'Maura');
+select atteso('il Judo di Giorgio: domani, non oggi',
+  elenca('11111111-1111-1111-1111-111111111111', 'authenticated', $$select array_agg(persona_id) from compleanni_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000005')$$), '(nessuno)');
+select atteso('Giorgio non insegna Lotta 2',
+  elenca('cccccccc-1111-1111-1111-111111111111', 'authenticated', $$select array_agg(persona_id) from compleanni_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), '42501');
+select atteso('il tablet non è personale',
+  elenca('66666666-6666-6666-6666-666666666666', 'authenticated', $$select array_agg(persona_id) from compleanni_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), '42501');
+select atteso('un iscritto qualunque',
+  elenca('dddddddd-1111-1111-1111-111111111111', 'authenticated', $$select array_agg(persona_id) from compleanni_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), '42501');
+select atteso('anon', elenca('', 'anon', $$select array_agg(persona_id) from compleanni_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), '42501');
+
+-- Con un sostituto fa la lezione lui, non chi insegna il corso: Maura non c'entra più.
+select set_config('prova.utente', '11111111-1111-1111-1111-111111111111', false);
+update sessioni set istruttore_id = 'ffffffff-0000-0000-0000-000000000001' where id = 'eeeeeeee-0000-0000-0000-000000000001';
+select atteso('sostituto che non compie gli anni: nessuno, la lezione per il tablet no',
+  elenca('11111111-1111-1111-1111-111111111111', 'authenticated', $$select array_agg(persona_id) from compleanni_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), '(nessuno)');
+select atteso('...e nemmeno nel calendario del tablet',
+  lezioni_in_festa('66666666-6666-6666-6666-666666666666', 'authenticated', $$select array_agg(sessione_id) from compleanni_istruttori_sala(current_date - 2, current_date + 2)$$), '02, 04, 06');
+select set_config('prova.utente', '11111111-1111-1111-1111-111111111111', false);
+update sessioni set istruttore_id = null where id = 'eeeeeeee-0000-0000-0000-000000000001';
+-- Un istruttore dismesso non festeggia.
+update persone set attiva = false where id = 'aaaaaaaa-0000-0000-0000-000000000002';
+select atteso('istruttrice dismessa: nessuno',
+  elenca('11111111-1111-1111-1111-111111111111', 'authenticated', $$select array_agg(persona_id) from compleanni_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000001')$$), '(nessuno)');
+update persone set attiva = true where id = 'aaaaaaaa-0000-0000-0000-000000000002';

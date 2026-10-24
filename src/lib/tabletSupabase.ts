@@ -62,7 +62,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     async lezioni(da, a) {
       await allungaCalendario(db)
       const giorni = { da_giorno: chiaveGiorno(da), a_giorno: chiaveGiorno(a) }
-      const [righe, segni, attivita, prove] = await Promise.all([
+      const [righe, segni, attivita, prove, inFesta] = await Promise.all([
         rpc<Array<{
           id: string; corso_id: string; corso: string; colore: string | null; descrizione: string | null
           istruttori: string | null; inizio: string; fine: string; stato: StatoSessione; iscritti: number; presenti: number
@@ -82,6 +82,8 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
           (r) => new Map(((r.data ?? []) as Array<{ sessione_id: string; prove: number }>).map((p) => [p.sessione_id, p.prove])),
           () => new Map<string, number>(),
         ),
+        // Gli istruttori in festa arrivano con 108-compleanni.sql, e solo a una postazione che li ha accesi.
+        festeggiatiDa(db.rpc('compleanni_istruttori_sala', giorni), 'sessione_id').then((ids) => new Set(ids)),
       ])
       return (righe ?? []).map((r): LezioneSala => ({
         id: r.id,
@@ -91,6 +93,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
         descrizione: r.descrizione ?? undefined,
         istruttori: r.istruttori ?? undefined,
         kanji: segni.get(r.id),
+        compleannoIstruttore: inFesta.has(r.id),
         attivita: attivita.get(r.id),
         inizio: r.inizio,
         fine: r.fine,
