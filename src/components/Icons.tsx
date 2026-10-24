@@ -171,3 +171,15 @@ export const ICONE_CONTI = {
   casa: voce(<><path d="M3 11 12 4l9 7" /><path d="M5 10v10h14V10" /><rect x="10" y="14" width="4" height="6" /></>),
   frecce: voce(<><polyline points="15 4 19 8 15 12" /><path d="M5 8h14" /><polyline points="9 20 5 16 9 12" /><path d="M19 16H5" /></>),
 }
+
+/** Le icone delle schede di IMPOSTAZIONI: la chiave è l'`IdImpostazioni` di lib/schedeImpostazioni. */
+export const ICONE_IMPOSTAZIONI = {
+  stagione: ICONE_MENU.settimana,
+  sale: voce(<><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M11 18h2" /></>),
+  esercizi: ICONE_CONTI.manubrio,
+  ricevute: voce(<><path d="M5 2v20l2.5-1.5L10 22l2-1.5 2 1.5 2.5-1.5L19 22V2l-2.5 1.5L14 2l-2 1.5L10 2 7.5 3.5z" /><path d="M9 8h6M9 12h6" /></>),
+  avvisi: voce(<><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></>),
+  dati: voce(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><polyline points="9 12 11 14 15 10" /></>),
+  importa: voce(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><path d="M12 15V3" /></>),
+  computer: voce(<><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" /></>),
+}

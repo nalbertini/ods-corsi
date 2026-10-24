@@ -4,8 +4,9 @@
 
 Le scelte che spettano alla palestra, non al programma.
 
-La pagina ha sette schede, una per gruppo, e se ne vede una alla volta: **LA STAGIONE**
-(quella che si apre), **LE SALE E I TABLET**, **LE RICEVUTE**, **GLI AVVISI**, **DATI E
+La pagina ha otto schede, una per gruppo, ognuna con la sua icona davanti al nome, e se ne
+vede una alla volta: **LA STAGIONE** (quella che si apre), **LE SALE E I TABLET**, **GLI
+ESERCIZI**, **LE RICEVUTE**, **GLI AVVISI**, **DATI E
 PRIVACY**, **IMPORTA** (la [guida](importa.md)) e, in fondo, **QUESTO COMPUTER**. Le spiegazioni
 lunghe di un riquadro stanno dietro **COME FUNZIONA?**: si tocca per aprirle; i numeri e gli
 avvisi restano sempre in vista.
