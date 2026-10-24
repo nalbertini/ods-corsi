@@ -257,7 +257,7 @@ const barraTelefono = (r) => r.selettori.includes('.sg-barra-tel')
 // Il tasto di ordinamento delle colonne è alto almeno 24px (WCAG 2.5.8, `prova:a11y-dietro-login`): la sua regola base è cambiata di proposito.
 const ordinaAlto = (r) => r.selettori.includes('.sg-ordina') && /display:\s*inline-flex/.test(r.corpo)
 // Il nome nelle righe delle tabelle è alto almeno 24px (WCAG 2.5.8, `prova:a11y-segreteria-bersagli`): la sua regola base è cambiata di proposito.
-const nomeInRigaAlto = (r) => r.selettori.includes('.sg-riga-apri') && /min-height:\s*24px/.test(r.corpo)
+const nomeInRigaAlto = (r) => r.selettori.includes('.sg-riga-apri') && /min-height:\s*0;/.test(r.corpo)
 if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
