@@ -1,8 +1,9 @@
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
+import { politicaCsp } from './src/lib/csp'
 
 // La versione dell'app: il numero di package.json e il commit da cui è
 // compilata, così chi segnala un problema dal tablet dice anche quale app ha.
@@ -70,7 +71,20 @@ function pagineDelleAree(): Plugin {
   }
 }
 
-export default defineConfig({
+/**
+ * La CSP in ogni pagina compilata (le aree sono copie della radice, vedi sopra).
+ * Solo in compilazione: in sviluppo Vite scrive script in pagina per il suo
+ * ricaricamento e la bloccherebbe. Il database è quello con cui si compila.
+ */
+function cspNellePagine(urlSupabase: string | undefined): Plugin {
+  return {
+    name: 'ods-csp',
+    apply: 'build',
+    transformIndexHtml: () => [{ tag: 'meta', attrs: { 'http-equiv': 'Content-Security-Policy', content: politicaCsp(urlSupabase) }, injectTo: 'head-prepend' }],
+  }
+}
+
+export default defineConfig(({ mode }) => ({
   // Percorsi relativi: l'app funziona anche servita da una sottocartella,
   // non solo dalla radice del dominio.
   base: './',
@@ -109,6 +123,7 @@ export default defineConfig({
   plugins: [
     react(),
     pagineDelleAree(),
+    cspNellePagine(loadEnv(mode, process.cwd(), 'VITE_').VITE_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL),
     VitePWA({
       registerType: 'autoUpdate',
       // La registrazione la facciamo a mano in main.tsx, per poterla fallire in pace.
@@ -182,4 +197,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+}))

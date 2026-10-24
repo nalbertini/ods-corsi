@@ -809,6 +809,13 @@ ok('cambia dove porta: l’indirizzo si svuota', prova(() => z.conIndirizziGiust
 ok('stesso dove: l’indirizzo resta', prova(() => z.conIndirizziGiusti([B('altro', 'Sito', 'https://x.it/')], [B('altro', 'Sito', 'https://x.it/b')])), [B('altro', 'Sito', 'https://x.it/b')])
 ok('un pulsante nuovo resta com’è', prova(() => z.conIndirizziGiusti([], [B('modulo')])), [B('modulo')])
 
+// Quel che l'editor disegna con dangerouslySetInnerHTML (EditorPuck.tsx) non porta codice: scritto male, esce ripulito o con le entità.
+const sporco = '<p onclick="x()">Ciao</p><script>alert(1)</script><img src=x onerror="alert(1)"><a href="javascript:alert(1)">qui</a>'
+const pericoloso = (h) => typeof h !== 'string' || /<script|<[^>]*\son\w+\s*=|href="javascript:/i.test(h)
+ok('parteSulSito: le domande scritte male escono senza codice', pericoloso(prova(() => g.parteSulSito(D('d', [Q('Dove?', sporco)])))), false)
+ok('parteSulSito: i pulsanti con testo e indirizzo scritti male escono senza codice', pericoloso(prova(() => g.parteSulSito(PU('p', B('altro', '"><script>alert(1)</script>', 'javascript:alert(1)'))))), false)
+ok('invito: titolo e frase scritti male escono con le entità', pericoloso(prova(() => g.invito({ titolo: '<script>alert(1)</script>', frase: '<img src=x onerror=alert(1)>' }, true))), false)
+
 // Quel che l'editor disegna nella pagina.
 const fila = prova(() => g.parteSulSito(PU('s', B('telefono', 'Chiamaci'), B('modulo', 'Prova'))))
 ok('parteSulSito: la fila con Iscriviti primario per primo', typeof fila === 'string' && /^<div class="pulsanti"><a class="pulsante primario"[^>]*>Iscriviti<\/a><a class="pulsante secondario" href="tel:\+393463292786"[^>]*>Chiamaci<\/a><\/div>$/.test(fila), true)
