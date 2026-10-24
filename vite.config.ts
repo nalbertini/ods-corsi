@@ -88,14 +88,15 @@ function cspNellePagine(urlSupabase: string | undefined): Plugin {
 }
 
 // Il CSS di Puck importa un font da un altro sito, che la CSP blocca (vedi `senzaImportEsterni`).
+// Si toglie prima della compilazione, non dopo: così cambia anche il nome del file, e chi ha
+// in cache la copia vecchia (il service worker non la rinnova se il nome è lo stesso) la lascia.
 function senzaFontEsterni(): Plugin {
   return {
     name: 'ods-senza-font-esterni',
     apply: 'build',
-    generateBundle(_, bundle) {
-      for (const file of Object.values(bundle)) {
-        if (file.type === 'asset' && file.fileName.endsWith('.css') && typeof file.source === 'string') file.source = senzaImportEsterni(file.source)
-      }
+    enforce: 'pre',
+    transform(code, id) {
+      if (id.split('?')[0].endsWith('.css')) return { code: senzaImportEsterni(code), map: null }
     },
   }
 }
