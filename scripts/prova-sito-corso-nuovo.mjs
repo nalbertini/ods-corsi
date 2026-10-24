@@ -264,5 +264,15 @@ console.log('\n14. I nove testi veri di docs/sito')
   }
 }
 
+console.log('\n15. Reflow a 320 px: le parole lunghe dei dati vanno a capo')
+{
+  // Senza, «giocomotricità» nella tessera «Quando» allarga la pagina di 24px (WCAG 1.4.10).
+  const slug = 'giocomotricita-e-psicomotricita'
+  const file = readFileSync(new URL(`../docs/sito/${slug}.html`, import.meta.url), 'utf8')
+  const h = pagina(file.replace(/^<!doctype html>\s*<meta charset="utf-8">\s*<title>[^<]*<\/title>\s*/i, ''), { slug, titolo: 'Giocomotricità', ospiti: [] })
+  const css = [...h.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('')
+  ok('.dato .val può andare a capo ovunque', /\.corso-nuovo \.dato \.val\{[^}]*overflow-wrap:anywhere/.test(css), true)
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)

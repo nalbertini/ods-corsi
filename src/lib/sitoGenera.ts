@@ -207,7 +207,7 @@ const CSS_CORSO_NUOVO = `
 .corso-nuovo .tessere.dati.n-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .corso-nuovo .tessere.dati.n-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .corso-nuovo .tessere.dati>.tessera{grid-column:auto;min-height:150px;padding:24px 26px;justify-content:space-between;gap:12px}
-.corso-nuovo .dato .val{margin:0;font-size:20px;font-weight:600;line-height:1.35}
+.corso-nuovo .dato .val{margin:0;font-size:20px;font-weight:600;line-height:1.35;overflow-wrap:anywhere}
 .corso-nuovo .tessera.orario{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr;align-items:start;gap:0 12px;min-height:170px;padding:24px 26px;font-size:17px;line-height:1.45}
 .corso-nuovo .orario h3{font-size:clamp(28px,3.2vw,46px)}
 .corso-nuovo .orario .ora{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(26px,2.8vw,40px);line-height:1;text-transform:uppercase}
