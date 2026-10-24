@@ -171,3 +171,9 @@ export const ICONE_CONTI = {
   casa: voce(<><path d="M3 11 12 4l9 7" /><path d="M5 10v10h14V10" /><rect x="10" y="14" width="4" height="6" /></>),
   frecce: voce(<><polyline points="15 4 19 8 15 12" /><path d="M5 8h14" /><polyline points="9 20 5 16 9 12" /><path d="M19 16H5" /></>),
 }
+
+/** Le icone del tablet: sulle schede «Quali lezioni» dell'istruttore. Il testo accanto resta il nome. */
+export const ICONE_TABLET = {
+  oggi: voce(<><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><circle cx="12" cy="16" r="1.5" /></>),
+  corso: ICONE_MENU.corsi,
+}

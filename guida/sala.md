@@ -190,8 +190,8 @@ iniziale.
 ## Per voi: l'area istruttore
 
 1. **AREA ISTRUTTORE** → digitate il vostro **PIN di quattro cifre**.
-2. A sinistra le lezioni: scheda **OGGI** (quelle di oggi in questa sala) o
-   **PER CORSO** (scegliete il corso e vedete le lezioni passate, per
+2. A sinistra le lezioni, con due schede grandi, ognuna con la sua icona:
+   **OGGI** (quelle di oggi in questa sala) o **PER CORSO** (scegliete il corso e vedete le lezioni passate, per
    sistemare i buchi del registro: una lezione passata senza nessun presente
    è in rosso, con **✕ SENZA APPELLO**). Il conto di ogni lezione è degli
    iscritti: «10 presenti su 10», e chi è venuto a provare a parte

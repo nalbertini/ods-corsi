@@ -3,7 +3,7 @@ import type { DatiTablet, LezioneSala, PresenzaIstruttore, RigaAppelloTablet } f
 import { contoAppello, contoSala, fase, lezioneDiAdesso, sorvegliaScritture } from '../../lib/tablet'
 import type { StatoPresenza } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
-import { Croce, Spunta } from '../Icons'
+import { Croce, ICONE_TABLET, Spunta } from '../Icons'
 import { EtichettaAttivita } from '../ds'
 import { Guaio, messaggio, orario } from './comune'
 import type { ChiProva } from '../../lib/prove'
@@ -245,7 +245,8 @@ export function TabletIstruttore({
               className="num tb-scheda"
               onClick={() => setScheda(id)}
             >
-              {nome}
+              {ICONE_TABLET[id]({ size: 28 })}
+              <span>{nome}</span>
             </button>
           ))}
         </div>

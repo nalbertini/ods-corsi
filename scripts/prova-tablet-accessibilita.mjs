@@ -44,4 +44,11 @@ const css = readFileSync('timer/src/styles.css', 'utf8')
 ok('il timer annuncia la fase (regione fissa)', /role="status"[^>]*className="vh"|className="vh"[^>]*role="status"/.test(timer), true)
 ok('il timer ha la classe .vh (vive in un’ombra: non vede quella dell’app)', /^\.vh\s*\{/m.test(css), true)
 
+// Le schede «Quali lezioni» hanno un'icona ciascuna; il nome accessibile resta il testo (le icone sono aria-hidden).
+const istr = readFileSync('src/components/tablet/TabletIstruttore.tsx', 'utf8')
+const icone = readFileSync('src/components/Icons.tsx', 'utf8')
+ok('le schede Quali lezioni hanno un\'icona', /ICONE_TABLET\[id\]/.test(istr), true)
+ok('le icone del tablet sono decorative', /export const ICONE_TABLET/.test(icone) && /function IconaVoce[\s\S]*aria-hidden="true"/.test(icone), true)
+ok('la scheda tiene il testo come nome', /<span>\{nome\}<\/span>/.test(istr), true)
+
 process.exit(fallite ? 1 : 0)
