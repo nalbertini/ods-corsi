@@ -40,6 +40,30 @@ jobs:
       # c'è anche il controllo dei tipi (tsc -b).
       - run: npm run build:tutto
 
+  # Solo avvisi (vedi lighthouserc.json): serve a vedere i numeri veri prima
+  # di decidere quali soglie far diventare bloccanti. `continue-on-error` per
+  # non fermare la PR se Lighthouse stesso inciampa (rete, Chrome).
+  lighthouse:
+    name: Lighthouse
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            timer/package-lock.json
+
+      # Il timer sta dentro la build dell'app (tsc -b lo controlla).
+      - run: npm ci
+      - run: npm ci --prefix timer
+      - run: npm run build
+      - run: npx --yes @lhci/cli@0.15.1 autorun
+
   prove:
     name: Prove dell'app
     runs-on: ubuntu-latest
