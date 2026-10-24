@@ -542,6 +542,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('107-sito-accessibilita.sql', 'la Dichiarazione di accessibilità del sito, con la voce nel footer',
     exists (select 1 from sito_pagine where slug = 'dichiarazione-accessibilita' and di_legge)
     and exists (select 1 from sito_menu m join sito_pagine p on p.id = m.pagina_id where p.slug = 'dichiarazione-accessibilita' and m.dove = 'footer')
-    and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%'))
+    and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%'),
+  ('109-privilegi-e-certificati.sql', 'anon e authenticated non possono svuotare le tabelle, e i file del certificato in attesa hanno un tetto',
+    not exists (select 1 from pg_class c, unnest(array['anon', 'authenticated']) r, unnest(array['TRUNCATE', 'TRIGGER', 'REFERENCES']) p
+                 where c.relnamespace = 'public'::regnamespace and c.relkind in ('r', 'p') and has_table_privilege(r, c.oid, p))
+    and exists (select 1 from pg_trigger where tgname = 'limita_file_certificato' and not tgisinternal))
 ) as x(file, cosa, c)
 order by file, cosa;
