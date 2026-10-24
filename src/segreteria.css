@@ -768,13 +768,6 @@
     padding: calc(var(--safe-t) + 8px) 8px 8px 16px; background: var(--menu); border-bottom: 2px solid var(--line-soft);
   }
   .sg-barra-tel > svg { flex-shrink: 0; }
-  /* A 320px (zoom 400%) logo e nome non stanno con i quattro tasti: il nome prende la prima riga, i tasti la seconda,
-     sempre, anche col bollino sul MENU, così la barra non cambia altezza aprendo il menu: 8 + 36 + 8 + 42 + 8 = 102 (misurata). */
-  @media (max-width: 479px) {
-    .sg-barra-tel > .grow { flex: 1 1 calc(100% - 48px); min-width: 0; }
-    .sg-tasto-menu { margin-left: auto; }
-    .sg-menu { inset: calc(var(--safe-t) + 102px) 0 0 0; }
-  }
   .sg-chi-voci { display: none; }
   .sg-tasto-menu {
     display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;

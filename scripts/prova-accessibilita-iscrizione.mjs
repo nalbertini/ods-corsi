@@ -64,9 +64,10 @@ ok('un altro tasto non fa niente', L.frecciaRadio('a', 0, 3, true), null)
 
 // Reflow a 320px: la barra e la riga di ricerca vanno a capo.
 const css = readFileSync('src/segreteria.css', 'utf8')
+const cssApp = readFileSync('src/styles.css', 'utf8')
 const barra = css.match(/\.sg-barra-tel \{[^}]*display: flex[^}]*\}/)?.[0] ?? ''
 ok('la barra del telefono va a capo', /flex-wrap:\s*wrap/.test(barra), true)
-ok('a 320px la barra ha l’altezza che il menu aperto si aspetta', /max-width: 479px[^}]*\}[^}]*\}[^}]*sg-menu \{ inset: calc\(var\(--safe-t\) \+ 102px\)/.test(css), true)
+ok('a 320px la barra ha l’altezza che il menu aperto si aspetta', /max-width: 479px[^}]*\}[^}]*\}[^}]*sg-menu \{ inset: calc\(var\(--safe-t\) \+ 102px\)/.test(cssApp), true)
 const iscritti = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
 ok('la ricerca degli iscritti può restringersi', /flexBasis: '100%', minWidth: 0/.test(iscritti), true)
 
