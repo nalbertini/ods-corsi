@@ -2655,3 +2655,5 @@ label.sg-btn { cursor: pointer; }
 .sg-sotto[data-tono='aspetta'] { color: var(--giallo-testo); }
 .sg-sotto[data-tono='guaio'] { color: var(--rosso-testo); }
 .mia-versione { margin: 0; padding: 16px; font-size: 11px; color: var(--dim); text-align: center; }
+/* La selezione che sta per diventare un link, mentre il fuoco è sul campo dell'indirizzo. */
+::highlight(ods-link) { background: Highlight; color: HighlightText; }
