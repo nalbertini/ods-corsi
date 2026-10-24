@@ -349,6 +349,10 @@ export function TimerScreen({
         </button>
       </div>
 
+      {/* Il cambio di fase a voce: la regione c'è sempre, cambia solo il testo. */}
+      <p role="status" className="vh">
+        {done ? `Completato: ${workout.name}` : idle ? '' : `${seg?.label ?? ''}, ${seg?.name ?? ''}`}
+      </p>
       <div className="tf-corpo">
         <div className="tf-sinistra">
           {done ? (

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { DatiTablet, LezioneSala, NomeSala } from '../../lib/tablet'
-import { chiaveTocco, codaDelTablet, dimenticaTocco, inAttesa, ricordaTocco, rifiutato, siAnnulla } from '../../lib/tablet'
+import { annuncioFascia, chiaveTocco, codaDelTablet, dimenticaTocco, inAttesa, ricordaTocco, rifiutato, siAnnulla } from '../../lib/tablet'
 import { Spunta } from '../Icons'
 import { messaggio } from './comune'
 
@@ -167,6 +167,15 @@ export function useTocchi(d: DatiTablet, lezione: LezioneSala, onCambiato?: () =
   return { nomi, guaio, fascia, attesa, tocca, annulla, chiudi: () => mostra(null) }
 }
 
+/** Il tocco, a voce: la regione c'è sempre, cambia solo il testo (una che nasce già piena non è affidabile). */
+export function AnnuncioTocco({ fascia, passata, giorno }: { fascia: Fascia | null; passata: boolean; giorno: string }) {
+  return (
+    <p role="status" className="vh">
+      {annuncioFascia(fascia, passata, giorno)}
+    </p>
+  )
+}
+
 /** La fascia in basso: l'esito dell'ultimo tocco, con ANNULLA finché si può. */
 export function FasciaTocco({
   fascia,
@@ -182,7 +191,7 @@ export function FasciaTocco({
   onChiudi: () => void
 }) {
   return (
-    <div role="status" className="tb-fascia" data-tipo={fascia.tipo} data-attesa={(fascia.tipo === 'fatto' && fascia.attesa) || undefined}>
+    <div className="tb-fascia" data-tipo={fascia.tipo} data-attesa={(fascia.tipo === 'fatto' && fascia.attesa) || undefined}>
       {fascia.tipo === 'fatto' && (
         <>
           <span style={{ color: fascia.attesa ? 'var(--giallo-testo)' : 'var(--verde-testo)' }}>

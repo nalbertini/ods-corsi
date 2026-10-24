@@ -142,6 +142,8 @@ SEGNARTI?**.
    sbagliato preme **ANNULLA** nella fascia in basso, che resta dieci secondi.
    L'annullo vale per due minuti: in quel tempo, toccando di nuovo il nome,
    **ANNULLA** ricompare. Annullato, la fascia lo dice: **ANNULLATO**.
+   Con un lettore di schermo l'esito del tocco, e nel timer il cambio di fase
+   (**LAVORO**, **RIPOSO**…), si sentono a voce, senza cercare la fascia.
 
 Altri messaggi possibili:
 

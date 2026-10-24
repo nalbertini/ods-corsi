@@ -5,7 +5,7 @@ import { Spunta } from '../Icons'
 import { SegnoCompleanno } from '../SegnoCompleanno'
 import { EtichettaAttivita } from '../ds'
 import { Guaio, Indietro, orario } from './comune'
-import { FasciaTocco, useTocchi } from './tocchi'
+import { AnnuncioTocco, FasciaTocco, useTocchi } from './tocchi'
 import { Kanji } from '../Kanji'
 
 /**
@@ -94,6 +94,7 @@ export function TabletPresenza({
       <div className="grow" />
       <span className="tb-nota">Non trovi il tuo nome? Chiedi all'istruttore: qui ci sono solo gli iscritti a questo corso.</span>
 
+      <AnnuncioTocco fascia={fascia} passata={passata} giorno={giorno} />
       {fascia && <FasciaTocco fascia={fascia} passata={passata} giorno={giorno} onAnnulla={annulla} onChiudi={chiudi} />}
     </div>
   )
