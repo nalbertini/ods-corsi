@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.200.8 — 24 ottobre 2026
+
+### Risolto
+
+- La pagina giocomotricità non scorre più di lato sul telefono stretto
+
+### Modificato
+
+- Il calendario della palestra resta leggibile a chi ha un accesso: scritto il perché
+
 ## 0.200.7 — 24 ottobre 2026
 
 ### Modificato
