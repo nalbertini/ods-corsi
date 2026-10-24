@@ -288,8 +288,9 @@ export function Segreteria({
   }, [voce])
   const segno = (n: number, detto: string) =>
     n > 0 && (
-      <span className="num sg-tag" data-tipo="presto" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${n} ${detto}`}>
-        {n}
+      <span className="num sg-tag" data-tipo="presto" style={{ marginLeft: 8, whiteSpace: 'nowrap' }}>
+        <span aria-hidden="true">{n}</span>
+        <span className="vh"> {detto}</span>
       </span>
     )
   // Le segnalazioni che aspettano una risposta: aperte, e l'ultimo a scrivere è un altro.

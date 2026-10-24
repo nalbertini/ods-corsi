@@ -17,6 +17,7 @@
     "prova:musica": "node scripts/prova-musica.mjs",
     "prova:a11y-iscritti": "node scripts/prova-a11y-iscritti.mjs",
     "prova:a11y-dietro-login": "node scripts/prova-a11y-dietro-login.mjs",
+    "prova:a11y-segreteria-menu": "node scripts/prova-a11y-segreteria-menu.mjs",
     "prova:robots": "node scripts/prova-robots.mjs",
     "prova:timer-font": "node scripts/prova-timer-font.mjs",
     "prova:timer-accessibilita": "node scripts/prova-timer-accessibilita.mjs",
