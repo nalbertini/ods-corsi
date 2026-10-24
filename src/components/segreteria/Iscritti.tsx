@@ -11,6 +11,7 @@ import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '.
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { conTessere, incrocioDaMostrare, SEGNALA_TESSERE, senzaTessera, tesseratoSenzaCorso, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
 import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaIniziale, SCHEDE, segniSchede, serveCambiare, tastoScheda, type IdScheda } from '../../lib/schedaSezioni'
+import { ICONE_SCHEDA_ISCRITTO } from '../Icons'
 import { ImportaTessere, TessereDellaPersona } from './Tessere'
 import { lette } from '../../lib/letture'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni, messaggio, Riga, SchedaPiena, Stato, Testa, useAvviso, useCarica, useOrdina } from './comune'
@@ -1026,6 +1027,7 @@ function Scheda({
       <div className="schede sg-schede sg-schede-scheda" role="tablist" aria-label="Parti della scheda" onKeyDown={tastiera}>
         {SCHEDE.map((s) => {
           const segno = segni[s.id]
+          const Icona = ICONE_SCHEDA_ISCRITTO[s.id]
           return (
             <button
               key={s.id}
@@ -1041,6 +1043,7 @@ function Scheda({
               data-on={aperta === s.id}
               onClick={() => setAperta(s.id)}
             >
+              <Icona size={16} />
               <span aria-hidden="true" className="sg-scheda-lunga">{s.etichetta}</span>
               <span aria-hidden="true" className="sg-scheda-corta">{s.etichettaTelefono}</span>
               {segno && (

@@ -128,6 +128,11 @@ console.log('\n3. I recapiti: quattro tessere cliccabili')
   ok('ogni azione è un solo link dentro div.azione; Telefono: tel:+393463292786', [az.map((a) => a.length), az[0]?.[0]?.href, az[0]?.[0]?.t], [[1, 1, 1, 1], 'tel:+393463292786', 'Chiama ora →'])
   ok('Instagram, Facebook e indicazioni vanno ai loro indirizzi', az.slice(1).map((a) => a[0]?.href?.replace(/\?.*/, '')), ['https://www.instagram.com/officine.dellosport/', 'https://www.facebook.com/ilCentroJudo/', 'https://www.google.com/maps/dir/'])
   ok('i link esterni delle tessere hanno rel noopener noreferrer', az.slice(1).map((a) => a[0]?.rel?.split(/\s+/).sort()), [['noopener', 'noreferrer'], ['noopener', 'noreferrer'], ['noopener', 'noreferrer']])
+  const ico = t.map((x) => x.html.match(/<svg\b[^>]*>[\s\S]*?<\/svg>/g) ?? [])
+  ok('ogni tessera ha una sola icona, decorativa (aria-hidden) e prima del titolo', [ico.map((a) => a.length), ico.every((a) => /aria-hidden="true"/.test(a[0] ?? '')), t.every((x) => x.html.startsWith('<svg'))], [[1, 1, 1, 1], true, true])
+  ok('le quattro icone sono diverse e non portano testo né titolo', [new Set(ico.map((a) => a[0])).size, ico.some((a) => /<title|<text|aria-label/.test(a[0] ?? ''))], [4, false])
+  const strano = articoli(pag(NUOVO.replace('<h3>Facebook</h3>', '<h3>Altro</h3>').replace(/https:\/\/www\.facebook\.com\/[^"]*/, 'https://esempio.it/x')).match(/<div class="tessere n-4 recapiti">([\s\S]*?)<\/div>\s*<\/section>/)?.[1] ?? '')
+  ok('un recapito con un link che non si riconosce resta senza icona', strano.map((x) => x.html.startsWith('<svg')), [true, true, false, true])
   ok('il testo del link non resta anche fuori dal div.azione', t.map((x) => testo(x.html.replace(/<div class="azione">[\s\S]*?<\/div>/, '')).includes('→')), [false, false, false, false])
 }
 
