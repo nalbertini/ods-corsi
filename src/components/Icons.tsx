@@ -183,3 +183,11 @@ export const ICONE_SCHEDE = {
   mese: ICONE_MENU.settimana,
   segnalate: ICONE_MENU.segnalazioni,
 }
+
+/** Le icone delle linguette della scheda iscritto: la chiave è l'`IdScheda` di lib/schedaSezioni. */
+export const ICONE_SCHEDA_ISCRITTO = {
+  persona: ICONE_MENU.areaIstruttori,
+  documenti: voce(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M8 13h8M8 17h8" /></>),
+  quota: ICONE_CONTI.banconota,
+  corsi: ICONE_MENU.corsi,
+}

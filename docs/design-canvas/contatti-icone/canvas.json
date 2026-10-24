@@ -1,0 +1,8 @@
+{
+  "pages": [{ "id": "page-1", "name": "Contatti · icone" }],
+  "artboards": [
+    { "file": "ContattiIcone.dc.html", "title": "1 · Contatti con icone (1440)", "x": 0, "y": 0, "w": 1440, "h": 1500, "page": "page-1" },
+    { "file": "ContattiIconeTelefono.dc.html", "title": "2 · Contatti con icone (375)", "x": 1560, "y": 0, "w": 375, "h": 1900, "page": "page-1" },
+    { "file": "IconeScelta.dc.html", "title": "3 · La scelta delle icone", "x": 2055, "y": 0, "w": 1440, "h": 760, "page": "page-1" }
+  ]
+}

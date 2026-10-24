@@ -49,4 +49,13 @@ const radice = token(':root')
 const temi = { scuro: radice, chiaro: { ...radice, ...token(":root[data-tema='chiaro']") } }
 for (const [n, t] of Object.entries(temi)) ok(`--dim sul fondo delle schede ≥ 4,5 · ${n}`, contrasto(t['--dim'], t['--surface']) >= 4.5, true)
 
+// Le linguette della scheda iscritto hanno un'icona, decorativa: il nome resta quello della linguetta.
+const iscritti = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
+const icone = readFileSync('src/components/Icons.tsx', 'utf8')
+const schede = [...readFileSync('src/lib/schedaSezioni.ts', 'utf8').matchAll(/\{ id: '(\w+)', etichetta/g)].map((m) => m[1])
+const blocco = icone.match(/export const ICONE_SCHEDA_ISCRITTO = \{([\s\S]*?)\n\}/)?.[1] ?? ''
+ok('ogni scheda ha la sua icona in ICONE_SCHEDA_ISCRITTO', schede.filter((id) => !new RegExp(`^  ${id}: `, 'm').test(blocco)), [])
+ok('la linguetta mostra l\'icona della sua scheda', /const Icona = ICONE_SCHEDA_ISCRITTO\[s\.id\]/.test(iscritti) && /<Icona size=\{16\} \/>/.test(iscritti), true)
+ok('le icone di voce sono aria-hidden', /function IconaVoce[\s\S]*?aria-hidden="true"/.test(icone), true)
+
 process.exit(fallite ? 1 : 0)
