@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
+import { conPrecarica, daPrecaricare } from './scripts/precarica-aree.mjs'
 import { politicaCsp } from './src/lib/csp'
 
 // La versione dell'app: il numero di package.json e il commit da cui è
@@ -33,6 +34,8 @@ const conBase = (html: string) => html.replace(/<head>/i, `<head>\n    ${BASE}`)
  * 404. Sono la stessa pagina della radice con `<base href="../">`, così i
  * file relativi (`./assets/…`, le icone, i moduli, il timer) si prendono da
  * lì e l'app è una sola, con un service worker solo che le precarica tutte.
+ * Ogni pagina precarica anche il primo pezzo della sua area, se no il browser
+ * lo scopre solo dopo aver eseguito il codice principale (`scripts/precarica-aree.mjs`).
  *
  * In sviluppo il server risponde già con la pagina a ogni indirizzo: qui gli
  * si aggiunge la base, e la barra finale a chi la dimentica (senza, `../`
@@ -65,7 +68,7 @@ function pagineDelleAree(): Plugin {
       const radice = bundle['index.html']
       if (!radice || radice.type !== 'asset') return
       for (const area of AREE) {
-        this.emitFile({ type: 'asset', fileName: `${area}/index.html`, source: conBase(String(radice.source)) })
+        this.emitFile({ type: 'asset', fileName: `${area}/index.html`, source: conPrecarica(conBase(String(radice.source)), daPrecaricare(bundle, area)) })
       }
     },
   }
