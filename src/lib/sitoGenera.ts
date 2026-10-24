@@ -1430,6 +1430,8 @@ export function generaSito(d: DatiSito): Record<string, string> {
   file['sitemap.xml'] = mappa(c, pagine)
   file['llms.txt'] = llms(c, pagine)
   file['robots.txt'] = `User-agent: *\nAllow: /\n\nSitemap: ${d.dominio}/sitemap.xml\n`
+  // Search Console verifica la proprietà del sito cercando questo file alla radice.
+  file['google4c8602c048a4cfb5.html'] = 'google-site-verification: google4c8602c048a4cfb5.html'
   for (const r of d.rinvii) {
     if (!slugValido(r.da) || c.slugs.has(r.da) || !c.slugs.has(r.a)) continue
     file[`${r.da}/index.html`] = rinvio(c, r.a)

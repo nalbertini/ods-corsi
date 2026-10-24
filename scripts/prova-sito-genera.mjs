@@ -62,7 +62,8 @@ const genera = (d) => {
   const r = prova(() => g.generaSito(d))
   return typeof r === 'object' && r !== null ? r : {}
 }
-const html = (r) => Object.keys(r).filter((f) => f.endsWith('.html'))
+// Il file di verifica di Google finisce in .html ma non è una pagina del sito.
+const html = (r) => Object.keys(r).filter((f) => f.endsWith('.html') && !f.startsWith('google'))
 const ha = (r, f) => typeof r[f] === 'string'
 // Il contenuto di un file, o '' se non c'è (le regole «non contiene» valgono solo se il file c'è: vedi `esiste`).
 const c = (r, f) => (ha(r, f) ? r[f] : '')
@@ -76,7 +77,9 @@ console.log('\nPercorsi: un file per pagina')
   ok('la home è index.html', esiste(r, 'index.html'), true)
   ok('le altre pagine sono <slug>/index.html', [esiste(r, 'judo/index.html'), esiste(r, 'orari/index.html')], [true, true])
   ok('ci sono 404.html, sitemap.xml e robots.txt', [esiste(r, '404.html'), esiste(r, 'sitemap.xml'), esiste(r, 'robots.txt')], [true, true, true])
-  ok('niente di più: 3 pagine + 4 file fissi', Object.keys(r).sort(), ['404.html', 'index.html', 'judo/index.html', 'llms.txt', 'orari/index.html', 'robots.txt', 'sitemap.xml'])
+  ok('niente di più: 3 pagine + 5 file fissi', Object.keys(r).sort(), ['404.html', 'google4c8602c048a4cfb5.html', 'index.html', 'judo/index.html', 'llms.txt', 'orari/index.html', 'robots.txt', 'sitemap.xml'])
+  // Search Console verifica il sito cercando questo file, con questo testo preciso.
+  ok('il file di verifica di Google ha il suo testo', c(r, 'google4c8602c048a4cfb5.html'), 'google-site-verification: google4c8602c048a4cfb5.html')
 }
 {
   const cattivi = ['../x', 'a b', 'Admin', 'x/y', '', '..', '/x', 'a\\b', 'é', 'x.html']
@@ -85,7 +88,7 @@ console.log('\nPercorsi: un file per pagina')
   ok('la home resta anche con slug cattivi attorno', esiste(r, 'index.html'), true)
   const strani = Object.keys(r).filter((f) => f.startsWith('/') || f.includes('..') || /[^a-z0-9/\-.]/.test(f))
   ok('nessun percorso con «..», «/» iniziale o caratteri fuori [a-z0-9/-.]', Object.keys(r).length > 0 ? strani : 'nessun file', [])
-  ok('con soli slug cattivi non cade (resta 404, llms.txt, sitemap, robots)', Object.keys(genera(dati({ pagine: cattivi.map((x) => pag(x)), menu: [] }))).sort(), ['404.html', 'llms.txt', 'robots.txt', 'sitemap.xml'])
+  ok('con soli slug cattivi non cade (resta 404, verifica Google, llms.txt, sitemap, robots)', Object.keys(genera(dati({ pagine: cattivi.map((x) => pag(x)), menu: [] }))).sort(), ['404.html', 'google4c8602c048a4cfb5.html', 'llms.txt', 'robots.txt', 'sitemap.xml'])
 }
 
 // ---------------------------------------------------------------------------
@@ -264,7 +267,7 @@ console.log('\nRinvii')
   ok('rinvio verso una pagina che non c’è: saltato', esiste(r, 'index.html') && !esiste(r, 'fantasma/index.html'), true)
   ok('rinvio con «da» uguale a una pagina: la pagina non è sostituita', c(r, 'orari/index.html').includes('Testo di orari') && !c(r, 'orari/index.html').includes('refresh'), true)
   ok('rinvio con «da» non valido: saltato', Object.keys(r).length === 0 ? -1 : Object.keys(r).filter((f) => f.includes('..') || f.includes('A B') || f.startsWith('/') || f === 'index.html/index.html').length, 0)
-  ok('file totali: 3 pagine, 2 rinvii, 4 fissi', Object.keys(r).length, 9)
+  ok('file totali: 3 pagine, 2 rinvii, 5 fissi', Object.keys(r).length, 10)
 }
 
 // ---------------------------------------------------------------------------
