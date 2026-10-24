@@ -27,6 +27,7 @@ prima() {
     accessi-piu-stretti) echo tablet ;;
     timer-lezioni) echo timer ;;
     108-compleanni) echo tablet ;;
+    111-iscrizione-troppo-grande) echo iscrizioni ;;
   esac
 }
 
