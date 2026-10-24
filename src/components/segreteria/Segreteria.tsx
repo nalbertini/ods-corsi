@@ -47,6 +47,7 @@ import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 import { eScorciatoiaDiRicerca } from '../../lib/scorciatoiaRicerca'
 import { guidaDellaVoce, indirizzoConsentito, leggeLaSegreteria, menuDi, postoConsentito, primaVoce, titoloDelMenu, vociConsentite } from '../../lib/menuSegreteria'
+import '../../segreteria.css'
 
 export type { Voce }
 

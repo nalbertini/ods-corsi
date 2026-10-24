@@ -120,6 +120,8 @@ scrive.
 - **LE PAGINE PIÙ LETTE**: le cinque con più visite, col titolo e
   l'indirizzo, e le altre insieme. Gli indirizzi sbagliati (la pagina «404»)
   non ci sono: si vedono su GoatCounter;
+- Quanti aprono il modulo e quante richieste arrivano («iscrizione-modulo» e
+  «iscrizione-fatta») non sono qui: si vedono su GoatCounter, fra gli eventi;
 - **DA DOVE ARRIVANO**: Google, Instagram, Facebook… le cinque più grandi e le
   altre insieme, e a parte **Diretto o non si sa**: chi scrive l'indirizzo a
   mano, chi apre un link da WhatsApp, le app che non lo dicono.

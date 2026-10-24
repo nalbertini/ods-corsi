@@ -509,7 +509,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
       {perVoci ? (
         <div role="table" aria-label="Totali per voce" className="sg-tabella">
           <div className="sg-tabella-corpo">
-            {perVoce(trovate).length === 0 && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Nessun movimento nel periodo.</p>}
+            {perVoce(trovate).length === 0 && <div role="row"><p role="cell" className="sg-sotto" style={{ padding: '12px 14px' }}>Nessun movimento nel periodo.</p></div>}
             {perVoce(trovate).map((g) => (
               <div key={`${g.tipo}|${g.voce}`} role="row" className="row" style={{ gap: 14, padding: '10px 14px', borderBottom: '1px solid var(--line-soft)', alignItems: 'center' }}>
                 <span role="cell" style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>{g.voce}</span>
@@ -538,9 +538,11 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
           </div>
           <div className="sg-tabella-corpo">
             {trovate.length === 0 && (
-              <p className="sg-sotto" style={{ padding: '12px 14px' }}>
-                {righe.length === 0 ? 'Nessun movimento: compaiono qui gli incassi degli iscritti e quelli che scrivi tu.' : 'Nessun movimento corrisponde ai filtri.'}
-              </p>
+              <div role="row">
+                <p role="cell" className="sg-sotto" style={{ padding: '12px 14px' }}>
+                  {righe.length === 0 ? 'Nessun movimento: compaiono qui gli incassi degli iscritti e quelli che scrivi tu.' : 'Nessun movimento corrisponde ai filtri.'}
+                </p>
+              </div>
             )}
             {trovate.slice(0, viste).map((r) => {
               const e = dellEstratto.get(r.id)
@@ -585,11 +587,13 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
             })}
           </div>
           {trovate.length > viste && (
-            <div className="row" style={{ gap: 10, padding: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-              <button type="button" className="sg-btn sg-btn-linea" onClick={() => setViste(viste + RIGHE_ELENCO)}>
-                Mostra altre {Math.min(RIGHE_ELENCO, trovate.length - viste)} righe
-              </button>
-              <span className="sg-sotto">ne vedi {viste} su {trovate.length}</span>
+            <div role="row" className="row" style={{ gap: 10, padding: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div role="cell">
+                <button type="button" className="sg-btn sg-btn-linea" onClick={() => setViste(viste + RIGHE_ELENCO)}>
+                  Mostra altre {Math.min(RIGHE_ELENCO, trovate.length - viste)} righe
+                </button>
+              </div>
+              <span role="cell" className="sg-sotto">ne vedi {viste} su {trovate.length}</span>
             </div>
           )}
         </div>

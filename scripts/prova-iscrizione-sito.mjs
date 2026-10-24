@@ -123,13 +123,22 @@ const pulisci = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '')
 const regole = (css) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, sel, corpo]) => ({ selettori: sel.split(',').map((s) => s.trim().replace(/"/g, "'")), corpo: corpo.trim() }))
 const dichiarazioni = (corpo) => Object.fromEntries([...corpo.matchAll(/(--[\w-]+)\s*:\s*([^;]+?)\s*(?:;|$)/g)].map((m) => [m[1], m[2]]))
 const PREFISSO = ":root[data-modulo='sito']"
-const ora = pulisci(readFileSync('src/styles.css', 'utf8'))
+// Il CSS è in due file (vedi prova-css-ingresso): le regole di prima stanno nell'uno o nell'altro.
+const ora = pulisci(readFileSync('src/styles.css', 'utf8') + readFileSync('src/segreteria.css', 'utf8'))
 // Il confronto è con main, non con HEAD: nel ramo o in CI HEAD contiene già le regole nuove e
 // il confronto sarebbe vuoto. Senza un main con cui confrontare quei casi si saltano, non passano a vuoto.
 let prima = null
 for (const base of ['main', 'origin/main']) {
   try {
-    prima = pulisci(execSync(`git show ${base}:src/styles.css`, { encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'] }))
+    const mostra = (f) => execSync(`git show ${base}:${f}`, { encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'] })
+    // main prima di questa divisione non ha ancora segreteria.css.
+    let segreteria = ''
+    try {
+      segreteria = mostra('src/segreteria.css')
+    } catch {
+      /* tutto in styles.css */
+    }
+    prima = pulisci(mostra('src/styles.css') + segreteria)
     break
   } catch {
     /* quel ramo qui non c'è: si prova l'altro */
@@ -245,7 +254,9 @@ const testataScheda = (r) => r.selettori.some((x) => /^\.sg-scheda-piede > \.sg-
 const areaIscrittiRivista = (r) => r.selettori.some((x) => /^\.mio-nome$|^\.mia-lezione-cosa(\[data-tono='fatto'\])?$|^\.mia-presenza-segno$/.test(x))
 // La barra del menu sui telefoni va a capo a 320px (reflow, WCAG 1.4.10): `.sg-barra-tel` ha `flex-wrap` e il suo gap a due valori, e la regola è cambiata di proposito.
 const barraTelefono = (r) => r.selettori.includes('.sg-barra-tel')
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// Il tasto di ordinamento delle colonne è alto almeno 24px (WCAG 2.5.8, `prova:a11y-dietro-login`): la sua regola base è cambiata di proposito.
+const ordinaAlto = (r) => r.selettori.includes('.sg-ordina') && /display:\s*inline-flex/.test(r.corpo)
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

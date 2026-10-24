@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { HistoryEntry, Mode, Settings, Workout } from './types'
 import { DEFAULT_SETTINGS, loadHistory, loadSettings, loadWorkouts, pushHistory, saveSettings, saveWorkouts } from './lib/storage'
 import { type Esercizio, loadEsercizi, normalizza, saveEsercizi } from './lib/esercizi'
@@ -10,15 +10,6 @@ import { INTRO_CLIP, PROSSIMO_CLIP, STATE_CLIP, exerciseKey, extraClip } from '.
 import { uid } from './lib/format'
 import { presetsDi } from './lib/presets'
 import { HomeScreen } from './components/HomeScreen'
-import { PresetScreen } from './components/PresetScreen'
-import { EditorScreen } from './components/EditorScreen'
-import { TimerScreen } from './components/TimerScreen'
-import { SettingsScreen } from './components/SettingsScreen'
-import { VoiceRecorderScreen } from './components/VoiceRecorderScreen'
-import { HistoryScreen } from './components/HistoryScreen'
-import { EserciziScreen } from './components/EserciziScreen'
-import { CondividiScreen } from './components/CondividiScreen'
-import { RicevutoScreen } from './components/RicevutoScreen'
 import { CountdownTab, CronometroScreen } from './components/AlVolo'
 import { pulisciLink, workoutDaLink } from './lib/condivisione'
 import { type Interrotto, leggiInterrotto, scordaInterrotto } from './lib/ripresa'
@@ -52,6 +43,18 @@ import { type Gruppo, type Strumento, aTuttoSchermo, conBarra, gruppiDi, strumen
 import type { Incorporato } from './lib/incorporato'
 import { CHIAVI_SALA, type ImpostazioniSala, type TimerSala, salvaTimerSala, scaricaDiscipline, toccaLaSala } from './lib/impostazioniSala'
 import { type Disciplina, disciplineConVoci, filtroValido, loadDiscipline, saveDiscipline } from './lib/discipline'
+
+// Solo la home serve all'apertura: le altre schermate si scaricano quando le
+// apri (il service worker le ha già precaricate, quindi anche senza rete).
+const PresetScreen = lazy(() => import('./components/PresetScreen').then((m) => ({ default: m.PresetScreen })))
+const EditorScreen = lazy(() => import('./components/EditorScreen').then((m) => ({ default: m.EditorScreen })))
+const TimerScreen = lazy(() => import('./components/TimerScreen').then((m) => ({ default: m.TimerScreen })))
+const SettingsScreen = lazy(() => import('./components/SettingsScreen').then((m) => ({ default: m.SettingsScreen })))
+const VoiceRecorderScreen = lazy(() => import('./components/VoiceRecorderScreen').then((m) => ({ default: m.VoiceRecorderScreen })))
+const HistoryScreen = lazy(() => import('./components/HistoryScreen').then((m) => ({ default: m.HistoryScreen })))
+const EserciziScreen = lazy(() => import('./components/EserciziScreen').then((m) => ({ default: m.EserciziScreen })))
+const CondividiScreen = lazy(() => import('./components/CondividiScreen').then((m) => ({ default: m.CondividiScreen })))
+const RicevutoScreen = lazy(() => import('./components/RicevutoScreen').then((m) => ({ default: m.RicevutoScreen })))
 
 /** I corsi dell'ultima volta, per il titolo della lezione e l'editor senza rete. */
 const DOVE_CORSI = 'ods-timer:corsi'
@@ -713,7 +716,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   const fonteAudio = musica.fonte === 'file' || musica.fonte === 'radio' ? musica.fonte : null
   const con = (schermata: ReactNode) => (
     <>
-      {schermata}
+      <Suspense fallback={null}>{schermata}</Suspense>
       {conYoutube && <PlayerYoutube link={settings.youtube} />}
       {fonteAudio && musica.attiva && !incorporato && <PlayerAudio fonte={fonteAudio} link={settings.radio} nome="" />}
     </>

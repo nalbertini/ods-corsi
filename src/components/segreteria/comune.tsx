@@ -399,9 +399,9 @@ export function Riga({ titolo, children }: { titolo: string; children?: ReactNod
   return (
     <div className="sg-riga-titolo">
       {/* Un titolo vero: chi legge lo schermo salta da una parte all'altra della scheda. */}
-      <h3 className="sg-etichetta" style={{ margin: 0, fontSize: 14, letterSpacing: '0.22em' }}>
+      <h2 className="sg-etichetta" style={{ margin: 0, fontSize: 14, letterSpacing: '0.22em' }}>
         {titolo}
-      </h3>
+      </h2>
       <div className="rule-line" />
       {children}
     </div>
