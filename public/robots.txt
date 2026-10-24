@@ -1,0 +1,3 @@
+# L'app è interna: il sito pubblico è www.officinedellosport.it.
+User-agent: *
+Disallow: /
