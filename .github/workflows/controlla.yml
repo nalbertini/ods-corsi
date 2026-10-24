@@ -62,7 +62,12 @@ jobs:
       - run: npm ci
       - run: npm ci --prefix timer
       - run: npm run build
+      # Il token della GitHub App di Lighthouse CI fa comparire il risultato
+      # come controllo della PR, con il link al report. Senza (PR da fork,
+      # segreto mancante) il job gira lo stesso e i link restano nel log.
       - run: npx --yes @lhci/cli@0.15.1 autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
   prove:
     name: Prove dell'app
