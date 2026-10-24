@@ -195,7 +195,7 @@ programma**; chi ha pagato solo corsi si sollecita). Un fisso
 ha il tasto, con **Sembra un fisso**. Lo stesso **Annulla** c'è anche nella
 scheda.
 
-Poi la scheda è divisa in quattro schede, e se ne vede una alla volta:
+Poi la scheda è divisa in quattro schede, e se ne vede una alla volta. Ogni linguetta ha una piccola icona accanto al nome (una persona, un foglio, una banconota, una medaglia): serve solo a ritrovarla a colpo d'occhio.
 
 - **PERSONA** — i **CONTATTI** (con l'**EMAIL**), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.

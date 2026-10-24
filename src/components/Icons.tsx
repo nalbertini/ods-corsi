@@ -177,3 +177,11 @@ export const ICONE_TABLET = {
   oggi: voce(<><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><circle cx="12" cy="16" r="1.5" /></>),
   corso: ICONE_MENU.corsi,
 }
+
+/** Le icone delle linguette della scheda iscritto: la chiave è l'`IdScheda` di lib/schedaSezioni. */
+export const ICONE_SCHEDA_ISCRITTO = {
+  persona: ICONE_MENU.areaIstruttori,
+  documenti: voce(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M8 13h8M8 17h8" /></>),
+  quota: ICONE_CONTI.banconota,
+  corsi: ICONE_MENU.corsi,
+}

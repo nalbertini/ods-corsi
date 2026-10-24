@@ -55,7 +55,8 @@ const ok = (cosa, avuto, voluto) => {
 
 // Un nome che non si ripete fra un giro e l'altro sullo stesso database.
 const giro = Date.now().toString(36)
-const oggi = new Date().toISOString().slice(0, 10)
+// Il giorno del dispositivo, come `chiaveGiorno` dei due motori: non quello UTC, che dopo mezzanotte in Italia è ancora ieri.
+const oggi = new Date().toLocaleDateString('sv-SE')
 
 const casi = {
   async 'un corso nuovo c’è, e archiviato non è più attivo'(s) {

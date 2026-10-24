@@ -374,6 +374,7 @@ const CSS_CONTATTI = `
 .recapiti-sez{padding:48px var(--margine) 0}
 .recapiti-sez .recapiti{grid-auto-rows:minmax(270px,auto)}
 .recapiti .tessera{position:relative}
+.recapiti .ico{display:block;flex:none;width:32px;height:32px}
 .recapiti-sez .azione{margin-top:10px;padding-top:4px;border-top:2px solid currentColor}
 .recapiti-sez .azione a{display:flex;align-items:center;min-height:48px;font-size:17px;font-weight:600;text-decoration:none}
 .recapiti-sez .azione a::after{content:"";position:absolute;inset:0;border-radius:6px}
