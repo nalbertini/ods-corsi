@@ -54,6 +54,7 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
   la pagina torna come prima. Il primo è sempre il giallo. L'indirizzo di WhatsApp si scrive **con `https://`**: senza, il sito toglie il link.
 - **Recapiti**: quattro titoli piccoli (Telefono, Instagram, Facebook, Indirizzo), ognuno con il valore e, in un paragrafo che è solo un link,
   l'azione («Chiama ora →», …). La tessera intera è un bersaglio da toccare. Il telefono usa `tel:`.
+  Sopra il titolo sta una piccola icona decorativa, scelta dal link dell'azione (`tel:`, Instagram, Facebook, mappe): un link che non si riconosce resta senza.
 - **Come arrivare**: un paragrafo, la **mappa** (immagine), il pulsante «Ottieni indicazioni» e tre titoli piccoli con una riga ciascuno
   (In metro, In auto, Col navigatore). La lettera nel quadratino è l'iniziale dell'ultima parola del titolo.
 - **Una settimana per scegliere**: un paragrafo e **tre** titoli piccoli, ognuno con un paragrafo (numerati 1-2-3). Con due o quattro, o con un titolo che finisce con «?», diventano tessere come le altre. Le **foto** subito dopo l'ultimo passo escono in fila sotto la sezione (una, due o tre).
