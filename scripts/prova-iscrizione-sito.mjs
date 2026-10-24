@@ -250,8 +250,8 @@ const menuConNomi = (r) => r.selettori.some((x) => /^#sg-menu \.sg-icone( > \.sg
 const presenzeSenzaBarre = (r) => r.selettori.some((x) => /^\.sg-presenze$|^\.sg-barra(-nome|-suggerimento|-scala)?$|^\.sg-barra[:\[]/.test(x))
 // Il sollecito è un tasto in testata e le azioni rare stanno in «Altro» (`prova:scheda-iscritto`): il gruppo a destra del piede e la riga «Sollecitato…» nel riquadro sono tolti di proposito.
 const testataScheda = (r) => r.selettori.some((x) => /^\.sg-scheda-piede > \.sg-scheda-piede-destra$|^\.sg-sollecito-ultimo$/.test(x))
-// L'area iscritti ha il nome nel saluto sottolineato, l'etichetta a destra della lezione che può andare a capo (e niente più verde: non c'è un «fatto» nelle lezioni) e il segno della presenza come icona: le loro regole sono cambiate di proposito.
-const areaIscrittiRivista = (r) => r.selettori.some((x) => /^\.mio-nome$|^\.mia-lezione-cosa(\[data-tono='fatto'\])?$|^\.mia-presenza-segno$/.test(x))
+// L'area iscritti: VEDI TUTTE e lo stato della presenza (NON SEGNATO, PRESENTE) sono scuri abbastanza (`prova:a11y-iscritti`). Ha il nome nel saluto sottolineato, l'etichetta a destra della lezione che può andare a capo (e niente più verde: non c'è un «fatto» nelle lezioni) e il segno della presenza come icona: le loro regole sono cambiate di proposito.
+const areaIscrittiRivista = (r) => r.selettori.some((x) => /^\.mio-nome$|^\.mia-lezione-cosa(\[data-tono='fatto'\])?$|^\.mia-presenza-segno$|^\.mia-vedi-tutte$|^\.mia-presenza-detto$|^\.mia-presenza-piccola \.mia-presenza-detto$|^\.mia-presenza-piccola\[data-tono='spento'\]$/.test(x))
 // La barra del menu sui telefoni va a capo a 320px (reflow, WCAG 1.4.10): `.sg-barra-tel` ha `flex-wrap` e il suo gap a due valori, e la regola è cambiata di proposito.
 const barraTelefono = (r) => r.selettori.includes('.sg-barra-tel')
 // Il tasto di ordinamento delle colonne è alto almeno 24px (WCAG 2.5.8, `prova:a11y-dietro-login`): la sua regola base è cambiata di proposito.

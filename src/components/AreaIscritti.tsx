@@ -478,7 +478,7 @@ function Saluto({ scheda, tua, io, membri, onCambia }: { scheda: SchedaIscritto;
       {membri.length > 1 ? (
         // Il nome è il campo: il select vero ci sta sopra, trasparente, e il telefono apre il suo elenco.
         <label className="mio-nome-scelta">
-          <span className="ob mio-nome">{tua ? `Ciao ${scheda.nome}` : `${scheda.nome} ${scheda.cognome}`}</span>
+          <span role="heading" aria-level={1} className="ob mio-nome">{tua ? `Ciao ${scheda.nome}` : `${scheda.nome} ${scheda.cognome}`}</span>
           <span aria-hidden="true" className="mio-nome-freccia">▾</span>
           <select aria-label="Di chi vedi la pagina" value={scheda.id} onChange={(e) => onCambia(e.target.value)}>
             {membri.map((p) => (
@@ -489,7 +489,7 @@ function Saluto({ scheda, tua, io, membri, onCambia }: { scheda: SchedaIscritto;
           </select>
         </label>
       ) : (
-        <span className="ob mio-nome">{tua ? `Ciao ${scheda.nome}` : `${scheda.nome} ${scheda.cognome}`}</span>
+        <span role="heading" aria-level={1} className="ob mio-nome">{tua ? `Ciao ${scheda.nome}` : `${scheda.nome} ${scheda.cognome}`}</span>
       )}
       {membri.length > 1 && <Dettaglio>Tocca il nome per vedere un altro membro del nucleo.</Dettaglio>}
       {!tua && <Dettaglio>Nel tuo nucleo familiare: vedi la sua pagina come la vede la segreteria.</Dettaglio>}

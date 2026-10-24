@@ -14,7 +14,7 @@ import type { Tappa } from '../lib/passiIscrizione'
 export function Titoletto({ children, conto, dentro }: { children: ReactNode; conto?: ReactNode; dentro?: boolean }) {
   return (
     <div className={dentro ? 'rule rule-dentro' : 'rule'}>
-      <span className="rule-label">{children}</span>
+      <span className="rule-label" role="heading" aria-level={2}>{children}</span>
       <div className="rule-line" />
       {conto !== undefined && <span className="num rule-conto">{conto}</span>}
     </div>
@@ -101,7 +101,7 @@ export function Cifra({ children }: { children: ReactNode }) {
 /** La frase sotto un titolo, in `dim`. `tono` la colora quando dice un guaio o un avviso. */
 export function Dettaglio({ children, tono }: { children: ReactNode; tono?: 'testo' | 'guaio' | 'avviso' | 'fatto' }) {
   return (
-    <span className="passo-dettaglio" data-tono={tono}>
+    <span className="passo-dettaglio" data-tono={tono} role={tono === 'guaio' ? 'alert' : undefined}>
       {children}
     </span>
   )
@@ -132,7 +132,7 @@ export function NastroProva({ testo, onEsci }: { testo: string; onEsci?: () => v
 /** Il titolo di un esito, grande e obliquo: verde se è andata, giallo se manca qualcosa. */
 export function TitoloEsito({ children, tono }: { children: ReactNode; tono: 'fatto' | 'avviso' }) {
   return (
-    <span className="ob esito-titolo" data-tono={tono}>
+    <span className="ob esito-titolo" role="heading" aria-level={2} data-tono={tono}>
       {children}
     </span>
   )
