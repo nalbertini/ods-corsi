@@ -37,7 +37,6 @@ Le altre pagine, Judo compresa, stanno in 320 px.
 - **Lettore di schermo** (VoiceOver, TalkBack): axe non dice se i testi sono
   sensati letti ad alta voce. Va fatta a mano da chi può, e la data va nella
   dichiarazione.
-- **Zoom del testo al 200 %** e contrasto di foto con testo sopra: non misurati.
 - **Il modulo di iscrizione** vive nell'app (`iscrizioni/`), coperto da
   `docs/qa/accessibilita.md`, non da questa scansione.
 - **Pagine nascoste o in bozza**: non sono in sitemap, quindi non scansionate
@@ -64,17 +63,29 @@ già corretto. Se una pagina resta ferma su «Salta al contenuto» è la prova
 che parte troppo presto: `PAUSA=9000` e, per rileggere solo alcune pagine,
 `PAGINE=url1,url2`.
 
+## Zoom al 200 % e contrasto su foto (2026-10-24)
+
+Playwright sul sito vero, 21 pagine della sitemap (script non nel repo).
+
+- **Zoom**: finestra a 640 px (1280 px al 200 %) e, a parte, testo al 200 %
+  (`html{font-size:200%}`). Nessuno scorrimento orizzontale. Lo script segnala
+  titoli nascosti per lo screen reader (`.solo-lettori`, `.nascosto`): non
+  sono testo tagliato.
+- **Contrasto su foto**: l'unico testo sopra un'immagine è la mappa in
+  `/contatti/`; rapporti da 8,95 a 14,83, sopra le soglie (4,5; 3 per il
+  testo grande). Altrove il testo sta su pannelli a tinta piatta. Il rapporto
+  è il 5° percentile dei pixel dietro il testo, da uno screenshot: una stima.
+
 ## Per la Dichiarazione
 
-Stato onesto: «parzialmente conforme», finché i salti di titolo e il link
-«informativa» non sono sistemati. Dichiarazione compilata:
+Dopo la correzione dei titoli e del link «informativa» e con zoom e contrasto
+verificati, lo stato è «conforme». Dichiarazione compilata:
 
 - **Gestore**: ASD Il Centro Judo, Corso Francia 224, Rivoli (TO).
-- **Contenuti non accessibili**: i titoli di tre pagine saltano un livello
-  e in una pagina un link si legge solo «informativa»; chi usa un lettore di
-  schermo li trova comunque, ma l'ordine dei titoli è meno chiaro.
+- **Contenuti non accessibili**: nessuno noto.
 - **Verifica**: 24 ottobre 2026; controllo automatico (axe, larghezza a 320 px,
-  tastiera) e lettura di tutte le pagine con VoiceOver su Safari.
+  tastiera, finestra a 640 px e testo al 200 %, contrasto dei testi sulle
+  immagini) e lettura di tutte le pagine con VoiceOver su Safari.
 - **Contatto**: asdilcentrojudo@gmail.com, 346 329 2786.
 
 Il testo si scrive e si pubblica dall'editor del sito (la pagina nasce come
