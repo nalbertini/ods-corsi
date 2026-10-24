@@ -207,7 +207,7 @@ select atteso('le funzioni interne non le esegue nessuno', (has_function_privile
   or has_function_privilege('authenticated', 'compleanno_oggi(date)', 'execute'))::text, 'false');
 
 -- Il tablet: la postazione della sala Lotta ha i compleanni accesi (sezione 2). Maura insegna Lotta 2 e compie gli anni oggi.
-select atteso('il tablet: le lezioni di Lotta 2 (non quella di tre settimane fa, né il Judo di un\'altra sala)',
+select atteso('il tablet: le lezioni di Lotta 2 (non quella di tre settimane fa, né il Judo di un''altra sala)',
   lezioni_in_festa('66666666-6666-6666-6666-666666666666', 'authenticated', $$select array_agg(sessione_id) from compleanni_istruttori_sala(current_date - 2, current_date + 2)$$), '01, 02, 04, 06');
 update postazioni set compleanni = false where id = 'dddddddd-0000-0000-0000-000000000001';
 select atteso('postazione spenta: nessuna lezione, anche se Maura compie gli anni',

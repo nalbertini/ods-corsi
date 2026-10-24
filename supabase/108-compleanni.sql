@@ -31,7 +31,7 @@ alter table postazioni add column if not exists compleanni boolean not null defa
 -- Oggi (a Roma) è il compleanno di chi è nato il `nato`? Il 29 febbraio si festeggia il 1° marzo negli anni non bisestili.
 create or replace function compleanno_oggi(nato date)
   returns boolean
-  language sql stable as $$
+  language sql stable set search_path = public, extensions as $$
   select coalesce(to_char(g.oggi, 'MMDD') = case
       when to_char(nato, 'MMDD') = '0229' and not (extract(year from g.oggi)::int % 4 = 0
         and (extract(year from g.oggi)::int % 100 <> 0 or extract(year from g.oggi)::int % 400 = 0))
