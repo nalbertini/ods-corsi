@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import type { Voce } from '../../lib/indirizzoSegreteria'
 import { personaCambiata } from '../../lib/segreteria'
+import { lette } from '../../lib/letture'
 import { daSpunte, insegna, nomeDelRuolo, puo, siElimina, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, suCarta, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
@@ -173,6 +174,8 @@ export function Personale({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce) =>
           ))}
         </div>
 
+        {/* Sotto la tabella: compare con le righe, se no le righe che arrivano lo spingono giù. */}
+        {lette(lista) && (
         <section aria-label="Cosa può fare ogni ruolo" className="sg-riquadro">
           <Riga titolo="COSA PUÒ FARE OGNI RUOLO" />
           <div className="sg-permessi-scorre">
@@ -204,6 +207,7 @@ export function Personale({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce) =>
             senza uscire.
           </span>
         </section>
+        )}
       </div>
       {avviso}
     </>

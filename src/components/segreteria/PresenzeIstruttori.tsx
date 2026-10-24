@@ -4,6 +4,7 @@ import type { StatoPresenzaIstruttore } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { mesi } from '../../lib/ore'
 import { SOCIETA } from '../../lib/cartaPdf'
+import { lette } from '../../lib/letture'
 import { chiedi, Guaio, suCarta, Testa, useAvviso, useCarica, useOrdina } from './comune'
 
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
@@ -83,6 +84,8 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
   const giorni = Math.ceil((Date.now() - dal.getTime()) / 86_400_000) + 1
   const elenco = useCarica(() => d.presenzeIstruttori(giorni), [d, giorni])
   const proposte = useCarica(() => d.lezioniSenzaIstruttore(), [d])
+  // Riepilogo e lezioni da confermare stanno sopra la tabella: se arrivano dopo, la spostano.
+  const pronte = lette(elenco, proposte)
   const { avviso, fai, lavora } = useAvviso()
 
   const tutte = elenco.dato ?? []
@@ -201,10 +204,11 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           ))}
           <option value="">Ultimi dodici mesi</option>
         </select>
+        {/* Larghezza fissa: con corsi e istruttori che arrivano dopo, i menu si allargherebbero e andrebbero a capo, spostando tutto. */}
         <label htmlFor="corso-pi" className="vh">
           Corso
         </label>
-        <select id="corso-pi" className="sg-campo" value={corso} onChange={(e) => setCorso(e.target.value)}>
+        <select id="corso-pi" className="sg-campo" style={{ width: 300, maxWidth: '100%' }} value={corso} onChange={(e) => setCorso(e.target.value)}>
           <option value="">Tutti i corsi</option>
           {corsi.map((c) => (
             <option key={c} value={c}>
@@ -215,7 +219,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
         <label htmlFor="istr-pi" className="vh">
           Istruttore
         </label>
-        <select id="istr-pi" className="sg-campo" value={istruttore} onChange={(e) => setIstruttore(e.target.value)}>
+        <select id="istr-pi" className="sg-campo" style={{ width: 300, maxWidth: '100%' }} value={istruttore} onChange={(e) => setIstruttore(e.target.value)}>
           <option value="">Tutti gli istruttori</option>
           {istruttori.map(([id, nome]) => (
             <option key={id} value={id}>
@@ -285,9 +289,9 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
       </p>
 
       {proposte.guaio && <Guaio testo={proposte.guaio} />}
-      {lezioni.length > 0 && <LezioniDaConfermare lezioni={lezioni} lavora={lavora} onScegli={scegli} />}
+      {pronte && lezioni.length > 0 && <LezioniDaConfermare lezioni={lezioni} lavora={lavora} onScegli={scegli} />}
 
-      {elenco.dato !== null && (
+      {pronte && elenco.dato !== null && (
         <p className="sg-sotto" style={{ margin: 0 }}>
           {lista.length === 1 ? 'Una presenza' : `${lista.length} presenze`} in elenco: {conte.confermate}{' '}
           {conte.confermate === 1 ? 'confermata' : 'confermate'}, {conte.daConfermare} da confermare
@@ -314,6 +318,8 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
 
       {elenco.guaio && <Guaio testo={elenco.guaio} />}
 
+      {!pronte && <p className="sg-sotto">Sto leggendo le presenze…</p>}
+      {pronte && (
       <div role="table" aria-label="Presenze degli istruttori" className="sg-tabella">
         <div role="row" className="sg-lista-testa sg-riga-presenza-istr">
           {colonna('istruttore', 'ISTRUTTORE')}
@@ -323,7 +329,6 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           {colonna('stato', 'STATO', { destra: true })}
         </div>
         <div className="sg-tabella-corpo">
-          {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px', fontSize: 15 }}>Sto leggendo le presenze…</p>}
           {elenco.dato !== null && lista.length === 0 && (
             <p className="sg-sotto" style={{ padding: '12px 14px', fontSize: 15 }}>
               {nelMese.length ? 'Nessuna presenza con questi filtri.' : `Nessun istruttore è entrato col PIN durante una lezione ${m ? (m.chiave.startsWith('anno-') ? `nell’${m.nome.toLowerCase()}` : `in ${m.nome.toLowerCase()}`) : 'negli ultimi dodici mesi'}.`}
@@ -403,6 +408,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           ))}
         </div>
       </div>
+      )}
       {avviso}
     </>
   )

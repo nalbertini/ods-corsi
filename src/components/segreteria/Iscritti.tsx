@@ -12,6 +12,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { conTessere, incrocioDaMostrare, SEGNALA_TESSERE, senzaTessera, tesseratoSenzaCorso, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
 import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaIniziale, SCHEDE, segniSchede, serveCambiare, tastoScheda, type IdScheda } from '../../lib/schedaSezioni'
 import { ImportaTessere, TessereDellaPersona } from './Tessere'
+import { lette } from '../../lib/letture'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni, messaggio, Riga, SchedaPiena, Stato, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
@@ -167,6 +168,7 @@ export function Iscritti({
   onMovimento?: (id: string) => void
 }) {
   const persone = useCarica(() => d.persone(), [d])
+  const pronti = lette(persone)
   const corsi = useCarica(() => d.corsi(), [d])
   const freq = useCarica(() => d.frequenze(), [d])
   const tessere = useCarica(() => d.tessere(), [d])
@@ -422,6 +424,10 @@ export function Iscritti({
           </button>
         </Testa>
 
+        {/* Filtri ed elenco compaiono insieme, a letture finite: se arrivano uno alla volta, ognuno sposta l'altro. */}
+        {!pronti && <p className="sg-sotto">Sto leggendo gli iscritti…</p>}
+        {pronti && (
+        <>
         {ricerca && <FiltroRicerca ricerca={ricerca} onTogli={onTogliRicerca} />}
         <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap', flexBasis: '100%', minWidth: 0 }}>
@@ -525,7 +531,6 @@ export function Iscritti({
             {sollecitare && <span role="columnheader" className="sg-etichetta sg-cella-sollecito-testa">WHATSAPP</span>}
           </div>
           <div className="sg-tabella-corpo">
-            {persone.dato === null && !persone.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo gli iscritti…</p>}
             {persone.dato !== null && trovati.length === 0 && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Nessuno corrisponde alla ricerca. <button type="button" className="sg-link sg-link-alto" onClick={togliFiltri}>Togli ricerca e filtri</button></p>}
             {ordina(trovati).map((p) => {
               const f = freq.dato?.get(p.id)
@@ -596,7 +601,8 @@ export function Iscritti({
         </div>
         </>
         )}
-
+        </>
+        )}
       </div>
       {avviso}
     </>
