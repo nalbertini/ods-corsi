@@ -8,6 +8,13 @@ In ogni sala c'è un tablet con il calendario di quella sala. Gli allievi, quand
 arrivano, toccano il loro nome e la presenza è segnata. Voi, col vostro PIN,
 aprite l'appello completo e lo correggete.
 
+I tasti hanno i colori del sito. Il tasto **giallo** è quello da toccare, e
+in ogni schermata ce n'è uno solo (**TUTTI PRESENTI**, **COLLEGA IL
+TABLET**). Con **PROVE** aperto il giallo è quello del pannello, e **TUTTI
+PRESENTI** passa col bordo blu. Gli altri hanno il bordo **blu**. **SÌ, ESCI** ha la scritta e il
+bordo rossi. Un tasto **grigio** è spento: per esempio **TUTTI PRESENTI**
+quando sono già tutti segnati.
+
 ## Cosa si vede quando nessuno lo tocca
 
 - In alto: **SALA …**, la data, l'ora e, ultimo, il

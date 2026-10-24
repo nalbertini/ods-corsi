@@ -154,7 +154,7 @@ export function TabletHome({
         ))}
         {lezioni !== null && diOggi.length === 0 && <span className="tb-nota">Nessuna lezione.</span>}
         <div className="grow" />
-        <button type="button" className="tb-btn tb-btn-linea" style={{ borderColor: 'var(--giallo)' }} onClick={onRecupero}>
+        <button type="button" className="tb-btn tb-btn-linea" onClick={onRecupero}>
           <Recupero />
           TI SEI DIMENTICATO DI SEGNARTI?
         </button>

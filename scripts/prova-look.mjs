@@ -308,11 +308,11 @@ for (const c of ['.sg-riquadro', '.sg-dafare-riga', '.card', '.sg-mancano']) {
 for (const [c, colore] of [[".sg-dafare-riga[data-livello='blocca']", 'rosso'], [".sg-dafare-riga[data-livello='presto']", 'giallo-testo'], [".sg-riquadro[data-fatto='true']", 'verde']])
   ok(`${c}: barra a sinistra var(--${colore})`, ha(c, new RegExp(`box-shadow:\\s*inset 4px 0 0 var\\(--${colore}\\)`)), true)
 
-// Il giallo pieno è di cinque cose sole: il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
+// Il giallo pieno è di sei cose sole (con il tasto verde del tablet, che nella sala è giallo): il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
 // il tasto principale di tutto il resto (.btn-primary: CHIUDI e simili), la voce di menu corrente e la voce corrente
 // della barra in basso dell'istruttore.
-const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .appello-fine .btn-go`, `${LOOK} .btn-primary`]
-ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .appello-testa .btn-go, .appello-fine .btn-go e le due voci di menu correnti',
+const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .appello-fine .btn-go`, `${LOOK} .btn-primary`, `${LOOK} .tb-btn-verde`]
+ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .tb-btn-verde, .appello-testa .btn-go, .appello-fine .btn-go e le due voci di menu correnti',
   delLook.filter((r) => r !== bloccoLook && GIALLO_PIENO.test(r.corpo) && !r.selettori.every((s) => PIENO_AMMESSO.includes(s))).map((r) => r.selettori.join(',')), [])
 ok('.sg-btn-pieno: fondo var(--giallo), testo var(--su-colore)', ha('.sg-btn-pieno', /background(-color)?:\s*var\(--giallo\)/) && ha('.sg-btn-pieno', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // Ogni regola di fuori del look con un .sg- e il giallo pieno ne ha una gemella nel look col giallo scritto.
@@ -441,6 +441,34 @@ for (const [sel, re, cosa] of [
 ok('fra 768 e 1360px le cinque caselle non prendono i bordi e lo spazio del caso a due colonne (nth-child 5 e n+3)', /grid-column:\s*auto/.test(esatto(".sg-mancano-casella:nth-child(5)")) && /border-top:\s*0/.test(esatto('.sg-mancano-casella:nth-child(n + 3)')), true)
 for (const [sel, corpo] of [['.sg-btn', /letter-spacing:\s*0\s*;/], ['.sg-chip', /letter-spacing:\s*0\s*;/]])
   ok(`${sel}: senza la spaziatura da maiuscolo (i testi sono con l'iniziale maiuscola)`, ha(sel, corpo) && ha(sel, /font-weight:\s*600/), true)
+
+// Il tablet di sala (.tb-btn) ha sempre il look sito: i tasti prendono forma e colori del sito, le misure restano.
+const TB = [
+  ['.tb-btn', /font-style:\s*normal/, 'font-style normal'],
+  ['.tb-btn', /border-radius:\s*6px/, 'angoli da 6px'],
+  ['.tb-btn', /font-weight:\s*800/, 'peso 800'],
+  ['.tb-btn', /letter-spacing:\s*0\.06em/, 'spaziatura 0.06em'],
+  ['.tb-btn-verde', /background(-color)?:\s*var\(--giallo\)/, 'fondo var(--giallo)'],
+  ['.tb-btn-verde', /(?<![-\w])color:\s*var\(--su-colore\)/, 'testo var(--su-colore)'],
+  ['.tb-btn-linea', /border-color:\s*var\(--blu\)/, 'bordo var(--blu)'],
+  ['.tb-btn-linea[aria-expanded=\'true\']', /border-color:\s*var\(--text\)/, 'aperto: bordo var(--text)'],
+  ['.tb-btn-rosso', /background(-color)?:\s*transparent/, 'a linea: fondo transparent'],
+  ['.tb-btn-rosso', /border:\s*2px solid var\(--rosso-testo\)/, 'a linea: bordo 2px var(--rosso-testo)'],
+  ['.tb-btn-rosso', /(?<![-\w])color:\s*var\(--rosso-testo\)/, 'testo var(--rosso-testo)'],
+  ['.tb-btn:disabled', /background(-color)?:\s*var\(--surface-2\)/, 'spento: fondo var(--surface-2)'],
+  ['.tb-btn:disabled', /(?<![-\w])color:\s*var\(--dim\)/, 'spento: testo var(--dim)'],
+  ['.tb-btn:disabled', /opacity:\s*1\s*(;|$)/, 'spento: opacity 1'],
+  ['.tb-btn-linea:disabled', /border-color:\s*transparent/, 'spento: bordo transparent'],
+  ['.tb-btn-rosso:disabled', /border-color:\s*transparent/, 'spento: bordo transparent'],
+]
+for (const [sel, re, cosa] of TB) ok(`${sel}: ${cosa}`, ha(sel, re), true)
+ok('tasti del tablet: nessuna regola del look cambia min-height, font-size, padding o width',
+  delLook.filter((r) => r.selettori.some((s) => /\.tb-btn/.test(s)) && /(?<![-\w])(min-height|font-size|padding(-[a-z]+)?|width)\s*:/.test(r.corpo)).map((r) => r.selettori.join(',')), [])
+ok('TabletHome: nessun bordo giallo inline (il tasto TI SEI DIMENTICATO DI SEGNARTI? è blu come gli altri a linea)',
+  /style=\{\{[^}]*var\(--giallo\)/.test(readFileSync('src/components/tablet/TabletHome.tsx', 'utf8')), false)
+// Un giallo per schermata: col pannello delle prove aperto il giallo è il suo, TUTTI PRESENTI passa a linea.
+ok('TabletIstruttore: TUTTI PRESENTI a linea quando il pannello PROVE è aperto',
+  /className=\{`tb-btn \$\{conProve \? 'tb-btn-linea' : 'tb-btn-verde'\}`\}[^>]*onClick=\{\(\) => tutti\('tutti'\)\}/.test(readFileSync('src/components/tablet/TabletIstruttore.tsx', 'utf8')), true)
 console.log(`\n${asserzioni} asserzioni.`)
 console.log(guai ? `${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : 'TUTTO A POSTO')
 process.exit(guai ? 1 : 0)

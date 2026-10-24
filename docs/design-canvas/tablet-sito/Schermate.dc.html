@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; }
+    .p { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border-radius: 6px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 0.06em; white-space: nowrap; }
+    .grande { min-height: 64px; padding: 0 26px; font-size: 20px; }
+    .giallo { background: #f4c31b; color: #0d2a3d; }
+    .linea { border: 2px solid #14709f; color: #0d2a3d; }
+    .spento { background: #cfe6f4; color: #46606f; }
+    .sch { width: 1024px; padding: 28px; display: flex; flex-direction: column; gap: 18px; background: #eef5fa; border-bottom: 2px solid #cfe6f4; }
+    .et { font-size: 13px; font-weight: 600; color: #46606f; }
+    .riga { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 6px; background: #ffffff; font-size: 20px; font-weight: 600; }
+    .stato { margin-left: auto; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; }
+  </style>
+</helmet>
+<!-- Il tablet di sala con i tasti proposti: l'appello, l'appello gia' fatto, la home col recupero, l'uscita. Disegnato a mano: la libreria ha TabletRigaAppello e TabletTestaAppello col tema vecchio. -->
+<div style="display:flex;flex-direction:column;width:1024px">
+  <div class="sch">
+    <span class="et">1 · APPELLO · un solo giallo: TUTTI PRESENTI</span>
+    <div style="display:flex;align-items:baseline;gap:10px"><span class="big" style="font-size:30px">KARATE BAMBINI · 17:00</span><span class="big" style="margin-left:auto;font-size:46px">3</span><span style="font-size:22px;color:#46606f">/ 12</span></div>
+    <div style="display:flex;gap:12px"><div class="p giallo">TUTTI PRESENTI</div><div class="p linea">GLI ALTRI ASSENTI</div><div class="p linea">PROVE</div></div>
+    <div class="riga">ROSSI GIULIA<span class="stato" style="color:#12913f">✓ PRESENTE</span></div>
+    <div class="riga">BIANCHI LUCA<span class="stato" style="color:#46606f">DA SEGNARE</span></div>
+  </div>
+  <div class="sch">
+    <span class="et">2 · APPELLO GIÀ FATTO · i tasti si spengono, il «fatto» lo dicono il conto e le righe</span>
+    <div style="display:flex;align-items:baseline;gap:10px"><span class="big" style="font-size:30px">KARATE BAMBINI · 17:00</span><span class="big" style="margin-left:auto;font-size:46px">12</span><span style="font-size:22px;color:#46606f">/ 12</span></div>
+    <div style="display:flex;gap:12px"><div class="p spento">TUTTI PRESENTI</div><div class="p spento">GLI ALTRI ASSENTI</div><div class="p linea">PROVE</div></div>
+    <div class="riga">ROSSI GIULIA<span class="stato" style="color:#12913f">✓ PRESENTE</span></div>
+  </div>
+  <div class="sch">
+    <span class="et">3 · HOME · il recupero in fondo: A bordo giallo come oggi, B bordo blu come gli altri</span>
+    <div style="display:flex;gap:12px"><div class="p linea" style="border-color:#f4c31b;flex:1">↺ TI SEI DIMENTICATO DI SEGNARTI? · A</div><div class="p linea" style="flex:1">↺ TI SEI DIMENTICATO DI SEGNARTI? · B</div></div>
+  </div>
+  <div class="sch">
+    <span class="et">4 · ESCI DAL TABLET · SÌ, ESCI a linea (A) accanto ad ANNULLA</span>
+    <span class="big" style="font-size:30px">VUOI SCOLLEGARE IL TABLET?</span>
+    <div style="display:flex;gap:12px"><div class="p grande" style="border:2px solid #b81d1d;color:#b81d1d">SÌ, ESCI</div><div class="p grande linea">ANNULLA</div></div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1024,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

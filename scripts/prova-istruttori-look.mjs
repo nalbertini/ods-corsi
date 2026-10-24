@@ -184,7 +184,8 @@ ok('striscia: LAVORO su var(--rosso-testo), testo var(--su-rosso)', /background:
 ok('striscia: RECUPERO su var(--verde-testo)', /background:\s*var\(--verde-testo\)/.test(striscia), true)
 ok('niente font-style oblique sotto il look', delLook.filter((r) => /oblique/.test(r.corpo)).length, 0)
 // Il cronometro in allenamento, il tablet e i timer fuori dall'app non cambiano: il look non li nomina.
-ok('nessuna regola del look nomina il tablet (.tb-) né il timer incorporato (.faccia-timer .tb, .timer-)', delLook.flatMap((r) => r.sel).filter((s) => /\.tb-|\.timer-(?!striscia)/.test(s)), [])
+// Fanno eccezione i tasti del tablet (.tb-btn), passati all'aspetto del sito (prova-look, sezione 9): il timer non li usa.
+ok('nessuna regola del look nomina il tablet (.tb-, tranne i tasti .tb-btn) né il timer incorporato (.faccia-timer .tb, .timer-)', delLook.flatMap((r) => r.sel).filter((s) => /\.tb-(?!btn)|\.timer-(?!striscia)/.test(s)), [])
 ok('il blocco dei token del look non è cambiato per il cronometro (--bg resta #eef5fa)', regole.find((r) => r.sel.length === 1 && r.sel[0] === LOOK)?.corpo.includes('--bg: #eef5fa'), true)
 
 // --- 5b. la pagina TIMER col look del sito (design: docs/design-canvas/timer-sito) ----------

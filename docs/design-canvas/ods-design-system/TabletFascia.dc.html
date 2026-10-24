@@ -13,6 +13,8 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
+  <!-- Tema sito: Big Shoulders Display 800 per i tasti .tb-btn, come Bottone. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;display=swap">
 </helmet>
 <div style="display: flex; align-items: center; gap: 18px; width: 100%; padding: 18px 22px; background: {{c.surface}}; border: 3px solid {{bordo}}; box-shadow: {{ombra}}; color: {{c.text}}">
   <sc-if value="{{conSpunta}}" hint-placeholder-val="{{ true }}">
@@ -25,7 +27,7 @@
     <span style="font-size: 17px; color: {{c.sec}}">{{sotto}}</span>
   </span>
   <sc-if value="{{haTasto}}" hint-placeholder-val="{{ true }}">
-    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 64px; padding: 0 26px; border: 2px solid {{c.line}}; color: {{c.text}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap">{{tasto}}</span>
+    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 64px; padding: 0 26px; border: 2px solid {{c.tbBordo}}; color: {{c.text}}; font-family: {{c.tbFam}}; font-style: {{c.tbStile}}; font-size: 20px; font-weight: {{c.tbPeso}}; letter-spacing: {{c.tbSp}}; border-radius: {{c.tbRaggio}}; white-space: nowrap">{{tasto}}</span>
   </sc-if>
 </div>
 </x-dc>
@@ -38,9 +40,9 @@
 // - tasto: ANNULLA | VA BENE; vuoto = nessun tasto (la fascia ANNULLATO non l'ha).
 // - L'ombra sale dal fondo: nera sul tema scuro, leggera sul chiaro (riga 1061), altrimenti diventa una fascia grigia.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', ombra: '0 -12px 40px rgba(0, 0, 0, 0.6)' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', ombra: '0 -8px 28px rgba(0, 0, 0, 0.16)' },
-  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', ombra: '0 -8px 28px rgba(0, 0, 0, 0.16)' },
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', ombra: '0 -12px 40px rgba(0, 0, 0, 0.6)', tbFam: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", tbStile: 'oblique 9deg', tbPeso: '700', tbSp: '0.12em', tbRaggio: '0', tbBordo: '#333333', tbRecupero: '#f4c31b', tbVerde: '#16a54a' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', ombra: '0 -8px 28px rgba(0, 0, 0, 0.16)', tbFam: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", tbStile: 'oblique 9deg', tbPeso: '700', tbSp: '0.12em', tbRaggio: '0', tbBordo: '#d4d4ce', tbRecupero: '#f4c31b', tbVerde: '#12913f' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', ombra: '0 -8px 28px rgba(0, 0, 0, 0.16)', tbFam: "'Big Shoulders Display', 'Helvetica Neue', Arial, sans-serif", tbStile: 'normal', tbPeso: '800', tbSp: '0.06em', tbRaggio: '6px', tbBordo: '#14709f', tbRecupero: '#14709f', tbVerde: '#f4c31b' },
 };
 class Component extends DCLogic {
   renderVals() {

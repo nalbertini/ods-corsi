@@ -82,7 +82,7 @@ Google, e vale solo per i mockup.
 | `TimerRiga` | La riga di un timer nell'elenco (tipo, durata, nome, nota, ▶), per le sezioni CREATI DA TE e le copie; `TimerPagina` ha `conTitolo`, `conBarra`, `tutti` e `cronometro`: nella B la pagina TIMER è `conBarra` falso, `tutti="LIBRERIA"`, `cronometro` vero |
 | `RigaDaFare` | Una riga di DA FARE (`.sg-dafare-riga`): numero grande rosso (`blocca`) o giallo (`presto`), titolo, frase, i primi 5 nomi col perché (`elenco`) e il tasto a linea «Vedi tutti» |
 | `SegnalazioneListino` | Una riga di `Segnalazioni` in LISTINO: in rosso cosa manca a un corso («senza prezzo nel listino», «manca il prezzo del trimestre»…), col link «Va bene senza prezzo» che non va a capo; `rosso` falso per «…, va bene così» col link «Rimetti il rosso» |
-| `TabletTasto` | `.tb-btn`: linea, verde, rosso, grande, quadro |
+| `TabletTasto` | `.tb-btn`: linea, verde, rosso, grande, quadro (look sito: verde giallo, rosso a linea, spento grigio) |
 | `TabletTastiera` | I pallini e il tastierino del PIN |
 | `Cifra` | Un numero grande di OGGI nel Banco (`.bn-cifra`): titolo, numero (rosso se è un guaio), frase |
 | `RigaCoda` | Una riga della coda DA FARE AL BANCO (`.bn-riga`): titolo, frase, tasto; bordo rosso se blocca, giallo se aspetta |
