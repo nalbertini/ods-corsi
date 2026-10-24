@@ -123,13 +123,22 @@ const pulisci = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '')
 const regole = (css) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, sel, corpo]) => ({ selettori: sel.split(',').map((s) => s.trim().replace(/"/g, "'")), corpo: corpo.trim() }))
 const dichiarazioni = (corpo) => Object.fromEntries([...corpo.matchAll(/(--[\w-]+)\s*:\s*([^;]+?)\s*(?:;|$)/g)].map((m) => [m[1], m[2]]))
 const PREFISSO = ":root[data-modulo='sito']"
-const ora = pulisci(readFileSync('src/styles.css', 'utf8'))
+// Il CSS è in due file (vedi prova-css-ingresso): le regole di prima stanno nell'uno o nell'altro.
+const ora = pulisci(readFileSync('src/styles.css', 'utf8') + readFileSync('src/segreteria.css', 'utf8'))
 // Il confronto è con main, non con HEAD: nel ramo o in CI HEAD contiene già le regole nuove e
 // il confronto sarebbe vuoto. Senza un main con cui confrontare quei casi si saltano, non passano a vuoto.
 let prima = null
 for (const base of ['main', 'origin/main']) {
   try {
-    prima = pulisci(execSync(`git show ${base}:src/styles.css`, { encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'] }))
+    const mostra = (f) => execSync(`git show ${base}:${f}`, { encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'] })
+    // main prima di questa divisione non ha ancora segreteria.css.
+    let segreteria = ''
+    try {
+      segreteria = mostra('src/segreteria.css')
+    } catch {
+      /* tutto in styles.css */
+    }
+    prima = pulisci(mostra('src/styles.css') + segreteria)
     break
   } catch {
     /* quel ramo qui non c'è: si prova l'altro */
