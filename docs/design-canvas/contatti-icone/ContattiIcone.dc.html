@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Contatti con icone</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA (1440px): pagina Contatti con un'icona a tratto sopra il titolo di ogni recapito. Icone decorative (aria-hidden): testo, link e nomi accessibili non cambiano. -->
+<div style="width:1440px;min-height:1500px;position:relative;overflow:hidden;background:#eef5fa;color:#0d2a3d">
+  <dc-import name="SitoTestata" logo="logo.webp" attiva="Contattaci" prova="Prova una settimana a 5 €" hint-size="100%,120px"></dc-import>
+  <section style="padding:24px 48px 0"><h1 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0;line-height:.86;letter-spacing:-.01em;font-size:140px">Contattaci</h1></section>
+  <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:48px 48px 0">
+    <dc-import name="SitoRecapito" icona="telefono" titolo="Telefono" valore="346 329 2786" azione="Chiama ora →" tono="giallo" alto="320px" hint-size="100%,320px"></dc-import>
+    <dc-import name="SitoRecapito" icona="instagram" titolo="Instagram" valore="@officine.dellosport" azione="Scrivici su Instagram →" tono="blu" alto="320px" hint-size="100%,320px"></dc-import>
+    <dc-import name="SitoRecapito" icona="facebook" titolo="Facebook" valore="Officine dello Sport" azione="Scrivici su Facebook →" tono="inchiostro" alto="320px" hint-size="100%,320px"></dc-import>
+    <dc-import name="SitoRecapito" icona="indirizzo" titolo="Indirizzo" valore="Via Sassi 26, Collegno" azione="Ottieni indicazioni →" tono="chiara" alto="320px" hint-size="100%,320px"></dc-import>
+  </section>
+  <section style="padding:96px 48px 48px">
+    <dc-import name="SitoTitolo" testo="Come arrivare" intro="Via Sassi 26, a Collegno." corpo="80px" hint-size="100%,160px"></dc-import>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:40px">
+      <dc-import name="SitoArrivo" sigla="M" titolo="In metro" testo="La sede è vicino alla metro Fermi, Linea 1." tono="chiara" hint-size="100%,160px"></dc-import>
+      <dc-import name="SitoArrivo" sigla="A" titolo="In auto" testo="Dove si parcheggia da indicare." tono="giallo" nota="DA CONFERMARE C5 · parcheggio" hint-size="100%,160px"></dc-import>
+      <dc-import name="SitoArrivo" sigla="N" titolo="Col navigatore" testo="Tocca «Ottieni indicazioni»: si apre il percorso fino a Via Sassi 26." tono="blu" hint-size="100%,160px"></dc-import>
+    </div>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>
