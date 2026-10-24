@@ -198,6 +198,8 @@ await prova(async () => {
   ok('senza rete', dice({ message: 'TypeError: Failed to fetch' }), 'Il server non risponde: c’è rete? Riprova fra poco')
   ok('la funzione non c’è sul database: dice di andare in segreteria', dice({ code: 'PGRST202', message: 'Could not find the function public.iscritto_manda_certificato' }), 'Mandare il certificato da qui non è ancora attivo: portalo in segreteria')
   ok('non è una persona sua', dice({ code: '42501', message: 'permission denied' }), 'Non puoi mandare il certificato di questa persona')
+  ok('tre file in attesa: aspettare la segreteria', dice({ code: '54000', message: 'Hai già mandato troppi file: aspetta che la segreteria li guardi' }), 'Hai già mandato tre file: aspetta che la segreteria li guardi, poi potrai mandarne altri')
+  ok('lo stesso da Storage, che non passa il codice', dice({ message: 'Hai già mandato troppi file: aspetta che la segreteria li guardi', statusCode: '500' }), 'Hai già mandato tre file: aspetta che la segreteria li guardi, poi potrai mandarne altri')
   ok('altro: niente testo dell’API', dice({ code: 'XX000', message: 'relation "storage.objects" boom' }), 'Il certificato non è partito: riprova fra poco')
 })
 
