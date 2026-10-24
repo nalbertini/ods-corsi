@@ -1124,6 +1124,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .iscrizioni-riga > :first-child { min-width: 0; }
 .iscrizioni-riga .cifra { flex: none; white-space: nowrap; }
 .iscrizioni-costi-breve, .iscrizioni-torna { padding-top: 14px; padding-bottom: 6px; }
+/* Aspettando il listino il riquadro tiene il posto che avrà: se no, arrivato il listino, spinge giù tutto e la pagina salta (CLS). */
+.iscrizioni-costi-attesa > * { min-height: 290px; }
 .iscrizioni-torna { display: flex; }
 .iscrizioni-torna .passo-btn { flex: 1; }
 .iscrizioni-nota { font-size: 13px; color: var(--dim); padding-bottom: 20px; }

@@ -10,6 +10,24 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.197.3 — 24 ottobre 2026
+
+### Modificato
+
+- L'app non compare più nei motori di ricerca
+
+## 0.197.2 — 24 ottobre 2026
+
+### Risolto
+
+- La pagina delle iscrizioni da telefono non salta più mentre si carica
+
+## 0.197.1 — 24 ottobre 2026
+
+### Risolto
+
+- La home non salta più mentre si carica
+
 ## 0.197.0 — 24 ottobre 2026
 
 ### Novità
