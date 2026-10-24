@@ -133,9 +133,9 @@ console.log('\n8. Le differenze che restavano')
   const regole = [...CSS.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].map((m) => ({ s: m[1].trim(), d: m[2] }))
   const dec = (sel, prop, n = 0) => regole.filter((r) => r.s.split(',').includes(sel)).map((r) => (r.d.match(new RegExp(`(?:^|;)${prop}:([^;]*)`)) || [])[1]).filter(Boolean)[n]
   ok('foto di testata tagliata al 58%, fila: prima al 30%, le altre al 55%', [dec('.corso .corso-testata .foto img', 'object-position'), dec('.corso .foto-fila img', 'object-position'), dec('.corso .foto-fila figure:first-child img', 'object-position')], ['50% 58%', '50% 55%', '50% 30%'])
-  // 8.2 un h2 vuoto apre una sezione senza titolo (la fila di foto)
+  // 8.2 un h2 vuoto apre una sezione senza titolo (la fila di foto) (l'h2 per chi legge con lo schermo non conta)
   const f = main(pagina(TESTA + '<h2></h2><img src="/a.png" alt="a"><img src="/b.png" alt="b"><img src="/c.png" alt="c"><h2>Dopo</h2><h3>X</h3><p>y</p>'))
-  ok('h2 vuoto: la sezione ha la fila di foto e nessun h2 vuoto', [/<section class="sezione"><div class="foto-fila">/.test(f), /<h2><\/h2>/.test(f), conta(f, /<h2/g)], [true, false, 1])
+  ok('h2 vuoto: la sezione ha la fila di foto e nessun h2 vuoto', [/<section class="sezione"><div class="foto-fila">/.test(f), /<h2><\/h2>/.test(f), conta(f, /<h2(?! class="solo-lettori")/g)], [true, false, 1])
   ok('anche con un a capo dentro: nessun h2 vuoto', conta(main(pagina('<h2><br></h2><p>x</p><h2>S</h2><p>y</p>')), /<h2/g), 1)
   // 8.3 colori: con testo il quarto è azzurro, senza testo torna giallo
   const sez = (t) => colori(main(pagina(TESTA + '<h2>S</h2>' + t)).split('<h2>S</h2>')[1])
