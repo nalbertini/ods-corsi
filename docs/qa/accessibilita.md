@@ -40,7 +40,7 @@ nei due temi, stati non affidati al solo colore, fuoco da tastiera visibile.
    elementi ciascuna; si corregge in un punto solo e si tolgono le 4 voci da
    `scripts/a11y-note.json`.
 2. **Versione nella barra del timer** (WCAG 1.4.3, contrasto): `.sidebar-versione`
-   usa `--faint` `#5a5a56`, sotto 4,5:1. Tolta la correzione, si toglie anche
+   usa `--faint` `#5a5a56`, sotto 4,5:1. Corretto il colore, si toglie anche
    la voce nota.
 
 ## Cosa non è coperto
