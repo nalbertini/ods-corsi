@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.206.0 — 25 ottobre 2026
+
+### Novità
+
+- Nell'elenco degli iscritti si vedono i minorenni e le famiglie
+
 ## 0.205.0 — 25 ottobre 2026
 
 ### Novità
