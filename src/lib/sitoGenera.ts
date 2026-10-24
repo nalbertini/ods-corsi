@@ -1151,6 +1151,13 @@ const conSalto = (corpo: string) => {
   return conDestinazione === corpo ? corpo : `<a class="salta" href="#contenuto">Salta al contenuto</a>${conDestinazione}`
 }
 
+/**
+ * Dopo l'h1 viene un h2, mai un h3 (WCAG 1.3.1): le schede dei corsi e dei recapiti e i testi scritti solo con h3 non ne hanno.
+ * Tra l'h1 e il primo titolo, se questo è un h3, si mette un h2 per chi legge con lo schermo; a vista non cambia niente.
+ */
+const titoliInOrdine = (intro: string, resto: string) =>
+  /<h1\b/.test(intro) && /^(?:(?!<h[1-6]\b)[\s\S])*<h3\b/.test(resto) ? `${intro}<h2 class="solo-lettori">Contenuto della pagina</h2>${resto}` : intro + resto
+
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; cssCorsoNuovo?: string; cssCorsi?: boolean; cssOrari?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
@@ -1220,7 +1227,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
     : p.diLegge
       ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
       : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}${tecnici ? ' elenco-tecnici' : ''}"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main${scheda ? ' class="scheda-scarna"' : dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${p.diLegge ? '' : fondo(tecnici?.conInvito ?? false)}${piede(c)}`
+  const corpo = `${t}<main${scheda ? ' class="scheda-scarna"' : dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${p.diLegge ? titoliInOrdine(intro, testo.trim() ? `<div class="testo">${testo}</div>` : '') : intro + (corso?.html ?? '') + (tecnici?.html ?? '')}${p.diLegge ? '' : testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${p.diLegge ? '' : fondo(tecnici?.conInvito ?? false)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: c.corsi.has(p.slug) })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null, dati })
 }
@@ -1248,7 +1255,7 @@ function paginaOrari(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: boolea
 function paginaCorsiNuova(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: boolean) => string, pulito: string): string {
   const h = corsiNuova(pulito, TESTI.iscrizione)
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${h.frase ? `<p>${h.frase}</p>` : ''}</div></section>`
-  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-corsi">${hero}${h.html}</main>${fondo(h.chiamata)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-corsi">${titoliInOrdine(hero, h.html)}</main>${fondo(h.chiamata)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsi: true, dati })
 }
@@ -1268,7 +1275,7 @@ function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: b
 function paginaContattiNuova(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: boolean) => string, pulito: string): string {
   const h = contattiNuova(pulito, TESTI.iscrizione, NOME, CONTATTI.indirizzo)
   const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
-  const corpo = `${testata(c, percorso(p.slug))}<main class="contatti-nuova passo-unico">${hero}${h.html}</main>${fondo(false)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="contatti-nuova passo-unico">${titoliInOrdine(hero, h.html)}</main>${fondo(false)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssContatti: true, dati })
 }
