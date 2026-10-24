@@ -689,7 +689,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
   /** I pagamenti Satispay (`73-satispay.sql`), anche per le schede in `persone`; senza il file, nessuno. */
   const leggiSatispay = async (): Promise<PagamentoSatispay[]> => {
-    const colonne = 'id, richiesta_id, chi, importo, stato, creato_il, pagato_il, ricevuta_id, persona_id, email, corso_id, formula, ricevuta:ricevute ( annullata_il ), corso:corsi ( nome )'
+    const colonne = 'id, richiesta_id, chi, importo, stato, creato_il, pagato_il, ricevuta_id, persona_id, email, corso_id, formula, ricevuta:ricevute!ricevuta_id ( annullata_il ), corso:corsi ( nome )'
     // `saldo_di`: 103-saldo-satispay.sql; senza il file si legge come prima.
     const leggi = (con: string) =>
       tutteLeRighe((prima, ultima) =>
