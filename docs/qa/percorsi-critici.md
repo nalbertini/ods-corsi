@@ -64,7 +64,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Conti letti dalla chat con Claude | amministrazione | totale diverso da BILANCIO, nomi verso Claude | `prova:mcp`, `prova:bilancio`, `prova:contabilita`, `prova:segreteria` | sì |
 | Segreteria dalla chat con Claude (spenta) | segreteria | dati di un minore verso Claude | `prova:mcp`, `prova:frequenza`, `prova:segreteria`, `prova:certificati`, `75-chat-segreteria.sql`, `finto-supabase.sql` | sì, quando si accende |
 | Il token di Claude solo dalla sua porta | tutti | token che legge persone o certificati | `prova:mcp`, `claude-dalla-porta.sql`, `rls.sql`, `contabilita.sql` | sì |
-| Elenco ISCRITTI | segreteria | un guaio che non si vede in elenco | `prova:iscritti`, `prova:filtri-iscritti` | sì, da fare |
+| Elenco ISCRITTI | segreteria | un guaio in elenco, un minore contato da adulto, famiglia fuori filtro | `prova:iscritti`, `prova:filtri-iscritti`, `prova:pagato-prima` | sì, da fare |
 | Tab ISCRITTI nella scheda del corso | segreteria | iscritto mancante, «a posto» falso | `prova:iscritti-corso`, `prova:indirizzi` | sì |
 | Calendario e date dei corsi | segreteria, tablet | lezione che non compare | `prova:indirizzi`, `prova:calendario`, `prova:segreteria`, `calendario*.sql`, `date-corsi.sql` | no |
 | Prove (modalità prova) e statistiche | segreteria | numeri sbagliati | `prova:prove`, `prova:segreteria`, `prova:filtri-iscritti`, `prove.sql`, `prove-per-nome.sql`, `statistiche.sql` | no |
@@ -135,6 +135,8 @@ quando arriva la prova.
 - Listino: `saldoEntro`, e `some` al posto di `every` sull'annuale.
 - Avvisi: 50 richieste finte spengono gli avvisi (scelta dell'utente).
 - Striscia: `useDaFare` e la regola degli appelli («cominciata» o «finita»).
+- Elenco ISCRITTI: la frase col conto dei minorenni e dei senza data, e il
+  segno MINORENNE sulla riga, stanno nel `.tsx`; nessuna prova.
 
 ## Come si aggiorna
 
