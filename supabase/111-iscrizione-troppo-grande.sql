@@ -1,5 +1,5 @@
 -- ---------------------------------------------------------------------------
--- 110 · Una richiesta d'iscrizione enorme si rifiuta all'ingresso
+-- 111 · Una richiesta d'iscrizione enorme si rifiuta all'ingresso
 --
 -- L'audit RLS del 2026-10-24: `invia_iscrizione`, che chiunque (anche senza
 -- accesso) può chiamare, non guardava la dimensione di `dati`: una chiave

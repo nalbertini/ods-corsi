@@ -547,7 +547,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     not exists (select 1 from pg_class c, unnest(array['anon', 'authenticated']) r, unnest(array['TRUNCATE', 'TRIGGER', 'REFERENCES']) p
                  where c.relnamespace = 'public'::regnamespace and c.relkind in ('r', 'p') and has_table_privilege(r, c.oid, p))
     and exists (select 1 from pg_trigger where tgname = 'limita_file_certificato' and not tgisinternal)),
-  ('110-iscrizione-troppo-grande.sql', 'una richiesta d''iscrizione enorme si rifiuta all''ingresso',
+  ('110-tetto-certificato-messaggio.sql', 'il tetto ai file del certificato scatta con un codice suo (Storage lascia passare il testo) e solo per chi può caricare',
+    exists (select 1 from dentro where nome = 'limita_file_certificato' and corpo like '%54000%' and corpo like '%iscritto_puo_mandare%')),
+  ('111-iscrizione-troppo-grande.sql', 'una richiesta d''iscrizione enorme si rifiuta all''ingresso',
     exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pg_column_size(dati)%'))
 ) as x(file, cosa, c)
 order by file, cosa;

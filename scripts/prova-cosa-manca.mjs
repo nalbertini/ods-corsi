@@ -99,27 +99,33 @@ ok('il nome per lo screen reader comincia col titolo che si legge', ID.map((id) 
 
 console.log('\nIl nome per chi usa lo screen reader')
 const nomi = (n, contato = true) => ID.map((id) => casella(id, n, { contato }).nome)
+// WCAG 2.5.3: il testo che si vede (titolo e nota) sta dentro il nome, se no chi detta i comandi a voce non la nomina giusta.
 ok('uno', nomi(1), [
-  '1 appello non fatto, senza appello, ultimi 30 giorni',
-  '1 certificato scaduto o mancante',
-  '1 pagamento non in regola',
-  '1 persona senza tessera valida',
-  '1 richiesta online da accogliere',
+  '1 Appelli non fatti, senza appello, ultimi 30 giorni',
+  '1 Certificati scaduti, scaduti o mancanti',
+  '1 Pagamenti, quote non in regola',
+  '1 Senza tessera, senza tessera valida',
+  '1 Richieste online, da accogliere',
 ])
 ok('più di uno', nomi(7), [
-  '7 appelli non fatti, senza appello, ultimi 30 giorni',
-  '7 certificati scaduti o mancanti',
-  '7 pagamenti non in regola',
-  '7 persone senza tessera valida',
-  '7 richieste online da accogliere',
+  '7 Appelli non fatti, senza appello, ultimi 30 giorni',
+  '7 Certificati scaduti, scaduti o mancanti',
+  '7 Pagamenti, quote non in regola',
+  '7 Senza tessera, senza tessera valida',
+  '7 Richieste online, da accogliere',
 ])
 ok('zero', nomi(0), [
-  'Nessun appello non fatto: a posto',
-  'Nessun certificato scaduto o mancante: a posto',
-  'Nessun pagamento non in regola: a posto',
-  'Nessuna tessera da sistemare: a posto',
-  'Nessuna richiesta online da accogliere: a posto',
+  'Appelli non fatti, senza appello, ultimi 30 giorni: nessuno, a posto',
+  'Certificati scaduti, scaduti o mancanti: nessuno, a posto',
+  'Pagamenti, quote non in regola: nessuno, a posto',
+  'Senza tessera, senza tessera valida: nessuno, a posto',
+  'Richieste online, da accogliere: nessuno, a posto',
 ])
+ok('il nome contiene sempre il titolo e, con un conto buono, la nota che si vedono', ID.flatMap((id) => [1, 7, 0].map((n) => {
+  const c = casella(id, n, { contato: true })
+  const nome = c.nome.toLowerCase()
+  return nome.includes(c.titolo.toLowerCase()) && nome.includes(c.nota.toLowerCase())
+})), ID.flatMap(() => [true, true, true]))
 ok('non so', nomi(null), [
   'Appelli non fatti: non so, non si è riusciti a contare',
   'Certificati scaduti: non so, non si è riusciti a contare',
@@ -152,7 +158,7 @@ console.log('\nLa casella «Corsi scaduti»')
   ok('3 → «3», manca', [conCorsi(3)?.numero, conCorsi(3)?.stato], ['3', 'manca'])
   ok('non si sa (null) → «—», non so, mai a posto', [conCorsi(null)?.numero, conCorsi(null)?.stato, conCorsi(null)?.n], ['—', 'nonso', null])
   ok('la nota', conCorsi(3)?.nota, 'trimestre o annuale finito')
-  ok('i nomi per lo screen reader', [conCorsi(0)?.nome, conCorsi(1)?.nome, conCorsi(7)?.nome], ['Nessun corso scaduto: a posto', '1 iscritto con un corso scaduto', '7 iscritti con un corso scaduto'])
+  ok('i nomi per lo screen reader', [conCorsi(0)?.nome, conCorsi(1)?.nome, conCorsi(7)?.nome], ['Corsi scaduti, trimestre o annuale finito: nessuno, a posto', '1 Corsi scaduti, trimestre o annuale finito', '7 Corsi scaduti, trimestre o annuale finito'])
   ok('dove porta un tocco', [conCorsi(1)?.voce, conCorsi(1)?.filtro], ['iscritti', 'corsi-scaduti'])
   ok('annuncio: da 2 a 5', m.annuncioCambio(conti(0, 0, 0, 0, { corsi: 2 }), conti(0, 0, 0, 0, { corsi: 5 })), 'Corsi scaduti: 5')
   ok('annuncio: dopo «Pagamenti», prima di «Richieste online»', m.annuncioCambio(conti(0, 0, 1, 1, { corsi: 2 }), conti(0, 0, 2, 2, { corsi: 5 })), 'Pagamenti: 2. Corsi scaduti: 5. Richieste online: 2')

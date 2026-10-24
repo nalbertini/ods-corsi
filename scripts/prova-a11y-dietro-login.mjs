@@ -19,6 +19,7 @@ const ok = (cosa, avuto, voluto) => {
 const css = readFileSync('src/styles.css', 'utf8')
 const tablet = readFileSync('src/components/tablet/Tablet.tsx', 'utf8')
 const comune = readFileSync('src/components/segreteria/comune.tsx', 'utf8')
+const app = readFileSync('src/App.tsx', 'utf8')
 const contabilita = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
 
 const regolaOrdina = css.match(/^\.sg-ordina \{([^}]*)\}/m)?.[1] ?? ''
@@ -35,5 +36,13 @@ ok('i titoli di sezione sono h2, sotto l\'h1 della pagina', /<h2 className="sg-e
 const mezzo = contabilita.slice(contabilita.indexOf('aria-label="Movimenti"'))
 ok('«Nessun movimento» sta in una riga', /role="row"[^>]*>\s*<p role="cell"/.test(contabilita), true)
 ok('«Mostra altre» sta in una riga', /role="row"[\s\S]{0,200}<div role="cell">\s*<button[\s\S]{0,150}Mostra altre/.test(mezzo), true)
+
+// Una pagina senza <h1> (Lighthouse/axe: page-has-heading-one): la testata e il menu di queste quattro pagine
+// non hanno altri titoli, il luogo («CORSI», «CONTABILITÀ», «ISTRUTTORI») diventa l'h1. Le altre pagine ne hanno già uno.
+ok('la testata fa del luogo un h1 solo se glielo si chiede', /\{h1 \? <h1 className="testata-luogo">[^]*?<span className="testata-luogo">/.test(app), true)
+for (const luogo of ['CORSI', 'CONTABILITÀ'])
+  ok(`la pagina «${luogo}» ha l'h1`, new RegExp(`<Testata luogo="${luogo}"[^>]*\\bh1\\b`).test(app), true)
+ok('le due testate di «ISTRUTTORI» (telefono) hanno l\'h1', (app.match(/<Testata luogo="ISTRUTTORI"[^>]*\bh1\b/g) ?? []).length, 2)
+ok('il menu di «ISTRUTTORI» (schermo largo) ha l\'h1', /<h1[^>]*>ISTRUTTORI<\/h1>/.test(app), true)
 
 process.exit(fallite ? 1 : 0)

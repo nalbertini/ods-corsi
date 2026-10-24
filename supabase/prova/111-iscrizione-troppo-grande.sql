@@ -1,4 +1,4 @@
--- Una richiesta d'iscrizione enorme (fatta apposta, non dal modulo) si rifiuta all'ingresso (110-iscrizione-troppo-grande.sql).
+-- Una richiesta d'iscrizione enorme (fatta apposta, non dal modulo) si rifiuta all'ingresso (111-iscrizione-troppo-grande.sql).
 -- Prima `invia_iscrizione` la leggeva tutta, anche con 5 MB in una chiave che poi scartava; ora, come
 -- `invia_ordine_vestiario` (47), la ferma subito. Le richieste giuste (prova/iscrizioni.sql) passano come prima.
 -- Si lancia dopo `iscrizioni` (ne usa gli helper `chi`, `tenta`, `atteso`, `adulto`).

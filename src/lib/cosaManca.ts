@@ -102,28 +102,11 @@ export function statoDi(id: IdCasella, n: number | null): StatoCasella {
   return n === null ? 'nonso' : n === 0 ? 'aposto' : id === 'richieste' ? 'attesa' : 'manca'
 }
 
-const plurale = (n: number, uno: string, tanti: string) => (n === 1 ? `1 ${uno}` : `${n} ${tanti}`)
-
+/** Il nome contiene il testo che si vede (titolo e nota): WCAG 2.5.3, per chi detta i comandi a voce. */
 function nomeAccessibile(id: IdCasella, n: number | null, contato: boolean): string {
   if (n === null) return `${NOMI[id]}: ${contato ? 'non so, non si è riusciti a contare' : 'sto contando'}`
-  if (n === 0) {
-    return {
-      appelli: 'Nessun appello non fatto: a posto',
-      certificati: 'Nessun certificato scaduto o mancante: a posto',
-      pagamenti: 'Nessun pagamento non in regola: a posto',
-      corsi: 'Nessun corso scaduto: a posto',
-      tessere: 'Nessuna tessera da sistemare: a posto',
-      richieste: 'Nessuna richiesta online da accogliere: a posto',
-    }[id]
-  }
-  return {
-    appelli: `${plurale(n, 'appello non fatto', 'appelli non fatti')}, ${NOTE.appelli}`,
-    certificati: plurale(n, 'certificato scaduto o mancante', 'certificati scaduti o mancanti'),
-    pagamenti: plurale(n, 'pagamento non in regola', 'pagamenti non in regola'),
-    corsi: plurale(n, 'iscritto con un corso scaduto', 'iscritti con un corso scaduto'),
-    tessere: plurale(n, 'persona senza tessera valida', 'persone senza tessera valida'),
-    richieste: plurale(n, 'richiesta online da accogliere', 'richieste online da accogliere'),
-  }[id]
+  if (n === 0) return `${TITOLI[id]}, ${NOTE[id]}: nessuno, a posto`
+  return `${n} ${TITOLI[id]}, ${NOTE[id]}`
 }
 
 const orario = (ms: number) => new Date(ms).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false })
