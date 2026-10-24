@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .col { display: flex; flex-direction: column; gap: 14px; padding: 24px; flex: 1; }
+    .testa { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: 0.04em; }
+    .nota { font-size: 13px; color: #46606f; line-height: 1.45; margin: 0; }
+    .riga { display: flex; flex-direction: column; gap: 4px; }
+    .et { font-size: 12px; font-weight: 600; color: #46606f; }
+  </style>
+</helmet>
+<!-- I tasti condivisi dell'app (.btn e varianti) nel look del sito: oggi e proposta. -->
+<div style="display:flex;width:900px;background:#eef5fa">
+  <div class="col" style="border-right:2px solid #cfe6f4">
+    <span class="testa">OGGI</span>
+    <p class="nota">Storti (9°), lettere spaziate 0.16em, angoli vivi, principale rosso, bordo grigio chiaro. Disegnati col tema chiaro della libreria: nell'app il carattere è già Big Shoulders, la forma è questa.</p>
+      <div class="riga"><span class="et">principale (FIRMA, CONDIVIDI, CHIUDI)</span>
+        <dc-import name="Bottone" tema="chiaro" label="CHIUDI · 2 ASSENTI" variante="principale" larghezza="100%" hint-size="100%,56px"></dc-import>
+      </div>
+      <div class="riga"><span class="et">vai (TUTTI PRESENTI)</span>
+        <dc-import name="Bottone" tema="chiaro" label="TUTTI PRESENTI" variante="vai" larghezza="100%" hint-size="100%,56px"></dc-import>
+      </div>
+      <div class="riga"><span class="et">a linea (.btn-ghost)</span>
+        <dc-import name="Bottone" tema="chiaro" label="ANNULLA" variante="linea" larghezza="100%" hint-size="100%,56px"></dc-import>
+      </div>
+      <div class="riga"><span class="et">tratteggiato (.btn-dashed)</span>
+        <dc-import name="Bottone" tema="chiaro" label="+ AGGIUNGI CHI PROVA" variante="tratteggiato" larghezza="100%" hint-size="100%,56px"></dc-import>
+      </div>
+      <div class="riga"><span class="et">disabilitato</span>
+        <dc-import name="Bottone" tema="chiaro" label="CHIUDI" variante="principale" larghezza="100%" disabled="{{ true }}" hint-size="100%,56px"></dc-import>
+      </div>
+  </div>
+  <div class="col">
+    <span class="testa">PROPOSTA</span>
+    <p class="nota">Come i tasti del modulo di iscrizione: dritti, Big Shoulders 800 a 22px, 0.06em, raggio 6px, alti 56px come oggi.</p>
+      <div class="riga"><span class="et">principale: giallo, testo inchiostro</span>
+        <dc-import name="Bottone" tema="sito" label="CHIUDI · 2 ASSENTI" variante="principale" larghezza="100%" hint-size="100%,56px"></dc-import>
+      </div>
+      <div class="riga"><span class="et">vai: resta verde</span>
+        <!-- Bottone tema sito mette `vai` giallo come nel modulo: nell'app resta verde (regola 4), qui lo stesso tasto con lo sfondo verde .btn-go. -->
+        <div style="display:flex;align-items:center;justify-content:center;min-height:56px;border-radius:6px;background:#12913f;color:#121212;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;font-size:22px;letter-spacing:0.06em">TUTTI PRESENTI</div>
+      </div>
+      <div class="riga"><span class="et">a linea: bordo blu</span>
+        <dc-import name="Bottone" tema="sito" label="ANNULLA" variante="linea" larghezza="100%" hint-size="100%,56px"></dc-import>
+      </div>
+      <div class="riga"><span class="et">tratteggiato: bordo blu tratteggiato</span>
+        <dc-import name="Bottone" tema="sito" label="+ AGGIUNGI CHI PROVA" variante="tratteggiato" larghezza="100%" hint-size="100%,56px"></dc-import>
+      </div>
+      <div class="riga"><span class="et">disabilitato · A: come oggi, opacità 0.4</span>
+        <dc-import name="Bottone" tema="sito" label="CHIUDI" variante="principale" larghezza="100%" disabled="{{ true }}" hint-size="100%,56px"></dc-import>
+      </div>
+      <div class="riga"><span class="et">disabilitato · B: grigio come in segreteria (surface-2, testo dim)</span>
+        <!-- Proposta B: il disabilitato della segreteria (Bottone contesto segreteria, disabled) sulla forma dell'app. -->
+        <div style="display:flex;align-items:center;justify-content:center;min-height:56px;border-radius:6px;background:#cfe6f4;color:#46606f;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;font-size:22px;letter-spacing:0.06em">CHIUDI</div>
+      </div>
+      <div class="riga"><span class="et">chiede conferma (ELIMINA ×2): resta così</span>
+        <div style="display:flex;align-items:center;justify-content:center;min-height:56px;border-radius:6px;border:2px solid #b81d1d;color:#b81d1d;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;font-size:22px;letter-spacing:0.06em">TOCCA DI NUOVO PER ELIMINARE</div>
+      </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":900,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

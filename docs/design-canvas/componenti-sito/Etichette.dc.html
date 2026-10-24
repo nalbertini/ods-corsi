@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .col { display: flex; flex-direction: column; gap: 14px; padding: 24px; flex: 1; }
+    .testa { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: 0.04em; }
+    .nota { font-size: 13px; color: #46606f; line-height: 1.45; margin: 0; }
+    .riga { display: flex; flex-direction: column; gap: 4px; }
+    .et { font-size: 12px; font-weight: 600; color: #46606f; }
+  </style>
+</helmet>
+<!-- Etichette, testata e campo: oggi e proposta. -->
+<div style="display:flex;width:900px;background:#eef5fa">
+  <div class="col" style="border-right:2px solid #cfe6f4;padding-left:0;padding-right:0">
+    <span class="testa" style="padding:0 24px">OGGI</span>
+    <p class="nota" style="padding:0 24px">Lettere spaziate fino a 0.24em, campo ad angoli vivi.</p>
+      <span class="et">titoletto di sezione (.rule-label)</span>
+      <dc-import name="Titoletto" tema="chiaro" label="LUNEDÌ 26 OTTOBRE" conto="3" hint-size="100%,50px"></dc-import>
+      <span class="et">luogo sotto il marchio (.testata-luogo)</span>
+      <dc-import name="Testata" tema="sito" istruttori="{ true }" luogo="ISTRUTTORI" hint-size="100%,72px"></dc-import>
+      <span class="et">striscia della prova (.nastro-prova)</span>
+      <dc-import name="NastroProva" tema="chiaro" hint-size="100%,26px"></dc-import>
+      <span class="et">campo (.campo): angoli vivi, bordo 2px</span>
+      <dc-import name="Campo" tema="chiaro" tipo="select" etichetta="CHI" valore="Rossi Giulia" hint-size="100%,90px"></dc-import>
+  </div>
+  <div class="col" style="padding-left:0;padding-right:0">
+    <span class="testa" style="padding:0 24px">PROPOSTA</span>
+    <p class="nota" style="padding:0 24px">Stesse misure e maiuscolo, lettere a 0.12em al massimo. Per il titoletto due strade: A o B.</p>
+      <span class="et">titoletto · A: piccolo come oggi, 0.12em</span>
+      <!-- Proposta A: .rule-label com'e' (15px, 700, dim, riga #cfe6f4) con la spaziatura a 0.12em. -->
+        <div style="display:flex;align-items:baseline;gap:10px;padding:22px 20px 10px"><span style="font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:0.12em;color:#46606f">LUNEDÌ 26 OTTOBRE</span><div style="flex-grow:1;height:2px;background:#cfe6f4"></div><span style="font-size:15px;font-weight:600;color:#46606f">3</span></div>
+      <span class="et">titoletto · B: il titolo di sezione del modulo (Big Shoulders 26px)</span>
+      <dc-import name="Titoletto" tema="sito" label="LUNEDÌ 26 OTTOBRE" conto="3" hint-size="100%,58px"></dc-import>
+      <span class="et">luogo sotto il marchio: 0.12em</span>
+      <dc-import name="Testata" tema="sito" luogo="ISTRUTTORI" hint-size="100%,72px"></dc-import>
+      <span class="et">striscia della prova: stessa altezza, 0.08em, sempre gialla</span>
+      <!-- .nastro-prova con 0.08em: NastroProva non ha il tema sito, qui i suoi valori (giallo #f4c31b, 12px 700) in Big Shoulders. -->
+      <div style="width:100%;padding:4px;background:#f4c31b;color:#121212;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-size:13px;font-weight:800;letter-spacing:0.08em;text-align:center">DATI DI PROVA · ORARIO VERO, ISCRITTI INVENTATI</div>
+      <span class="et">campo: raggio 6px, bordo blu</span>
+      <dc-import name="Campo" tema="sito" tipo="select" etichetta="CHI" valore="Rossi Giulia" hint-size="100%,96px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":900,"height":760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

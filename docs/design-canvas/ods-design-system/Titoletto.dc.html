@@ -24,12 +24,14 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"label":{"editor":"text","default":"LEZIONI"},"conto":{"editor":"text","default":""},"dentro":{"editor":"boolean","default":false},"giallo":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":50}}'>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"LEZIONI"},"conto":{"editor":"text","default":""},"dentro":{"editor":"boolean","default":false},"giallo":{"editor":"boolean","default":false},"piccolo":{"editor":"boolean","default":false,"section":"Tema"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":50}}'>
 // Riproduzione 1:1 di .rule / .rule-label / .rule-line / .rule-conto (src/styles.css righe 218-220 e 486-487) e
 // di Titoletto in src/components/ds.tsx. E' il titoletto di sezione con la riga: etichetta Saira 15px, 0.24em,
 // `dim`; riga da 2px `line-soft`; conto a destra (15px, 600, tabulare).
 // dentro = .rule-dentro (padding 12px 0 0, per un titoletto dentro un riquadro). giallo = l'etichetta in
 // giallo-testo (ADESSO, OGGI: CalendarioScreen.tsx).
+// piccolo (con tema sito) = .rule-label sotto :root[data-look='sito'] (appello, area iscritti): Big Shoulders 15px 0.12em in `dim`,
+// l'etichetta di sezione dell'app; senza, tema sito e' il titolo di sezione del modulo di iscrizione (26px).
 const T = {
   scuro: { lineSoft: '#2a2a2a', dim: '#8c8c88', gialloTesto: '#f4c31b' },
   chiaro: { lineSoft: '#e2e2dd', dim: '#656561', gialloTesto: '#8f6a00' },
@@ -46,15 +48,16 @@ class Component extends DCLogic {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
     const sito = p.tema === 'sito';
+    const piccolo = sito && truthy(p.piccolo);
     const conto = p.conto ?? '';
     return {
       label: p.label ?? 'LEZIONI',
       conto,
       haConto: String(conto) !== '',
       padding: truthy(p.dentro) ? '12px 0 0' : '22px 20px 10px',
-      colore: truthy(p.giallo) ? c.gialloTesto : (c.titolo || c.dim),
+      colore: truthy(p.giallo) ? c.gialloTesto : piccolo ? c.dim : (c.titolo || c.dim),
       famiglia: sito ? BIG : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", famigliaConto: sito ? INTER : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif",
-      corpo: sito ? '26px' : '15px', peso: sito ? 800 : 700, spazio: sito ? '0.05em' : '0.24em',
+      corpo: sito && !piccolo ? '26px' : '15px', peso: sito ? 800 : 700, spazio: piccolo ? '0.12em' : sito ? '0.05em' : '0.24em',
       dim: c.dim,
       riga: c.lineSoft,
     };

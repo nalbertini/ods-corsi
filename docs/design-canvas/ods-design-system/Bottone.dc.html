@@ -18,7 +18,7 @@
 </helmet>
 <button type="button" onClick="{{click}}" style="display: inline-flex; align-items: center; justify-content: center; gap: {{s.gap}}; min-height: {{s.minHeight}}; min-width: {{s.minWidth}}; width: {{s.width}}; padding: {{s.padding}}; border: {{s.border}}; border-radius: {{s.radius}}; background: {{s.bg}}; color: {{s.fg}}; font-family: {{s.family}}; font-style: {{s.fontStyle}}; font-size: {{s.fontSize}}; font-weight: {{s.weight}}; letter-spacing: {{s.spacing}}; line-height: normal; text-align: center; white-space: {{s.aCapo}}; opacity: {{s.opacity}}; cursor: {{s.cursor}}">{{label}}</button>
 </x-dc>
-<script data-dc-script data-props='{"label":{"editor":"text","default":"SEGNA LA PRESENZA"},"variante":{"editor":"enum","options":["principale","vai","linea","tratteggiato","pieno","rosso","pericolo","icona"],"default":"principale"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"disabled":{"editor":"boolean","default":false},"alto":{"editor":"text","default":""},"corpo":{"editor":"text","default":""},"spazio":{"editor":"text","default":""},"larghezza":{"editor":"text","default":""},"aCapo":{"editor":"boolean","default":false},"bordo":{"editor":"enum","options":["","riga-campo"],"default":""},"onClick":{"editor":null},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":260,"height":80}}'>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"SEGNA LA PRESENZA"},"variante":{"editor":"enum","options":["principale","vai","linea","tratteggiato","pieno","rosso","pericolo","icona"],"default":"principale"},"contesto":{"editor":"enum","options":["app","segreteria","modulo"],"default":"app"},"disabled":{"editor":"boolean","default":false},"alto":{"editor":"text","default":""},"corpo":{"editor":"text","default":""},"spazio":{"editor":"text","default":""},"larghezza":{"editor":"text","default":""},"aCapo":{"editor":"boolean","default":false},"bordo":{"editor":"enum","options":["","riga-campo"],"default":""},"onClick":{"editor":null},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":260,"height":80}}'>
 // Riproduzione 1:1 di .btn / .icon-btn / .sg-btn in src/styles.css (righe 224-247 e 1295-1314) e dei tasti di
 // src/components/ds.tsx (Tasto).
 // contesto "app": .btn, 56px, 19px, 0.16em. contesto "segreteria": .sg-btn, 48px, 15px, 0.14em.
@@ -33,7 +33,9 @@
 // bordo = "riga-campo": il bordo dei campi e delle scelte del modulo (i tipi di TI SERVE ALTRO?, .vestiario-tasto.btn-ghost).
 // tema sito + contesto segreteria: Inter 16px 600 senza spaziatura, raggio 6px, `pieno` giallo #f4c31b con l'inchiostro (il tasto principale, uno per schermata),
 // `vai` verde con #121212 (l'inchiostro sul verde non arriva a 4,5:1), `linea` e `tratteggiato` blu #14709f.
-// disabled: nell'app opacita' 0.4; in segreteria un blocco `surface-2` senza bordo, testo `dim`.
+// disabled: nell'app opacita' 0.4; in segreteria e nel look del sito (tema sito, contesto app: appello, scelta, area iscritti) un blocco `surface-2`
+// senza bordo, testo `dim`. contesto modulo (con tema sito) = il modulo di iscrizione pubblico, l'unico col tasto spento ancora a 0.4.
+// tema sito, contesto app: `.btn` sotto :root[data-look='sito'], stessa forma del modulo; `principale` e `vai` gialli, linea e tratteggiato blu.
 // Il fuoco e il passaggio del mouse non sono riprodotti (stati dinamici).
 const T = {
   scuro: { bg: '#121212', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', rossoTesto: '#ff5a52', verde: '#16a54a', tasto: '#b8b8b2', tratteggio: '#4a4a46', rigaCampo: '#6e6e6a', suColore: '#121212', suRosso: '#ffffff' },
@@ -57,6 +59,8 @@ class Component extends DCLogic {
     const sg = p.contesto === 'segreteria';
     // `sito` con contesto segreteria e' il look del sito della segreteria (:root[data-look='sito']), diverso dal modulo di iscrizione (sito senza contesto).
     const sgSito = sito && sg;
+    // Il look del sito spegne i tasti come la segreteria; il modulo pubblico no.
+    const grigio = sg || (sito && p.contesto !== 'modulo');
     const label = p.label ?? 'SEGNA LA PRESENZA';
     let v = p.variante || 'principale';
     if (sg && v === 'principale') v = 'pieno';
@@ -90,7 +94,7 @@ class Component extends DCLogic {
       border = '2px ' + stile + ' ' + colore;
       if (v === 'tratteggiato' && !sg) s.width = '100%';
     }
-    if (off && sg) {
+    if (off && grigio) {
       bg = c.surface2; fg = c.dim;
       if (border !== '0') border = '2px solid transparent';
     }
@@ -104,7 +108,7 @@ class Component extends DCLogic {
     return {
       label,
       click: () => { if (!off && typeof p.onClick === 'function') p.onClick(); },
-      s: { ...s, aCapo: p.aCapo === true || p.aCapo === 'true' ? 'normal' : 'nowrap', bg, fg, border, opacity: off && !sg ? 0.4 : 1, cursor: off ? 'not-allowed' : 'pointer' },
+      s: { ...s, aCapo: p.aCapo === true || p.aCapo === 'true' ? 'normal' : 'nowrap', bg, fg, border, opacity: off && !grigio ? 0.4 : 1, cursor: off ? 'not-allowed' : 'pointer' },
     };
   }
 }

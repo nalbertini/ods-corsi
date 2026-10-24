@@ -159,10 +159,10 @@ Non c'è niente da salvare: ogni tocco parte subito.
 
 ### Chiudere l'appello
 
-In fondo all'elenco c'è il tasto per chiudere:
+In fondo all'elenco c'è il tasto giallo per chiudere. Dice:
 
-- **CHIUDI L'APPELLO ✓**, in verde, quando tutti hanno un segno;
-- **CHIUDI · 3 ASSENTI**, in rosso, quando qualcuno è ancora da segnare:
+- **CHIUDI L'APPELLO ✓** quando tutti hanno un segno;
+- **CHIUDI · 3 ASSENTI** quando qualcuno è ancora da segnare:
   chiudendo, chi non ha un segno risulta **assente** (se è uno in prova, il
   tasto aggiunge **+1 PROVA**).
 
@@ -172,8 +172,8 @@ si finisce con le prove.
 Chiede un secondo tocco, con quanti diventerebbero assenti, se nessuno è
 segnato (**NESSUNO SEGNATO · 14 ASSENTI?**: di solito vuol dire che manca
 **TUTTI PRESENTI**), se la lezione non è ancora cominciata (**NON È
-COMINCIATA · …**) o se più di metà diventerebbe assente. Il tasto si svuota
-mentre chiede: leggete, e toccatelo di nuovo. Un doppio tocco veloce non
+COMINCIATA · …**) o se più di metà diventerebbe assente. Mentre chiede il
+tasto diventa bianco col bordo rosso: leggete, e toccatelo di nuovo. Un doppio tocco veloce non
 basta.
 
 Chiuso, si torna al calendario e in cima compare com'è andata, con quanti

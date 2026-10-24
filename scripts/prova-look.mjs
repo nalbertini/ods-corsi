@@ -308,10 +308,11 @@ for (const c of ['.sg-riquadro', '.sg-dafare-riga', '.card', '.sg-mancano']) {
 for (const [c, colore] of [[".sg-dafare-riga[data-livello='blocca']", 'rosso'], [".sg-dafare-riga[data-livello='presto']", 'giallo-testo'], [".sg-riquadro[data-fatto='true']", 'verde']])
   ok(`${c}: barra a sinistra var(--${colore})`, ha(c, new RegExp(`box-shadow:\\s*inset 4px 0 0 var\\(--${colore}\\)`)), true)
 
-// Il giallo pieno è di quattro cose sole: il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
-// la voce di menu corrente e la voce corrente della barra in basso dell'istruttore.
-const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`]
-ok('giallo pieno nel look: solo .sg-btn-pieno, .appello-testa .btn-go e le due voci di menu correnti',
+// Il giallo pieno è di cinque cose sole: il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
+// il tasto principale di tutto il resto (.btn-primary: CHIUDI e simili), la voce di menu corrente e la voce corrente
+// della barra in basso dell'istruttore.
+const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .appello-fine .btn-go`, `${LOOK} .btn-primary`]
+ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .appello-testa .btn-go, .appello-fine .btn-go e le due voci di menu correnti',
   delLook.filter((r) => r !== bloccoLook && GIALLO_PIENO.test(r.corpo) && !r.selettori.every((s) => PIENO_AMMESSO.includes(s))).map((r) => r.selettori.join(',')), [])
 ok('.sg-btn-pieno: fondo var(--giallo), testo var(--su-colore)', ha('.sg-btn-pieno', /background(-color)?:\s*var\(--giallo\)/) && ha('.sg-btn-pieno', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // Ogni regola di fuori del look con un .sg- e il giallo pieno ne ha una gemella nel look col giallo scritto.
@@ -365,6 +366,34 @@ ok('.mia-barra: in fondo anche a pagina corta (margin-top: auto)', /\n\.mia-barr
 ok('.mio-nome-scelta (cambio persona): alto almeno 44px', /\n\.mio-nome-scelta \{[^}]*min-height: 44px/.test(readFileSync('src/styles.css', 'utf8')), true)
 ok('.sg-voce: altezza minima 44px', ha('.sg-voce', /min-height:\s*44px/), true)
 ok('.sg-voce: raggio 6px, peso 500', ha('.sg-voce', /border-radius:\s*6px/) && ha('.sg-voce', /font-weight:\s*500/), true)
+
+// Componenti condivisi del sistema vecchio, al passo del sito.
+// Gli stessi valori di `:root[data-modulo='sito'] .btn`: il modulo di iscrizione non cambia.
+console.log('\nComponenti condivisi: tasti, titoletti, campi')
+ok('.btn: niente obliquo, angoli 6px, 22px, spaziatura 0.06em', ha('.btn', /font-style:\s*normal/) && ha('.btn', /border-radius:\s*6px/) && ha('.btn', /font-size:\s*22px/) && ha('.btn', /letter-spacing:\s*0\.06em/), true)
+ok('.btn-primary: fondo var(--giallo), testo var(--su-colore)', ha('.btn-primary', /background(-color)?:\s*var\(--giallo\)/) && ha('.btn-primary', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
+ok("il tasto «tocca di nuovo per eliminare» (.btn-primary[data-sicuro='true']) resta rosso: senza fondo, bordo 2px var(--rosso-testo)",
+  ha(".btn-primary[data-sicuro='true']", /background(-color)?:\s*transparent/) && ha(".btn-primary[data-sicuro='true']", /border:\s*2px solid var\(--rosso-testo\)/) && ha(".btn-primary[data-sicuro='true']", /(?<![-\w])color:\s*var\(--rosso-testo\)/), true)
+// Il bordo di .btn-ghost è var(--blu) (regola dell'appello, che vince sull'ordine): nel look vale quanto --riga-campo.
+for (const [c, bordo] of [['.btn-ghost', /border(-color)?:[^;]*var\(--blu\)/], ['.btn-dashed', /border(-color)?:[^;]*dashed[^;]*var\(--riga-campo\)/]])
+  ok(`${c}: bordo ${c === '.btn-dashed' ? 'tratteggiato var(--riga-campo)' : 'var(--blu)'}, testo var(--text)`, ha(c, bordo) && ha(c, /(?<![-\w])color:\s*var\(--text\)/), true)
+// CHIUDI L'APPELLO ✓ (tutto segnato) è .btn-go: giallo come CHIUDI · N ASSENTI, approvato dall'utente.
+ok(".appello-fine .btn-go: fondo var(--giallo), testo var(--su-colore)", ha('.appello-fine .btn-go', /background(-color)?:\s*var\(--giallo\)/) && ha('.appello-fine .btn-go', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
+// TUTTI PRESENTI spento: grigio come ogni tasto spento, non azzurro.
+ok('.appello-testa .btn-go:disabled: fondo var(--surface-2)', ha('.appello-testa .btn-go:disabled', /background(-color)?:\s*var\(--surface-2\)/) && !ha('.appello-testa .btn-go:disabled', /var\(--line\)/), true)
+ok('.btn:disabled: grigio (fondo var(--surface-2), testo var(--dim)), mai sbiadito (opacity 1)', ha('.btn:disabled', /background(-color)?:\s*var\(--surface-2\)/) && ha('.btn:disabled', /(?<![-\w])color:\s*var\(--dim\)/) && ha('.btn:disabled', /opacity:\s*1\s*(;|$)/), true)
+for (const c of ['.btn-ghost:disabled', '.btn-dashed:disabled'])
+  ok(`${c}: senza bordo (border-color transparent)`, ha(c, /border-color:\s*transparent/), true)
+ok('.rule-label: 15px, spaziatura 0.12em', ha('.rule-label', /font-size:\s*15px/) && ha('.rule-label', /letter-spacing:\s*0\.12em/), true)
+for (const c of ['.modulo-etichetta', '.etichetta-riquadro', '.testata-luogo'])
+  ok(`${c}: spaziatura 0.12em`, ha(c, /letter-spacing:\s*0\.12em/), true)
+ok('.scelta-titolo: niente obliquo, spaziatura 0.06em', ha('.scelta-titolo', /font-style:\s*normal/) && ha('.scelta-titolo', /letter-spacing:\s*0\.06em/), true)
+ok('.campo: angoli 6px', ha('.campo', /border-radius:\s*6px/), true)
+ok('.nastro-prova: 13px, peso 800, spaziatura 0.08em', ha('.nastro-prova', /font-size:\s*13px/) && ha('.nastro-prova', /font-weight:\s*800/) && ha('.nastro-prova', /letter-spacing:\s*0\.08em/), true)
+arriva('--su-colore su --giallo (tasto principale): 4,5:1', T['--su-colore'], T['--giallo'], 4.5)
+arriva('--dim su --surface-2 (tasto spento): 4,5:1', T['--dim'], T['--surface-2'], 4.5)
+arriva('--rosso-testo su --bg (conferma di eliminazione): 4,5:1', T['--rosso-testo'], T['--bg'], 4.5)
+ok('il modulo di iscrizione non cambia: nessuna regola del look contiene data-modulo', delLook.filter((r) => r.selettori.some((s) => s.includes('data-modulo')) || /data-modulo/.test(r.corpo)).map((r) => r.selettori.join(',')), [])
 
 
 // --- 10. il menu e la barra del telefono, dove --dim è chiaro -----------------
