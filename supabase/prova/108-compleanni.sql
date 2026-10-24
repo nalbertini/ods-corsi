@@ -60,15 +60,15 @@ insert into persone (id, nome, cognome, ruolo, attiva, utente_id) values
   ('ffffffff-0000-0000-0000-000000000018', 'Altrocorso', 'Oggi', 'iscritto', true, null),
   ('ffffffff-0000-0000-0000-000000000019', 'Scaduta', 'Oggi', 'iscritto', true, null);
 insert into iscrizioni (corso_id, persona_id, dal, al) values
-  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000011', current_date - 60, null),
-  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000012', current_date - 60, null),
-  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000013', current_date - 60, null),
-  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000014', current_date - 60, null),
-  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000015', current_date - 60, null),
-  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000016', current_date - 60, null),
-  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000017', current_date - 60, null),
-  ('cccccccc-0000-0000-0000-000000000002', 'ffffffff-0000-0000-0000-000000000018', current_date - 60, null),
-  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000019', current_date - 60, current_date - 1);
+  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000011', oggi() - 60, null),
+  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000012', oggi() - 60, null),
+  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000013', oggi() - 60, null),
+  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000014', oggi() - 60, null),
+  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000015', oggi() - 60, null),
+  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000016', oggi() - 60, null),
+  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000017', oggi() - 60, null),
+  ('cccccccc-0000-0000-0000-000000000002', 'ffffffff-0000-0000-0000-000000000018', oggi() - 60, null),
+  ('cccccccc-0000-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000019', oggi() - 60, oggi() - 1);
 insert into corsi_istruttori (corso_id, persona_id) values
   ('cccccccc-0000-0000-0000-000000000002', 'ffffffff-0000-0000-0000-000000000001');
 
