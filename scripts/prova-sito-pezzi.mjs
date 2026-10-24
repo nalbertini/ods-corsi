@@ -956,6 +956,19 @@ console.log('\nUn editor solo: il testo scritto in Puck tiene foto e pulsanti')
   ok('un link normale resta un link senza classe', giro('<p><a href="https://x.it">qui</a></p>'), pulisci('<p><a href="https://x.it">qui</a></p>'))
   ok('il link si scrive solo con un indirizzo che il sito ammette', [prova(() => tt.indirizzoDelLink(' /orari ')), prova(() => tt.indirizzoDelLink('javascript:alert(1)'))], [{ indirizzo: '/orari' }, { guaio: 'Scrivi un indirizzo che cominci con https://, mailto:, tel: oppure /, senza spazi' }])
   ok('un indirizzo scritto sopra il vecchio, con due https://, non passa', prova(() => tt.indirizzoDelLink('https://a.it/xhttps://a.it/x')), { guaio: 'Sembra due indirizzi uno dopo l’altro: cancella quello vecchio e scrivi solo il nuovo' })
+
+  // Cambiare le parole di un link è scriverci sopra: nell'editor vero, con l'autolink di tiptap, una parola e uno
+  // spazio sul bordo del link toglievano il link da lì in poi, e le parole nuove uscivano senza. Qui si prova che
+  // l'autolink non c'è e che quel che si scrive in fondo a un link resta nel link (nel node l'autolink non si
+  // comporta come nel browser, per questo non si prova il gesto).
+  const { Window } = await import('happy-dom')
+  globalThis.window = new Window()
+  globalThis.document = window.document
+  const { Editor } = await import('@tiptap/core')
+  const ed = new Editor({ element: document.createElement('div'), extensions: estensioni, content: '<p>Leggi la <a href="https://x.it/">informativa</a> qui.</p>' })
+  ok('il link del sito non ha l\'autolink, che spezza il link a metà di una riscrittura', ed.state.plugins.some((p) => p.key === 'autolink$'), false)
+  ok('quel che si scrive in fondo a un link resta nel link', ed.schema.marks.link.spec.inclusive, true)
+  ed.destroy()
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

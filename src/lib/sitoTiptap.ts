@@ -11,7 +11,10 @@ import { indirizzoValido } from './sitoPagine'
 
 // Il pulsante è un link con la classe «pulsante» (l'unica che il sito ammette): il link di tiptap tiene già `class`.
 // Niente target né rel da tiptap: `pulisciTesto` mette il rel giusto, e sul sito i link si aprono nella stessa scheda.
-const LinkDelSito = Link.configure({ openOnClick: false, HTMLAttributes: { target: null, rel: null } })
+// Niente autolink: alla prima parola e allo spazio sul bordo di un link toglieva il link dallo spazio e da quel che
+// segue, così cambiare le parole di un link le lasciava fuori. `inclusive` (che con l'autolink spento sarebbe falso)
+// tiene dentro il link quel che si scrive in fondo.
+const LinkDelSito = Link.extend({ inclusive: true }).configure({ openOnClick: false, autolink: false, HTMLAttributes: { target: null, rel: null } })
 
 // L'immagine è un blocco con indirizzo e testo alternativo, e nient'altro: è quello che il sito ammette (`sitoTesto.ts`).
 // `alt=""` (solo decorativa) resta com'è, non sparisce; un'immagine che arriva senza `alt` si salva come decorativa.
