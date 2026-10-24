@@ -6,7 +6,8 @@
 // Le foto stanno in riquadri più larghi o più stretti di loro (`object-fit:cover`):
 // il ritaglio taglia teste e mani se il punto che resta al centro è quello sbagliato.
 // `src/lib/sitoFoto.ts` dice, foto per foto, dove stanno le persone (`x% y%`), e il
-// generatore scrive una regola `img[src$="nome.jpg"]{object-position:…!important}`
+// generatore scrive una regola `img[src*="nome.jpg"]{object-position:…!important}` (il nome ovunque
+// nell'indirizzo: anche in quello di /render/image, che finisce con ?width=…)
 // che vale in ogni pagina e in ogni riquadro, sul computer e sul telefono.
 // Una foto che non è nella tabella resta col ritaglio del suo riquadro.
 // ---------------------------------------------------------------------------
@@ -54,7 +55,7 @@ const SCHEDE = {
 
 console.log('\n1. Ogni foto del sito ha il suo fuoco')
 for (const [nome, foco] of Object.entries(FOTO)) {
-  ok(`${nome.slice(0, 8)}: ${foco}`, css.includes(`img[src$="${nome}"]{object-position:${foco}!important}`), true)
+  ok(`${nome.slice(0, 8)}: ${foco}`, css.includes(`img[src*="${nome}"]{object-position:${foco}!important}`), true)
 }
 ok('la tabella ha le stesse foto e non una di più', Object.keys(f.FOCI_FOTO ?? {}).sort(), Object.keys(FOTO).sort())
 
@@ -78,8 +79,8 @@ console.log('\n2. La tabella è fatta bene')
   ok('ogni fuoco è «x% y%» con numeri da 0 a 100', Object.values(t).every((v) => /^(\d{1,3})% (\d{1,3})%$/.test(v) && v.split(' ').every((n) => parseInt(n, 10) <= 100)), true)
   ok('ogni nome è un file jpg o webp semplice (niente virgolette né barre nel selettore)', Object.keys(t).every((n) => /^[A-Za-z0-9._-]+\.(jpg|webp)$/.test(n)), true)
   ok('una foto che non è in tabella non ha regole', /img\[src\$="sconosciuta\.jpg"\]/.test(css), false)
-  ok('le regole del fuoco vengono dopo quelle dei riquadri (stesso CSS, in fondo)', css.lastIndexOf('object-position:') > css.indexOf('img[src$='), true)
-  ok('un fuoco sbagliato non entra nel CSS (si salta, non si rompe)', typeof f.cssFoci === 'function' && !f.cssFoci({ 'a.jpg': 'url(x)', 'b"].jpg': '10% 10%', 'c.jpg': '20% 30%' }).includes('url') && f.cssFoci({ 'c.jpg': '20% 30%' }) === 'img[src$="c.jpg"]{object-position:20% 30%!important}', true)
+  ok('le regole del fuoco vengono dopo quelle dei riquadri (stesso CSS, in fondo)', css.lastIndexOf('object-position:') > css.indexOf('img[src*='), true)
+  ok('un fuoco sbagliato non entra nel CSS (si salta, non si rompe)', typeof f.cssFoci === 'function' && !f.cssFoci({ 'a.jpg': 'url(x)', 'b"].jpg': '10% 10%', 'c.jpg': '20% 30%' }).includes('url') && f.cssFoci({ 'c.jpg': '20% 30%' }) === 'img[src*="c.jpg"]{object-position:20% 30%!important}', true)
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

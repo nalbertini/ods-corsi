@@ -37,11 +37,12 @@ export const FOCI_SCHEDE: Record<string, [string, string]> = {
 /**
  * Le regole CSS del fuoco, una per foto. `!important` perché i riquadri hanno il loro ritaglio per posto
  * (testata, fila, ritratto) e il fuoco della foto deve vincere su tutti. Un nome o un fuoco strani si saltano.
+ * `*=` e non `$=`: le foto escono da /render/image, con `?width=…` dopo il nome (che è un uuid, non si confonde).
  */
 export function cssFoci(foci: Record<string, string> = FOCI_FOTO): string {
   return Object.entries(foci)
     .filter(([nome, foco]) => /^[A-Za-z0-9._-]+\.(jpg|webp)$/.test(nome) && /^\d{1,3}% \d{1,3}%$/.test(foco))
-    .map(([nome, foco]) => `img[src$="${nome}"]{object-position:${foco}!important}`)
+    .map(([nome, foco]) => `img[src*="${nome}"]{object-position:${foco}!important}`)
     .join('\n')
 }
 

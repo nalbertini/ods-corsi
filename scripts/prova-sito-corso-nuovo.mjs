@@ -108,7 +108,7 @@ console.log('\n1. Quando una pagina è «corso nuovo»')
 console.log('\n2. Il testo di prima resta com’era')
 {
   const senza = pagina(T({ pul: '' }))
-  ok('lo stesso testo senza il pulsante: <main> identico a oggi (sha)', sha(main(senza)), '488555f30008f5c1aaccdd22627ecd6d98e9ccdd85e2b0d22b7352708b7fbf73')
+  ok('lo stesso testo senza il pulsante: <main> identico a oggi (sha)', sha(main(senza)), '6ac18064824bf3335bce6a1204525a5e00787e5f77b314d7fcf11d3bd26d727e')
   ok('non porta nessuna classe del corso nuovo', rotto(senza), false)
 }
 

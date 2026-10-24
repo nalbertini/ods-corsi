@@ -63,17 +63,21 @@ const risorse = join(radice, 'sito/risorse')
 if (!existsSync(risorse)) fine('Manca la cartella sito/risorse (carattere e logo).')
 
 // Il generatore è TypeScript e usa sanitize-html (che vuole `require`): si impacchetta come fanno le prove.
-const { outputFiles } = await build({
-  entryPoints: [join(radice, 'src/lib/sitoGenera.ts')],
-  bundle: true,
-  format: 'esm',
-  platform: 'node',
-  write: false,
-  logLevel: 'silent',
-  define: { 'import.meta.env': '{}' },
-  banner: { js: `import { createRequire as __cr } from 'node:module'; const require = __cr(${JSON.stringify(`${radice}/`)});` },
-})
-const { generaSito, datiDaRisposte, prefissoImmagini, codiceStatistiche } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+const carica = async (file) => {
+  const { outputFiles } = await build({
+    entryPoints: [join(radice, file)],
+    bundle: true,
+    format: 'esm',
+    platform: 'node',
+    write: false,
+    logLevel: 'silent',
+    define: { 'import.meta.env': '{}' },
+    banner: { js: `import { createRequire as __cr } from 'node:module'; const require = __cr(${JSON.stringify(`${radice}/`)});` },
+  })
+  return import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+}
+const { generaSito, datiDaRisposte, prefissoImmagini, codiceStatistiche } = await carica('src/lib/sitoGenera.ts')
+const { immaginiNelTesto, dimensioniImmagine } = await carica('src/lib/sitoImmagini.ts')
 
 async function leggi() {
   if (daFile) {
@@ -120,6 +124,25 @@ async function leggi() {
   return { pagine, menu, rinvii, orari, orariSito }
 }
 
+/** Le misure delle foto del contenitore, per width/height. Una foto che non risponde o non si legge resta senza: il sito esce lo stesso. */
+async function misureImmagini(prefisso, pagine) {
+  const indirizzi = [...new Set(pagine.flatMap((p) => immaginiNelTesto(p.testo)))].filter((u) => u.startsWith(prefisso))
+  const voci = await Promise.all(
+    indirizzi.map(async (u) => {
+      try {
+        const r = await fetch(u, { signal: AbortSignal.timeout(20000) })
+        const misure = r.ok ? dimensioniImmagine(new Uint8Array(await r.arrayBuffer())) : null
+        return misure ? [u, misure] : null
+      } catch {
+        return null
+      }
+    }),
+  )
+  const misurate = voci.filter(Boolean)
+  console.log(`  foto del contenitore: ${indirizzi.length}, misurate ${misurate.length}`)
+  return Object.fromEntries(misurate)
+}
+
 const risposte = await leggi()
 for (const nome of ['pagine', 'menu', 'rinvii']) {
   if (!Array.isArray(risposte[nome])) fine(`I dati non sono fatti come si aspetta il generatore: «${nome}» dovrebbe essere un elenco.`)
@@ -136,6 +159,7 @@ if (process.env.SUPABASE_URL) {
     fine('SUPABASE_URL non è un indirizzo valido (deve cominciare con https://).')
   }
   dati.ospitiImmagini = [prefissoImmagini(origine)]
+  dati.immagini = await misureImmagini(dati.ospitiImmagini[0], dati.pagine)
 }
 // Il contatore delle visite (GoatCounter): la variabile si legge solo qui, così l'anteprima del pannello non conta mai niente.
 // Un codice sbagliato non ferma la pubblicazione: il sito esce senza contatore e il giro lo dice. Il valore non si stampa:
