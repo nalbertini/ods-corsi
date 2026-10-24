@@ -266,7 +266,7 @@ console.log('\n13. Il testo pronto in docs/sito/home.html è una Home nuova comp
   ok('è riconosciuta come Home nuova, con il titolo e la frase di home.md', [/<main class="passo-unico">/.test(h), h.includes(`<h1>${titolo}</h1>`), h.includes(frase)], [true, true, true])
   ok('4 numeri, 9 schede, nessuna citazione accademica, 5 recensioni, 5 domande, la chiamata finale', [conta(h, /tessera [a-z]+ numero/g), conta(h, /<article class="tessera [a-z]+ scheda">/g), conta(h, /<details class="intero">/g), conta(h, /citazione [a-z]+ larga/g), conta(h, /<article class="tessera chiara">/g), /<section class="sezione cta">/.test(h)], [4, 9, 0, 5, 5, true])
   ok('«Iscriviti» in testata, nel menu del telefono, hero e chiamata finale (4), nessun pulsante «Scrivici» né secondario', [conta(h, /class="pulsante primario"[^>]*>Iscriviti<\/a>/g), /<a [^>]*>Scrivici<\/a>/.test(h)], [4, false])
-  ok('tutte le foto sono del contenitore delle immagini', [...h.matchAll(/<img[^>]*src="([^"]+)"/g)].every((m) => m[1].startsWith(F.OSPITE_VECCHIO) || m[1].startsWith('/')), true)
+  ok('tutte le foto sono del contenitore delle immagini', [...h.matchAll(/<img[^>]*src="([^"]+)"/g)].every((m) => m[1].replace('/render/image/', '/object/').startsWith(F.OSPITE_VECCHIO) || m[1].startsWith('/')), true)
 }
 
 console.log('\n14. Niente testo si perde in silenzio')

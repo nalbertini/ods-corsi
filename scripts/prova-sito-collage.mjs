@@ -304,7 +304,7 @@ console.log('\n4. Le immagini di un host non dichiarato non entrano (invariante)
   const soloExt = pag(`${ext}${TRE}`)
   ok('con tutte le foto tolte il collage è solo numeri: tessere n-3, nessuna foto', [foto(soloExt).length, numeri(soloExt).length, radice(hero(soloExt)).includes('n-3'), radice(hero(soloExt)).includes('collage')], [0, 3, true, false])
   const dich = pag(`<img src="${P}a1.jpg" alt="d">${TRE}`, { ospiti: [P] })
-  ok('un’immagine del contenitore dichiarato è una tessera foto', [foto(dich).length, dich.includes(`${P}a1.jpg`)], [1, true])
+  ok('un’immagine del contenitore dichiarato è una tessera foto', [foto(dich).length, dich.includes('render/image/public/sito/a1.jpg')], [1, true])
 }
 
 console.log('\n5. I numeri: un solo ul di 2–6 voci con il grassetto iniziale (R4, R5)')
