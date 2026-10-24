@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.196.0 — 24 ottobre 2026
+
+### Novità
+
+- Controllo Lighthouse su ogni PR
+
 ## 0.195.0 — 24 ottobre 2026
 
 ### Novità
