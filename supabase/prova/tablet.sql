@@ -40,9 +40,9 @@ insert into iscrizioni (corso_id, persona_id, dal) values
 -- quaranta minuti, ancora in corso.
 insert into sessioni (id, corso_id, inizio, fine) values
   ('eeeeeeee-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000001', now() + interval '5 minutes', now() + interval '65 minutes'),
-  ('eeeeeeee-0000-0000-0000-000000000002', 'cccccccc-0000-0000-0000-000000000001', now() - interval '1 day',    now() - interval '23 hours'),
+  ('eeeeeeee-0000-0000-0000-000000000002', 'cccccccc-0000-0000-0000-000000000001', now() - interval '1 day',    now() - interval '1 day' + interval '1 hour'),
   ('eeeeeeee-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001', now() - interval '21 days',  now() - interval '21 days' + interval '1 hour'),
-  ('eeeeeeee-0000-0000-0000-000000000004', 'cccccccc-0000-0000-0000-000000000001', now() + interval '1 day',    now() + interval '25 hours'),
+  ('eeeeeeee-0000-0000-0000-000000000004', 'cccccccc-0000-0000-0000-000000000001', now() + interval '1 day',    now() + interval '1 day 1 hour'),
   ('eeeeeeee-0000-0000-0000-000000000005', 'cccccccc-0000-0000-0000-000000000002', now() + interval '5 minutes', now() + interval '65 minutes'),
   ('eeeeeeee-0000-0000-0000-000000000006', 'cccccccc-0000-0000-0000-000000000001', now() - interval '40 minutes', now() + interval '20 minutes');
 select imposta_pin('aaaaaaaa-0000-0000-0000-000000000002', '4321');
