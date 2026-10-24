@@ -712,3 +712,35 @@ select atteso('adesso è tra le pagine pubbliche', (select count(*)::text from s
 select atteso('e la voce «Accessibilità» è nel menu pubblico',
   (select count(*)::text from sito_menu_pubblico() where dove = 'footer' and slug = 'dichiarazione-accessibilita'), '1');
 reset role;
+
+\echo ''
+\echo '--- 20. 112-sito-accessibilita-agid.sql: riscrive solo la bozza mai toccata ---'
+-- La traccia di 107 (quella vecchia), com'era prima delle quattro parti AgID.
+create or replace function traccia_vecchia() returns text language sql as $t$select $v$<h2>Quale sito riguarda</h2><p>Questa dichiarazione riguarda il sito pubblico di [DA COMPILARE: nome di chi gestisce la palestra], raggiungibile all’indirizzo www.officinedellosport.it. L’app per gli iscritti, la segreteria e gli istruttori non rientra in questa dichiarazione.</p><h2>Stato di conformità</h2><p>Regole di accessibilità WCAG 2.1 livello AA: [DA COMPILARE: stato di conformità, «conforme», «parzialmente conforme» o «non conforme»; scrivilo solo dopo la verifica].</p><h2>Contenuti non accessibili</h2><p>[DA COMPILARE: contenuti non accessibili e perché, oppure «nessuno noto»; per ognuno scrivi quando sarà sistemato].</p><h2>Come e quando è stato verificato</h2><p>Data dell’ultima verifica: [DA COMPILARE: data, ad esempio 3 novembre 2026]. Metodo: [DA COMPILARE: metodo usato, ad esempio prova da tastiera, lettore di schermo e controllo automatico, e chi l’ha fatta].</p><h2>Segnalare un problema</h2><p>Se trovi qualcosa che non riesci a usare, scrivici: [DA COMPILARE: contatto per le segnalazioni, un indirizzo email o un telefono a cui risponde davvero qualcuno].</p>$v$::text$t$;
+select id as id_acc from sito_pagine where slug = 'dichiarazione-accessibilita' \gset
+
+update sito_pagine set bozza = traccia_vecchia(), pubblicato = null, versione = 3 where id = :'id_acc';
+\ir ../112-sito-accessibilita-agid.sql
+select atteso('bozza uguale alla vecchia e mai pubblicata: riscritta con la nuova',
+  (select (bozza like '%EN 301 549%' and bozza like '%AgID%' and bozza <> traccia_vecchia())::text from sito_pagine where id = :'id_acc'), 'true');
+select atteso('riscritta: resta mai pubblicata',
+  (select (pubblicato is null)::text from sito_pagine where id = :'id_acc'), 'true');
+
+update sito_pagine set bozza = traccia_vecchia() || '<p>Scritto dalla segreteria</p>', pubblicato = null, versione = 3 where id = :'id_acc';
+\ir ../112-sito-accessibilita-agid.sql
+select atteso('bozza cambiata dalla segreteria: resta com''è, versione compresa',
+  (select (bozza = traccia_vecchia() || '<p>Scritto dalla segreteria</p>')::text || ' ' || versione from sito_pagine where id = :'id_acc'), 'true 3');
+
+update sito_pagine set bozza = traccia_vecchia(), pubblicato = '<p>Testo già online</p>', versione = 3, pubblicata_il = now() where id = :'id_acc';
+\ir ../112-sito-accessibilita-agid.sql
+select atteso('già pubblicata, bozza uguale alla vecchia: non cambia niente',
+  (select (bozza = traccia_vecchia())::text || ' ' || pubblicato || ' ' || versione from sito_pagine where id = :'id_acc'), 'true <p>Testo già online</p> 3');
+
+update sito_pagine set bozza = traccia_vecchia(), pubblicato = null, versione = 3 where id = :'id_acc';
+\ir ../112-sito-accessibilita-agid.sql
+select bozza as bozza_dopo, versione as versione_dopo from sito_pagine where id = :'id_acc' \gset
+\ir ../112-sito-accessibilita-agid.sql
+select atteso('rilancio: identica, anche la versione',
+  (select (bozza = :'bozza_dopo')::text || ' ' || versione from sito_pagine where id = :'id_acc'), 'true ' || :'versione_dopo');
+select atteso('nessun doppione di pagina né di voce nel footer',
+  (select count(*)::text from sito_pagine where slug = 'dichiarazione-accessibilita') || ' ' || (select count(*)::text from sito_menu where pagina_id = :'id_acc' and dove = 'footer'), '1 1');

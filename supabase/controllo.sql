@@ -543,6 +543,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from sito_pagine where slug = 'dichiarazione-accessibilita' and di_legge)
     and exists (select 1 from sito_menu m join sito_pagine p on p.id = m.pagina_id where p.slug = 'dichiarazione-accessibilita' and m.dove = 'footer')
     and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%'),
+  ('112-sito-accessibilita-agid.sql', 'la traccia della Dichiarazione di accessibilità ha le parti AgID (norma, data di redazione, tempo di risposta, segnalazione)',
+    not exists (select 1 from sito_pagine
+                 where slug = 'dichiarazione-accessibilita' and pubblicato is null
+                   and bozza like '%Data dell’ultima verifica: [DA COMPILARE%' and bozza not like '%EN 301 549%')),
   ('109-privilegi-e-certificati.sql', 'anon e authenticated non possono svuotare le tabelle, e i file del certificato in attesa hanno un tetto',
     not exists (select 1 from pg_class c, unnest(array['anon', 'authenticated']) r, unnest(array['TRUNCATE', 'TRIGGER', 'REFERENCES']) p
                  where c.relnamespace = 'public'::regnamespace and c.relkind in ('r', 'p') and has_table_privilege(r, c.oid, p))
