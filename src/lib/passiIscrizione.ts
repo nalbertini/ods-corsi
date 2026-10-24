@@ -301,6 +301,9 @@ export function avanti(s: StatoPassi, passo: number, oggi = new Date()): { passo
 /** La chiave del primo campo che non va, dove porta il focus. */
 export const primoDaCorreggere = (s: StatoPassi, passo: number, oggi = new Date()): string | undefined => mancanze(s, passo, oggi)[0]?.chiave
 
+/** I campi del modulo sono tutti da compilare, tranne il secondo telefono: serve per `aria-required`. */
+export const campoObbligatorio = (k: string): boolean => k !== 'telefono2'
+
 /** Sotto il campo: «Manca» solo dopo il tentativo, «scritto male» anche appena si lascia il campo. */
 export function notaSottoIlCampo(errore: string | undefined, provato: boolean, visto: boolean): string | undefined {
   if (!errore) return undefined

@@ -767,7 +767,7 @@
 .sg-barra-tel { display: none; }
 @media (max-width: 767px) {
   .sg-barra-tel {
-    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; flex-shrink: 0;
     padding: calc(var(--safe-t) + 8px) 8px 8px 16px; background: var(--menu); border-bottom: 2px solid var(--line-soft);
   }
   .sg-barra-tel > svg { flex-shrink: 0; }

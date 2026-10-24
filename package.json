@@ -19,6 +19,7 @@
     "prova:robots": "node scripts/prova-robots.mjs",
     "prova:timer-font": "node scripts/prova-timer-font.mjs",
     "prova:timer-accessibilita": "node scripts/prova-timer-accessibilita.mjs",
+    "prova:accessibilita-iscrizione": "node scripts/prova-accessibilita-iscrizione.mjs",
     "prova:cornice-mail": "node scripts/prova-cornice-mail.mjs",
     "prova:guida": "node scripts/prova-guida.mjs",
     "prova:musica-file": "node scripts/prova-musica-file.mjs",

@@ -188,6 +188,16 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   // Letto una volta all'apertura: è la fotografia di com'era quando l'app è morta.
   const [interrotto, setInterrotto] = useState<Interrotto | null>(() => leggiInterrotto())
   const [view, setView] = useState<View>({ kind: 'tabs' })
+  // Tornando alle schede (dal timer, dallo storico…) il focus va sulla scheda attiva, non sul body.
+  // Due layout: barra laterale (.navitem) e barra in basso (.tab); l'altra è nascosta e non prende il focus.
+  const primaVista = useRef(true)
+  useEffect(() => {
+    if (primaVista.current) {
+      primaVista.current = false
+      return
+    }
+    if (view.kind === 'tabs') document.querySelector<HTMLElement>('.navitem[aria-current="page"], .tab[data-on="true"]')?.focus()
+  }, [view.kind])
 
   // L'audio si sblocca al PRIMO tocco nell'app, non all'avvio del timer.
   // `resume()` è asincrono: chiamarlo quando parte l'allenamento significa che

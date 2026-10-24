@@ -372,6 +372,13 @@ chiama la segreteria. Dopo la data di chiusura la pagina dice **ORDINI CHIUSI**
 e dà il telefono; prima che la segreteria li apra dice **ORDINI NON ANCORA
 APERTI**.
 
+## Con la tastiera e con un lettore di schermo
+
+Nella richiesta, dove si sceglie una sola voce (il comune, la formula, chi si
+iscrive) le **frecce** spostano da una voce all'altra e **Tab** esce dal gruppo.
+Un lettore di schermo dice «obbligatorio» sui campi da compilare; il secondo
+telefono è facoltativo e non lo dice.
+
 ## Cosa dire a chi chiede
 
 - «Ti mando il link: c'è cosa preparare e il tasto per la richiesta. I prezzi

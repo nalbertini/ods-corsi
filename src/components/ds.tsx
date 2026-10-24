@@ -1,4 +1,5 @@
-import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react'
+import { type KeyboardEvent, type ReactNode, type RefObject, useEffect, useRef, useState } from 'react'
+import { frecciaRadio, tabIndexRadio } from '../lib/frecceRadio'
 import type { Tappa } from '../lib/passiIscrizione'
 
 /**
@@ -213,9 +214,24 @@ export function SceltaCorsi({
       aria-label={etichetta}
       aria-describedby={descritto}
     >
-      {voci.map((v) => {
+      {voci.map((v, i) => {
         const on = scelti.includes(v.id)
-        const stato = una ? { role: 'radio', 'aria-checked': on } : { 'aria-pressed': on }
+        const stato = una
+          ? {
+              role: 'radio',
+              'aria-checked': on,
+              tabIndex: tabIndexRadio(i, voci.findIndex((x) => scelti.includes(x.id))),
+              // Come un radio vero: le frecce spostano il focus e, se c'è già una scelta, anche quella.
+              onKeyDown: (e: KeyboardEvent<HTMLButtonElement>) => {
+                const freccia = frecciaRadio(e.key, i, voci.length, scelti.length > 0)
+                if (!freccia) return
+                e.preventDefault()
+                if (freccia.scegli) onScegli(voci[freccia.focus].id)
+                const fratelli = e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]')
+                fratelli?.[freccia.focus]?.focus()
+              },
+            }
+          : { 'aria-pressed': on }
         return (
           <button key={v.id} type="button" className="modulo-corso" {...stato} onClick={() => onScegli(v.id)}>
             {!una && (
