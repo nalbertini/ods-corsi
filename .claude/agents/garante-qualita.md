@@ -15,7 +15,9 @@ quadro: cosa è critico, cosa è coperto, cosa è scoperto.
 Il registro è `docs/qa/percorsi-critici.md`: per ogni percorso da cui dipende
 l'operatività della palestra, chi lo usa, cosa si rompe se cade, e le prove che
 lo coprono (`prova:*` e `supabase/prova/*.sql`). Se non esiste una riga per il
-percorso che stai guardando, la aggiungi.
+percorso che stai guardando, la aggiungi. Una regola senza prova va in
+«Scoperti», un punto per buco. Righe corte, senza date, rami o PR: lo leggono
+tutti gli agenti, e la storia sta in `git log`.
 
 Un percorso è critico se, cadendo, **si perde o si sbaglia un dato** (quota,
 presenza, certificato, ricevuta, firma, iscrizione) o **la segreteria non
