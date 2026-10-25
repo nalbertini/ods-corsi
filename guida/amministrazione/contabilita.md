@@ -108,6 +108,14 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
 - **Uno solo**: apri il movimento, scegli la **voce** nuova e tocca **Cambia la voce**. In fondo, **Cosa è
   cambiato** dice chi l'ha cambiata, quando e da quale voce veniva. Un movimento scritto qui che va su
   **Quota associativa** o **Corsi e altri pagamenti** chiede la **persona**, se non ce l'ha già.
+- **Il suggerimento**: un movimento su **Da classificare** apre con un riquadro giallo,
+  **Suggerito · conferma tu**. La **voce** è quella delle altre righe uguali (almeno due, tutte
+  sulla stessa voce); la **persona** è la scheda col nome scritto nel testo («Satispay · Elisa M.»):
+  il nome intero, o nome e iniziale del cognome. Un nome solo non basta. Se le schede possibili sono
+  più d'una, scegli tu e **Conferma** resta spento finché non scegli. Per un'uscita la persona non c'è.
+  **Conferma** collega la voce e la persona e non crea una ricevuta: la quota resta da pagare finché non
+  registri l’incasso nella scheda della persona. **Scegli tu** non cambia niente: mette la proposta nei campi qui sotto, e decidi lì.
+  Senza suggerimento, il riquadro non c'è.
 - **Tanti insieme**: nell'elenco scrivi nella ricerca una parte della causale (per esempio «enel»),
   scegli la **voce** da cui partire (per esempio «Da classificare») e, se serve, il periodo
   **Tutto**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure la casella in testa alla

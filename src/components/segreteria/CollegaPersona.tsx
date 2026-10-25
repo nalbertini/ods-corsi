@@ -137,7 +137,7 @@ export function CollegaSicuri({ d, onRileggi, onVediDaDecidere, onChiudi }: { d:
 }
 
 /** Una persona da scegliere: nome e cognome, e quel che distingue due omonimi. */
-function SchedaCandidata({ c, scelta, onScegli }: { c: CandidatoPersona; scelta: boolean; onScegli: () => void }) {
+export function SchedaCandidata({ c, scelta, onScegli, nome = 'persona' }: { c: CandidatoPersona; scelta: boolean; onScegli: () => void; nome?: string }) {
   const dettagli = [
     c.annoNascita ? `nascita ${c.annoNascita}` : '',
     c.corsi.length ? c.corsi.join(', ') : '',
@@ -145,7 +145,7 @@ function SchedaCandidata({ c, scelta, onScegli }: { c: CandidatoPersona; scelta:
   ].filter(Boolean)
   return (
     <label className="sg-scelta-persona" data-scelta={scelta}>
-      <input type="radio" name="persona" checked={scelta} onChange={onScegli} />
+      <input type="radio" name={nome} checked={scelta} onChange={onScegli} />
       <span className="stack" style={{ gap: 2, minWidth: 0 }}>
         <b style={{ fontSize: 16 }}>{c.cognome} {c.nome}</b>
         <span className="sg-sotto">{dettagli.length ? dettagli.join(' · ') : 'nessun dato in più sulla scheda'}</span>

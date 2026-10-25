@@ -957,7 +957,7 @@ console.log('\n36. Contabilita.tsx cambia la voce dopo il riepilogo, a pacchetti
   const da = tsx.indexOf('function CambiaVoce(')
   const fino = tsx.indexOf('function NuovoMovimento(')
   const corpo = da >= 0 && fino > da ? tsx.slice(da, fino) : ''
-  ok('due chiamate a cambiaVoceMovimenti: il riepilogo e il movimento aperto', tsx.split('cambiaVoceMovimenti(').length - 1, 2)
+  ok('tre chiamate a cambiaVoceMovimenti: il riepilogo, il movimento aperto e il suggerimento (dopo cosaNonVaCambioVoce)', tsx.split('cambiaVoceMovimenti(').length - 1, 3)
   ok('il riepilogo scrive a pacchetti', [corpo.includes('pacchetti('), /await d\.cambiaVoceMovimenti\(/.test(corpo)], [true, true])
   ok('…e dice com\'è andata con esitoCambioVoce', corpo.includes('esitoCambioVoce('), true)
   ok('…il sì resta spento finché cosaNonVaCambioVoce ha qualcosa da dire', /disabled=\{[^}]*guaio/.test(corpo), true)

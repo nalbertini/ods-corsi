@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Scheda movimento</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+.et { font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; }
+.riga { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; align-items: baseline; }
+.riga .et { width: 130px; flex-shrink: 0; }
+.campo { display: flex; flex-direction: column; gap: 6px; }
+.box { border-radius: 6px; min-height: 48px; padding: 12px 14px; border: 2px solid #14709f; background: #ffffff; font-size: 16px; display: flex; align-items: center; justify-content: space-between; }
+.tasto { border-radius: 6px; min-height: 48px; padding: 0 20px; display: inline-flex; align-items: center; font-family: Inter, Arial, sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.12em; border: 2px solid #14709f; background: transparent; color: #14709f; }
+.tasto.pieno { background: #f4c31b; border-color: #8f6a00; color: #0d2a3d; }
+.tasto.rosso { border-color: #b81d1d; color: #b81d1d; }
+</style>
+</helmet>
+<div style="display: flex; gap: 40px; width: 1440px; padding: 28px 36px 36px; align-items: flex-start">
+
+<div style="width: 600px; display: flex; flex-direction: column; gap: 10px">
+<span class="et" style="color: #8f6a00; letter-spacing: 0.12em">OGGI · SCHEDA COSÌ COM'È</span>
+<section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #ffffff; border: 2px solid #cfe6f4">
+<span class="et">IL MOVIMENTO</span>
+<span style="font-family: Inter, Arial, sans-serif; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">SATISPAY · ELISA M.</span>
+<div class="riga"><span class="et">DATA</span><span style="font-size: 15px">09/10/2026</span></div>
+<div class="riga"><span class="et">TIPO</span><span style="font-size: 15px">ENTRATA</span></div>
+<div class="riga"><span class="et">CASSA</span><span style="font-size: 15px">Satispay</span></div>
+<div class="riga"><span class="et">IMPORTO</span><span style="font-size: 15px">50,00 €</span></div>
+<div class="campo"><span class="et">VOCE</span><div class="box"><span>Da classificare</span><span aria-hidden="true">▾</span></div></div>
+<div class="campo"><span class="et">DESCRIZIONE</span><div class="box"><span>SATISPAY · ELISA M.</span></div></div>
+<div class="campo"><span class="et">NOTA</span><div class="box" style="min-height: 72px; align-items: flex-start"><span style="color: #46606f"></span></div></div>
+<span style="font-size: 14px; color: #0d2a3d; line-height: 1.4">SCEGLI TU, L'APP NON INDOVINA. La persona si collega a parte, dalla scheda della persona.</span>
+<div style="display: flex; gap: 10px; flex-wrap: wrap"><span class="tasto pieno">CAMBIA LA VOCE</span><span class="tasto">SALVA IL TESTO</span><span class="tasto rosso">ANNULLA IL MOVIMENTO</span></div>
+</section>
+</div>
+
+<div style="width: 724px; display: flex; flex-direction: column; gap: 10px">
+<span class="et" style="color: #8f6a00; letter-spacing: 0.12em">PROPOSTA · UN SOLO CANDIDATO</span>
+<section style="display: flex; flex-direction: column; gap: 16px; padding: 22px 24px; background: #ffffff; border: 2px solid #cfe6f4">
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span class="et">IL MOVIMENTO · SATISPAY · 09/10/2026</span>
+<span style="font-family: Inter, Arial, sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 0.04em">SATISPAY · ELISA M.</span>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px">
+<span style="font-family: Inter, Arial, sans-serif; font-size: 34px; font-weight: 700; letter-spacing: 0.02em">+50,00 €</span>
+<span style="font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 3px 8px; border: 1px solid #46606f; color: #0d2a3d">ENTRATA</span>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; border: 2px solid #f4c31b; background: #eef5fa">
+<span class="et" style="color: #8f6a00">SUGGERITO · CONFERMA TU</span>
+
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="et">VOCE</span>
+<b style="font-size: 18px">Corsi e altri pagamenti</b>
+<span style="font-size: 14px; color: #0d2a3d; line-height: 1.4">50,00 € è l'importo di una quota mensile. Altre 3 entrate Satispay uguali sono state messe qui.</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span class="et">PERSONA</span>
+<b style="font-size: 18px">Marini Elisa</b>
+<span style="font-size: 14px; color: #0d2a3d; line-height: 1.4">nascita 2012 · Judo kids · quota di ottobre da pagare 50,00 €</span>
+<span style="font-size: 14px; color: #0d2a3d; line-height: 1.4">Perché lei: nome «Elisa» e cognome che inizia per M. È l'unica così fra gli iscritti.</span>
+</div>
+
+<div style="display: flex; gap: 10px; flex-wrap: wrap"><span class="tasto pieno">CONFERMA VOCE E PERSONA</span><span class="tasto">SCEGLI TU</span></div>
+</div>
+
+<div class="campo"><span class="et">VOCE</span><div class="box"><span>Da classificare</span><span aria-hidden="true">▾</span></div></div>
+<div class="campo"><span class="et">PERSONA</span><div class="box"><span style="color: #46606f">Nessuna collegata</span><span class="et" style="color: #0d2a3d">CERCA</span></div></div>
+<div class="campo"><span class="et">DESCRIZIONE</span><div class="box"><span>SATISPAY · ELISA M.</span></div></div>
+<div style="display: flex; gap: 10px; flex-wrap: wrap"><span class="tasto">SALVA IL TESTO</span><span class="tasto rosso">ANNULLA IL MOVIMENTO</span></div>
+<span style="font-size: 14px; color: #0d2a3d; line-height: 1.4">Voce e persona restano come sono finché non tocchi «Conferma». Il suggerimento non si applica da solo.</span>
+</section>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Casi</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+.et { font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; }
+.sez { border-radius: 6px; display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #ffffff; border: 2px solid #cfe6f4; }
+.sug { border-radius: 6px; display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; border: 2px solid #f4c31b; background: #eef5fa; }
+.sug.muto { border-color: #cfe6f4; }
+.tit { font-family: Inter, Arial, sans-serif; font-size: 26px; font-weight: 700; letter-spacing: 0.04em; }
+.sec { font-size: 14px; color: #0d2a3d; line-height: 1.4; }
+.tasto { border-radius: 6px; min-height: 48px; padding: 0 20px; display: inline-flex; align-items: center; font-family: Inter, Arial, sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.12em; border: 2px solid #14709f; background: transparent; color: #14709f; }
+.tasto.pieno { background: #f4c31b; border-color: #8f6a00; color: #0d2a3d; }
+.cand { border-radius: 6px; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 14px; border: 2px solid #cfe6f4; }
+.cand.on { border-color: #14709f; background: #eef5fa; }
+.cer { width: 24px; height: 24px; flex: none; border: 2px solid #14709f; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.cer i { width: 12px; height: 12px; border-radius: 50%; background: #14709f; display: block; }
+</style>
+</helmet>
+<div style="display: flex; gap: 32px; width: 1440px; padding: 28px 36px 36px; align-items: flex-start">
+
+<div style="width: 440px; display: flex; flex-direction: column; gap: 10px">
+<span class="et" style="color: #8f6a00; letter-spacing: 0.12em">CASO A · PIÙ CANDIDATI</span>
+<section class="sez">
+<span class="et">IL MOVIMENTO · SATISPAY · 11/10/2026</span>
+<span class="tit">SATISPAY · LUCA B.</span>
+<span style="font-family: Inter, Arial, sans-serif; font-size: 30px; font-weight: 700">+35,00 €</span>
+<div class="sug">
+<span class="et" style="color: #8f6a00">SUGGERITO · CONFERMA TU</span>
+<div style="display: flex; flex-direction: column; gap: 4px"><span class="et">VOCE</span><b style="font-size: 18px">Corsi e altri pagamenti</b><span class="sec">Altre 2 entrate Satispay da 35,00 € sono state messe qui.</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="et">PERSONA · TRE POSSIBILI, SCEGLI</span>
+<div class="cand on"><span class="cer"><i></i></span><span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">Bianchi Luca</b><span class="sec">nascita 2011 · Judo kids · 35,00 € da pagare</span></span></div>
+<div class="cand"><span class="cer"></span><span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">Bruni Luca</b><span class="sec">nascita 2008 · Karate · nulla da pagare</span></span></div>
+<div class="cand"><span class="cer"></span><span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">Bertoli Luca</b><span class="sec">nascita 1990 · Pugilato · nulla da pagare</span></span></div>
+</div>
+<span class="sec">In cima chi ha da pagare proprio questa cifra. Se non sei sicuro, «Scegli tu» lascia tutto com'è.</span>
+<div style="display: flex; gap: 10px; flex-wrap: wrap"><span class="tasto pieno">CONFERMA</span><span class="tasto">SCEGLI TU</span></div>
+</div>
+</section>
+</div>
+
+<div style="width: 440px; display: flex; flex-direction: column; gap: 10px">
+<span class="et" style="color: #8f6a00; letter-spacing: 0.12em">CASO B · VOCE SÌ, PERSONA NO</span>
+<section class="sez">
+<span class="et">IL MOVIMENTO · BONIFICO · 12/10/2026</span>
+<span class="tit">BONIFICO ENEL ENERGIA SPA</span>
+<span style="font-family: Inter, Arial, sans-serif; font-size: 30px; font-weight: 700">−312,40 €</span>
+<div class="sug">
+<span class="et" style="color: #8f6a00">SUGGERITO · CONFERMA TU</span>
+<div style="display: flex; flex-direction: column; gap: 4px"><span class="et">VOCE</span><b style="font-size: 18px">Energia elettrica</b><span class="sec">Altri 11 bonifici con questa descrizione sono stati messi qui.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span class="et">PERSONA</span><span class="sec">Nessuna: è una spesa, non serve.</span></div>
+<div style="display: flex; gap: 10px; flex-wrap: wrap"><span class="tasto pieno">CONFERMA LA VOCE</span><span class="tasto">SCEGLI TU</span></div>
+</div>
+</section>
+</div>
+
+<div style="width: 440px; display: flex; flex-direction: column; gap: 10px">
+<span class="et" style="color: #8f6a00; letter-spacing: 0.12em">CASO C · NESSUN SUGGERIMENTO</span>
+<section class="sez">
+<span class="et">IL MOVIMENTO · SATISPAY · 14/10/2026</span>
+<span class="tit">SATISPAY · M. ROSSI</span>
+<span style="font-family: Inter, Arial, sans-serif; font-size: 30px; font-weight: 700">+17,00 €</span>
+<div class="sug muto">
+<span class="et">SUGGERITO</span>
+<span class="sec">Nessuna proposta: la cifra non corrisponde a niente e il nome non è abbastanza per riconoscere una persona. Scegli la voce qui sotto.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="et">VOCE</span><div style="min-height: 48px; padding: 12px 14px; border: 2px solid #14709f; background: #ffffff; display: flex; justify-content: space-between; align-items: center; font-size: 16px"><span>Da classificare</span><span aria-hidden="true">▾</span></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="et">PERSONA</span><div style="min-height: 48px; padding: 12px 14px; border: 2px solid #14709f; background: #ffffff; display: flex; justify-content: space-between; align-items: center; font-size: 16px"><span style="color: #46606f">Nessuna collegata</span><span class="et" style="color: #0d2a3d">CERCA</span></div></div>
+</section>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
