@@ -11,6 +11,7 @@ import { MieOre } from './components/MieOre'
 import { BarraMusicaTelefono, BarraNavigazione, MusicaMini, PaginaTimer, StrisciaTimer, useMusicaTelefono } from './components/TimerIstruttori'
 import { Conferme, chiedi } from './components/segreteria/comune'
 import { indirizzo, INDIRIZZI, useArea } from './lib/aree'
+import { titolo } from './lib/luoghiBanco'
 import { nomeDellArea, rimandaAmministrazione } from './lib/menuSegreteria'
 import { account, altreAree, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
@@ -101,6 +102,10 @@ function Aree() {
  */
 /** `h1`: il luogo è il titolo della pagina, quando la pagina non ne ha uno suo. */
 function Testata({ luogo, guida, senzaTema, h1, children }: { luogo: string; guida?: string; senzaTema?: boolean; h1?: boolean; children?: ReactNode }) {
+  // La scheda del browser dice dove si è, come la testata.
+  useEffect(() => {
+    document.title = titolo(luogo)
+  }, [luogo])
   return (
     <header className="testata">
       <Logo />
@@ -270,6 +275,10 @@ type LezioneTimer = Pick<SessioneVista, 'id' | 'corsoId' | 'corso' | 'inizio'>
 
 function Istruttori() {
   const largo = useLargo()
+  // Sullo schermo largo c'è il menu e non la testata: il titolo della scheda lo scrive l'area.
+  useEffect(() => {
+    document.title = titolo('ISTRUTTORI')
+  }, [])
   // Il calendario (e con lui l'appello) e il timer restano montati cambiando
   // pagina, nascosti: tornando, i segni, la ricerca e l'allenamento sono com'erano.
   const [pagina, setPagina] = useState<PaginaIstruttori>('calendario')

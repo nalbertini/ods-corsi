@@ -48,6 +48,7 @@ import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 import { eScorciatoiaDiRicerca } from '../../lib/scorciatoiaRicerca'
 import { guidaDellaVoce, indirizzoConsentito, leggeLaSegreteria, menuDi, postoConsentito, primaVoce, titoloDelMenu, vociConsentite } from '../../lib/menuSegreteria'
+import { titoloDellaVoce } from '../../lib/luoghiBanco'
 import '../../segreteria.css'
 
 export type { Voce }
@@ -286,6 +287,10 @@ export function Segreteria({
   // una ricarica, o con Indietro) si porta in vista.
   useEffect(() => {
     document.querySelector('#sg-menu .sg-voce[aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
+  }, [voce])
+  // La scheda del browser dice la voce aperta: fra più schede, nella cronologia e nei segnalibri si riconosce.
+  useEffect(() => {
+    document.title = titoloDellaVoce(voce)
   }, [voce])
   const segno = (n: number, detto: string) =>
     n > 0 && (

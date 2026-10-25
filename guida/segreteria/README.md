@@ -128,6 +128,10 @@ dove si era, e una scheda iscritto o un corso si apre anche in un'altra
 finestra, copiandone il link. Sul telefono, col MENU
 aperto, Indietro chiude solo il menu.
 
+Il titolo della scheda del browser dice la voce aperta («Contabilità ·
+Segreteria · ODS Corsi»): con più schede aperte, nella cronologia e nei
+segnalibri si riconosce subito dove porta.
+
 Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
 numero giallo accanto dice quante cose aspettano (richieste nuove, presenze da
 confermare, segnalazioni da rispondere). Accanto ci sono **?** e le impostazioni.
