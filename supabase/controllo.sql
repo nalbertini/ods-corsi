@@ -547,6 +547,15 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from sito_pagine where slug = 'dichiarazione-accessibilita' and di_legge)
     and exists (select 1 from sito_menu m join sito_pagine p on p.id = m.pagina_id where p.slug = 'dichiarazione-accessibilita' and m.dove = 'footer')
     and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%')),
+  ('116-satispay-separato.sql', 'Satispay separato dal Conto Corrente: cassa dal 2025, candidati solo in Satispay',
+    exists (select 1 from casse where nome = 'Satispay' and dal <= date '2025-01-01')
+    and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%from casse where nome = ''Satispay''%')
+    and exists (select 1 from dentro where nome = 'satispay_scollega' and corpo like '%c.nome = ''Satispay''%')),
+  ('114-importazioni.sql', 'IMPORTAZIONI: gruppi Satispay, «Non è questo», movimenti della banca già scritti',
+    to_regclass('public.banca_coperti') is not null
+    and exists (select 1 from dentro where nome = 'banca_non_e_questo')
+    and exists (select 1 from dentro where nome = 'satispay_scarico_stato' and corpo like '%m.banca_chiave is null%')
+    and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%m.banca_chiave is null%')),
   ('112-sito-accessibilita-agid.sql', 'la traccia della Dichiarazione di accessibilità ha le parti AgID (norma, data di redazione, tempo di risposta, segnalazione)',
     not exists (select 1 from sito_pagine
                  where slug = 'dichiarazione-accessibilita' and pubblicato is null
@@ -562,7 +571,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('113-genitore-non-iscritto.sql', 'la segreteria aggiunge il genitore non iscritto come titolare del nucleo dei figli',
     exists (select 1 from dentro where nome = 'aggiungi_genitore' and corpo like '%genitore_non_iscritto%')
     and exists (select 1 from pg_trigger where tgname = 'iscrizioni_togli_genitore_non_iscritto' and not tgisinternal)),
-  ('114-gare.sql', 'le gare, con la quota a voci, chi accompagna, gli atleti e l''incasso in CONTABILITÀ',
+  ('115-carta.sql', 'si paga anche con la carta nel modulo di iscrizione (PayPal)',
+    to_regprocedure('public.carta_esito(text, text)') is not null
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%con la carta%')
+    and to_regprocedure('public.pagamento_prima(text, uuid, text, text, text, text, uuid)') is not null),
+  ('117-gare.sql', 'le gare, con la quota a voci, chi accompagna, gli atleti e l''incasso in CONTABILITÀ',
     exists (select 1 from dentro where nome = 'incassa_gara' and corpo like '%registra_pagamento_diretto%')
     and exists (select 1 from pg_trigger where tgname = 'gare_atleti_unione' and not tgisinternal))
 ) as x(file, cosa, c)

@@ -41,6 +41,7 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
     nome: 'SOLDI',
     voci: [
       { voce: 'contabilita', nome: 'CONTABILITÀ' },
+      { voce: 'importazioni', nome: 'IMPORTAZIONI' },
       { voce: 'listino', nome: 'LISTINO' },
       { voce: 'vestiario', nome: 'VESTIARIO' },
     ],
@@ -97,4 +98,18 @@ export function tesserePalestra(daRispondere: number): Array<{ voce: Voce; titol
     frase: FRASI_PALESTRA[v.voce] ?? '',
     stato: v.voce === 'segnalazioni' && daRispondere > 0 ? `${daRispondere} da rispondere` : undefined,
   }))
+}
+
+/**
+ * Il titolo della scheda del browser: prima la sezione, perché le schede
+ * strette mostrano solo l'inizio. In minuscolo, che fra le schede e nella
+ * cronologia il maiuscolo pesa.
+ */
+export const titolo = (...parti: string[]): string =>
+  [...parti.map((p) => p.charAt(0) + p.slice(1).toLowerCase()), 'Centro Judo'].join(' - ')
+
+/** Il titolo di una voce della segreteria, col nome del menu (PALESTRA non è nella seconda riga). */
+export function titoloDellaVoce(voce: Voce): string {
+  const nome = LUOGHI.flatMap((l) => l.voci).find((v) => v.voce === voceInLista(voce))?.nome ?? voce.toUpperCase()
+  return titolo(nome, 'SEGRETERIA')
 }

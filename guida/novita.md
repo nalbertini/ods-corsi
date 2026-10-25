@@ -10,6 +10,46 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.210.2 — 25 ottobre 2026
+
+### Modificato
+
+- I dettagli di una persona si aprono in una finestra più larga
+
+## 0.210.1 — 25 ottobre 2026
+
+### Risolto
+
+- I pagamenti Satispay non si confondono più con gli incassi del Conto Corrente
+
+### Modificato
+
+- Il titolo della scheda del browser finisce con «Centro Judo»
+
+## 0.210.0 — 25 ottobre 2026
+
+### Novità
+
+- La scheda del browser dice in che sezione sei
+
+## 0.209.0 — 25 ottobre 2026
+
+### Novità
+
+- Si può pagare anche con la carta di credito o di debito, oltre che con Satispay
+
+## 0.208.0 — 25 ottobre 2026
+
+### Novità
+
+- IMPORTAZIONI, un posto solo per i pagamenti Satispay e la banca, da decidere a gruppi e da rivedere
+
+## 0.207.1 — 25 ottobre 2026
+
+### Modificato
+
+- Le righe da sistemare dei movimenti in giallo tenue, senza il segno Da Satispay
+
 ## 0.207.0 — 25 ottobre 2026
 
 ### Novità

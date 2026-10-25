@@ -13,7 +13,7 @@
     body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: grid; grid-template-columns: 44px 104px minmax(0, 1fr) 150px 170px 120px 120px; gap: 12px; align-items: center; width: 1100px; padding: 16px 18px; min-height: 92px; background: #fff; border-bottom: 1px solid #cfe6f4; color: #0d2a3d">
+<div style="display: grid; grid-template-columns: 44px 104px minmax(0, 1fr) 150px 170px 120px 120px; gap: 12px; align-items: center; width: 1100px; padding: 16px 18px; min-height: 92px; background: {{fondo}}; border-bottom: 1px solid #cfe6f4; color: #0d2a3d">
   <span></span><span style="font-size: 14px">{{data}}</span>
   <div style="min-width: 0"><div style="font-size: 16px; font-weight: 700">{{nome}}</div><div style="font-size: 14px; margin-top: 3px">{{voce}}</div><div style="font-size: 13px; color: #46606f; margin-top: 2px">{{dettaglio}}</div></div>
   <span style="display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 600; color: #14709f"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0M15 10h3M15 14h3"/></svg>{{tipo}}</span>
@@ -21,9 +21,10 @@
   <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; text-align: right; color: #0b7a33">{{entrata}}</span><span></span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"data":{"editor":"text","default":"22/10/2026"},"nome":{"editor":"text","default":"Usseglio Veronica"},"voce":{"editor":"text","default":"Quota associativa"},"dettaglio":{"editor":"text","default":"ricevuta 308/2026"},"tipo":{"editor":"text","default":"Incasso iscritto"},"cassa":{"editor":"text","default":"Conto Corrente"},"entrata":{"editor":"text","default":"+ 50,00 €"},"$preview":{"width":1100,"height":100}}'>
+<script data-dc-script data-props='{"data":{"editor":"text","default":"22/10/2026"},"nome":{"editor":"text","default":"Usseglio Veronica"},"voce":{"editor":"text","default":"Quota associativa"},"dettaglio":{"editor":"text","default":"ricevuta 308/2026"},"tipo":{"editor":"text","default":"Incasso iscritto"},"cassa":{"editor":"text","default":"Conto Corrente"},"entrata":{"editor":"text","default":"+ 50,00 €"},"fondo":{"editor":"text","default":"#fff"},"$preview":{"width":1100,"height":100}}'>
 // Riproduzione 1:1 della riga di MOVIMENTI (Contabilita.tsx, .sg-riga-movimento): casella | DATA | DESCRIZIONE | TIPO (tipoMovimento: icona e nome) | CASSA | ENTRATE | USCITE.
 // Niente colonna SALDO. Sotto il nome: la voce (lineaVoce, con la persona solo se diversa dal nome) e il dettaglio senza ripetere voce e cassa. Sotto i 1200px resta 44px + testo e il tipo apre la riga di sotto. Tema sito.
+// Una riga da sistemare (rigaDaSistemare: movimento a mano su Da classificare, Varie o senza voce) ha fondo="#f4f0e6": --giallo-testo al 10% sul bianco.
 </script>
 </body>
 </html>

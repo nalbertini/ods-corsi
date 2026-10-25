@@ -139,7 +139,10 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 111. `111-iscrizione-troppo-grande.sql` — `invia_iscrizione` (la chiama anche chi non ha un accesso) rifiuta subito una richiesta oltre i 64 kB (una vera ne fa meno di 10) con 22023 e «La richiesta è troppo grande: ricarica la pagina e rifalla», prima di leggere altro, come `invia_ordine_vestiario` (47): prima una chiave sconosciuta da 5 MB veniva letta e poi scartata. Il resto è la funzione di `100`: rilanciando `100`, `06`, `74`, `83` o `84` va rilanciato anche questo. Prova: `prova/111-iscrizione-troppo-grande.sql`. Si lancia dopo `109-privilegi-e-certificati.sql`; non chiede di rilanciare `06-iscrizioni.sql`.
 112. `112-sito-accessibilita-agid.sql` — la traccia della Dichiarazione di accessibilità (107) ha anche le parti del modello AgID che mancavano: la norma EN 301 549, la data di redazione, il tempo di risposta alle segnalazioni e come rivolgersi all'AgID se la risposta non basta. Riscrive la bozza solo se la pagina non è mai stata pubblicata e il testo è ancora la traccia di 107: una bozza che la segreteria ha cominciato a compilare, o una pagina già pubblicata, resta com'è. La versione sale di uno. Prova: `prova/sito.sql` (sezione 20). Si lancia dopo `107-sito-accessibilita.sql`; non chiede di rilanciare `06-iscrizioni.sql`; finché non lo lanci, la bozza resta con la traccia di prima.
 113. `113-genitore-non-iscritto.sql` — il genitore non iscritto, titolare del nucleo dei figli minorenni: la colonna `persone.genitore_non_iscritto` e `aggiungi_genitore(figlio, nome, cognome, codice_fiscale)` (solo la segreteria), che crea la persona col segno e il codice fiscale in `anagrafiche` e ci mette il figlio nel nucleo, con le regole di `nucleo_non_va`; senza un codice fiscale valido, o se è già di un'altra persona, non crea niente. Un trigger su `iscrizioni` toglie il segno a chi si iscrive a un corso. Prova: `prova/genitore-non-iscritto.sql`. Si lancia dopo `100-nucleo.sql`; non chiede di rilanciare `06-iscrizioni.sql`.
-114. `114-gare.sql` — le gare: `gare` (uno o più giorni), la quota a voci `gare_voci`, `gare_accompagnatori` e `gare_atleti`, col pagamento di ogni atleta e le voci di quel momento. Scrive solo la segreteria; l'istruttore legge le gare che accompagna e quelle dei suoi atleti, l'iscritto le sue e dei figli, solo la riga sua. `incassa_gara(atleta, metodo, data)` (solo la segreteria) incassa una volta sola il totale delle voci di adesso e registra il pagamento diretto con la voce «Gare», che il file aggiunge alle voci contabili. Una gara passata non si cancella; unendo due schede resta una riga per gara, quella pagata. Prova: `prova/gare.sql`. Si lancia dopo `88-pagamento-una-volta.sql`, `99-email-unica.sql` e `101-iscritto.sql`; non chiede di rilanciare `06-iscrizioni.sql`.
+114. `114-importazioni.sql` — I CONTI → IMPORTAZIONI: i pagamenti Satispay da decidere si decidono a gruppi (`satispay_decidi_gruppo`, tutte le scelte o nessuna, un movimento a mano per un pagamento solo), «Non è questo» scollega un pagamento dal movimento a mano (`satispay_scollega`, non nei giorni chiusi), e lo stato non propone più i movimenti già presi o annullati. I movimenti della banca abbinati da soli a uno scritto a mano restano in `banca_coperti` (`banca_segna_coperti`), e `banca_non_e_questo` li fa entrare come un import normale. Solo l'amministrazione. Prova: `prova/importazioni.sql`. Si lancia dopo `97` e `104`; non chiede di rilanciare `06-iscrizioni.sql`.
+115. `115-carta.sql` — la carta di credito o di debito (con Apple Pay e Google Pay) nel modulo di iscrizione, accanto a Satispay: incassa PayPal coi suoi campi carta ospitati, e nessun dato della carta passa dal database. In `pagamenti_satispay` le colonne `circuito` (`'satispay'` o `'carta'`) e `paypal_id` (l'ordine PayPal, unico); la cassa «Carta»; `carta_prepara_prima(dati)`, `carta_creato`, `carta_esito` e `carta_stato_pagamento`, solo `service_role` (le chiama la Edge Function `paypal`). Un pagamento con la carta in attesa da più di 30 minuti non si riprende: se ne fa uno nuovo. Rifà `satispay_prepara_prima` (ritrova solo i Satispay), `invia_iscrizione` (prende anche un pagamento con la carta, coi testi suoi), `emetti_ricevuta_satispay` (con la carta vuole il metodo «Carta») e `registra_pagamento_diretto` («Carta» a mano no, finché dal modulo ci sono soldi con la carta non in una ricevuta). Prova: `prova/carta.sql`. Si lancia dopo `112-sito-accessibilita-agid.sql`; non chiede di rilanciare `06-iscrizioni.sql`; rilanciando `83`, `86`, `88`, `100` o `111` va rilanciato anche questo. Finché non c'è, la Edge Function `paypal` dice che la carta è spenta e il modulo offre solo Satispay e bonifico.
+116. `116-satispay-separato.sql` — Satispay separato dal Conto Corrente: ogni pagamento Satispay, di qualunque data, entra nella cassa Satispay (che parte dal 1° gennaio 2025), e i «forse già scritti a mano» si cercano solo tra i movimenti di quella cassa (`satispay_negozio_applica`, `satispay_scollega`). Gli a_mano collegati a un movimento del Conto Corrente si scollegano e, coi da decidere che avevano un candidato fuori da Satispay, tornano senza esito per lo scarico dopo; gli scritti restano dove sono. Prova: `prova/116-satispay-separato.sql`. Si lancia dopo `114`; non chiede di rilanciare `06-iscrizioni.sql`.
+117. `117-gare.sql` — le gare: `gare` (uno o più giorni), la quota a voci `gare_voci`, `gare_accompagnatori` e `gare_atleti`, col pagamento di ogni atleta e le voci di quel momento. Scrive solo la segreteria; l'istruttore legge le gare che accompagna e quelle dei suoi atleti, l'iscritto le sue e dei figli, solo la riga sua. `incassa_gara(atleta, metodo, data)` (solo la segreteria) incassa una volta sola il totale delle voci di adesso e registra il pagamento diretto con la voce «Gare», che il file aggiunge alle voci contabili. Una gara passata non si cancella; unendo due schede resta una riga per gara, quella pagata. Prova: `prova/gare.sql`. Si lancia dopo `88-pagamento-una-volta.sql`, `99-email-unica.sql` e `101-iscritto.sql`; non chiede di rilanciare `06-iscrizioni.sql`.
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -204,8 +207,10 @@ Per lo scarico dei pagamenti Satispay del negozio basta `97-satispay-scarico.sql
 Per la persona delle quote e dei corsi scritti a mano basta `98-quote-persona.sql` (dopo `60-chiusura-cassa.sql`, `67-cambia-voce.sql` e `70-movimenti-persona.sql`), che non chiede di rilanciare `06-iscrizioni.sql` ma rifà `registra_movimento` del `60`, `cambia_voce_movimenti` del `67` e `collegamento_perche` e `storico_persona` del `70`: se si rilancia uno di quei tre dopo, va rilanciato anche questo (`controllo.sql` lo dice). Finché non c'è, la persona scelta non si salva e lo spostamento su una quota dice di lanciarlo; il resto della contabilità funziona.
 Per l'importazione dal file della banca basta `104-importa-banca.sql` (dopo `59` e `63`): senza, si importa lo stesso e il tasto «Annulla tutta l'importazione» dice di lanciarlo.
 Per il genitore non iscritto, titolare del nucleo dei figli, basta `113-genitore-non-iscritto.sql` (dopo `100`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, l'elenco si legge senza il segno e «Aggiungi il genitore» dice di lanciarlo.
-
-Per le gare basta `114-gare.sql` (dopo `113`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, GARE dice «non ancora disponibile» e il resto dell'app non cambia.
+Per IMPORTAZIONI basta `114-importazioni.sql` (dopo `97` e `104`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, la conferma di un gruppo, «Non è questo» e i movimenti della banca già scritti dicono di lanciarlo; l'import e le decisioni una per una funzionano come prima.
+Per la carta nel modulo di iscrizione basta `115-carta.sql` (dopo `114`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, la funzione `paypal` dice che la carta è spenta e il modulo mostra solo Satispay e bonifico.
+Per Satispay separato dal Conto Corrente basta `116-satispay-separato.sql` (dopo `114`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, lo scarico mette i pagamenti di prima di ottobre 2026 nel Conto Corrente e propone come già scritti anche i movimenti a mano del Conto Corrente.
+Per le gare basta `117-gare.sql` (dopo `116`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, GARE dice «non ancora disponibile» e il resto dell'app non cambia.
 `15-presenze-istruttori.sql` (dopo `04-tablet.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, il tablet apre l'area
 istruttore come prima senza segnare niente, e PRESENZE ISTRUTTORI in
@@ -1267,6 +1272,32 @@ pagamenti da decidere o non è riuscito, la segreteria riceve un avviso (vedi
 «Gli avvisi alla segreteria»): la funzione `avvisi-segreteria` va ripubblicata
 con la `mail.ts` che conosce il tipo `satispay_scarico`.
 
+### La carta
+
+`115-carta.sql` e la funzione `paypal` aggiungono la carta di credito o di
+debito (con Apple Pay e Google Pay) in fondo al modulo, accanto a Satispay.
+Incassa PayPal (pagamenti avanzati con carta): i campi della carta sono di
+PayPal, e nessun dato della carta passa dall'app o dal database. Servono un
+conto PayPal Business con le carte avanzate attive, e dalla sua dashboard
+sviluppatori un'app REST: client id e segreto, prima in sandbox.
+
+```sh
+supabase secrets set --project-ref <id-del-progetto> \
+  PAYPAL_CLIENT_ID=<client id> PAYPAL_SECRET=<segreto> \
+  PAYPAL_HOST=api-m.sandbox.paypal.com
+supabase functions deploy paypal --no-verify-jwt --project-ref <id-del-progetto>
+```
+
+In produzione `PAYPAL_HOST=api-m.paypal.com`, con le chiavi di produzione,
+solo dopo che l'informativa sulla privacy nomina PayPal. Senza i segreti la
+carta non compare. Apple Pay chiede anche il file di verifica del dominio di
+PayPal in `/.well-known/` del sito che apre il modulo.
+
+I soldi arrivano sul conto PayPal: in CONTABILITÀ stanno nella cassa «Carta»,
+e passano al conto corrente con un giroconto. Un rimborso si fa dal conto
+PayPal e poi si segna in CONTABILITÀ.
+
+
 ## 14. La ricevuta per email
 
 Fatta la ricevuta, la famiglia la riceve in PDF all'**email di contatto** della
@@ -1384,6 +1415,8 @@ prova il modulo di iscrizione: cosa può fare chi non ha un accesso, le sei rich
 sui file (il documento, che si trovi da stampare; il certificato, che passi alla scheda accogliendo), e chi accoglie le richieste;
 `disattiva-chiude-iscrizioni.sql` prova che disattivare una scheda chiude le sue iscrizioni e che riattivarla, o accogliere una sua richiesta, non riapre i corsi vecchi.
 `satispay-scarico.sql` prova lo scarico dei pagamenti Satispay del negozio: il modulo resta fuori, il doppione sicuro prende il segno, quelli dubbi e i giorni chiusi aspettano una decisione, l'anteprima non scrive niente, e lo scarico lo vedono e lo decidono solo l'amministrazione e il servizio.
+`importazioni.sql` prova IMPORTAZIONI: la conferma di un gruppo è tutta o niente e non dà lo stesso movimento a due pagamenti, «Non è questo» rimette il pagamento da decidere ma non nei giorni chiusi, i movimenti della banca già scritti si segnano una volta sola e si fanno entrare con «Non è questo», e tutto lo fa solo l'amministrazione.
+`116-satispay-separato.sql` prova Satispay separato dal Conto Corrente: la cassa Satispay dal 1° gennaio 2025, i candidati solo in Satispay, e i dati di prima rimessi da valutare senza toccare gli scritti né un «Non è questo» deciso in Satispay, anche lanciando il 116 due volte.
 `tessere.sql` prova le tessere: che le veda e le scriva solo la segreteria, l'import dal RASD (codice fiscale e stesso nome, anteprima, senza doppioni né persone nuove), l'unione di due schede con la stessa tessera e la mappa dei corsi che si scrive una volta sola;
 `orari-sito.sql` prova `orari_sito()`: solo corso, giorno, ora, durata e data di modifica, solo corsi attivi e ricorrenze non finite, le tabelle chiuse, la data di modifica scritta sempre dal database e il permesso rimesso da `06`;
 `certificato-iscritto.sql` prova che l'iscritto mandi il certificato solo per sé (o il titolare per chi sta senza account), che resti in attesa finché la segreteria lo conferma o lo rifiuta, e che la scheda non mostri mai il nome del file;
@@ -1392,6 +1425,7 @@ sui file (il documento, che si trovi da stampare; il certificato, che passi alla
 `109-privilegi-e-certificati.sql` prova che TRUNCATE, TRIGGER e REFERENCES non restino ad `anon` e `authenticated` (nemmeno sulle tabelle nuove) e che un iscritto tenga in attesa al più 3 file del certificato;
 `111-iscrizione-troppo-grande.sql` prova che `invia_iscrizione` rifiuti subito una richiesta da 5 MB, senza leggerla.
 `update-con-where.sql` prova che nessuna funzione di `public` faccia un UPDATE o un DELETE senza WHERE (su Supabase `safeupdate` lo rifiuta con 21000, e il Postgres delle prove no); un `on conflict … do update` va bene.
+`carta.sql` prova la carta nel modulo di iscrizione (`115-carta.sql`): l'importo dal listino, un solo pagamento vivo per scelta, persona e circuito (dopo 30 minuti uno nuovo), l'ordine PayPal scritto una volta, l'esito che non torna indietro, le funzioni solo per la Edge Function, `invia_iscrizione`, la ricevuta e il pagamento a mano col metodo «Carta», e che Satispay e carta non si scambino i soldi.
 `certificati.sql` prova che certificati, documento e pagamenti li veda e li
 cambi solo la segreteria, che il file del certificato stia in un contenitore
 privato (foto e PDF, 10 MB) che apre solo lei, che un file nuovo prenda il

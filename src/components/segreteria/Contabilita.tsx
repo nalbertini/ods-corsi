@@ -77,6 +77,7 @@ import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scar
 import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri } from './CollegaPersona'
 import { Bilancio } from './Bilancio'
+import { rigaDaSistemare } from '../../lib/bilancio'
 import { ScaricoSatispay } from './ScaricoSatispay'
 import { commissioneSatispay, NOME_CASSA_SATISPAY, spesaCommissione } from '../../lib/satispayScarico'
 
@@ -95,7 +96,7 @@ type Fai = ReturnType<typeof useAvviso>['fai']
  * degli iscritti sono nell'elenco ma non si scrivono qui: si ricavano da
  * ricevute e pagamenti, e si correggono in PAGAMENTI.
  */
-export function Contabilita({ d, movimento, onPersona }: { d: DatiSegreteria; movimento?: string; onPersona?: (personaId: string) => void }) {
+export function Contabilita({ d, movimento, onPersona, onImportazioni }: { d: DatiSegreteria; movimento?: string; onPersona?: (personaId: string) => void; onImportazioni?: () => void }) {
   const [scheda, setScheda] = useState<Scheda>('movimenti')
   const casse = useCarica(() => d.casse(), [d])
   const voci = useCarica(() => d.voci(), [d])
@@ -177,7 +178,7 @@ export function Contabilita({ d, movimento, onPersona }: { d: DatiSegreteria; mo
       {/* Le schede si nascondono, non si smontano: filtri e bozze restano dove sono. */}
       {pronto && (
         <>
-          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} movimento={movimento} onPersona={onPersona} /></div>
+          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} movimento={movimento} onPersona={onPersona} onImportazioni={onImportazioni} /></div>
           <div hidden={scheda !== 'bilancio'}><Bilancio d={d} casse={casse.dato ?? []} righe={elenco} oggi={oggiARoma()} fai={fai} /></div>
           <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
           <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} chiusure={dateChiusure} guaioChiusure={chiusure.guaio ?? undefined} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
@@ -249,7 +250,7 @@ function FiltroCasse({ casse, scelte, onChange }: { casse: Cassa[]; scelte: stri
   )
 }
 
-function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, movimento, onPersona }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; movimento?: string; onPersona?: (personaId: string) => void }) {
+function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, movimento, onPersona, onImportazioni }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; movimento?: string; onPersona?: (personaId: string) => void; onImportazioni?: () => void }) {
   // Dove ScaricoSatispay porta la sua voce nel menu delle azioni.
   const [listaMenu, setListaMenu] = useState<HTMLElement | null>(null)
   const oggi = oggiARoma()
@@ -421,7 +422,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
         })}
         <Saldo nome="Totale" icona={null} valore={soldiConSegno(totaleResidui(conti))} sotto={['saldi iniziali compresi']} />
       </div>
-      <ScaricoSatispay d={d} fai={fai} onCambiato={onCambiato} menu={listaMenu} />
+      <ScaricoSatispay d={d} fai={fai} onCambiato={onCambiato} menu={listaMenu} onImportazioni={onImportazioni} />
 
       {cambio && idScelti.length > 0 && sceltaRiep.tipo !== 'misto' && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={cambioFinito} onChiudi={() => setCambio(false)} /></InVista>}
       {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', persona: 'da_decidere' }) }} onChiudi={chiudiCollega} /></InVista>}
@@ -551,14 +552,13 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
             {trovate.slice(0, viste).map((r) => {
               const e = dellEstratto.get(r.id)
               return (
-              <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} data-scelto={aperto?.id === r.id} data-scelta={scelti.has(r.id)} data-senza-casella={!cambiabile(r)} onClick={() => { if (r.origine !== 'movimento' && r.personaId && onPersona) onPersona(r.personaId); else { setScrivo(null); setAperto(r) } }}>
+              <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} data-scelto={aperto?.id === r.id} data-scelta={scelti.has(r.id)} data-senza-casella={!cambiabile(r)} data-da-sistemare={rigaDaSistemare(r)} onClick={() => { if (r.origine !== 'movimento' && r.personaId && onPersona) onPersona(r.personaId); else { setScrivo(null); setAperto(r) } }}>
                 <span role="cell" className="sg-scelta-riga" onClick={(e) => e.stopPropagation()}>
                   {cambiabile(r) && <input type="checkbox" checked={scelti.has(r.id)} onChange={() => alterna(r.id)} aria-label={`Scegli ${r.descrizione} del ${dataRicevuta(r.data)}`} />}
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{dataRicevuta(r.data)}</span>
                 <span role="cell" style={{ fontSize: 15, fontWeight: 600, textDecoration: r.annullato ? 'line-through' : undefined }}>
                   <button type="button" className="sg-riga-apri">{r.descrizione}</button>
-                  {r.satispayId && <span className="num sg-tag" style={{ marginLeft: 8 }}>Da Satispay</span>}
                   {r.origineImport?.startsWith('banca:') && <span className="num sg-tag" style={{ marginLeft: 8 }}>Dalla banca</span>}
                   {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
                   {/* Lo stato del collegamento alla persona sta accanto alla descrizione: la colonna PERSONA non c'è più. */}

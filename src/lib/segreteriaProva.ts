@@ -22,14 +22,14 @@ import { QUOTA_ASSOCIATIVA, stagioneDi } from './costi'
 import { NOTA_DI_DEFAULT, type IncassoPrima } from './pagatoPrima'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
-import { MASSIMO_PER_IMPORTAZIONE, PREFISSO_CHIAVE_BANCA } from './importaBanca'
+import { MASSIMO_PER_IMPORTAZIONE, nonEQuestoBanca, PREFISSO_CHIAVE_BANCA, segnaCoperti } from './importaBanca'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
 const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
-import { cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
-import { applicaScarico, CAMBIO_CASSA_SATISPAY, daDecidere, decidiScarico, NOME_CASSA_SATISPAY, type PagamentoNegozio } from './satispayScarico'
+import { cartaPerPersona, cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
+import { applicaScarico, daDecidere, decidiGruppo, decidiScarico, NOME_CASSA_SATISPAY, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
@@ -179,8 +179,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       { id: 'cassa-contanti', nome: NOME_CASSA_CONTANTI, saldoIniziale: 0 },
       { id: 'cassa-conto', nome: NOME_CASSA_CONTO, saldoIniziale: 0 },
     ]
-    // Come 97-satispay-scarico.sql: la cassa Satispay c'è anche in un archivio fatto prima.
-    return casse.some((c) => c.nome === NOME_CASSA_SATISPAY) ? casse : [...casse, { id: 'cassa-satispay', nome: NOME_CASSA_SATISPAY, saldoIniziale: 0, dal: CAMBIO_CASSA_SATISPAY }]
+    // Come 97-satispay-scarico.sql e 116: la cassa Satispay c'è anche in un archivio fatto prima, dal 2025,
+    // anche in uno salvato quando partiva dal 1° ottobre 2026.
+    return casse.some((c) => c.nome === NOME_CASSA_SATISPAY)
+      ? casse.map((c) => (c.nome === NOME_CASSA_SATISPAY && c.dal === '2026-10-01' ? { ...c, dal: '2025-01-01' } : c))
+      : [...casse, { id: 'cassa-satispay', nome: NOME_CASSA_SATISPAY, saldoIniziale: 0, dal: '2025-01-01' }]
   }
   const contabilita = () => ({
     casse: cassePartenza(),
@@ -709,6 +712,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async persone() {
       potaCertificati()
       const conSatispay = satispayPerPersona(pagamentiSatispayProva())
+      const conCarta = cartaPerPersona(pagamentiSatispayProva())
       const conSaldo = saldoPerPersona(pagamentiSatispayProva())
       const corsiSatispay = satispayCorsiPerPersona(pagamentiSatispayProva())
       const quotaSatispay = satispayQuotaPerPersona(pagamentiSatispayProva())
@@ -732,6 +736,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
             vociCorsi: vociCorsiDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
             satispay: conSatispay.get(p.id),
+            carta: conCarta.get(p.id),
             saldo: conSaldo.get(p.id),
             satispayQuota: quotaSatispay.get(p.id),
             satispayCorsi: corsiSatispay.get(p.id),
@@ -1887,6 +1892,55 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async decidiGruppoSatispay(scelte) {
+      const { movimenti, voci, casse, chiusure } = contabilita()
+      const r = decidiGruppo({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, scelte)
+      a().satispayNegozio = r.negozio
+      a().movimenti = r.movimenti
+      salva()
+    },
+
+    async scollegaSatispay(satispayId) {
+      const { movimenti, voci, casse, chiusure } = contabilita()
+      const r = scollegaScarico({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, satispayId)
+      a().satispayNegozio = r.negozio
+      a().movimenti = r.movimenti
+      salva()
+    },
+
+    async negozioSatispay() {
+      // Pochi pagamenti d'esempio: il mese lo sceglie `righeEntrato`.
+      return a().satispayNegozio ?? []
+    },
+
+    async bancaCoperti() {
+      return a().bancaCoperti ?? []
+    },
+
+    async segnaCopertiBanca(righe) {
+      const conto = contabilita().casse.find((c) => c.nome === NOME_CASSA_CONTO)
+      if (!conto) throw new Error('Manca la cassa Conto Corrente')
+      // Come `banca_segna_coperti`: le righe il cui abbinamento non regge entrano come un import normale.
+      const r = segnaCoperti(contabilita().movimenti, a().bancaCoperti ?? [], righe, conto.id)
+      // Le righe nuove si scrivono prima: se una non va, i segni sui movimenti a mano non restano a metà.
+      if (r.daScrivere.length) await this.importaMovimentiBanca(r.daScrivere)
+      const segni = new Map(r.movimenti.filter((m) => m.bancaChiave).map((m) => [m.id, m.bancaChiave]))
+      a().movimenti = contabilita().movimenti.map((m) => (segni.has(m.id) ? { ...m, bancaChiave: segni.get(m.id) } : m))
+      a().bancaCoperti = r.coperti
+      salva()
+    },
+
+    async nonEQuestoBanca(chiave) {
+      const conto = contabilita().casse.find((c) => c.nome === NOME_CASSA_CONTO)
+      if (!conto) throw new Error('Manca la cassa Conto Corrente')
+      const r = nonEQuestoBanca(a().bancaCoperti ?? [], chiave, contabilita().chiusure, conto.id)
+      await this.importaMovimentiBanca([r.scrivi])
+      // Il movimento a mano non è più coperto: torna libero, anche per Satispay.
+      a().movimenti = contabilita().movimenti.map((m) => (m.bancaChiave === chiave ? { ...m, bancaChiave: undefined } : m))
+      a().bancaCoperti = r.coperti
+      salva()
+    },
+
     async correggiTestoMovimento(id, descrizione, nota) {
       const m = contabilita().movimenti.find((x) => x.id === id)
       if (!m) throw new Error('Il movimento non c’è')
@@ -1911,7 +1965,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
         throw new Error('La ricevuta non si capisce: ricarica la pagina')
       const gia = chiave ? (a().ricevute ?? []).find((x) => x.chiave === chiave && x.personaId === dati.personaId && !x.annullataIl) : undefined
       if (gia) throw new Error(`Questo pagamento è già nella ricevuta n. ${gia.numero}/${gia.anno}: non va registrato di nuovo`)
-      const sp = cosaNonVaSatispayAMano(dati.metodo, satispayPerPersona(pagamentiSatispayProva()).get(dati.personaId))
+      const tutti = pagamentiSatispayProva()
+      // Come registra_pagamento_diretto (115-carta.sql): Satispay e la carta si controllano ognuno coi suoi soldi.
+      const sp = cosaNonVaSatispayAMano(dati.metodo, satispayPerPersona(tutti.filter((x) => x.circuito !== 'carta')).get(dati.personaId), cartaPerPersona(tutti).get(dati.personaId))
       if (sp) throw new Error(sp)
       const { chiaveRicevuta: _chiave, ...senzaChiave } = dati
       const nuovo: PagamentoDiretto = { ...senzaChiave, metodo: dati.metodo.trim(), voce: dati.voce.trim(), nota: dati.nota?.trim() || undefined, id: `pd-${unico()}`, creatoIl: new Date().toISOString() }

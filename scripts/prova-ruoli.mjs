@@ -136,8 +136,8 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
     ['Il resto', ['statistiche', 'vestiario', 'segnalazioni', 'sito']],
   ]
   ok('solo segreteria: i cinque gruppi, senza CONTABILITÀ', gruppi('segreteria'), DELLA_SEGRETERIA_NEL_MENU)
-  ok('segreteria e amministrazione: gli stessi, e «I conti» con CONTABILITÀ dopo «Iscritti e soldi»', gruppi('segreteria + amministrazione'), DELLA_SEGRETERIA_NEL_MENU.flatMap(([t, v]) => (t === 'Iscritti e soldi' ? [[t, v], ['I conti', ['contabilita']]] : [[t, v]])))
-  ok('solo amministrazione: solo «I conti», due voci', gruppi('amministrazione'), [['I conti', ['contabilita', 'listino']]])
+  ok('segreteria e amministrazione: gli stessi, e «I conti» con CONTABILITÀ e IMPORTAZIONI dopo «Iscritti e soldi»', gruppi('segreteria + amministrazione'), DELLA_SEGRETERIA_NEL_MENU.flatMap(([t, v]) => (t === 'Iscritti e soldi' ? [[t, v], ['I conti', ['contabilita', 'importazioni']]] : [[t, v]])))
+  ok('solo amministrazione: solo «I conti», tre voci', gruppi('amministrazione'), [['I conti', ['contabilita', 'importazioni', 'listino']]])
   ok('insegnare non aggiunge voci a chi ha l\'amministrazione', gruppi('amministrazione + istruttore'), gruppi('amministrazione'))
   ok('insegnare non aggiunge voci a chi ha la segreteria', gruppi('segreteria + istruttore'), gruppi('segreteria'))
   ok('un istruttore non ha il menu', gruppi('istruttore'), [])
@@ -154,6 +154,7 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
   const consenti = (voce, c, prova = false) => m.postoConsentito({ voce }, chi[c], { prova })
   ok('una voce che spetta resta com\'è', consenti('iscritti', 'segreteria'), { voce: 'iscritti' })
   ok('CONTABILITÀ a chi non ha l\'amministrazione porta alla prima voce', consenti('contabilita', 'segreteria'), { voce: 'dafare' })
+  ok('…e anche IMPORTAZIONI', consenti('importazioni', 'segreteria'), { voce: 'dafare' })
   ok('chi ha solo l\'amministrazione che scrive #iscritti arriva a CONTABILITÀ', consenti('iscritti', 'amministrazione'), { voce: 'contabilita' })
   ok('…e anche #regole (le impostazioni sono della segreteria)', consenti('regole', 'amministrazione'), { voce: 'contabilita' })
   ok('la segreteria apre le impostazioni, che non sono nel menu', consenti('regole', 'segreteria'), { voce: 'regole' })
@@ -168,14 +169,14 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
 console.log('\nil menu e i permessi dicono la stessa cosa')
 {
   // Ogni voce del menu ha il suo permesso in `puo`: se qualcuno cambia l'uno senza l'altro, qui si vede.
-  const PERMESSO = { contabilita: 'contabilita', pagamenti: 'pagina-pagamenti', listino: 'listino' }
+  const PERMESSO = { contabilita: 'contabilita', importazioni: 'contabilita', pagamenti: 'pagina-pagamenti', listino: 'listino' }
   const permessoDi = (v) => PERMESSO[v] ?? 'persone'
   const persone = [p('staff'), p('staff', false, true), p('amministrazione'), p('amministrazione', true), p('staff', true), p('istruttore'), { ruolo: 'contabile', ancheIstruttore: true, ancheAmministrazione: true }]
   for (const x of persone) {
     const nome = `${x.ruolo}${x.ancheAmministrazione ? ' + amministrazione' : ''}${x.ancheIstruttore ? ' + istruttore' : ''}`
     const nelMenu = m.vociDelMenu(x)
     ok(`${nome}: ogni voce del menu la può usare`, nelMenu.filter((v) => !m.puo(x, permessoDi(v))), [])
-    ok(`${nome}: le voci dei conti che può usare ci sono tutte`, ['contabilita', 'listino'].filter((v) => m.puo(x, permessoDi(v)) && !nelMenu.includes(v)), [])
+    ok(`${nome}: le voci dei conti che può usare ci sono tutte`, ['contabilita', 'importazioni', 'listino'].filter((v) => m.puo(x, permessoDi(v)) && !nelMenu.includes(v)), [])
   }
   ok('chi legge la segreteria: la segreteria sì, i soli conti no', [m.leggeLaSegreteria(p('staff')), m.leggeLaSegreteria(p('staff', false, true)), m.leggeLaSegreteria(p('amministrazione')), m.leggeLaSegreteria(p('istruttore'))], [true, true, false, false])
 }

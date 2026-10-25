@@ -1,7 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
-import type { DatoImportBanca } from './importaBanca'
+import type { CopertoBanca, DatoImportBanca } from './importaBanca'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
 import type { IncassoPrima } from './pagatoPrima'
@@ -17,7 +17,7 @@ import { euro, mancanoDatiSocio } from './ricevute'
 import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
 import type { PagamentoSatispay } from './satispay'
-import type { ContiScarico, SceltaSatispay, StatoScarico } from './satispayScarico'
+import type { ContiScarico, PagamentoNegozio, SceltaGruppo, SceltaSatispay, StatoScarico } from './satispayScarico'
 import type { VoceCorso } from './corsiDaPagare'
 import { STAGIONE, stagioneDi } from './costi'
 import { ESTENSIONI, MASSIMO_FILE, anniScritti, minorenne } from './richieste'
@@ -160,6 +160,8 @@ export interface PersonaSeg {
   vociCorsi?: VoceCorso[]
   /** Centesimi pagati con Satispay dal modulo e non ancora in una ricevuta (`73-satispay.sql`). */
   satispay?: number
+  /** Quanto di `satispay` è arrivato con la carta (`115-carta.sql`). */
+  carta?: number
   /** Centesimi del saldo della quota arrivati con Satispay e non ancora in una ricevuta (`102-saldo-satispay.sql`). */
   saldo?: number
   /** Quanto di `satispay` è la quota intera pagata dall'area iscritti (`105-paga-quota-satispay.sql`): non copre i corsi. */
@@ -833,6 +835,18 @@ export interface DatiSegreteria {
   scaricaSatispay(anteprima: boolean): Promise<ContiScarico>
   /** Cosa fare di un pagamento da decidere: scriverlo oggi o il suo giorno, lasciarlo fuori, o riconoscerlo in un movimento a mano. */
   decidiSatispay(satispayId: string, scelta: SceltaSatispay, movimentoId?: string): Promise<void>
+  /** Le scelte di un gruppo di IMPORTAZIONI, tutte o nessuna (`114-importazioni.sql`). */
+  decidiGruppoSatispay(scelte: SceltaGruppo[]): Promise<void>
+  /** «Non è questo»: il pagamento lascia il movimento a mano e torna da decidere. Non nei giorni chiusi. */
+  scollegaSatispay(satispayId: string): Promise<void>
+  /** I pagamenti del negozio Satispay di un mese (`AAAA-MM`), con l'esito dello scarico; vuoto senza il 97. */
+  negozioSatispay(mese: string): Promise<PagamentoNegozio[]>
+  /** I movimenti della banca abbinati da soli a uno già scritto; null senza `114-importazioni.sql`. */
+  bancaCoperti(): Promise<CopertoBanca[] | null>
+  /** Dopo l'import: salva i movimenti della banca abbinati da soli, per ricontrollarli. Senza il 114 non fa niente. */
+  segnaCopertiBanca(righe: CopertoBanca[]): Promise<void>
+  /** «Non è questo» per la banca: il movimento entra come un import normale (Conto Corrente, «Da classificare»). */
+  nonEQuestoBanca(chiave: string): Promise<void>
   /** Solo la descrizione e la nota si correggono sul posto. */
   correggiTestoMovimento(id: string, descrizione: string, nota?: string): Promise<void>
   /**

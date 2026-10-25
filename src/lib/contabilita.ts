@@ -53,6 +53,8 @@ export interface MovimentoManuale {
   dallaChat?: boolean
   /** Scaricato da Satispay (`97-satispay-scarico.sql`), o un movimento a mano riconosciuto: il segno DA SATISPAY. */
   satispayId?: string
+  /** Coperto da un movimento della banca (`114-importazioni.sql`): la sua chiave. Mai insieme a `satispayId`. */
+  bancaChiave?: string
 }
 
 /** Una chiusura della Cassa Contanti: il periodo da `dal` a `data`, quel che c'era «secondo i conti» e quel che si è contato. */
@@ -99,6 +101,8 @@ export interface RigaMovimento {
   creatoIl?: string
   /** Solo dei movimenti a mano: l'id del pagamento Satispay, il segno DA SATISPAY. */
   satispayId?: string
+  /** Solo dei movimenti a mano: la chiave della riga della banca che lo copre. */
+  bancaChiave?: string
 }
 
 export const NOME_CASSA_CONTANTI = 'Cassa Contanti'
@@ -106,6 +110,8 @@ export const NOME_CASSA_CONTO = 'Conto Corrente'
 export const NOME_CASSA_SATISPAY = 'Satispay'
 /** Dal 1° ottobre 2026 Satispay è una cassa a sé (97-satispay-scarico.sql); prima si scriveva nel Conto Corrente. */
 export const CAMBIO_CASSA_SATISPAY = '2026-10-01'
+/** La carta dal modulo di iscrizione (115-carta.sql): una cassa sua da subito. Al banco la carta resta «POS», sul conto. */
+export const NOME_CASSA_CARTA = 'Carta'
 export const VOCE_QUOTA = 'Quota associativa'
 export const VOCE_CORSI = 'Corsi e altri pagamenti'
 /** Le quote delle gare (`114-gare.sql`): una voce a sé, per sapere quanto entra e quanto si spende per le gare. */
@@ -127,12 +133,12 @@ export const VOCE_VARIE = 'Varie'
 /** Sopra questa differenza (in centesimi) la schermata chiede una conferma in più. */
 export const SOGLIA_DIFFERENZA = 2000
 
-/** Contanti in Cassa Contanti, Satispay dal cambio nella cassa Satispay, tutto il resto (bonifico, POS, assegno) in Conto Corrente. */
-export const cassaDelMetodo = (metodo: string, data: string): 'contanti' | 'conto' | 'satispay' => {
+/** Contanti in Cassa Contanti, Satispay dal cambio nella cassa Satispay, Carta nella cassa Carta, tutto il resto (bonifico, POS, assegno) in Conto Corrente. */
+export const cassaDelMetodo = (metodo: string, data: string): 'contanti' | 'conto' | 'satispay' | 'carta' => {
   const m = metodo.trim().toLowerCase()
-  return m === 'contanti' ? 'contanti' : m === 'satispay' && data >= CAMBIO_CASSA_SATISPAY ? 'satispay' : 'conto'
+  return m === 'contanti' ? 'contanti' : m === 'carta' ? 'carta' : m === 'satispay' && data >= CAMBIO_CASSA_SATISPAY ? 'satispay' : 'conto'
 }
-const NOME_CASSA = { contanti: NOME_CASSA_CONTANTI, conto: NOME_CASSA_CONTO, satispay: NOME_CASSA_SATISPAY }
+const NOME_CASSA = { contanti: NOME_CASSA_CONTANTI, conto: NOME_CASSA_CONTO, satispay: NOME_CASSA_SATISPAY, carta: NOME_CASSA_CARTA }
 
 /** La voce di sistema di un incasso: la quota associativa, le gare, o tutto il resto. */
 export const voceDiSistema = (voce: string) => {
@@ -186,6 +192,7 @@ export function righeMovimenti(derivati: RigaMovimento[], manuali: MovimentoManu
       personaId: x.personaId,
       ...(x.dallaChat ? { dallaChat: true, creatoIl: x.creatoIl } : x.origineImport?.startsWith('banca:') ? { creatoIl: x.creatoIl } : {}),
       ...(x.satispayId ? { satispayId: x.satispayId } : {}),
+      ...(x.bancaChiave ? { bancaChiave: x.bancaChiave } : {}),
     }),
   )
   return [...derivati, ...mie].sort((a, b) => b.data.localeCompare(a.data) || a.id.localeCompare(b.id))
@@ -591,7 +598,7 @@ export const togliFiltro = (f: FiltriElenco, chiave: keyof FiltriElenco): Filtri
 export type IconaConti = 'banconota' | 'banca' | 'telefono' | 'tessera' | 'persone' | 'lampadina' | 'manubrio' | 'casa'
 
 /** L'icona accanto al nome della cassa, per le tre casse della palestra; le altre restano senza. */
-const ICONE_CASSE: Record<string, IconaConti> = { [NOME_CASSA_CONTANTI]: 'banconota', [NOME_CASSA_CONTO]: 'banca', [NOME_CASSA_SATISPAY]: 'telefono' }
+const ICONE_CASSE: Record<string, IconaConti> = { [NOME_CASSA_CONTANTI]: 'banconota', [NOME_CASSA_CONTO]: 'banca', [NOME_CASSA_SATISPAY]: 'telefono', [NOME_CASSA_CARTA]: 'tessera' }
 export const iconaCassa = (nome: string): IconaConti | null => ICONE_CASSE[nome] ?? null
 
 /** Il tipo di un movimento, per la colonna TIPO dell'elenco: il nome e l'icona (quelle di `ICONE_CONTI`). */

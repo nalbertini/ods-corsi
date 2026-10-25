@@ -24,9 +24,10 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
-import { satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
+import { cartaPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
-import type { ContiScarico, DaDecidere } from './satispayScarico'
+import type { ContiScarico, DaDecidere, PagamentoNegozio } from './satispayScarico'
+import type { CopertoBanca } from './importaBanca'
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { vociCorsiDi } from './corsiDaPagare'
 import { motivoDaErrore, type InvioRicevuta } from './ricevuteEmail'
@@ -532,6 +533,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     if (r.error) throw guaio(r.error)
     return r.data
   }
+  // Senza 114-importazioni.sql le funzioni di IMPORTAZIONI non ci sono: si dice cosa fare, non il codice dell'API.
+  const senza114 = <R extends { error: { code?: string } | null }>(r: R): R => {
+    if (r.error && (r.error.code === 'PGRST202' || r.error.code === '42883')) throw new Error('Per questo serve prima aggiornare il database: chiedi a chi lo cura di lanciare il file 114-importazioni.sql.')
+    return r
+  }
 
   /**
    * Dopo un cambio al sito chiede alla funzione `sito` di far partire subito il
@@ -703,14 +709,15 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           .order('id')
           .range(prima, ultima),
       )
-    // `voce`: 105-paga-quota-satispay.sql, con lo stesso ripiego.
-    let r = await leggi(`${colonne}, saldo_di, voce`)
+    // `voce`: 105-paga-quota-satispay.sql, `circuito`: 115-carta.sql, con lo stesso ripiego.
+    let r = await leggi(`${colonne}, saldo_di, voce, circuito`)
+    if (r.error?.code === '42703' && /circuito/.test(r.error.message ?? '')) r = await leggi(`${colonne}, saldo_di, voce`)
     if (r.error?.code === '42703' && /voce/.test(r.error.message ?? '')) r = await leggi(`${colonne}, saldo_di`)
     if (r.error?.code === '42703' && /saldo_di/.test(r.error.message ?? '')) r = await leggi(colonne)
     // Prima di 73-satispay.sql non c'è niente da mostrare.
     if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205' || r.error.code === 'PGRST200')) return []
     // `as`: Supabase tipa la riga a modo suo, la forma è quella della select.
-    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; email: string | null; corso_id: string | null; formula: 'annuale' | 'trimestre' | null; ricevuta: { annullata_il: string | null } | null; corso: { nome: string } | null; saldo_di?: string | null; voce?: 'quota' | 'corso' | null }>).map(
+    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; email: string | null; corso_id: string | null; formula: 'annuale' | 'trimestre' | null; ricevuta: { annullata_il: string | null } | null; corso: { nome: string } | null; saldo_di?: string | null; voce?: 'quota' | 'corso' | null; circuito?: 'satispay' | 'carta' | null }>).map(
       (x): PagamentoSatispay => ({
         id: x.id,
         richiestaId: x.richiesta_id ?? undefined,
@@ -728,6 +735,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         formula: x.formula ?? undefined,
         saldoDi: x.saldo_di ?? undefined,
         voce: x.voce ?? undefined,
+        circuito: x.circuito === 'carta' ? 'carta' : undefined,
       }),
     )
   }
@@ -1115,6 +1123,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const natiIl = await nati
       const arrivati = await leggiSatispay().catch(() => [])
       const conSatispay = satispayPerPersona(arrivati)
+      const conCarta = cartaPerPersona(arrivati)
       const conSaldo = saldoPerPersona(arrivati)
       const corsiSatispay = satispayCorsiPerPersona(arrivati)
       const quotaSatispay = satispayQuotaPerPersona(arrivati)
@@ -1146,6 +1155,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           // Senza le ricevute lette i corsi non si giudicano: nessuno «da pagare» per sbaglio.
           vociCorsi: ricevute ? vociCorsiDi(perPersona.get(r.id) ?? []) : undefined,
           satispay: conSatispay.get(r.id),
+          carta: conCarta.get(r.id),
           saldo: conSaldo.get(r.id),
           satispayQuota: quotaSatispay.get(r.id),
           satispayCorsi: corsiSatispay.get(r.id),
@@ -1660,7 +1670,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const righe = ok(await tutteLeRighe((prima, ultima) => db.from('movimenti').select('*').order('id').range(prima, ultima))) as Array<{
         id: string; tipo: 'entrata' | 'uscita' | 'giroconto'; data: string; importo: number; voce_id: string | null; cassa_id: string; cassa_a_id: string | null
         descrizione: string; nota: string | null; creato_il: string; annullato_il: string | null
-        origine_import?: string | null; persona_id?: string | null; dalla_chat?: boolean; satispay_id?: string | null
+        origine_import?: string | null; persona_id?: string | null; dalla_chat?: boolean; satispay_id?: string | null; banca_chiave?: string | null
       }>
       return righe.map((r) => ({
         id: r.id,
@@ -1678,6 +1688,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         ...(r.persona_id ? { personaId: r.persona_id } : {}),
         ...(r.dalla_chat ? { dallaChat: true } : {}),
         ...(r.satispay_id ? { satispayId: r.satispay_id } : {}),
+        ...(r.banca_chiave ? { bancaChiave: r.banca_chiave } : {}),
       }))
     },
 
@@ -1754,6 +1765,52 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async decidiSatispay(satispayId, scelta, movimentoId) {
       ok(await db.rpc('satispay_decidi', { satispay_id: satispayId, scelta, movimento: movimentoId ?? null }))
+    },
+
+    async decidiGruppoSatispay(scelte) {
+      ok(senza114(await db.rpc('satispay_decidi_gruppo', { scelte })))
+    },
+
+    async scollegaSatispay(satispayId) {
+      ok(senza114(await db.rpc('satispay_scollega', { satispay_id: satispayId })))
+    },
+
+    async negozioSatispay(mese) {
+      // Un giorno in più per parte: il mese è quello di Roma, e lo sceglie `righeEntrato`.
+      const [anno, m] = mese.split('-').map(Number)
+      const dal = new Date(Date.UTC(anno, m - 1, 0)).toISOString()
+      const al = new Date(Date.UTC(anno, m, 2)).toISOString()
+      const r = await tutteLeRighe((prima, ultima) => db.from('satispay_negozio').select('*').gte('quando', dal).lt('quando', al).order('quando').order('satispay_id').range(prima, ultima))
+      // Senza 97-satispay-scarico.sql la tabella non c'è: niente da mostrare.
+      if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205')) return []
+      // `as`: le colonne di satispay_negozio in 97-satispay-scarico.sql.
+      return (ok(r) as Array<{ satispay_id: string; tipo: PagamentoNegozio['tipo']; stato: string; importo: number; quando: string; chi: string | null; esito: PagamentoNegozio['esito'] | null; motivo: PagamentoNegozio['motivo'] | null; candidati: string[] | null; movimento_id: string | null }>)
+        .map((x) => ({
+          satispayId: x.satispay_id, tipo: x.tipo, stato: x.stato, importo: x.importo, quando: x.quando, chi: x.chi,
+          ...(x.esito ? { esito: x.esito } : {}), ...(x.motivo ? { motivo: x.motivo } : {}),
+          ...(x.candidati ? { candidati: x.candidati } : {}), ...(x.movimento_id ? { movimentoId: x.movimento_id } : {}),
+        }))
+    },
+
+    async bancaCoperti() {
+      const r = await tutteLeRighe((prima, ultima) => db.from('banca_coperti').select('*').order('data').order('chiave').range(prima, ultima))
+      // Senza 114-importazioni.sql la tabella non c'è: IMPORTAZIONI dice di lanciarlo.
+      if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205')) return null
+      // `as`: le colonne di banca_coperti in 114-importazioni.sql.
+      return (ok(r) as Array<{ chiave: string; data: string; tipo: CopertoBanca['tipo']; importo: number; descrizione: string; con_id: string | null; con_descrizione: string | null }>)
+        .map((x) => ({ chiave: x.chiave, data: x.data, tipo: x.tipo, importo: x.importo, descrizione: x.descrizione, conId: x.con_id ?? '', conDescrizione: x.con_descrizione ?? '' }))
+    },
+
+    async segnaCopertiBanca(righe) {
+      if (!righe.length) return
+      const r = await db.rpc('banca_segna_coperti', { righe })
+      // Senza il 114 l'import è già fatto: i movimenti abbinati restano solo da non ricontrollare.
+      if (r.error && (r.error.code === 'PGRST202' || r.error.code === '42883')) return
+      ok(r)
+    },
+
+    async nonEQuestoBanca(chiave) {
+      ok(senza114(await db.rpc('banca_non_e_questo', { chiave })))
     },
 
     async correggiTestoMovimento(id, descrizione, nota) {

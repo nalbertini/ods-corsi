@@ -25,7 +25,7 @@ Sostituire fogli Excel, Google Form e registri cartacei con un'unica app che tie
 
 ## Positioning
 
-Non è un gestionale per palestre generico: è fatto su misura per le abitudini di ODS. Le sale con la loro musica, il kanji di ogni istruttore come timbro, la «ricevuta semplice» dell'associazione con il suo numero che va avanti da sé, il modulo delle autorizzazioni della palestra firmato col dito, il certificato e il documento che restano su carta in segreteria. I dati restano in casa (nessun servizio esterno vede gli iscritti, tranne la posta di Register.it per le ricevute via email, font serviti in locale, backup cifrato) e il costo è quasi zero (GitHub Pages + Supabase, nessun abbonamento).
+Non è un gestionale per palestre generico: è fatto su misura per le abitudini di ODS. Le sale con la loro musica, il kanji di ogni istruttore come timbro, la «ricevuta semplice» dell'associazione con il suo numero che va avanti da sé, il modulo delle autorizzazioni della palestra firmato col dito, il certificato e il documento che restano su carta in segreteria. I dati restano in casa (nessun servizio esterno vede gli iscritti, tranne la posta di Register.it per le ricevute via email e Satispay o PayPal per chi paga online, font serviti in locale, backup cifrato) e il costo è quasi zero (GitHub Pages + Supabase, nessun abbonamento).
 
 ## Operating Context
 
