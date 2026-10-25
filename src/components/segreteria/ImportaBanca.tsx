@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { NOME_CASSA_CONTO, oggiARoma, type Cassa, type RigaMovimento } from '../../lib/contabilita'
-import { anteprimaBanca, datiImportBanca, leggiBanca, MASSIMO_PER_IMPORTAZIONE, ultimaImportazione, type LetturaBanca } from '../../lib/importaBanca'
+import { anteprimaBanca, copertiDaSalvare, datiImportBanca, leggiBanca, MASSIMO_PER_IMPORTAZIONE, ultimaImportazione, type LetturaBanca } from '../../lib/importaBanca'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { chiedi, type useAvviso } from './comune'
 
@@ -38,7 +38,19 @@ export function ImportaBanca({ d, casse, righe, fai, onRileggi, onVedi }: { d: D
       `Sì, importa ${dati.length === 1 ? 'il movimento' : `i ${dati.length} movimenti`}`,
     )
     if (!si) return
-    void fai(async () => setScritti(await d.importaMovimentiBanca(dati)), undefined, () => {
+    void fai(async () => {
+      const n = await d.importaMovimentiBanca(dati)
+      // I coperti si salvano dopo l'import: servono a ricontrollarli in «Cosa è entrato» con «Non è questo».
+      try {
+        await d.segnaCopertiBanca(copertiDaSalvare(a))
+      } catch {
+        // I nuovi sono già scritti: la pagina va riletta lo stesso, e rileggendo il file i già scritti tornano.
+        setLettura(null)
+        onRileggi()
+        throw new Error(`${n === 1 ? "1 movimento importato" : `${n} movimenti importati`}, ma i già scritti non sono salvati: rileggi lo stesso file`)
+      }
+      setScritti(n)
+    }, undefined, () => {
       setLettura(null)
       onRileggi()
     })

@@ -53,6 +53,8 @@ export interface MovimentoManuale {
   dallaChat?: boolean
   /** Scaricato da Satispay (`97-satispay-scarico.sql`), o un movimento a mano riconosciuto: il segno DA SATISPAY. */
   satispayId?: string
+  /** Coperto da un movimento della banca (`114-importazioni.sql`): la sua chiave. Mai insieme a `satispayId`. */
+  bancaChiave?: string
 }
 
 /** Una chiusura della Cassa Contanti: il periodo da `dal` a `data`, quel che c'era «secondo i conti» e quel che si è contato. */
@@ -99,6 +101,8 @@ export interface RigaMovimento {
   creatoIl?: string
   /** Solo dei movimenti a mano: l'id del pagamento Satispay, il segno DA SATISPAY. */
   satispayId?: string
+  /** Solo dei movimenti a mano: la chiave della riga della banca che lo copre. */
+  bancaChiave?: string
 }
 
 export const NOME_CASSA_CONTANTI = 'Cassa Contanti'
@@ -181,6 +185,7 @@ export function righeMovimenti(derivati: RigaMovimento[], manuali: MovimentoManu
       personaId: x.personaId,
       ...(x.dallaChat ? { dallaChat: true, creatoIl: x.creatoIl } : x.origineImport?.startsWith('banca:') ? { creatoIl: x.creatoIl } : {}),
       ...(x.satispayId ? { satispayId: x.satispayId } : {}),
+      ...(x.bancaChiave ? { bancaChiave: x.bancaChiave } : {}),
     }),
   )
   return [...derivati, ...mie].sort((a, b) => b.data.localeCompare(a.data) || a.id.localeCompare(b.id))

@@ -132,14 +132,14 @@ titolo('luoghi del Banco')
   ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['compensi', 'COMPENSI'], ['personale', 'ACCESSI']])
   ok('CORSI', voci('corsi'), [['corsi', 'CORSI']])
   // CONTABILITÀ è il primo: l'estratto conto è dove si apre di più.
-  ok('SOLDI', voci('soldi'), [['contabilita', 'CONTABILITÀ'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
+  ok('SOLDI', voci('soldi'), [['contabilita', 'CONTABILITÀ'], ['importazioni', 'IMPORTAZIONI'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
   ok('PALESTRA', voci('palestra'), [['statistiche', 'STATISTICHE'], ['segnalazioni', 'SEGNALAZIONI'], ['sito', 'SITO'], ['regole', 'IMPOSTAZIONI']])
 
   // Chi ha solo l'amministrazione vede solo i luoghi con le sue voci, e dentro solo quelle.
   const nomi = (luoghi) => luoghi.map((l) => [l.id, l.voci.map((v) => v.voce)])
   ok('con tutte le voci i luoghi sono quelli di sempre', nomi(m.luoghi.luoghiPer(VOCI)).map(([id]) => id), ['oggi', 'persone', 'corsi', 'soldi', 'palestra'])
-  ok('solo amministrazione: un luogo, SOLDI, con le due voci dei conti', nomi(m.luoghi.luoghiPer(['contabilita', 'listino'])), [['soldi', ['contabilita', 'listino']]])
-  ok('solo segreteria: SOLDI senza CONTABILITÀ', nomi(m.luoghi.luoghiPer(VOCI.filter((v) => v !== 'contabilita'))).find(([id]) => id === 'soldi'), ['soldi', ['listino', 'vestiario']])
+  ok('solo amministrazione: un luogo, SOLDI, con le voci dei conti', nomi(m.luoghi.luoghiPer(['contabilita', 'importazioni', 'listino'])), [['soldi', ['contabilita', 'importazioni', 'listino']]])
+  ok('solo segreteria: SOLDI senza CONTABILITÀ', nomi(m.luoghi.luoghiPer(VOCI.filter((v) => v !== 'contabilita' && v !== 'importazioni'))).find(([id]) => id === 'soldi'), ['soldi', ['listino', 'vestiario']])
   ok('nessuna voce, nessun luogo', m.luoghi.luoghiPer([]), [])
   ok('i luoghi dati non cambiano', LUOGHI.length, 5)
 

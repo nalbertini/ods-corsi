@@ -7,6 +7,7 @@ import type { StatoSito } from './sitoProva'
 import type { ImmagineSito } from './sitoImmagini'
 import type { Cassa, CambioVoce, ChiusuraCassa, MovimentoManuale, VoceContabile } from './contabilita'
 import type { PagamentoNegozio } from './satispayScarico'
+import type { CopertoBanca } from './importaBanca'
 import type { Ruolo, StatoSessione } from './sala'
 import type { PagamentoDiretto } from './pagamenti'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
@@ -175,6 +176,8 @@ export interface Archivio {
   satispayNegozio?: PagamentoNegozio[]
   /** A che punto è lo scarico: il primo confermato, l'ultimo giro. */
   satispayScarico?: { primoFatto: boolean; ultimo: string | null; errore: string | null }
+  /** I movimenti della banca abbinati da soli a uno già scritto (114-importazioni.sql). */
+  bancaCoperti?: CopertoBanca[]
   /** I cambi di voce dei movimenti (67-cambia-voce.sql), dal più vecchio. */
   cambiVoce?: Array<CambioVoce & { movimentoId: string }>
   /** La traccia dei collegamenti dello storico alle persone (70-movimenti-persona.sql), dal più vecchio. */
