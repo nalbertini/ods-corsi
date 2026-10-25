@@ -3,7 +3,6 @@
 // `satispay-scarico/pagine.ts`), la stessa regola del database per la modalità prova, e la commissione del giroconto.
 import {
   CAMBIO_CASSA_SATISPAY,
-  NOME_CASSA_CONTO,
   NOME_CASSA_SATISPAY,
   giornoChiuso,
   giornoRoma,
@@ -65,9 +64,8 @@ export async function scorriPagine(
 }
 // </pagine>
 
-/** La cassa di un giorno: Satispay dal cambio, prima Conto Corrente. È `satispay_cassa` nel 96. */
-export const cassaSatispay = (data: string, casse: Cassa[]): Cassa | undefined =>
-  casse.find((c) => c.nome === (data >= CAMBIO_CASSA_SATISPAY ? NOME_CASSA_SATISPAY : NOME_CASSA_CONTO))
+/** La cassa dello scarico: Satispay, di qualunque giorno. È `satispay_cassa` nel 116. */
+export const cassaSatispay = (casse: Cassa[]): Cassa | undefined => casse.find((c) => c.nome === NOME_CASSA_SATISPAY)
 /** Il confronto di `order by` sugli id: per byte, uguale a ogni giro. */
 const perByte = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0)
 
@@ -133,8 +131,8 @@ export function applicaScarico(dati: DatiScarico, scrivi: boolean): { conti: Con
   const movimenti = dati.movimenti.map((m) => ({ ...m }))
   const negozio = dati.negozio.map((n) => ({ ...n }))
   const conti: ContiScarico = { incassi: 0, rimborsi: 0, modulo: 0, pagamenti: 0, a_mano: 0, da_decidere: 0, prima: 0, scritti: 0, dal: null }
-  const nomiCandidate = [NOME_CASSA_CONTO, NOME_CASSA_SATISPAY]
-  const candidate = dati.casse.filter((c) => nomiCandidate.includes(c.nome)).map((c) => c.id)
+  // Un incasso Satispay non è un incasso della banca: i candidati sono solo le entrate della cassa Satispay (116).
+  const candidate = dati.casse.filter((c) => c.nome === NOME_CASSA_SATISPAY).map((c) => c.id)
   // Fino a ieri: oggi la palestra può ancora scriverlo in PAGAMENTI.
   const daFare = negozio
     .filter((p) => !p.esito && p.stato === 'ACCEPTED' && giornoRoma(p.quando) < dati.oggi)
@@ -145,7 +143,7 @@ export function applicaScarico(dati: DatiScarico, scrivi: boolean): { conti: Con
   const giaPresi = (data: string, importo: number) => negozio.filter((n) => n.esito === 'pagamenti' && n.importo === importo && giornoRoma(n.quando) === data).length
   for (const p of daFare) {
     const data = giornoRoma(p.quando)
-    const cassa = cassaSatispay(data, dati.casse)
+    const cassa = cassaSatispay(dati.casse)
     if (dati.modulo.includes(p.satispayId)) {
       p.esito = 'modulo'
       conti.modulo++
@@ -258,7 +256,7 @@ export function decidiScarico(dati: DatiScarico, satispayId: string, scelta: Sce
     p.movimentoId = m.id
   } else if (scelta === 'oggi' || scelta === 'scrivi') {
     const giorno = scelta === 'oggi' ? dati.oggi : giornoRoma(p.quando)
-    const cassa = cassaSatispay(giorno, dati.casse)
+    const cassa = cassaSatispay(dati.casse)
     if (!cassa || (cassa.dal && giorno < cassa.dal)) throw new Error('Quel giorno la cassa non c’era ancora: scrivilo oggi')
     if (giornoChiuso(dati.chiusure, [cassa.id], giorno)) throw new Error('Quel giorno la cassa è chiusa: scrivilo oggi')
     const m = movimentoDelPagamento(p, giorno, cassa, dati.voci)
@@ -381,7 +379,7 @@ export function scollegaScarico(dati: DatiScarico, satispayId: string): { movime
   if (giornoChiuso(dati.chiusure, [m.cassaId], m.data)) throw new Error('Quel giorno la cassa è chiusa: il collegamento resta')
   delete m.satispayId
   const data = giornoRoma(p.quando)
-  const candidate = dati.casse.filter((c) => [NOME_CASSA_CONTO, NOME_CASSA_SATISPAY].includes(c.nome)).map((c) => c.id)
+  const candidate = dati.casse.filter((c) => c.nome === NOME_CASSA_SATISPAY).map((c) => c.id)
   p.esito = 'da_decidere'
   p.motivo = 'forse_doppione'
   delete p.movimentoId

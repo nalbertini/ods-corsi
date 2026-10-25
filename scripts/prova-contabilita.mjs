@@ -75,6 +75,7 @@ console.log('\n2. la cassa e la voce di un incasso')
   ok('Satispay dal 1° ottobre 2026: cassa Satispay', prova(() => [m.cassaDelMetodo('Satispay', '2026-10-01'), m.cassaDelMetodo(' SATISPAY ', '2026-11-15')]), ['satispay', 'satispay'])
   ok('…gli altri metodi non cambiano', prova(() => ['Contanti', 'POS', 'Bonifico'].map((x) => m.cassaDelMetodo(x, '2026-10-05'))), ['contanti', 'conto', 'conto'])
   ok('la quota associativa, comunque sia scritta', prova(() => ['QUOTA ASSOCIATIVA', 'Quota associativa', 'quota associativa ', '  Quota Associativa'].map((x) => m.voceDiSistema(x))), Array(4).fill('Quota associativa'))
+  ok('le gare hanno la loro voce, comunque scritta', prova(() => ['Gare', 'GARE', ' gare '].map((x) => m.voceDiSistema(x))), Array(3).fill('Gare'))
   ok('tutto il resto è «Corsi e altri pagamenti»', prova(() => ['ANNUALE JUDO', 'TRIMESTRE KARATE', 'ALTRO', '', 'Quota associativa junior'].map((x) => m.voceDiSistema(x))), Array(5).fill('Corsi e altri pagamenti'))
 }
 
@@ -115,6 +116,9 @@ console.log('\n3. gli incassi degli iscritti si ricavano, non si copiano')
       ['ricevuta', 'entrata', '2026-10-01', 2000, 'Rossi Giulia', 'ricevuta 12/2026', 'Quota associativa', 'c2', false],
       ['pagamento', 'entrata', '2026-09-12', 1500, "D'Amico Zoë", 'ANNUALE JUDO · senza ricevuta', 'Corsi e altri pagamenti', 'c2', false],
     ])
+  ok('una quota di gara va sotto «Gare», e sotto il nome non si ripete la voce',
+    prova(() => lette(m.incassiDerivati(m.righeDirette([diretto('g1', 'p-Rossi', '2026-10-25', 9000, { metodo: 'Contanti', voce: 'Gare' })], nomeDi), casse))),
+    [['pagamento', 'entrata', '2026-10-25', 9000, 'Rossi Giulia', 'senza ricevuta', 'Gare', 'c1', false]])
   const conSatispay = [...casse, { id: 'c3', nome: 'Satispay', saldoIniziale: 0, dal: '2026-10-01' }]
   const sat = (data) => ({ ...diretto(`s-${data}`, 'p-Rossi', data, 2500), metodo: 'Satispay' })
   ok('un pagamento Satispay del 30 settembre: Conto Corrente; dell\'1 ottobre: cassa Satispay',

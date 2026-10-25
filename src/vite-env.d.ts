@@ -18,6 +18,11 @@ interface ImportMetaEnv {
    * modulo d'iscrizione conta due eventi, senza cookie. Assente = non conta niente.
    */
   readonly VITE_SITO_STATISTICHE?: string
+  /**
+   * La chiave di Google Places (New), a pagamento: suggerisce l'indirizzo delle gare. Finisce nel bundle, quindi va
+   * limitata al dominio dell'app nella console di Google. Assente = l'indirizzo si scrive a mano.
+   */
+  readonly VITE_GOOGLE_PLACES_KEY?: string
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv

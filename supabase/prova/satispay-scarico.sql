@@ -152,7 +152,7 @@ grant execute on function atteso(text, text, text), chi(text), tenta(text), esit
 
 \echo ''
 \echo '--- 1. la cassa Satispay e le voci ---'
-select atteso('la cassa Satispay parte dal 1 ottobre con saldo 0', (select dal || ' ' || saldo_iniziale from casse where nome = 'Satispay'), '2026-10-01 0');
+select atteso('la cassa Satispay parte dal 1 gennaio 2025 con saldo 0 (116-satispay-separato.sql)', (select dal || ' ' || saldo_iniziale from casse where nome = 'Satispay'), '2025-01-01 0');
 select atteso('«Da classificare» entrata e uscita',
   (select string_agg(tipo::text, ',' order by tipo) from voci_contabili where nome = 'Da classificare'), 'entrata,uscita');
 select atteso('«Commissioni bancarie» è una voce di uscita', (select count(*)::text from voci_contabili where nome = 'Commissioni bancarie' and tipo = 'uscita'), '1');
@@ -173,9 +173,15 @@ select atteso('salvato con un altro importo, dopo l''esito: non cambia', sal(pag
 select atteso('senza nome: solo «Satispay»',
   (select sal(pag('P2', 'TO_BUSINESS', 'ACCEPTED', 300, '2026-10-15T09:00:00Z')) || ' ' || conti(app(true)) || ' ' || mov_di('P2')),
   '1 1/0/0/0/0/1 entrata|2026-10-15|300|Satispay|Da classificare|Satispay|nessuno');
-select atteso('un incasso del 20 settembre entra in Conto Corrente',
+select atteso('un incasso del 20 settembre entra in Satispay, non nel Conto Corrente',
   (select sal(pag('P3', 'TO_BUSINESS', 'ACCEPTED', 2000, '2026-09-20T10:00:00Z', 'Sara')) || ' ' || conti(app(true)) || ' ' || mov_di('P3')),
-  '1 1/0/0/0/0/1 entrata|2026-09-20|2000|Conto Corrente|Da classificare|Satispay · Sara|nessuno');
+  '1 1/0/0/0/0/1 entrata|2026-09-20|2000|Satispay|Da classificare|Satispay · Sara|nessuno');
+select atteso('un incasso del 15 settembre, senza altri movimenti: Satispay',
+  (select sal(pag('P4', 'TO_BUSINESS', 'ACCEPTED', 700, '2026-09-15T10:00:00Z', 'Lia')) || ' ' || conti(app(true)) || ' ' || mov_di('P4')),
+  '1 1/0/0/0/0/1 entrata|2026-09-15|700|Satispay|Da classificare|Satispay · Lia|nessuno');
+select atteso('uno del 20 ottobre, dopo il vecchio cambio: Satispay',
+  (select sal(pag('P5', 'TO_BUSINESS', 'ACCEPTED', 700, '2026-10-20T10:00:00Z', 'Lia')) || ' ' || conti(app(true)) || ' ' || mov_di('P5')),
+  '1 1/0/0/0/0/1 entrata|2026-10-20|700|Satispay|Da classificare|Satispay · Lia|nessuno');
 
 \echo ''
 \echo '--- 3. il giorno è quello di Roma, l''importo in centesimi ---'
@@ -185,9 +191,9 @@ select atteso('le 23:30 a Roma del 14 sono già il 15',
 select atteso('30 settembre a mezzanotte e mezza a Roma è già il 1 ottobre: cassa Satispay',
   (select sal(pag('T2', 'TO_BUSINESS', 'ACCEPTED', 100, '2026-09-30T22:30:00Z', 'Cambio')) || ' ' || conti(app(true)) || ' ' || mov_di('T2')),
   '1 1/0/0/0/0/1 entrata|2026-10-01|100|Satispay|Da classificare|Satispay · Cambio|nessuno');
-select atteso('le 21:30 del 30 settembre a Roma sono ancora settembre: Conto Corrente',
+select atteso('le 21:30 del 30 settembre a Roma sono ancora settembre: Satispay lo stesso',
   (select sal(pag('T3', 'TO_BUSINESS', 'ACCEPTED', 100, '2026-09-30T19:30:00Z', 'Sera')) || ' ' || conti(app(true)) || ' ' || mov_di('T3')),
-  '1 1/0/0/0/0/1 entrata|2026-09-30|100|Conto Corrente|Da classificare|Satispay · Sera|nessuno');
+  '1 1/0/0/0/0/1 entrata|2026-09-30|100|Satispay|Da classificare|Satispay · Sera|nessuno');
 
 \echo ''
 \echo '--- 4. PENDING aspetta, CANCELED non entra mai (R2) ---'
@@ -237,7 +243,7 @@ select atteso('il movimento è uno, annullato', (select count(*)::text || ' ' ||
 \echo ''
 \echo '--- 8. un''entrata a mano uguale: doppione certo e dubbio ---'
 select pulisci();
-select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Bonifico di Mario') as m1 \gset
+select a_mano('2026-10-14', 1250, 'Satispay', 'Bonifico di Mario') as m1 \gset
 select atteso('doppione certo: il movimento a mano prende il segno, niente di nuovo',
   sal(pag('D1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) || ' ' || conti(app(true)) || ' ' || n_mov() || ' ' || esito_di('D1'),
   '1 0/0/0/1/0/0 1 a_mano/-');
@@ -246,7 +252,7 @@ select atteso('…e gli resta il suo nome', (select descrizione from movimenti w
 select atteso('un altro giro non lo riprende', conti(app(true)) || ' ' || n_mov(), '0/0/0/0/0/0 1');
 
 select pulisci();
-select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Primo') as m1 \gset
+select a_mano('2026-10-14', 1250, 'Satispay', 'Primo') as m1 \gset
 select a_mano('2026-10-14', 1250, 'Satispay', 'Secondo') as m2 \gset
 select atteso('doppione dubbio: due uguali',
   sal(pag('D2', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) || ' ' || conti(app(true)) || ' ' || n_mov() || ' ' || esito_di('D2'),
@@ -265,16 +271,47 @@ select atteso('un''entrata in Cassa Contanti non è candidata: entra un moviment
   sal(pag('D3', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) || ' ' || conti(app(true)) || ' ' || n_mov(),
   '1 1/0/0/0/0/1 2');
 select atteso('un''entrata di un altro giorno o importo nemmeno',
-  (select a_mano('2026-10-13', 777, 'Conto Corrente')::text is not null)::text || ' ' || (select a_mano('2026-10-15', 888, 'Conto Corrente')::text is not null)::text || ' '
+  (select a_mano('2026-10-13', 777, 'Satispay')::text is not null)::text || ' ' || (select a_mano('2026-10-15', 888, 'Satispay')::text is not null)::text || ' '
   || sal(pag('D4', 'TO_BUSINESS', 'ACCEPTED', 777, '2026-10-15T10:00:00Z', 'Altro')) || ' ' || conti(app(true)),
   'true true 1 1/0/0/0/0/1');
 select atteso('una già annullata non conta', (
-  select a_mano('2026-10-16', 555, 'Conto Corrente')::text is not null)::text, 'true');
+  select a_mano('2026-10-16', 555, 'Satispay')::text is not null)::text, 'true');
 update movimenti set annullato_il = now() where importo = 555;
 select atteso('…quindi entra un movimento nuovo', sal(pag('D5', 'TO_BUSINESS', 'ACCEPTED', 555, '2026-10-16T10:00:00Z', 'Z')) || ' ' || conti(app(true)), '1 1/0/0/0/0/1');
 
+-- Il caso reale: le entrate uguali nel Conto Corrente non sono candidate, il pagamento va in Satispay.
 select pulisci();
-select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Uno solo') as m1 \gset
+select a_mano('2026-08-31', 5000, 'Conto Corrente', 'Bonifico ' || n) from generate_series(1, 4) n;
+select atteso('31/08, 4 entrate a mano uguali in Conto Corrente: scritto in Satispay, non da decidere',
+  sal(pag('K1', 'TO_BUSINESS', 'ACCEPTED', 5000, '2026-08-31T10:00:00Z', 'Reale')) || ' ' || conti(app(true)) || ' ' || esito_di('K1') || ' ' || mov_di('K1'),
+  '1 1/0/0/0/0/1 scritto/- entrata|2026-08-31|5000|Satispay|Da classificare|Satispay · Reale|nessuno');
+select atteso('…le 4 entrate restano senza segno', (select count(*)::text from movimenti where satispay_id is null), '4');
+select pulisci();
+select a_mano('2026-08-31', 5000, 'Conto Corrente', 'Bonifico') as m1 \gset
+select atteso('una sola entrata uguale in Conto Corrente: scritto in Satispay, non a_mano',
+  sal(pag('K2', 'TO_BUSINESS', 'ACCEPTED', 5000, '2026-08-31T10:00:00Z', 'Reale')) || ' ' || conti(app(true)) || ' ' || esito_di('K2') || ' ' || n_mov(),
+  '1 1/0/0/0/0/1 scritto/- 2');
+select atteso('…e l''entrata del Conto Corrente non ha il segno', (select coalesce(satispay_id, '-') from movimenti where id = :'m1'), '-');
+select pulisci();
+select a_mano('2026-08-31', 5000, 'Satispay', 'Uno') as m1 \gset
+select a_mano('2026-08-31', 5000, 'Satispay', 'Due') as m2 \gset
+select a_mano('2026-08-31', 5000, 'Conto Corrente', 'In banca') as m3 \gset
+select atteso('2 entrate a mano in Satispay e una in Conto Corrente: da decidere, forse doppione',
+  sal(pag('K3', 'TO_BUSINESS', 'ACCEPTED', 5000, '2026-08-31T10:00:00Z', 'Reale')) || ' ' || conti(app(true)) || ' ' || esito_di('K3'),
+  '1 0/0/0/0/1/0 da_decidere/forse_doppione');
+select atteso('…i candidati sono solo i due di Satispay', candidati_di('K3'), (select string_agg(x, ',' order by x) from unnest(array[:'m1', :'m2']::text[]) x));
+select pulisci();
+select a_mano('2026-08-31', 5000, 'Satispay', 'Uno') as m1 \gset
+select a_mano('2026-08-31', 5000, 'Conto Corrente', 'In banca') as m2 \gset
+select atteso('una in Satispay e una in Conto Corrente: a_mano con quella di Satispay',
+  sal(pag('K4', 'TO_BUSINESS', 'ACCEPTED', 5000, '2026-08-31T10:00:00Z', 'Reale')) || ' ' || conti(app(true)) || ' ' || esito_di('K4'),
+  '1 0/0/0/1/0/0 a_mano/-');
+-- In un'altra select: nella stessa, il movimento si legge com'era prima dello scarico.
+select atteso('…collegata a quella di Satispay', (select satispay_id from movimenti where id = :'m1'), 'K4');
+select atteso('…quella del Conto Corrente no', (select coalesce(satispay_id, '-') from movimenti where id = :'m2'), '-');
+
+select pulisci();
+select a_mano('2026-10-14', 1250, 'Satispay', 'Uno solo') as m1 \gset
 select atteso('due pagamenti uguali, un movimento a mano: il primo lo prende, il secondo entra nuovo',
   sal(pag('E1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T09:00:00Z', 'Primo'), pag('E2', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T11:00:00Z', 'Secondo'))
   || ' ' || conti(app(true)) || ' ' || esito_di('E1') || ' ' || esito_di('E2') || ' ' || n_mov(),
@@ -291,13 +328,17 @@ select atteso('il 14 ottobre la cassa Satispay è chiusa: da decidere, niente mo
 select atteso('un giorno dopo la chiusura entra', sal(pag('G2', 'TO_BUSINESS', 'ACCEPTED', 100, '2026-10-16T10:00:00Z', 'Dopo')) || ' ' || conti(app(true)), '1 1/0/0/0/0/1');
 select atteso('un rimborso in un giorno chiuso aspetta anche lui',
   sal(pag('G3', 'REFUND_TO_BUSINESS', 'ACCEPTED', 100, '2026-10-15T10:00:00Z', 'Via')) || ' ' || conti(app(true)) || ' ' || esito_di('G3'), '1 0/0/0/0/1/0 da_decidere/giorno_chiuso');
+-- Chiusa solo la cassa Conto Corrente (fino al 20): un pagamento del 17, che per Satispay è aperto, entra.
+insert into chiusure_cassa (cassa_id, dal, data, previsto, contato, differenza) values (id_cassa('Conto Corrente'), '2026-09-01', '2026-10-20', 0, 0, 0);
+select atteso('chiusa solo la cassa Conto Corrente: il pagamento entra in Satispay',
+  sal(pag('G5', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-17T10:00:00Z', 'Mario')) || ' ' || conti(app(true)) || ' ' || esito_di('G5'), '1 1/0/0/0/0/1 scritto/-');
 -- Il doppione certo viene prima del giorno chiuso: non cambia i conti, il soldo è già scritto.
-select a_mano('2026-10-12', 4200, 'Conto Corrente', 'Già scritto') as m1 \gset
+select a_mano('2026-10-12', 4200, 'Satispay', 'Già scritto') as m1 \gset
 select atteso('un doppione certo in un giorno chiuso è a_mano, non da decidere',
   sal(pag('G4', 'TO_BUSINESS', 'ACCEPTED', 4200, '2026-10-12T10:00:00Z', 'Mario')) || ' ' || conti(app(true)) || ' ' || esito_di('G4'), '1 0/0/0/1/0/0 a_mano/-');
--- Prima dell'inizio della cassa: il Conto Corrente parte dal 1 settembre.
-select atteso('un pagamento del 20 agosto è prima del Conto Corrente: fuori, niente movimento',
-  sal(pag('B1', 'TO_BUSINESS', 'ACCEPTED', 900, '2026-08-20T10:00:00Z', 'Vecchio')) || ' ' || esito_di('B1'), '1 senza esito/-');
+-- Prima dell'inizio della cassa Satispay (1 gennaio 2025).
+select atteso('un pagamento del 20 dicembre 2024 è prima della cassa Satispay: fuori, niente movimento',
+  sal(pag('B1', 'TO_BUSINESS', 'ACCEPTED', 900, '2024-12-20T10:00:00Z', 'Vecchio')) || ' ' || esito_di('B1'), '1 senza esito/-');
 select app(true) as giro \gset
 select atteso('…applica lo manda fuori, e nei conti conta «prima» senza toccare gli scritti',
   (:'giro'::jsonb->>'prima') || ' ' || conti(:'giro'::jsonb) || ' ' || esito_di('B1') || ' ' || mov_di('B1'),
@@ -320,9 +361,9 @@ reset role;
 select atteso('…esito fuori, niente movimento', esito_di('G3') || ' ' || mov_di('G3'), 'fuori/giorno_chiuso nessuno');
 
 select pulisci();
-select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Primo') as m1 \gset
-select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Secondo') as m2 \gset
-select a_mano('2026-10-14', 1300, 'Conto Corrente', 'Un altro importo') as m3 \gset
+select a_mano('2026-10-14', 1250, 'Satispay', 'Primo') as m1 \gset
+select a_mano('2026-10-14', 1250, 'Satispay', 'Secondo') as m2 \gset
+select a_mano('2026-10-14', 1300, 'Satispay', 'Un altro importo') as m3 \gset
 select sal(pag('H1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario'), pag('H2', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T12:00:00Z', 'Mario')) as _;
 select conti(app(true)) as _;
 select atteso('i due sono da decidere (forse doppione)', esito_di('H1') || ' ' || esito_di('H2'), 'da_decidere/forse_doppione da_decidere/forse_doppione');
@@ -343,8 +384,8 @@ select atteso('…esito scritto', esito_di('H2'), 'scritto/forse_doppione');
 
 -- Un forse doppione che nel frattempo diventa giorno chiuso: «scrivi» non basta.
 select pulisci();
-select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Primo') as m1 \gset
-select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Secondo') as m2 \gset
+select a_mano('2026-10-14', 1250, 'Satispay', 'Primo') as m1 \gset
+select a_mano('2026-10-14', 1250, 'Satispay', 'Secondo') as m2 \gset
 select sal(pag('K1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) as _;
 select conti(app(true)) as _;
 insert into chiusure_cassa (cassa_id, dal, data, previsto, contato, differenza) values (id_cassa('Satispay'), '2026-10-01', '2026-10-15', 0, 0, 0);
@@ -355,14 +396,14 @@ delete from chiusure_cassa;
 update casse set dal = '2026-10-15' where nome = 'Satispay';
 select atteso('«scrivi» prima dell''inizio della cassa: scrivilo oggi',
   come('22222222-2222-2222-2222-222222222222', 'authenticated', $$select satispay_decidi('K1', 'scrivi')$$), '22023 Quel giorno la cassa non c’era ancora: scrivilo oggi');
-update casse set dal = '2026-10-01' where nome = 'Satispay';
+update casse set dal = '2025-01-01' where nome = 'Satispay';
 
 \echo ''
 \echo '--- 11. anteprima: stessi conti, niente cambia (R10) ---'
 select pulisci();
 update casse set dal = '2026-09-01' where nome = 'Conto Corrente';
 insert into pagamenti_satispay (chi, importo, stato, satispay_id, pagato_il) values ('Paolo', 5000, 'pagato', 'AM', now());
-select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Già scritto') as m1 \gset
+select a_mano('2026-10-14', 1250, 'Satispay', 'Già scritto') as m1 \gset
 insert into chiusure_cassa (cassa_id, dal, data, previsto, contato, differenza) values (id_cassa('Satispay'), '2026-10-01', '2026-10-12', 0, 0, 0);
 select sal(
   pag('N1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'A mano'),

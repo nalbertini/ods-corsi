@@ -1127,6 +1127,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .cifra { font-size: 26px; font-weight: 700; }
 .riga-tasti { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .link-sec { color: var(--sec); }
+/* Un link da toccare col dito (la mappa di una gara): riga sua, alto 44px. */
+.link-alto { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; color: var(--text); text-decoration: underline; text-decoration-color: var(--blu); text-underline-offset: 3px; overflow-wrap: anywhere; }
 .testo-pieno { color: var(--text); }
 .una-riga { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .esito { gap: 14px; padding: 20px 20px 28px; }
@@ -2252,7 +2254,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 }
 .sg-finestra-velo { position: absolute; inset: 0; z-index: 0; }
 .sg-finestra {
-  position: relative; z-index: 1; display: flex; flex-direction: column; width: min(920px, 100%); min-height: 0;
+  position: relative; z-index: 1; display: flex; flex-direction: column; width: min(1200px, 100%); min-height: 0;
   background: var(--surface); border: 2px solid var(--text); border-top: 6px solid var(--tinta, var(--text));
 }
 .sg-finestra:focus { outline: none; }

@@ -7,6 +7,7 @@ import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } 
 import { apriAspettoModulo } from './lib/aspettoModulo'
 import { vistaIscrizioni } from './lib/paginaIscrizioni'
 import { MieiTimer } from './components/MieiTimer'
+import { MieGare } from './components/MieGare'
 import { MieOre } from './components/MieOre'
 import { BarraMusicaTelefono, BarraNavigazione, MusicaMini, PaginaTimer, StrisciaTimer, useMusicaTelefono } from './components/TimerIstruttori'
 import { Conferme, chiedi } from './components/segreteria/comune'
@@ -433,7 +434,12 @@ function Istruttori() {
                 onImpostazioni={conTastoImpostazioni ? setImpostazioni : null}
               />
             )}
-            {pagina === 'mieiTimer' && <MieiTimer soloDi={mio} onTimer={() => dalMenu('timer')} />}
+            {pagina === 'mieiTimer' && (
+              <>
+                <MieiTimer soloDi={mio} onTimer={() => dalMenu('timer')} />
+                {mio && <MieGare personaId={mio} />}
+              </>
+            )}
             {pagina === 'ore' && mio && <MieOre personaId={mio} />}
             {largo && mini}
           </main>

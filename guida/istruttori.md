@@ -368,6 +368,16 @@ vostri corsi e con le singole lezioni. I timer si fanno e si cambiano nel timer
 Si scelgono i vostri timer e quelli della palestra. Il collegamento lo vedono
 anche il tablet e il collega che fa la lezione al posto vostro.
 
+## Le gare
+
+Sotto i timer, in **I MIEI**, la sezione **GARE** (solo se ce n'è una in
+arrivo): le gare con atleti dei vostri corsi e quelle in cui siete fra gli
+accompagnatori. Per ognuna le date, il luogo (l'indirizzo apre la mappa), le
+note e gli atleti, ognuno col corso, il **certificato alla data della gara** e
+la nota della segreteria. In cima, in rosso, quanti non hanno il certificato
+valido: la segreteria li sta sentendo. Si legge soltanto: le gare, gli atleti e
+le quote li scrive la [segreteria](segreteria/gare.md).
+
 ## Le mie ore
 
 **ORE** (la pagina si intitola **LE MIE ORE**) dice quali lezioni risultano vostre in segreteria, mese per

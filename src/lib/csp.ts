@@ -9,10 +9,11 @@
  * Gli stili in pagina restano ammessi: React e Puck li scrivono, e l'anteprima
  * del sito (iframe `srcdoc`) ha il suo `<style>`. Le immagini e l'audio
  * possono venire da https: le foto del sito e le radio le sceglie la segreteria.
+ * Con la chiave di Places, i suggerimenti degli indirizzi delle gare (`indirizziGoogle`).
  */
-export function politicaCsp(urlSupabase: string | undefined): string {
+export function politicaCsp(urlSupabase: string | undefined, places = false): string {
   const carta = 'https://www.paypal.com https://*.paypal.com https://*.paypalobjects.com'
-  const connect = ["'self'", 'https://accounts.spotify.com', 'https://api.spotify.com', carta, 'https://pay.google.com']
+  const connect = ["'self'", 'https://accounts.spotify.com', 'https://api.spotify.com', carta, 'https://pay.google.com', ...(places ? ['https://places.googleapis.com'] : [])]
   try {
     // Dall'indirizzo si prende solo l'origine: il resto (`/rest/v1`) non conta.
     const { protocol, host } = new URL(urlSupabase ?? '')
