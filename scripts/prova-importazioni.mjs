@@ -15,6 +15,11 @@
 //   righeEntrato(dati: Pick<DatiScarico, 'negozio'|'movimenti'|'voci'|'casse'>, mese: 'AAAA-MM'):
 //     Array<{ satispayId, tipo, importo, data, chi, esito, movimento: { id, descrizione, cassa } | null }>
 //   riepilogoEntrato(dati: Pick<DatiScarico, 'negozio'>, mese): { entrato, secondoSatispay, aMano: { conteggio, importo } }
+// (daClassificare.ts):
+//   FONTI_DA_CLASSIFICARE: la lista delle fonti, in ordine
+//   vistaDaClassificare(righe, fonte, quante): { fonte (vuota se non ha più voci), visibili, restano, prossime }
+//   daClassificare(righe: RigaMovimento[]): { righe: Array<RigaMovimento & { fonte: 'Satispay'|'Banca'|'A mano'|'Storico' }>, entrate: { conteggio, importo }, uscite: { conteggio, importo } }
+//   filtraDaClassificare(righe, fonte: '' | 'Satispay'|'Banca'|'A mano'|'Storico'): righe
 // (importaBanca.ts):
 //   copertiDaSalvare(a: AnteprimaBanca): Array<{ chiave, data, tipo, importo, descrizione, conId, conDescrizione }>
 //   nonEQuestoBanca(coperti, chiave: string, chiusure: ChiusuraCassa[], contoId: string): { scrivi: DatoImportBanca, coperti }
@@ -43,6 +48,7 @@ const carica = async (contents) => {
 }
 const s = await carica("export * from './src/lib/satispayScarico'")
 const b = await carica("export * from './src/lib/importaBanca'")
+const dc = await carica("export * from './src/lib/daClassificare'")
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -343,6 +349,43 @@ console.log('\n13. un rimborso si dice rimborso: dettoNuovo')
   ok('uno solo', prova(() => s.dettoNuovo('TO_BUSINESS', 1).conto), '1 incasso nuovo')
   ok('un rimborso', prova(() => s.dettoNuovo('REFUND_TO_BUSINESS', 1)), { scelta: 'Rimborso nuovo', conto: '1 rimborso nuovo', verso: 'in meno' })
   ok('più rimborsi', prova(() => s.dettoNuovo('REFUND_TO_BUSINESS', 3).conto), '3 rimborsi nuovi')
+}
+
+console.log('\n14. DA CLASSIFICARE: le voci già in contabilità ma senza una voce vera, di qualunque fonte')
+{
+  const r = (id, data, tipo, importo, altro = {}) => ({ id, origine: 'movimento', tipo, data, importo, descrizione: `voce ${id}`, voce: 'Da classificare', cassaId: 'cc', annullato: false, ...altro })
+  const righe = [
+    r('b1', '2026-10-15', 'entrata', 12000, { origineImport: 'banca:a:0' }),
+    r('s2', '2026-10-22', 'entrata', 4000, { satispayId: 'P2', cassaId: 'sa' }),
+    r('s1', '2026-10-22', 'entrata', 4000, { satispayId: 'P1', cassaId: 'sa' }),
+    r('u1', '2026-10-21', 'uscita', 800, { satispayId: 'P3', cassaId: 'sa' }),
+    r('c1', '2026-10-15', 'uscita', 420, { origineImport: 'banca:a:1' }),
+    r('m1', '2026-10-12', 'uscita', 3500),
+    r('p1', '2019-03-01', 'entrata', 5000, { origineImport: 'prima-nota:7' }),
+    // fuori: voce vera, annullata, giroconto, incasso iscritto
+    r('x1', '2026-10-10', 'entrata', 1000, { voce: 'Corsi e altri pagamenti' }),
+    r('x2', '2026-10-10', 'entrata', 1000, { annullato: true }),
+    r('x3', '2026-10-10', 'giroconto', 1000, { voce: null }),
+    r('x4', '2026-10-10', 'entrata', 1000, { origine: 'ricevuta' }),
+  ]
+  const prima = copia(righe)
+  const x = prova(() => dc.daClassificare(righe))
+  ok('entrano le voci su «Da classificare» non annullate, non giroconti, non incassi iscritti; le più vecchie in alto, a pari data per id', prova(() => x.righe.map((y) => y.id)), ['p1', 'm1', 'b1', 'c1', 'u1', 's1', 's2'])
+  ok('la fonte: Satispay, Banca, A mano, Storico (prima nota)', prova(() => x.righe.map((y) => y.fonte)), ['Storico', 'A mano', 'Banca', 'Banca', 'Satispay', 'Satispay', 'Satispay'])
+  ok('il totale: entrate e uscite, con il conteggio', prova(() => [x.entrate, x.uscite]), [{ conteggio: 4, importo: 25000 }, { conteggio: 3, importo: 4720 }])
+  ok('le righe di partenza non cambiano', righe, prima)
+  ok('niente da classificare: lista vuota e totali a zero', prova(() => dc.daClassificare([righe[7]])), { righe: [], entrate: { conteggio: 0, importo: 0 }, uscite: { conteggio: 0, importo: 0 } })
+  ok('il filtro Satispay', prova(() => dc.filtraDaClassificare(x.righe, 'Satispay').map((y) => y.id)), ['u1', 's1', 's2'])
+  ok('il filtro Banca', prova(() => dc.filtraDaClassificare(x.righe, 'Banca').map((y) => y.id)), ['b1', 'c1'])
+  ok('senza filtro: tutte', prova(() => dc.filtraDaClassificare(x.righe, '').length), 7)
+  // La vista a pagine: quante righe si vedono, quante restano, quante ne porta «Mostra altre».
+  const v = (fonte, quante) => prova(() => { const p = dc.vistaDaClassificare(x.righe, fonte, quante); return [p.fonte, p.visibili.map((y) => y.id), p.restano, p.prossime] })
+  ok('la vista: le prime 3 di 7, ne restano 4 e «Mostra altre» ne porta 3', v('', 3), ['', ['p1', 'm1', 'b1'], 4, 3])
+  ok('la vista: l’ultima pagina porta solo quelle che restano', v('', 5), ['', ['p1', 'm1', 'b1', 'c1', 'u1'], 2, 2])
+  ok('la vista: tutte visibili, niente «Mostra altre»', v('', 20), ['', ['p1', 'm1', 'b1', 'c1', 'u1', 's1', 's2'], 0, 0])
+  ok('la vista col filtro conta solo la fonte', v('Satispay', 2), ['Satispay', ['u1', 's1'], 1, 1])
+  ok('la vista: una fonte senza più voci torna su «Tutte»', prova(() => dc.vistaDaClassificare(dc.filtraDaClassificare(x.righe, 'Satispay'), 'Banca', 20).fonte), '')
+  ok('le fonti da mostrare, nell’ordine dei chip', prova(() => dc.FONTI_DA_CLASSIFICARE), ['Satispay', 'Banca', 'A mano', 'Storico'])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
