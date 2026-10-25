@@ -72,6 +72,13 @@ class Component extends DCLogic {
     } else {
       s = { padding: '1px 6px', border: '2px solid ' + c.giallo, bg: 'transparent', fg: c.gialloTesto, fontSize: '11px', spacing: '0.12em', lineHeight: 'normal' };
     }
+    // PROPOSTA: con l'icona (tema sito, tag e segno) l'icona prende il posto del segno ✕ … ✓, e il tag bianco bordato
+    // diventa una pastiglia tinta senza bordo: icona e simbolo insieme, sul bordo, erano troppo segni per una parola.
+    const TINTE = { rosso: '#fbe9e9', giallo: '#fcf6e6', verde: '#e3f2e8', neutro: '#e6eef3', spento: '#e6eef3' };
+    if (sito && p.icona && (tipo === 'tag' || tipo === 'segno') && p.forma !== 'pallino') {
+      segno = '';
+      s = { ...s, padding: '4px 10px 4px 8px', border: '0', bg: TINTE[tono] || TINTE.neutro, peso: '600' };
+    }
     const pallino = sito && tipo === 'segno' && p.forma === 'pallino';
     if (pallino) {
       s = { ...s, padding: '2px 0', border: '0', bg: 'transparent', punto: s.fg, fg: '#0d2a3d', fontSize: '13px', spacing: '0', peso: '500', dopoPunto: '7px' };
