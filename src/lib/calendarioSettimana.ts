@@ -55,10 +55,11 @@ export function giorniDellaSettimana(primo: Date): Date[] {
  * altrimenti tengono due colonne larghe vuote. `inizi` null = la settimana non è
  * ancora arrivata: non si stringe niente, per non allargarli di colpo dopo.
  */
-export function giorniStretti(giorni: Date[], inizi: string[] | null): boolean[] {
+export function giorniStretti(giorni: Date[], inizi: string[] | null, conGara: string[] = []): boolean[] {
   if (inizi === null) return giorni.map(() => false)
-  const conLezioni = new Set(inizi.map((i) => chiaveGiorno(new Date(i))))
-  return giorni.map((g) => (g.getDay() === 6 || g.getDay() === 0) && !conLezioni.has(chiaveGiorno(g)))
+  // Un giorno di gara resta largo: la tessera della gara ci deve stare.
+  const larghi = new Set([...inizi.map((i) => chiaveGiorno(new Date(i))), ...conGara])
+  return giorni.map((g) => (g.getDay() === 6 || g.getDay() === 0) && !larghi.has(chiaveGiorno(g)))
 }
 
 /** Il mese del giovedì: la settimana «sta» dove cadono più dei suoi giorni, e vi sta sempre per almeno quattro. */

@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.211.0 — 25 ottobre 2026
+
+### Novità
+
+- Le gare, con chi ci va e il controllo del certificato
+
 ## 0.210.2 — 25 ottobre 2026
 
 ### Modificato

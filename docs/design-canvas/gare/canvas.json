@@ -1,0 +1,76 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Gare · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Elenco.dc.html",
+   "title": "GARE: l'elenco",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Gara.dc.html",
+   "title": "Una gara: chi ci va e il certificato alla data della gara",
+   "x": 1560,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Aggiungi.dc.html",
+   "title": "Aggiungi atleti: da un corso o per nome",
+   "x": 0,
+   "y": 1500,
+   "page": "page-1"
+  },
+  {
+   "file": "Istruttore.dc.html",
+   "title": "L'istruttore, al telefono, legge",
+   "x": 1560,
+   "y": 1500,
+   "page": "page-1"
+  },
+  {
+   "file": "Modifica.dc.html",
+   "title": "Modifica la gara: la quota, facoltativa",
+   "x": 0,
+   "y": 2700,
+   "page": "page-1"
+  },
+  {
+   "file": "Incassa.dc.html",
+   "title": "Incassa: la conferma di REGISTRA IL PAGAMENTO, già compilata",
+   "x": 800,
+   "y": 2700,
+   "page": "page-1"
+  },
+  {
+   "file": "Iscritto.dc.html",
+   "title": "L'iscritto vede la gara a cui è invitato",
+   "x": 2030,
+   "y": 1500,
+   "page": "page-1"
+  },
+  {
+   "file": "Calendario.dc.html",
+   "title": "La SETTIMANA mostra le gare",
+   "x": 0,
+   "y": 3950,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Le gare: chi ci va, se il certificato vale alla data della gara e chi ha pagato la quota"
+  }
+ ]
+}

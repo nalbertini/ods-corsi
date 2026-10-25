@@ -76,6 +76,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SPOTIFY_CLIENT_ID: ${{ secrets.VITE_SPOTIFY_CLIENT_ID }}
+          # I suggerimenti di indirizzo delle gare (Google Places, a pagamento): vuoto = testo libero.
+          VITE_GOOGLE_PLACES_KEY: ${{ secrets.VITE_GOOGLE_PLACES_KEY }}
 
       # Il timer si compila dopo, dentro dist/timer: un'app a sé, con il suo
       # service worker, pubblicata nella sottocartella dello stesso sito. Gli

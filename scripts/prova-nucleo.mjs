@@ -670,5 +670,21 @@ console.log('\n17. col database: l\'elenco legge il segno, e senza la colonna no
   ok('ma la colonna si era chiesta (e il nucleo si legge ancora)', senza.chiesto.some((c) => /genitore_non_iscritto/.test(c)), true)
 }
 
+console.log('\n15. il nucleo per lo sconto della ricevuta (nucleoPerRicevuta)')
+{
+  const t = { id: 'papa', attiva: true }
+  const f1 = { id: 'sara', nucleo: 'papa', attiva: true }
+  const f2 = { id: 'leo', nucleo: 'papa', attiva: true }
+  const via = { id: 'ugo', nucleo: 'papa', attiva: false }
+  const solo = { id: 'zeno', attiva: true }
+  const tutti = [t, f1, f2, via, solo]
+  const ids = (p) => m.nucleo.nucleoPerRicevuta(p, tutti).map((x) => x.id)
+  ok('per la figlia: il titolare e il fratello, non lei', ids(f1), ['papa', 'leo'])
+  ok('per il titolare: i figli attivi', ids(t), ['sara', 'leo'])
+  ok('chi ha lasciato la palestra non conta', ids(f2).includes('ugo'), false)
+  ok('chi non ha nucleo: nessuno', ids(solo), [])
+  ok('un titolare che non c\'è più: nessuno', m.nucleo.nucleoPerRicevuta({ id: 'x', nucleo: 'manca', attiva: true }, tutti), [])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

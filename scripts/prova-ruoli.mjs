@@ -131,7 +131,7 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
   const DELLA_SEGRETERIA_NEL_MENU = [
     ['Ogni giorno', ['dafare', 'richieste', 'presenze']],
     ['Iscritti e soldi', ['iscritti']],
-    ['Corsi e orari', ['settimana', 'corsi', 'listino']],
+    ['Corsi e orari', ['settimana', 'corsi', 'gare', 'listino']],
     ['Istruttori', ['istruttori', 'compensi', 'personale']],
     ['Il resto', ['statistiche', 'vestiario', 'segnalazioni', 'sito']],
   ]
