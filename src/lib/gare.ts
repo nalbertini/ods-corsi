@@ -1,7 +1,7 @@
 /**
  * Le gare della palestra: chi ci va, il certificato alla data della gara, la
  * quota a voci. Le regole del database (vincoli, RLS, `incassa_gara`) sono in
- * `supabase/114-gare.sql`; le prove in `scripts/prova-gare.mjs`.
+ * `supabase/117-gare.sql`; le prove in `scripts/prova-gare.mjs`.
  * I soldi sono centesimi, le date `AAAA-MM-GG`.
  */
 import { VOCE_GARE } from './contabilita'
@@ -51,11 +51,11 @@ export interface AtletaGara {
 }
 
 const DATA = /^\d{4}-\d{2}-\d{2}$/
-// Gli anni dei vincoli di 114-gare.sql.
+// Gli anni dei vincoli di 117-gare.sql.
 const dataVera = (g: string) => DATA.test(g) && chiaveGiorno(new Date(g + 'T12:00:00')) === g && g >= '2000-01-01' && g <= '2100-12-31'
 const troppo = (s: string | undefined, max: number) => (s?.trim().length ?? 0) > max
 
-/** Cosa manca per salvare una gara, detto a chi la scrive; `null` se va bene. I limiti sono quelli di 114-gare.sql. */
+/** Cosa manca per salvare una gara, detto a chi la scrive; `null` se va bene. I limiti sono quelli di 117-gare.sql. */
 export function cosaNonVaGara(g: Pick<Gara, 'nome' | 'dal' | 'al' | 'voci' | 'luogo' | 'indirizzo' | 'organizzatore' | 'note'>): string | null {
   if (!g.nome.trim()) return 'Scrivi il nome della gara.'
   if (troppo(g.nome, 120)) return 'Il nome della gara è troppo lungo: al massimo 120 lettere.'
@@ -266,7 +266,7 @@ export interface ChiGuarda {
 }
 
 /**
- * Di quali atleti può vedere la riga chi guarda, come le RLS di `114-gare.sql`:
+ * Di quali atleti può vedere la riga chi guarda, come le RLS di `117-gare.sql`:
  * l'iscritto sé e il suo nucleo (`iscritto_puo_vedere`, che lascia fuori chi
  * ha un account suo: in prova nessuno ce l'ha, come in `iscrittoProva.ts`);
  * l'istruttore i suoi atleti, con l'iscrizione ancora aperta, e tutti quelli
@@ -284,7 +284,7 @@ function rigaVisibile(chi: ChiGuarda, gare: Gara[], persone: PersonaSeg[]): (a: 
   return (a) => accompagna.has(a.garaId) || !!persone.find((p) => p.id === a.personaId)?.iscrizioni.some((i) => corsi.has(i.corsoId) && (!i.al || i.al >= oggi))
 }
 
-/** Le stesse regole delle RLS di `114-gare.sql`, per la modalità prova. */
+/** Le stesse regole delle RLS di `117-gare.sql`, per la modalità prova. */
 export function gareVisibili(chi: ChiGuarda, gare: Gara[], atleti: AtletaGara[], persone: PersonaSeg[]): Gara[] {
   if (chi.ruolo === 'staff') return gare
   const vede = rigaVisibile(chi, gare, persone)

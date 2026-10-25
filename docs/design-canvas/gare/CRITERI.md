@@ -16,7 +16,7 @@ non si controlla; un solo elenco di atleti; niente risultati né categorie.
 9. Per un minore nessun dato del genitore nell'elenco della gara.
 10. L'istruttore legge e non scrive; senza ruolo (anon) il database rifiuta lettura e scrittura.
 11. Modalità prova: gare di esempio in archivioProva.ts (una passata, una vicina, una annullata), stesse regole.
-12. Finché 114-gare.sql non è lanciato: «non ancora disponibile», le altre schermate funzionano.
+12. Finché 117-gare.sql non è lanciato: «non ancora disponibile», le altre schermate funzionano.
 13. Unendo due schede iscritte alla stessa gara resta una sola iscrizione.
 14. Più giorni: DAL obbligatorio, AL facoltativo e non prima di DAL; il certificato si controlla all'ultimo giorno (AL se c'è). Date dette «sabato 14 e domenica 15 novembre 2026».
 15. Quota a voci (voce, importo > 0): il totale a atleta è la somma. Senza voci la gara non ha quota.

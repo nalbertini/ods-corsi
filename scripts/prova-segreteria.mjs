@@ -3412,7 +3412,7 @@ await sezione('la contabilità di prova: le tre casse e le due voci di sistema',
   ok('le tre casse, a zero; solo Satispay con la data', casse.map((c) => [c.nome, c.saldoIniziale, c.dal ?? null]).sort(), [['Cassa Contanti', 0, null], ['Conto Corrente', 0, null], ['Satispay', 0, '2025-01-01']])
   cx.contanti = casse.find((c) => c.nome === 'Cassa Contanti').id
   cx.conto = casse.find((c) => c.nome === 'Conto Corrente').id
-  // «Differenza di cassa» arriva con 60-chiusura-cassa.sql e ha le sue prove (la chiusura di cassa, più sotto); «Compensi istruttori» con 81-compensi-pagati.sql (prova-compensi-pagati); «Gare» con 114-gare.sql (prova-gare).
+  // «Differenza di cassa» arriva con 60-chiusura-cassa.sql e ha le sue prove (la chiusura di cassa, più sotto); «Compensi istruttori» con 81-compensi-pagati.sql (prova-compensi-pagati); «Gare» con 117-gare.sql (prova-gare).
   const di = (await s.voci()).filter((v) => v.diSistema && !['Differenza di cassa', 'Compensi istruttori', 'Gare'].includes(v.nome))
   ok('le voci di sistema, attive', di.map((v) => [v.nome, v.tipo, v.attiva]).sort(), [['Corsi e altri pagamenti', 'entrata', true], ['Quota associativa', 'entrata', true]])
   cx.quota = di.find((v) => v.nome === 'Quota associativa').id

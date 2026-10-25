@@ -158,7 +158,7 @@ export interface Archivio {
    * il database le aveva già create, e il trigger non le toglie.
    */
   dateCorsiDal?: string
-  /** Le gare e chi ci va, come `gare` e `gare_atleti` (114-gare.sql). */
+  /** Le gare e chi ci va, come `gare` e `gare_atleti` (117-gare.sql). */
   gare?: Gara[]
   gareAtleti?: AtletaGara[]
   /** Le ricevute dei pagamenti, come le righe di `ricevute` (16-ricevute.sql). */

@@ -114,7 +114,7 @@ export const CAMBIO_CASSA_SATISPAY = '2026-10-01'
 export const NOME_CASSA_CARTA = 'Carta'
 export const VOCE_QUOTA = 'Quota associativa'
 export const VOCE_CORSI = 'Corsi e altri pagamenti'
-/** Le quote delle gare (`114-gare.sql`): una voce a sé, per sapere quanto entra e quanto si spende per le gare. */
+/** Le quote delle gare (`117-gare.sql`): una voce a sé, per sapere quanto entra e quanto si spende per le gare. */
 export const VOCE_GARE = 'Gare'
 /** Un'entrata su una quota o un corso, scritta a mano, ha la persona che ha pagato (`98-quote-persona.sql`). */
 export const vuolePersona = (tipo: string, voceNome: string | null | undefined): boolean =>

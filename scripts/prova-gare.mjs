@@ -140,7 +140,7 @@ ok('senza data dice di scegliere la data', parla(m.cosaNonVaGara({ nome: 'Trofeo
 ok('senza niente dice prima il nome', parla(m.cosaNonVaGara({ nome: '', dal: '', voci: [] }), 'nome'), true)
 ok('una data scritta male non vale', parla(m.cosaNonVaGara({ nome: 'Trofeo', dal: '14/11/2026', voci: [] }), 'data'), true)
 ok('una data che non esiste non vale (31 novembre)', parla(m.cosaNonVaGara({ nome: 'Trofeo', dal: '2026-11-31', voci: [] }), 'data'), true)
-// Gli stessi limiti dei vincoli di 114-gare.sql: se no il database rifiuta con un testo tecnico.
+// Gli stessi limiti dei vincoli di 117-gare.sql: se no il database rifiuta con un testo tecnico.
 const lunga = (n) => 'x'.repeat(n)
 ok('un nome di 120 lettere va bene', m.cosaNonVaGara({ nome: lunga(120), dal: '2026-11-14', voci: [] }), null)
 ok('uno di 121 no, e lo dice', parla(m.cosaNonVaGara({ nome: lunga(121), dal: '2026-11-14', voci: [] }), 'nome'), true)
@@ -397,7 +397,7 @@ console.log('\n18 e 19 · CHI VEDE COSA')
   ok('Zeno non insegna né accompagna: niente', vede({ ruolo: 'istruttore', personaId: 'zeno', corsiInsegnati: [] }), [])
   ok('più accompagnatori: tutti la vedono', m.gareVisibili({ ruolo: 'istruttore', personaId: 'zeno', corsiInsegnati: [] }, [{ ...g1, accompagnatori: ['gianni', 'zeno'] }], atleti, persone).length, 1)
   const finito = persona('finito', 'Ugo', 'Neri', { resto: { iscrizioni: [{ corsoId: judo, dal: '2025-09-14', al: '2026-06-30' }] } })
-  ok('chi non è più iscritto al corso di Maura non le apre la gara (come in 114-gare.sql)', m.gareVisibili({ ruolo: 'istruttore', personaId: 'maura', corsiInsegnati: [judo] }, [g2], [atleta('g2', 'finito')], [finito]).length, 0)
+  ok('chi non è più iscritto al corso di Maura non le apre la gara (come in 117-gare.sql)', m.gareVisibili({ ruolo: 'istruttore', personaId: 'maura', corsiInsegnati: [judo] }, [g2], [atleta('g2', 'finito')], [finito]).length, 0)
   ok('chi insegna due corsi vede le gare di tutti e due', vede({ ruolo: 'istruttore', personaId: 'maura', corsiInsegnati: [judo, pesi] }), ['g1', 'g2'])
   ok('l\'iscritto vede le sue gare', vede({ ruolo: 'iscritto', personaId: 'luca', corsiInsegnati: [] }), ['g1'])
   ok('un altro iscritto vede le sue, non quelle di Luca', vede({ ruolo: 'iscritto', personaId: 'marco', corsiInsegnati: [] }), ['g2'])
@@ -508,7 +508,7 @@ console.log('\n11 · MODALITÀ PROVA: gare di esempio, stesse regole')
   ok('gli atleti di esempio sono persone dell\'archivio di prova', gareAtleti.every((a) => m.archivio.dati.persone.some((p) => p.id === a.personaId)), true)
 }
 
-console.log('\n11 · MODALITÀ PROVA: chi ha pagato resta, la gara annullata non si incassa (come 114-gare.sql)')
+console.log('\n11 · MODALITÀ PROVA: chi ha pagato resta, la gara annullata non si incassa (come 117-gare.sql)')
 {
   const d = await m.creaGareProva()
   const rifiuto = async (f) => {

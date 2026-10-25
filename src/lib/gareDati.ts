@@ -6,12 +6,12 @@ import { sembraItaliano } from './importa'
 import { nuovoId } from './prove'
 
 /**
- * Le gare col database vero (`supabase/114-gare.sql`) o con l'archivio di
+ * Le gare col database vero (`supabase/117-gare.sql`) o con l'archivio di
  * prova, come il vestiario. Chi vede cosa lo dicono le RLS; in prova
  * `gareVisibili`, con le stesse regole.
  *
  * Gli `as` sulle risposte: supabase-js qui non conosce lo schema (non ci sono
- * tipi generati), e i tipi scritti sotto sono quelli di 114-gare.sql.
+ * tipi generati), e i tipi scritti sotto sono quelli di 117-gare.sql.
  */
 
 export const MANCA_GARE = 'Le gare non sono ancora disponibili: riprova più tardi'
@@ -162,7 +162,7 @@ export function creaGareSupabase(db: SupabaseClient): DatiGare {
   }
 }
 
-/** Le stesse regole sull'archivio di prova: i vincoli e le funzioni di 114-gare.sql rifatti qui. */
+/** Le stesse regole sull'archivio di prova: i vincoli e le funzioni di 117-gare.sql rifatti qui. */
 export async function creaGareProva(): Promise<DatiGare> {
   const { archivio } = await import('./archivioProva')
   const { creaSegreteriaProva } = await import('./segreteriaProva')

@@ -903,7 +903,8 @@
 .sg-gara-candidato[data-spento] { color: var(--dim); }
 /* Una gara passata o annullata si legge ancora, come l'ordine annullato. */
 .sg-riga-gara.sg-iscritto[data-spento='true'] { opacity: 1; color: var(--dim); }
-.sg-riga-atleta-gara .sg-tag { white-space: normal; }
+/* Il tag del certificato va a capo; per attributo: .sg-tag si usa anche fuori dalla segreteria (prova:css-ingresso). */
+.sg-riga-atleta-gara [data-tipo] { white-space: normal; }
 .sg-riga-gara > *, .sg-riga-atleta-gara > * { min-width: 0; overflow-wrap: anywhere; }
 @media (min-width: 1001px) {
   .sg-riga-gara { grid-template-columns: 120px minmax(0, 1.6fr) 70px minmax(190px, 1.4fr) minmax(190px, 1.4fr); }

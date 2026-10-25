@@ -63,7 +63,7 @@ export function Settimana({
   const sale = useCarica(() => d.sale(), [d])
   const pronto = useCarica(() => d.prontoFino(), [d])
   // Le gare non hanno un'ora: stanno in una riga loro, sui giorni che coprono. Se non si leggono
-  // (prima di `114-gare.sql`) la riga non c'è: la settimana resta quella delle lezioni.
+  // (prima di `117-gare.sql`) la riga non c'è: la settimana resta quella delle lezioni.
   const gare = useCarica(async () => {
     const { gare, atleti } = await (await datiGare()).leggi({ ruolo: 'staff', personaId: '', corsiInsegnati: [] })
     return gareDellaSettimana(gare.filter((g) => !g.annullata), primo).map((x) => ({ ...x, atleti: atleti.filter((a) => a.garaId === x.gara.id).length }))

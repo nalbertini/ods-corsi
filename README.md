@@ -95,7 +95,7 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   per cominciare in fondo; i prezzi di ogni corso e come si paga stanno a `iscrizioni/#prezzi`.
 - **Le gare**: la segreteria scrive date, luogo, accompagnatori, la quota a voci e chi ci va; l'app controlla il certificato
   all'ultimo giorno della gara (avvisa, non blocca), incassa con la voce «Gare» e stampa l'elenco. L'istruttore le legge in
-  I MIEI → GARE, l'iscritto in LE MIE GARE, la SETTIMANA le mostra in una riga sua (`supabase/114-gare.sql`, `src/lib/gare.ts`).
+  I MIEI → GARE, l'iscritto in LE MIE GARE, la SETTIMANA le mostra in una riga sua (`supabase/117-gare.sql`, `src/lib/gare.ts`).
 - **Il vestiario**: judogi, costumini e vestiario si ordinano da `iscrizioni/#vestiario`,
   al posto del modulo Google; la segreteria tiene catalogo e chiusura, segna chi ha
   pagato e scarica l'elenco per il fornitore, solo coi capi saldati (`supabase/47-vestiario.sql`).

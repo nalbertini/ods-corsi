@@ -1,7 +1,7 @@
 -- Le gare: la segreteria le scrive, l'istruttore le legge (quelle dei suoi corsi
 -- e quelle che accompagna), l'iscritto vede solo le sue; senza accesso niente.
 -- Si lancia dopo finto-supabase.sql, i file dello schema e il file delle gare
--- (supabase/114-gare.sql).
+-- (supabase/117-gare.sql).
 --
 --
 -- Lo schema che questa prova si aspetta (lo fissa lei: il file SQL lo segue):

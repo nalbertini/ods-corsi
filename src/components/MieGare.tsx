@@ -14,7 +14,7 @@ interface Letto {
 /**
  * GARE nella pagina I MIEI dell'istruttore: le gare prossime dei suoi atleti
  * o in cui accompagna, in sola lettura. Quali vede lo dicono le RLS di
- * `114-gare.sql` (in prova `gareVisibili`); le scrive la segreteria.
+ * `117-gare.sql` (in prova `gareVisibili`); le scrive la segreteria.
  */
 export function MieGare({ personaId }: { personaId: string }) {
   const [letto, setLetto] = useState<Letto | null>(null)

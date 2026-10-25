@@ -491,7 +491,7 @@ function SchedaGara({
                   </span>
                 )}
                 <span role="cell" style={{ textAlign: 'right' }}>
-                  {/* Chi ha pagato resta nella gara (114-gare.sql): se non ci va, lo dice la nota. */}
+                  {/* Chi ha pagato resta nella gara (117-gare.sql): se non ci va, lo dice la nota. */}
                   {!r.pagata && (
                     <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={lavora} aria-label={`Togli ${r.nome} ${r.cognome} dalla gara`} onClick={() => void togli(r)}>
                       Togli

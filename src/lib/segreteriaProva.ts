@@ -157,7 +157,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     const conCompensi: VoceContabile[] = conDifferenza.some(omonima)
       ? conDifferenza.map((v) => (omonima(v) ? { ...v, diSistema: true, attiva: true } : v))
       : [...conDifferenza, { id: 'voce-compensi', nome: VOCE_COMPENSI, tipo: 'uscita', diSistema: true, attiva: true }]
-    // Come 114-gare.sql: gli incassi delle gare hanno la loro voce, anche in un archivio fatto prima.
+    // Come 117-gare.sql: gli incassi delle gare hanno la loro voce, anche in un archivio fatto prima.
     return conCompensi.some((v) => v.tipo === 'entrata' && v.nome === VOCE_GARE)
       ? conCompensi
       : [...conCompensi, { id: 'voce-gare', nome: VOCE_GARE, tipo: 'entrata', diSistema: true, attiva: true }]

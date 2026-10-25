@@ -10,7 +10,7 @@ import { Dettaglio, Riquadro, Titoletto } from './ds'
 /**
  * LE MIE GARE nell'area iscritti: le gare a cui la segreteria ha invitato
  * questa persona, con la sua quota e il certificato alla data della gara.
- * Niente degli altri atleti: le RLS di `114-gare.sql` danno solo le righe sue
+ * Niente degli altri atleti: le RLS di `117-gare.sql` danno solo le righe sue
  * e dei figli del nucleo.
  * Senza gare la sezione non c'è.
  */
