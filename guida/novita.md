@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.214.0 — 25 ottobre 2026
+
+### Novità
+
+- Le icone dappertutto, le stesse in segreteria, appello, area iscritti, tablet e timer
+
 ## 0.213.1 — 25 ottobre 2026
 
 ### Modificato
