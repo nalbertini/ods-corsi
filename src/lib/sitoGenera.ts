@@ -943,7 +943,26 @@ ${CSS_INTERNE}
 ${CSS_TESTATA}
 ${cssFoci()}
 @media (max-width:720px){.colonne.c-2,.colonne.c-3{grid-template-columns:minmax(0,1fr)}}
-@media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
+/* Il movimento sta tutto qui (niente codice nostro: solo CSS). Titolo, testo e foto di apertura si muovono solo con transform: con l'opacità a 0 la prima immagine e il testo si vedrebbero dopo, e il contenuto manca se l'animazione non parte (per questo «backwards»). */
+@media (prefers-reduced-motion:no-preference){
+.pulsante,.testata nav a{transition:background-color .15s,transform .15s}
+.pulsante:active{transform:translateY(2px)}
+@keyframes sale{from{transform:translateY(24px)}}
+@keyframes si-posa{from{transform:scale(1.05)}}
+@keyframes compare{from{opacity:0;transform:translateY(16px)}}
+.pagina-hero .intro h1{animation:sale .7s cubic-bezier(.16,1,.3,1) backwards}
+.pagina-hero .intro p{animation:sale .7s cubic-bezier(.16,1,.3,1) .08s backwards}
+.pagina-hero .intro .pulsanti{animation:compare .6s cubic-bezier(.16,1,.3,1) .2s backwards}
+.pagina-hero .hero-foto img{animation:si-posa .9s cubic-bezier(.16,1,.3,1) backwards}
+.dopo-hero>.numeri>.tessera{animation:compare .5s cubic-bezier(.16,1,.3,1) .3s backwards}
+.dopo-hero>.numeri>.tessera:nth-child(2){animation-delay:.38s}
+.dopo-hero>.numeri>.tessera:nth-child(3){animation-delay:.46s}
+.dopo-hero>.numeri>.tessera:nth-child(n+4){animation-delay:.54s}
+#menu:target{animation:compare .2s ease-out backwards}
+@view-transition{navigation:auto}
+.testata{view-transition-name:testata}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.2s}
+}
 @media (min-width:901px) and (max-width:1200px){.invito-riquadri{grid-template-columns:repeat(2,minmax(0,1fr))}}
 `.replace(/\n/g, '')
 
