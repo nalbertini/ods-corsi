@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: MODIFICA della gara (e NUOVA GARA, uguale ma vuota). Un pannello sito sul velo. NOME e DAL obbligatori, AL solo se la gara dura più giorni (il certificato si controlla all'ultimo giorno); LUOGO, ORGANIZZATORE, QUOTA A ATLETA e NOTE facoltativi. La quota è fatta di voci (iscrizione, trasferimento, hotel...), ognuna col suo importo: l'atleta paga il totale e la ricevuta ha una riga per voce. Nessuna voce = gara senza quota: niente colonna QUOTA, niente conti. Cambiare la quota non tocca chi ha già pagato. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 640px; min-height: 1000px; padding: 28px; background: #ffffff; border-radius: 6px; border: 1px solid #cfe6f4">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · MODIFICA, CON LA QUOTA</span>
+  <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 28px"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#14709f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -4px; margin-right: 10px"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3M12 14v4M8 21h8M10 18h4"></path></svg>MODIFICA LA GARA</h2>
+  <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="NOME" valore="Trofeo Città di Varese" hint-size="100%,72px"></dc-import>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px">
+    <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="DAL" valore="14/11/2026" hint-size="100%,72px"></dc-import>
+    <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="AL · SE DURA PIÙ GIORNI" valore="15/11/2026" hint-size="100%,72px"></dc-import>
+  </div>
+  <span style="font-size: 14px; line-height: 1.35; color: #46606f"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg>Il certificato deve valere fino all’ultimo giorno.</span>
+  <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid #cfe6f4; border-radius: 6px; background: #eef5fa">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px"><circle cx="12" cy="12" r="9"></circle><path d="M15 9a4 4 0 1 0 0 6M7 11h6M7 13h6"></path></svg>QUOTA A ATLETA · FACOLTATIVA</span>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) 140px 44px; gap: 8px; align-items: end">
+      <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="VOCE" valore="Iscrizione alla gara" hint-size="100%,72px"></dc-import>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="IMPORTO" valore="30,00 €" hint-size="100%,72px"></dc-import>
+      <button aria-label="Togli la voce" style="width: 44px; height: 44px; margin-bottom: 4px; background: transparent; border: 0; font: 600 20px Inter, Arial, sans-serif; color: #46606f">×</button>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="VOCE" valore="Trasferimento in pullman" hint-size="100%,72px"></dc-import>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="IMPORTO" valore="15,00 €" hint-size="100%,72px"></dc-import>
+      <button aria-label="Togli la voce" style="width: 44px; height: 44px; margin-bottom: 4px; background: transparent; border: 0; font: 600 20px Inter, Arial, sans-serif; color: #46606f">×</button>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="VOCE" valore="Hotel, una notte" hint-size="100%,72px"></dc-import>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="IMPORTO" valore="45,00 €" hint-size="100%,72px"></dc-import>
+      <button aria-label="Togli la voce" style="width: 44px; height: 44px; margin-bottom: 4px; background: transparent; border: 0; font: 600 20px Inter, Arial, sans-serif; color: #46606f">×</button>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <button style="min-height: 44px; padding: 0; background: transparent; border: 0; font: 600 15px Inter, Arial, sans-serif; color: #14709f">+ Aggiungi una voce</button>
+      <span style="font-size: 15px; font-weight: 700">Totale a atleta 90,00 €</span>
+    </div>
+    <span style="font-size: 14px; line-height: 1.35; color: #8f6a00">3 atleti hanno già pagato: per loro non cambia niente.</span>
+  </div>
+  <!-- PROPOSTA: mentre si scrive, LUOGO propone i luoghi delle gare già inserite (dal più usato); si sceglie col dito, con le frecce e Invio, o si continua a scrivere un luogo nuovo. Lo stesso per ORGANIZZATORE. Nessuna dipendenza nuova: i suggerimenti vengono dalle gare della palestra. -->
+  <div style="position: relative">
+    <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="LUOGO · FACOLTATIVO" valore="Pala" acceso="{{ true }}" hint-size="100%,72px"></dc-import>
+    <div role="listbox" style="position: absolute; left: 0; right: 0; top: 76px; z-index: 2; display: flex; flex-direction: column; padding: 4px 0; background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px; box-shadow: 0 8px 24px rgba(13, 42, 61, 0.16)">
+      <div style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 14px; background: #eef5fa;"><span style="font-size: 15px; color: #0d2a3d"><b>Pala</b>Whirlpool, Varese</span><span style="font-size: 13px; color: #46606f">4 gare</span></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 14px;"><span style="font-size: 15px; color: #0d2a3d"><b>Pala</b>Yamamay, Busto Arsizio</span><span style="font-size: 13px; color: #46606f">2 gare</span></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 14px;"><span style="font-size: 15px; color: #0d2a3d"><b>Pala</b>sport di Legnano</span><span style="font-size: 13px; color: #46606f">1 gara</span></div>
+      <span style="padding: 6px 14px 4px; font-size: 13px; color: #46606f">Dalle gare già inserite. Se non c’è, si scrive e basta.</span>
+    </div>
+  </div>
+  <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="ORGANIZZATORE · FACOLTATIVO" valore="FIJLKAM Lombardia" hint-size="100%,72px"></dc-import><div style="position: relative" id="indirizzo"><dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="INDIRIZZO · FACOLTATIVO" valore="Via Manin 8, Va" acceso="{{ true }}" hint-size="100%,72px"></dc-import><div role="listbox" style="position: absolute; left: 0; right: 0; top: 76px; z-index: 2; display: flex; flex-direction: column; padding: 4px 0; background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px; box-shadow: 0 8px 24px rgba(13, 42, 61, 0.16)"><div style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: #eef5fa"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#46606f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg><span style="font-size: 15px; color: #0d2a3d"><b>Via Manin 8</b>, Varese VA, Italia</span></div><div style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#46606f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg><span style="font-size: 15px; color: #0d2a3d"><b>Via Manin 80</b>, Varese VA, Italia</span></div><div style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#46606f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg><span style="font-size: 15px; color: #0d2a3d"><b>Via Manin 8</b>, Gallarate VA, Italia</span></div><span style="padding: 6px 14px 4px; font-size: 13px; color: #46606f">Suggerimenti da Google Places, mentre si scrive. Se non c’è, si scrive e basta.</span></div></div><span style="font-size: 14px; line-height: 1.35; color: #46606f"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>Scelto l’indirizzo, la gara mostra il link alla mappa, anche all’istruttore e all’iscritto.</span><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="ISTRUTTORE CHE ACCOMPAGNA · FACOLTATIVO" valore="Scegli fra gli istruttori" hint-size="100%,72px"></dc-import><span style="font-size: 14px; line-height: 1.35; color: #46606f"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>L'istruttore scelto vede questa gara anche se non insegna il corso degli atleti, e la trova nel suo elenco GARE. Si può scegliere più di uno.</span>
+  <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="area" etichetta="NOTE · FACOLTATIVE" valore="Pesatura venerdì sera dalle 18." hint-size="100%,110px"></dc-import>
+  <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center">
+    <button style="min-height: 44px; padding: 0 12px; background: transparent; border: 0; font: 600 14px Inter, Arial, sans-serif; color: #b81d1d">Annulla la gara</button>
+    <div style="display: flex; gap: 8px">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Lascia stare" hint-size="150px,56px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="principale" label="Salva" hint-size="120px,56px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":640,"height":1000}}'>class Component extends DCLogic { renderVals() { return {}; } }</script>
+</body>
+</html>

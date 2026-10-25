@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: {{griglia}}; align-items: center; gap: 16px; min-height: 64px; padding: 10px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; cursor: pointer">
+  <span style="opacity: {{opacita}}; display: flex; flex-direction: column; gap: 2px">
+    <b style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">{{giorno}}</b>
+    <span style="font-size: 12px; font-weight: 600; color: #46606f">{{mese}}</span>
+  </span>
+  <span style="opacity: {{opacita}}; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+    <span style="font-size: 15px; font-weight: 600; text-decoration: {{barrata}}">{{nome}}<sc-if value="{{annullata}}" hint-placeholder-val="{{ false }}"><span style="margin-left: 10px; display: inline-block; padding: 1px 8px; border: 1.5px solid #46606f; border-radius: 6px; font-size: 12px; font-weight: 700; color: #46606f; vertical-align: 1px; text-decoration: none">Annullata</span></sc-if></span>
+    <span style="font-size: 13px; color: #46606f; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{dove}}</span>
+  </span>
+  <span style="opacity: {{opacita}}; font-size: 15px; font-weight: 600; text-align: right">{{atleti}}</span>
+  <span style="opacity: {{opacita}}; display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500"><sc-if value="{{conCertificati}}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{punto}}"></span></sc-if>{{certificati}}</span>
+  <span style="display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; opacity: {{opacitaQuote}}"><sc-if value="{{conQuote}}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{puntoQuote}}"></span></sc-if>{{quote}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"data":{"editor":"text","default":"SAB 14|novembre 2026"},"nome":{"editor":"text","default":"Trofeo Città di Varese"},"dove":{"editor":"text","default":"PalaWhirlpool, Varese · FIJLKAM Lombardia"},"atleti":{"editor":"text","default":"8"},"senza":{"editor":"text","default":"2"},"stato":{"editor":"enum","options":["futura","passata","annullata"],"default":"futura"},"dapagare":{"editor":"text","default":""},"griglia":{"editor":"text","default":"90px minmax(0, 1fr) 80px 220px 160px"},"$preview":{"width":1000,"height":72}}'>
+// PROPOSTA (../gare/): la riga dell'elenco GARE della segreteria, solo nel look del sito. Fondo bianco, filetto `surface-2`
+// sotto come la riga di ISCRITTI; si clicca tutta e apre la gara. Data in Big Shoulders 22px (giorno) e mese 12px `dim`;
+// nome 15px 600 e sotto luogo e organizzatore 13px `dim`; atleti a destra; certificati: «Tutti validi» col pallino verde,
+// «N senza certificato valido» col pallino rosso (nell'app il conto lo fa `src/lib/gare.ts`, alla data della gara).
+// stato: futura = normale; passata = opacita' 0.6, i certificati non si contano piu' (si legge la storia, non c'e' niente da fare);
+// annullata = nome barrato, tag «Annullata» `dim`, opacita' 0.6.
+// data: «GIORNO|mese anno» separati da |.
+// dapagare: le QUOTE, vuoto = gara senza quota («—» `dim`); «0» = «Tutte pagate» col pallino verde; N = «N da pagare» col
+// pallino rosso, anche a gara passata (i soldi restano da chiedere: la colonna non si spegne con la riga).
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const [giorno, mese] = String(p.data ?? 'SAB 14|novembre 2026').split('|');
+    const stato = p.stato || 'futura';
+    const senza = Number(p.senza ?? 0);
+    const futura = stato === 'futura';
+    const dapagare = String(p.dapagare ?? '').trim();
+    return {
+      giorno, mese: mese ?? '', nome: p.nome ?? '', dove: p.dove ?? '', atleti: (p.atleti ?? '0') + ' atleti',
+      annullata: stato === 'annullata', barrata: stato === 'annullata' ? 'line-through' : 'none', opacita: futura ? '1' : '0.6',
+      conCertificati: futura, punto: senza ? '#e4292a' : '#12913f',
+      certificati: !futura ? (stato === 'annullata' ? '' : 'Gara passata') : senza ? senza + ' senza certificato valido' : 'Tutti validi',
+      conQuote: dapagare !== '', puntoQuote: Number(dapagare) ? '#e4292a' : '#12913f',
+      quote: dapagare === '' ? '—' : Number(dapagare) ? dapagare + ' da pagare' : 'Tutte pagate',
+      // a gara passata le celle si spengono a 0.6, tranne le quote ancora da pagare
+      opacitaQuote: futura || Number(dapagare) ? '1' : '0.6',
+      griglia: p.griglia || '90px minmax(0, 1fr) 80px 220px 160px',
+    };
+  }
+}
+</script>
+</body>
+</html>

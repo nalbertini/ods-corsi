@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: la voce GARE (in CORSI E ORARI, dopo CORSI) e il suo elenco. Cornice da PaginaSito.dc.html. Prima le gare che vengono, dalla piu' vicina; poi, sotto un Titoletto, le passate dalla piu' recente. Una gara annullata resta, barrata. Un solo tasto giallo: NUOVA GARA. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" gare="true" attiva="GARE" numeri="RICHIESTE ONLINE:3" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · L'ELENCO DELLE GARE</span>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; font-size: 34px"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#14709f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -4px; margin-right: 10px"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3M12 14v4M8 21h8M10 18h4"></path></svg>GARE</h1>
+        <span style="font-size: 14px; color: #46606f">Le gare a cui vanno i nostri atleti. Il certificato si controlla alla data della gara, non a oggi.</span>
+      </div>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="principale" label="Nuova gara" hint-size="180px,56px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="IN ARRIVO" conto="3" hint-size="100%,32px"></dc-import>
+    <div style="display: flex; flex-direction: column; border-radius: 6px; overflow: hidden; border: 1px solid #cfe6f4">
+      <dc-import name="TestataTabella" tema="sito" colonne="DATA|GARA|ATLETI|CERTIFICATI|QUOTE" griglia="90px minmax(0, 1fr) 80px 220px 160px" ordinata="DATA" verso="su" ultimaADestra="false" hint-size="100%,40px"></dc-import>
+      <dc-import name="RigaGara" data="14–15|novembre 2026" nome="Trofeo Città di Varese" dapagare="3" dove="PalaWhirlpool, Varese · FIJLKAM Lombardia" atleti="6" senza="2" stato="futura" hint-size="100%,64px"></dc-import>
+      <dc-import name="RigaGara" data="DOM 29|novembre 2026" nome="Campionato regionale Esordienti B" dapagare="" dove="Palazzetto di Busto Arsizio · FIJLKAM Lombardia" atleti="5" senza="0" stato="futura" hint-size="100%,64px"></dc-import>
+      <dc-import name="RigaGara" data="SAB 12|dicembre 2026" nome="Coppa di Natale lotta giovanile" dapagare="" dove="Gallarate · FIJLKAM" atleti="0" senza="0" stato="annullata" hint-size="100%,64px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="PASSATE" conto="2" hint-size="100%,32px"></dc-import>
+    <div style="display: flex; flex-direction: column; border-radius: 6px; overflow: hidden; border: 1px solid #cfe6f4">
+      <dc-import name="RigaGara" data="DOM 18|ottobre 2026" nome="Torneo d'autunno" dapagare="1" dove="Legnano · CSEN" atleti="11" senza="0" stato="passata" hint-size="100%,64px"></dc-import>
+      <dc-import name="RigaGara" data="SAB 20|giugno 2026" nome="Kids Cup aikido" dapagare="0" dove="Milano" atleti="6" senza="0" stato="passata" hint-size="100%,64px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>class Component extends DCLogic { renderVals() { return {}; } }</script>
+</body>
+</html>
