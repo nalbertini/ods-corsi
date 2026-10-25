@@ -1386,6 +1386,7 @@ sui file (il documento, che si trovi da stampare; il certificato, che passi alla
 `110-tetto-certificato-messaggio.sql` prova che il quarto file in attesa sia negato con 54000 e il testo del tetto (anche da superutente), e che chi non è titolare della cartella riceva l'errore della policy, uguale per una cartella piena e una vuota.
 `109-privilegi-e-certificati.sql` prova che TRUNCATE, TRIGGER e REFERENCES non restino ad `anon` e `authenticated` (nemmeno sulle tabelle nuove) e che un iscritto tenga in attesa al più 3 file del certificato;
 `111-iscrizione-troppo-grande.sql` prova che `invia_iscrizione` rifiuti subito una richiesta da 5 MB, senza leggerla.
+`update-con-where.sql` prova che nessuna funzione di `public` faccia un UPDATE o un DELETE senza WHERE (su Supabase `safeupdate` lo rifiuta con 21000, e il Postgres delle prove no); un `on conflict … do update` va bene.
 `certificati.sql` prova che certificati, documento e pagamenti li veda e li
 cambi solo la segreteria, che il file del certificato stia in un contenitore
 privato (foto e PDF, 10 MB) che apre solo lei, che un file nuovo prenda il
