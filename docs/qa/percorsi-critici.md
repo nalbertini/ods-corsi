@@ -119,6 +119,8 @@ quando arriva la prova.
 - **GRAVE** — Edge Function `paypal` (`index.ts`): il blocco della cattura
   oltre 30 minuti e il ramo del rifiuto non hanno prova; si tolgono senza che
   cada niente, e si incassano soldi che il modulo ha dato per non andati.
+- COMPENSI (`Compensi.tsx`): il doppio clic su «C'era», «Non c'era» e «Segna
+  firmata» è bloccato per tutto l'elenco. Senza prova (serve il browser): a mano.
 - Edge Function `paypal`: nessuna prova del flusso (prepara, crea l'ordine,
   cattura, rilettura dello stato).
 - Carta: la richiesta del browser non contiene campi della carta

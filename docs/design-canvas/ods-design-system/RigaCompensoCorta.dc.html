@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="rowgroup" style="display: flex; flex-direction: column; width: 100%; border-bottom: 1px solid #cfe6f4; background: #ffffff; color: #0d2a3d">
+<sc-if value="{{largo}}" hint-placeholder-val="{{ true }}">
+  <div role="row" style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 96px 64px 100px 100px 64px 128px minmax(0, 1.2fr) 264px; gap: 14px; align-items: center; min-height: 56px; padding: 6px 14px">
+    <span role="cell" style="font-size: 15px; font-weight: {{pesoNome}}; min-width: 0">{{nome}}</span>
+    <span role="cell" style="font-size: 14px; color: {{coloreCorsi}}; min-width: 0">{{corsi}}</span>
+    <span role="cell" style="font-size: 15px; font-variant-numeric: tabular-nums; text-align: right; color: {{coloreCifre}}">{{lezioni}}</span>
+    <span role="cell" style="font-size: 15px; font-variant-numeric: tabular-nums; text-align: right; color: {{coloreCifre}}">{{ore}}</span>
+    <span role="cell" style="display: flex; flex-direction: column; align-items: flex-end; gap: 1px; font-size: 14px; font-variant-numeric: tabular-nums; color: {{coloreTariffa}}; font-weight: {{pesoTariffa}}">{{tariffa}}<sc-if value="{{senzaTariffa}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 400; color: #46606f">{{corso}}</span></sc-if></span>
+    <span role="cell" style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; color: {{coloreImporto}}">{{importo}}</span>
+    <span role="cell" aria-label="{{ibanDetto}}" style="font-size: 16px; text-align: center; color: {{coloreIban}}; font-weight: 700">{{iban}}</span>
+    <span role="cell" style="font-size: 14px; font-variant-numeric: tabular-nums; color: {{coloreRicevuta}}">{{ricevuta}}</span>
+    <div role="cell" style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+        <sc-if value="{{conSegnoLargo}}" hint-placeholder-val="{{ true }}"><dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="200px,26px"></dc-import></sc-if>
+        <sc-if value="{{haSottoLargo}}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: #46606f">{{sotto}}</span></sc-if>
+      </div>
+      <sc-for list="{{anche}}" as="x" hint-placeholder-count="0"><span style="font-size: 13px; color: #46606f">+ {{x.t}}</span></sc-for>
+    </div>
+    <div role="cell" style="display: grid; grid-template-columns: 80px 170px; gap: 14px; align-items: center">
+      <span style="display: flex; justify-content: flex-end"><sc-if value="{{conSeconda}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px">{{seconda}}</span></sc-if></span>
+      <span style="display: flex"><sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" larghezza="170px" hint-size="170px,44px"></dc-import></sc-if></span>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{telefono}}" hint-placeholder-val="{{ false }}">
+  <div role="row" style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px">
+    <div style="display: flex; align-items: baseline; gap: 10px">
+      <span style="flex: 1; min-width: 0; font-size: 15px; font-weight: 600">{{nome}}</span>
+      <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: {{coloreImporto}}">{{importo}}</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+      <sc-if value="{{conSegno}}" hint-placeholder-val="{{ true }}"><dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="200px,26px"></dc-import></sc-if>
+      <span style="font-size: 13px; color: #46606f; font-variant-numeric: tabular-nums">{{lezioni}} lez. · {{ore}}</span>
+    </div>
+    <sc-if value="{{haSotto}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #46606f">{{sotto}}</span></sc-if>
+    <sc-for list="{{anche}}" as="x" hint-placeholder-count="0"><span style="font-size: 13px; color: #46606f">+ {{x.t}}</span></sc-for>
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+      <sc-if value="{{conSeconda}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px">{{seconda}}</span></sc-if>
+      <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" larghezza="170px" hint-size="170px,44px"></dc-import></sc-if>
+    </div>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Ballabio Katia"},"lezioni":{"editor":"text","default":"8"},"ore":{"editor":"text","default":"12"},"importo":{"editor":"text","default":"180,00 €"},"stato":{"editor":"enum","options":["da-confermare","senza-tariffa","senza-dati","non-torna","da-fare","da-firmare","da-pagare","pagata","solo-extra","extra"],"default":"da-fare"},"quante":{"editor":"text","default":"3"},"corso":{"editor":"text","default":"Karate"},"manca":{"editor":"text","default":"IBAN"},"tariffa":{"editor":"text","default":"15,00 €/ora"},"quando":{"editor":"text","default":"2/10"},"anche":{"editor":"text","default":""},"contabilita":{"editor":"boolean","default":true},"corsi":{"editor":"text","default":"Judo kids, Judo ragazzi"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1600,"height":64}}'>
+// COSTRUITO (Compensi.tsx, .sg-compensi-* di src/segreteria.css; storia in docs/design-canvas/compensi-revisione): la riga di COMPENSI accorciata, dentro un gruppo (`GruppoCompensi`). Rispetto a `RigaCompenso`:
+// UN segno per motivo e UNA azione; la frase sotto c'e' solo quando aggiunge (quale dato manca, la cifra che non torna, la data); niente frase che ripete il link.
+// Le colonne sono fisse: il segno non sposta le cifre. Le altre cose del tecnico (`anche`, «testo|testo») stanno in una riga piccola «+ …» sotto il segno,
+// leggibile senza passare col mouse: «1 extra da pagare · 150,00 €», «1 lezione senza la sua firma, in ASPETTANO UNA FIRMA».
+// Lo stato e' quello di `StatoCompenso`; il gruppo lo decide il passo che manca: fatta e non firmata = `da-firmare`, firmata e non pagata = `da-pagare`.
+// Niente freccia: il dettaglio per corso sta nella finestra di «Prepara la ricevuta» (`DialogoRicevuta`), e la riga resta con un'azione sola.
+// CORSI e RICEVUTA sono colonne (risposta dell'utente; il telefono no, commento sul canvas): i corsi del mese
+// e a che punto e' la ricevuta (fatta il, firmata il, pagata il). La data della ricevuta non si ripete nelle NOTE, che restano per i fermi.
+// `contabilita` falso: Segna pagato non c'e' (resta Ristampa). `telefono` la impila, con le stesse azioni.
+// Il segno c'e' solo nei fermi, dove dice il motivo (diverso riga per riga); DA FARE, DA FAR FIRMARE, DA PAGARE e PAGATA li dice gia' la testa del gruppo:
+// ripeterli su ogni riga era rumore (commento dell'utente sul canvas). Resta la frase, se aggiunge qualcosa (la data, «firmata»).
+// Le azioni sono uguali su ogni riga (secondo commento): l'azione del passo e' sempre un Bottone a linea largo 170px nello stesso posto, Ristampa sempre
+// testo sottolineato prima del tasto (il tasto in fondo, sul bordo destro: commento dell'utente). Niente link blu da una parte e tasti dall'altra; Firmata e' un tasto («Segna firmata») come Segna pagato.
+// TARIFFA e IBAN sono colonne (terzo commento): il dato si vede su ogni riga, e quando manca la tariffa la cella dice «✕ manca» in rosso (sotto, il corso
+// senza tariffa); dell'IBAN basta sapere se c'e' (quarto commento): ✓ verde o ✕ rosso, in una colonna stretta. SENZA TARIFFA e MANCANO I DATI non si ripetono nelle NOTE. Sul telefono le colonne non ci sono e resta il segno.
+// Nei fermi l'azione e' sempre «Gestisci» (quinto commento): apre il tecnico dove si sistema, qualunque sia il motivo. Le ore hanno la «h» (9 h).
+// `extra`: una ricevuta extra come riga della tabella (↳ per cosa, «—», importo, segno EXTRA), con le stesse azioni delle altre.
+const STATI = {
+  'da-confermare': { tono: 'rosso', segno: () => 'DA CONFERMARE', azione: 'Gestisci', sotto: (p) => `${p.quante ?? '3'} presenze`, vuoto: true },
+  'senza-tariffa': { tono: 'rosso', segno: (p) => `SENZA TARIFFA · ${(p.corso ?? 'Karate').toUpperCase()}`, azione: 'Gestisci', sotto: '', vuoto: true },
+  'senza-dati': { tono: 'rosso', segno: () => 'MANCANO I DATI', azione: 'Gestisci', sotto: (p) => p.manca ?? 'IBAN' },
+  'non-torna': { tono: 'rosso', segno: () => 'NON TORNA PIÙ', azione: 'Gestisci', sotto: () => 'era 180,00 €, ora 165,00 €' },
+  'da-fare': { tono: 'neutro', segno: () => 'DA FARE', azione: 'Prepara la ricevuta', sotto: '' },
+  'da-firmare': { tono: 'giallo', segno: () => 'DA FAR FIRMARE', azione: 'Segna firmata', sotto: (p) => `fatta il ${p.quando ?? '2/10'}`, ristampa: true },
+  'da-pagare': { tono: 'giallo', segno: () => 'DA PAGARE', azione: 'Segna pagato', sotto: () => 'firmata', ristampa: true, paga: true },
+  'pagata': { tono: 'verde', segno: () => 'PAGATA', azione: '', sotto: (p) => `il ${p.quando ?? '5/10'}`, ristampa: true },
+  'solo-extra': { tono: 'neutro', segno: () => 'SOLO EXTRA', azione: '', sotto: () => 'nessuna lezione nel mese', vuoto: true },
+  // la ricevuta extra del tecnico sopra, come riga della stessa tabella: per cosa nella colonna TECNICO, lezioni e ore «—»
+  'extra': { tono: 'neutro', segno: () => 'EXTRA', azione: 'Segna pagato', sotto: () => 'firmata', ristampa: true, paga: true, extra: true },
+};
+const vero = (v, d) => (v === undefined ? d : v === true || v === 'true');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const s = STATI[p.stato] || STATI['da-fare'];
+    const telefono = vero(p.telefono, false);
+    const contabilita = vero(p.contabilita, true);
+    const sotto = typeof s.sotto === 'function' ? s.sotto(p) : s.sotto;
+    const azione = s.paga && !contabilita ? '' : s.azione;
+    const extra = !!s.extra;
+    // la tariffa e l'IBAN hanno una colonna loro: quando mancano lo dice la cella, in rosso, e il segno nelle NOTE non serve
+    const senzaTariffa = p.stato === 'senza-tariffa';
+    const senzaIban = p.stato === 'senza-dati';
+    // a che punto e' la ricevuta: nei fermi e in DA FARE non c'e' ancora
+    const ricevuta = { 'da-firmare': `fatta il ${p.quando ?? '2/10'}`, 'da-pagare': `firmata il ${p.quando ?? '3/10'}`, 'pagata': `pagata il ${p.quando ?? '5/10'}`, 'extra': `firmata il ${p.quando ?? '3/10'}` }[p.stato] ?? '—';
+    return {
+      largo: !telefono, telefono,
+      corsi: extra ? '—' : (p.corsi ?? 'Judo kids, Judo ragazzi'), coloreCorsi: extra ? '#46606f' : '#0d2a3d',
+      ricevuta, coloreRicevuta: ricevuta === '—' ? '#46606f' : '#0d2a3d',
+      nome: extra ? `↳ ${p.nome ?? 'Stage di judo'}` : (p.nome ?? 'Ballabio Katia'), pesoNome: extra ? 400 : 600,
+      lezioni: extra ? '—' : (p.lezioni ?? '8'), ore: extra ? '—' : `${p.ore ?? '12'} h`,
+      coloreCifre: s.vuoto && (p.lezioni ?? '8') === '0' ? '#46606f' : '#0d2a3d',
+      importo: s.vuoto ? '—' : (p.importo ?? '180,00 €'), coloreImporto: s.vuoto ? '#46606f' : '#0d2a3d',
+      tono: s.tono, segno: s.segno(p), conSegno: s.tono === 'rosso' || p.stato === 'solo-extra' || extra, sotto, haSotto: !!sotto,
+      conSegnoLargo: (s.tono === 'rosso' || p.stato === 'solo-extra' || extra) && !senzaTariffa && !senzaIban, haSottoLargo: !!sotto && !senzaIban && s.tono === 'rosso',
+      senzaTariffa, corso: p.corso ?? 'Karate',
+      tariffa: senzaTariffa ? '✕ manca' : extra ? '—' : (p.tariffa ?? '15,00 €/ora'), coloreTariffa: senzaTariffa ? '#b81d1d' : extra ? '#46606f' : '#0d2a3d', pesoTariffa: senzaTariffa ? 700 : 400,
+      iban: senzaIban ? '✕' : extra ? '—' : '✓', coloreIban: senzaIban ? '#b81d1d' : extra ? '#46606f' : '#0b7a33',
+      ibanDetto: senzaIban ? 'manca l’IBAN' : extra ? '' : 'IBAN c’è',
+      anche: String(p.anche ?? '').split('|').filter(Boolean).map((t) => ({ t })),
+      azione, conTasto: !!azione, seconda: s.ristampa ? 'Ristampa' : '', conSeconda: !!s.ristampa,
+    };
+  }
+}
+</script>
+</body>
+</html>

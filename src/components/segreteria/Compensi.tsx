@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { cartaSePuoi } from '../../lib/cartaPdf'
 import type { DatiSegreteria, Tariffa } from '../../lib/segreteria'
 import type { Voce } from '../../lib/indirizzoSegreteria'
@@ -8,9 +8,9 @@ import { chiaveGiorno, dataLunga, oraDi } from '../../lib/sala'
 import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
-import { centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, daPagareCompensi, extraDelPagamento, avvisoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
+import { centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, daPagareCompensi, extraDelPagamento, avvisoDelMese, aChePunto, azioneCarta, azioneRiga, gruppiCompensi, senzaImporto, STATI_FERMI, type AzioneCompenso, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type GruppoCompensi, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
 import { chiedi, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
-import { Numero } from './Presenze'
+import { Chip } from '../ds'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 const GIORNI_CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
@@ -260,56 +260,252 @@ export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda, senzaFi
   )
 }
 
+type Riga = ReturnType<typeof righeCompensi>[number]
+type Tono = 'rosso' | 'giallo' | 'neutro' | 'verde'
+
+// Le icone a linea della tabella e dei gruppi, disegnate come quelle del menu (24×24, tratto 1.75); corsi e ricevuta sono quelle di ICONE_MENU.
+const ICONE = {
+  persona: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8a4 4 0 1 0 0-8',
+  corsi: 'M6 8a6 6 0 1 0 12 0a6 6 0 1 0 -12 0 M15.5 12.9 17 22l-5-3-5 3 1.5-9.1',
+  calendario: 'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M16 2v4 M8 2v4 M3 10h18',
+  orologio: 'M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M12,6 L12,12 L16,14',
+  tariffa: 'M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z M7 7h.01',
+  euro: 'M18 7c-1.2-1.3-3-2-5-2a7 7 0 0 0 0 14c2 0 3.8-.7 5-2 M4 10h9M4 14h9',
+  carta: 'M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z M2 10h20',
+  ricevuta: 'M5 2v20l2.5-1.5L10 22l2-1.5 2 1.5 2.5-1.5L19 22V2l-2.5 1.5L14 2l-2 1.5L10 2 7.5 3.5z M9 8h6M9 12h6',
+  nota: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8',
+  sistemare: 'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z M12 9v4 M12 17h.01',
+  stampa: 'M6 9V2h12v7 M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2 M6 14h12v8H6z',
+  firma: 'M12 20h9 M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z',
+  pagate: 'M20 6 9 17l-5-5',
+}
+type NomeIcona = keyof typeof ICONE
+
+const Icona = ({ nome, misura = 14 }: { nome: NomeIcona; misura?: number }) => (
+  <svg width={misura} height={misura} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none' }} aria-hidden>
+    <path d={ICONE[nome]} />
+  </svg>
+)
+
+const TESTE: Record<GruppoCompensi, { titolo: string; icona: NomeIcona; tono: Tono }> = {
+  'da-sistemare': { titolo: 'DA SISTEMARE PRIMA', icona: 'sistemare', tono: 'rosso' },
+  'da-fare': { titolo: 'DA FARE', icona: 'stampa', tono: 'neutro' },
+  'da-far-firmare': { titolo: 'DA FAR FIRMARE', icona: 'firma', tono: 'giallo' },
+  'da-pagare': { titolo: 'DA PAGARE', icona: 'euro', tono: 'giallo' },
+  pagate: { titolo: 'PAGATE', icona: 'pagate', tono: 'verde' },
+}
+
+/** Le colonne della tabella; quelle in cifre a destra. */
+const COLONNE: Array<[string, NomeIcona, boolean]> = [
+  ['TECNICO', 'persona', false],
+  ['CORSI', 'corsi', false],
+  ['LEZIONI', 'calendario', true],
+  ['ORE', 'orologio', true],
+  ['TARIFFA', 'tariffa', true],
+  ['IMPORTO', 'euro', true],
+  ['IBAN', 'carta', false],
+  ['RICEVUTA', 'ricevuta', false],
+  ['NOTE', 'nota', false],
+]
+
+function TestataCompensi() {
+  return (
+    <div className="sg-compensi-griglia sg-compensi-testa" aria-hidden>
+      {COLONNE.map(([testo, icona, destra]) => (
+        <span key={testo} className="sg-etichetta" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, justifySelf: destra ? 'end' : 'start' }}>
+          <Icona nome={icona} />
+          {testo}
+        </span>
+      ))}
+      <span />
+    </div>
+  )
+}
+
+/** La testa di un gruppo: il titolo col conto, cosa vuol dire, e il tasto se il gruppo ne ha uno. */
+function TestaGruppo({ titolo, conto, icona, tono, sotto, children }: { titolo: string; conto: string; icona: NomeIcona; tono: Tono; sotto: string; children?: ReactNode }) {
+  return (
+    <div className="sg-compensi-gruppo" data-tono={tono}>
+      <div className="stack" style={{ gap: 2, minWidth: 0 }}>
+        <h2 className="ob sg-compensi-gruppo-titolo">
+          <Icona nome={icona} misura={22} />
+          <span>
+            {titolo} <span className="sg-compensi-conto">· {conto}</span>
+          </span>
+        </h2>
+        <span className="sg-sotto">{sotto}</span>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+/** L'ultima colonna: l'azione della riga, un tasto di 170px sempre allo stesso posto, e accanto quella in testo. */
+const Azioni = ({ testo, tasto }: { testo?: ReactNode; tasto?: ReactNode }) => (
+  <span className="sg-compensi-azioni">
+    <span>{testo}</span>
+    {tasto}
+  </span>
+)
+const Vuota = ({ destra }: { destra?: boolean }) => <span className={`sg-compensi-largo sg-compensi-vuoto${destra ? ' sg-compensi-cifra' : ''}`}>—</span>
+
+/** La riga del mese di un tecnico: le cifre, a che punto è la ricevuta, perché è fermo, e l'azione che serve adesso. */
+function RigaCorta({ r, azioni, onApri }: { r: Riga; azioni: ReactNode; onApri: () => void }) {
+  const tariffe = [...new Set(r.conto.righe.flatMap((x) => (x.centesimiOra ? [x.centesimiOra] : [])))]
+  const altro = (r.manca ?? '').replace(/^Mancano i dati per la ricevuta: /, '')
+  return (
+    <div className="sg-compensi-griglia sg-compensi-riga">
+      <span className="sg-compensi-nome">
+        <button type="button" className="sg-compensi-apri" onClick={onApri}>
+          {nomeDi(r.persona)}
+        </button>
+      </span>
+      <span className="sg-compensi-largo">{r.conto.righe.map((x) => x.corso).join(', ') || '—'}</span>
+      <span className="sg-compensi-largo sg-compensi-cifra num">{r.conto.lezioni || '—'}</span>
+      <span className="sg-compensi-largo sg-compensi-cifra num">{r.conto.minuti ? `${ore(r.conto.minuti)} h` : '—'}</span>
+      <span className="sg-compensi-largo sg-compensi-cifra">
+        {r.stato === 'senza-tariffa' ? (
+          <span className="stack" style={{ gap: 2, alignItems: 'flex-end' }}>
+            <span style={{ color: 'var(--rosso-testo)', fontWeight: 700 }}>✕ manca</span>
+            <span style={{ fontSize: 13, color: 'var(--dim)' }}>{r.conto.senzaTariffa.join(', ')}</span>
+          </span>
+        ) : tariffe.length === 1 ? (
+          euroOra(tariffe[0])
+        ) : tariffe.length ? (
+          'varie'
+        ) : (
+          '—'
+        )}
+      </span>
+      <span className="sg-compensi-importo num">{senzaImporto(r.stato) ? '—' : `${euro(r.ricevuta?.importo ?? r.conto.calcolato)} €`}</span>
+      <span className="sg-compensi-largo sg-compensi-iban">{r.manca?.includes('IBAN') ? <span data-tono="rosso" aria-label="manca l’IBAN">✕</span> : <span data-tono="verde" aria-label="IBAN c’è">✓</span>}</span>
+      <span className="sg-compensi-largo">{aChePunto(r.ricevuta)}</span>
+      <span className="sg-compensi-note">
+        <span className="sg-compensi-telefono num">
+          {quante(r.conto.lezioni, 'lez.', 'lez.')} · {ore(r.conto.minuti)} h
+        </span>
+        {r.stato === 'da-confermare' && (
+          <>
+            <span className="sg-segno-regola" data-tono="rosso">
+              DA CONFERMARE
+            </span>
+            <span>{quante(r.conto.daConfermare, 'presenza', 'presenze')}</span>
+          </>
+        )}
+        {r.stato === 'non-torna' && r.ricevuta && (
+          <>
+            <span className="sg-segno-regola" data-tono="rosso">
+              NON TORNA PIÙ
+            </span>
+            <span>
+              era {euro(r.ricevuta.importo)} €, ora {euro(r.conto.calcolato)} €
+            </span>
+          </>
+        )}
+        {/* Al desktop lo dicono le celle TARIFFA e IBAN; sul telefono quelle colonne non ci sono. */}
+        {r.stato === 'senza-tariffa' && (
+          <span className="sg-segno-regola sg-compensi-telefono" data-tono="rosso">
+            SENZA TARIFFA · {r.conto.senzaTariffa.join(', ').toUpperCase()}
+          </span>
+        )}
+        {r.stato === 'senza-dati' && (
+          <span className="sg-segno-regola sg-compensi-telefono" data-tono="rosso">
+            MANCANO I DATI
+          </span>
+        )}
+        {r.stato === 'senza-dati' && altro !== 'IBAN' && <span>{maiuscola(altro)}</span>}
+        {r.stato === 'solo-extra' && (
+          <>
+            <span className="sg-segno-regola" data-tono="neutro">
+              SOLO EXTRA
+            </span>
+            <span>nessuna lezione nel mese</span>
+          </>
+        )}
+        {r.senzaFirma.length > 0 && <span style={{ color: 'var(--dim)' }}>+ {quante(r.senzaFirma.length, 'lezione', 'lezioni')} senza la sua firma, in ASPETTANO UNA FIRMA</span>}
+      </span>
+      {azioni}
+    </div>
+  )
+}
+
+/** Un compenso extra, subito sotto il suo tecnico: per cosa, quanto, a che punto. */
+function RigaExtraCorta({ x, azioni, onApri }: { x: RicevutaCompenso; azioni: ReactNode; onApri: () => void }) {
+  return (
+    <div className="sg-compensi-griglia sg-compensi-riga">
+      <span className="sg-compensi-nome">
+        <button type="button" className="sg-compensi-apri" style={{ fontWeight: 400 }} onClick={onApri}>
+          ↳ {x.extra}
+        </button>
+      </span>
+      <Vuota />
+      <Vuota destra />
+      <Vuota destra />
+      <Vuota destra />
+      <span className="sg-compensi-importo num">{euro(x.importo)} €</span>
+      <Vuota />
+      <span className="sg-compensi-largo">{aChePunto(x)}</span>
+      <span className="sg-compensi-note">
+        <span className="sg-segno-regola" data-tono="neutro">
+          EXTRA
+        </span>
+      </span>
+      {azioni}
+    </div>
+  )
+}
+
 /**
- * Le lezioni in due dove al tecnico manca la firma: chi ha firmato, e i due
- * tasti. C'ERA conferma la presenza (entra nel compenso); «Non c'era» la
- * rifiuta e non si chiede più.
+ * Una lezione tenuta in due dove il tecnico era previsto e non ha firmato.
+ * C'ERA conferma la presenza (entra nel compenso); «Non c'era» la rifiuta e
+ * non si chiede più.
  */
-function SenzaFirmaElenco({ d, p, lezioni, aperto, fai, onCambiato }: { d: DatiSegreteria; p: Persona; lezioni: SenzaFirma[]; aperto: boolean; fai: Fai; onCambiato: () => Promise<unknown> }) {
-  // Un clic alla volta: un doppio clic su C'ERA non deve diventare anche «Non c'era».
-  const [occupato, setOccupato] = useState(false)
-  const segna = async (l: SenzaFirma, cera: boolean) => {
+function RigaSenzaFirma({ d, p, l, fai, onCambiato, occupato, setOccupato }: { d: DatiSegreteria; p: Persona; l: SenzaFirma; fai: Fai; onCambiato: () => Promise<unknown>; occupato: boolean; setOccupato: (v: boolean) => void }) {
+  // `occupato` e' di tutto l'elenco, non della riga: la riga segnata sparisce col suo stato,
+  // e il secondo clic di un doppio clic cadrebbe sulla riga che sale al suo posto.
+  const segna = async (cera: boolean) => {
     setOccupato(true)
     try {
       await fai(() => (cera ? d.segnaIstruttorePrevisto(l.sessioneId, p.id) : d.segnaIstruttoreAssente(l.sessioneId, p.id)), cera ? `${p.nome} c’era: la lezione entra nel compenso` : `${p.nome} non c’era`, onCambiato)
-      // La riga segnata sparisce e quella sotto sale al suo posto: il secondo clic di un doppio clic cadrebbe lì.
+      // Il tempo di vedere la riga sparire, prima che i tasti di quella sotto si riaccendano.
       await new Promise((r) => setTimeout(r, 600))
     } finally {
       setOccupato(false)
     }
   }
-  const righe = lezioni.map((l) => {
-    const quando = new Date(l.inizio)
-    return (
-      <div key={l.sessioneId} className="sg-senza-firma">
-        <span className="sg-senza-firma-corso">{l.corso}</span>
-        {/* Sul telefono giorno e chi ha firmato stanno sotto il corso, su una riga: al desktop sono due colonne. */}
-        <span className="sg-senza-firma-sotto">
-          <span className="num">
-            {GIORNI_CORTI[quando.getDay()]} {quando.getDate()}/{quando.getMonth() + 1} · {oraDi(l.inizio)}
-          </span>
-          <span className="sg-senza-firma-chi">ha firmato {l.firmatoDa.join(', ')}</span>
+  const quando = new Date(l.inizio)
+  return (
+    <div className="sg-compensi-griglia sg-compensi-riga">
+      <span className="sg-compensi-nome" style={{ fontSize: 15, fontWeight: 600 }}>
+        {nomeDi(p)}
+      </span>
+      <span className="sg-compensi-largo">{l.corso}</span>
+      <span className="sg-compensi-largo sg-compensi-cifra num">1</span>
+      <Vuota destra />
+      <Vuota destra />
+      <span className="sg-compensi-importo sg-compensi-vuoto">—</span>
+      <Vuota />
+      <Vuota />
+      <span className="sg-compensi-note">
+        <span className="num">
+          <span className="sg-compensi-telefono">{l.corso} · </span>
+          {GIORNI_CORTI[quando.getDay()]} {quando.getDate()}/{quando.getMonth() + 1} · {oraDi(l.inizio)}
         </span>
-        <span className="row" style={{ gap: 12, alignItems: 'center' }}>
-          <button type="button" className="sg-btn sg-btn-linea" disabled={occupato} onClick={() => void segna(l, true)}>
-            C’era
-          </button>
-          <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} disabled={occupato} onClick={() => void segna(l, false)}>
+        <span style={{ color: 'var(--dim)' }}>ha firmato {l.firmatoDa.join(', ')}</span>
+      </span>
+      <Azioni
+        testo={
+          <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} disabled={occupato} onClick={() => void segna(false)}>
             Non c’era
           </button>
-        </span>
-      </div>
-    )
-  })
-  const titolo = `MANCA LA FIRMA DI ${p.nome.toUpperCase()} · ${quante(lezioni.length, 'LEZIONE', 'LEZIONI')}`
-  // Chiuso come «Per corso»: aperto da sé solo dove serve guardarlo (chi ha solo queste, o il filtro «Manca la firma»).
-  return (
-    <details className="sg-compenso sg-compenso-per-corso" open={aperto}>
-      <summary className="sg-etichetta" style={{ minHeight: 44, display: 'flex', alignItems: 'center' }}>
-        {titolo}
-      </summary>
-      <div className="stack" style={{ gap: 0, paddingLeft: 16 }}>{righe}</div>
-    </details>
+        }
+        tasto={
+          <button type="button" className="sg-btn sg-btn-linea" disabled={occupato} onClick={() => void segna(true)}>
+            C’era
+          </button>
+        }
+      />
+    </div>
   )
 }
 
@@ -536,21 +732,95 @@ function DialogoExtra({
   )
 }
 
-type Filtro = 'tutti' | 'da-fare' | 'da-pagare' | 'da-firmare' | 'manca-firma' | 'extra'
+/**
+ * Il tecnico aperto: la ricevuta del mese coi suoi tasti (prepara, modifica il
+ * compenso, annulla), le sue extra e il conto per corso. Nella tabella c'è solo
+ * il tasto che serve adesso; il resto sta qui.
+ */
+function DialogoRicevuta({ d, r, mese, fai, onChiudi, onCambiato, onPaga, onExtra, onModificaExtra, onVai }: {
+  d: DatiSegreteria
+  r: Riga
+  mese: string
+  fai: Fai
+  onChiudi: () => void
+  onCambiato: () => Promise<unknown>
+  onPaga?: () => void
+  onExtra: () => void
+  onModificaExtra: (x: RicevutaCompenso) => void
+  onVai: (v: Voce) => void
+}) {
+  const dialogo = useDialogo<HTMLDivElement>(onChiudi)
+  return (
+    <div className="sg-velo" onClick={onChiudi}>
+      <div ref={dialogo} className="sg-dialogo stack" role="dialog" aria-modal="true" aria-labelledby="compenso-titolo" style={{ gap: 14, minWidth: 'min(760px, 100%)' }} onClick={(e) => e.stopPropagation()}>
+        <h2 id="compenso-titolo" className="ob" style={{ fontSize: 26, margin: 0 }}>
+          {nomeDi(r.persona)}
+        </h2>
+        <SegnoCompenso stato={r.stato} conto={r.conto} ricevuta={r.ricevuta} manca={r.manca} senzaFirma={r.senzaFirma.length} />
+        {r.stato !== 'solo-extra' && (
+          <AzioniRicevuta d={d} p={r.persona} conto={r.conto} ricevuta={r.ricevuta} stato={r.stato} mese={mese} fai={fai} onCambiato={onCambiato} onPaga={onPaga} onVai={onVai} />
+        )}
+        {r.extra.map((x) => (
+          <RigaExtra key={x.id} d={d} r={x} fai={fai} onCambiato={onCambiato} onModifica={() => onModificaExtra(x)} onPaga={onPaga} />
+        ))}
+        {r.conto.righe.length > 0 && (
+          <div className="stack" style={{ gap: 0 }}>
+            <span className="sg-etichetta">PER CORSO</span>
+            {r.conto.righe.map((x) => (
+              <div key={x.corso} className="sg-compenso-corso" style={{ fontSize: 14, padding: '4px 0', borderBottom: '1px solid var(--line-soft)' }}>
+                <span>{x.corso}</span>
+                <span className="num">{quanteOre(x.minuti)}</span>
+                {x.centesimiOra ? (
+                  <span className="num">{euroOra(x.centesimiOra)}</span>
+                ) : (
+                  <span className="sg-segno-regola" data-tono="rosso">
+                    SENZA TARIFFA
+                  </span>
+                )}
+                <span className="num" style={{ fontWeight: 700 }}>{x.importo !== undefined ? `${euro(x.importo)} €` : '—'}</span>
+              </div>
+            ))}
+            <div className="sg-compenso-corso" style={{ fontSize: 14, padding: '6px 0', fontWeight: 700 }}>
+              <span>Totale</span>
+              <span className="num">{quanteOre(r.conto.minuti)}</span>
+              <span />
+              <span className="num">{euro(r.conto.calcolato)} €</span>
+            </div>
+          </div>
+        )}
+        <div className="row" style={{ gap: 14, flexWrap: 'wrap' }}>
+          <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} onClick={onExtra}>
+            + Compenso extra
+          </button>
+          <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} onClick={() => onVai('personale')}>
+            Apri la scheda ›
+          </button>
+        </div>
+        <div className="sg-conferma-tasti">
+          <Tasto onClick={onChiudi}>
+            Chiudi
+          </Tasto>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 /**
- * COMPENSI: il mese di tutti i tecnici. Una riga per chi ha lezioni
- * confermate, da confermare o una ricevuta di quel mese: per ogni corso le
- * ore per la tariffa, a che punto è, e i tasti. Le ricevute pronte si
- * preparano tutte insieme, in un PDF solo; chi non è pronto si salta e si dice
- * perché.
+ * COMPENSI: il mese di tutti i tecnici, in gruppi nell'ordine in cui la
+ * segreteria lavora: da sistemare, da fare, da far firmare, da pagare, pagate.
+ * Ogni riga ha il solo tasto che serve adesso; il nome apre il resto. Le
+ * ricevute da fare si preparano tutte insieme, in un PDF solo.
  */
 export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare: boolean; onVai: (v: Voce) => void }) {
   const periodi = useMemo(mesi, [])
   const [periodo, setPeriodo] = useState(periodi[1]?.chiave ?? periodi[0].chiave)
-  const [filtro, setFiltro] = useState<Filtro>('tutti')
+  const [filtro, setFiltro] = useState<'manca-firma' | 'extra' | null>(null)
   const [tutte, setTutte] = useState(false)
   const [paga, setPaga] = useState<Persona | null>(null)
+  // Solo l'id: la riga si ritrova a ogni ricarica, così il dialogo mostra lo stato di adesso.
+  const [aperto, setAperto] = useState<string | null>(null)
+  const [segnando, setSegnando] = useState(false)
   // Il dialogo COMPENSO EXTRA: per chi (dalla riga) o per una da cambiare.
   const [extra, setExtra] = useState<{ personaId?: string; ricevuta?: RicevutaCompenso } | null>(null)
   const m = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
@@ -574,20 +844,52 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
   }, [d, giorni])
 
   const righe = dati.dato ? righeCompensi({ ...dati.dato, mese: m }) : []
-  const daFare = righe.filter((r) => r.stato === 'da-fare')
-  const fermi = righe.filter((r) => r.stato === 'da-confermare' || r.stato === 'senza-tariffa' || r.stato === 'senza-dati' || r.stato === 'non-torna')
-  // Le extra contano come quella del mese: da riportare firmate e da pagare.
-  const daFirmare = righe.filter((r) => (r.ricevuta && !r.ricevuta.firmata) || r.extra.some((x) => !x.firmata))
-  const { righe: daPagare, totale: totaleDaPagare } = daPagareCompensi(righe)
-  const senzaFirme = righe.filter((r) => r.senzaFirma.length)
-  const conExtra = righe.filter((r) => r.extra.length)
-  const visibili = filtro === 'da-fare' ? daFare : filtro === 'da-firmare' ? daFirmare : filtro === 'da-pagare' ? daPagare : filtro === 'manca-firma' ? senzaFirme : filtro === 'extra' ? conExtra : righe
+  const fermi = righe.filter((r) => STATI_FERMI.includes(r.stato))
+  const tutti = gruppiCompensi(righe)
+  const { totale: totaleDaPagare } = daPagareCompensi(righe)
+  const nExtra = righe.reduce((s, r) => s + r.extra.length, 0)
+  const conFiltro = filtro === 'extra' ? righe.filter((r) => r.extra.length) : righe
+  const { gruppi, senzaFirma } = gruppiCompensi(conFiltro)
+  const rigaAperta = righe.find((r) => r.persona.id === aperto)
 
-  const preparaTutte = async () => {
+  const ristampa = (x: RicevutaCompenso) => (
+    <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} onClick={() => void fai(() => suCarta(fai, (c) => scarica([x], c)), 'PDF scaricato')}>
+      Ristampa
+    </button>
+  )
+  // Come per C'ERA: la riga firmata passa a DA PAGARE e quella sotto sale sotto il mouse.
+  const segnaFirmata = async (x: RicevutaCompenso) => {
+    setSegnando(true)
+    try {
+      await fai(() => d.segnaFirmataCompenso(x.id, true), 'Segnata firmata', dati.ricarica)
+      await new Promise((r) => setTimeout(r, 600))
+    } finally {
+      setSegnando(false)
+    }
+  }
+  // Le regole (quale tasto) stanno in azioneRiga e azioneCarta; qui solo cosa fa ciascuno.
+  const tasti = (r: Riga, azione: AzioneCompenso | null, x?: RicevutaCompenso) => {
+    const tasto = (testo: string, onClick: () => void, disabled = false) => (
+      <button type="button" className="sg-btn sg-btn-linea" disabled={disabled} onClick={onClick}>
+        {testo}
+      </button>
+    )
+    const qui: Record<AzioneCompenso, () => ReactNode> = {
+      presenze: () => tasto('Gestisci', () => onVai('istruttori')),
+      conto: () => tasto('Gestisci', () => setAperto(r.persona.id)),
+      personale: () => tasto('Gestisci', () => onVai('personale')),
+      prepara: () => tasto('Prepara la ricevuta', () => setAperto(r.persona.id)),
+      firmata: () => x && tasto('Segna firmata', () => void segnaFirmata(x), segnando),
+      pagato: () => tasto('Segna pagato', () => setPaga(r.persona)),
+    }
+    return <Azioni testo={x && ristampa(x)} tasto={azione && qui[azione]()} />
+  }
+  const preparaTutte = async (daFare: Riga[]) => {
     const fatte: RicevutaCompenso[] = []
     const saltati: string[] = fermi.map(saltato)
     setTutte(true)
     // La carta prima: se non arriva, l'avviso dice insieme l'esito (chi è saltato) e che il PDF aspetta.
+    try {
     const carta = await cartaSePuoi()
     await fai(async () => {
       for (const r of daFare) {
@@ -603,113 +905,155 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
       if (esito.guaio) throw new Error(esito.testo)
       avvisa(esito.testo)
     })
-    setTutte(false)
+    } finally {
+      setTutte(false)
+    }
     await dati.ricarica()
   }
 
+  const righeDelGruppo = (rs: Riga[]) =>
+    rs.map((r) => (
+      <Fragment key={r.persona.id}>
+        <RigaCorta r={r} azioni={tasti(r, azioneRiga(r, puoPagare), r.stato === 'da-fare' || STATI_FERMI.includes(r.stato) ? undefined : (r.ricevuta ?? undefined))} onApri={() => setAperto(r.persona.id)} />
+        {r.extra.map((x) => (
+          <RigaExtraCorta key={x.id} x={x} azioni={tasti(r, azioneCarta(r.stato, x, false, puoPagare), x)} onApri={() => setExtra({ ricevuta: x })} />
+        ))}
+      </Fragment>
+    ))
+
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <Testa titolo="COMPENSI" sotto="Le ricevute dei tecnici, mese per mese: per ogni corso, ore confermate × la sua tariffa. Si stampano, si fanno firmare, si segnano pagate." />
+      <Testa titolo="COMPENSI" sotto="Per ogni corso, ore confermate × la sua tariffa. Si sistemano, si stampano, si fanno firmare, si pagano." />
       {avviso}
-      <label className="stack" style={{ gap: 6, maxWidth: 240 }}>
-        <span className="sg-etichetta">MESE</span>
-        <select className="sg-campo" value={periodo} onChange={(e) => setPeriodo(e.target.value)}>
-          {periodi.map((x) => (
-            <option key={x.chiave} value={x.chiave}>
-              {x.nome}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="row" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <label className="stack" style={{ gap: 6, width: 240 }}>
+          <span className="sg-etichetta">MESE</span>
+          <select className="sg-campo" value={periodo} onChange={(e) => setPeriodo(e.target.value)}>
+            {periodi.map((x) => (
+              <option key={x.chiave} value={x.chiave}>
+                {x.nome}
+              </option>
+            ))}
+          </select>
+        </label>
+        {dati.dato && (
+          <>
+            <span className="num" style={{ fontSize: 14, minHeight: 44, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+              {quante(righe.length, 'tecnico', 'tecnici')} ·{' '}
+              <span style={fermi.length ? { color: 'var(--rosso-testo)', fontWeight: 700 } : undefined}>{quante(fermi.length, 'fermo', 'fermi')}</span> · {euro(totaleDaPagare)} € da pagare · {euro(tutti.pagati)} € pagati
+            </span>
+            <span className="row" style={{ gap: 10, flexWrap: 'wrap', marginLeft: 'auto', alignItems: 'center' }}>
+              <Chip acceso={filtro === 'manca-firma'} numero={tutti.senzaFirma.length} etichetta={`Manca la firma: ${quante(tutti.senzaFirma.length, 'lezione', 'lezioni')}`} onClick={() => setFiltro(filtro === 'manca-firma' ? null : 'manca-firma')}>
+                Manca la firma
+              </Chip>
+              <Chip acceso={filtro === 'extra'} numero={nExtra} etichetta={`Extra: ${quante(nExtra, 'ricevuta', 'ricevute')}`} onClick={() => setFiltro(filtro === 'extra' ? null : 'extra')}>
+                Extra
+              </Chip>
+              {/* Anche per chi nel mese non ha lezioni: per questo sta qui e non solo nel dialogo del tecnico. */}
+              <button type="button" className="sg-btn sg-btn-linea" onClick={() => setExtra({})}>
+                + Compenso extra
+              </button>
+            </span>
+          </>
+        )}
+      </div>
       {dati.guaio && <Guaio testo={dati.guaio} />}
       {dati.dato && (
         <>
-          {/* Sul telefono solo DA FARE e FERMI, affiancati: l'elenco comincia prima. */}
-          <div className="sg-numeri" data-telefono-due>
-            <Numero titolo="TECNICI" valore={righe.length} sotto="nel mese" />
-            <Numero titolo="DA FARE" valore={daFare.length} sotto={`${euro(daFare.reduce((s, r) => s + r.conto.calcolato, 0))} €`} />
-            <Numero titolo="FERMI" valore={fermi.length} sotto="da sistemare prima" allarme={fermi.length > 0} />
-            <Numero titolo="DA PAGARE" valore={daPagare.length} sotto={`${euro(totaleDaPagare)} €`} />
-          </div>
-          <div className="row" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center', padding: '14px 16px', border: '2px solid var(--line-soft)' }}>
-            {daFare.length > 0 && (
-              <>
-                <button type="button" className="sg-btn sg-btn-pieno" disabled={tutte} onClick={() => void preparaTutte()}>
-                  Prepara e stampa le ricevute ({daFare.length})
-                </button>
-                <span className="sg-sotto" style={{ flex: 1, minWidth: 240 }}>
-                  Un PDF solo con quelle da fare.
-                  {fermi.length > 0 && ` Salta ${fermi.map(saltato).join(', ')}.`}
-                </span>
-              </>
-            )}
-            {/* Anche per chi nel mese non ha lezioni: per questo sta qui e non solo sulla riga. */}
-            <button type="button" className="sg-btn sg-btn-linea" onClick={() => setExtra({})}>
-              + Compenso extra
-            </button>
-          </div>
-          <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            {(
-              [
-                ['tutti', 'Tutti', righe.length],
-                ['da-fare', 'Da fare', daFare.length],
-                ['da-pagare', 'Da pagare', daPagare.length],
-                ['da-firmare', 'Da riportare firmate', daFirmare.length],
-                ['manca-firma', 'Manca la firma', senzaFirme.length],
-                ['extra', 'Extra', conExtra.length],
-              ] as const
-            ).map(([id, testo, n]) => (
-              <button key={id} type="button" className="num sg-chip" aria-pressed={filtro === id} onClick={() => setFiltro(id)}>
-                {testo} {id !== 'tutti' && n > 0 ? `(${n})` : ''}
-              </button>
-            ))}
-          </div>
-          {visibili.length === 0 && <span className="sg-sotto">{righe.length ? 'Nessuno con questo filtro.' : `Nessun tecnico con lezioni in ${m.nome.toLowerCase()}.`}</span>}
-          <div className="stack" style={{ gap: 0 }}>
-            {visibili.map((r) => (
-              <div key={r.persona.id} className="stack" style={{ gap: 4, borderBottom: '1px solid var(--line-soft)', padding: '10px 0' }}>
-                <div className="row sg-compenso-riga" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center', minHeight: 48 }}>
-                  <span style={{ fontSize: 15, fontWeight: 600, minWidth: 160 }}>{nomeDi(r.persona)}</span>
-                  <span className="num" style={{ fontSize: 15, fontWeight: 700, minWidth: 90 }}>{r.ricevuta || r.conto.calcolato ? `${euro(r.ricevuta?.importo ?? r.conto.calcolato)} €` : '—'}</span>
-                  <span className="num" style={{ fontSize: 14, color: 'var(--sec)' }}>
-                    {r.stato === 'solo-extra' ? '—' : `${quante(r.conto.lezioni, 'lezione', 'lezioni')} · ${quanteOre(r.conto.minuti)}`}
-                  </span>
-                  <span style={{ flex: 1, minWidth: 200 }}>
-                    <SegnoCompenso stato={r.stato} conto={r.conto} ricevuta={r.ricevuta} manca={r.manca} senzaFirma={r.senzaFirma.length} />
-                  </span>
-                  {/* I tasti stanno fuori dal dettaglio: un clic su un tasto non apre né chiude i corsi. */}
-                  <AzioniRicevuta d={d} p={r.persona} conto={r.conto} ricevuta={r.ricevuta} stato={r.stato} mese={mese} fai={fai} onCambiato={dati.ricarica} onPaga={puoPagare ? () => setPaga(r.persona) : undefined} onVai={onVai} />
-                </div>
-                {r.extra.map((x) => (
-                  <RigaExtra key={x.id} d={d} r={x} fai={fai} onCambiato={dati.ricarica} onModifica={() => setExtra({ ricevuta: x })} onPaga={puoPagare ? () => setPaga(r.persona) : undefined} />
+          {!righe.length && <span className="sg-sotto">Nessun tecnico con lezioni in {m.nome.toLowerCase()}.</span>}
+          {righe.length > 0 && filtro && !(filtro === 'manca-firma' ? senzaFirma.length : gruppi.length) && <span className="sg-sotto">Nessuno con questo filtro.</span>}
+          <div className="sg-compensi">
+            {(gruppi.length > 0 || senzaFirma.length > 0) && <TestataCompensi />}
+            {filtro !== 'manca-firma' &&
+              gruppi.map((g) => {
+                const t = TESTE[g.gruppo]
+                if (g.gruppo === 'pagate')
+                  return (
+                    <details key={g.gruppo} className="sg-compensi-pagate">
+                      <summary>
+                        <span aria-hidden>▸</span>
+                        <Icona nome="pagate" misura={20} />
+                        <span className="ob sg-compensi-pagate-titolo">
+                          PAGATE <span className="sg-compensi-conto">· {g.righe.length}</span>
+                        </span>
+                        <span className="sg-sotto">{euro(gruppiCompensi(g.righe).pagati)} € · si aprono per ristampare</span>
+                      </summary>
+                      {righeDelGruppo(g.righe)}
+                    </details>
+                  )
+                const n = g.righe.length
+                const conto =
+                  g.gruppo === 'da-fare'
+                    ? `${n} · ${euro(g.righe.reduce((s, r) => s + r.conto.calcolato, 0))} €`
+                    : g.gruppo === 'da-pagare'
+                      ? `${n} · ${euro(daPagareCompensi(g.righe).totale)} €`
+                      : String(n)
+                const sotto =
+                  g.gruppo === 'da-sistemare'
+                    ? 'Finché non sono a posto, la loro ricevuta non si fa.'
+                    : g.gruppo === 'da-fare'
+                      ? `Un PDF solo con ${n === 1 ? 'questa' : `queste ${n}`}, da stampare e consegnare. Gli extra si stampano uno per uno.`
+                      : g.gruppo === 'da-far-firmare'
+                        ? 'Stampate e consegnate. Quando tornano firmate, «Segna firmata» e passano a DA PAGARE.'
+                        : puoPagare
+                          ? 'Firmate. «Segna pagato» le scrive in Contabilità.'
+                          : 'Le paga chi cura la contabilità.'
+                return (
+                  <section key={g.gruppo} aria-label={t.titolo}>
+                    <TestaGruppo titolo={t.titolo} conto={conto} icona={t.icona} tono={t.tono} sotto={sotto}>
+                      {/* Con un filtro il gruppo non è intero: «tutte» preparerebbe solo una parte. */}
+                      {g.gruppo === 'da-fare' && !filtro && (
+                        <button type="button" className="sg-btn sg-btn-pieno" disabled={tutte} onClick={() => void preparaTutte(g.righe)}>
+                          Prepara le ricevute ({n})
+                        </button>
+                      )}
+                    </TestaGruppo>
+                    {righeDelGruppo(g.righe)}
+                  </section>
+                )
+              })}
+            {filtro !== 'extra' && senzaFirma.length > 0 && (
+              <section aria-label="ASPETTANO UNA FIRMA">
+                <TestaGruppo
+                  titolo="ASPETTANO UNA FIRMA"
+                  conto={quante(senzaFirma.length, 'lezione', 'lezioni')}
+                  icona="orologio"
+                  tono="neutro"
+                  sotto="Lezioni tenute in due: il tecnico era previsto e non ha firmato. Non fermano nessuna ricevuta. Se c’era, entra nel suo compenso del mese."
+                />
+                {senzaFirma.map(({ persona, lezione }) => (
+                  <RigaSenzaFirma key={`${persona.id}-${lezione.sessioneId}`} d={d} p={persona} l={lezione} fai={fai} onCambiato={dati.ricarica} occupato={segnando} setOccupato={setSegnando} />
                 ))}
-                {r.senzaFirma.length > 0 && <SenzaFirmaElenco d={d} p={r.persona} lezioni={r.senzaFirma} aperto={r.stato === 'solo-attese' || filtro === 'manca-firma'} fai={fai} onCambiato={dati.ricarica} />}
-                {r.conto.righe.length > 0 && (
-                  <details className="sg-compenso sg-compenso-per-corso">
-                    <summary style={{ fontSize: 13, color: 'var(--sec)', minHeight: 44, display: 'flex', alignItems: 'center' }}>Per corso</summary>
-                    {r.conto.righe.map((x) => (
-                      <div key={x.corso} className="sg-compenso-corso" style={{ fontSize: 13, color: 'var(--sec)', padding: '2px 0 2px 16px' }}>
-                        <span>{x.corso}</span>
-                        <span className="num">{quanteOre(x.minuti)}</span>
-                        {x.centesimiOra ? (
-                          <span className="num">{euroOra(x.centesimiOra)}</span>
-                        ) : (
-                          <span className="sg-segno-regola" data-tono="rosso">
-                            SENZA TARIFFA
-                          </span>
-                        )}
-                        <span className="num" style={{ fontWeight: 700 }}>{x.importo !== undefined ? `${euro(x.importo)} €` : '—'}</span>
-                      </div>
-                    ))}
-                    {/* Dalla riga aperta il tecnico è già scelto. */}
-                    <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14, marginLeft: 16 }} onClick={() => setExtra({ personaId: r.persona.id })}>
-                      + Compenso extra per {nomeDi(r.persona)}
-                    </button>
-                  </details>
-                )}
-              </div>
-            ))}
+              </section>
+            )}
           </div>
+          {rigaAperta && (
+            <DialogoRicevuta
+              d={d}
+              r={rigaAperta}
+              mese={mese}
+              fai={fai}
+              onChiudi={() => setAperto(null)}
+              onCambiato={dati.ricarica}
+              onPaga={
+                puoPagare
+                  ? () => {
+                      setAperto(null)
+                      setPaga(rigaAperta.persona)
+                    }
+                  : undefined
+              }
+              onExtra={() => {
+                setAperto(null)
+                setExtra({ personaId: rigaAperta.persona.id })
+              }}
+              onModificaExtra={(x) => {
+                setAperto(null)
+                setExtra({ ricevuta: x })
+              }}
+              onVai={onVai}
+            />
+          )}
           {extra && (
             <DialogoExtra
               d={d}
