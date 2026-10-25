@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.206.2 — 25 ottobre 2026
+
+### Modificato
+
+- Listino, Da fare, Segnalazioni e altre pagine della segreteria usano tutta la larghezza dello schermo
+
 ## 0.206.1 — 25 ottobre 2026
 
 ### Modificato
