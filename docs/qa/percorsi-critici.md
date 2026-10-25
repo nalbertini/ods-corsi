@@ -39,7 +39,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Documenti sulla carta intestata | segreteria, amministrazione, genitore | cifra coperta, voci perse fra le pagine | `prova:carta`, `prova:ricevuta`, `prova:compensi`, `prova:bilancio`, `prova:chiusura-pdf`, `prova:ore` | sì |
 | Satispay dal modulo di iscrizione | genitore, segreteria, amministrazione | importo diverso dal listino, pagato perso o doppio | `prova:satispay`, `satispay.sql` | sì |
 | Satispay: prima paghi, poi mandi | genitore, segreteria, amministrazione | soldi presi e richiesta che non arriva | `prova:satispay`, `satispay.sql` | sì |
-| Scarico automatico Satispay in CONTABILITÀ | amministrazione, segreteria | incasso nella cassa sbagliata o doppio | `prova:satispay-scarico`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:segreteria`, `satispay-scarico.sql`, `avvisi-scarico-satispay.sql` | sì, da fare |
+| Scarico automatico Satispay in CONTABILITÀ | amministrazione, segreteria | incasso nella cassa sbagliata, doppio o perso | `prova:satispay-scarico`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:segreteria`, `satispay-scarico.sql`, `avvisi-scarico-satispay.sql`, `update-con-where.sql` | sì, da fare |
 | Tessere | segreteria | non tesserato che frequenta, tessera alla persona sbagliata | `prova:tessere`, `prova:cosa-manca`, `prova:indirizzi`, `prova:filtri-iscritti`, `prova:menu`, `tessere.sql` | sì |
 | Ordini di vestiario | genitore, segreteria | ordine perso, totale sbagliato | `prova:vestiario`, `vestiario.sql`, `rls.sql` | sì |
 | Firma e informativa | iscritto | consenso non valido | `prova:firma`, `prova:firma-tratti`, `prova:informativa`, `prova:moduli`, `prova:fogli-moduli`, `informativa-mesi.sql` | sì |
@@ -106,6 +106,9 @@ quando arriva la prova.
   `email-unica.sql` §4 tiene la perdita come attesa.
 - **GRAVE** — Ricevuta da un pagamento a mano: un `pagamentoId` perso per
   strada non fa cadere niente, e lo stesso incasso conta due volte.
+- `update-con-where.sql`: il controllo cerca un WHERE dopo l'UPDATE, nello
+  stesso `;`. Un UPDATE senza WHERE con una sottoquery che ha il suo WHERE
+  (`set x = (select … where …)`) passa (DA FARE).
 - Edge Function `satispay` (quota, corso, saldo) e quella delle ricevute per
   email: nessuna prova.
 - Saldo Satispay: `least`/`greatest`, `ricevuta_id is null`, `utente_id`, le

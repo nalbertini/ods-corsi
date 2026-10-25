@@ -45,7 +45,8 @@ create table if not exists satispay_negozio (
   movimento_id uuid references movimenti
 );
 
--- Una riga sola: a che punto è lo scarico.
+-- Una riga sola: a che punto è lo scarico. Gli update hanno `where id` perché su Supabase `safeupdate`
+-- rifiuta un UPDATE senza WHERE (prova/update-con-where.sql).
 create table if not exists satispay_scarico (
   id              boolean primary key default true check (id),
   primo_fatto     boolean not null default false,
@@ -189,7 +190,7 @@ begin
     end loop;
     conti := conti || jsonb_build_object('dal', (select min((quando at time zone 'Europe/Rome')::date) from satispay_negozio));
     if scrivi then
-      update satispay_scarico set primo_fatto = true;
+      update satispay_scarico set primo_fatto = true where id;
     else
       -- L'anteprima fa gli stessi passi e poi li disfa tutti: i conti sono quelli che scriverebbe davvero.
       raise exception using errcode = 'P0099';
@@ -255,7 +256,7 @@ end $$;
 
 create or replace function satispay_scarico_segna(errore text) returns void
   language sql security definer set search_path = public as $$
-  update satispay_scarico set ultimo = now(), errore = satispay_scarico_segna.errore
+  update satispay_scarico set ultimo = now(), errore = satispay_scarico_segna.errore where id
 $$;
 
 -- Finito uno scarico vero, la segreteria riceve un'email (con gli altri avvisi, 84-avvisi-segreteria.sql) solo se
@@ -283,7 +284,7 @@ end $$;
 
 create or replace function satispay_scarico_ripresa(ripresa text, completa boolean) returns void
   language sql security definer set search_path = public as $$
-  update satispay_scarico set ripresa = satispay_scarico_ripresa.ripresa, storia_completa = completa
+  update satispay_scarico set ripresa = satispay_scarico_ripresa.ripresa, storia_completa = completa where id
 $$;
 
 revoke all on function satispay_cassa(date), satispay_scrivi(satispay_negozio, date, casse, uuid) from public, anon, authenticated;
