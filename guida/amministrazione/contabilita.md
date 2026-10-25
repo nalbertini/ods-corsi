@@ -117,7 +117,10 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
   il nome scritto nel testo («Satispay · Elisa M.»: nome intero, o nome e iniziale del cognome); poi il
   nome e cognome del **genitore** come sono nei dati di registrazione (i minori li paga di solito
   un genitore: si propongono i figli); poi un **codice fiscale** scritto nella causale; poi l'**importo**:
-  se è quello di un corso del listino, gli iscritti a quel corso col cognome nel testo. Chi ha già
+  se è quello di un corso del listino, gli iscritti a quel corso col cognome nel testo; poi il solo
+  **cognome**, suo o del genitore (se è di più persone, chi di loro è iscritto quel giorno, o se nessuno
+  chi lo è stato); poi il **nome** con una parola del **corso** a cui è iscritta (per esempio «Giulia
+  psicomotricità»): questa non si sceglie mai da sola, scegli tu. Chi ha già
   l'iscrizione in corso quel giorno va in fondo, col segno. Sotto le schede una riga dice perché sono
   queste. Un nome solo non basta. Se le schede possibili sono
   più d'una, scegli tu e **Conferma** resta spento finché non scegli. Per un'uscita la persona non c'è.

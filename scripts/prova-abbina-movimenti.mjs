@@ -3,8 +3,9 @@
 //
 //   node scripts/prova-abbina-movimenti.mjs
 //
-// Controlla `src/lib/abbinaMovimenti.ts` e il riquadro «Suggerito» di `suggerimentoMovimento.ts`: le tre regole in
-// ordine (nome e cognome interi nel testo, nome e cognome del genitore, codice fiscale letto dalla causale), ognuna solo
+// Controlla `src/lib/abbinaMovimenti.ts` e il riquadro «Suggerito» di `suggerimentoMovimento.ts`: le sei regole in
+// ordine (nome e cognome interi nel testo, nome e cognome del genitore, codice fiscale letto dalla causale, importo e
+// cognome, solo cognome, nome di battesimo e corso; «nome e corso» non si preseleziona mai), ognuna solo
 // se la precedente non trova nessuno; l'ordine per iscrizione alla data del movimento (chi non è iscritto prima, chi lo
 // è in fondo col segno «già iscritto»); la preselezione; cosa esce (mai codici, genitori, date). Gli stessi casi, con gli
 // stessi messaggi, di supabase/prova/abbina-movimenti.sql: la modalità prova e il database danno lo stesso risultato.
@@ -115,6 +116,8 @@ console.log('\n6. ordinaAbbinati: le righe che il database rende, con la stessa 
   ok('uno solo iscritto: no', o([x('a', 'Ada', 'Beta', true)]).preselezionato, null)
   ok('nessuno: niente', prova(() => [o([]).candidati, o([]).preselezionato]), [[], null])
   ok('più di uno: no', o([x('a', 'Ada', 'Beta'), x('b', 'Bea', 'Beta')]).preselezionato, null)
+  ok('«nome e corso» da solo non è mai preselezionato', o([x('a', 'Ada', 'Beta', false, 'nome e corso')]).preselezionato, null)
+  ok('…«cognome» sì, come le altre', o([x('a', 'Ada', 'Beta', false, 'cognome')]).preselezionato, 'a')
   ok('al massimo otto, anche se il database ne rendesse di più', prova(() => o(Array.from({ length: 12 }, (_, i) => x(`i${i}`, 'N', `C${String(i).padStart(2, '0')}`))).candidati.length), 8)
 }
 
@@ -136,6 +139,8 @@ console.log('\n7. il riquadro «Suggerito» con le persone abbinate')
   const r3 = sug([x('anna', true, 'nome intero')])
   ok('uno solo «già iscritto»: si propone ma non si preseleziona, «Conferma» spento', prova(() => [r3.caso, r3.candidati.map((c) => c.giaIscritto), r3.preselezionato, s.confermaDi(r3, null)]), ['A', [true], null, null])
   ok('…si può sceglierlo a mano', prova(() => s.confermaDi(r3, 'anna')), { voceId: 'vq', personaId: 'anna' })
+  const r5 = sug([x('giulia', false, 'nome e corso')])
+  ok('uno solo per «nome e corso»: si propone ma non si preseleziona, «Conferma» spento', prova(() => [r5.caso, r5.preselezionato, s.confermaDi(r5, null)]), ['A', null, null])
   const r4 = sug([x('anna', true, 'nome intero'), x('bruno', false, 'nome intero')])
   ok('già iscritto in fondo, anche se il database lo rende per primo', prova(() => [r4.candidati.map((c) => c.id), r4.preselezionato]), [['bruno', 'anna'], null])
   ok('senza abbinati (funzione assente o nessun abbinato) vale il solo nome, senza errore', prova(() => { const r = s.suggerisciMovimento({ ...riga, descrizione: 'Cliente Gallo Marta per quota TRN 3' }, righe, voci, [{ id: 'marta', nome: 'Marta', cognome: 'Gallo' }]); return [r.candidati.map((c) => c.id), r.preselezionato] }), [['marta'], 'marta'])
@@ -173,12 +178,53 @@ console.log('\n9. l\'importo dice il corso, il corso dice chi cercare')
   ]
   const ab = (testo, corsi, data = '2026-12-10') => prova(() => { const r = a.abbinaMovimento({ testo, data, codiciFiscali: [], corsiImporto: corsi }, pc); return [r.candidati.map((c) => [c.id, c.come, c.giaIscritto]), r.preselezionato] })
   ok('il solo cognome nel testo + iscritto al corso dell\'importo: lui, preselezionato', ab('Bonifico Rossi retta', ['c-judo']), [[['rossi1', 'corso e cognome', false]], 'rossi1'])
-  ok('senza il corso dell\'importo, il solo cognome non basta', ab('Bonifico Rossi retta', []), [[], null])
+  ok('senza il corso dell\'importo vale il solo cognome (regola 5): i Rossi iscritti, a scegliere', ab('Bonifico Rossi retta', []), [[['rossi2', 'cognome', false], ['rossi1', 'cognome', false]], null])
   ok('nome e cognome interi del genitore vincono sull’importo (già iscritto: in fondo, non preselezionato)', ab('Bonifico Verdi Luisa retta', ['c-judo']), [[['bianchi', 'genitore', true]], null])
   ok('…anche col solo cognome del genitore', ab('Bonifico Verdi retta', ['c-judo']), [[['bianchi', 'corso e cognome', false]], 'bianchi'])
   ok('più iscritti al corso con lo stesso cognome: si sceglie, nessuno preselezionato', ab('Bonifico Rossi retta', ['c-judo', 'c-karate']), [[['rossi2', 'corso e cognome', false], ['rossi1', 'corso e cognome', false]], null])
-  ok('iscrizione finita prima del movimento, o persona non attiva: non vale', [ab('Neri retta', ['c-judo']), ab('Gigi Rossi retta', ['c-judo'])[0].length], [[[], null], 1])
+  ok('iscrizione finita prima del movimento, o persona non attiva: la regola 4 non vale (Neri lo trova la 5, cognome unico)', [ab('Neri retta', ['c-judo']), ab('Gigi Rossi retta', ['c-judo'])[0].length], [[[['neri', 'cognome', false]], 'neri'], 1])
   ok('nome e cognome interi vincono sull\'importo: la regola 4 non si guarda', ab('Anna Rossi retta', ['c-judo']), [[['rossi2', 'nome intero', true]], null])
+}
+
+console.log('\n10. regola 5, il solo cognome; regola 6, il nome di battesimo e il corso')
+{
+  const I = (corso, dal = '2026-09-01', al = null) => ({ corsoId: `c-${corso}`, corso, dal, al })
+  const PRIMA = ['2025-09-01', '2026-06-30']
+  const pc = [
+    P('conti', 'Giulia', 'Conti'),
+    P('moro', 'Ada', 'Moro', { iscrizioni: [I('Judo 2')] }),
+    P('sala', 'Pia', 'Sala', { genitoreNome: 'Ugo', genitoreCognome: 'Tosi' }),
+    P('greco1', 'Rita', 'Greco', { iscrizioni: [I('Judo 2')] }),
+    P('greco2', 'Sara', 'Greco', { iscrizioni: [I('Judo 2', ...PRIMA)] }),
+    P('greco3', 'Tea', 'Greco'),
+    P('riva1', 'Eva', 'Riva', { iscrizioni: [I('Judo 2', ...PRIMA)] }),
+    P('riva2', 'Ivo', 'Riva', { iscrizioni: [I('Judo 2', '2027-01-10')] }),
+    P('riva3', 'Leo', 'Riva'),
+    P('pozzi1', 'Lia', 'Pozzi'),
+    P('pozzi2', 'Ugo', 'Pozzi'),
+    P('spento', 'Rino', 'Neri', { attiva: false }),
+    P('esposito', 'Giulia', 'Esposito', { iscrizioni: [I('Psicomotricità')] }),
+    P('marino', 'Giulia', 'Marino', { iscrizioni: [I('Judo 2')] }),
+    P('fabbri', 'Nora', 'Fabbri', { iscrizioni: [I('Aikido 2', ...PRIMA)] }),
+    P('galli', 'Nora', 'Galli', { iscrizioni: [I('Aikido 2')] }),
+    P('ricci', 'Olga', 'Ricci', { iscrizioni: [I('Aikido 2', ...PRIMA)] }),
+  ]
+  const ab = (testo, elenco = pc) => prova(() => { const r = a.abbinaMovimento({ testo, data: '2026-12-10', codiciFiscali: [] }, elenco); return [elenca(r), r.preselezionato] })
+  ok('cognome di una persona attiva sola: lei, preselezionata', ab('Bonifico CONTI retta'), ['Giulia Conti (cognome)', 'conti'])
+  ok('…anche se è il cognome del genitore', ab('Da TOSI TRN 1'), ['Pia Sala (cognome)', 'sala'])
+  ok('…già iscritta il giorno del movimento: col segno, non preselezionata', ab('Bonifico Moro retta'), ['Ada Moro (cognome, già iscritto)', null])
+  ok('chi non è attivo non conta: il cognome resta di uno solo', ab('Bonifico Neri retta', [...pc, P('neri', 'Elia', 'Neri')]), ['Elia Neri (cognome)', 'neri'])
+  ok('cognome di più persone: solo chi è iscritto il giorno del movimento', ab('Bonifico GRECO retta'), ['Rita Greco (cognome)', 'greco1'])
+  ok('…se nessuno lo è, chi è stato o sarà iscritto (in qualunque momento), a scegliere', ab('Bonifico RIVA retta'), ['Eva Riva (cognome); Ivo Riva (cognome)', null])
+  ok('…se nessuno ha iscrizioni, nessuno', ab('Bonifico POZZI retta'), ['nessuno', null])
+  ok('nome di battesimo + un corso a cui è iscritto, alla data: lei, mai preselezionata', ab("Retta psicomotricita' Giulia"), ['Giulia Esposito (nome e corso)', null])
+  ok('…chi è iscritto alla data vince su chi lo era prima', ab('Retta aikido Nora'), ['Nora Galli (nome e corso)', null])
+  ok('…se nessuno lo è alla data, vale un\'iscrizione in qualunque momento', ab('Retta aikido Olga'), ['Olga Ricci (nome e corso)', null])
+  ok('…le cifre del nome del corso non bastano', ab('Retta 2 Olga'), ['nessuno', null])
+  ok('…il solo nome, senza corso, non basta', ab('Retta Giulia'), ['nessuno', null])
+  ok('…né il corso senza il nome', ab('Retta aikido'), ['nessuno', null])
+  ok('il cognome vince su nome e corso: la regola 6 si guarda solo se la 5 non trova nessuno', ab('Retta aikido Nora Riva'), ['Eva Riva (cognome); Ivo Riva (cognome)', null])
+  ok('il corso non esce mai dall\'abbinamento', prova(() => JSON.stringify(a.abbinaMovimento({ testo: "Retta psicomotricita' Giulia", data: '2026-12-10', codiciFiscali: [] }, pc)).toLowerCase().includes('psico')), false)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

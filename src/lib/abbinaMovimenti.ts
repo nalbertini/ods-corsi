@@ -2,16 +2,20 @@ import { normalizzaNome } from './movimentiPersona'
 
 /**
  * Chi può aver pagato un movimento non identificato (banca o Satispay), con le stesse regole del database
- * (`supabase/119-abbina-movimenti.sql`, che le applica senza mostrare a chi amministra codici, genitori e date):
+ * (`supabase/120-abbina-cognome-nome-corso.sql`, che le applica senza mostrare a chi amministra codici, genitori e date):
  *  1. nome e cognome interi nel testo;
  *  2. se nessuno, nome e cognome del genitore nel testo: i suoi figli;
  *  3. se nessuno, un codice fiscale letto dalla causale: del genitore, o dell'adulto che paga per sé;
  *  4. se nessuno, l'importo: i corsi che costano quella cifra (`corsiConImporto`) e, fra i loro iscritti, chi ha nel testo
  *     il cognome suo o del genitore. Qui l'iscrizione è il segno a favore, non contro: «già iscritto» resta falso.
+ *  5. se nessuno, il cognome suo o del genitore: se è di una persona sola, lei; se no chi di loro è iscritto il giorno del
+ *     movimento, o (se nessuno) chi ha un'iscrizione in qualunque momento, con «già iscritto» falso come nella 4;
+ *  6. se nessuno, il nome di battesimo e una parola del nome di un corso a cui è iscritto (prima alla data, se no in
+ *     qualunque momento). Sui movimenti già collegati del database ha indovinato 4 volte su 6: si propone, ma non si preseleziona mai.
  * Chi è già iscritto il giorno del movimento si propone lo stesso (può pagare un altro corso) ma in fondo e col segno.
  */
 
-export type ComeAbbinato = 'nome intero' | 'genitore' | 'codice fiscale' | 'corso e cognome'
+export type ComeAbbinato = 'nome intero' | 'genitore' | 'codice fiscale' | 'corso e cognome' | 'cognome' | 'nome e corso'
 
 export interface Abbinato {
   id: string
@@ -23,7 +27,7 @@ export interface Abbinato {
 
 export interface EsitoAbbinamento {
   candidati: Abbinato[]
-  /** Solo con un candidato solo, non iscritto: negli altri casi sceglie chi amministra. */
+  /** Solo con un candidato solo, non iscritto, non per «nome e corso»: negli altri casi sceglie chi amministra. */
   preselezionato: string | null
 }
 
@@ -37,7 +41,7 @@ export interface PersonaDaAbbinare {
   genitoreNome: string | null
   genitoreCognome: string | null
   genitoreCodiceFiscale: string | null
-  iscrizioni: Array<{ dal: string; al: string | null; corsoId?: string }>
+  iscrizioni: Array<{ dal: string; al: string | null; corsoId?: string; corso?: string }>
 }
 
 const MASSIMO_ABBINATI = 8
@@ -59,17 +63,28 @@ const nelTesto = (nome: string, nelle: Set<string>): boolean => {
 
 const ordine = (a: Abbinato, b: Abbinato) => `${a.cognome} ${a.nome}`.localeCompare(`${b.cognome} ${b.nome}`, 'it') || a.id.localeCompare(b.id)
 
-/** Non iscritti prima (cognome e nome), iscritti in fondo; al massimo otto; preselezionato solo se uno e non iscritto. */
+/** Le parole di un corso che dicono quale: almeno tre lettere, non solo cifre («Judo 2» → judo). */
+const senzaApostrofi = (w: string): string => w.replace(/^'+|'+$/g, '')
+const paroleCorso = (nome: string): string[] => parole(nome).map(senzaApostrofi).filter((w) => w.length >= 3 && !/^[0-9]+$/.test(w))
+
+/** Non iscritti prima (cognome e nome), iscritti in fondo; al massimo otto; preselezionato solo se uno, non iscritto, non per «nome e corso». */
 export function ordinaAbbinati(abbinati: Abbinato[]): EsitoAbbinamento {
   const candidati = [...abbinati].sort((a, b) => Number(a.giaIscritto) - Number(b.giaIscritto) || ordine(a, b)).slice(0, MASSIMO_ABBINATI)
-  return { candidati, preselezionato: abbinati.length === 1 && !abbinati[0].giaIscritto ? abbinati[0].id : null }
+  const solo = abbinati.length === 1 ? abbinati[0] : null
+  return { candidati, preselezionato: solo && !solo.giaIscritto && solo.come !== 'nome e corso' ? solo.id : null }
 }
 
 export function abbinaMovimento(movimento: { testo: string; data: string; codiciFiscali: string[]; corsiImporto?: string[] }, persone: PersonaDaAbbinare[]): EsitoAbbinamento {
   const nelle = new Set(parole(movimento.testo))
   const attive = persone.filter((p) => p.attiva)
-  const come = (trovate: PersonaDaAbbinare[], c: ComeAbbinato): Abbinato[] =>
-    trovate.map((p) => ({ id: p.id, nome: p.nome, cognome: p.cognome, come: c, giaIscritto: p.iscrizioni.some((i) => i.dal <= movimento.data && (i.al === null || movimento.data <= i.al)) }))
+  const allaData = (i: { dal: string; al: string | null }) => i.dal <= movimento.data && (i.al === null || movimento.data <= i.al)
+  const come = (trovate: PersonaDaAbbinare[], c: ComeAbbinato, giaIscritto = (p: PersonaDaAbbinare) => p.iscrizioni.some(allaData)): Abbinato[] =>
+    trovate.map((p) => ({ id: p.id, nome: p.nome, cognome: p.cognome, come: c, giaIscritto: giaIscritto(p) }))
+  // Prima chi lo soddisfa il giorno del movimento; se nessuno, in qualunque momento (le iscrizioni vecchie non ci sono tutte).
+  const ibrida = (trovate: PersonaDaAbbinare[], vale: (i: PersonaDaAbbinare['iscrizioni'][number]) => boolean) => {
+    const allora = trovate.filter((p) => p.iscrizioni.some((i) => allaData(i) && vale(i)))
+    return allora.length ? allora : trovate.filter((p) => p.iscrizioni.some(vale))
+  }
 
   const perNome = attive.filter((p) => nelTesto(`${p.nome} ${p.cognome}`, nelle))
   if (perNome.length) return ordinaAbbinati(come(perNome, 'nome intero'))
@@ -87,8 +102,18 @@ export function abbinaMovimento(movimento: { testo: string; data: string; codici
         p.iscrizioni.some((i) => i.corsoId !== undefined && corsi.includes(i.corsoId) && i.dal <= movimento.data && (i.al === null || movimento.data <= i.al)) &&
         (nelTesto(p.cognome, nelle) || (!!p.genitoreCognome && nelTesto(p.genitoreCognome, nelle))),
     )
-    if (perCorso.length) return ordinaAbbinati(perCorso.map((p) => ({ id: p.id, nome: p.nome, cognome: p.cognome, come: 'corso e cognome', giaIscritto: false })))
+    if (perCorso.length) return ordinaAbbinati(come(perCorso, 'corso e cognome', () => false))
   }
+  const perCognome = attive.filter((p) => nelTesto(p.cognome, nelle) || (!!p.genitoreCognome && nelTesto(p.genitoreCognome, nelle)))
+  if (perCognome.length === 1) return ordinaAbbinati(come(perCognome, 'cognome'))
+  const fraIscritti = ibrida(perCognome, () => true)
+  if (fraIscritti.length) return ordinaAbbinati(come(fraIscritti, 'cognome', () => false))
+  const testoCorsi = new Set([...nelle].map(senzaApostrofi))
+  const perNomeCorso = ibrida(
+    attive.filter((p) => nelTesto(p.nome, nelle)),
+    (i) => paroleCorso(i.corso ?? '').some((w) => testoCorsi.has(w)),
+  )
+  if (perNomeCorso.length) return ordinaAbbinati(come(perNomeCorso, 'nome e corso', () => false))
   return { candidati: [], preselezionato: null }
 }
 
