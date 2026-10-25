@@ -76,6 +76,7 @@ import { ImportaBanca } from './ImportaBanca'
 import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica, Tasto, TestaColonna } from './comune'
 import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri, SchedaCandidata } from './CollegaPersona'
+import { useListino } from '../Costi'
 import { confermaDi, parolaDelMovimento, suggerisciMovimento } from '../../lib/suggerimentoMovimento'
 import { Bilancio } from './Bilancio'
 import { rigaDaSistemare } from '../../lib/bilancio'
@@ -964,7 +965,9 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
   // Il suggerimento: la voce dalle righe uguali, la persona dal nome nel testo. Propone e basta: si scrive solo con «Conferma».
   const parola = manuale ? parolaDelMovimento(riga) : null
   const trovate = useCarica(() => (parola ? d.cercaPagatori(parola) : Promise.resolve([])), [d, parola])
-  const sug = useMemo(() => parola && (trovate.dato === null || trovate.guaio) ? null : suggerisciMovimento(riga, righe, voci, trovate.dato ?? []), [riga, righe, voci, parola, trovate.dato, trovate.guaio])
+  // Il listino serve alla voce dall'importo: finché non arriva il blocco non c'è, per non proporre «fuori listino» a torto.
+  const listino = useListino()
+  const sug = useMemo(() => parola && (trovate.dato === null || trovate.guaio || listino === null) ? null : suggerisciMovimento(riga, righe, voci, trovate.dato ?? [], listino?.listino), [riga, righe, voci, parola, trovate.dato, trovate.guaio, listino])
   const [sugScelta, setSugScelta] = useState<string | null>(null)
   const [daSolo, setDaSolo] = useState(false)
   const confermaSug = sug ? confermaDi(sug, sugScelta) : null
@@ -991,54 +994,30 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
     if (!si) return
     void fai(() => d.annullaMovimento(riga.id), 'Movimento annullato', onFatto)
   }
-  const dettaglio: Array<[string, string]> = [
-    ['DATA', dataRicevuta(riga.data)],
-    ['TIPO', riga.tipo === 'giroconto' ? 'GIROCONTO' : riga.tipo === 'entrata' ? 'ENTRATA' : 'USCITA'],
-    ...(cambiabile(riga) ? [] : ([['VOCE', riga.voce ?? '—']] as Array<[string, string]>)),
-    ['CASSA', riga.tipo === 'giroconto' ? `${cassa} → ${cassaA}` : cassa],
-    ['IMPORTO', soldi(riga.importo)],
+  const chip = [
+    dataRicevuta(riga.data),
+    riga.tipo === 'giroconto' ? 'Giroconto' : riga.tipo === 'entrata' ? 'Entrata' : 'Uscita',
+    riga.tipo === 'giroconto' ? `Da ${cassa} a ${cassaA}` : cassa,
+    ...(cambiabile(riga) ? [] : [`Voce ${riga.voce ?? '—'}`]),
   ]
   return (
-    <div className="stack" style={{ gap: 14 }}>
-      <div className="row" style={{ gap: 10, alignItems: 'center' }}>
-        <span className="sg-etichetta">{manuale ? 'IL MOVIMENTO' : 'INCASSO DI UN ISCRITTO'}</span>
-        {riga.dallaChat && <span className="num sg-tag">Dalla chat</span>}
-      </div>
-      <span className="sg-riquadro-titolo ob">{riga.descrizione}</span>
-      <div className="sg-movimento-colonne">
-      <div className="stack" style={{ gap: 14 }}>
-      <div className="stack" style={{ gap: 0 }}>
-        {dettaglio.map(([k, v]) => (
-          <div key={k} className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline' }}>
-            <span className="sg-etichetta" style={{ width: 130, flexShrink: 0 }}>{k}</span>
-            <span style={{ fontSize: 15, minWidth: 0, overflowWrap: 'anywhere' }}>{v}</span>
+    <div className="stack" style={{ gap: 20 }}>
+      <div className="sg-movimento-testata">
+        <div className="stack" style={{ gap: 6, minWidth: 0 }}>
+          <div className="row" style={{ gap: 10, alignItems: 'center' }}>
+            <span className="sg-etichetta">{manuale ? 'IL MOVIMENTO' : 'INCASSO DI UN ISCRITTO'}</span>
+            {riga.dallaChat && <span className="num sg-tag">Dalla chat</span>}
           </div>
-        ))}
-      </div>
-      {(riga.personaId || (riga.tipo !== 'giroconto' && vuolePersona(riga.tipo, riga.voce ?? undefined))) && (
-        <div className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline', flexWrap: 'wrap' }}>
-          <span className="sg-etichetta" style={{ width: 130, flexShrink: 0 }}>PERSONA</span>
-          {riga.personaId ? (
-            <span style={{ fontSize: 15, minWidth: 0, overflowWrap: 'anywhere' }}>{nomePersona ?? '…'}</span>
-          ) : (
-            <span style={{ fontSize: 15, color: 'var(--rosso-testo)' }}>Nessuna: di chi è?</span>
-          )}
-          {riga.personaId && onPersona && (
-            <button type="button" className="sg-link" style={DITO} onClick={() => onPersona(riga.personaId ?? '')}>Apri la scheda ›</button>
-          )}
-          {manuale && !riga.annullato && !collegando && (
-            <>
-              <button type="button" className="sg-link" style={DITO} onClick={() => setCollegando(true)}>{riga.personaId ? 'Cambia persona' : 'Collega a una persona'}</button>
-              {riga.personaId && <button type="button" className="sg-link" style={DITO} onClick={() => void scollega()}>Scollega</button>}
-            </>
-          )}
+          <span className="sg-riquadro-titolo ob">{riga.descrizione}</span>
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap', paddingTop: 6 }}>
+            {chip.map((c) => <span key={c} className="sg-movimento-chip">{c}</span>)}
+          </div>
         </div>
-      )}
-      {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={() => setCollegando(false)} />}
-      {!manuale && <span className="sg-sotto">Si cambia nella scheda della persona, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
-      {manuale && riga.annullato && <span className="sg-sotto"><span className="num sg-tag" data-tipo="manca">Annullato</span> Resta in elenco e non si conta più.</span>}
+        <div className="sg-movimento-importo">
+          <span className="sg-etichetta">{riga.tipo === 'giroconto' ? 'GIROCONTO' : riga.tipo === 'entrata' ? 'ENTRATA' : 'USCITA'}</span>
+          <b className="num">{soldi(riga.importo)}</b>
+        </div>
       </div>
-      <div className="stack" style={{ gap: 14 }}>
       {manuale && !riga.annullato && sug && !daSolo && (
         <div className="stack" style={{ gap: 14, padding: '16px 18px', border: `2px solid ${sug.caso === 'D' ? 'var(--line)' : 'var(--giallo)'}`, background: 'var(--bg)' }}>
           <span className="sg-etichetta">{sug.caso === 'D' ? 'SUGGERITO' : 'SUGGERITO · CONFERMA TU'}</span>
@@ -1046,12 +1025,13 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
             <span className="sg-sotto">Non c'è un suggerimento: scegli la voce qui sotto.</span>
           ) : (
             <>
+              <div className="sg-sug-colonne">
               <div className="stack" style={{ gap: 4 }}>
                 <span className="sg-etichetta">VOCE</span>
                 {sug.voce ? (
                   <>
                     <b style={{ fontSize: 18 }}>{sug.voce.nome}</b>
-                    <span className="sg-sotto">{sug.voce.motivo}.</span>
+                    <span className="sg-sotto" style={sug.voce.avviso ? { color: 'var(--giallo-testo)', fontWeight: 600 } : undefined}>{sug.voce.motivo}.</span>
                   </>
                 ) : (
                   <span className="sg-sotto">Non so la voce: scegli tu.</span>
@@ -1072,9 +1052,10 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
                 {sug.persona === 'gia-collegata' && <span className="sg-sotto">Già collegata: cambia solo la voce.</span>}
                 {sug.persona === 'da-scegliere' && <span className="sg-sotto">Da scegliere: nessuna scheda ha il nome che c'è nel testo.</span>}
               </div>
+              </div>
               {sug.persona === 'candidati' && <span className="sg-sotto">Collega la voce e la persona. Non crea una ricevuta: la quota resta da pagare finché non registri l’incasso nella scheda della persona.</span>}
               {sugGuaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{sugGuaio}</span>}
-              <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+              <div className="row sg-movimento-gruppo">
                 <button type="button" className="sg-btn sg-btn-pieno" disabled={!confermaSug || !!sugGuaio} onClick={() => confermaSug && void fai(() => d.cambiaVoceMovimenti([riga.id], confermaSug.voceId, confermaSug.personaId), `Voce cambiata in «${sug.voce?.nome ?? ''}»`, onFatto)}>
                   {sug.persona === 'candidati' ? 'Conferma voce e persona' : 'Conferma la voce'}
                 </button>
@@ -1086,7 +1067,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
       )}
       {manuale && !riga.annullato && (
         <>
-          <div className="sg-due sg-scheda-campi">
+          <div className="sg-due sg-scheda-campi" style={{ maxWidth: 'none' }}>
             {cambiabile(riga) && (
               <Campo id="ma-voce" etichetta="VOCE" largo>
                 <select id="ma-voce" className="sg-campo" value={voceId} onChange={(e) => setVoceId(e.target.value)}>
@@ -1116,8 +1097,28 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           <span className="sg-sotto">Importo, data e cassa non si cambiano: si annulla e si rifà.{giro ? ' La descrizione di un giroconto la scrive il sistema.' : ' La voce sì, anche se il giorno è già chiuso: i soldi non cambiano.'}</span>
         </>
       )}
-      </div>
-      </div>
+      {(riga.personaId || (riga.tipo !== 'giroconto' && vuolePersona(riga.tipo, riga.voce ?? undefined))) && (
+        <div className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline', flexWrap: 'wrap' }}>
+          <span className="sg-etichetta" style={{ width: 130, flexShrink: 0 }}>PERSONA</span>
+          {riga.personaId ? (
+            <span style={{ fontSize: 15, minWidth: 0, overflowWrap: 'anywhere' }}>{nomePersona ?? '…'}</span>
+          ) : (
+            <span style={{ fontSize: 15, color: 'var(--rosso-testo)' }}>Nessuna: di chi è?</span>
+          )}
+          {riga.personaId && onPersona && (
+            <button type="button" className="sg-link" style={DITO} onClick={() => onPersona(riga.personaId ?? '')}>Apri la scheda ›</button>
+          )}
+          {manuale && !riga.annullato && !collegando && (
+            <>
+              <button type="button" className="sg-link" style={DITO} onClick={() => setCollegando(true)}>{riga.personaId ? 'Cambia persona' : 'Collega a una persona'}</button>
+              {riga.personaId && <button type="button" className="sg-link" style={DITO} onClick={() => void scollega()}>Scollega</button>}
+            </>
+          )}
+        </div>
+      )}
+      {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={() => setCollegando(false)} />}
+      {!manuale && <span className="sg-sotto">Si cambia nella scheda della persona, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
+      {manuale && riga.annullato && <span className="sg-sotto"><span className="num sg-tag" data-tipo="manca">Annullato</span> Resta in elenco e non si conta più.</span>}
       {manuale && !giro && (traccia.guaio || (traccia.dato?.length ?? 0) > 0) && (
         <div className="stack" style={{ gap: 6 }}>
           <span className="sg-etichetta">COSA È CAMBIATO</span>
@@ -1127,9 +1128,9 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           ))}
         </div>
       )}
-      <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+      <div className="sg-movimento-piede">
         {manuale && !riga.annullato && (
-          <>
+          <div className="sg-movimento-gruppo">
             {cambiabile(riga) && (
               <button type="button" className="sg-btn sg-btn-pieno" disabled={!voceId || voceId === voceAttuale?.id || !!voceGuaio} onClick={() => void fai(() => d.cambiaVoceMovimenti([riga.id], voceId, conPersona ? personaId : undefined), `Voce cambiata in «${offerte.find((v) => v.id === voceId)?.nome ?? ''}»`, onFatto)}>
                 Cambia la voce
@@ -1138,16 +1139,18 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
             <Tasto disabled={!descrizione.trim()} onClick={() => void fai(() => d.correggiTestoMovimento(riga.id, descrizione, nota.trim() || undefined), 'Testo corretto', onFatto)}>
               Salva il testo
             </Tasto>
-            {!chiuso && (
-              <Tasto tono="rosso" disabled={chiedendo} onClick={() => void annulla()}>
-                Annulla il movimento
-              </Tasto>
-            )}
-          </>
+          </div>
         )}
-        <Tasto onClick={onChiudi}>
-          Chiudi
-        </Tasto>
+        <div className="sg-movimento-gruppo">
+          {manuale && !riga.annullato && !chiuso && (
+            <Tasto tono="rosso" disabled={chiedendo} onClick={() => void annulla()}>
+              Annulla il movimento
+            </Tasto>
+          )}
+          <Tasto onClick={onChiudi}>
+            Chiudi
+          </Tasto>
+        </div>
       </div>
     </div>
   )

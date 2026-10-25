@@ -326,12 +326,21 @@
   .sg-tre > * { grid-column: auto !important; }
 }
 .sg-scheda-campi { max-width: 720px; }
-/* La scheda di un movimento: il riepilogo a sinistra, il da fare (suggerimento e campi) a destra. Sotto i 1100px una colonna sola. */
-.sg-movimento-colonne { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
-@media (min-width: 1100px) {
-  .sg-movimento-colonne { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start; }
-  .sg-movimento-colonne .sg-scheda-campi { grid-template-columns: minmax(0, 1fr); max-width: none; }
-  .sg-movimento-colonne .sg-scheda-campi > * { grid-column: auto !important; }
+/* La scheda di un movimento: testata (chi, quanto, quando), suggerimento a tutta larghezza, campi, piede coi tasti. Sul telefono tutto in colonna, tasti a tutta larghezza. */
+.sg-movimento-testata { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.sg-movimento-chip { padding: 6px 12px; border: 2px solid var(--line-soft); font-size: 14px; font-weight: 600; }
+.sg-movimento-importo { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: none; }
+.sg-movimento-importo b { font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+.sg-sug-colonne { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.sg-movimento-piede { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 20px; border-top: 2px solid var(--line-soft); }
+.sg-movimento-gruppo { display: flex; gap: 10px; flex-wrap: wrap; }
+@media (min-width: 700px) { .sg-sug-colonne { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; } }
+@media (max-width: 699px) {
+  .sg-movimento-testata { flex-direction: column; }
+  .sg-movimento-importo { align-items: flex-start; }
+  .sg-movimento-importo b { font-size: 40px; }
+  .sg-movimento-piede, .sg-movimento-gruppo { flex-direction: column; align-items: stretch; width: 100%; }
+  .sg-movimento-gruppo button { width: 100%; }
 }
 .sg-scheda-piede { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding-top: 16px; border-top: 2px solid var(--line-soft); }
 .sg-ricorrenza {
