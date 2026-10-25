@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.220.0 — 25 ottobre 2026
+
+### Novità
+
+- Il movimento da classificare propone anche i figli dal nome o dal codice fiscale del genitore, e dall'importo del corso
+
 ## 0.219.0 — 25 ottobre 2026
 
 ### Novità
