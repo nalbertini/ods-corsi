@@ -179,10 +179,9 @@ quando arriva la prova.
 - Suggerimento da classificare: il caricamento in `Contabilita.tsx` (listino
   assente → solo importo escluso; nessun abbinato → ricerca per nome) sta nel
   `.tsx`; nessuna prova, solo collaudo a mano.
-- Suggerimento da classificare: `ImportaBanca.tsx` (una richiesta per
-  movimento, al massimo trenta; errore ignorato; «Conferma quelli che sembrano
-  giusti» segna i movimenti come coperti) sta nel `.tsx`; nessuna prova, solo
-  collaudo a mano (DA FARE: scrive).
+- Suggerimento da classificare: `ImportaBanca.tsx` (al massimo trenta
+  richieste; «Conferma quelli che sembrano giusti» scrive) sta nel `.tsx`:
+  solo collaudo a mano.
 - Suggerimento da classificare: la traduzione verso il database
   (`codiceFiscaleLetto` → `codice_fiscale_letto`, `gia_iscritto` →
   `giaIscritto`) sta in `segreteriaSupabase.ts`; le due metà sono provate, il
