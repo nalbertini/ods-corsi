@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito: Inter (qui da Google Fonts, in app file locale OFL). -->
+  <!-- Inter (qui da Google Fonts, in app file locale OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -18,11 +18,11 @@
 </helmet>
 <div role="row" style="display: grid; grid-template-columns: {{griglia}}; gap: 14px; align-items: center; width: 100%; padding: 0 14px 6px; border-bottom: 2px solid {{c.lineSoft}}">
   <sc-for list="{{colonne}}" as="k" hint-placeholder-count="5">
-    <span style="display: inline-flex; align-items: center; gap: 4px; justify-self: {{k.lato}}; white-space: nowrap; font-family: {{fam}}; font-size: {{corpo}}; font-weight: 700; letter-spacing: 0.18em; color: {{k.colore}}"><sc-if value="{{k.cert}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="{{k.testo}}"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 11v6M9 14h6"/></svg></sc-if><sc-if value="{{k.euro}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="{{k.testo}}"><path d="M18 7c-1.2-1.3-3-2-5-2a7 7 0 0 0 0 14c2 0 3.8-.7 5-2"/><path d="M4 10h9M4 14h9"/></svg></sc-if><sc-if value="{{k.parola}}" hint-placeholder-val="{{ true }}">{{k.testo}}</sc-if><span style="font-size: {{segnoCorpo}}; letter-spacing: 0; opacity: {{k.opacita}}">{{k.segno}}</span></span>
+    <span style="display: inline-flex; align-items: center; gap: 4px; justify-self: {{k.lato}}; white-space: nowrap; font-family: {{fam}}; font-size: {{corpo}}; font-weight: 700; letter-spacing: 0.18em; color: {{k.colore}}"><sc-if value="{{k.conIcona}}" hint-placeholder-val="{{ false }}"><dc-import name="Icona" nome="{{k.icona}}" misura="14" colore="{{k.colore}}" hint-size="14px,14px"></dc-import></sc-if><sc-if value="{{k.cert}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="{{k.testo}}"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 11v6M9 14h6"/></svg></sc-if><sc-if value="{{k.euro}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="{{k.testo}}"><path d="M18 7c-1.2-1.3-3-2-5-2a7 7 0 0 0 0 14c2 0 3.8-.7 5-2"/><path d="M4 10h9M4 14h9"/></svg></sc-if><sc-if value="{{k.parola}}" hint-placeholder-val="{{ true }}">{{k.testo}}</sc-if><sc-if value="{{carattere}}" hint-placeholder-val="{{ true }}"><span style="font-size: {{segnoCorpo}}; letter-spacing: 0; opacity: {{k.opacita}}">{{k.segno}}</span></sc-if><sc-if value="{{iconaFreccia}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; opacity: {{k.opacita}}"><dc-import name="Icona" nome="{{k.freccia}}" misura="14" colore="{{k.colore}}" hint-size="14px,14px"></dc-import></span></sc-if></span>
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"colonne":{"editor":"text","default":"NOME|CORSI|CONTATTO|IN REGOLA|30 GIORNI"},"griglia":{"editor":"text","default":"1.2fr 1.4fr 1.3fr 150px 80px"},"ordinata":{"editor":"text","default":"NOME"},"verso":{"editor":"enum","options":["su","giu","niente"],"default":"su"},"ultimaADestra":{"editor":"boolean","default":true},"grande":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":900,"height":40}}'>
+<script data-dc-script data-props='{"colonne":{"editor":"text","default":"NOME|CORSI|CONTATTO|IN REGOLA|30 GIORNI"},"griglia":{"editor":"text","default":"1.2fr 1.4fr 1.3fr 150px 80px"},"ordinata":{"editor":"text","default":"NOME"},"verso":{"editor":"enum","options":["su","giu","niente"],"default":"su"},"ultimaADestra":{"editor":"boolean","default":true},"destra":{"editor":"text","default":""},"grande":{"editor":"boolean","default":false},"frecce":{"editor":"enum","options":["carattere","icona"],"default":"carattere"},"$preview":{"width":900,"height":40}}'>
 // Riproduzione 1:1 della testata di una tabella di segreteria: .sg-lista-testa (src/styles.css riga 1478) con la
 // griglia della riga sotto (.sg-riga-iscritto riga 1544: 1.2fr 1.4fr 1.3fr 150px 80px, gap 14px) e le intestazioni
 // che ordinano (.sg-etichetta riga 1329 + .sg-ordina righe 1480-1483), come le disegna `colonna` di
@@ -35,38 +35,42 @@
 // freccia 12px, righe 1603-1604). ordinata: il testo della colonna ordinata; verso: su / giu / niente.
 // Una colonna «NOME@certificato» o «NOME@quota» mostra l'icona (18px, tratto 1.75: foglio con la croce; euro di
 // ICONE_MENU.pagamenti) invece della parola, per le colonne strette del telefono.
-// ultimaADestra: l'ultima colonna e' allineata a destra (30 GIORNI, `destra`).
-// tema sito (`:root[data-look='sito']`): l'etichetta di colonna e' in Inter (`.sg-etichetta`), stessa misura e maiuscole; il filetto e' #cfe6f4.
+// COSTRUITO «icone dappertutto» (`iconaVerso` di src/lib/icone.ts): frecce="icona" disegna ▲ ▼ ↕ con le icone crescente / decrescente / ordina di Icona.dc.html (14px).
+// ultimaADestra: l'ultima colonna e' allineata a destra (30 GIORNI, `destra`). destra: altre colonne a destra, separate da | (le cifre, come nella riga sotto: COMPENSI).
+// Look del sito (`:root[data-look='sito']`): l'etichetta di colonna e' in Inter (`.sg-etichetta`), stessa misura e maiuscole; il filetto e' #cfe6f4.
 // Non riprodotto: il passaggio del mouse.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', tasto: '#b8b8b2', menu: '#161616' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#ebebe7' },
   sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', tasto: '#0d2a3d', menu: '#0d2a3d' },
 };
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
-const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
 const nomi = String(p.colonne ?? 'NOME|CORSI|CONTATTO|IN REGOLA|30 GIORNI').split('|').map((x) => x.trim()).filter(Boolean);
     // «NOME@icona» mette l'icona al posto della parola (che resta per chi legge lo schermo): certificato, quota.
     const icone = nomi.map((x) => x.split('@')[1] || '');
+    // COSTRUITO «icone dappertutto» (Iscritti, Movimenti, Presenze istruttori): «NOME+icona» mette un'icona di Icona.dc.html (14px, aria-hidden) davanti alla parola, che resta.
+    const davanti = nomi.map((x) => x.split('+')[1] || '');
+    nomi.forEach((x, i) => { nomi[i] = x.split('+')[0]; });
     nomi.forEach((x, i) => { nomi[i] = x.split('@')[0]; });
     const verso = p.verso || 'su';
     const grande = truthy(p.grande);
     const colonne = nomi.map((testo, i) => {
       const acceso = testo === (p.ordinata ?? 'NOME') && verso !== 'niente';
       return {
+        icona: davanti[i], conIcona: !!davanti[i],
         testo, cert: icone[i] === 'certificato', euro: icone[i] === 'quota', parola: !icone[i],
         segno: acceso ? (verso === 'giu' ? '▼' : '▲') : '↕',
+        freccia: acceso ? (verso === 'giu' ? 'decrescente' : 'crescente') : 'ordina',
         opacita: acceso ? '1' : '0.35',
         colore: acceso ? c.text : c.dim,
-        lato: truthy(p.ultimaADestra ?? true) && i === nomi.length - 1 ? 'end' : 'start',
+        lato: (truthy(p.ultimaADestra ?? true) && i === nomi.length - 1) || String(p.destra ?? '').split('|').includes(testo) ? 'end' : 'start',
       };
     });
-    return { c, fam: p.tema === 'sito' ? INTER : COND, colonne, griglia: p.griglia || '1.2fr 1.4fr 1.3fr 150px 80px', corpo: grande ? '13px' : '12px', segnoCorpo: grande ? '12px' : '0.85em' };
+    const iconaFreccia = p.frecce === 'icona';
+    return { carattere: !iconaFreccia, iconaFreccia, c, fam: INTER, colonne, griglia: p.griglia || '1.2fr 1.4fr 1.3fr 150px 80px', corpo: grande ? '13px' : '12px', segnoCorpo: grande ? '12px' : '0.85em' };
   }
 }
 </script>

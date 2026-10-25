@@ -18,19 +18,18 @@
   <div style="display: flex; align-items: center; min-height: 44px; padding: 0 14px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">MOSTRA TUTTI</div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"testo":{"editor":"text","default":"gio"},"trovati":{"editor":"text","default":"17"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":560,"height":48}}'>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"gio"},"trovati":{"editor":"text","default":"17"},"$preview":{"width":560,"height":48}}'>
 // FiltroRicerca (src/components/segreteria/FiltroRicerca.tsx, .sg-filtro-ricerca): la riga sopra ISCRITTI, CORSI e RICHIESTE
 // ONLINE aperti da «ALTRI N» della ricerca: «Cercato «gio»: 17 trovati.» (14px, `sec`) e il chip MOSTRA TUTTI (.sg-chip,
 // 44px, bordo `line`, testo `tasto`). Colori da CercaIscritto.dc.html.
 const T = {
-  scuro: { line: '#333333', sec: '#c9c9c4', tasto: '#b8b8b2' },
-  chiaro: { line: '#d4d4ce', sec: '#3d3d3a', tasto: '#4a4a46' },
+  sito: { line: '#cfe6f4', sec: '#0d2a3d', tasto: '#0d2a3d' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const n = Number(p.trovati ?? 17);
-    return { c: T[p.tema] || T.scuro, frase: `Cercato «${p.testo ?? 'gio'}»: ${n} ${n === 1 ? 'trovato' : 'trovati'}.` };
+    return { c: T.sito, frase: `Cercato «${p.testo ?? 'gio'}»: ${n} ${n === 1 ? 'trovato' : 'trovati'}.` };
   }
 }
 </script>

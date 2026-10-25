@@ -3,7 +3,7 @@
 //
 //   node scripts/prova-campi.mjs
 //
-// Il bordo di un campo deve vedersi sullo sfondo, anche nel tema scuro
+// Il bordo di un campo deve vedersi sullo sfondo
 // (WCAG 1.4.11, 3:1): per questo c'è `--riga-campo`, più chiaro di `--line`,
 // che resta per le righe e i contenitori di tutta l'app. Le scelte a una sola
 // risposta (`una` di SceltaCorsi) sono un segmento pieno, non una casella.
@@ -62,17 +62,15 @@ const contrasto = (a, b) => {
   return (x + 0.05) / (y + 0.05)
 }
 
-const TEMI = { scuro: ':root', chiaro: ":root[data-tema='chiaro']", tatami: ":root[data-tema='tatami']" }
+const TEMI = { sito: ":root[data-look='sito']" }
 
 console.log('Il token --riga-campo')
 const valore = {}
 for (const [tema, sel] of Object.entries(TEMI)) {
   valore[tema] = token(sel, '--riga-campo')
-  ok(`il tema ${tema} definisce --riga-campo`, valore[tema] !== null, true)
+  ok(`l'aspetto ${tema} definisce --riga-campo`, valore[tema] !== null, true)
 }
-ok('scuro: --riga-campo è #6e6e6a', valore.scuro, '#6e6e6a')
-ok('chiaro: --riga-campo è #8a8a85', valore.chiaro, '#8a8a85')
-// Il Tatami non ha un valore fisso: basta che il bordo si veda (3:1, sotto).
+ok('sito: --riga-campo è #14709f', valore.sito, '#14709f')
 
 console.log('Il contrasto contro lo sfondo (almeno 3:1)')
 for (const [tema, sel] of Object.entries(TEMI))
@@ -109,8 +107,7 @@ ok('le altre scelte hanno il bordo --riga-campo', bordo('.modulo-corso')?.includ
 
 console.log('DESIGN.md')
 const design = readFileSync('DESIGN.md', 'utf8')
-ok('ha il token riga-campo', /^\s*riga-campo:\s*"#6e6e6a"/m.test(design), true)
-ok('ha il token riga-campo-chiara', /^\s*riga-campo-chiara:\s*"#8a8a85"/m.test(design), true)
+ok('ha il token riga-campo', /^\s*riga-campo:\s*"#14709f"/m.test(design), true)
 ok('la descrizione dei campi cita riga-campo', /campi[^\n]*riga-campo|riga-campo[^\n]*campi|\*\*Riga Campo\*\*/i.test(design.split('---').slice(2).join('---')), true)
 
 console.log('Il tasto di invio del modulo')

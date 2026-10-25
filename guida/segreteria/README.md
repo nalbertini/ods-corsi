@@ -166,6 +166,15 @@ il dato, il «—», resta in fondo. In **CERTIFICATO** e **QUOTA** vengono prim
 guai più grossi, in **STATO** prima quelle da guardare. L'ordine resta finché non si
 cambia voce del menu, anche aprendo una scheda e tornando.
 
+## Le icone
+
+I tasti che si usano ovunque hanno un'icona davanti alla parola, sempre la
+stessa: **Salva**, **Annulla**, **Aggiungi**, **Cerca**, **Elimina**,
+**Scarica**, **Stampa**, **Copia**, **Importa**, **Modifica**, **Chiudi**. Gli
+altri tasti restano con la sola parola. Nel nuovo aspetto gli stati con l'icona
+(in regola, da confermare, manca) sono un'etichetta colorata piena invece del
+bordo col segno ✓ o ✕.
+
 ## Il giro di una settimana normale
 
 1. **Lunedì**: uno sguardo alla [Settimana](settimana.md). Le lezioni passate

@@ -13,19 +13,19 @@ import {
 } from '../../lib/sitoPagine'
 import { databaseConPezzi, FRASE_SENZA_PEZZI, pagineDaPulsante, pezziVuoti } from '../../lib/sitoPezzi'
 import { Immagini } from './ImmaginiSito'
-import { Campo, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { Campo, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica, Tasto, Tag } from './comune'
 
 // L'editor (Puck, con l'anteprima che porta il generatore del sito) è grosso: si scarica solo quando si apre una pagina.
 const EditorPuck = lazy(() => import('./EditorPuck'))
 
-const TONO_STATO: Record<StatoPagina, string | undefined> = { pubblicata: 'fatto', modificata: 'presto', 'solo-bozza': undefined, nascosta: undefined }
+const TONO_STATO: Record<StatoPagina, 'fatto' | 'presto' | undefined> = { pubblicata: 'fatto', modificata: 'presto', 'solo-bozza': undefined, nascosta: undefined }
 
 const Stato = ({ p }: { p: PaginaSito }) => {
   const s = statoPagina(p)
   return (
-    <span className="sg-tag" data-tipo={TONO_STATO[s]}>
+    <Tag tipo={TONO_STATO[s]} icona={s === 'pubblicata' ? 'fatto' : undefined}>
       {PAROLE_STATO[s]}
-    </span>
+    </Tag>
   )
 }
 
@@ -61,9 +61,9 @@ function NuovaPagina({ d, altri, aPezzi, finita }: { d: DatiSegreteria; altri: s
         <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || !titolo.trim() || !!no} onClick={() => void crea()}>
           Crea la pagina
         </button>
-        <button type="button" className="sg-btn sg-btn-linea" onClick={() => finita()}>
+        <Tasto onClick={() => finita()}>
           Annulla
-        </button>
+        </Tasto>
       </div>
       {avviso}
     </div>
@@ -128,7 +128,7 @@ function ElencoVoci({ d, dove, titolo, voci, pagine, ricarica }: { d: DatiSegret
       {cambiata && (
         <div className="row" style={{ gap: 8 }}>
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => setModifica(voci)}>Butta i cambi</button>
-          <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || problemi.length > 0} onClick={() => void fai(() => d.salvaMenuSito(dove, modifica.map((v) => ({ ...v, etichetta: v.etichetta.trim() }))), `${titolo} salvato`, ricarica)}>Salva</button>
+          <Tasto tono="pieno" disabled={lavora || problemi.length > 0} onClick={() => void fai(() => d.salvaMenuSito(dove, modifica.map((v) => ({ ...v, etichetta: v.etichetta.trim() }))), `${titolo} salvato`, ricarica)}>Salva</Tasto>
         </div>
       )}
       {avviso}

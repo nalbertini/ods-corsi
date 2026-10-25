@@ -92,7 +92,7 @@ const nav = sg.slice(sg.indexOf('<nav className="sg-menu"'), sg.indexOf('</nav>'
 const chiBox = nav.slice(nav.indexOf('className="sg-chi"'))
 ok('in cima al menu non c\'è più la riga di icone con ? e impostazioni', /className="row sg-icone"/.test(nav), false)
 ok('nel riquadro di chi è dentro: «Aiuto» e «Impostazioni» scritti', [/sg-voce-testo">Aiuto</.test(sg) && /\{guidaNome\}/.test(chiBox), /sg-voce-testo">Impostazioni</.test(sg) && /\{impostazioniNome\}/.test(chiBox)], [true, true])
-ok('il riquadro tiene il tema e la ricerca resta nel menu', [/<TastoTema \/>/.test(chiBox), /<CercaIscritto/.test(nav)], [true, true])
+ok('il riquadro non ha più il tasto del tema e la ricerca resta nel menu', [/<TastoTema/.test(chiBox), /<CercaIscritto/.test(nav)], [false, true])
 
 console.log('\nLa ricerca con ⌘K, in una finestra al centro')
 const sc = existsSync('src/lib/scorciatoiaRicerca.ts') ? await impacchetta("export * from './src/lib/scorciatoiaRicerca'") : {}

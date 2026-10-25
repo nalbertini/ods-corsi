@@ -283,6 +283,13 @@ console.log('\n6, 7 e 14 · IL CERTIFICATO ALL\'ULTIMO GIORNO DELLA GARA')
   ok('se sono tutti a posto non c\'è l\'avviso', m.avvisoCertificati(righe.filter((r) => r.personaId === 'b')), null)
   ok('senza atleti non c\'è l\'avviso', m.avvisoCertificati([]), null)
   ok('l\'aggiunta di uno senza certificato riesce (avvisa, non blocca)', m.aggiungiAtleti([], 'm', ['d'], tutti).length, 1)
+
+  // La striscia in testa alla scheda: atleti, certificati a posto e chi non lo è, per nome.
+  const rie = m.riepilogoCertificati(righe)
+  ok('la striscia conta 5 atleti e 2 a posto (Bea e la bambina)', [rie.atleti, rie.aPosto], [5, 2])
+  ok('e nomina chi non ha il certificato valido, per cognome', rie.senza.map((r) => r.cognome).sort(), righe.filter((r) => r.senzaCertificatoValido).map((r) => r.cognome).sort())
+  ok('senza atleti: zero e nessun nome', m.riepilogoCertificati([]), { atleti: 0, aPosto: 0, senza: [] })
+  ok('la striscia e l\'avviso contano gli stessi senza certificato', m.avvisoCertificati(righe), `${rie.senza.length} ${rie.senza.length === 1 ? 'atleta' : 'atleti'} senza certificato valido`)
 }
 
 // ---------------------------------------------------------------------------

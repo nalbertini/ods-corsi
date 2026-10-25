@@ -1634,7 +1634,7 @@ console.log('\ngli errori del server e le voci dei tablet, detti per la segreter
   ok('due che diventerebbero uguali restano intere', doppie.map((v) => m.nomeVoce(v, doppie)), doppie)
 }
 
-// Il testo spento del tema chiaro sul fondo del menu e sui riquadri alti: le
+// Il testo spento sui fondi chiari e sui riquadri alti: le
 // scritte piccole (titoli dei gruppi, ruolo, versione) devono arrivare a 4,5:1.
 // L'app e il timer hanno lo stesso token: si provano tutti e due.
 {
@@ -1653,16 +1653,9 @@ console.log('\ngli errori del server e le voci dei tablet, detti per la segreter
       const corpo = css.slice(css.indexOf(sel + ' {')).split('}')[0]
       return Object.fromEntries([...corpo.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/gi)].map((m) => [m[1], m[2]]))
     }
-    const chiaro = tema(":root[data-tema='chiaro']")
-    for (const fondo of ['menu', 'surface-2'].filter((f) => chiaro[f])) ok(`${file}, tema chiaro: testo spento su --${fondo}`, contrasto(chiaro.dim, chiaro[fondo]), 4.5)
-    ok(`${file}, tema scuro: il testo spento resta quello`, tema(':root').dim, '#8c8c88')
-    // Il Tatami: il testo spento si legge su tutti i fondi chiari, e sul menu
-    // verde muschio si legge quello che il menu rimappa (i token di testo lì
-    // tornano chiari). Il blocco mancante è un caso rosso, non un errore.
-    const tatami = tema(":root[data-tema='tatami']")
-    for (const fondo of ['bg', 'surface', 'surface-2']) ok(`${file}, tema tatami: testo spento su --${fondo}`, tatami.dim && tatami[fondo] ? contrasto(tatami.dim, tatami[fondo]) : 0, 4.5)
-    const nelMenu = [...css.matchAll(/:root\[data-tema=['"]?tatami['"]?\]\s+[^{}]+\{([^}]*)\}/g)].map((m) => m[1].match(/--dim:\s*(#[0-9a-f]{6})/i)?.[1]).find(Boolean)
-    ok(`${file}, tema tatami: il testo spento nel menu su --menu`, nelMenu && tatami.menu ? contrasto(nelMenu, tatami.menu) : 0, 4.5)
+    // Un solo aspetto, quello del sito: il testo spento si legge sui fondi chiari (il menu scuro rimappa i suoi token).
+    const sito = tema(file.startsWith('timer') ? ":root[data-tema='sito']" : ":root[data-look='sito']")
+    for (const fondo of ['bg', 'surface', 'surface-2'].filter((f) => sito[f])) ok(`${file}, testo spento su --${fondo}`, sito.dim ? contrasto(sito.dim, sito[fondo]) : 0, 4.5)
   }
 }
 

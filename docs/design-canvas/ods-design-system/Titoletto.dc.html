@@ -9,14 +9,15 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito (modulo di iscrizione): Big Shoulders Display e Inter. In app saranno i file locali OFL di public/risorse (come nel sito pubblico, src/lib/sitoGenera.ts); qui, come per Saira e Barlow, il canvas li prende da Google Fonts. -->
+  <!-- Big Shoulders Display e Inter. In app saranno i file locali OFL di public/risorse (come nel sito pubblico, src/lib/sitoGenera.ts); qui, come per Saira e Barlow, il canvas li prende da Google Fonts. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; align-items: baseline; gap: 10px; padding: {{padding}}">
+<div style="display: flex; align-items: {{allinea}}; gap: 10px; padding: {{padding}}">
+  <sc-if value="{{conIcona}}" hint-placeholder-val="{{ false }}"><dc-import name="Icona" nome="{{icona}}" misura="20" colore="{{colore}}" hint-size="20px,20px"></dc-import></sc-if>
   <span style="font-family: {{famiglia}}; font-size: {{corpo}}; font-weight: {{peso}}; letter-spacing: {{spazio}}; color: {{colore}}">{{label}}</span>
   <div style="flex-grow: 1; height: 2px; background: {{riga}}"></div>
   <sc-if value="{{haConto}}" hint-placeholder-val="{{ true }}">
@@ -24,17 +25,16 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"label":{"editor":"text","default":"LEZIONI"},"conto":{"editor":"text","default":""},"dentro":{"editor":"boolean","default":false},"giallo":{"editor":"boolean","default":false},"piccolo":{"editor":"boolean","default":false,"section":"Tema"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":50}}'>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"LEZIONI"},"icona":{"editor":"text","default":""},"conto":{"editor":"text","default":""},"dentro":{"editor":"boolean","default":false},"giallo":{"editor":"boolean","default":false},"piccolo":{"editor":"boolean","default":false},"$preview":{"width":360,"height":50}}'>
+// COSTRUITO «icone dappertutto» (../icone-dappertutto/; `Titoletto` di ds.tsx, 20px nell'area iscritti): `icona` = un nome di Icona.dc.html, a linea, tratto 1.75, aria-hidden, nel colore del testo; vuoto = com'è oggi.
 // Riproduzione 1:1 di .rule / .rule-label / .rule-line / .rule-conto (src/styles.css righe 218-220 e 486-487) e
 // di Titoletto in src/components/ds.tsx. E' il titoletto di sezione con la riga: etichetta Saira 15px, 0.24em,
 // `dim`; riga da 2px `line-soft`; conto a destra (15px, 600, tabulare).
 // dentro = .rule-dentro (padding 12px 0 0, per un titoletto dentro un riquadro). giallo = l'etichetta in
 // giallo-testo (ADESSO, OGGI: CalendarioScreen.tsx).
-// piccolo (con tema sito) = .rule-label sotto :root[data-look='sito'] (appello, area iscritti): Big Shoulders 15px 0.12em in `dim`,
-// l'etichetta di sezione dell'app; senza, tema sito e' il titolo di sezione del modulo di iscrizione (26px).
+// piccolo = .rule-label sotto :root[data-look='sito'] (appello, area iscritti): Big Shoulders 15px 0.12em in `dim`,
+// l'etichetta di sezione dell'app; senza, e' il titolo di sezione del modulo di iscrizione (26px).
 const T = {
-  scuro: { lineSoft: '#2a2a2a', dim: '#8c8c88', gialloTesto: '#f4c31b' },
-  chiaro: { lineSoft: '#e2e2dd', dim: '#656561', gialloTesto: '#8f6a00' },
   // PROPOSTA «modulo di iscrizione nell'aspetto del sito» (A2): valori da docs/design-canvas/sito-approvato/token-proposta.md e src/lib/sitoGenera.ts;
   // rapporti di contrasto e correzioni in iscrizione-sito/token-proposta.md.
   // Il titolo di sezione del sito e' Big Shoulders 800 in inchiostro (`titolo`), non l'etichetta spenta; la riga e' #cfe6f4 come .tessera.chiara.
@@ -46,18 +46,19 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    const sito = p.tema === 'sito';
-    const piccolo = sito && truthy(p.piccolo);
+    const c = T.sito;
+    const piccolo = truthy(p.piccolo);
     const conto = p.conto ?? '';
     return {
       label: p.label ?? 'LEZIONI',
+      icona: p.icona || '', conIcona: !!p.icona,
       conto,
       haConto: String(conto) !== '',
+      allinea: p.icona ? 'center' : 'baseline',
       padding: truthy(p.dentro) ? '12px 0 0' : '22px 20px 10px',
       colore: truthy(p.giallo) ? c.gialloTesto : piccolo ? c.dim : (c.titolo || c.dim),
-      famiglia: sito ? BIG : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", famigliaConto: sito ? INTER : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif",
-      corpo: sito && !piccolo ? '26px' : '15px', peso: sito ? 800 : 700, spazio: piccolo ? '0.12em' : sito ? '0.05em' : '0.24em',
+      famiglia: BIG, famigliaConto: INTER,
+      corpo: piccolo ? '15px' : '26px', peso: 800, spazio: piccolo ? '0.12em' : '0.05em',
       dim: c.dim,
       riga: c.lineSoft,
     };

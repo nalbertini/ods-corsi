@@ -28,19 +28,18 @@
     </div>
     <span style="font-size: 14px; line-height: 1.5; color: {{c.dim}}">{{spiegazione}}</span>
     <div style="display: flex; align-self: flex-start">
-      <dc-import name="Bottone" label="{{tastoCopia}}" variante="linea" contesto="segreteria" tema="{{tema}}" hint-size="190px,48px"></dc-import>
+      <dc-import name="Bottone" label="{{tastoCopia}}" variante="linea" contesto="segreteria" hint-size="190px,48px"></dc-import>
     </div>
   </sc-if>
   <div style="display: flex; flex-wrap: wrap; gap: 10px">
-    <dc-import name="Bottone" label="VAI ALLA SETTIMANA" variante="pieno" contesto="segreteria" tema="{{tema}}" hint-size="230px,48px"></dc-import>
-    <dc-import name="Bottone" label="IMPORTA DI NUOVO" variante="linea" contesto="segreteria" tema="{{tema}}" hint-size="210px,48px"></dc-import>
+    <dc-import name="Bottone" label="VAI ALLA SETTIMANA" variante="pieno" contesto="segreteria" hint-size="230px,48px"></dc-import>
+    <dc-import name="Bottone" label="IMPORTA DI NUOVO" variante="linea" contesto="segreteria" hint-size="210px,48px"></dc-import>
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tono":{"editor":"enum","options":["giallo","verde"],"default":"giallo"},"titolo":{"editor":"text","default":"FATTO, 3 righe da sistemare"},"frase":{"editor":"text","default":""},"conto":{"editor":"text","default":"3 RIGHE DA SISTEMARE"},"elenco":{"editor":"text","default":""},"spiegazione":{"editor":"text","default":""},"copiato":{"editor":"boolean","default":false},"$preview":{"width":640,"height":520},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"}}'>
+<script data-dc-script data-props='{"tono":{"editor":"enum","options":["giallo","verde"],"default":"giallo"},"titolo":{"editor":"text","default":"FATTO, 3 righe da sistemare"},"frase":{"editor":"text","default":""},"conto":{"editor":"text","default":"3 RIGHE DA SISTEMARE"},"elenco":{"editor":"text","default":""},"spiegazione":{"editor":"text","default":""},"copiato":{"editor":"boolean","default":false},"$preview":{"width":640,"height":520}}'>
 const T = {
-  scuro: { surface: '#1c1c1c', surface2: '#242424', bg: '#121212', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', verde: '#16a54a', verdeTesto: '#16a54a' },
-  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', bg: '#f4f4f1', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', verde: '#12913f', verdeTesto: '#0b7a33' },
+  sito: { surface: '#ffffff', surface2: '#cfe6f4', bg: '#eef5fa', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', giallo: '#f4c31b', gialloTesto: '#8f6a00', verde: '#12913f', verdeTesto: '#0b7a33' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
@@ -48,11 +47,10 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const righe = String(p.elenco ?? '').split(';;').filter(Boolean);
     return {
-      c, cond: COND, mono: MONO, tema: p.tema === 'chiaro' ? 'chiaro' : 'scuro',
-      bordo: p.tono === 'verde' ? c.verde : c.giallo,
+      c, cond: COND, mono: MONO, bordo: p.tono === 'verde' ? c.verde : c.giallo,
       titolo: p.titolo ?? 'FATTO, 3 righe da sistemare', frase: p.frase ?? '', conto: p.conto ?? '3 RIGHE DA SISTEMARE', spiegazione: p.spiegazione ?? '',
       righe, haElenco: righe.length > 0, tastoCopia: truthy(p.copiato) ? 'COPIATO' : "COPIA L'ELENCO",
     };

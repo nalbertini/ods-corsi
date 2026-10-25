@@ -30,21 +30,20 @@
   <span style="font-family: {{cond}}; font-size: 24px; font-weight: 700; letter-spacing: 0.12em; line-height: 1.15; color: {{c.text}}">{{titolo}}</span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"numero":{"editor":"text","default":"3"},"totale":{"editor":"text","default":"8"},"titolo":{"editor":"text","default":"CORSO"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":100}}'>
+<script data-dc-script data-props='{"numero":{"editor":"text","default":"3"},"totale":{"editor":"text","default":"8"},"titolo":{"editor":"text","default":"CORSO"},"$preview":{"width":390,"height":100}}'>
 // L'avanzamento del modulo a passi: `Avanzamento` di src/components/ds.tsx e `.avanza*` di src/styles.css, le tappe da `tappeDelPasso` di src/lib/passiIscrizione.ts.
 // Tre tappe affiancate (CHI, IL CORSO, PAGA E MANDA), gap 10px, larghe quanto i loro passi: segmenti da 6px, gap 3px (fatti `verde`, quello di adesso `text`, gli altri `line`);
 // sotto il nome in Saira 12px 0.14em: `text` la tappa di adesso, `verdeTesto` con ✓ quella finita, `dim` le altre. Poi il nome del passo in Saira 24px 0.12em.
 // Il numero a schermo non c'è: per chi legge lo schermo resta «Passo N di N: nome». `totale` 7 = adulto (CHI ha 1 passo), 8 = figlio (CHI ne ha 2).
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tasto: '#b8b8b2', rosso: '#e4292a', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suRosso: '#ffffff', suColore: '#121212' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', tasto: '#4a4a46', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suRosso: '#ffffff', suColore: '#121212' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', tasto: '#0d2a3d', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suRosso: '#ffffff', suColore: '#0d2a3d' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const n = Number(p.numero ?? 2);
     const tot = Number(p.totale ?? 4);
     // Le tappe come tappeDelPasso: adulto [1,3,3], figlio [2,3,3]; un totale diverso (canvas vecchi) si divide in tre.

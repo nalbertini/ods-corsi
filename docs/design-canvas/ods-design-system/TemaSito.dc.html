@@ -14,65 +14,65 @@
     body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<!-- La segreteria nel look del sito (`<html data-look="sito">`, blocco `:root[data-look='sito']` di src/styles.css): i componenti della libreria col `tema="sito"`
+<!-- La segreteria nel look del sito (`<html data-look="sito">`, blocco `:root[data-look='sito']` di src/styles.css): i componenti della libreria
      (con `contesto="segreteria"` dove c'e'), uno accanto all'altro. Fondo #eef5fa, tessere bianche senza bordo, raggio 6px, Big Shoulders 800 solo per titoli e cifre grandi,
      Inter per il resto. Il giallo pieno #f4c31b e' solo del tasto principale (uno per schermata) e della voce corrente del menu; «aspetta» e' giallo scuro #8f6a00
      su bianco; rosso #b81d1d manca; verde #0b7a33 fatto. Ogni stato si legge a parole con un segno: ✕ manca, … aspetta, ✓ fatto. Valori: docs/design-canvas/segreteria-sito/token-proposta.md. -->
 <div style="display: flex; flex-direction: column; gap: 28px; width: 1200px; padding: 32px; background: #eef5fa">
   <div style="display: flex; flex-direction: column; gap: 4px">
     <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">LA SEGRETERIA NEL LOOK DEL SITO</h1>
-    <span style="font-size: 14px; color: #46606f">I componenti della libreria con tema="sito". Il tema e' uno solo e sempre chiaro: niente nero, bianco o Tatami.</span>
+    <span style="font-size: 14px; color: #46606f">I componenti della libreria nel look del sito: sempre chiaro.</span>
   </div>
 
   <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
-    <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Nuovo iscritto" variante="pieno" hint-size="170px,48px"></dc-import>
-    <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Vedi chi" variante="linea" hint-size="120px,48px"></dc-import>
-    <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Accogli" variante="vai" hint-size="110px,48px"></dc-import>
-    <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Annulla la ricevuta" variante="rosso" hint-size="190px,48px"></dc-import>
-    <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Salva" variante="pieno" disabled="{{ true }}" hint-size="100px,48px"></dc-import>
-    <dc-import name="Badge" tema="sito" tipo="tag" tono="rosso" label="Senza appello" hint-size="130px,24px"></dc-import>
-    <dc-import name="Badge" tema="sito" tipo="tag" tono="giallo" label="Manca l’istruttore" hint-size="150px,24px"></dc-import>
-    <dc-import name="Badge" tema="sito" tipo="tag" tono="verde" label="Appello fatto" hint-size="130px,24px"></dc-import>
-    <dc-import name="Badge" tema="sito" tipo="tag" tono="neutro" label="Straordinaria" hint-size="130px,24px"></dc-import>
-    <dc-import name="Badge" tema="sito" tipo="segno" tono="rosso" label="NO TESSERA" hint-size="130px,26px"></dc-import>
-    <dc-import name="Badge" tema="sito" tipo="bollino" label="DATI DI PROVA" hint-size="130px,24px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" label="Nuovo iscritto" variante="pieno" hint-size="170px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" label="Vedi chi" variante="linea" hint-size="120px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" label="Accogli" variante="vai" hint-size="110px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" label="Annulla la ricevuta" variante="rosso" hint-size="190px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" label="Salva" variante="pieno" disabled="{{ true }}" hint-size="100px,48px"></dc-import>
+    <dc-import name="Badge" tipo="tag" tono="rosso" label="Senza appello" hint-size="130px,24px"></dc-import>
+    <dc-import name="Badge" tipo="tag" tono="giallo" label="Manca l’istruttore" hint-size="150px,24px"></dc-import>
+    <dc-import name="Badge" tipo="tag" tono="verde" label="Appello fatto" hint-size="130px,24px"></dc-import>
+    <dc-import name="Badge" tipo="tag" tono="neutro" label="Straordinaria" hint-size="130px,24px"></dc-import>
+    <dc-import name="Badge" tipo="segno" tono="rosso" label="NO TESSERA" hint-size="130px,26px"></dc-import>
+    <dc-import name="Badge" tipo="bollino" label="DATI DI PROVA" hint-size="130px,24px"></dc-import>
   </div>
 
   <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
-    <dc-import name="Chip" tema="sito" label="Senza certificato valido" numero="5" tono-numero="rosso" hint-size="260px,44px"></dc-import>
-    <dc-import name="Chip" tema="sito" label="Da pagare" acceso="{{ true }}" hint-size="150px,44px"></dc-import>
-    <dc-import name="Chip" tema="sito" label="Non in regola" hint-size="150px,44px"></dc-import>
+    <dc-import name="Chip" label="Senza certificato valido" numero="5" tono-numero="rosso" hint-size="260px,44px"></dc-import>
+    <dc-import name="Chip" label="Da pagare" acceso="{{ true }}" hint-size="150px,44px"></dc-import>
+    <dc-import name="Chip" label="Non in regola" hint-size="150px,44px"></dc-import>
   </div>
 
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px">
-    <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="NOME" valore="Giulia" hint-size="100%,80px"></dc-import>
-    <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="CORSO" valore="Judo kids" acceso="{{ true }}" hint-size="100%,80px"></dc-import>
+    <dc-import name="Campo" contesto="segreteria" etichetta="NOME" valore="Giulia" hint-size="100%,80px"></dc-import>
+    <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="CORSO" valore="Judo kids" acceso="{{ true }}" hint-size="100%,80px"></dc-import>
   </div>
 
-  <dc-import name="FiltriIscritti" tema="sito" attivi="DA PAGARE" hint-size="1000px,110px"></dc-import>
+  <dc-import name="FiltriIscritti" attivi="DA PAGARE" hint-size="1000px,110px"></dc-import>
   <div>
-    <dc-import name="TestataTabella" tema="sito" hint-size="100%,32px"></dc-import>
-    <dc-import name="RigaIscritto" tema="sito" hint-size="100%,60px"></dc-import>
-    <dc-import name="RigaIscritto" tema="sito" stato="scelta" nome="Bianchi Luca" bollini="CERTIFICATO:rosso|QUOTA:verde" hint-size="100%,60px"></dc-import>
+    <dc-import name="TestataTabella" hint-size="100%,32px"></dc-import>
+    <dc-import name="RigaIscritto" hint-size="100%,60px"></dc-import>
+    <dc-import name="RigaIscritto" stato="scelta" nome="Bianchi Luca" bollini="CERTIFICATO:rosso|QUOTA:verde" hint-size="100%,60px"></dc-import>
   </div>
 
-  <dc-import name="CosaManca" tema="sito" voci="14|Appelli non fatti||r; 5|Certificati scaduti||r; 7|Pagamenti||r; 0|Senza tessera||v; 3|Richieste online||g" hint-size="100%,72px"></dc-import>
+  <dc-import name="CosaManca" voci="14|Appelli non fatti||r; 5|Certificati scaduti||r; 7|Pagamenti||r; 0|Senza tessera||v; 3|Richieste online||g" hint-size="100%,72px"></dc-import>
 
   <div style="display: flex; flex-direction: column; gap: 8px">
-    <dc-import name="RigaDaFare" tema="sito" livello="blocca" n="14" titolo="Lezioni senza appello" sotto="Negli ultimi 30 giorni: passate, e nessuno ha segnato." tasto="Vedi tutti" hint-size="100%,100px"></dc-import>
-    <dc-import name="RigaDaFare" tema="sito" livello="presto" n="3" titolo="Richieste online nuove" sotto="Da accogliere: non bloccano niente." tasto="Vedi tutti" hint-size="100%,96px"></dc-import>
+    <dc-import name="RigaDaFare" livello="blocca" n="14" titolo="Lezioni senza appello" sotto="Negli ultimi 30 giorni: passate, e nessuno ha segnato." tasto="Vedi tutti" hint-size="100%,100px"></dc-import>
+    <dc-import name="RigaDaFare" livello="presto" n="3" titolo="Richieste online nuove" sotto="Da accogliere: non bloccano niente." tasto="Vedi tutti" hint-size="100%,96px"></dc-import>
   </div>
 
   <div style="display: grid; grid-template-columns: repeat(4, 180px); gap: 10px">
     <dc-import name="LezioneSettimana" tag="manca:Senza appello" stato="manca" hint-size="180px,96px"></dc-import>
     <dc-import name="LezioneSettimana" corso="Pilates" tinta="#8b5cc4" conto="8/9" fatto="{{ true }}" stato="chiusa" tag="fatto:Appello fatto" hint-size="180px,96px"></dc-import>
-    <dc-import name="LezioneSettimana" corso="Lotta adulti" tinta="#16a54a" conto="14/16" tag="aspetta:Manca l’istruttore|sostituto:Sostituto" hint-size="180px,120px"></dc-import>
+    <dc-import name="LezioneSettimana" corso="Lotta adulti" tinta="#12913f" conto="14/16" tag="aspetta:Manca l’istruttore|sostituto:Sostituto" hint-size="180px,120px"></dc-import>
     <dc-import name="LezioneSettimana" corso="Yoga" tinta="#f4c31b" stato="annullata" tag="Annullata" hint-size="180px,96px"></dc-import>
   </div>
 
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px">
-    <dc-import name="Riquadro" tema="sito" contesto="segreteria" etichetta="" titolo="Certificato medico" testo="Valido fino al 30 giugno." hint-size="100%,100px"></dc-import>
-    <dc-import name="Riquadro" tema="sito" contesto="segreteria" fatto="{{ true }}" etichetta="" titolo="Iscrizione completa" testo="Tutto in regola." hint-size="100%,100px"></dc-import>
+    <dc-import name="Riquadro" contesto="segreteria" etichetta="" titolo="Certificato medico" testo="Valido fino al 30 giugno." hint-size="100%,100px"></dc-import>
+    <dc-import name="Riquadro" contesto="segreteria" fatto="{{ true }}" etichetta="" titolo="Iscrizione completa" testo="Tutto in regola." hint-size="100%,100px"></dc-import>
   </div>
 </div>
 </x-dc>

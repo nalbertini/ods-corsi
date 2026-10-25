@@ -378,7 +378,7 @@
 .sg-cella-piu { margin-left: 6px; color: var(--dim); }
 .sg-cella-contatto { font-size: 13px; color: var(--sec); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sg-cella-contatto[data-manca] { color: var(--rosso-testo); }
-.sg-icona-contatto { margin-right: 6px; vertical-align: -2px; color: var(--dim); }
+.sg-icona-contatto { display: inline-flex; margin-right: 6px; vertical-align: -2px; color: var(--dim); }
 .sg-testa-stretta { display: none; }
 .sg-cella-frequenza { font-size: 16px; font-weight: 700; text-align: right; color: var(--text); }
 .sg-cella-frequenza[data-poco] { color: var(--giallo-testo); }
@@ -800,7 +800,7 @@
   .sg-tasto-menu[aria-expanded='true'] { border-color: var(--text); }
 }
 
-/* Sui telefoni più stretti la guida e il tema si avvicinano, per lasciare il logo. */
+/* Sui telefoni più stretti la guida e il resto si avvicinano, per lasciare il logo. */
 @media (max-width: 380px) {
   .sg-barra-tel { gap: 6px; }
 }
@@ -919,33 +919,43 @@
 /* Una gara passata o annullata si legge ancora, come l'ordine annullato. */
 .sg-riga-gara.sg-iscritto[data-spento='true'] { opacity: 1; color: var(--dim); }
 /* Il tag del certificato va a capo; per attributo: .sg-tag si usa anche fuori dalla segreteria (prova:css-ingresso). */
-.sg-riga-atleta-gara [data-tipo] { white-space: normal; }
-.sg-riga-gara > *, .sg-riga-atleta-gara > * { min-width: 0; overflow-wrap: anywhere; }
+.sg-gara-atleta [data-tipo] { white-space: normal; }
+.sg-riga-gara > * { min-width: 0; overflow-wrap: anywhere; }
 @media (min-width: 1001px) {
   .sg-riga-gara { grid-template-columns: 120px minmax(0, 1.6fr) 70px minmax(190px, 1.4fr) minmax(190px, 1.4fr); }
-  .sg-riga-atleta-gara { grid-template-columns: minmax(0, 1.4fr) 48px minmax(0, 1fr) minmax(200px, 1.4fr) minmax(0, 1.2fr) minmax(0, 1.4fr) 80px; }
-  .sg-riga-atleta-gara[data-senza-quota] { grid-template-columns: minmax(0, 1.4fr) 48px minmax(0, 1fr) minmax(200px, 1.4fr) minmax(0, 1.6fr) 80px; }
 }
-/* Sul telefono la riga va a capo in due colonne: il nome prende tutta la larghezza, niente testata. */
+/* Sul telefono la riga della gara va a capo in due colonne, senza testata: ogni cella dice cos'è. */
 @media (max-width: 1000px) {
-  .sg-riga-gara, .sg-riga-atleta-gara, .sg-riga-atleta-gara[data-senza-quota] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); row-gap: 6px; }
-  .sg-riga-gara > :nth-child(2), .sg-riga-gara > :nth-child(3), .sg-riga-atleta-gara > :nth-child(2), .sg-riga-atleta-gara > :nth-child(3) { display: block; }
-  .sg-riga-gara > :nth-child(2), .sg-riga-atleta-gara > :first-child { grid-column: 1 / -1; }
-  .sg-lista-testa.sg-riga-gara, .sg-lista-testa.sg-riga-atleta-gara { display: none; }
-  /* Senza testata, ogni cella dice cos'è. */
+  .sg-riga-gara { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); row-gap: 6px; }
+  .sg-riga-gara > :nth-child(2), .sg-riga-gara > :nth-child(3) { display: block; }
+  .sg-riga-gara > :nth-child(2) { grid-column: 1 / -1; }
+  .sg-lista-testa.sg-riga-gara { display: none; }
   .sg-riga-gara > :nth-child(4) { grid-column: 1 / -1; }
-  .sg-riga-gara:not(.sg-lista-testa) > :nth-child(n + 3)::before,
-  .sg-riga-atleta-gara:not(.sg-lista-testa) > :nth-child(n + 2):not(:last-child)::before {
-    display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--dim);
-  }
+  .sg-riga-gara:not(.sg-lista-testa) > :nth-child(n + 3)::before { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--dim); }
   .sg-riga-gara > :nth-child(3)::before { content: 'ATLETI'; }
   .sg-riga-gara > :nth-child(4)::before { content: 'CERTIFICATI'; }
   .sg-riga-gara > :nth-child(5)::before { content: 'QUOTE'; }
-  .sg-riga-atleta-gara > :nth-child(2)::before { content: 'NATO'; }
-  .sg-riga-atleta-gara > :nth-child(3)::before { content: 'CORSO'; }
-  .sg-riga-atleta-gara > :nth-child(4)::before { content: 'CERTIFICATO'; }
-  .sg-riga-atleta-gara > :nth-child(5)::before { content: 'NOTA'; }
-  .sg-riga-atleta-gara:not([data-senza-quota]) > :nth-child(6)::before { content: 'QUOTA'; }
+}
+/* LA SCHEDA DELLA GARA: la striscia dei numeri, gli atleti a due piani (chi sei e il certificato a sinistra, l'incasso a destra) e il piede coi tasti. */
+.sg-gara-numeri { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 2px; background: var(--line-soft); border: 2px solid var(--line-soft); }
+.sg-gara-numero { display: flex; flex-direction: column; gap: 2px; padding: 8px 14px; background: var(--surface); }
+.sg-gara-numero-valore { font-size: 20px; font-weight: 700; }
+.sg-gara-numero[data-tono='manca'] .sg-gara-numero-valore { color: var(--rosso-testo); }
+.sg-gara-numero[data-tono='fatto'] .sg-gara-numero-valore { color: var(--verde-testo); }
+.sg-gara-atleta { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-bottom: 2px solid var(--line-soft); }
+.sg-gara-atleta-chi { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.sg-gara-atleta-stato { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; }
+.sg-gara-azioni { flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; gap: 10px; max-width: 300px; }
+.sg-gara-togli { width: 44px; padding: 0; }
+/* I tasti della gara restano in vista: l'elenco può essere lungo. */
+.sg-gara-piede { position: sticky; bottom: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 0; background: var(--surface); border-top: 2px solid var(--line-soft); }
+.sg-gara-piede-pieno { margin-left: auto; min-height: 48px; }
+@media (max-width: 700px) {
+  .sg-gara-atleta { flex-direction: column; align-items: stretch; gap: 10px; border: 2px solid var(--line-soft); margin-bottom: 10px; }
+  .sg-gara-azioni { max-width: none; justify-content: space-between; }
+  .sg-gara-quota { flex-grow: 1; }
+  .sg-gara-piede { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-gara-piede-pieno { grid-column: 1 / -1; grid-row: 1; margin-left: 0; }
 }
 /* CATALOGO E CHIUSURA: la foto di un capo o la tabella di un tipo, con la miniatura da 96px. */
 .sg-carica-foto { display: flex; align-items: flex-start; gap: 14px; min-width: 0; }
@@ -1079,7 +1089,7 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 .sito-orario-righe { list-style: none; margin: 0; padding: 0; }
 .sito-orario-riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0 10px; padding: 14px 16px; border-left: 6px solid var(--blu); background: var(--surface-2); font-family: var(--cond); font-size: 24px; font-weight: 800; line-height: 1; text-transform: uppercase; }
 .sito-orario-ora { white-space: nowrap; font-size: 22px; }
-/* L'anteprima vera segue il tema come gli altri riquadri: il fondo azzurro del sito sta dentro la pagina. */
+/* L'anteprima vera segue l'aspetto come gli altri riquadri: il fondo azzurro del sito sta dentro la pagina. */
 .sito-anteprima-pagina { width: 100%; height: 720px; border: 2px solid var(--line); background: var(--surface); }
 /* L'editor delle pagine (Puck, col suo aspetto: sempre chiaro, coi suoi colori) prende tutto lo schermo; sotto il velo (10) dei dialoghi, così domande e scelta della foto gli stanno sopra. */
 .sito-puck { position: fixed; inset: 0; z-index: 9; background: var(--puck-color-white); color: var(--puck-color-text); color-scheme: light; }
@@ -1191,28 +1201,58 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sg-riga-bilancio > :first-child { grid-column: 1 / -1; }
 }
 
-/* COMPENSI: la riga del tecnico, i corsi in colonna, il «Per corso» che dice che si apre; sul telefono la riga si impila. */
+/* COMPENSI: il conto «Per corso» nel dialogo del tecnico; le righe delle extra, nel dialogo e nella scheda. */
 .sg-compenso-corso { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 14px; align-items: center; }
-.sg-compenso-per-corso > summary::before { content: '▸ '; }
-.sg-compenso-per-corso[open] > summary::before { content: '▾ '; }
 .sg-segno-regola[data-tono='neutro'] { color: var(--text); }
-/* MANCA LA SUA FIRMA: corso, giorno, chi ha firmato, i due tasti; le colonne restano ferme coi nomi lunghi. */
-.sg-senza-firma { display: grid; grid-template-columns: minmax(0, 1fr) 130px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 52px; padding: 6px 0; border-top: 1px solid var(--line-soft); font-size: 14px; }
-.sg-senza-firma-corso { min-width: 0; overflow-wrap: anywhere; }
-.sg-senza-firma-sotto { display: contents; }
-.sg-senza-firma-chi { min-width: 0; color: var(--sec); }
-/* Due segni accanto (PRESENZE DA CONFERMARE, MANCA LA FIRMA · N LEZIONI) in una colonna stretta: vanno a capo dentro, non escono. */
 .sg-compenso-riga .sg-segno-regola { white-space: normal; }
 @media (max-width: 480px) {
-  .sg-senza-firma { grid-template-columns: minmax(0, 1fr) auto; padding: 8px 0; }
-  .sg-senza-firma-corso { font-weight: 600; grid-column: 1; }
-  .sg-senza-firma-sotto { display: block; grid-column: 1; font-size: 13px; color: var(--sec); }
-  .sg-senza-firma-sotto > * + *::before { content: ' · '; }
-  .sg-senza-firma > :last-child { grid-column: 2; grid-row: 1 / span 2; }
   .sg-compenso-riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
   .sg-compenso-riga > :nth-child(n + 3) { grid-column: 1 / -1; }
-  .sg-numeri[data-telefono-due] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .sg-numeri[data-telefono-due] > :nth-child(1) { display: none; }
+}
+/* COMPENSI, la tabella: una griglia sola per testata, gruppi e righe, così le colonne restano in fila in tutta la pagina. */
+.sg-compensi { container-type: inline-size; }
+.sg-compensi-griglia { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 96px 64px 100px 100px 64px 128px minmax(0, 1.2fr) 264px; gap: 14px; align-items: center; }
+.sg-compensi-testa { padding: 0 14px 6px; border-bottom: 2px solid var(--line-soft); }
+.sg-compensi-riga { min-height: 56px; padding: 6px 14px; background: var(--surface); border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+.sg-compensi-riga > * { min-width: 0; overflow-wrap: anywhere; }
+.sg-compensi-nome { font-size: 15px; font-weight: 600; }
+/* Il nome apre il dialogo del tecnico: sembra testo, ma è alto quanto un dito. */
+.sg-compensi-apri { min-height: 44px; min-width: 44px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.sg-compensi-apri:hover { text-decoration: underline; text-underline-offset: 3px; }
+.sg-compensi-cifra { font-size: 15px; text-align: right; font-variant-numeric: tabular-nums; }
+.sg-compensi-importo { font-size: 15px; font-weight: 700; text-align: right; }
+.sg-compensi-vuoto { color: var(--dim); }
+.sg-compensi-iban { text-align: center; font-size: 16px; font-weight: 700; }
+.sg-compensi-iban [data-tono='verde'] { color: var(--verde-testo); }
+.sg-compensi-iban [data-tono='rosso'] { color: var(--rosso-testo); }
+.sg-compensi-note { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+.sg-compensi-note .sg-segno-regola { white-space: normal; }
+/* Il tasto sempre allo stesso posto, a destra; il testo (Ristampa, Non c’era) subito prima. */
+.sg-compensi-azioni { display: grid; grid-template-columns: 80px 170px; gap: 14px; align-items: center; }
+.sg-compensi-azioni > :first-child { display: flex; justify-content: flex-end; white-space: nowrap; }
+.sg-compensi-azioni > button { width: 170px; grid-column: 2; }
+.sg-compensi-telefono { display: none; }
+.sg-compensi-gruppo { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px 14px; padding: 22px 14px 10px; background: var(--bg); border-bottom: 3px solid var(--line-soft); }
+.sg-compensi-gruppo[data-tono='rosso'] { border-bottom-color: var(--rosso-testo); }
+.sg-compensi-gruppo[data-tono='giallo'] { border-bottom-color: var(--giallo); }
+.sg-compensi-gruppo-titolo { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.04em; }
+.sg-compensi-gruppo[data-tono='rosso'] .sg-compensi-gruppo-titolo svg { color: var(--rosso-testo); }
+.sg-compensi-conto { color: var(--dim); }
+.sg-compensi-pagate { margin-top: 22px; border-left: 4px solid var(--verde-testo); }
+.sg-compensi-pagate > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; min-height: 56px; padding: 6px 14px; background: var(--bg); cursor: pointer; list-style: none; }
+.sg-compensi-pagate > summary::-webkit-details-marker { display: none; }
+.sg-compensi-pagate[open] > summary > :first-child { transform: rotate(90deg); }
+.sg-compensi-pagate-titolo { font-size: 20px; font-weight: 800; letter-spacing: 0.04em; }
+/* Sotto i 1350px le dieci colonne non ci stanno: la riga si stringe a nome e importo, sotto le note e il tasto; le cifre vanno nelle note. */
+@container (max-width: 1350px) {
+  .sg-compensi-testa, .sg-compensi-largo { display: none; }
+  .sg-compensi-telefono { display: inline; }
+  .sg-compensi-griglia { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+  .sg-compensi-riga { padding: 10px 14px; }
+  .sg-compensi-note, .sg-compensi-azioni { grid-column: 1 / -1; }
+  .sg-compensi-azioni { grid-template-columns: auto 170px; justify-content: start; }
+  .sg-compensi-azioni > :first-child { justify-content: flex-start; }
+  .sg-compensi-azioni > :first-child:empty { display: none; }
 }
 
 /* IMPOSTAZIONI: sette schede non stanno in una riga sul telefono, vanno a capo. */

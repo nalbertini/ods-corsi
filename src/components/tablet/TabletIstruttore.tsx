@@ -3,7 +3,8 @@ import type { DatiTablet, LezioneSala, PresenzaIstruttore, RigaAppelloTablet } f
 import { contoAppello, contoSala, fase, lezioneDiAdesso, sorvegliaScritture } from '../../lib/tablet'
 import type { StatoPresenza } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
-import { Croce, ICONE_TABLET, Spunta } from '../Icons'
+import { Croce, Icona, ICONE_TABLET, Spunta } from '../Icons'
+import { TRATTO_TABLET } from '../../lib/icone'
 import { EtichettaAttivita } from '../ds'
 import { Guaio, messaggio, orario } from './comune'
 import type { ChiProva } from '../../lib/prove'
@@ -313,6 +314,7 @@ export function TabletIstruttore({
             com'è andata la sua presenza è un'informazione in più. */}
         {presenze.length > 0 && <LaTuaPresenza presenze={presenze} />}
         <button type="button" className="tb-btn tb-btn-linea" onClick={onEsci}>
+          <Icona nome="esci" misura={22} tratto={TRATTO_TABLET} />
           ESCI
         </button>
         <span className="tb-nota" style={{ fontSize: 15 }}>
@@ -349,9 +351,11 @@ export function TabletIstruttore({
             <div className="tb-azioni-appello">
               {/* Col pannello delle prove aperto il giallo è il suo: uno per schermata. */}
               <button type="button" className={`tb-btn ${conProve ? 'tb-btn-linea' : 'tb-btn-verde'}`} disabled={!daSegnarePresenti.length} onClick={() => tutti('tutti')}>
+                <Icona nome="fatto" misura={22} tratto={TRATTO_TABLET} />
                 {daConfermare === 'tutti' ? `CONFERMA: ${daSegnarePresenti.length} PRESENTI` : 'TUTTI PRESENTI'}
               </button>
               <button type="button" className="tb-btn tb-btn-linea" disabled={!daSegnareAssenti.length} onClick={() => tutti('altri')}>
+                <Icona nome="manca" misura={22} tratto={TRATTO_TABLET} />
                 {daConfermare === 'altri' ? `CONFERMA: ${daSegnareAssenti.length} ASSENTI` : 'GLI ALTRI ASSENTI'}
               </button>
               <button
@@ -426,7 +430,7 @@ export function TabletIstruttore({
   )
 }
 
-/** `colore` per il bordo, `scritto` per l'etichetta: giallo e verde puri sul tema chiaro non si leggono. */
+/** `colore` per il bordo, `scritto` per l'etichetta: giallo e verde puri sul fondo chiaro non si leggono. */
 const PRESENZA: Record<PresenzaIstruttore['stato'], { titolo: string; testo: string; colore: string; scritto: string }> = {
   confermata: { titolo: 'LA TUA PRESENZA È SEGNATA', testo: 'Eri previsto su questa lezione.', colore: 'var(--verde)', scritto: 'var(--verde-testo)' },
   da_confermare: {

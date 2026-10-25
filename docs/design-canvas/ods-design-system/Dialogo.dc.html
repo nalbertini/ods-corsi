@@ -25,15 +25,15 @@
       </sc-if>
       <sc-if value="{{haSpunta}}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; padding: 4px 12px; border: 2px solid {{c.line}}; border-radius: {{raggio}}">
-          <dc-import name="Campo" tipo="spunta" contesto="segreteria" valore="{{spunta}}" scelto="{{spuntata}}" tema="{{temaCampo}}" hint-size="100%,48px"></dc-import>
+          <dc-import name="Campo" tipo="spunta" contesto="segreteria" valore="{{spunta}}" scelto="{{spuntata}}" hint-size="100%,48px"></dc-import>
           <sc-if value="{{haSpuntaNota}}" hint-placeholder-val="{{ false }}">
             <span style="padding: 0 0 10px 34px; font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{spuntaNota}}</span>
           </sc-if>
         </div>
       </sc-if>
       <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 8px">
-        <dc-import name="Bottone" label="{{no}}" variante="{{varianteNo}}" contesto="segreteria" tema="{{tema}}" hint-size="150px,48px"></dc-import>
-        <dc-import name="Bottone" label="{{si}}" variante="{{varianteSi}}" contesto="segreteria" tema="{{tema}}" hint-size="190px,48px"></dc-import>
+        <dc-import name="Bottone" label="{{no}}" variante="{{varianteNo}}" contesto="segreteria" hint-size="150px,48px"></dc-import>
+        <dc-import name="Bottone" label="{{si}}" variante="{{varianteSi}}" contesto="segreteria" hint-size="190px,48px"></dc-import>
       </div>
     </div>
   </sc-if>
@@ -42,15 +42,15 @@
     <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(520px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 16px; padding: 28px; background: {{c.surface}}; border: 2px solid {{c.text}}">
       <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">{{titolo}}</span>
       <span style="font-size: 14px; line-height: 1.5; color: {{c.dim}}">{{sotto}}</span>
-      <dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="CORSO" valore="Judo kids" tema="{{tema}}" hint-size="100%,72px"></dc-import>
+      <dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="CORSO" valore="Judo kids" hint-size="100%,72px"></dc-import>
       <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
-        <dc-import name="Campo" contesto="segreteria" etichetta="GIORNO" valore="12/10/2026" tema="{{tema}}" hint-size="100%,72px"></dc-import>
-        <dc-import name="Campo" contesto="segreteria" etichetta="ORA" valore="18:30" tema="{{tema}}" hint-size="100%,72px"></dc-import>
-        <dc-import name="Campo" contesto="segreteria" etichetta="MINUTI" valore="60" tema="{{tema}}" hint-size="100%,72px"></dc-import>
+        <dc-import name="Campo" contesto="segreteria" etichetta="GIORNO" valore="12/10/2026" hint-size="100%,72px"></dc-import>
+        <dc-import name="Campo" contesto="segreteria" etichetta="ORA" valore="18:30" hint-size="100%,72px"></dc-import>
+        <dc-import name="Campo" contesto="segreteria" etichetta="MINUTI" valore="60" hint-size="100%,72px"></dc-import>
       </div>
       <div style="display: flex; align-items: stretch; gap: 10px; padding-top: 6px">
-        <div style="display: flex; flex-grow: 1; flex-basis: 0"><dc-import name="Bottone" label="LASCIA STARE" variante="linea" contesto="segreteria" tema="{{tema}}" larghezza="100%" hint-size="100%,48px"></dc-import></div>
-        <div style="display: flex; flex-grow: 1; flex-basis: 0"><dc-import name="Bottone" label="AGGIUNGI" variante="pieno" contesto="segreteria" tema="{{tema}}" larghezza="100%" hint-size="100%,48px"></dc-import></div>
+        <div style="display: flex; flex-grow: 1; flex-basis: 0"><dc-import name="Bottone" label="LASCIA STARE" variante="linea" contesto="segreteria" larghezza="100%" hint-size="100%,48px"></dc-import></div>
+        <div style="display: flex; flex-grow: 1; flex-basis: 0"><dc-import name="Bottone" label="AGGIUNGI" variante="pieno" contesto="segreteria" larghezza="100%" hint-size="100%,48px"></dc-import></div>
       </div>
     </div>
   </sc-if>
@@ -62,7 +62,7 @@
           <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 28px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">{{titolo}}</span>
           <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; letter-spacing: 0.14em; color: {{c.dim}}">{{quando}}</span>
         </div>
-        <dc-import name="Bottone" label="✕" variante="icona" tema="{{tema}}" hint-size="44px,44px"></dc-import>
+        <dc-import name="Bottone" label="✕" variante="icona" hint-size="44px,44px"></dc-import>
       </div>
       <div style="display: flex; flex-direction: column; gap: 6px">
         <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">STATO</span>
@@ -72,12 +72,12 @@
           </sc-for>
         </div>
       </div>
-      <dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="ISTRUTTORE" valore="{{istruttore}}" tema="{{tema}}" hint-size="100%,72px"></dc-import>
+      <dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="ISTRUTTORE" valore="{{istruttore}}" hint-size="100%,72px"></dc-import>
     </div>
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["conferma","dialogo","cassetto"],"default":"conferma"},"domanda":{"editor":"text","default":"Annullare Judo kids di lunedì alle 18:30?"},"resto":{"editor":"text","default":"Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con PREVISTA."},"no":{"editor":"text","default":"LASCIA STARE"},"si":{"editor":"text","default":"ANNULLA LA LEZIONE"},"pericolo":{"editor":"boolean","default":false},"restare":{"editor":"boolean","default":false},"titolo":{"editor":"text","default":""},"sotto":{"editor":"text","default":"Una lezione in più, fuori dalle ricorrenze: un recupero, un evento, una prova aperta. Gli iscritti del corso sono già nell appello."},"quando":{"editor":"text","default":"LUNEDÌ 12 OTTOBRE · 18:30–19:30"},"tinta":{"editor":"text","default":"#1b8ac4"},"stato":{"editor":"enum","options":["prevista","svolta","annullata"],"default":"prevista"},"istruttore":{"editor":"text","default":"Come da corso"},"spunta":{"editor":"text","default":""},"spuntata":{"editor":"boolean","default":true},"spuntaNota":{"editor":"text","default":""},"altezza":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":640,"height":440}}'>
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["conferma","dialogo","cassetto"],"default":"conferma"},"domanda":{"editor":"text","default":"Annullare Judo kids di lunedì alle 18:30?"},"resto":{"editor":"text","default":"Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con PREVISTA."},"no":{"editor":"text","default":"LASCIA STARE"},"si":{"editor":"text","default":"ANNULLA LA LEZIONE"},"pericolo":{"editor":"boolean","default":false},"restare":{"editor":"boolean","default":false},"titolo":{"editor":"text","default":""},"sotto":{"editor":"text","default":"Una lezione in più, fuori dalle ricorrenze: un recupero, un evento, una prova aperta. Gli iscritti del corso sono già nell appello."},"quando":{"editor":"text","default":"LUNEDÌ 12 OTTOBRE · 18:30–19:30"},"tinta":{"editor":"text","default":"#1b8ac4"},"stato":{"editor":"enum","options":["prevista","svolta","annullata"],"default":"prevista"},"istruttore":{"editor":"text","default":"Come da corso"},"spunta":{"editor":"text","default":""},"spuntata":{"editor":"boolean","default":true},"spuntaNota":{"editor":"text","default":""},"altezza":{"editor":"text","default":""},"$preview":{"width":640,"height":440}}'>
 // Riproduzione 1:1 dei dialoghi e del cassetto di segreteria, su un velo (.sg-velo: nero al 60%, qui sopra il fondo `bg`).
 // tipo "conferma": .sg-dialogo.sg-conferma di `Conferma` (src/components/segreteria/comune.tsx righe 157-174; src/styles.css righe
 //   1448-1466): 520px al massimo, padding 28px, gap 12px, fondo `surface`, bordo 2px `text`; domanda .sg-conferma-domanda (cond 24px
@@ -91,17 +91,15 @@
 //   bordo sinistro 2px `text`, in alto 6px della `tinta` del corso; titolo .ob 28px 700 (vuoto = JUDO KIDS), data e ora cond 14px 0.14em
 //   `dim`, ✕ (.icon-btn), STATO a tre scelte (.sg-btn.sg-scelta: 44px, 14px; quella accesa col bordo `text` e fondo `surface-2`) e
 //   ISTRUTTORE come select (acceso giallo quando c'e' un sostituto: qui non riprodotto, vedi Campo `acceso`).
-// tema sito (src/styles.css righe 240-268 e 369-383, `:root[data-look='sito']`): fondo pagina `bg` #eef5fa, dialogo bianco con bordo 2px
+// Look del sito (src/styles.css righe 240-268 e 369-383, `:root[data-look='sito']`): fondo pagina `bg` #eef5fa, dialogo bianco con bordo 2px
 //   inchiostro e raggio 6px, domanda in --cond = Big Shoulders Display, testo in Inter; il velo resta .sg-velo (nero al 60%). I tasti sono
-//   i Bottone col tema sito (pieno giallo, rosso pieno con `pericolo`).
+//   i Bottone nel look del sito (pieno giallo, rosso pieno con `pericolo`).
 // PROPOSTA «ricevuta via email» (../ricevuta-email/): spunta = una casella sotto il resto (Campo tipo spunta, 22px), in un riquadro con
 //   bordo 2px `line`; spuntata = gia' spuntata (default); spuntaNota = la frase sotto, 14px `dim`, allineata al testo della casella.
 // COSTRUITA «fai anche la ricevuta» (../pagamento-ricevuta/): la stessa casella nella conferma di REGISTRA IL PAGAMENTO; il tasto `si`
 //   segue la spunta (SpuntaDomanda.si in comune.tsx: «Sì, fai la ricevuta» / «Sì, registra senza ricevuta»): qui si scrive il testo giusto.
 // altezza: quella del velo (default 440px conferma, 520px dialogo, 600px cassetto). Il fuoco e l'animazione non sono riprodotti.
 const T = {
-  scuro: { surface: '#1c1c1c', surface2: '#242424', bg: '#121212', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', line: '#333333' },
-  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', bg: '#f4f4f1', text: '#161616', sec: '#3d3d3a', dim: '#656561', line: '#d4d4ce' },
   sito: { surface: '#ffffff', surface2: '#cfe6f4', bg: '#eef5fa', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', line: '#cfe6f4' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
@@ -109,18 +107,17 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const tipo = p.tipo || 'conferma';
     const pericolo = truthy(p.pericolo);
     const restare = truthy(p.restare);
     const resto = p.resto ?? 'Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con PREVISTA.';
     const stato = p.stato || 'prevista';
     return {
-      c, cond: COND, tema: p.tema === 'chiaro' || p.tema === 'sito' ? p.tema : 'scuro',
-      temaCampo: p.tema === 'chiaro' || p.tema === 'sito' ? p.tema : 'scuro',
-      raggio: p.tema === 'sito' ? '6px' : '0',
-      titoli: p.tema === 'sito' ? "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif" : COND,
-      corpoTesto: p.tema === 'sito' ? "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" : "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      c, cond: COND,
+      raggio: '6px',
+      titoli: "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif",
+      corpoTesto: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif",
       spunta: p.spunta ?? '', haSpunta: (p.spunta ?? '') !== '', spuntata: p.spuntata === undefined ? true : truthy(p.spuntata),
       spuntaNota: p.spuntaNota ?? '', haSpuntaNota: (p.spuntaNota ?? '') !== '',
       eConferma: tipo === 'conferma', eDialogo: tipo === 'dialogo', eCassetto: tipo === 'cassetto',

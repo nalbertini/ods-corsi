@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito: Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -77,16 +77,6 @@
     <div style="display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid {{c.lineSoft}}">
     <span style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-size: 15px; font-weight: 500"><span style="display: flex; align-items: center; justify-content: center; width: 20px; font-weight: 700">?</span><span>Aiuto</span></span>
     <span style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border: 2px solid {{impBordo}}; color: {{impColore}}; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9M14 17H4"></path><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg><span>Impostazioni</span></span>
-      <sc-if value="{{conTema}}" hint-placeholder-val="{{ true }}">
-      <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
-        <sc-if value="{{scuro}}" hint-placeholder-val="{{ true }}">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
-        </sc-if>
-        <sc-if value="{{chiaro}}" hint-placeholder-val="{{ false }}">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
-        </sc-if>
-      </span>
-      </sc-if>
     </div>
     <span style="font-size: 14px; font-weight: 600">{{nome}}</span>
     <span style="font-size: 12px; color: {{c.dim}}">{{ruolo}} · accesso completo</span>
@@ -100,7 +90,7 @@
   </div>
 </nav>
 </x-dc>
-<script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"impostazioni":{"editor":"boolean","default":false},"compensi":{"editor":"boolean","default":false},"importazioni":{"editor":"boolean","default":true},"iscrittiUnico":{"editor":"boolean","default":false},"gare":{"editor":"boolean","default":true},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"area":{"editor":"enum","options":["segreteria","amministrazione"],"default":"segreteria"},"autorizzazioni":{"editor":"enum","options":["segreteria","segreteria e amministrazione","amministrazione"],"default":"segreteria"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
+<script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"impostazioni":{"editor":"boolean","default":false},"compensi":{"editor":"boolean","default":false},"importazioni":{"editor":"boolean","default":true},"iscrittiUnico":{"editor":"boolean","default":false},"gare":{"editor":"boolean","default":true},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"area":{"editor":"enum","options":["segreteria","amministrazione"],"default":"segreteria"},"autorizzazioni":{"editor":"enum","options":["segreteria","segreteria e amministrazione","amministrazione"],"default":"segreteria"},"altezza":{"editor":"text","default":"900px"},"$preview":{"width":240,"height":900}}'>
 // Riproduzione 1:1 del menu di segreteria: src/components/segreteria/Segreteria.tsx (righe 402-494, GRUPPI alle
 // righe 50-86) con .sg-menu, .sg-voce, .sg-gruppo, .sg-chi e figli di src/styles.css (righe 1201-1270).
 // Misure del computer (da 1001px): colonna di 240px su `menu`, padding 28px 12px 24px, gap 28px, bordo destro
@@ -109,8 +99,8 @@
 // bollini gialli (.sg-tag data-tipo="presto"). Sul telefono il menu sta dietro una barra: non riprodotto.
 // attiva: il testo della voce corrente, come nel codice ("PRESENZE"). numeri: "VOCE:n" separati da virgola.
 // Aiuto e Impostazioni (col nome) stanno in cima al riquadro di chi e' dentro, non piu' come tre icone sotto il marchio. prova: nel riquadro compare DATI DI PROVA e in fondo "Riparti dall'orario vero".
-// Il logo e' Logo.tsx; nell'app l'ingranaggio bianco segue il colore del testo (nero nel tema chiaro).
-// I tasti (?, tema, impostazioni) mostrano l'icona che porta altrove: sole sul tema scuro, luna sul chiaro.
+// Il logo e' Logo.tsx; nell'app l'ingranaggio bianco segue il colore del testo (qui bianco sull'inchiostro).
+// I tasti (?, impostazioni) mostrano l'icona che porta altrove.
 // impostazioni: il tasto coi cursori e' la pagina corrente (.icon-btn[aria-current='page']: bordo e icona in `text`).
 // altezza: l'altezza dello schermo. Il menu dell'app scorre (overflow-y: auto) e, su uno schermo da 900px, taglia
 // le ultime voci: qui il taglio e' lo stesso. Per vederlo intero basta "1140px".
@@ -119,10 +109,10 @@
 // PAGAMENTI sta in PERSONE, dopo ISCRITTI (Segreteria.tsx, GRUPPI).
 // ICONE: una per voce (`ICONE_MENU` di src/components/Icons.tsx, tratto 1,75, 20px, davanti al testo, gap 12px), qui riscritte come un tracciato solo; fra un gruppo
 // e il successivo un filetto di 1px `line-soft` con 14px sopra e sotto (`.sg-gruppo + .sg-gruppo`).
-// tema sito (`:root[data-look='sito']`): menu inchiostro #0d2a3d con testo bianco (`sec` e `dim` #cfe6f4, filetti #46606f); Inter 15px 500, voci alte 44px
+// Look del sito (`:root[data-look='sito']`): menu inchiostro #0d2a3d con testo bianco (`sec` e `dim` #cfe6f4, filetti #46606f); Inter 15px 500, voci alte 44px
 // con raggio 6px, in parole con l'iniziale maiuscola (i titoli dei gruppi restano maiuscoli: lo fa lo stile, Inter 12px 600, 0.12em); la voce corrente
 // ha il giallo del marchio pieno col testo inchiostro e in grassetto; il numero e' un tag bianco col bordo giallo scuro #8f6a00; il campo di ricerca e'
-// bianco; il tasto del tema non c'e' (il tema e' uno solo). Titolo e tasto «?» in Big Shoulders 800.
+// bianco; titolo e tasto «?» in Big Shoulders 800.
 // Non riprodotti: l'elenco della ricerca aperto, ISTRUTTORI →, il passaggio del mouse.
 // iscrittiUnico (PROPOSTA, ../iscritti-unico/): in ISCRITTI E SOLDI resta la sola voce ISCRITTI (TESSERE sparisce, PAGAMENTI e' una scheda di CONTABILITÀ); il menu dell'amministrazione sola non cambia.
 // gare (COSTRUITO, src/lib/menuSegreteria.ts): la voce GARE in CORSI E ORARI dopo CORSI, con l'icona di una coppa; di default c'e' sempre.
@@ -130,8 +120,6 @@
 // importazioni (acceso di serie, com'e' l'app): la voce IMPORTAZIONI in I CONTI dopo CONTABILITÀ, con l'icona dello scarico; spento, il menu di prima.
 const ICONE = {"gare": "M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22 M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22 M18 2H6v7a6 6 0 0 0 12 0V2Z", "dafare": "M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11", "richieste": "M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2z M3,7 L12,13 L21,7", "presenze": "M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2 M10 3h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1z M9,14 L11,16 L15,12", "iscritti": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75", "tessere": "M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-16a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2z M6 11a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M5.5 16c.5-1.5 1.5-2 2.5-2s2 .5 2.5 2 M14 10h4M14 14h4", "pagamenti": "M18 7c-1.2-1.3-3-2-5-2a7 7 0 0 0 0 14c2 0 3.8-.7 5-2 M4 10h9M4 14h9", "settimana": "M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2z M16 2v4M8 2v4M3 10h18", "corsi": "M6 8a6 6 0 1 0 12 0a6 6 0 1 0 -12 0 M15.5 12.9 17 22l-5-3-5 3 1.5-9.1", "listino": "M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z M6 7a1 1 0 1 0 2 0a1 1 0 1 0 -2 0", "istruttori": "M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M12,6 L12,12 L16,14", "personale": "M3 15.5a4.5 4.5 0 1 0 9 0a4.5 4.5 0 1 0 -9 0 M10.7 12.3 21 2M16 7l3 3M14 9l2 2", "statistiche": "M12 20V10M18 20V4M6 20v-4", "vestiario": "M20.4 3.5 16 2a4 4 0 0 1-8 0L3.6 3.5a2 2 0 0 0-1.3 2.2l.6 3.5a1 1 0 0 0 1 .8H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.2a1 1 0 0 0 1-.8l.6-3.5a2 2 0 0 0-1.4-2.2z", "segnalazioni": "M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z M4 22v-7", "sito": "M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M2 12h20 M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z", "contabilita": "M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3", "areaIstruttori": "M8 8a4 4 0 1 0 8 0a4 4 0 1 0 -8 0 M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1", "compensi": "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8", "importazioni": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3", "link": "M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7 M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"};
 const T = {
-  scuro: { surface: '#1c1c1c', menu: '#161616', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tasto: '#b8b8b2' },
-  chiaro: { surface: '#ffffff', menu: '#ebebe7', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', tasto: '#4a4a46' },
   sito: { surface: '#ffffff', menu: '#0d2a3d', line: '#46606f', lineSoft: '#46606f', text: '#ffffff', sec: '#cfe6f4', dim: '#cfe6f4', tasto: '#cfe6f4', giallo: '#f4c31b', ink: '#0d2a3d', gialloTesto: '#8f6a00', faint: '#46606f' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
@@ -161,11 +149,8 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c0 = T[p.tema] || T.scuro;
-    const sito = p.tema === 'sito';
-    const c = sito
-      ? { ...c0, campo: '#ffffff', campoBordo: '#ffffff', campoTesto: c0.faint, numSfondo: '#ffffff', numColore: c0.ink, numBordo: '1.5px solid ' + c0.gialloTesto, numRiemp: '1px 6px', numSpazio: '0.02em' }
-      : { ...c0, campo: c0.surface, campoBordo: c0.line, campoTesto: c0.dim, numSfondo: '#f4c31b', numColore: '#121212', numBordo: '0', numRiemp: '0 4px', numSpazio: '0.12em' };
+    const c0 = T.sito;
+    const c = { ...c0, campo: '#ffffff', campoBordo: '#ffffff', campoTesto: c0.faint, numSfondo: '#ffffff', numColore: c0.ink, numBordo: '1.5px solid ' + c0.gialloTesto, numRiemp: '1px 6px', numSpazio: '0.02em' };
     const numeri = {};
     for (const s of String(p.numeri ?? 'RICHIESTE ONLINE:3, PRESENZE:2').split(',')) {
       const i = s.lastIndexOf(':');
@@ -184,29 +169,27 @@ class Component extends DCLogic {
       // Il filetto fra i gruppi: 14px sopra, 14px dentro, 1px `line-soft`. Il titolo e' una riga, le voci sono tasti.
       voci.push({
         testo: titolo, haNumero: false, numero: '', haIcona: false, icona: '', altezza: '0', padding: '0 12px 0 16px', barra: 'transparent', sfondo: 'transparent', colore: c.dim,
-        fam: sito ? INTER : COND, peso: sito ? 600 : 700, corpo: '12px', spazio: sito ? '0.12em' : '0.22em', sopra: g === 0 ? '0' : '14px', sotto: '4px', vuoto: '0', raggio: '0',
+        fam: INTER, peso: 600, corpo: '12px', spazio: '0.12em', sopra: g === 0 ? '0' : '14px', sotto: '4px', vuoto: '0', raggio: '0',
         filetto: g === 0 ? '0' : '1px solid ' + c.lineSoft, paddingSopra: g === 0 ? '0' : '14px',
       });
       elenco.forEach((testo, i) => {
         const corrente = testo === String(p.attiva ?? '').toUpperCase();
         voci.push({
-          testo: sito ? cap(testo) : testo, haNumero: !!numeri[testo], numero: numeri[testo] ?? '', haIcona: !!IDENT[testo], icona: ICONE[IDENT[testo]] ?? '',
-          altezza: '44px', padding: sito ? '0 4px 0 12px' : '0 8px 0 12px', paddingSopra: '0', filetto: '0', vuoto: '12px',
-          barra: corrente ? (sito ? c.giallo : c.text) : 'transparent', sfondo: corrente ? (sito ? c.giallo : c.surface) : 'transparent', colore: corrente ? (sito ? c.ink : c.text) : c.sec,
-          fam: sito ? INTER : COND, peso: sito ? (corrente ? 700 : 500) : 700, corpo: sito ? '15px' : '16px', spazio: sito ? '0' : '0.1em', raggio: sito ? '6px' : '0', sopra: i === 0 ? '0' : '2px', sotto: '0',
+          testo: cap(testo), haNumero: !!numeri[testo], numero: numeri[testo] ?? '', haIcona: !!IDENT[testo], icona: ICONE[IDENT[testo]] ?? '',
+          altezza: '44px', padding: '0 4px 0 12px', paddingSopra: '0', filetto: '0', vuoto: '12px',
+          barra: corrente ? (c.giallo) : 'transparent', sfondo: corrente ? (c.giallo) : 'transparent', colore: corrente ? (c.ink) : c.sec,
+          fam: INTER, peso: (corrente ? 700 : 500), corpo: '15px', spazio: '0', raggio: '6px', sopra: i === 0 ? '0' : '2px', sotto: '0',
         });
       });
     });
-    const vocePrimo = { fam: sito ? INTER : COND, corpo: sito ? '15px' : '16px', peso: sito ? 500 : 700, spazio: sito ? '0' : '0.1em' };
+    const vocePrimo = { fam: INTER, corpo: '15px', peso: 500, spazio: '0'};
     return {
-      c, voci, sito, vocePrimo, fam: sito ? INTER : 'inherit', cond: sito ? BIG : COND, inclina: sito ? 'normal' : 'oblique 9deg', titoloPeso: sito ? 800 : 700,
-      raggio: sito ? '6px' : '0', conTema: !sito, iconaLink: ICONE.link,
-      link: sito ? ['Copia link iscrizioni', 'Copia link ordini'] : ['COPIA LINK ISCRIZIONI', 'COPIA LINK ORDINI'],
+      c, voci, vocePrimo, fam: INTER, cond: BIG, inclina: 'normal', titoloPeso: 800,
+      raggio: '6px', iconaLink: ICONE.link,
+      link: ['Copia link iscrizioni', 'Copia link ordini'],
       nomeArea: aut === 'segreteria e amministrazione' ? 'GESTIONE' : aut.toUpperCase(),
       conRicerca: !amm,
       conLink: !amm,
-      scuro: (p.tema || 'scuro') === 'scuro',
-      chiaro: p.tema !== 'scuro' && p.tema !== undefined,
       prova: truthy(p.prova),
       impBordo: truthy(p.impostazioni) ? c.text : c.line,
       impColore: truthy(p.impostazioni) ? c.text : c.tasto,

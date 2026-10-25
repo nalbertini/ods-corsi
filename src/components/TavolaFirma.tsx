@@ -1,13 +1,13 @@
 import { type ReactNode, type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { adattaTratti, altezzaVisibile, daIsolare, invitoGirare, rotazioneCancella, firmaVera, limitaPunto, orientamento, risultatoFatto, serveBack, trattoVero, type Tratto } from '../lib/tratti'
+import { Icona } from './Icons'
 
 /**
  * Il riquadro dove si firma col dito, o col mouse dal computer.
  *
  * La firma si tiene come tratti, punti in pixel del riquadro, e non come
- * immagine: sullo schermo si disegna col colore del tema (bianca sul fondo
- * scuro), e per il modulo se ne fa un PNG a parte, con l'inchiostro blu della
+ * immagine: sullo schermo si disegna col colore del testo del sito, e per il modulo se ne fa un PNG a parte, con l'inchiostro blu della
  * penna, su fondo trasparente e ritagliato attorno alla firma (`firmaPng`).
  */
 
@@ -89,12 +89,8 @@ function Tela({ id, tratti, onTratti, onTocco, limita, descritto }: { id?: strin
     misura()
     const o = typeof ResizeObserver === 'function' ? new ResizeObserver(misura) : null
     o?.observe(c)
-    // Il tema cambia il colore dell'inchiostro sullo schermo.
-    const tema = new MutationObserver(ridisegna)
-    tema.observe(document.documentElement, { attributes: true })
     return () => {
       o?.disconnect()
-      tema.disconnect()
     }
   }, [])
 
@@ -289,10 +285,7 @@ function FirmaSchermoIntero({ titolo, piccolo, ritorno, firmaPrima, onTratti, on
         {/* In verticale, finché non si firma: girare il telefono dà più spazio al dito. Non copre la riga. */}
         {invitoGirare(verso, bozza.length, toccato, avviso) && (
           <p className="firma-gira">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <rect x="7" y="2" width="10" height="20" rx="2" />
-              <path d="M11 18h2" />
-            </svg>
+            <Icona nome="sala" misura={28} />
             GIRA IL TELEFONO IN ORIZZONTALE: FIRMI MEGLIO
           </p>
         )}

@@ -33,7 +33,7 @@
   </span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"quando":{"editor":"text","default":"Lunedì 5 ottobre · 17:30"},"stato":{"editor":"enum","options":["presente","assente","giustificato","niente"],"default":"presente"},"soloTasto":{"editor":"boolean","default":false},"icone":{"editor":"boolean","default":false},"segnalata":{"editor":"enum","options":["no","da-confermare","rifiutata"],"default":"no"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":80}}'>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"quando":{"editor":"text","default":"Lunedì 5 ottobre · 17:30"},"stato":{"editor":"enum","options":["presente","assente","giustificato","niente"],"default":"presente"},"soloTasto":{"editor":"boolean","default":false},"icone":{"editor":"boolean","default":false},"segnalata":{"editor":"enum","options":["no","da-confermare","rifiutata"],"default":"no"},"$preview":{"width":360,"height":80}}'>
 // Riproduzione 1:1 della riga delle presenze nell'area iscritti: <li className="mia-presenza-voce"> con .mia-presenza in
 // src/components/AreaIscritti.tsx (righe 366-399) e src/styles.css (righe 792-807, 797-800). Nell'app le righe stanno in un
 // unico riquadro (.mie-presenze, padding 4px 14px) separate da un filo; qui una riga col suo riquadro.
@@ -41,8 +41,6 @@
 // - segnalata: una segnalazione gia' fatta (DA CONFERMARE in giallo-testo, RIFIUTATA in rosso-testo): sostituisce il tasto.
 // - Il tasto SEGNALA (.mia-segnala, 44px, bordo blu) c'e' solo dove non risulta presente ne' giustificato e non c'e' gia' una segnalazione.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', faint: '#5a5a56', verde: '#16a54a', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52', blu: '#1b8ac4' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', faint: '#a8a8a3', verde: '#12913f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d', blu: '#1b8ac4' },
   // L'area iscritti ha il look del sito (lookDellArea): sempre chiara, coi token di :root[data-look='sito'].
   sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', faint: '#46606f', verde: '#12913f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d', blu: '#14709f' },
 };
@@ -54,7 +52,7 @@ const SEGNI = { presente: ['✓', 'PRESENTE'], assente: ['✗', 'ASSENTE'], gius
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const stato = SEGNI[p.stato] ? p.stato : 'presente';
     const segn = p.segnalata === 'da-confermare' || p.segnalata === 'rifiutata' ? p.segnalata : 'no';
     const icone = p.icone === true || p.icone === 'true';

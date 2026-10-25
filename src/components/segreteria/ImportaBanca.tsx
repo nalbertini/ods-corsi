@@ -3,7 +3,7 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { NOME_CASSA_CONTO, oggiARoma, type Cassa, type RigaMovimento } from '../../lib/contabilita'
 import { anteprimaBanca, copertiDaSalvare, datiImportBanca, leggiBanca, MASSIMO_PER_IMPORTAZIONE, ultimaImportazione, type LetturaBanca } from '../../lib/importaBanca'
 import { dataRicevuta, euro } from '../../lib/ricevute'
-import { chiedi, type useAvviso } from './comune'
+import { chiedi, type useAvviso, Tasto } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 
@@ -96,7 +96,7 @@ export function ImportaBanca({ d, casse, righe, fai, onRileggi, onVedi }: { d: D
             L’ultima importazione ha scritto <b>{movimenti(ultima.conteggio)}</b>, dal {dataRicevuta(ultima.dal)} al {dataRicevuta(ultima.al)}.
           </span>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            <button type="button" className="sg-btn sg-btn-rosso" onClick={() => void annullaLotto()}>Annulla tutta l’importazione</button>
+            <Tasto tono="rosso" onClick={() => void annullaLotto()}>Annulla tutta l’importazione</Tasto>
           </div>
         </div>
       )}
@@ -196,7 +196,7 @@ export function ImportaBanca({ d, casse, righe, fai, onRileggi, onVedi }: { d: D
               <button type="button" className="sg-btn sg-btn-pieno" disabled={!a.entrano.length || troppi} onClick={() => void importa()}>
                 {a.entrano.length === 1 ? 'Sì, importa il movimento' : `Sì, importa i ${a.entrano.length} movimenti`}
               </button>
-              <button type="button" className="sg-btn sg-btn-linea" onClick={() => setLettura(null)}>Annulla</button>
+              <Tasto onClick={() => setLettura(null)}>Annulla</Tasto>
             </div>
           </div>
         </>

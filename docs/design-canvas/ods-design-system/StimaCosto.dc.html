@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito (modulo di iscrizione): Big Shoulders Display e Inter, come in CaricaFile. -->
+  <!-- Look sito (modulo di iscrizione): Big Shoulders Display e Inter, come in CaricaFile. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -51,7 +51,7 @@
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"righe":{"editor":"text","default":"Quota associativa:50 €|Judo kids · trimestre:105 €|Sconto famiglia 20% su Judo kids di Ginevra:−21 €"},"totale":{"editor":"text","default":"134 €"},"frasi":{"editor":"text","default":"Lo sconto famiglia va sull annuale che costa meno nel nucleo: Judo kids di Ginevra, che l ha già avuto o lo avrà in segreteria."},"avviso":{"editor":"text","default":""},"intestatario":{"editor":"text","default":"ASD Il Centro Judo"},"iban":{"editor":"text","default":"IT00 X000 0000 0000 0000 0000 000"},"causale":{"editor":"text","default":"Iscrizione Giulia Rossi · Judo kids"},"tasti":{"editor":"text","default":"COPIA IBAN|COPIA CAUSALE|PAGA CON SATISPAY"},"etichetta":{"editor":"text","default":"QUANTO COSTA"},"stima":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":420}}'>
+<script data-dc-script data-props='{"righe":{"editor":"text","default":"Quota associativa:50 €|Judo kids · trimestre:105 €|Sconto famiglia 20% su Judo kids di Ginevra:−21 €"},"totale":{"editor":"text","default":"134 €"},"frasi":{"editor":"text","default":"Lo sconto famiglia va sull annuale che costa meno nel nucleo: Judo kids di Ginevra, che l ha già avuto o lo avrà in segreteria."},"avviso":{"editor":"text","default":""},"intestatario":{"editor":"text","default":"ASD Il Centro Judo"},"iban":{"editor":"text","default":"IT00 X000 0000 0000 0000 0000 000"},"causale":{"editor":"text","default":"Iscrizione Giulia Rossi · Judo kids"},"tasti":{"editor":"text","default":"COPIA IBAN|COPIA CAUSALE|PAGA CON SATISPAY"},"etichetta":{"editor":"text","default":"QUANTO COSTA"},"stima":{"editor":"text","default":""},"$preview":{"width":360,"height":420}}'>
 // Riproduzione 1:1 di QuantoCosta di src/components/ModuloIscrizione.tsx (righe 832-885): la voce QUANTO COSTA di una persona in piu' nel
 // nucleo. Il guscio e' Riquadro stretto (.card.stack.riquadro[data-stretto]: padding 14px, gap 4px) preceduto da .modulo-etichetta (12px 0.18em);
 // le righe sono .stima (src/styles.css righe 788-791): .stima-riga 15px, importo in Saira tabulare, riga di sconto in `verde`, .stima-totale
@@ -62,14 +62,11 @@
 // `etichetta` = IL TUO ORDINE, `stima` = «Paga entro il … con un bonifico a …:» (il totale lo calcola il server, non e' una stima), `frasi` vuoto.
 // Vuoti, restano quelli dell'iscrizione.
 // Vuoto `righe`: «Scegli i corsi per vedere quanto costa» (nessun corso scelto).
-// tema="sito": il modulo di iscrizione (:root[data-modulo='sito'] di src/styles.css): token del sito, etichetta Big Shoulders 15px 0.08em
+// Aspetto: il modulo di iscrizione (:root[data-modulo='sito'] di src/styles.css): token del sito, etichetta Big Shoulders 15px 0.08em
 // (.modulo-etichetta), raggio 6px (.card), tasti .btn-ghost col bordo `riga-campo` #14709f, Big Shoulders dritto 22px 0.06em.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
   sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', faint: '#46606f', tasto: '#0d2a3d', tratteggio: '#14709f', blu: '#14709f', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', suRosso: '#ffffff' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
 };
-const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
@@ -77,14 +74,13 @@ const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    const sito = p.tema === 'sito';
+    const c = T.sito;
 const righe = lista(p.righe ?? 'Quota associativa:50 €|Judo kids · trimestre:105 €|Sconto famiglia 20% su Judo kids di Ginevra:−21 €', '|').map((s) => { const i = s.lastIndexOf(':'); const importo = s.slice(i + 1); return { testo: s.slice(0, i), importo, colore: /^[−-]/.test(importo) ? c.verde : c.text }; });
     const avviso = p.avviso ?? '';
     return {
-      c, cond: sito ? BIG : COND, testoFam: sito ? INTER : 'inherit', raggio: sito ? '6px' : '0',
-      etichettaCorpo: sito ? '15px' : '12px', etichettaSpazio: sito ? '0.08em' : '0.18em', etichettaPeso: sito ? '800' : '700',
-      bordoTasto: sito ? '#14709f' : c.line, inclina: sito ? 'normal' : 'oblique 9deg', tastoCorpo: sito ? '22px' : '16px', tastoSpazio: sito ? '0.06em' : '0.16em',
+      c, cond: BIG, testoFam: INTER, raggio: '6px',
+      etichettaCorpo: '15px', etichettaSpazio: '0.08em', etichettaPeso: '800',
+      bordoTasto: '#14709f', inclina: 'normal', tastoCorpo: '22px', tastoSpazio: '0.06em',
       righe, nessuna: righe.length === 0, totale: p.totale ?? '134 €',
       frasi: lista(p.frasi ?? 'Lo sconto famiglia va sull annuale che costa meno nel nucleo: Judo kids di Ginevra, che l ha già avuto o lo avrà in segreteria.', '|'), avviso, haAvviso: avviso !== '',
       etichetta: p.etichetta || 'QUANTO COSTA',

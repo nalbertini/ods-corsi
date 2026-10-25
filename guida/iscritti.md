@@ -8,8 +8,7 @@
 segreteria sa della sua iscrizione, senza dover chiedere. Si legge e basta: per cambiare
 qualcosa si passa in segreteria.
 
-Ha i colori e i caratteri del sito della palestra, blu e giallo, ed è sempre
-chiara, qualunque tema sia scelto altrove: il tasto del tema qui non c'è.
+Ha i colori e i caratteri del sito della palestra, blu e giallo.
 
 L'indirizzo è <https://app.officinedellosport.it/iscritti/>.
 
@@ -51,6 +50,9 @@ apre su questo), **DOCUMENTI**, per il titolare di un nucleo **FAMIGLIA**, e
 **CONTATTI**. Se il certificato o la quota non vanno, sul tab DOCUMENTI c'è un
 **●** rosso o giallo. Il tab scelto resta quando si cambia persona. Con le
 frecce della tastiera si passa da un tab all'altro.
+
+I titoli delle sezioni e gli stati (**IN REGOLA**, **DA CONFERMARE**,
+**DA SISTEMARE**, **RIFIUTATA**) hanno un'icona accanto alla parola.
 
 Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
 («Ciao Alessandro ▾»): si apre l'elenco dei membri.

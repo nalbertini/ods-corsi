@@ -82,9 +82,7 @@ Le pagine sono quattro, con lo stesso nome ovunque: **CALENDARIO**, **TIMER**,
 telefono stanno nella barra in basso; la pagina in cui siete ha una riga sopra
 ed è scritta più chiara, non solo di un altro colore. Sul computer e sul tablet
 in orizzontale sono nel menu a sinistra, che ha la stessa faccia della
-segreteria, e in fondo il tasto **?** della guida e, sotto il vostro nome, **Esci**. Questa
-area è sempre chiara, a prescindere dal tema scelto altrove: qui il tasto del
-tema non c'è. Chi è della segreteria e non insegna non ha **ORE**: non
+segreteria, e in fondo il tasto **?** della guida e, sotto il vostro nome, **Esci**. Ha l'aspetto del sito della palestra. Chi è della segreteria e non insegna non ha **ORE**: non
 ha ore sue.
 
 ## L'appello
@@ -131,7 +129,7 @@ I due tasti in cima:
 - **TUTTI PRESENTI**: mette ✓ a tutti. È il modo più veloce: premetelo e poi
   toccate una volta gli assenti. Se qualcuno è già segnato diventa **GLI ALTRI
   PRESENTI**, e mette ✓ solo a chi non ha ancora un segno: le assenze già
-  messe restano. Quando tutti hanno un segno diventa **✓ TUTTI SEGNATI**, e
+  messe restano. Quando tutti hanno un segno diventa **TUTTI SEGNATI**, e
   non si tocca. Se invece gli iscritti sono tutti assenti (un appello chiuso per
   sbaglio, riaperto; chi prova non conta) torna **TUTTI PRESENTI**, e mette ✓
   a tutti.
@@ -161,7 +159,7 @@ Non c'è niente da salvare: ogni tocco parte subito.
 
 In fondo all'elenco c'è il tasto giallo per chiudere. Dice:
 
-- **CHIUDI L'APPELLO ✓** quando tutti hanno un segno;
+- **CHIUDI L'APPELLO**, con la spunta, quando tutti hanno un segno;
 - **CHIUDI · 3 ASSENTI** quando qualcuno è ancora da segnare:
   chiudendo, chi non ha un segno risulta **assente** (se è uno in prova, il
   tasto aggiunge **+1 PROVA**).
@@ -230,7 +228,7 @@ arriva prima.
 
 Chi non è iscritto a questa lezione e viene a provarla (o a fare la settimana
 di prova) lo aggiungete voi, senza aspettare la segreteria: in fondo
-all'elenco c'è **+ AGGIUNGI CHI PROVA**. Apre una pagina a parte, con la
+all'elenco c'è **AGGIUNGI CHI PROVA**. Apre una pagina a parte, con la
 tastiera già pronta.
 
 1. Scrivete il **nome o il cognome**, in qualunque ordine. Dalla terza lettera

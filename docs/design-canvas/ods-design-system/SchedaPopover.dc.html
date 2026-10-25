@@ -25,12 +25,12 @@
       </div>
       <sc-if value="{{haPassaggio}}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; align-items: center; gap: 8px">
-          <dc-import name="Bottone" label="{{etPrecedente}}" variante="linea" contesto="segreteria" tema="sito" hint-size="140px,44px"></dc-import>
+          <dc-import name="Bottone" label="{{etPrecedente}}" variante="linea" contesto="segreteria" hint-size="140px,44px"></dc-import>
           <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; font-variant-numeric: tabular-nums; color: #46606f">{{posizione}}</span>
-          <dc-import name="Bottone" label="{{etSuccessiva}}" variante="linea" contesto="segreteria" tema="sito" hint-size="140px,44px"></dc-import>
+          <dc-import name="Bottone" label="{{etSuccessiva}}" variante="linea" contesto="segreteria" hint-size="140px,44px"></dc-import>
         </div>
       </sc-if>
-      <dc-import name="Bottone" label="✕" variante="icona" tema="sito" hint-size="44px,44px"></dc-import>
+      <dc-import name="Bottone" label="✕" variante="icona" hint-size="44px,44px"></dc-import>
     </div>
     <sc-if value="{{haAvviso}}" hint-placeholder-val="{{ false }}">
       <div style="margin: 0 28px 10px; padding: 8px 12px; background: #f4c31b; border: 2px solid #0d2a3d; font-size: 13px; font-weight: 600">{{avviso}}</div>
@@ -46,7 +46,7 @@
     <!-- Il piede resta sempre visibile, anche con la scheda lunga: scorre solo il corpo. -->
     <div style="display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 14px 28px 18px; border-top: 2px solid #cfe6f4; background: #ffffff">
       <sc-for list="{{azioni}}" as="a" hint-placeholder-count="3">
-        <dc-import name="Bottone" label="{{a.label}}" variante="{{a.variante}}" contesto="segreteria" tema="sito" hint-size="190px,48px"></dc-import>
+        <dc-import name="Bottone" label="{{a.label}}" variante="{{a.variante}}" contesto="segreteria" hint-size="190px,48px"></dc-import>
       </sc-for>
     </div>
   </div>

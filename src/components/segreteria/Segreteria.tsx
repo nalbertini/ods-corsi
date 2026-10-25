@@ -2,7 +2,6 @@ import { lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'rea
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
-import { TastoTema } from '../TastoTema'
 import { Cursori, ICONE_MENU, ICONE_SCHEDE } from '../Icons'
 import { Settimana } from './Settimana'
 import { datiVestiario } from '../../lib/vestiarioDati'
@@ -397,7 +396,7 @@ export function Segreteria({
     </a>
   )
 
-  // Il tasto IMPOSTAZIONI sta con ? e il tema, in cima, sul computer e sul telefono.
+  // Il tasto IMPOSTAZIONI sta con ?, in cima, sul computer e sul telefono.
   const impostazioni = conSegreteria && (
     <button
       type="button"
@@ -480,7 +479,6 @@ export function Segreteria({
             </>
           }
           guida={guida}
-          tema={<TastoTema />}
           onVai={(v) => void vai(v)}
           onIstruttori={onIstruttori}
           onEsci={onEsci}
@@ -494,7 +492,6 @@ export function Segreteria({
           <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>{etichetta}</span>
         </span>
         {guida}
-        <TastoTema />
         {impostazioni}
         <button
           type="button"
@@ -572,8 +569,7 @@ export function Segreteria({
           <div className="sg-voci sg-chi-voci">
             {guidaNome}
             {impostazioniNome}
-            <TastoTema />
-          </div>
+              </div>
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
           <span style={{ fontSize: 12, color: 'var(--dim)' }}>{ruolo}{conSegreteria ? ' · accesso completo' : ''}</span>
           {prova && <span className="num sg-bollino">DATI DI PROVA</span>}

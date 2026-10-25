@@ -28,12 +28,12 @@
   </div>
   <span style="font-size: 14px; color: {{c.dim}}">Dal 01/10/2026 entrano nella cassa Satispay; quelli di prima in Conto Corrente, come si faceva finora, così i saldi passati non cambiano. Uno scarico si annulla movimento per movimento, come ogni movimento.</span>
   <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px">
-    <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="pieno" label="{{tastoSi}}" hint-size="260px,48px"></dc-import>
-    <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="linea" label="Non ora" hint-size="110px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" variante="pieno" label="{{tastoSi}}" hint-size="260px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" variante="linea" label="Non ora" hint-size="110px,48px"></dc-import>
   </div>
 </section>
 </x-dc>
-<script data-dc-script data-props='{"incassi":{"editor":"text","default":"31"},"rimborsi":{"editor":"text","default":"2"},"modulo":{"editor":"text","default":"12"},"pagamenti":{"editor":"text","default":"4"},"aMano":{"editor":"text","default":"3"},"daDecidere":{"editor":"text","default":"2"},"prima":{"editor":"text","default":"9"},"dal":{"editor":"text","default":"01/06/2026"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":820,"height":560}}'>
+<script data-dc-script data-props='{"incassi":{"editor":"text","default":"31"},"rimborsi":{"editor":"text","default":"2"},"modulo":{"editor":"text","default":"12"},"pagamenti":{"editor":"text","default":"4"},"aMano":{"editor":"text","default":"3"},"daDecidere":{"editor":"text","default":"2"},"prima":{"editor":"text","default":"9"},"dal":{"editor":"text","default":"01/06/2026"},"$preview":{"width":820,"height":560}}'>
 // COSTRUITA (`PrimoScarico` in src/components/segreteria/ScaricoSatispay.tsx; proposta e storia in ../satispay-scarico/): la pagina intera
 // (`SchedaPiena` «Primo scarico da Satispay», torna a «I movimenti») che si apre da «Guarda il primo scarico». Colonna con gap 14px:
 // .sg-etichetta «NIENTE SI SCRIVE FINCHÉ NON DICI SÌ», titolo 20px 700 (.sg-riquadro-titolo) «PRIMO SCARICO DA SATISPAY», frase da 15px
@@ -48,8 +48,6 @@
 // Differenze dalla proposta: la pagina non e' un riquadro bianco (e' la SchedaPiena), le righe sono senza fili e col numero a 22px, la
 // riga «sono gia' in PAGAMENTI» e' nuova, il numero dei «da decidere» non e' giallo, la data e' solo «dal GG/MM/AAAA».
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', giallo: '#f4c31b', rosso: '#ff5a52', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', giallo: '#8f6a00', rosso: '#b81d1d', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
   sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', giallo: '#8f6a00', rosso: '#b81d1d', cond: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif", body: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
 };
 const truthy = (v) => v === true || v === 'true';
@@ -70,7 +68,7 @@ class Component extends DCLogic {
       [c.prima, 'sono di prima dell’inizio dei conti', ': non entrano.'],
     ].filter((r) => r[0] > 0).map((r) => ({ n: String(r[0]), cosa: r[1], resto: r[2] }));
     return {
-      c: T[p.tema] || T.sito, tema: p.tema || 'sito', righe,
+      c: T.sito, righe,
       tuttiTesto: tutti === 1 ? '1 pagamento' : tutti + ' pagamenti',
       dal: p.dal ? ', dal ' + p.dal : '',
       tastoSi: scritti === 1 ? 'Sì, scrivi il movimento' : scritti ? 'Sì, scrivi i ' + scritti + ' movimenti' : 'Sì, comincia lo scarico',

@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito: Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -31,19 +31,17 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"musica":{"editor":"enum","options":["suona","pausa"],"default":"suona"},"titolo":{"editor":"text","default":"Riscaldamento"},"video":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":56}}'>
+<script data-dc-script data-props='{"musica":{"editor":"enum","options":["suona","pausa"],"default":"suona"},"titolo":{"editor":"text","default":"Riscaldamento"},"video":{"editor":"boolean","default":false},"$preview":{"width":390,"height":56}}'>
 // Nell'app (BarraMusicaTelefono / MusicaMini di src/components/TimerIstruttori.tsx, .musica-telefono / .musica-mini di styles.css): la barra piccola della musica fuori dalla pagina TIMER (CALENDARIO, I MIEI,
 // ORE, appello). Sta in basso, appena sopra BarraNavigazione: la striscia dell'allenamento sta in alto, cosi' le due non si confondono e
 // non si toccano. Alta 56px, fondo `surface`, bordo sopra `line-soft`: la nota, il titolo, MUSICA / IN PAUSA scritto (mai solo l'icona)
 // e un solo tasto ⏸/▶ da 44px. Toccare il resto della barra porta alla pagina TIMER, dove ci sono tutti i comandi.
 // C'e' solo quando la musica e' accesa (suona o in pausa); spenta o ferma dopo un ricaricamento non c'e'.
-// tema sito (COSTRUITO: `.musica-mini` non ha regole sue nel look, prende i token): fondo bianco, filo sopra #cfe6f4, testo in Inter (titolo 15px 700, «MUSICA» / «MUSICA IN PAUSA» 12px 700 con 0.12em in #46606f),
+// (COSTRUITO: `.musica-mini` non ha regole sue nel look, prende i token): fondo bianco, filo sopra #cfe6f4, testo in Inter (titolo 15px 700, «MUSICA» / «MUSICA IN PAUSA» 12px 700 con 0.12em in #46606f),
 // tasto ⏸/▶ da 44px con bordo celeste #cfe6f4 da 2px (come `--line`, non blu) e senza raggio. Sta sopra la barra delle pagine (inchiostro), quindi bianca: si distingue da lei e dalla striscia dell'allenamento, che e' in alto.
 // video: con YouTube che suona il video (200x200, YouTube lo vuole visibile) entra nella barra, a destra, e la barra si alza a
 // 200px in flusso (.musica-mini[data-video]): nota e titolo sopra, ⏸ largo sotto. Non galleggia sopra la pagina: non copre niente.
 const T = {
-  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', dim: '#8c8c88' },
-  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', dim: '#656561' },
   sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', dim: '#46606f' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
@@ -51,13 +49,13 @@ const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const suona = (p.musica || 'suona') === 'suona';
     const video = p.video === true || p.video === 'true';
     const forma = video
       ? "display: grid; grid-template-columns: 20px minmax(0, 1fr) 200px; grid-template-rows: 1fr 44px; grid-template-areas: 'nota titolo video' 'tasto tasto video'; gap: 8px 10px; padding: 12px 20px 14px"
       : 'display: flex; align-items: center; gap: 12px; padding: 0 8px 0 20px';
-    const sito = p.tema === 'sito';
+    const sito = true;
     return { c: { lineTasto: c.line, ...c }, cond: sito ? INTER : COND, corpoFam: sito ? INTER : 'inherit', pesoStato: 700, spazioStato: '0.12em', raggio: '0', suona, inPausa: !suona, video, forma, titolo: p.titolo ?? 'Riscaldamento', stato: suona ? 'MUSICA' : 'MUSICA IN PAUSA' };
   }
 }

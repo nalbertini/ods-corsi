@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito: Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -58,16 +58,6 @@
 
   <div style="display: flex; align-items: center; gap: 8px; padding: 0 4px">
     <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-size: 20px; font-weight: {{titoloPeso}}">?</span>
-    <sc-if value="{{conTema}}" hint-placeholder-val="{{ true }}">
-    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
-      <sc-if value="{{scuro}}" hint-placeholder-val="{{ true }}">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
-      </sc-if>
-      <sc-if value="{{chiaro}}" hint-placeholder-val="{{ false }}">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
-      </sc-if>
-    </span>
-    </sc-if>
   </div>
 
   <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid {{c.lineSoft}}">
@@ -81,7 +71,7 @@
   </div>
 </nav>
 </x-dc>
-<script data-dc-script data-props='{"attiva":{"editor":"enum","options":["CALENDARIO","TIMER","I MIEI TIMER","LE MIE ORE","I MIEI","ORE"],"default":"CALENDARIO"},"elenco":{"editor":"text","default":""},"conTimer":{"editor":"boolean","default":false},"conOre":{"editor":"boolean","default":true},"ancheSegreteria":{"editor":"boolean","default":false},"prova":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Maurizio Verdi"},"ruolo":{"editor":"text","default":"Istruttore · calendario e appello"},"versione":{"editor":"text","default":"v0.37.1"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
+<script data-dc-script data-props='{"attiva":{"editor":"enum","options":["CALENDARIO","TIMER","I MIEI TIMER","LE MIE ORE","I MIEI","ORE"],"default":"CALENDARIO"},"elenco":{"editor":"text","default":""},"conTimer":{"editor":"boolean","default":false},"conOre":{"editor":"boolean","default":true},"ancheSegreteria":{"editor":"boolean","default":false},"prova":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Maurizio Verdi"},"ruolo":{"editor":"text","default":"Istruttore · calendario e appello"},"versione":{"editor":"text","default":"v0.37.1"},"altezza":{"editor":"text","default":"900px"},"$preview":{"width":240,"height":900}}'>
 // Riproduzione 1:1 del menu degli istruttori sullo schermo largo: MenuIstruttori in src/App.tsx (righe 296-366),
 // fatto con le classi del menu di segreteria (.sg-menu, .sg-voci, .sg-voce, .sg-icone, .sg-chi, .sg-bollino,
 // .sg-link: src/styles.css righe 1238-1310) ma SENZA id #sg-menu: quindi margini di 16px (non 12), voci con
@@ -91,42 +81,37 @@
 // Marchio come in Menu.dc.html, con ISTRUTTORI sotto (12px 600 0.2em `dim`). Voci: CALENDARIO, I MIEI TIMER, LE MIE
 // ORE (solo a chi insegna: conOre; la segreteria che vede le lezioni di tutti non ne ha) e TIMER ↗ (apre il timer in
 // un'altra scheda); la corrente ha barra sinistra, fondo `surface` e testo `text`, mai rossa. In fondo, dopo lo spazio
-// libero: SEGRETERIA → (solo a chi e' di segreteria e insegna: ancheSegreteria), i tasti ? e tema (qui non c'e'
+// libero: SEGRETERIA → (solo a chi e' di segreteria e insegna: ancheSegreteria), il tasto ? (qui non c'e'
 // il tasto delle impostazioni), il riquadro con nome, ruolo, DATI DI PROVA (prova), Esci e la versione (.versione).
 // conTimer: PROPOSTA (non ancora nell'app), la voce TIMER che apre il timer dentro l'app, subito dopo CALENDARIO; con conTimer TIMER ↗ non c'è più.
 // elenco: PROPOSTA «Navigazione», le voci scritte a mano separate da | (es. CALENDARIO|TIMER|ORE): sostituisce quelle di sopra, stesse voci della barra in basso del telefono (BarraNavigazione).
-// tema sito (COSTRUITO, `MenuIstruttori` di src/App.tsx con le classi del menu di segreteria nel look del sito): menu inchiostro #0d2a3d con testo bianco (`sec` e `dim` #cfe6f4, filetti #46606f),
+// Look del sito (COSTRUITO, `MenuIstruttori` di src/App.tsx con le classi del menu di segreteria nel look del sito): menu inchiostro #0d2a3d con testo bianco (`sec` e `dim` #cfe6f4, filetti #46606f),
 // voci in Inter 15px (500, la corrente 700) alte 44px con raggio 6px, SENZA icone (la barra in basso del telefono le ha, il menu largo no); la voce corrente e' gialla #f4c31b con l'inchiostro, l'unico giallo pieno del menu;
-// ODS CORSI in Big Shoulders 700 dritto (il peso e' inline nel codice, non 800) e il «?» in Big Shoulders 700; il tasto del tema non c'e' (il tema e' uno solo: sempre chiaro); DATI DI PROVA e' il `.sg-bollino` del look:
+// ODS CORSI in Big Shoulders 700 dritto (il peso e' inline nel codice, non 800) e il «?» in Big Shoulders 700; DATI DI PROVA e' il `.sg-bollino` del look:
 // bianco, testo e bordo 1,5px giallo scuro #8f6a00, 0.18em. La versione ha 0.08em. Le voci restano quelle dell'app (CALENDARIO, TIMER, I MIEI, ORE): senza `elenco` ci sono tutte e quattro (`conOre` le toglie ORE).
 // attiva: la voce corrente. prova: nome "<Nome> · di prova" e bollino. altezza: come in Menu.dc.html.
 // Non riprodotti: il passaggio del mouse e il fuoco.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', tasto: '#b8b8b2', menu: '#161616' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#ebebe7' },
   sito: { surface: '#f4c31b', menu: '#0d2a3d', line: '#46606f', lineSoft: '#46606f', text: '#ffffff', sec: '#cfe6f4', dim: '#cfe6f4', tasto: '#cfe6f4', ink: '#0d2a3d', gialloTesto: '#8f6a00' },
 };
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
-const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    const sito = p.tema === 'sito';
-const conOre = truthy(p.conOre ?? true);
+    const c = T.sito;
+    const conOre = truthy(p.conOre ?? true);
     const conTimer = truthy(p.conTimer);
     const dellElenco = String(p.elenco || '').split('|').map((t) => t.trim()).filter(Boolean).map((t) => [t]);
-    const voci = (dellElenco.length ? dellElenco : sito ? [['CALENDARIO'], ['TIMER'], ['I MIEI'], conOre ? ['ORE'] : null].filter(Boolean) : [['CALENDARIO'], conTimer ? ['TIMER'] : null, ['I MIEI TIMER'], conOre ? ['LE MIE ORE'] : null, conTimer ? null : ['TIMER ↗', true]].filter(Boolean)).map(([testo, fuori]) => {
+    const voci = (dellElenco.length ? dellElenco : [['CALENDARIO'], ['TIMER'], ['I MIEI'], conOre ? ['ORE'] : null].filter(Boolean)).map(([testo, fuori]) => {
       const corrente = !fuori && testo === (p.attiva || 'CALENDARIO');
-      return { testo, fam: sito ? INTER : COND, corpo: sito ? '15px' : '16px', peso: sito ? (corrente ? 700 : 500) : 700, spazio: sito ? '0' : '0.12em', barra: corrente ? (sito ? c.surface : c.text) : 'transparent', sfondo: corrente ? c.surface : 'transparent', colore: corrente ? (sito ? c.ink : c.text) : c.sec };
+      return { testo, fam: INTER, corpo: '15px', peso: (corrente ? 700 : 500), spazio: '0', barra: corrente ? (c.surface) : 'transparent', sfondo: corrente ? c.surface : 'transparent', colore: corrente ? (c.ink) : c.sec };
     });
     return {
-      c, voci, conOre, fam: sito ? INTER : 'inherit', cond: sito ? BIG : COND, inclina: sito ? 'normal' : 'oblique 9deg', titoloPeso: 700, raggio: sito ? '6px' : '0', conTema: !sito,
-      famVoce: sito ? INTER : COND, corpoVoce: sito ? '15px' : '16px', pesoVoce: sito ? 500 : 700, spazioVoce: sito ? '0' : '0.12em', spazioVersione: '0.08em',
-      bollino: sito ? { bordo: '1.5px solid #8f6a00', sfondo: '#ffffff', colore: '#8f6a00', spazio: '0.18em' } : { bordo: '0', sfondo: '#f4c31b', colore: '#121212', spazio: '0.18em' },
-      scuro: (p.tema || 'scuro') === 'scuro', chiaro: p.tema === 'chiaro',
+      c, voci, conOre, fam: INTER, cond: BIG, inclina: 'normal', titoloPeso: 700, raggio: '6px',
+      famVoce: INTER, corpoVoce: '15px', pesoVoce: 500, spazioVoce: '0', spazioVersione: '0.08em',
+      bollino: { bordo: '1.5px solid #8f6a00', sfondo: '#ffffff', colore: '#8f6a00', spazio: '0.18em' },
       ancheSegreteria: truthy(p.ancheSegreteria), prova: truthy(p.prova),
       nome: p.nome ?? 'Maurizio Verdi', ruolo: p.ruolo ?? 'Istruttore · calendario e appello', versione: p.versione ?? 'v0.37.1',
       altezza: p.altezza || '900px',

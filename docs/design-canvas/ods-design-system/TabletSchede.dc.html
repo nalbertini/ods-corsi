@@ -37,7 +37,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"scelta":{"editor":"enum","options":["oggi","corso"],"default":"oggi"},"corso":{"editor":"text","default":""},"iconaOggi":{"editor":"enum","options":["","calendario","sole","orologio"],"default":"","section":"Icone"},"iconaCorso":{"editor":"enum","options":["","medaglia","cartella","elenco"],"default":"","section":"Icone"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":300,"height":140}}'>
+<script data-dc-script data-props='{"scelta":{"editor":"enum","options":["oggi","corso"],"default":"oggi"},"corso":{"editor":"text","default":""},"iconaOggi":{"editor":"enum","options":["","calendario","sole","orologio"],"default":"","section":"Icone"},"iconaCorso":{"editor":"enum","options":["","medaglia","cartella","elenco"],"default":"","section":"Icone"},"$preview":{"width":300,"height":140}}'>
 // Riproduzione 1:1 delle schede OGGI / PER CORSO dell'area istruttore del tablet (TabletIstruttore.tsx, righe 237-285) con
 // .tb-schede, .tb-scheda, .tb-etichetta e .tb-select (src/styles.css, righe 1089-1107). Due tasti da 60px; quello scelto
 // (aria-selected) ha bordo `text`, fondo `surface-2` e scritta `text`, l'altro bordo `line` e scritta `sec`.
@@ -47,14 +47,12 @@
 // - scelta: la scheda accesa. corso: se non vuoto compaiono la scritta CORSO e la tendina (56px, freccia a destra), che
 //   nell'app si vede solo con PER CORSO; il valore e' il corso scelto.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561' },
   sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
+    const c = T.sito;
     const scelta = p.scelta === 'corso' ? 'corso' : 'oggi';
     const schede = [['oggi', 'OGGI'], ['corso', 'PER CORSO']].map(([id, nome]) => {
       const on = id === scelta;

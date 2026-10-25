@@ -5,7 +5,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { mesi } from '../../lib/ore'
 import { SOCIETA } from '../../lib/cartaPdf'
 import { lette } from '../../lib/letture'
-import { chiedi, Guaio, suCarta, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, Guaio, suCarta, Testa, useAvviso, useCarica, useOrdina, Tasto } from './comune'
 
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 const perNome = (a: string, b: string) => a.localeCompare(b, 'it')
@@ -236,9 +236,8 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           <option value="confermata">Confermate</option>
           <option value="rifiutata">Rifiutate</option>
         </select>
-        <button
-          type="button"
-          className="sg-btn sg-btn-linea"
+        <Tasto
+          
           disabled={!lista.length}
           onClick={() =>
             scaricaCsv(
@@ -251,7 +250,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           }
         >
           Scarica CSV
-        </button>
+        </Tasto>
         <button
           type="button"
           className="sg-btn sg-btn-linea"
@@ -322,11 +321,11 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
       {pronte && (
       <div role="table" aria-label="Presenze degli istruttori" className="sg-tabella">
         <div role="row" className="sg-lista-testa sg-riga-presenza-istr">
-          {colonna('istruttore', 'ISTRUTTORE')}
-          {colonna('lezione', 'LEZIONE', { numeri: true })}
-          {colonna('previsto', 'PREVISTO')}
-          {colonna('entrato', 'ENTRATO', { numeri: true })}
-          {colonna('stato', 'STATO', { destra: true })}
+          {colonna('istruttore', 'ISTRUTTORE', { icona: 'istruttore' })}
+          {colonna('lezione', 'LEZIONE', { numeri: true, icona: 'corso' })}
+          {colonna('previsto', 'PREVISTO', { icona: 'calendario' })}
+          {colonna('entrato', 'ENTRATO', { numeri: true, icona: 'orario' })}
+          {colonna('stato', 'STATO', { destra: true, icona: 'fatto' })}
         </div>
         <div className="sg-tabella-corpo">
           {elenco.dato !== null && lista.length === 0 && (

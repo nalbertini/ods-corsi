@@ -24,9 +24,9 @@
     <span role="cell" style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; color: {{coloreImporto}}">{{importo}}</span>
     <div role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
       <div style="display: flex; flex-wrap: wrap; gap: 6px">
-        <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="230px,26px"></dc-import>
-        <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" tema="sito" hint-size="210px,26px"></dc-import></sc-if>
-        <sc-if value="{{conAttese}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="{{segnoAttese}}" tema="sito" hint-size="230px,26px"></dc-import></sc-if>
+        <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" hint-size="230px,26px"></dc-import>
+        <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" hint-size="210px,26px"></dc-import></sc-if>
+        <sc-if value="{{conAttese}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="{{segnoAttese}}" hint-size="230px,26px"></dc-import></sc-if>
       </div>
       <sc-if value="{{haNota}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #46606f; line-height: 1.35">{{nota}}</span></sc-if>
     </div>
@@ -34,7 +34,7 @@
       <sc-if value="{{conSpunta}}" hint-placeholder-val="{{ false }}">
         <span role="checkbox" aria-checked="{{firmata}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; font-weight: 600"><span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #0d2a3d; border-radius: 4px; background: {{fondoSpunta}}; color: #ffffff; font-size: 16px; font-weight: 700">{{segnoSpunta}}</span>Firmata</span>
       </sc-if>
-      <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" hint-size="170px,44px"></dc-import></sc-if>
+      <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" hint-size="170px,44px"></dc-import></sc-if>
       <sc-if value="{{conLink}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">{{azione}}</span></sc-if>
     </div>
   </div>
@@ -58,7 +58,7 @@
           <span role="cell">{{a.corso}}</span>
           <span role="cell" style="font-variant-numeric: tabular-nums">{{a.giorno}}</span>
           <span role="cell" style="color: #46606f">ha firmato {{a.chi}}</span>
-          <span role="cell" style="display: flex; gap: 10px; align-items: center; justify-content: flex-end"><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" tema="sito" hint-size="90px,44px"></dc-import><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; text-decoration: underline; text-underline-offset: 3px">Non c’era</span></span>
+          <span role="cell" style="display: flex; gap: 10px; align-items: center; justify-content: flex-end"><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" hint-size="90px,44px"></dc-import><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; text-decoration: underline; text-underline-offset: 3px">Non c’era</span></span>
         </div>
       </sc-for>
     </div>
@@ -72,9 +72,9 @@
     </div>
     <span style="font-size: 13px; color: #46606f; font-variant-numeric: tabular-nums">{{lezioni}} lezioni · {{ore}} ore</span>
     <div style="display: flex; flex-wrap: wrap; gap: 6px">
-      <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="230px,26px"></dc-import>
-      <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" tema="sito" hint-size="210px,26px"></dc-import></sc-if>
-      <sc-if value="{{conAttese}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="{{segnoAttese}}" tema="sito" hint-size="230px,26px"></dc-import></sc-if>
+      <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" hint-size="230px,26px"></dc-import>
+      <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" hint-size="210px,26px"></dc-import></sc-if>
+      <sc-if value="{{conAttese}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="{{segnoAttese}}" hint-size="230px,26px"></dc-import></sc-if>
     </div>
     <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #46606f; line-height: 1.35">{{nota}}</span></sc-if>
     <sc-if value="{{conAttese}}" hint-placeholder-val="{{ false }}">
@@ -84,12 +84,12 @@
           <div style="display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; font-size: 14px">
             <span>{{a.corso}} · {{a.giorno}}</span>
             <span style="color: #46606f">ha firmato {{a.chi}}</span>
-            <span style="display: flex; gap: 12px; align-items: center"><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" tema="sito" hint-size="90px,44px"></dc-import><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; text-decoration: underline; text-underline-offset: 3px">Non c’era</span></span>
+            <span style="display: flex; gap: 12px; align-items: center"><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" hint-size="90px,44px"></dc-import><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; text-decoration: underline; text-underline-offset: 3px">Non c’era</span></span>
           </div>
         </sc-for>
       </div>
     </sc-if>
-    <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" larghezza="100%" hint-size="100%,48px"></dc-import></sc-if>
+    <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" larghezza="100%" hint-size="100%,48px"></dc-import></sc-if>
     <sc-if value="{{conLink}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">{{azione}}</span></sc-if>
   </div>
 </sc-if>

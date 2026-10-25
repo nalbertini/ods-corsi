@@ -16,7 +16,7 @@ import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { posizione, vicina } from '../../lib/schedaFinestra'
-import { chiedi, Campo, dataLunga, Guaio, lasciare, Proposta, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, lasciare, Proposta, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, Tasto } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 const STATI: Record<StatoRichiesta, string> = { nuova: 'Nuova', accolta: 'Accolta', rifiutata: 'Rifiutata' }
@@ -650,16 +650,15 @@ function Scheda({
       {/* Lontano da «Accogli» e «Rifiuta»: cancella i file per sempre e si usa di rado. Accolta, tiene i dati della scheda. */}
       {siElimina(x) && (
         <div className="row" style={{ justifyContent: 'flex-end', marginTop: 24 }}>
-          <button
-            type="button"
-            className="sg-btn sg-btn-linea sg-pericolo"
+          <Tasto
+            className="sg-pericolo"
             onClick={async () => {
               if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file?${restituire ? `\n\n${restituire} Eliminata la richiesta, in RICHIESTE ONLINE non si vede più.` : ''}`, 'Elimina per sempre', { pericolo: true })))
                 void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
             }}
           >
             Elimina richiesta e file
-          </button>
+          </Tasto>
         </div>
       )}
     </>

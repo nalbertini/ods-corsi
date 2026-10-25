@@ -16,7 +16,7 @@ export const STATE_COLOR = {
   cooldown: 'var(--cooldown)',
 } as const
 
-/** Il colore delle scritte sopra ogni fase: bianco sul rosso; sugli altri colori lo decide il tema. */
+/** Il colore delle scritte sopra ogni fase: bianco sul rosso; sugli altri colori lo decide l'aspetto del sito. */
 export const SU_STATE = {
   prepare: 'var(--su-prepare)',
   work: 'var(--su-work)',

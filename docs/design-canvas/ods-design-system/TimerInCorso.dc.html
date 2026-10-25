@@ -26,12 +26,7 @@
   </div>
 
   <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 12px; padding: 16px 4px 0; border-top: 2px solid {{c.lineSoft}}">
-    <sc-if value="{{fascia}}" hint-placeholder-val="{{ false }}">
       <span style="display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 52px; background: {{f.tinta}}; color: {{f.su}}; border-radius: {{raggio}}; font-family: {{cond}}; font-size: 32px; font-weight: 800; letter-spacing: 0.22em; line-height: 1">{{f.parola}}</span>
-    </sc-if>
-    <sc-if value="{{nonFascia}}" hint-placeholder-val="{{ true }}">
-      <span style="font-family: {{cond}}; font-style: {{ob}}; font-size: 30px; font-weight: 700; letter-spacing: 0.26em; color: {{f.testo}}; line-height: 1">{{f.parola}}</span>
-    </sc-if>
     <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 120px; font-weight: 800; line-height: 0.88; letter-spacing: -0.02em; color: {{c.text}}">{{f.tempo}}</span>
     <span style="font-family: {{cond}}; font-style: {{ob}}; font-size: 30px; font-weight: 600; letter-spacing: 0.04em; text-align: center">{{f.esercizio}}</span>
 
@@ -58,24 +53,19 @@
   <div style="flex-grow: 1"></div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"stato":{"editor":"enum","options":["pronto","lavoro","recupero"],"default":"pronto"},"nome":{"editor":"text","default":"BRUCIA GRASSI"},"serie":{"editor":"text","default":"SERIE 1 / 3"},"altezza":{"editor":"text","default":"860px"},"tema":{"editor":"enum","options":["scuro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":860}}'>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["pronto","lavoro","recupero"],"default":"pronto"},"nome":{"editor":"text","default":"BRUCIA GRASSI"},"serie":{"editor":"text","default":"SERIE 1 / 3"},"altezza":{"editor":"text","default":"860px"},"$preview":{"width":390,"height":860}}'>
 // L'allenamento nella pagina TIMER dell'area istruttori com'e' costruito (TimerScreen.tsx, .tf-* in timer/src/styles.css, telefono in verticale):
 // cornice di 10px del colore della fase, X / nome e SERIE / MAURIZIO / RESET, la fase, le cifre, l'esercizio, il tasto grande (AVVIA,
 // PAUSA, RIPRENDI) del colore della fase, INDIETRO +30″ AVANTI, la SCALETTA col passo corrente pieno.
-// tema scuro = com'era prima del look: fasi --prepare giallo, --work rosso, --rest verde; la fase scritta nel suo colore (--state-testo).
-// tema sito = COSTRUITO (TimerSala con `sito`, :root[data-tema='sito'] e .tf-* in timer/src/styles.css, SU_STATE in Quadrante.tsx): fondo #eef5fa, Big Shoulders e Inter, cifre inchiostro #0d2a3d (mai gialle su chiaro);
+// Look del sito, COSTRUITO (TimerSala con `sito`, :root[data-tema='sito'] e .tf-* in timer/src/styles.css, SU_STATE in Quadrante.tsx): fondo #eef5fa, Big Shoulders e Inter, cifre inchiostro #0d2a3d (mai gialle su chiaro);
 // la fase diventa una FASCIA piena con la parola sopra (si legge da lontano, chiesto dall'istruttore); fasi coi colori della
 // TimerStriscia nel look sito: PRONTO/PREPARATI giallo #f4c31b con inchiostro, LAVORO #b81d1d e RECUPERO #0b7a33 con bianco,
 // RIPOSO e DEFATICAMENTO blu #14709f, sempre col bianco sopra (--su-*); +30″ col bordo della fase; tasti secondari col bordo blu.
 // Fuori dagli intervalli (cronometro, conto alla rovescia, chip accesi, COMPLETATO verde #0b7a33) il testo sui fondi pieni è bianco (--su-colore), sul giallo inchiostro (--su-giallo).
 const T = {
-  scuro: { bg: '#121212', lineSoft: '#2a2a2a', text: '#f2f2f0', dim: '#8c8c88', tasto: '#b8b8b2', lineaTasto: '#333333', suGiallo: '#121212',
-    prepare: ['#f4c31b', '#121212', '#f4c31b'], work: ['#e4292a', '#ffffff', '#e4292a'], rest: ['#16a54a', '#121212', '#16a54a'] },
   sito: { bg: '#eef5fa', lineSoft: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', tasto: '#14709f', lineaTasto: '#14709f', suGiallo: '#0d2a3d',
     prepare: ['#f4c31b', '#0d2a3d', '#8f6a00'], work: ['#b81d1d', '#ffffff', '#b81d1d'], rest: ['#0b7a33', '#ffffff', '#0b7a33'] },
 };
-const SAIRA = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
-const BARLOW = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const PLAY = 'M6 3l15 9-15 9z';
@@ -83,8 +73,7 @@ const PAUSA = 'M6 4h4v16H6zM14 4h4v16h-4z';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const sito = p.tema === 'sito';
-    const c = sito ? T.sito : T.scuro;
+    const c = T.sito;
     const stato = p.stato || 'pronto';
     const kind = stato === 'lavoro' ? 'work' : stato === 'recupero' ? 'rest' : 'prepare';
     const [tinta, su, testo] = c[kind];
@@ -110,8 +99,7 @@ class Component extends DCLogic {
     ];
     return {
       c, f, righe, altezza: p.altezza || '860px', nome: p.nome ?? 'BRUCIA GRASSI', serie: p.serie ?? 'SERIE 1 / 3',
-      cond: sito ? BIG : SAIRA, corpo: sito ? INTER : BARLOW, ob: sito ? 'normal' : 'oblique 9deg', raggio: sito ? '6px' : '0',
-      fascia: sito, nonFascia: !sito,
+      cond: BIG, corpo: INTER, ob: 'normal', raggio: '6px',
     };
   }
 }

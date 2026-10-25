@@ -4,7 +4,7 @@ import { describe, totalDuration } from '../lib/engine'
 import { clock } from '../lib/format'
 import { linkPer } from '../lib/condivisione'
 import { QrCode } from './QrCode'
-import { Back } from './Icons'
+import { Back, Icona } from './Icons'
 
 /**
  * Mandare un allenamento al tablet della sala, o a un collega.
@@ -85,6 +85,7 @@ export function CondividiScreen({ workout, onBack }: { workout: Workout; onBack:
 
           <div className="row" style={{ gap: 8 }}>
             <button className="btn btn-ghost grow" style={{ minHeight: 50, fontSize: 15 }} onClick={copia} disabled={!link}>
+              <Icona nome="link" />
               {copiato ? 'LINK COPIATO' : 'COPIA LINK'}
             </button>
             {typeof navigator !== 'undefined' && 'share' in navigator && (

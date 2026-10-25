@@ -16,14 +16,13 @@ import {
   nomeFile,
   salvataggioCorrente,
 } from '../lib/salvataggio'
-import { type Tema, useTema } from '../lib/tema'
 import { clientId, clientIdDaCompilazione, collega, impostaClientId, indirizzoRitorno, scollega } from '../lib/spotify'
 import { useMusica, useSpotify } from '../lib/useMusica'
 import { VOLUME_BLOCCATO, leggiLink } from '../lib/youtube'
 import { aggiungiFileScelti, ascoltaAudio, statoAudio, svuotaFileScelti, togliFileScelto } from '../lib/musicaAudio'
 import { TESTI_MUSICA } from '../lib/musicaLocale'
 import { eHttp, leggiRadio, MESSAGGIO_HTTP } from '../lib/link'
-import { Chevron } from './Icons'
+import { Chevron, Icona } from './Icons'
 import { Logo } from './Logo'
 import { daRadice } from '../lib/radice'
 
@@ -91,7 +90,7 @@ export function SettingsScreen({
    */
   sala?: boolean
   /**
-   * Dentro il tablet di ODS Corsi: l'accesso, il tema, la versione e la guida
+   * Dentro il tablet di ODS Corsi: l'accesso, la versione e la guida
    * sono già di ODS Corsi, e il salvataggio su file non serve a un tablet
    * i cui timer stanno sul database.
    */
@@ -99,7 +98,6 @@ export function SettingsScreen({
   /** Il collegamento con ODS Corsi, quando il timer ha un database. */
   palestra?: ReactNode
 }) {
-  const [tema, scegliTema] = useTema()
   const [incise, setIncise] = useState(0)
   const [daRipristinare, setDaRipristinare] = useState<Salvataggio | null>(null)
   const [messaggio, setMessaggio] = useState<string | null>(null)
@@ -189,7 +187,7 @@ export function SettingsScreen({
       {!sala && (
       <>
       <div className="rule">
-        <span className="rule-label">ESERCIZI</span>
+        <span className="rule-label titolo-icona"><Icona nome="esercizi" />ESERCIZI</span>
         <div className="rule-line" />
       </div>
       <div className="pad stack" style={{ gap: 8 }}>
@@ -202,37 +200,6 @@ export function SettingsScreen({
           </div>
           <Chevron />
         </button>
-      </div>
-      </>
-      )}
-
-      {!incorporato && (
-      <>
-      <div className="rule">
-        <span className="rule-label">TEMA</span>
-        <div className="rule-line" />
-      </div>
-      <div className="pad stack" style={{ gap: 2 }}>
-        <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
-          <div className="segmenti" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
-            {(
-              [
-                ['scuro', 'NERO'],
-                ['chiaro', 'BIANCO'],
-                ['tatami', 'TATAMI'],
-              ] as [Tema, string][]
-            ).map(([t, etichetta]) => (
-              <button key={t} className="segmento" data-on={tema === t} aria-pressed={tema === t} onClick={() => scegliTema(t)}>
-                <span className="ob" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.06em' }}>
-                  {etichetta}
-                </span>
-              </button>
-            ))}
-          </div>
-          <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--dim)' }}>
-            È lo stesso di ODS Corsi: scelto qui o là, vale per tutte e due su questo dispositivo.
-          </span>
-        </div>
       </div>
       </>
       )}
@@ -338,7 +305,7 @@ export function SettingsScreen({
       {!sala && (
       <>
       <div className="rule">
-        <span className="rule-label">VOCE INCISA</span>
+        <span className="rule-label titolo-icona"><Icona nome="volume" />VOCE INCISA</span>
         <div className="rule-line" />
       </div>
       <div className="pad stack" style={{ gap: 8 }}>
@@ -478,6 +445,7 @@ export function SettingsScreen({
               setMessaggio(fatto)
             }}
           >
+            <Icona nome="salva" />
             SALVA TUTTO
           </button>
           <button
@@ -681,7 +649,7 @@ function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: 
   return (
     <>
       <div className="rule">
-        <span className="rule-label">MUSICA</span>
+        <span className="rule-label titolo-icona"><Icona nome="musica" />MUSICA</span>
         <div className="rule-line" />
       </div>
       <div className="pad stack" style={{ gap: 8 }}>

@@ -36,11 +36,11 @@
 </div>
 </x-dc>
 <script data-dc-script data-props='{"forma":{"editor":"enum","options":["etichetta","icona","riga"],"default":"etichetta"},"misura":{"editor":"enum","options":["tablet","tessera","torta","telefono"],"default":"tablet"},"tema":{"editor":"enum","options":["sito","giallo"],"default":"sito"},"testo":{"editor":"text","default":"1 COMPLEANNO OGGI: Giulia R."},"$preview":{"width":260,"height":60}}'>
-// COSTRUITO (`SegnoCompleanno.tsx`, `.segno-compleanno` in src/styles.css; DESIGN.md «Segno compleanno»). Sala e istruttori hanno sempre il look sito: tema `sito` (default) = fondo bianco, testo `giallo-testo` #8f6a00 e filo inset 1.5px (come .sg-bollino nel look); tema `giallo` = fondo #f4c31b e testo #121212 (gli altri temi). misura `tessera` = 15px nelle tessere del tablet (appello intero), `torta` = la sola torta nell'appello veloce (la tessera e' larga ~100px). Vince il costruito su quanto segue (PROPOSTA, `../compleanni/`):
+// COSTRUITO (`SegnoCompleanno.tsx`, `.segno-compleanno` in src/styles.css; DESIGN.md «Segno compleanno»). Il colore del segno è la prop `tema` (non l'aspetto dell'app, che è uno solo): `sito` (default) = fondo bianco, testo `giallo-testo` #8f6a00 e filo inset 1.5px (come .sg-bollino nel look); tema `giallo` = fondo #f4c31b e testo #121212. misura `tessera` = 15px nelle tessere del tablet (appello intero), `torta` = la sola torta nell'appello veloce (la tessera e' larga ~100px). Vince il costruito su quanto segue (PROPOSTA, `../compleanni/`):
 // : il segno «e' il compleanno di questo iscritto oggi». Un avviso e basta: non cambia presenze,
 // ordine ne' passi. Si legge senza il colore: torta a linea (stesso tratto delle icone dell'app: 24x24, 2.2, tondo) + la parola.
 // Valori copiati dal codice: fondo `giallo` #f4c31b e testo `su-colore` #121212 come .sg-bollino (src/styles.css, riga 1250; vedi
-// Badge.dc.html), che non dipende dal tema: sul bianco, sul celeste #cfe6f4 della tessera segnata e sul nero resta leggibile (circa 10:1).
+// Badge.dc.html), che non dipende dal colore di sfondo: sul bianco e sul celeste #cfe6f4 della tessera segnata resta leggibile (circa 10:1).
 // Niente giallo-testo per la parola: sul celeste della tessera IN ATTESA farebbe sotto 4,5:1.
 // - etichetta: torta + COMPLEANNO. misura tablet = Saira Condensed 17px 0.12em (due pixel sopra IN ATTESA DI RETE: guardato da due metri),
 //   telefono = Inter 11px 0.12em (come .sg-bollino nel look del sito).

@@ -5,7 +5,7 @@ import { CLIPS, type ClipSpec, exerciseKey, formatoRegistrazione as pickFormat }
 import { deleteClip, getClip, listClips, putClip } from '../lib/clipStore'
 import { forgetClips, say, unlockVoice } from '../lib/voice'
 import { zipStore } from '../lib/zip'
-import { Back, Play, Trash } from './Icons'
+import { Back, Icona, Play, Trash } from './Icons'
 
 export function VoiceRecorderScreen({
   workouts,
@@ -204,6 +204,7 @@ export function VoiceRecorderScreen({
                       disabled={!format || (active !== null && !inCorso)}
                       onClick={() => (inCorso ? stop() : record(c.key))}
                     >
+                      <Icona nome={inCorso ? 'pausa' : inciso ? 'ricomincia' : 'microfono'} size={16} />
                       {inCorso ? 'FERMA' : inciso ? 'RIFAI' : 'REGISTRA'}
                     </button>
                   </div>

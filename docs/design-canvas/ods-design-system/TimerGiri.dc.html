@@ -26,18 +26,16 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"giri":{"editor":"text","default":"00:38.40|00:38.40;00:41.07|01:19.47;00:36.82|01:56.29"},"altezzaMax":{"editor":"text","default":"158px"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":1240,"height":140}}'>
+<script data-dc-script data-props='{"giri":{"editor":"text","default":"00:38.40|00:38.40;00:41.07|01:19.47;00:36.82|01:56.29"},"altezzaMax":{"editor":"text","default":"158px"},"$preview":{"width":1240,"height":140}}'>
 // Un giro e' «scarto|totale»: i tempi hanno i due punti dei minuti, quindi il separatore e' "|". Il giro n e' la posizione nell'ordine di segnatura.
 const T = {
-  scuro: { lineSoft: '#2a2a2a', faint: '#5a5a56', dim: '#8c8c88', text: '#f2f2f0', verde: '#16a54a' },
-  chiaro: { lineSoft: '#e2e2dd', faint: '#a8a8a3', dim: '#656561', text: '#161616', verde: '#12913f' },
   sito: { lineSoft: '#cfe6f4', faint: '#46606f', dim: '#46606f', text: '#0d2a3d', verde: '#12913f' },
 };
 const pad2 = (n) => String(n).padStart(2, '0');
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
+    const c = T.sito;
     const righe = String(p.giri ?? '00:38.40|00:38.40;00:41.07|01:19.47;00:36.82|01:56.29').split(';').filter(Boolean).map((x) => x.split('|'));
     const sec = (t) => { const m = /^(\d+):(\d+)\.(\d+)$/.exec(t); return m ? Number(m[1]) * 6000 + Number(m[2]) * 100 + Number(m[3]) : 0; };
     const scarti = righe.map((r) => sec(r[0]));

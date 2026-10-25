@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
  * L'aspetto della segreteria: com'è oggi, col menu a sinistra, o «Il Banco»,
  * con la ricerca in cima e cinque luoghi.
  *
- * Come il tema: la scelta vale per questo computer e resta dopo la ricarica.
+ * La scelta vale per questo computer e resta dopo la ricarica.
  * Chi non sceglie vede la segreteria di sempre, così nessuno trova un'app
  * cambiata senza averlo voluto.
  */

@@ -147,7 +147,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   // Quanti controlli dello stato di fila non hanno risposto: dopo qualche giro lo si dice.
   const erroriStato = useRef(0)
 
-  // Finché il modulo è aperto ha l'aspetto del sito, non quello del tema dell'app.
+  // Finché il modulo è aperto ha l'aspetto del sito.
   useEffect(() => apriAspettoModulo(), [])
 
   // Si contano solo le richieste vere dalla pagina pubblica: né la prova né l'area degli iscritti (`nucleo`).
@@ -1149,7 +1149,7 @@ function Bonifico({ causale: testo, satispay }: { causale: string | null; satisp
         <Dettaglio tono="avviso">Scrivi nome e cognome per la causale.</Dettaglio>
       )}
       <Tasti>
-        <Tasto onClick={() => void copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+        <Tasto icona="copia" onClick={() => void copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
         {testo && <Tasto onClick={() => void copia('causale', testo)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>}
         {satispay && PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
       </Tasti>

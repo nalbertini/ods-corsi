@@ -833,5 +833,135 @@ console.log('\n8. senza 80-ricevute-compensi.sql: dice cosa lanciare')
   ok('le ricevute, quando PostgREST non trova la tabella', lancia(await errore(() => cache.ricevuteCompensi())), 'dice di lanciare 80-ricevute-compensi.sql')
 }
 
+console.log('\n9. la pagina COMPENSI raggruppa i tecnici per cosa c\'è da fare')
+{
+  const ric = (id, o = {}) => ({ id, firmata: false, pagataIl: null, importo: 10000, ...o })
+  const riga = (id, stato, ricevuta, extra = [], senzaFirma = []) => ({ persona: { id, nome: id }, stato, ricevuta, extra, senzaFirma })
+  const lez = (id) => ({ sessioneId: id, corso: 'Judo', inizio: '2026-10-03T17:00:00Z', firmatoDa: ['Anna'] })
+  const g = (righe) => {
+    try {
+      return c.gruppiCompensi(righe)
+    } catch (e) {
+      return { errore: `ERRORE: ${e.message}` }
+    }
+  }
+  // Il gruppo in cui sta ogni tecnico, per id.
+  const dove = (righe) => {
+    const x = g(righe)
+    return x.errore ?? Object.fromEntries((x.gruppi ?? []).flatMap((q) => q.righe.map((r) => [r.persona.id, q.gruppo])))
+  }
+  const uno = (stato, ricevuta, extra, senza) => {
+    const d = dove([riga('X', stato, ricevuta, extra, senza)])
+    return typeof d === 'string' ? d : d.X
+  }
+  const f = ric('f', { firmata: true })
+  const fp = ric('fp', { firmata: true, pagataIl: '2026-11-02' })
+
+  ok('un caso solo: ogni stato nel suo gruppo', [
+    uno('da-confermare'), uno('senza-tariffa'), uno('senza-dati'), uno('non-torna', ric('n')),
+    uno('da-fare'), uno('fatta', ric('a')), uno('fatta', f), uno('pagata', fp),
+  ], ['da-sistemare', 'da-sistemare', 'da-sistemare', 'da-sistemare', 'da-fare', 'da-far-firmare', 'da-pagare', 'pagate'])
+  ok('da confermare: da sistemare', uno('da-confermare'), 'da-sistemare')
+  ok('senza tariffa: da sistemare', uno('senza-tariffa'), 'da-sistemare')
+  ok('senza dati: da sistemare', uno('senza-dati'), 'da-sistemare')
+  ok('non torna: da sistemare', uno('non-torna', ric('n')), 'da-sistemare')
+  ok('da fare: da fare', uno('da-fare'), 'da-fare')
+  ok('fatta e non firmata: da far firmare', uno('fatta', ric('a')), 'da-far-firmare')
+  ok('fatta e firmata: da pagare', uno('fatta', f), 'da-pagare')
+  ok('pagata e firmata: pagate', uno('pagata', fp), 'pagate')
+  ok('solo extra non firmata: da far firmare', uno('solo-extra', undefined, [ric('e')]), 'da-far-firmare')
+  ok('solo extra firmata e non pagata: da pagare', uno('solo-extra', undefined, [ric('e', { firmata: true })]), 'da-pagare')
+  ok('solo extra tutte pagate: pagate', uno('solo-extra', undefined, [ric('e', { firmata: true, pagataIl: '2026-11-02' })]), 'pagate')
+  ok('solo attese: in nessun gruppo', [g([riga('X', 'solo-attese', undefined, [], [lez('s1')])]).gruppi, uno('solo-attese', undefined, [], [lez('s1')])], [[], undefined])
+  ok('solo attese: le sue lezioni sono in senza firma', g([riga('X', 'solo-attese', undefined, [], [lez('s1'), lez('s2')])]).senzaFirma?.map((x) => [x.persona.id, x.lezione.sessioneId]), [['X', 's1'], ['X', 's2']])
+
+  console.log('   le precedenze')
+  ok('non torna anche se firmata: da sistemare', uno('non-torna', f), 'da-sistemare')
+  ok('non torna con una extra: da sistemare', uno('non-torna', f, [ric('e')]), 'da-sistemare')
+  ok('da fare con una extra non firmata: da fare', uno('da-fare', undefined, [ric('e')]), 'da-fare')
+  ok('fatta firmata con una extra non firmata: da far firmare', uno('fatta', f, [ric('e')]), 'da-far-firmare')
+  ok('fatta firmata con una extra firmata non pagata: da pagare', uno('fatta', f, [ric('e', { firmata: true })]), 'da-pagare')
+  ok('pagata ma non firmata: da far firmare', uno('pagata', ric('p', { pagataIl: '2026-11-02' })), 'da-far-firmare')
+  ok('pagata firmata con una extra non pagata: da pagare', uno('pagata', fp, [ric('e', { firmata: true })]), 'da-pagare')
+  ok('pagata firmata con una extra non firmata, anche pagata: da far firmare', uno('pagata', fp, [ric('e', { pagataIl: '2026-11-02' })]), 'da-far-firmare')
+
+  console.log('   l\'insieme')
+  const tutte = [
+    riga('P', 'pagata', fp), riga('F', 'fatta', f), riga('Q', 'fatta', ric('q')), riga('D', 'da-fare'),
+    riga('S', 'senza-dati'), riga('N', 'non-torna', f), riga('E', 'solo-extra', undefined, [ric('e')]), riga('A', 'solo-attese', undefined, [], [lez('s1')]),
+    riga('D2', 'da-fare'), riga('S2', 'da-confermare', undefined, [], [lez('s2')]),
+  ]
+  const copia = JSON.stringify(tutte)
+  const x = g(tutte)
+  ok('i gruppi nell\'ordine fisso, dentro l\'ordine di ingresso', x.gruppi?.map((q) => [q.gruppo, q.righe.map((r) => r.persona.id)]), [
+    ['da-sistemare', ['S', 'N', 'S2']], ['da-fare', ['D', 'D2']], ['da-far-firmare', ['Q', 'E']], ['da-pagare', ['F']], ['pagate', ['P']],
+  ])
+  ok('ogni tecnico una volta sola (tranne chi aspetta solo una firma)', x.gruppi?.flatMap((q) => q.righe.map((r) => r.persona.id)).sort(), ['D', 'D2', 'E', 'F', 'N', 'P', 'Q', 'S', 'S2'])
+  ok('la funzione non tocca le righe né lo stato', JSON.stringify(tutte), copia)
+  ok('le righe dei gruppi sono le stesse, non copie', x.gruppi?.every((q) => q.righe.every((r) => tutte.includes(r))), true)
+  ok('senza firma: una per lezione, anche di chi sta in un gruppo, nell\'ordine delle righe', x.senzaFirma?.map((y) => [y.persona.id, y.lezione.sessioneId]), [['A', 's1'], ['S2', 's2']])
+  ok('i gruppi vuoti non ci sono', g([riga('D', 'da-fare')]).gruppi?.map((q) => q.gruppo), ['da-fare'])
+  ok('nessuna riga: niente di niente', g([]), { gruppi: [], senzaFirma: [], pagati: 0 })
+
+  console.log('   i filtri di oggi e il pagato')
+  const daFare = tutte.filter((r) => r.stato === 'da-fare')
+  ok('«Da fare» è il gruppo da fare', x.gruppi?.find((q) => q.gruppo === 'da-fare')?.righe, daFare)
+  const dp = c.daPagareCompensi(tutte)
+  const copre = new Set(x.gruppi?.filter((q) => ['da-sistemare', 'da-far-firmare', 'da-pagare'].includes(q.gruppo)).flatMap((q) => q.righe))
+  ok('«Da pagare» sta in da sistemare, da far firmare e da pagare: nessuno si perde', dp.righe.every((r) => copre.has(r)), true)
+  ok('il totale da pagare resta quello di prima (100 + 100 + 100 €... fatta F, Q e la extra di E)', dp.totale, 30000)
+  ok('pagati: la ricevuta pagata del mese più le extra pagate, non il resto', g([
+    riga('P', 'pagata', ric('p', { firmata: true, pagataIl: '2026-11-02', importo: 12000 })),
+    riga('F', 'fatta', ric('f', { firmata: true, importo: 7000 }), [ric('e1', { firmata: true, pagataIl: '2026-11-02', importo: 2500 }), ric('e2', { importo: 900 })]),
+    riga('E', 'solo-extra', undefined, [ric('e3', { firmata: true, pagataIl: '2026-11-02', importo: 4000 })]),
+  ]).pagati, 12000 + 2500 + 4000)
+
+  console.log('   da righeCompensi vera')
+  const tec = [{ id: 'A', nome: 'Diana', cognome: 'Ballabio' }, { id: 'B', nome: 'Bruno', cognome: 'Rossi' }, { id: 'D', nome: 'Dario', cognome: 'Anselmi' }]
+  const conD = [presenza('p1', 'A', 'Judo kids', new Date(2026, 9, 2, 17, 0), 90, 'confermata'), presenza('p8', 'B', 'Judo kids', new Date(2026, 9, 2, 17, 0), 90, 'confermata'), presenza('d1', 'D', 'Judo kids', new Date(2026, 9, 20, 17, 0), 60, 'da_confermare')]
+  const vere = c.righeCompensi({
+    tecnici: tec, presenze: conD, senzaIstruttore: [], mese: ottobre, tariffe: { A: [tariffa('Judo kids', 1500)], B: [tariffa('Judo kids', 1500)] },
+    ricevute: [{ id: 'rb', personaId: 'B', mese: '2026-10-01', calcolato: 2250, importo: 2250, firmata: true, pagataIl: '2026-11-02', annullataIl: null }],
+  })
+  const v = g(vere)
+  ok('con righe vere: da sistemare, da fare, pagate, e il pagato', [v.gruppi?.map((q) => [q.gruppo, q.righe.map((r) => r.persona.id)]), v.pagati], [
+    [['da-sistemare', ['D']], ['da-fare', ['A']], ['pagate', ['B']]], 2250,
+  ])
+}
+
+console.log('\n9 bis. il tasto di ogni riga di COMPENSI, e cosa dice')
+{
+  const prova = (cosa, f, voluto) => {
+    try {
+      ok(cosa, f(), voluto)
+    } catch (e) {
+      ok(cosa, `ERRORE: ${e.message}`, voluto)
+    }
+  }
+  const ric = (o = {}) => ({ firmata: false, pagataIl: null, data: '2026-11-03', ...o })
+  const riga = (stato, ricevuta) => ({ stato, ricevuta })
+  console.log('   i fermi sono quelli di DA SISTEMARE PRIMA')
+  prova('gli stati fermi', () => c.STATI_FERMI, ['da-confermare', 'senza-tariffa', 'senza-dati', 'non-torna'])
+  console.log('   il tasto della riga del tecnico')
+  for (const [stato, voluto] of [['da-confermare', 'presenze'], ['non-torna', 'conto'], ['senza-tariffa', 'personale'], ['senza-dati', 'personale'], ['da-fare', 'prepara']])
+    prova(`${stato}: ${voluto}`, () => c.azioneRiga(riga(stato), true), voluto)
+  prova('fatta e non firmata: segna firmata', () => c.azioneRiga(riga('fatta', ric()), true), 'firmata')
+  prova('fatta e firmata: segna pagato', () => c.azioneRiga(riga('fatta', ric({ firmata: true })), true), 'pagato')
+  prova('fatta e firmata, ma chi guarda non paga: niente', () => c.azioneRiga(riga('fatta', ric({ firmata: true })), false), null)
+  prova('pagata: niente', () => c.azioneRiga(riga('pagata', ric({ firmata: true, pagataIl: '2026-11-05' })), true), null)
+  prova('del mese che non torna più: non si paga (si sistema prima)', () => c.azioneCarta('non-torna', ric({ firmata: true }), true, true), null)
+  prova('solo attese, senza ricevuta: niente', () => c.azioneRiga(riga('solo-attese'), true), null)
+  console.log('   una extra si paga anche se il mese non torna')
+  prova('extra firmata, mese non-torna: segna pagato', () => c.azioneCarta('non-torna', ric({ firmata: true }), false, true), 'pagato')
+  prova('extra non firmata: segna firmata', () => c.azioneCarta('da-fare', ric(), false, true), 'firmata')
+  console.log('   l\'importo e a che punto è la ricevuta')
+  for (const s of ['da-confermare', 'senza-tariffa', 'solo-extra']) prova(`${s}: senza importo`, () => c.senzaImporto(s), true)
+  for (const s of ['da-fare', 'fatta', 'non-torna', 'senza-dati']) prova(`${s}: con importo`, () => c.senzaImporto(s), false)
+  prova('nessuna ricevuta: —', () => c.aChePunto(null), '—')
+  prova('fatta', () => c.aChePunto(ric()), 'fatta il 3/11')
+  prova('firmata', () => c.aChePunto(ric({ firmata: true })), 'firmata')
+  prova('pagata', () => c.aChePunto(ric({ firmata: true, pagataIl: '2026-11-15' })), 'pagata il 15/11')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

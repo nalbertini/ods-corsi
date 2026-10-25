@@ -11,7 +11,8 @@ import type { Dati } from '../lib/dati'
 import { azioneMusica, fonteDelLink, listaRicordata, musicaScelta, type AzioneMusica, ricordaLista, ricordaSpenta, spentaRicordata, statoMusica, type ListaMusica, type StatoMusica } from '../lib/musica'
 import { avvisoSenzaRete, lettoreYoutube, statoStriscia, type PaginaIstruttori } from '../lib/timerIstruttori'
 import { MusicaSala } from './tablet/MusicaSala'
-import { Back, Nota } from './Icons'
+import { Back, Icona, Nota } from './Icons'
+import type { NomeIcona } from '../lib/icone'
 import { Gear, Pause, Play } from '../../timer/src/components/Icons'
 
 /**
@@ -24,12 +25,7 @@ import { Gear, Pause, Play } from '../../timer/src/components/Icons'
 const TimerSala = lazy(() => import('./tablet/TimerSala').then((m) => ({ default: m.TimerSala })))
 
 /** Le icone a linea delle voci, come nel design (BarraNavigazione). */
-const ICONE: Record<PaginaIstruttori, string[]> = {
-  calendario: ['M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M4 10h16', 'M8 3v4M16 3v4'],
-  timer: ['M4 13a8 8 0 1 0 16 0a8 8 0 1 0-16 0', 'M12 9v4l2.5 2', 'M9.5 2.5h5M12 2.5V5'],
-  mieiTimer: ['M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z'],
-  ore: ['M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z', 'M9 8h6M9 12h6', 'M9 16h3'],
-}
+const ICONE: Record<PaginaIstruttori, NomeIcona> = { calendario: 'calendario', timer: 'cronometro', mieiTimer: 'segnalibro', ore: 'documento' }
 
 /**
  * La barra in basso del telefono. La voce di dove si è si legge anche senza
@@ -48,11 +44,7 @@ export function BarraNavigazione({
     <nav className="barra-nav" aria-label="Pagine">
       {voci.map((v) => (
         <button key={v.pagina} type="button" className="barra-voce" aria-current={attiva === v.pagina ? 'page' : undefined} onClick={() => onPagina(v.pagina)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            {ICONE[v.pagina].map((d) => (
-              <path key={d} d={d} />
-            ))}
-          </svg>
+          <Icona nome={ICONE[v.pagina]} misura={24} />
           <span className="num">{v.nome}</span>
         </button>
       ))}
@@ -177,7 +169,7 @@ export function PaginaTimer({
         </div>
       )}
       <Suspense fallback={<p className="pad" style={{ color: 'var(--dim)' }}>Un attimo…</p>}>
-        <TimerSala incorporato={conScheda} visibile={visibile} sito />
+        <TimerSala incorporato={conScheda} visibile={visibile} />
       </Suspense>
       {musica}
     </div>

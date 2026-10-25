@@ -11,16 +11,15 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
 <!-- Tavola modello, schermo largo: la segreteria (menu fisso di 240px + corpo). Una schermata nuova si fa copiando
      questo file e sostituendo il contenuto di <main>: il menu e lo sfondo restano quelli dell'app, non si ridisegnano.
      Qui il corpo e' PRESENZE (calendario e appello affiancati, `.sala-due` da 960px: minmax(380px, 460px) + resto,
      ciascun lato col suo scorrimento, `.sg-corpo-sala` senza margine). Le altre sezioni hanno invece il margine
-     di .sg-corpo: 36px ai lati, 28px in alto e in basso, 18px fra i blocchi, titolo 34px (.sg-titolo).
-     Per il tema chiaro: sfondo #f4f4f1 qui sotto e tema="chiaro" su ogni <dc-import>. -->
-<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+     di .sg-corpo: 36px ai lati, 28px in alto e in basso, 18px fra i blocchi, titolo 34px (.sg-titolo). -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
   <div style="width: 240px; flex-shrink: 0">
     <dc-import name="Menu" attiva="PRESENZE" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
   </div>
@@ -42,7 +41,7 @@
         <dc-import name="RigaCalendario" ora="20:30" corso="Yoga" sala="Sala 2" istruttore="Elena B." tinta="#f4c31b" iscritti="10" stato="iscritti" hint-size="100%,72px"></dc-import>
       </div>
     </div>
-    <div style="border-left: 2px solid #2a2a2a">
+    <div style="border-left: 2px solid #cfe6f4">
       <div style="display: flex; padding: 20px 20px 0">
         <dc-import name="Bottone" label="TUTTI PRESENTI" variante="vai" corpo="17px" alto="56px" hint-size="200px,56px"></dc-import>
       </div>

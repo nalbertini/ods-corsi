@@ -7,7 +7,7 @@ import { avvisoPosti, cercaFraGliIscritti, COLORI, contoCorso, corsoCambiato, GI
 import { chiaveGiorno } from '../../lib/sala'
 import { Croce, ICONE_SCHEDE } from '../Icons'
 import { posizione, vicina } from '../../lib/schedaFinestra'
-import { chiedi, Campo, dataLunga, Guaio, lasciare, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, type MemoriaOrdine } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, lasciare, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, type MemoriaOrdine, Tasto } from './comune'
 
 const CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
 
@@ -398,9 +398,8 @@ function Scheda({
             Lascia stare
           </button>
         )}
-        <button
-          type="button"
-          className="sg-btn sg-btn-pieno"
+        <Tasto
+          tono="pieno"
           disabled={(!!corso && !cambiato) || !bozza.nome.trim()}
           onClick={() => {
             let id = ''
@@ -424,7 +423,7 @@ function Scheda({
           }}
         >
           Salva
-        </button>
+        </Tasto>
       </div>
 
       {corso && (
