@@ -39,6 +39,8 @@ create table if not exists satispay_negozio (
   importo      int not null check (importo > 0),
   quando       timestamptz not null,
   chi          text check (char_length(chi) <= 80),
+  -- Il campo `description` del pagamento, com'è: forse il commento di chi paga, forse il testo di chi l'ha creato.
+  descrizione  text check (char_length(descrizione) <= 200),
   esito        text check (esito in ('scritto', 'modulo', 'pagamenti', 'a_mano', 'da_decidere', 'fuori')),
   motivo       text check (motivo in ('giorno_chiuso', 'forse_doppione', 'prima_della_cassa')),
   candidati    uuid[],
@@ -57,6 +59,8 @@ create table if not exists satispay_scarico (
   storia_completa boolean not null default false
 );
 insert into satispay_scarico default values on conflict do nothing;
+-- Per chi l'ha già lanciato: la descrizione è arrivata dopo.
+alter table satispay_negozio add column if not exists descrizione text check (char_length(descrizione) <= 200);
 -- Per chi l'ha già lanciato: il check di prima non conosceva 'pagamenti'.
 alter table satispay_negozio drop constraint if exists satispay_negozio_esito_check;
 alter table satispay_negozio add constraint satispay_negozio_esito_check
@@ -113,12 +117,17 @@ begin
     -- Un tipo che non conosciamo (un domani Satispay ne aggiunge) non entra: non si sa di che segno sia.
     continue when coalesce(x->>'id', '') = '' or x->>'type' not in ('TO_BUSINESS', 'REFUND_TO_BUSINESS')
       or coalesce((x->>'amount_unit')::int, 0) <= 0;
-    insert into satispay_negozio as s (satispay_id, tipo, stato, importo, quando, chi)
+    insert into satispay_negozio as s (satispay_id, tipo, stato, importo, quando, chi, descrizione)
     values (x->>'id', x->>'type', coalesce(x->>'status', ''), (x->>'amount_unit')::int, (x->>'insert_date')::timestamptz,
-      left(x->'sender'->>'name', 80))
-    on conflict (satispay_id) do update set stato = excluded.stato, importo = excluded.importo, quando = excluded.quando
-      -- Uno già deciso non cambia più: il movimento è quello.
-      where s.esito is null and (s.stato, s.importo, s.quando) is distinct from (excluded.stato, excluded.importo, excluded.quando);
+      left(x->'sender'->>'name', 80), left(nullif(btrim(x->>'description'), ''), 200))
+    on conflict (satispay_id) do update set
+      -- Uno già deciso non cambia più: il movimento è quello. Solo la descrizione, se mancava, si completa.
+      stato = case when s.esito is null then excluded.stato else s.stato end,
+      importo = case when s.esito is null then excluded.importo else s.importo end,
+      quando = case when s.esito is null then excluded.quando else s.quando end,
+      descrizione = coalesce(s.descrizione, excluded.descrizione)
+      where (s.esito is null and (s.stato, s.importo, s.quando) is distinct from (excluded.stato, excluded.importo, excluded.quando))
+        or (s.descrizione is null and excluded.descrizione is not null);
     get diagnostics n = row_count;
     quanti := quanti + n;
   end loop;

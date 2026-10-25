@@ -487,6 +487,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.satispay_negozio') is not null and to_regprocedure('public.satispay_negozio_applica(boolean)') is not null
     and exists (select 1 from casse where nome = 'Satispay')
     and to_regprocedure('public.satispay_scarico_avvisa(jsonb,text)') is not null),
+  ('97-satispay-scarico.sql', 'lo scarico Satispay tiene la descrizione del pagamento',
+    exists (select 1 from information_schema.columns where table_name = 'satispay_negozio' and column_name = 'descrizione')
+    and exists (select 1 from dentro where nome = 'satispay_negozio_salva' and corpo like '%descrizione = coalesce(s.descrizione%')),
   ('97-satispay-scarico.sql', 'lo scarico Satispay scrive anche con safeupdate',
     exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%primo_fatto = true where id%')
     and exists (select 1 from dentro where nome = 'satispay_scarico_segna' and corpo like '%where id%')
