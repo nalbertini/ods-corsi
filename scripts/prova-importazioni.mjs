@@ -4,7 +4,7 @@
 //   node scripts/prova-importazioni.mjs
 //
 // Le regole stanno in `src/lib/satispayScarico.ts` e `src/lib/importaBanca.ts`; il database
-// (113-importazioni.sql) dice le stesse cose, e `supabase/prova/importazioni.sql` ha gli stessi
+// (114-importazioni.sql) dice le stesse cose, e `supabase/prova/importazioni.sql` ha gli stessi
 // casi con gli stessi messaggi. Oggi, per la prova, è il 22 ottobre 2026.
 //
 // Firme che queste prove si aspettano (satispayScarico.ts):

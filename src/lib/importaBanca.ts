@@ -243,7 +243,7 @@ export interface CopertoBanca {
   conDescrizione: string
 }
 
-/** Le righe per `banca_segna_coperti` (113-importazioni.sql). */
+/** Le righe per `banca_segna_coperti` (114-importazioni.sql). */
 export function copertiDaSalvare(a: AnteprimaBanca): CopertoBanca[] {
   return a.coperti.map(({ movimento: m, con }) => ({ chiave: m.chiave, data: m.data, tipo: m.tipo, importo: m.importo, descrizione: m.descrizione, conId: con.id, conDescrizione: con.descrizione }))
 }

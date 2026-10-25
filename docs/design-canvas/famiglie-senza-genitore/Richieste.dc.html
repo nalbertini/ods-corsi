@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta C: richiesta con lo stesso genitore</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .riga { display: flex; align-items: baseline; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; align-self: center; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+    .sotto { font-size: 14px; color: #46606f; margin: 0; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+  </style>
+</helmet>
+<!-- 4 · PROPOSTA C. Il dettaglio di una richiesta online in Richieste: sotto il blocco GENITORE, se un iscritto ha lo stesso codice fiscale del genitore, la riga che lo dice. Accogliere la richiesta e mettere nella famiglia restano due gesti separati. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #8f6a00">PROPOSTA C · RICHIESTE ONLINE, ARRIVA IL FRATELLO</span>
+  <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ROSSI LUCA</h2>
+        <dc-import name="Badge" tema="sito" tipo="tag" tono="giallo" label="DA ACCOGLIERE" hint-size="140px,24px"></dc-import>
+      </div>
+      <span style="font-size: 13px; color: #46606f">9 anni · Judo bambini · arrivata ieri</span>
+    </div>
+    <div class="riga"><span class="et">GENITORE</span><span class="filo"></span></div>
+    <div class="due">
+      <dc-import name="Dato" tema="sito" etichetta="NOME" valore="Rossi Paolo" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="CODICE FISCALE" valore="RSSPLA80A01L219X" codice="{{ true }}" hint-size="100%,62px"></dc-import>
+    </div>
+    <!-- Il suggerimento, coi valori del riquadro tratteggiato di Proposta A. Compare solo col codice fiscale del genitore uguale. -->
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 2px dashed #cfe6f4; border-radius: 6px">
+      <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 15px; font-weight: 600">Stesso genitore di Rossi Marco</span>
+        <span style="font-size: 13px; color: #46606f">Marco è nel nucleo di Rossi Paolo, genitore non iscritto. Dopo l’accoglienza, Luca entra lì: sconto famiglia sull’annuale che costa meno.</span>
+      </span>
+      <dc-import name="Chip" tema="sito" label="Mettilo nella famiglia" hint-size="210px,40px"></dc-import>
+    </div>
+    <span class="sotto" style="font-size: 12px; margin-top: -10px">Si può fare anche dopo, dalla scheda di Luca.</span>
+    <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Rifiuta" hint-size="120px,44px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="principale" label="Accogli" hint-size="140px,44px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":860,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

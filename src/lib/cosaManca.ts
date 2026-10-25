@@ -234,14 +234,14 @@ export function appelliSenzaSegni(lezioni: LezioneSeg[], adesso: number): Lezion
   return lezioni.filter((l) => Date.parse(l.fine) < adesso && l.stato !== 'annullata' && l.segnati === 0).sort((a, b) => b.inizio.localeCompare(a.inizio))
 }
 
-/** Fra chi è attivo, chi non ha il certificato valido (mancante o scaduto): le righe del filtro di ISCRITTI. */
+/** Fra chi è attivo, chi non ha il certificato valido (mancante o scaduto): le righe del filtro di ISCRITTI. Il genitore non iscritto no, come in `passaChip`. */
 export function certificatiDaSistemare(persone: PersonaSeg[], oggi: string): number {
-  return persone.filter((p) => p.attiva && senzaCertificatoValido(p, oggi)).length
+  return persone.filter((p) => p.attiva && !p.genitoreNonIscritto && senzaCertificatoValido(p, oggi)).length
 }
 
 /** Fra chi è attivo, chi non è in regola con la quota: le righe del filtro DA PAGARE di ISCRITTI. */
 export function pagamentiNonInRegola(persone: PersonaSeg[], oggi: string): number {
-  return persone.filter((p) => p.attiva && comePaga(p, oggi) !== 'pagato').length
+  return persone.filter((p) => p.attiva && !p.genitoreNonIscritto && comePaga(p, oggi) !== 'pagato').length
 }
 
 /**

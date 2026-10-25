@@ -187,15 +187,15 @@ avviso breve lo dice sopra l'elenco, con il link a IMPORTAZIONI.
 
 **La prima volta** c'è l'anteprima: l'app legge tutto Satispay e dice cosa
 scriverebbe, senza scrivere niente finché non dici sì. Ogni pagamento entra una volta
-sola, col segno **DA SATISPAY**, nella voce **Da classificare**: la voce giusta la
-scegli dopo, con **Cambia voce**. Un rimborso entra come uscita. Non entrano:
+sola, nella voce **Da classificare**: la voce giusta la
+scegli dopo, con **Cambia voce**. Finché non la scegli, in MOVIMENTI la riga è
+evidenziata in giallo, come ogni movimento su «Da classificare», «Varie» o senza voce. Un rimborso entra come uscita. Non entrano:
 
 - i pagamenti del **modulo di iscrizione**: sono già negli incassi degli iscritti o in una ricevuta;
 - quelli **già negli incassi**: un pagamento col metodo Satispay registrato in
   palestra, stesso giorno e stesso importo;
 - quelli **già scritti a mano**: stesso giorno, stesso importo, un solo movimento
-  possibile in Conto Corrente o Satispay. Resta il tuo, con la sua voce, e prende il
-  segno DA SATISPAY;
+  possibile in Conto Corrente o Satispay. Resta il tuo, con la sua voce;
 - quelli di prima dell'inizio dei conti.
 
 **Da decidere**: se il giorno è già chiuso, o se quel giorno ci sono più movimenti

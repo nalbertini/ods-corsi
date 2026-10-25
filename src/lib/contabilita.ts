@@ -53,7 +53,7 @@ export interface MovimentoManuale {
   dallaChat?: boolean
   /** Scaricato da Satispay (`97-satispay-scarico.sql`), o un movimento a mano riconosciuto: il segno DA SATISPAY. */
   satispayId?: string
-  /** Coperto da un movimento della banca (`113-importazioni.sql`): la sua chiave. Mai insieme a `satispayId`. */
+  /** Coperto da un movimento della banca (`114-importazioni.sql`): la sua chiave. Mai insieme a `satispayId`. */
   bancaChiave?: string
 }
 

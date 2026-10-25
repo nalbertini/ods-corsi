@@ -547,7 +547,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from sito_pagine where slug = 'dichiarazione-accessibilita' and di_legge)
     and exists (select 1 from sito_menu m join sito_pagine p on p.id = m.pagina_id where p.slug = 'dichiarazione-accessibilita' and m.dove = 'footer')
     and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%')),
-  ('113-importazioni.sql', 'IMPORTAZIONI: gruppi Satispay, «Non è questo», movimenti della banca già scritti',
+  ('114-importazioni.sql', 'IMPORTAZIONI: gruppi Satispay, «Non è questo», movimenti della banca già scritti',
     to_regclass('public.banca_coperti') is not null
     and exists (select 1 from dentro where nome = 'banca_non_e_questo')
     and exists (select 1 from dentro where nome = 'satispay_scarico_stato' and corpo like '%m.banca_chiave is null%')
@@ -563,6 +563,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('110-tetto-certificato-messaggio.sql', 'il tetto ai file del certificato scatta con un codice suo (Storage lascia passare il testo) e solo per chi può caricare',
     exists (select 1 from dentro where nome = 'limita_file_certificato' and corpo like '%54000%' and corpo like '%iscritto_puo_mandare%')),
   ('111-iscrizione-troppo-grande.sql', 'una richiesta d''iscrizione enorme si rifiuta all''ingresso',
-    exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pg_column_size(dati)%'))
+    exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pg_column_size(dati)%')),
+  ('113-genitore-non-iscritto.sql', 'la segreteria aggiunge il genitore non iscritto come titolare del nucleo dei figli',
+    exists (select 1 from dentro where nome = 'aggiungi_genitore' and corpo like '%genitore_non_iscritto%')
+    and exists (select 1 from pg_trigger where tgname = 'iscrizioni_togli_genitore_non_iscritto' and not tgisinternal))
 ) as x(file, cosa, c)
 order by file, cosa;

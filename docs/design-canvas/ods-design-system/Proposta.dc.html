@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Tema sito: Inter (qui da Google Fonts, in app file locale OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: #ffffff; border: 2px {{stileBordo}} {{coloreBordo}}; border-radius: 6px; color: #0d2a3d">
+  <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 200px">
+    <span style="font-size: 15px; font-weight: 600">{{titolo}}</span>
+    <span style="font-size: 13px; color: #46606f">{{dettaglio}}</span>
+  </span>
+  <span style="display: {{mostraTasto}}; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid #14709f; border-radius: 6px; background: {{sfondoTasto}}; color: {{testoTasto}}; font-size: 15px; font-weight: 600; white-space: nowrap">{{tasto}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"Il genitore non è iscritto: aggiungilo"},"dettaglio":{"editor":"text","default":"Rossi Paolo, dal blocco GENITORE: diventa titolare del nucleo, senza corsi né quota, e paga per i figli."},"tasto":{"editor":"text","default":"Aggiungi il genitore"},"pieno":{"editor":"boolean","default":true},"bordo":{"editor":"enum","options":["blu","giallo","linea","tratteggio"],"default":"blu"},"$preview":{"width":640,"height":90}}'>
+// Riproduzione 1:1 di `Proposta` di src/components/segreteria/comune.tsx: un suggerimento del NUCLEO FAMILIARE (scheda iscritto),
+// riga con padding 12px 14px, gap 12px, raggio 6px; titolo 15px 600, dettaglio 13px `sec` #46606f, testo largo almeno 200px:
+// sotto quella misura il tasto va a capo (flex-wrap) invece di schiacciare il testo.
+// bordo: blu = genitore da aggiungere o già iscritto; giallo = `giallo-testo` #8f6a00, c'è già una persona con quel codice fiscale;
+// linea = solida `line` #cfe6f4 (18 anni); tratteggio = tratteggiata `line` (fratelli, codice fiscale che manca o non è giusto).
+// tasto: il `.sg-chip` del look sito, `pieno` blu; vuoto = nessun tasto (codice fiscale che manca: si corregge nel blocco GENITORE).
+const BORDI = { blu: ['solid', '#14709f'], giallo: ['solid', '#8f6a00'], linea: ['solid', '#cfe6f4'], tratteggio: ['dashed', '#cfe6f4'] };
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const [stileBordo, coloreBordo] = BORDI[p.bordo] || BORDI.blu;
+    const pieno = p.pieno === undefined ? true : truthy(p.pieno);
+    const tasto = p.tasto ?? 'Aggiungi il genitore';
+    return {
+      stileBordo, coloreBordo, tasto,
+      titolo: p.titolo ?? 'Il genitore non è iscritto: aggiungilo',
+      dettaglio: p.dettaglio ?? 'Rossi Paolo, dal blocco GENITORE: diventa titolare del nucleo, senza corsi né quota, e paga per i figli.',
+      mostraTasto: tasto ? 'inline-flex' : 'none',
+      sfondoTasto: pieno ? '#14709f' : '#ffffff', testoTasto: pieno ? '#ffffff' : '#0d2a3d',
+    };
+  }
+}
+</script>
+</body>
+</html>

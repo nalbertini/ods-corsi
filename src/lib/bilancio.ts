@@ -269,6 +269,10 @@ export const voceDaSistemare = (voce: string | null): boolean => {
   return v === VOCE_DA_CLASSIFICARE.toLowerCase() || v === VOCE_VARIE.toLowerCase()
 }
 
+/** Una riga dei movimenti da sistemare, che l'elenco evidenzia: un movimento a mano in uso con la voce da sistemare. Un giroconto non ha voce e va bene così. */
+export const rigaDaSistemare = (r: Pick<RigaMovimento, 'origine' | 'tipo' | 'voce' | 'annullato'>): boolean =>
+  r.origine === 'movimento' && r.tipo !== 'giroconto' && !r.annullato && voceDaSistemare(r.voce)
+
 /**
  * I conti di un periodo, col confronto sullo stesso tratto dell'anno prima: un `al` dopo oggi diventa oggi
  * (periodo «parziale»). `voce` e `tipo` restringono le righe; «Da classificare» comprende quelle senza voce.

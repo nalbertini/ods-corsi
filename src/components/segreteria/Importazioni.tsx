@@ -293,7 +293,7 @@ function Entrato({ d, fonte, onFonte, casse, voci, manuali, chiusure, righe, fai
   const oggi = oggiARoma()
   const [mese, setMese] = useState(oggi.slice(0, 7))
   const negozio = useCarica(() => (fonte === 'satispay' ? d.negozioSatispay(mese) : Promise.resolve([])), [d, fonte, mese])
-  // In un oggetto: senza il 113 `bancaCoperti` dà null, che non si deve confondere con «sto leggendo».
+  // In un oggetto: senza il 114 `bancaCoperti` dà null, che non si deve confondere con «sto leggendo».
   const coperti = useCarica(async () => ({ righe: fonte === 'banca' ? await d.bancaCoperti() : [] }), [d, fonte])
   const nomeMese = mesi(oggi).find(([m]) => m === mese)?.[1].toLowerCase() ?? mese
   const rileggi = () => {
@@ -370,7 +370,7 @@ function Entrato({ d, fonte, onFonte, casse, voci, manuali, chiusure, righe, fai
           )
         })()
       ) : coperti.guaio ? <Guaio testo={coperti.guaio} /> : !coperti.dato ? <p className="sg-sotto">Sto leggendo i movimenti…</p> : (() => {
-        // Senza il 113 i coperti non ci sono: si vedono solo i movimenti importati.
+        // Senza il 114 i coperti non ci sono: si vedono solo i movimenti importati.
         const b = entratoBanca(righe, coperti.dato.righe ?? [], mese)
         return (
           <>

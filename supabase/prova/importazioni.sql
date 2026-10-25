@@ -1,4 +1,4 @@
--- La sezione IMPORTAZIONI (113-importazioni.sql): i pagamenti Satispay «forse già scritti a mano» si decidono
+-- La sezione IMPORTAZIONI (114-importazioni.sql): i pagamenti Satispay «forse già scritti a mano» si decidono
 -- a gruppi (`satispay_decidi_gruppo`), «Non è questo» scollega un pagamento da un movimento a mano
 -- (`satispay_scollega`), i candidati non includono i movimenti già presi o annullati (`satispay_scarico_stato`), e i
 -- movimenti della banca coperti da uno a mano si salvano (`banca_coperti`, `banca_segna_coperti`) per rivederli, con
@@ -7,7 +7,7 @@
 -- stessi casi, stessi messaggi. Le scelte e le righe sono jsonb con le chiavi dell'app (camelCase):
 --   satispay_decidi_gruppo('[{"satispayId": "P1", "scelta": "a_mano", "movimentoId": "<uuid>"}, …]')
 --   banca_segna_coperti('[{"chiave", "data", "tipo", "importo", "descrizione", "conId", "conDescrizione"}, …]')
--- Parte dallo schema da sé: ricrea utenti e dati. Si lancia dopo finto-supabase.sql e i file dello schema, fino a 113.
+-- Parte dallo schema da sé: ricrea utenti e dati. Si lancia dopo finto-supabase.sql e i file dello schema, fino a 114.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -182,13 +182,13 @@ select atteso('un movimento col segno di un altro pagamento o annullato non è p
     'select string_agg(c->>''id'', '','') from jsonb_array_elements(satispay_scarico_stato()->''da_decidere''->0->''candidati'') c'), :'m2');
 
 \echo ''
-\echo '--- 2. 113-importazioni.sql è stato lanciato ---'
+\echo '--- 2. 114-importazioni.sql è stato lanciato ---'
 select (to_regprocedure('public.satispay_decidi_gruppo(jsonb)') is not null
   and to_regprocedure('public.satispay_scollega(text)') is not null
   and to_regprocedure('public.banca_segna_coperti(jsonb)') is not null
   and to_regprocedure('public.banca_non_e_questo(text)') is not null
-  and to_regclass('public.banca_coperti') is not null)::text as c113 \gset
-select atteso('ci sono satispay_decidi_gruppo, satispay_scollega, banca_segna_coperti, banca_non_e_questo e banca_coperti', :'c113', 'true');
+  and to_regclass('public.banca_coperti') is not null)::text as c114 \gset
+select atteso('ci sono satispay_decidi_gruppo, satispay_scollega, banca_segna_coperti, banca_non_e_questo e banca_coperti', :'c114', 'true');
 
 \echo ''
 \echo '--- 3. satispay_decidi_gruppo: tutte le scelte o nessuna ---'

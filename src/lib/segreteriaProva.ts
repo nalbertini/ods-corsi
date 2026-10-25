@@ -6,7 +6,7 @@ import { cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagam
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
-import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
+import { codicePulito, cosaNonVaNucleo, GENITORE_GIA_IN_ELENCO, GENITORE_SENZA_CF, GENITORE_SENZA_NOME, nuovoTitolare, type DatiGenitore } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
 import { numeriDiProva } from './sitoStatistiche'
@@ -731,6 +731,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             satispayCorsi: corsiSatispay.get(p.id),
             nucleo: p.nucleo,
             natoIl: anagraficaDi(p.id)?.dati.natoIl,
+            ...(p.genitoreNonIscritto && { genitoreNonIscritto: true }),
           }),
         )
     },
@@ -1073,6 +1074,29 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (no) throw new Error(no)
       a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, nucleo: titolareId } : p))
       salva()
+    },
+
+    // Come `aggiungi_genitore` in 113-genitore-non-iscritto.sql: prima le prove, poi la persona nuova.
+    async aggiungiGenitore(figlioId, g) {
+      if (!g.nome.trim() || !g.cognome.trim()) throw new Error(GENITORE_SENZA_NOME)
+      const cf = codicePulito(g.codiceFiscale)
+      if (!cf) throw new Error(GENITORE_SENZA_CF)
+      // Come il database: la scheda e ogni modulo accolto, anche del figlio, che non è mai il suo genitore.
+      const codici = (id: string) => [a().anagrafiche?.[id]?.codiceFiscale, ...richiesteDi(id).filter((r) => r.stato === 'accolta').map((r) => r.codiceFiscale)]
+      if (a().persone.some((p) => codici(p.id).some((c) => codicePulito(c) === cf))) throw new Error(GENITORE_GIA_IN_ELENCO)
+      const id = crypto.randomUUID()
+      const iscritti = [...a().persone, { id, attiva: true, ruolo: 'iscritto' }]
+        .filter((p) => p.ruolo === 'iscritto')
+        .map((p) => ({ ...p, natoIl: anagraficaDi(p.id)?.dati.natoIl }))
+      const no = cosaNonVaNucleo(iscritti, figlioId, id)
+      if (no) throw new Error(no)
+      a().persone = [
+        ...a().persone.map((p) => (p.id === figlioId ? { ...p, nucleo: id } : p)),
+        { id, nome: g.nome.trim(), cognome: g.cognome.trim(), ruolo: 'iscritto', attiva: true, creataIl: oggi(), genitoreNonIscritto: true },
+      ]
+      a().anagrafiche = { ...a().anagrafiche, [id]: { codiceFiscale: cf, cambiataIl: new Date().toISOString() } }
+      salva()
+      return id
     },
 
     async togliDalNucleo(personaId) {
@@ -1431,10 +1455,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async genitori() {
-      const tutti = new Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>>()
+      const tutti = new Map<string, DatiGenitore>()
       for (const p of a().persone) {
         const an = anagraficaDi(p.id)
-        if (an) tutti.set(p.id, Object.fromEntries(Object.entries({ genitoreNome: an.dati.genitoreNome, genitoreCognome: an.dati.genitoreCognome }).filter(([, v]) => v)))
+        const { genitoreNome, genitoreCognome, genitoreCodiceFiscale, codiceFiscale } = an?.dati ?? {}
+        if (an) tutti.set(p.id, Object.fromEntries(Object.entries({ genitoreNome, genitoreCognome, genitoreCodiceFiscale, codiceFiscale }).filter(([, v]) => v)))
       }
       return tutti
     },
@@ -1995,6 +2020,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       }
       // Una sola iscrizione per corso, come nel database: chi torna riparte da oggi.
       a().iscrizioni = [...a().iscrizioni.filter((i) => i !== c), { corsoId, personaId, dal: dal ?? g }]
+      // Come il trigger di 113-genitore-non-iscritto.sql: iscritto a un corso, è un iscritto come gli altri.
+      a().persone = a().persone.map((p) => (p.id === personaId && p.genitoreNonIscritto ? { ...p, genitoreNonIscritto: undefined } : p))
       salva()
     },
 

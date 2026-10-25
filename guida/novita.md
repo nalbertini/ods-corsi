@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.207.1 — 25 ottobre 2026
+
+### Modificato
+
+- Le righe da sistemare dei movimenti in giallo tenue, senza il segno Da Satispay
+
+## 0.207.0 — 25 ottobre 2026
+
+### Novità
+
+- Le famiglie di soli fratelli minori o di soli adulti, come due sorelle, si legano in un nucleo anche senza un genitore iscritto
+
 ## 0.206.4 — 25 ottobre 2026
 
 ### Risolto

@@ -418,6 +418,8 @@ export function creaRichiesteProva(): DatiRichieste {
         // Chi aveva una fine segnata la perde; chi aveva già smesso riparte da oggi.
         a.iscrizioni = [...a.iscrizioni.filter((i) => i !== c), { corsoId, personaId: id, dal: c && c.al! >= oggi ? c.dal : oggi }]
       }
+      // Come il trigger di 113-genitore-non-iscritto.sql: iscritto a un corso, il genitore non è più «non iscritto».
+      if (a.iscrizioni.some((i) => i.personaId === id)) a.persone = a.persone.map((p) => (p.id === id && p.genitoreNonIscritto ? { ...p, genitoreNonIscritto: undefined } : p))
       // Il certificato passa alla scheda con la data letta dalla segreteria. Come `accogli_iscrizione`:
       // se la scheda ne ha già uno valido che non scade prima resta quello, e il file resta fra quelli della richiesta.
       const cert = file.get(richiestaId)?.get('certificato')

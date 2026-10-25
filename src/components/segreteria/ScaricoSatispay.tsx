@@ -64,11 +64,11 @@ export function PrimoScarico({ d, fai, onFatto, onChiudi }: { d: DatiSegreteria;
   const tutti = c.incassi + c.rimborsi + c.modulo + c.pagamenti + c.a_mano + c.da_decidere + c.prima
   const scritti = c.incassi + c.rimborsi
   const righe: Array<[number, string, string]> = [
-    [c.incassi, 'incassi del negozio entrano', ' in «Da classificare», col segno DA SATISPAY. La voce la scegli dopo, con Cambia voce.'],
+    [c.incassi, 'incassi del negozio entrano', ' in «Da classificare». La voce la scegli dopo, con Cambia voce.'],
     [c.rimborsi, 'rimborsi entrano come uscite', ', anche loro in «Da classificare».'],
     [c.modulo, 'sono pagamenti del modulo di iscrizione', ': sono già fra gli incassi degli iscritti o in una ricevuta. Non si scrivono una seconda volta.'],
     [c.pagamenti, 'sono già fra gli incassi degli iscritti', ': pagati in palestra con Satispay e registrati lì, stesso giorno e stesso importo. Non si scrivono una seconda volta.'],
-    [c.a_mano, 'erano già scritti a mano', ': stesso giorno, stesso importo, un solo movimento possibile. Resta quello a mano, con la sua voce; prende il segno DA SATISPAY.'],
+    [c.a_mano, 'erano già scritti a mano', ': stesso giorno, stesso importo, un solo movimento possibile. Resta quello a mano, con la sua voce.'],
     [c.da_decidere, 'sono da decidere', ': un giorno già chiuso, o più movimenti a mano con lo stesso importo quel giorno. Non entrano: li trovi in IMPORTAZIONI.'],
     [c.prima, 'sono di prima dell’inizio dei conti', ': non entrano.'],
   ]

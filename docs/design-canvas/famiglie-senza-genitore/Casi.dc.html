@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta D: i casi che non vanno lisci</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .sotto { font-size: 14px; color: #46606f; margin: 0; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .caso { display: flex; flex-direction: column; gap: 10px; background: #ffffff; border-radius: 6px; padding: 18px 22px; }
+    .quando { font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .riquadro { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 6px; }
+    .testi { display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0; }
+    .titolo { font-size: 15px; font-weight: 600; }
+    .dett { font-size: 13px; color: #46606f; }
+  </style>
+</helmet>
+<!-- 5 · PROPOSTA D. Quattro situazioni intorno a «Aggiungi il genitore», ognuna con quel che vede la segreteria nel NUCLEO FAMILIARE della scheda del figlio. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #8f6a00">PROPOSTA D · I CASI CHE NON VANNO LISCI</span>
+  <!-- 1. Una persona con quel codice fiscale c'è già: niente doppioni. -->
+  <div class="caso">
+    <span class="quando">1 · IL CODICE FISCALE DEL GENITORE C’È GIÀ</span>
+    <div class="riquadro" style="border: 2px solid #8f6a00">
+      <span class="testi">
+        <span class="titolo">C’è già Paolo Rossi con questo codice fiscale: è lui?</span>
+        <span class="dett">Genitore non iscritto, titolare del nucleo di Luca Rossi. Marco entra lì, senza una seconda scheda.</span>
+      </span>
+      <dc-import name="Chip" tema="sito" label="Usa Paolo Rossi" pieno="{{ true }}" hint-size="170px,40px"></dc-import>
+    </div>
+  </div>
+  <!-- 2. Il genitore è iscritto: si usa lui, come oggi, senza contatto nuovo. -->
+  <div class="caso">
+    <span class="quando">2 · IL GENITORE È GIÀ ISCRITTO</span>
+    <div class="riquadro" style="border: 2px solid #14709f">
+      <span class="testi">
+        <span class="titolo">Il genitore è iscritto: Rossi Paolo, Karate adulti</span>
+        <span class="dett">Stesso codice fiscale del blocco GENITORE. Marco entra nel suo nucleo, e Paolo conta per lo sconto famiglia.</span>
+      </span>
+      <dc-import name="Chip" tema="sito" label="Metti nel suo nucleo" pieno="{{ true }}" hint-size="200px,40px"></dc-import>
+    </div>
+  </div>
+  <!-- 3. Senza codice fiscale non si crea niente: servirebbe per la ricevuta e per riconoscere i fratelli. -->
+  <div class="caso">
+    <span class="quando">3 · MANCA IL CODICE FISCALE DEL GENITORE</span>
+    <div class="riquadro" style="border: 2px dashed #cfe6f4">
+      <span class="testi">
+        <span class="titolo">Per aggiungere il genitore serve il suo codice fiscale</span>
+        <span class="dett">Aggiungilo nel blocco GENITORE, qui sopra: va sulle ricevute e serve a riconoscere i fratelli.</span>
+      </span>
+      <dc-import name="Chip" tema="sito" label="Aggiungi il genitore" pieno="{{ true }}" disabled="{{ true }}" hint-size="200px,40px"></dc-import>
+    </div>
+  </div>
+  <!-- 4. A 18 anni il figlio può fare da titolare: lo si dice, non si sposta niente da solo. -->
+  <div class="caso">
+    <span class="quando">4 · UN FIGLIO COMPIE 18 ANNI</span>
+    <div class="riquadro" style="border: 2px solid #cfe6f4">
+      <span class="testi">
+        <span class="titolo">Marco è maggiorenne dal 3 marzo</span>
+        <span class="dett">È nel nucleo di Rossi Paolo, genitore non iscritto. Ora può avere un nucleo suo o restare qui: per le ricevute nuove, chiedi a chi intestarle.</span>
+      </span>
+      <dc-import name="Badge" tema="sito" tipo="tag" tono="giallo" label="18 ANNI" hint-size="90px,24px"></dc-import>
+    </div>
+    <p class="sotto" style="font-size: 12px">Lo stesso avviso compare in Cosa manca, finché la segreteria non tocca il nucleo.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":860,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
