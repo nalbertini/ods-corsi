@@ -117,7 +117,7 @@ export interface SuggerimentoMovimento {
   voce: VoceSuggerita | null
   persona: PersonaSuggerita
   candidati: Array<PersonaPerNome & { come: Come; giaIscritto: boolean }>
-  /** Solo con un candidato solo, e non già iscritto: più di uno si sceglie. */
+  /** Solo con un candidato solo, non già iscritto e non per «nome e corso» (`ordinaAbbinati`): negli altri casi si sceglie. */
   preselezionato: string | null
 }
 
@@ -164,6 +164,8 @@ export function motivoCandidati(candidati: ReadonlyArray<{ come: Come; giaIscrit
     : primo?.come === 'genitore' ? 'Nei dati di registrazione il genitore ha il nome che c’è nel testo: di solito paga per i figli.'
     : primo?.come === 'codice fiscale' ? 'Il codice fiscale scritto nella causale è di questa persona o del suo genitore.'
     : primo?.come === 'corso e cognome' ? 'L’importo è quello di un corso a cui è iscritta e il cognome è nel testo.'
+    : primo?.come === 'cognome' ? 'Nel testo c’è il cognome di questa persona o del genitore: controlla il nome.'
+    : primo?.come === 'nome e corso' ? 'Nel testo ci sono il nome e il corso a cui è iscritta, non il cognome: scegli tu.'
     : 'Il nome nel testo potrebbe essere di chi paga, non di chi frequenta: controlla.'
   return candidati.length > 1 && candidati.some((c) => c.giaIscritto) ? `${base} Chi ha già l’iscrizione in corso è in fondo.` : base
 }

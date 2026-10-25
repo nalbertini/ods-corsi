@@ -1587,7 +1587,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         return {
           id: p.id, nome: p.nome, cognome: p.cognome, attiva: p.attiva,
           codiceFiscale: dati?.codiceFiscale ?? null, genitoreNome: dati?.genitoreNome ?? null, genitoreCognome: dati?.genitoreCognome ?? null, genitoreCodiceFiscale: dati?.genitoreCodiceFiscale ?? null,
-          iscrizioni: a().iscrizioni.filter((i) => i.personaId === p.id).map((i) => ({ corsoId: i.corsoId, dal: i.dal, al: i.al ?? null })),
+          iscrizioni: a().iscrizioni.filter((i) => i.personaId === p.id).map((i) => ({ corsoId: i.corsoId, corso: a().corsi.find((c) => c.id === i.corsoId)?.nome, dal: i.dal, al: i.al ?? null })),
         }
       })
       return abbinaMovimento({ testo: m.descrizione, data: m.data, codiciFiscali: m.codiciLetti ?? [], corsiImporto: corsi }, persone).candidati

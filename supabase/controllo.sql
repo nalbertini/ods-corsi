@@ -588,6 +588,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('119-abbina-movimenti.sql', 'i movimenti non identificati propongono le persone anche dal genitore, dal codice fiscale e dall''importo',
     to_regclass('public.movimenti_codici_letti') is not null
     and exists (select 1 from dentro where nome = 'abbina_pagatori_movimento')
-    and exists (select 1 from dentro where nome = 'abbina_testo_banca'))
+    and exists (select 1 from dentro where nome = 'abbina_testo_banca')),
+  ('120-abbina-cognome-nome-corso.sql', 'i movimenti non identificati propongono le persone anche dal solo cognome e dal nome col corso',
+    exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%nome e corso%'))
 ) as x(file, cosa, c)
 order by file, cosa;

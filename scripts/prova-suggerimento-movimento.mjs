@@ -123,6 +123,10 @@ ok('la nota «in fondo» solo con più schede', [
   m.motivoCandidati([{ come: 'nome intero', giaIscritto: true }]).includes('in fondo'),
   m.motivoCandidati([{ come: 'genitore', giaIscritto: false }, { come: 'genitore', giaIscritto: true }]).includes('in fondo'),
 ], [false, true])
+ok('il solo cognome e «nome e corso» dicono il loro motivo, non «il nome»', [
+  m.motivoCandidati([{ come: 'cognome', giaIscritto: false }]),
+  m.motivoCandidati([{ come: 'nome e corso', giaIscritto: false }]),
+], ['Nel testo c’è il cognome di questa persona o del genitore: controlla il nome.', 'Nel testo ci sono il nome e il corso a cui è iscritta, non il cognome: scegli tu.'])
 
 console.log('\n4b. la voce dall\'importo, quando la persona è proposta')
 const corso = (nome, prezzi) => ({ corso: nome, eta: '', orari: [], prezzi })
