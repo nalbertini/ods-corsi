@@ -463,6 +463,11 @@ console.log('\n15. il periodo, l\'anno prima e i filtri')
   ok('…anche in fondo a un periodo', prova(() => m.contiPeriodo([], { dal: '2028-02-01', al: '2028-02-29' }, '2028-03-10').confrontoAl), '2027-02-28')
   console.log('   da sistemare: «Da classificare», «Varie» (in qualunque modo scritta) e senza voce, solo uscite')
   ok('voceDaSistemare', prova(() => [null, 'Da classificare', 'da classificare', 'Varie', 'VARIE', ' varie ', 'Utenze', 'Varie spese'].map(m.voceDaSistemare)), [true, true, true, true, true, true, false, false])
+  {
+    // La riga da evidenziare nei movimenti: solo un movimento a mano in uso, mai un incasso, un giroconto o un annullato.
+    const r = (x) => ({ origine: 'movimento', tipo: 'entrata', voce: 'Da classificare', annullato: false, ...x })
+    ok('rigaDaSistemare', prova(() => [r({}), r({ voce: null }), r({ voce: 'Varie' }), r({ voce: 'Utenze' }), r({ origine: 'ricevuta', voce: null }), r({ tipo: 'giroconto', voce: null }), r({ annullato: true })].map(m.rigaDaSistemare)), [true, true, true, false, false, false, false])
+  }
   ok('le uscite da sistemare del periodo: quante e quanto (annullati e entrate fuori)', prova(() => p.daSistemare), { movimenti: 4, uscite: 2800 })
   ok('nessuna uscita da sistemare: null', prova(() => m.contiPeriodo([uscita('2026-10-03', 4000, 'Utenze')], { dal: '2026-10-01', al: OGGI }, OGGI).daSistemare), null)
   console.log('   i filtri')
