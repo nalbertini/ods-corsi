@@ -326,6 +326,13 @@
   .sg-tre > * { grid-column: auto !important; }
 }
 .sg-scheda-campi { max-width: 720px; }
+/* La scheda di un movimento: il riepilogo a sinistra, il da fare (suggerimento e campi) a destra. Sotto i 1100px una colonna sola. */
+.sg-movimento-colonne { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+@media (min-width: 1100px) {
+  .sg-movimento-colonne { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start; }
+  .sg-movimento-colonne .sg-scheda-campi { grid-template-columns: minmax(0, 1fr); max-width: none; }
+  .sg-movimento-colonne .sg-scheda-campi > * { grid-column: auto !important; }
+}
 .sg-scheda-piede { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding-top: 16px; border-top: 2px solid var(--line-soft); }
 .sg-ricorrenza {
   display: grid; grid-template-columns: 130px 70px 80px 1fr 40px; gap: 4px 12px; align-items: center;

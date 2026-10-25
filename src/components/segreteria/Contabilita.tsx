@@ -1005,6 +1005,8 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
         {riga.dallaChat && <span className="num sg-tag">Dalla chat</span>}
       </div>
       <span className="sg-riquadro-titolo ob">{riga.descrizione}</span>
+      <div className="sg-movimento-colonne">
+      <div className="stack" style={{ gap: 14 }}>
       <div className="stack" style={{ gap: 0 }}>
         {dettaglio.map(([k, v]) => (
           <div key={k} className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline' }}>
@@ -1032,6 +1034,11 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           )}
         </div>
       )}
+      {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={() => setCollegando(false)} />}
+      {!manuale && <span className="sg-sotto">Si cambia nella scheda della persona, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
+      {manuale && riga.annullato && <span className="sg-sotto"><span className="num sg-tag" data-tipo="manca">Annullato</span> Resta in elenco e non si conta più.</span>}
+      </div>
+      <div className="stack" style={{ gap: 14 }}>
       {manuale && !riga.annullato && sug && !daSolo && (
         <div className="stack" style={{ gap: 14, padding: '16px 18px', border: `2px solid ${sug.caso === 'D' ? 'var(--line)' : 'var(--giallo)'}`, background: 'var(--bg)' }}>
           <span className="sg-etichetta">{sug.caso === 'D' ? 'SUGGERITO' : 'SUGGERITO · CONFERMA TU'}</span>
@@ -1077,9 +1084,6 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           )}
         </div>
       )}
-      {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={() => setCollegando(false)} />}
-      {!manuale && <span className="sg-sotto">Si cambia nella scheda della persona, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
-      {manuale && riga.annullato && <span className="sg-sotto"><span className="num sg-tag" data-tipo="manca">Annullato</span> Resta in elenco e non si conta più.</span>}
       {manuale && !riga.annullato && (
         <>
           <div className="sg-due sg-scheda-campi">
@@ -1112,6 +1116,8 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           <span className="sg-sotto">Importo, data e cassa non si cambiano: si annulla e si rifà.{giro ? ' La descrizione di un giroconto la scrive il sistema.' : ' La voce sì, anche se il giorno è già chiuso: i soldi non cambiano.'}</span>
         </>
       )}
+      </div>
+      </div>
       {manuale && !giro && (traccia.guaio || (traccia.dato?.length ?? 0) > 0) && (
         <div className="stack" style={{ gap: 6 }}>
           <span className="sg-etichetta">COSA È CAMBIATO</span>
