@@ -39,14 +39,17 @@ Il nome sta in 120 lettere, la nota di un atleta in 300.
 spuntare) o si cerca per nome. Chi è già nella gara compare spuntato e spento.
 Solo persone iscritte e non archiviate.
 
-Nella gara, per ogni atleta: nato il, corso, **CERTIFICATO AL** (lo stato
-all'ultimo giorno della gara, non oggi), una nota e la quota. In cima una riga
-conta chi non ha il certificato valido per quella gara: è un avviso, l'atleta
-resta in gara. Un certificato mandato dalla famiglia e non ancora confermato
+In cima alla gara quattro numeri: **ATLETI**, **CERTIFICATO A POSTO**, **DA
+INCASSARE** e **INCASSATO**. Sotto, un riquadro rosso nomina chi non ha il
+certificato valido per quella gara: è un avviso, l'atleta resta in gara. Ogni
+atleta ha due righe: nome, anno e corso; sotto il certificato (lo stato
+all'ultimo giorno della gara, non oggi) e una nota. A destra la quota, con
+**Incassa**, e il tasto **✕**. **Modifica la gara**, **Stampa l'elenco** e
+**Aggiungi atleti** stanno in fondo e restano in vista mentre scorri. Un certificato mandato dalla famiglia e non ancora confermato
 conta come non valido. L'app sa solo la scadenza: che sia **agonistico** va
 controllato sul foglio.
 
-**Togli** toglie l'atleta. Chi ha già pagato resta nella gara: se non ci va,
+**✕** toglie l'atleta dalla gara, non dalla palestra. Chi ha già pagato resta nella gara: se non ci va,
 scrivilo nella sua nota. **Stampa l'elenco** scarica il PDF da portare al
 tavolo dell'organizzatore: nome, anno, corso, certificato e nota, niente contatti
 né quote.
