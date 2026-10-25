@@ -1,6 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
+import type { Chiusura, ContoChiusura } from './chiusure'
 import type { CopertoBanca, DatoImportBanca } from './importaBanca'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
@@ -594,6 +595,14 @@ export interface DatiSegreteria {
   /** Fin dove è pronto il calendario, e lo allunga di due mesi da oggi. */
   prontoFino(): Promise<string | null>
   rigenera(): Promise<number>
+  /** Le chiusure della palestra (118-chiusure.sql); `null` se il file non è ancora lanciato. */
+  chiusurePalestra(): Promise<Chiusura[] | null>
+  /** Quante lezioni chiuderebbe il periodo, senza cambiare niente. */
+  contaChiusura(dal: string, al: string, salaId: string | null): Promise<ContoChiusura>
+  /** Annulla le lezioni del periodo e ricorda la chiusura. */
+  chiudi(dal: string, al: string, salaId: string | null): Promise<{ id: string; lezioni: number }>
+  /** Rimette com'erano le lezioni ancora annullate dalla chiusura, e la cancella: quante ne sono tornate. */
+  togliChiusura(id: string): Promise<number>
 
   corsi(): Promise<CorsoSeg[]>
   salvaCorso(c: DatiCorso): Promise<string>

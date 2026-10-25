@@ -38,6 +38,7 @@ import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type Tesse
 import type { PaginaSito, VoceMenu } from './sitoPagine'
 import type { OrarioSito } from './sitoOrari'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
+import { cosaNonVaChiusura as cosaNonVaPeriodo, mancaChiusure, SENZA_CHIUSURE, type Chiusura, type ContoChiusura } from './chiusure'
 import { pezziInHtml, pezziValidi } from './sitoPezzi'
 import { ORARIO_NON_ATTIVO } from './sitoOrario'
 import { CACHE_IMMAGINI, CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
@@ -554,6 +555,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     }
   }
 
+  /** `chiudi_palestra` conta o chiude con la stessa regola; il periodo si controlla prima, per un messaggio chiaro. */
+  const chiudiPalestra = async (dal: string, al: string, sala: string | null, soloContare: boolean) => {
+    const no = cosaNonVaPeriodo(dal, al)
+    if (no) throw new Error(no)
+    const r = await db.rpc('chiudi_palestra', { dal, al, sala, solo_contare: soloContare })
+    if (mancaChiusure(r.error)) throw new Error(SENZA_CHIUSURE)
+    // jsonb di `chiudi_palestra` (118-chiusure.sql).
+    return ok(r) as { id: string | null; lezioni: number; straordinarie: number; con_appello: ContoChiusura['conAppello'] }
+  }
+
   /** Quante righe di una tabella hanno questa attività. */
   const quante = async (tabella: 'ricorrenze' | 'sessioni', id: string) => {
     const { count, error } = await db.from(tabella).select('id', { count: 'exact', head: true }).eq('attivita_id', id)
@@ -863,6 +874,32 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     rigenera,
+
+    async chiusurePalestra() {
+      const r = await db.from('chiusure').select('id, dal, al, sala_id, chiusure_lezioni(count)').order('dal')
+      if (mancaChiusure(r.error)) return null
+      // I tipi generati non conoscono 118-chiusure.sql finché non c'è: la forma è quella del select qui sopra.
+      return (ok(r) as unknown as Array<{ id: string; dal: string; al: string; sala_id: string | null; chiusure_lezioni: Array<{ count: number }> }>).map(
+        (c): Chiusura => ({ id: c.id, dal: c.dal, al: c.al, salaId: c.sala_id, lezioni: c.chiusure_lezioni[0]?.count ?? 0 }),
+      )
+    },
+
+    async contaChiusura(dal, al, salaId) {
+      const c = await chiudiPalestra(dal, al, salaId, true)
+      return { lezioni: c.lezioni, straordinarie: c.straordinarie, conAppello: c.con_appello }
+    },
+
+    async chiudi(dal, al, salaId) {
+      const c = await chiudiPalestra(dal, al, salaId, false)
+      return { id: c.id ?? '', lezioni: c.lezioni }
+    },
+
+    async togliChiusura(id) {
+      const r = await db.rpc('togli_chiusura', { id })
+      if (mancaChiusure(r.error)) throw new Error(SENZA_CHIUSURE)
+      if (r.error?.code === 'P0002') throw new Error('Questa chiusura non c’è più: ricarica la pagina.')
+      return ok(r) as number
+    },
 
     async corsi() {
       const leggi = (giorno: string, ente: string) =>

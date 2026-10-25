@@ -17,6 +17,8 @@ import { archivio, certificatiInAttesaProva, certificatiProva, idRicorrenza, nom
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttoreAssenteProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
+// La chiusura della cassa ha già il nome `cosaNonVaChiusura`.
+import { cosaNonVaChiusura as cosaNonVaPeriodo, type ContoChiusura } from './chiusure'
 import { enteDaDati, fineAnno, importaTessereProva } from './tessere'
 import { QUOTA_ASSOCIATIVA, stagioneDi } from './costi'
 import { NOTA_DI_DEFAULT, type IncassoPrima } from './pagatoPrima'
@@ -339,6 +341,24 @@ export function creaSegreteriaProva(): DatiSegreteria {
     return { presenti: segni.filter((s) => s === 'presente').length, segnati: segni.length }
   }
 
+  /** Le lezioni non annullate del periodo e della sala (o di tutte): come `lezioni_da_chiudere`. */
+  const daChiudere = (dal: string, al: string, salaId: string | null) => {
+    const guaio = cosaNonVaPeriodo(dal, al)
+    if (guaio) throw new Error(guaio)
+    return lezioniFra(new Date(dal + 'T00:00:00'), new Date(al + 'T00:00:00')).filter((l) => comeE(l).stato !== 'annullata' && (salaId === null || comeE(l).sala === salaId))
+  }
+
+  const contoChiusura = (l: LezioneTrovata[]): ContoChiusura => {
+    const conProva = new Set((a().prove ?? []).map((p) => p.sessioneId))
+    return {
+      lezioni: l.length,
+      straordinarie: l.filter((x) => x.straordinaria).length,
+      conAppello: l
+        .filter((x) => conti(x.id).segnati || conProva.has(x.id))
+        .map((x) => ({ corso: x.corso.nome, inizio: x.inizio.toISOString(), prova: conProva.has(x.id) })),
+    }
+  }
+
   const vista = (l: LezioneTrovata): LezioneSeg => {
     const k = comeE(l)
     const c = conti(l.id)
@@ -392,6 +412,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (cambi.attivitaId && !a().attivita?.some((x) => x.id === cambi.attivitaId)) throw new Error('Attività inesistente')
       cambiaLezione(sessioneId, (x) => {
         if (cambi.stato) x.stato = cambi.stato === 'prevista' ? undefined : cambi.stato
+        // Rimessa a mano non è più della chiusura, come il trigger sessioni_fuori_chiusura.
+        if (cambi.stato && cambi.stato !== 'annullata') for (const c of a().chiusurePalestra ?? []) delete c.prima[sessioneId]
         // «Come da corso» vuol dire nessuna decisione a mano.
         if (cambi.sostitutoId !== undefined) x.istruttore = cambi.sostitutoId && !l.corso.istruttori.includes(cambi.sostitutoId) ? cambi.sostitutoId : undefined
         if (cambi.salaId !== undefined) x.sala = cambi.salaId && cambi.salaId !== salaDelGiorno(l) ? cambi.salaId : undefined
@@ -438,6 +460,52 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async rigenera() {
       return 0
+    },
+
+    async chiusurePalestra() {
+      return [...(a().chiusurePalestra ?? [])].sort((x, y) => x.dal.localeCompare(y.dal)).map((c) => ({ id: c.id, dal: c.dal, al: c.al, salaId: c.salaId, lezioni: Object.keys(c.prima).length }))
+    },
+
+    async contaChiusura(dal, al, salaId) {
+      return contoChiusura(daChiudere(dal, al, salaId))
+    },
+
+    async chiudi(dal, al, salaId) {
+      // In prova le lezioni si calcolano: annullarle tutte ora vale anche per i giorni mai guardati.
+      // shortcut: una ricorrenza aggiunta dopo la chiusura non nasce annullata; servirebbe se la prova lo chiedesse.
+      const l = daChiudere(dal, al, salaId)
+      const id = `ch-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+      const prima = Object.fromEntries(l.map((x) => [x.id, comeE(x).stato]))
+      for (const x of l) cambiaLezione(x.id, (y) => ({ ...y, stato: 'annullata' }))
+      a().chiusurePalestra = [...(a().chiusurePalestra ?? []), { id, dal, al, salaId, prima }]
+      salva()
+      return { id, lezioni: l.length }
+    },
+
+    async togliChiusura(id) {
+      const c = a().chiusurePalestra?.find((x) => x.id === id)
+      if (!c) throw new Error('Questa chiusura non c’è più: ricarica la pagina.')
+      let tornate = 0
+      for (const [lezione, stato] of Object.entries(c.prima)) {
+        // Una lezione rimessa a mano nel frattempo non si tocca.
+        if (a().lezioni[lezione]?.stato !== 'annullata') continue
+        // Un giorno chiuso anche da un'altra chiusura resta chiuso: la lezione passa a quella, la più vecchia.
+        const l = trovaLezione(lezione)
+        const altra = l && a().chiusurePalestra?.find((x) => x.id !== id && x.dal <= chiaveGiorno(l.inizio) && chiaveGiorno(l.inizio) <= x.al && (x.salaId === null || x.salaId === comeE(l).sala))
+        if (altra) {
+          altra.prima[lezione] = stato
+          continue
+        }
+        cambiaLezione(lezione, (y) => {
+          if (stato === 'prevista') delete y.stato
+          else y.stato = stato
+          return y
+        })
+        tornate++
+      }
+      a().chiusurePalestra = a().chiusurePalestra?.filter((x) => x.id !== id)
+      salva()
+      return tornate
     },
 
     async corsi() {

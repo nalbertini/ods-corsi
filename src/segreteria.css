@@ -151,6 +151,8 @@
 .sg-colore { width: 44px; height: 44px; border: 3px solid transparent; }
 .sg-colore[aria-pressed='true'] { border-color: var(--text); }
 .sg-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+/* Le due date della chiusura: al telefono una sotto l'altra, se no il campo data si taglia. */
+@media (max-width: 480px) { .sg-chiusura-date { grid-template-columns: 1fr; } }
 .sg-tre { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 /* Una voce della ricevuta: quantità stretta, poi prezzo, date e pagato. */
 .sg-ricevuta-voce { display: grid; grid-template-columns: 64px repeat(4, minmax(0, 1fr)); gap: 10px; }
@@ -577,6 +579,11 @@
 .sg-riquadro { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; background: var(--surface); border: 2px solid var(--line); min-width: 0; }
 .sg-riquadro[data-fatto='true'] { border-color: var(--verde); }
 .sg-riquadro-titolo { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
+/* Le chiusure della palestra (SETTIMANA): la fascia sopra la griglia, la nota gialla nei dialoghi, l’elenco di quelle decise. */
+.sg-chiusa { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--text); }
+.sg-chiusa-tag { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; }
+.sg-nota-gialla { margin: 0; padding: 10px 14px; background: var(--tinta-giallo); border-left: 4px solid var(--giallo-testo); font-size: 14px; line-height: 1.45; color: var(--sec); }
+.sg-chiusure-decise { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 2px solid var(--line); font-size: 14px; }
 /* Il sollecito su WhatsApp sotto i timbri: una cosa da fare, non un guaio, quindi la barra gialla scura a sinistra. */
 .sg-sollecito { gap: 10px; box-shadow: inset 4px 0 0 var(--giallo-testo); }
 .sg-sollecito-motivi { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 16px; font-weight: 600; line-height: 1.35; }
