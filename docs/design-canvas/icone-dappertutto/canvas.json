@@ -1,0 +1,105 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-25T12:00:00Z"
+ },
+ "title": "Icone in tutta l'app",
+ "launch": {
+  "view": "canvas"
+ },
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 140,
+   "w": 1080,
+   "h": 1600,
+   "title": "L'elenco delle icone"
+  },
+  "Segreteria.dc.html": {
+   "x": 1160,
+   "y": 140,
+   "w": 1080,
+   "h": 1300,
+   "title": "Segreteria · oggi e con le icone"
+  },
+  "App.dc.html": {
+   "x": 2320,
+   "y": 140,
+   "w": 1080,
+   "h": 1500,
+   "title": "Tablet, istruttori, iscritti"
+  },
+  "Timer.dc.html": {
+   "x": 3480,
+   "y": 140,
+   "w": 1080,
+   "h": 900,
+   "title": "Timer"
+  },
+  "Domande.dc.html": {
+   "x": 4640,
+   "y": 140,
+   "w": 760,
+   "h": 1100,
+   "title": "Le domande aperte"
+  },
+  "Icona.dc.html": {
+   "x": 0,
+   "y": 1760,
+   "w": 24,
+   "h": 24,
+   "title": "Componente Icona"
+  },
+  "Bottone.dc.html": {
+   "x": 200,
+   "y": 1760,
+   "w": 260,
+   "h": 80,
+   "title": "Componente Bottone"
+  },
+  "Titoletto.dc.html": {
+   "x": 540,
+   "y": 1760,
+   "w": 360,
+   "h": 50,
+   "title": "Componente Titoletto"
+  },
+  "Badge.dc.html": {
+   "x": 980,
+   "y": 1760,
+   "w": 140,
+   "h": 40,
+   "title": "Componente Badge"
+  },
+  "TestataTabella.dc.html": {
+   "x": 1200,
+   "y": 1760,
+   "w": 900,
+   "h": 40,
+   "title": "Componente TestataTabella"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Segreteria.dc.html",
+  "App.dc.html",
+  "Timer.dc.html",
+  "Domande.dc.html",
+  "Icona.dc.html",
+  "Bottone.dc.html",
+  "Titoletto.dc.html",
+  "Badge.dc.html",
+  "TestataTabella.dc.html"
+ ],
+ "notes": {
+  "titolo": {
+   "x": 0,
+   "y": 0,
+   "maxW": 5400,
+   "kind": "title1",
+   "text": "Icone in tutta l'app: un elenco solo, dove mancano, prima e dopo"
+  }
+ },
+ "designSystems": []
+}
