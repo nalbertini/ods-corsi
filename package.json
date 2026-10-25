@@ -153,6 +153,7 @@
     "prova:scheda": "node scripts/prova-scheda.mjs",
     "prova:scheda-persona": "node scripts/prova-scheda-persona.mjs",
     "prova:schede-iscritto": "node scripts/prova-schede-iscritto.mjs",
+    "prova:schede-personale": "node scripts/prova-schede-personale.mjs",
     "prova:sito-orario": "node scripts/prova-sito-orario.mjs",
     "prova:mcp": "node scripts/prova-mcp.mjs",
     "prova:frequenza": "node scripts/prova-frequenza.mjs",

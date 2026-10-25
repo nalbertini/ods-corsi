@@ -2695,6 +2695,8 @@ label.sg-btn { cursor: pointer; }
 .sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno { color: var(--surface); }
 @media (max-width: 1000px) {
   .sg-schede-scheda .scheda { flex-direction: column; gap: 2px; padding: 4px; white-space: normal; text-align: center; letter-spacing: 0.08em; font-size: 13px; }
+  /* Con «IN MODIFICA» sotto il nome PERSONA è più alta: tutte uguali, se no la riga salta. */
+  .sg-schede-personale .scheda { min-height: 61px; }
 }
 @media (max-width: 480px) {
   .sg-scheda-piede-fisso > .sg-btn { padding: 0 6px; letter-spacing: 0.08em; font-size: 14px; }
