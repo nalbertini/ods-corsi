@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.222.0 — 25 ottobre 2026
+
+### Novità
+
+- Chi ha pagato un movimento si propone sommando tutti gli indizi
+
 ## 0.221.0 — 25 ottobre 2026
 
 ### Novità
