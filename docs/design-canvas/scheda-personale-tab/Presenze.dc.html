@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .riga { display: flex; align-items: baseline; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; align-self: center; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .nome { margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .testo { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .kanji { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border: 2px solid #0d2a3d; font-size: 34px; font-weight: 700; }
+    .piede { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 16px; border-top: 2px solid #cfe6f4; }
+    .spenta { margin: 0; padding: 10px 12px; background: #cfe6f4; border-radius: 6px; font-size: 14px; line-height: 1.45; }
+    .scelte { display: flex; flex-wrap: wrap; gap: 8px; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #8f6a00">PROPOSTA · LA TAB PRESENZE (SOLO SE È DELLA SALA)</span>
+  <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <div class="kanji">柔</div>
+      <div style="display: flex; flex-direction: column; gap: 4px"><h2 class="nome">DE CHIARA GIULIA</h2><span class="sotto">Istruttore</span></div>
+      <div style="margin-left: auto"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Altro ▾" hint-size="110px,48px"></dc-import></div>
+    </div>
+    <dc-import name="SchedePersonale" tema="sito" acceso="PRESENZE" voci="DATI|PRESENZE|ACCESSO|PERSONA" chiare="{{ true }}" hint-size="100%,44px"></dc-import>
+    <div class="riga"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#46606f" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none; align-self: center" aria-hidden="true"><path d="M8 3v4 M16 3v4 M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z M4 9h16 M9 15l2 2 4-4"></path></svg><span class="et">PRESENZE DEL MESE</span><span class="filo"></span></div>
+    <div class="due">
+<dc-import name="Dato" tema="sito" etichetta="LEZIONI FATTE" valore="14" hint-size="100%,62px"></dc-import>
+<dc-import name="Dato" tema="sito" etichetta="COMPENSO DEL MESE" valore="350,00 €" hint-size="100%,62px"></dc-import>
+    </div>
+    <span class="testo">Le lezioni segnate sul tablet e in segreteria, mese per mese.</span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":860,"height":640}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

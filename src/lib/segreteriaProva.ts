@@ -6,6 +6,7 @@ import { cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagam
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
+import { unisciGare } from './gare'
 import { codicePulito, cosaNonVaNucleo, GENITORE_GIA_IN_ELENCO, GENITORE_SENZA_CF, GENITORE_SENZA_NOME, nuovoTitolare, type DatiGenitore } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
@@ -64,6 +65,7 @@ import {
   ultimaChiusura,
   VOCE_CORSI,
   VOCE_DIFFERENZA,
+  VOCE_GARE,
   contantiInGiornoChiuso,
   VOCE_QUOTA,
   type Cassa,
@@ -152,9 +154,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
     // Come 81-compensi-pagati.sql: c'è anche in un archivio fatto prima.
     // Una voce omonima scritta a mano diventa quella di sistema, come nell'81.
     const omonima = (v: VoceContabile) => v.tipo === 'uscita' && v.nome.trim().toLowerCase() === VOCE_COMPENSI.toLowerCase()
-    return conDifferenza.some(omonima)
+    const conCompensi: VoceContabile[] = conDifferenza.some(omonima)
       ? conDifferenza.map((v) => (omonima(v) ? { ...v, diSistema: true, attiva: true } : v))
       : [...conDifferenza, { id: 'voce-compensi', nome: VOCE_COMPENSI, tipo: 'uscita', diSistema: true, attiva: true }]
+    // Come 117-gare.sql: gli incassi delle gare hanno la loro voce, anche in un archivio fatto prima.
+    return conCompensi.some((v) => v.tipo === 'entrata' && v.nome === VOCE_GARE)
+      ? conCompensi
+      : [...conCompensi, { id: 'voce-gare', nome: VOCE_GARE, tipo: 'entrata', diSistema: true, attiva: true }]
   }
   // Come 97-satispay-scarico.sql: le voci dello scarico ci sono anche in un archivio fatto prima.
   const vociDelloScarico = (): VoceContabile[] => {
@@ -2401,6 +2407,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       }
       spostaRichieste(via, resta)
       a().segnalate = (a().segnalate ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      const gare = unisciGare({ gare: a().gare ?? [], atleti: a().gareAtleti ?? [] }, via, resta)
+      a().gare = gare.gare
+      a().gareAtleti = gare.atleti
       // Le coppie «non sono doppioni» passano a chi resta; una con sé stessa, o che c'è già, se ne va.
       const coppie: [string, string][] = []
       for (const [p, q] of a().nonDoppioni ?? []) {

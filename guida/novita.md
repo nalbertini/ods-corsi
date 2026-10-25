@@ -10,6 +10,34 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.213.1 — 25 ottobre 2026
+
+### Modificato
+
+- Le gare: la scheda con i numeri in testa e gli atleti su due righe, senza pulsanti che sbordano
+
+## 0.213.0 — 25 ottobre 2026
+
+### Novità
+
+- La scheda di una persona del personale divisa in quattro parti
+
+## 0.212.0 — 25 ottobre 2026
+
+### Novità
+
+- In IMPORTAZIONI l'elenco delle voci da classificare
+
+### Modificato
+
+- La gara si modifica in una finestra al centro, più larga
+
+## 0.211.0 — 25 ottobre 2026
+
+### Novità
+
+- Le gare, con chi ci va e il controllo del certificato
+
 ## 0.210.2 — 25 ottobre 2026
 
 ### Modificato

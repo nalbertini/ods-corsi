@@ -26,6 +26,7 @@ const Iscritti = lazy(() => import('./Iscritti').then((m) => ({ default: m.Iscri
 const Presenze = lazy(() => import('./Presenze').then((m) => ({ default: m.Presenze })))
 const Compensi = lazy(() => import('./Compensi').then((m) => ({ default: m.Compensi })))
 const Vestiario = lazy(() => import('./Vestiario').then((m) => ({ default: m.Vestiario })))
+const Gare = lazy(() => import('./Gare').then((m) => ({ default: m.Gare })))
 const PresenzeSegnalate = lazy(() => import('./PresenzeSegnalate').then((m) => ({ default: m.PresenzeSegnalate })))
 const Sito = lazy(() => import('./Sito').then((m) => ({ default: m.Sito })))
 import { tocca } from '../../lib/segnalazioni'
@@ -269,6 +270,11 @@ export function Segreteria({
   // di istruttori e segnalate, da qualunque voce; DA FARE conta tutto. Si
   // riconta cambiando voce, e quando una sezione dice che è cambiato qualcosa.
   const [giroConte, setGiroConte] = useState(0)
+  // La gara toccata nella SETTIMANA: GARE si apre su di lei. Uscendo da GARE si dimentica.
+  const [garaDaAprire, setGaraDaAprire] = useState<string>()
+  useEffect(() => {
+    if (voce !== 'gare') setGaraDaAprire(undefined)
+  }, [voce])
   // Quando i conti della striscia vanno riletti per forza: un appello segnato, una richiesta accolta, una scheda cambiata, RICONTA.
   const [giroStriscia, setGiroStriscia] = useState(0)
   const contiCambiati = () => {
@@ -640,7 +646,18 @@ export function Segreteria({
         <Suspense fallback={<span className="sg-sotto">Un attimo…</span>}>
         {d && voce === 'dafare' && !banco && <DaFare conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'dafare' && banco && <Oggi d={d} conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
-        {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} onConti={contiCambiati} />}
+        {d && voce === 'settimana' && (
+          <Settimana
+            d={d}
+            posto={posto}
+            onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)}
+            onConti={contiCambiati}
+            onGara={(id) => {
+              setGaraDaAprire(id)
+              segna({ voce: 'gare' }, 'push')
+            }}
+          />
+        )}
         {d && voce === 'corsi' && (
           <Corsi
             key={ricerca?.testo ?? ''}
@@ -681,7 +698,7 @@ export function Segreteria({
         {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? posto.richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta ?? posto.richiesta} onTogliRicerca={() => setRicerca(undefined)} onConti={contiCambiati} />}
         {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} schede={schedePresenze} />}
         {d && voce === 'contabilita' && <Contabilita key={movimento ?? ''} d={d} movimento={movimento} onPersona={conSegreteria ? (id) => void vai('iscritti', { persona: id }) : undefined} onImportazioni={() => void vai('importazioni')} />}
-        {d && voce === 'importazioni' && <Importazioni d={d} />}
+        {d && voce === 'importazioni' && <Importazioni d={d} onClassifica={(id) => void vai('contabilita', { movimento: id })} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} schede={schedePresenze} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
@@ -689,6 +706,7 @@ export function Segreteria({
         {d && voce === 'personale' && <Personale d={d} onVai={(v) => void vai(v)} />}
         {d && voce === 'listino' && <Listino d={d} />}
         {d && voce === 'vestiario' && <Vestiario onCambiato={() => setGiroConte((g) => g + 1)} />}
+        {d && voce === 'gare' && <Gare d={d} apri={garaDaAprire} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'regole' && <Regole d={d} onVai={vai} />}
         {voce === 'palestra' && <Palestra daRispondere={daRispondere} onVai={(v) => void vai(v)} />}
         {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}

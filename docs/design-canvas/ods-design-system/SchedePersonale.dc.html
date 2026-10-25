@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="tablist" aria-label="Scheda del personale" style="display: flex; gap: {{gap}}; align-self: flex-start; width: {{larghezza}}; max-width: 100%; border-bottom: {{filo}}">
+  <sc-for list="{{schede}}" as="x" hint-placeholder-count="4">
+    <span role="tab" aria-label="{{x.nomeIntero}}" aria-selected="{{x.selezionata}}" style="display: inline-flex; flex-direction: {{direzione}}; align-items: center; justify-content: center; flex: {{x.flex}}; min-width: 0; gap: {{gapDentro}}; min-height: 44px; padding: {{padding}}; white-space: {{aCapo}}; text-align: center; background: {{x.sfondo}}; border: 2px solid {{x.bordo}}; font-family: {{carattere}}; font-size: {{corpoNome}}; font-weight: 700; letter-spacing: {{spazioNome}}; color: {{x.colore}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none" aria-hidden="true"><path d="{{x.icona}}"></path></svg>{{x.testo}}<span style="font-size: {{corpoSegno}}; letter-spacing: {{spazioSegno}}; color: {{x.coloreSegno}}">{{x.segno}}</span></span>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"acceso":{"editor":"enum","options":["PERSONA","ACCESSO","DATI","PRESENZE"],"default":"DATI"},"voci":{"editor":"text","default":"DATI|PRESENZE|ACCESSO|PERSONA"},"inModifica":{"editor":"boolean","default":false},"telefono":{"editor":"boolean","default":false},"chiare":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":760,"height":50}}'>
+// PROPOSTA «scheda del personale a tab» (../scheda-personale-tab/): PERSONA | ACCESSO | DATI | PRESENZE sotto l'intestazione di `Scheda`
+// (src/components/segreteria/Personale.tsx). Stesso pattern di SchedeIscritto: alte 44px, bordo 2px, accesa piena di `text` (`chiare`).
+// `voci` e' l'elenco di quelle che esistono: DATI solo per chi insegna, PRESENZE solo per chi sta in sala (`insegna`, `puo(p, 'pin')`).
+// Davanti a ogni nome un'icona a tratto (come Menu.dc.html): accompagna la parola, non la sostituisce.
+// `inModifica` mette ● IN MODIFICA (giallo) su PERSONA quando non e' la tab accesa: una modifica aperta non si perde di vista.
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', gialloTesto: '#f4c31b' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', dim: '#656561', gialloTesto: '#8f6a00' },
+  sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', gialloTesto: '#8f6a00' },
+};
+const ICONE = {'PERSONA': 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21a8 8 0 0 1 16 0', 'ACCESSO': 'M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z M8 11V8a4 4 0 0 1 8 0v3', 'DATI': 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z M14 3v5h5 M9 13h6 M9 17h6', 'PRESENZE': 'M8 3v4 M16 3v4 M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z M4 9h16 M9 15l2 2 4-4'};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.sito;
+    const acceso = p.acceso || 'PERSONA';
+    const tel = truthy(p.telefono);
+    const chiare = p.chiare === undefined ? true : truthy(p.chiare);
+    const nomi = (p.voci || 'DATI|PRESENZE|ACCESSO|PERSONA').split('|');
+    const schede = nomi.map((nome) => {
+      let s = { segno: '', coloreSegno: c.dim };
+      if (nome === 'PERSONA' && truthy(p.inModifica) && acceso !== 'PERSONA') s = { segno: '● IN MODIFICA', coloreSegno: c.gialloTesto };
+      const on = nome === acceso;
+      if (on && s.coloreSegno === c.gialloTesto) s = { ...s, coloreSegno: c.text };
+      if (on && chiare && s.segno) s = { ...s, coloreSegno: c.surface };
+      return {
+        nomeIntero: nome + (s.segno ? ', ' + s.segno.slice(2).toLowerCase() : ''), testo: nome, icona: ICONE[nome], ...s,
+        selezionata: on ? 'true' : 'false', flex: tel ? '1 1 0' : '0 0 auto',
+        sfondo: on ? (chiare ? c.text : c.surface2) : c.surface, bordo: on ? c.text : c.line, colore: on ? (chiare ? c.surface : c.text) : c.dim,
+      };
+    });
+    return {
+      schede, gap: '4px', filo: chiare ? '2px solid ' + c.text : '0',
+      carattere: p.tema === 'sito' || !p.tema ? "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif" : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", larghezza: tel || chiare ? '100%' : 'fit-content',
+      direzione: tel ? 'column' : 'row', gapDentro: tel ? '2px' : '8px', padding: tel ? '4px' : '0 18px',
+      corpoSegno: '11px', corpoNome: tel ? '13px' : '14px', aCapo: tel ? 'normal' : 'nowrap',
+      spazioNome: tel ? '0.08em' : '0.18em', spazioSegno: tel ? '0.04em' : '0.1em',
+    };
+  }
+}
+</script>
+</body>
+</html>

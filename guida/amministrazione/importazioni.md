@@ -47,6 +47,23 @@ annulla da MOVIMENTI, come ogni movimento.
 In MOVIMENTI resta solo un avviso breve, con **Vai a Importazioni**. Nel menu, accanto a
 **Importazioni**, il numero dice quanti pagamenti sono da decidere.
 
+## Da classificare
+
+Sotto **Da decidere** c'è l'elenco di tutto quel che è già in contabilità ma sulla voce
+**Da classificare**: Satispay scaricato da solo, movimenti importati dalla banca, uscite e
+commissioni, movimenti scritti a mano e lo storico importato. Sono le stesse righe di
+MOVIMENTI con quella voce, dalla più vecchia. Le entrate sono col **+** e verdi, le uscite
+col **−** e rosse.
+
+I tasti sopra l'elenco (**Tutte**, **Satispay**, **Banca**, **A mano**, **Storico**) lo
+restringono per origine. Si vedono le prime 20 voci: **Mostra altre** ne aggiunge altre
+20. In fondo, il totale delle entrate e delle uscite di tutto l'elenco, non solo di
+quelle che si vedono.
+
+**Classifica** apre il movimento in MOVIMENTI, dove si sceglie la voce vera. Non c'è un
+tasto «fatto»: una voce esce dall'elenco da sola quando la classifichi, e così anche
+se la annulli.
+
 ## Cosa è entrato
 
 Il riepilogo di un mese, per fonte (**Satispay** o **Banca**) e per mese.

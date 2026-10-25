@@ -1,14 +1,16 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent, type KeyboardEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import type { Voce } from '../../lib/indirizzoSegreteria'
 import { personaCambiata } from '../../lib/segreteria'
 import { lette } from '../../lib/letture'
-import { daSpunte, insegna, nomeDelRuolo, puo, siElimina, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
+import { daSpunte, insegna, nomeDelRuolo, puo, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, suCarta, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina, Tasto } from './comune'
+import { chiedi, Campo, Guaio, lasciare, MenuAzioni, Riga, SchedaPiena, suCarta, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina, Tasto } from './comune'
 import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
+import { ICONE_SCHEDA_PERSONALE, ICONE_SEZIONE_PERSONALE } from '../Icons'
+import { idLinguettaPersonale, idPannelloPersonale, schedaAperta, schedaInizialePersonale, schedePersonale, segnoPersonale, tastoSchedaPersonale, vociAltro, type IdSchedaPersonale } from '../../lib/schedePersonale'
 import { DatiTecnico, LetteraIncarico, Tariffe } from './DatiTecnico'
 import { AzioniRicevuta, SegnoCompenso, tonoCompenso } from './Compensi'
 import { compensoDelMese, mancaPerRicevuta, presoNellAnno, primoDelMese, statoCompenso } from '../../lib/compensi'
@@ -218,6 +220,9 @@ type Fai = ReturnType<typeof useAvviso>['fai']
 type Avvisa = ReturnType<typeof useAvviso>['avvisa']
 type Partito = (nome: string, come: 'invito' | 'password') => string
 
+/** Il nome delle schede, per le linguette e per chi legge lo schermo. */
+const NOME_SCHEDA: Record<IdSchedaPersonale, string> = { dati: 'DATI', presenze: 'PRESENZE', accesso: 'ACCESSO', persona: 'PERSONA' }
+
 function Accesso({ p }: { p: PersonaleSeg }) {
   return (
     <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde-testo)' : 'var(--giallo-testo)' }}>
@@ -385,6 +390,7 @@ function Scheda({
   const [modifica, setModifica] = useState<{ nome: string; cognome: string; email: string } | null>(null)
   const [pin, setPin] = useState<string | null>(null)
   const [versione, setVersione] = useState(0)
+  const [scelta, setScelta] = useState<IdSchedaPersonale>(schedaInizialePersonale(p))
   useBozza((!!modifica && personaCambiata(p, modifica)) || !!pin, `${p.nome} ${p.cognome}`.trim())
   // Il ruolo doppio si scrive solo se c'era o ci sarà: un database senza la
   // sua colonna salva lo stesso tutti gli altri (vedi `ruoloDaScrivere`).
@@ -419,8 +425,26 @@ function Scheda({
     if (!fatto) await onCambiato()
   }
 
+  const accesso = async () => {
+    if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore, e se si allena in un corso l'iscrizione si chiude oggi; il registro resta.`, 'Togli l’accesso', { pericolo: true }))) return
+    void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', onCambiato)
+  }
+
+  const schede = schedePersonale(p)
+  const aperta = schedaAperta(p, scelta)
+  const tastiera = (e: KeyboardEvent) => {
+    const dove = tastoSchedaPersonale(schede, aperta, e.key)
+    if (!dove) return
+    e.preventDefault()
+    setScelta(dove)
+    // Il fuoco segue la scheda: la prossima Tab entra nel suo pannello.
+    document.getElementById(idLinguettaPersonale(dove))?.focus()
+  }
+  const pannello = (id: IdSchedaPersonale) => ({ role: 'tabpanel', id: idPannelloPersonale(id), 'aria-labelledby': idLinguettaPersonale(id), hidden: aperta !== id, className: 'stack', style: { gap: 20, minWidth: 0 } }) as const
+
   return (
     <>
+      <div className="sg-scheda-testa">
       <div className="row" style={{ gap: 14 }}>
         <Kanji segni={p.kanji} grande />
         <div className="stack" style={{ gap: 4, minWidth: 0 }}>
@@ -432,8 +456,53 @@ function Scheda({
           </span>
         </div>
       </div>
+      <MenuAzioni etichetta="Altro">
+        {vociAltro(p).map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            role="menuitem"
+            className={v.pericolo ? 'sg-pericolo' : undefined}
+            title={v.id === 'elimina' ? 'Solo per chi non ha storia: senza corsi, lezioni, presenze o registri a suo nome' : undefined}
+            onClick={() => void (v.id === 'accesso' ? accesso() : elimina())}
+          >
+            {v.etichetta}
+          </button>
+        ))}
+      </MenuAzioni>
+      </div>
 
-      <div className="stack" style={{ gap: 20, minWidth: 0 }}>
+      <div className="schede sg-schede sg-schede-scheda sg-schede-personale" role="tablist" aria-label="Parti della scheda" onKeyDown={tastiera}>
+        {schede.map((id) => {
+          const segno = id === 'persona' ? segnoPersonale(aperta, !!modifica) : null
+          const Icona = ICONE_SCHEDA_PERSONALE[id]
+          return (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              id={idLinguettaPersonale(id)}
+              aria-controls={idPannelloPersonale(id)}
+              aria-selected={aperta === id}
+              aria-label={segno ? `${NOME_SCHEDA[id]}, ${segno.parola.toLowerCase()}` : NOME_SCHEDA[id]}
+              tabIndex={aperta === id ? 0 : -1}
+              className="scheda"
+              data-on={aperta === id}
+              onClick={() => setScelta(id)}
+            >
+              <Icona size={16} />
+              <span aria-hidden="true">{NOME_SCHEDA[id]}</span>
+              {segno && (
+                <span aria-hidden="true" className="sg-scheda-segno" data-tono={segno.tono}>
+                  ● {segno.parola}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      <div {...pannello('persona')}>
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
           {modifica ? (
             <div className="sg-due">
@@ -491,16 +560,18 @@ function Scheda({
           )}
 
           <div className="stack" style={{ gap: 8 }}>
-            <Riga titolo="RUOLO" />
+            <Riga titolo="RUOLO" icona={<ICONE_SEZIONE_PERSONALE.ruolo size={18} />} />
             <SceltaRuolo spunte={spunteDi(p)} onScegli={cambiaRuolo} />
           </div>
 
           {dellaSala && <SceltaKanji d={d} p={p} altri={altri} fai={fai} onCambiato={onCambiato} />}
         </div>
+      </div>
 
+      <div {...pannello('accesso')}>
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
           <div className="stack" style={{ gap: 8 }}>
-            <Riga titolo="ACCESSO">
+            <Riga titolo="ACCESSO" icona={<ICONE_SEZIONE_PERSONALE.accesso size={18} />}>
               <Accesso p={p} />
             </Riga>
             <span style={{ fontSize: 14, color: 'var(--sec)' }}>
@@ -523,7 +594,7 @@ function Scheda({
 
           {dellaSala && (
             <div className="stack" style={{ gap: 8 }}>
-              <Riga titolo="PIN TABLET">
+              <Riga titolo="PIN TABLET" icona={<ICONE_SEZIONE_PERSONALE.pin size={18} />}>
                 <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
                   {p.haPin ? 'IMPOSTATO' : 'NESSUNO'}
                 </span>
@@ -572,37 +643,18 @@ function Scheda({
       </div>
 
       {/* I dati per pagarlo solo a chi insegna: la segreteria che non insegna non ha compensi. */}
-      {insegna(p) && (
-        <>
+      {schede.includes('dati') && (
+        <div {...pannello('dati')}>
           <DatiTecnico d={d} p={p} fai={fai} onSalvato={() => setVersione((v) => v + 1)} />
           <Tariffe d={d} p={p} fai={fai} onSalvato={() => setVersione((v) => v + 1)} />
           <LetteraIncarico d={d} p={p} fai={fai} versione={versione} />
-        </>
+        </div>
       )}
-      {dellaSala && <PresenzeDelMese d={d} p={p} fai={fai} versione={versione} onVai={onVai} />}
-
-      <div className="sg-scheda-piede">
-        <button
-          type="button"
-          className="sg-btn sg-btn-linea sg-pericolo"
-          onClick={async () => {
-            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore, e se si allena in un corso l'iscrizione si chiude oggi; il registro resta.`, 'Togli l’accesso', { pericolo: true }))) return
-            void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', onCambiato)
-          }}
-        >
-          {p.attiva ? 'Togli l’accesso' : 'Ridai l’accesso'}
-        </button>
-        {/* Chi insegna e la segreteria: a chi è solo di amministrazione si toglie l'accesso. Se ha corsi, lezioni, presenze o righe nei registri il database dice di no, e perché. */}
-        {siElimina(p) && (
-          <Tasto
-            className="sg-pericolo"
-            title="Solo per chi non ha storia: senza corsi, lezioni, presenze o registri a suo nome"
-            onClick={() => void elimina()}
-          >
-            Elimina
-          </Tasto>
-        )}
-      </div>
+      {schede.includes('presenze') && (
+        <div {...pannello('presenze')}>
+          <PresenzeDelMese d={d} p={p} fai={fai} versione={versione} onVai={onVai} />
+        </div>
+      )}
     </>
   )
 }
@@ -628,7 +680,7 @@ function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: P
 
   return (
     <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo="KANJI">
+      <Riga titolo="KANJI" icona={<ICONE_SEZIONE_PERSONALE.kanji size={18} />}>
         <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.kanji ? 'var(--text)' : 'var(--dim)' }}>
           {p.kanji ? `${p.kanji}${significato(p.kanji) ? ` · ${significato(p.kanji)!.toUpperCase()}` : ''}` : 'NESSUNO'}
         </span>
@@ -757,7 +809,7 @@ function PresenzeDelMese({ d, p, fai, versione, onVai }: { d: DatiSegreteria; p:
 
   return (
     <div className="stack" style={{ gap: 12 }}>
-      <Riga titolo="PRESENZE">
+      <Riga titolo="PRESENZE" icona={<ICONE_SEZIONE_PERSONALE.presenze size={18} />}>
         <label htmlFor="mese-istr" className="vh">
           Mese
         </label>

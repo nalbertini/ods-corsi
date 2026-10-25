@@ -17,7 +17,7 @@
 import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
 import { chiaveGiorno, lunedi } from './sala'
 
-export const VOCI = ['dafare', 'settimana', 'corsi', 'iscritti', 'richieste', 'presenze', 'segnalate', 'statistiche', 'istruttori', 'compensi', 'personale', 'listino', 'vestiario', 'regole', 'segnalazioni', 'sito', 'contabilita', 'importazioni', 'palestra'] as const
+export const VOCI = ['dafare', 'settimana', 'corsi', 'gare', 'iscritti', 'richieste', 'presenze', 'segnalate', 'statistiche', 'istruttori', 'compensi', 'personale', 'listino', 'vestiario', 'regole', 'segnalazioni', 'sito', 'contabilita', 'importazioni', 'palestra'] as const
 export type Voce = (typeof VOCI)[number]
 
 /** Un filtro già acceso quando si arriva a una voce: chi ha il certificato da sistemare, chi deve pagare, cosa c'è da stampare. */

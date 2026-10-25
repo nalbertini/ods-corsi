@@ -3412,8 +3412,8 @@ await sezione('la contabilità di prova: le tre casse e le due voci di sistema',
   ok('le tre casse, a zero; solo Satispay con la data', casse.map((c) => [c.nome, c.saldoIniziale, c.dal ?? null]).sort(), [['Cassa Contanti', 0, null], ['Conto Corrente', 0, null], ['Satispay', 0, '2025-01-01']])
   cx.contanti = casse.find((c) => c.nome === 'Cassa Contanti').id
   cx.conto = casse.find((c) => c.nome === 'Conto Corrente').id
-  // «Differenza di cassa» arriva con 60-chiusura-cassa.sql e ha le sue prove (la chiusura di cassa, più sotto); «Compensi istruttori» con 81-compensi-pagati.sql (prova-compensi-pagati).
-  const di = (await s.voci()).filter((v) => v.diSistema && v.nome !== 'Differenza di cassa' && v.nome !== 'Compensi istruttori')
+  // «Differenza di cassa» arriva con 60-chiusura-cassa.sql e ha le sue prove (la chiusura di cassa, più sotto); «Compensi istruttori» con 81-compensi-pagati.sql (prova-compensi-pagati); «Gare» con 117-gare.sql (prova-gare).
+  const di = (await s.voci()).filter((v) => v.diSistema && !['Differenza di cassa', 'Compensi istruttori', 'Gare'].includes(v.nome))
   ok('le voci di sistema, attive', di.map((v) => [v.nome, v.tipo, v.attiva]).sort(), [['Corsi e altri pagamenti', 'entrata', true], ['Quota associativa', 'entrata', true]])
   cx.quota = di.find((v) => v.nome === 'Quota associativa').id
   cx.corsi = di.find((v) => v.nome === 'Corsi e altri pagamenti').id
@@ -3423,7 +3423,7 @@ await sezione('la contabilità di prova: le tre casse e le due voci di sistema',
   ok('«Corsi e altri pagamenti» nemmeno', await errore(() => s.attivaVoce(cx.corsi, false)), SOLO_AMM)
   ok('un doppione della quota no', await errore(() => s.salvaVoce({ nome: 'QUOTA ASSOCIATIVA', tipo: 'entrata' })), 'C’è già una voce «QUOTA ASSOCIATIVA» tra le entrate')
   ok('né di «Corsi e altri pagamenti», con spazi', await errore(() => s.salvaVoce({ nome: '  corsi e altri pagamenti ', tipo: 'entrata' })), 'C’è già una voce «corsi e altri pagamenti» tra le entrate')
-  ok('sono rimaste com\'erano', (await s.voci()).filter((v) => v.diSistema && v.nome !== 'Differenza di cassa' && v.nome !== 'Compensi istruttori').map((v) => [v.nome, v.attiva]).sort(), [['Corsi e altri pagamenti', true], ['Quota associativa', true]])
+  ok('sono rimaste com\'erano', (await s.voci()).filter((v) => v.diSistema && !['Differenza di cassa', 'Compensi istruttori', 'Gare'].includes(v.nome)).map((v) => [v.nome, v.attiva]).sort(), [['Corsi e altri pagamenti', true], ['Quota associativa', true]])
 })
 
 await sezione('le voci: il nome è unico per tipo, una voce si disattiva', async () => {

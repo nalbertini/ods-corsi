@@ -453,11 +453,12 @@ export function Proposta({ titolo, dettaglio, bordo, children }: { titolo: strin
   )
 }
 
-export function Riga({ titolo, children }: { titolo: string; children?: ReactNode }) {
+export function Riga({ titolo, icona, children }: { titolo: string; icona?: ReactNode; children?: ReactNode }) {
   return (
     <div className="sg-riga-titolo">
       {/* Un titolo vero: chi legge lo schermo salta da una parte all'altra della scheda. */}
-      <h2 className="sg-etichetta" style={{ margin: 0, fontSize: 14, letterSpacing: '0.22em' }}>
+      <h2 className="sg-etichetta" style={{ margin: 0, fontSize: 14, letterSpacing: '0.22em', ...(icona ? { display: 'inline-flex', alignItems: 'center', gap: 8 } : {}) }}>
+        {icona}
         {titolo}
       </h2>
       <div className="rule-line" />

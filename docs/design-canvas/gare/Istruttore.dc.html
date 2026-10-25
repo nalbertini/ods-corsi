@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: l'istruttore, al telefono, vede le gare dei corsi che insegna e chi ci va, solo da leggere: nome, anno, corso, certificato alla data della gara, nota. Niente contatti dei minorenni, niente TOGLI ne' AGGIUNGI: scrive la segreteria. Si arriva da una voce GARE (dove stia, nella barra in basso o nel menu dell'istruttore, e' una domanda aperta). Cornice da PaginaSitoTelefono.dc.html. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #eef5fa">
+  <dc-import name="BarraTelefono" tema="sito" luogo="ISTRUTTORI" hint-size="390px,56px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 14px; flex: 1; padding: 20px 16px 28px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · L'ISTRUTTORE LEGGE</span>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; font-size: 28px">TROFEO CITTÀ DI VARESE</h1>
+      <span style="font-size: 14px; font-weight: 600"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>sabato 14 e domenica 15 novembre · tra 20 giorni</span>
+      <span style="font-size: 13px; color: #46606f"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px"><path d="M12 21s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>PalaWhirlpool, Varese · Pesatura venerdì sera dalle 18.</span>
+    </div>
+    <dc-import name="Riquadro" tema="sito" contesto="segreteria" avviso="true" etichetta="" titolo="2 senza certificato valido" testo="La segreteria li sta sentendo." tonoTesto="dim" hint-size="100%,84px"></dc-import>
+    <div style="display: flex; flex-direction: column; border-radius: 6px; overflow: hidden; border: 1px solid #cfe6f4">
+      <dc-import name="RigaAtletaGara" telefono="true" sola="true" nome="Bianchi Luca" nascita="2009" corso="Judo agonisti" certificato="Valido" tono="verde" nota="−66 kg" hint-size="100%,64px"></dc-import>
+      <dc-import name="RigaAtletaGara" telefono="true" sola="true" nome="Colombo Giulia" quota="Da pagare · 90 €" minorenne="true" nascita="2012" corso="Judo agonisti" certificato="Scade prima" tono="rosso" nota="−52 kg" hint-size="100%,64px"></dc-import>
+      <dc-import name="RigaAtletaGara" telefono="true" sola="true" nome="Ferrari Marco" nascita="2008" corso="Pesi agonisti" certificato="Valido" tono="verde" nota="−81 kg" hint-size="100%,64px"></dc-import>
+      <dc-import name="RigaAtletaGara" telefono="true" sola="true" nome="Nerini Sara" quota="Da pagare · 90 €" minorenne="true" nascita="2011" corso="Judo agonisti" certificato="Da confermare" tono="giallo" nota="" hint-size="100%,64px"></dc-import>
+      <dc-import name="RigaAtletaGara" telefono="true" sola="true" nome="Rossi Andrea" nascita="2007" corso="Judo agonisti" certificato="Valido" tono="verde" nota="−73 kg" hint-size="100%,64px"></dc-import>
+    </div>
+  </main>
+  <dc-import name="BarraNavigazione" tema="sito" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="I MIEI" hint-size="390px,66px"></dc-import>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>class Component extends DCLogic { renderVals() { return {}; } }</script>
+</body>
+</html>

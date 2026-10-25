@@ -21,6 +21,7 @@ import { cartaSePuoi } from '../lib/cartaPdf'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
 import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 import { AccessoIscritto } from './AccessoIscritto'
+import { GareIscritto } from './GareIscritto'
 import { riprendiDaGoogle, urlPulito } from '../lib/accessoIscritto'
 import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
@@ -417,6 +418,7 @@ function Pagina({
         <>
           <Presenze dati={dati} personaId={personaId} presenze={presenze} />
           <Prossime lezioni={lezioni} />
+          <GareIscritto scheda={scheda} />
         </>,
       )}
       {pannello(

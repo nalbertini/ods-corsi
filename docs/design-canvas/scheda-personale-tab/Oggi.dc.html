@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .riga { display: flex; align-items: baseline; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; align-self: center; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .nome { margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .testo { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .kanji { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border: 2px solid #0d2a3d; font-size: 34px; font-weight: 700; }
+    .piede { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 16px; border-top: 2px solid #cfe6f4; }
+    .spenta { margin: 0; padding: 10px 12px; background: #cfe6f4; border-radius: 6px; font-size: 14px; line-height: 1.45; }
+    .scelte { display: flex; flex-wrap: wrap; gap: 8px; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #46606f">OGGI · TUTTO IN UNA SCHEDA LUNGA</span>
+  <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <div class="kanji">柔</div>
+      <div style="display: flex; flex-direction: column; gap: 4px"><h2 class="nome">DE CHIARA GIULIA</h2><span class="sotto">Istruttore</span></div>
+    </div>
+    <div class="due">
+<dc-import name="Dato" tema="sito" etichetta="EMAIL" valore="giulia.dechiara@esempio.it" hint-size="100%,62px"></dc-import>
+<dc-import name="Dato" tema="sito" etichetta="CORSI" valore="Judo ragazzi, Judo adulti" hint-size="100%,62px"></dc-import>
+    </div>
+    <dc-import name="Chip" tema="sito" label="Modifica" hint-size="170px,40px"></dc-import>
+    <div class="riga"><span class="et">RUOLO</span><span class="filo"></span></div>
+    <div class="scelte"><dc-import name="Chip" tema="sito" label="Segreteria" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="Istruttore" acceso="{{ true }}" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="Amministratore" hint-size="170px,40px"></dc-import></div>
+    <div class="riga"><span class="et">KANJI</span><span class="filo"></span></div>
+    <div class="scelte"><dc-import name="Chip" tema="sito" label="柔" acceso="{{ true }}" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="道" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="武" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="力" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="気" hint-size="170px,40px"></dc-import></div>
+    <div class="riga"><span class="et">ACCESSO</span><span class="filo"></span><dc-import name="Badge" tema="sito" tipo="segno" tono="verde" label="È ENTRATA" hint-size="110px,28px"></dc-import></div>
+    <span class="testo">È entrata almeno una volta. Se perde la password la chiede da sé, dalla porta, con PASSWORD DIMENTICATA?</span>
+    <div class="riga"><span class="et">PIN TABLET</span><span class="filo"></span><span class="et" style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em">IMPOSTATO</span></div>
+    <span class="testo">Quattro cifre, per l’AREA ISTRUTTORE del tablet di sala. Due persone non possono avere lo stesso PIN.</span>
+    <dc-import name="Chip" tema="sito" label="Cambia il PIN" hint-size="170px,40px"></dc-import>
+    <div class="riga"><span class="et">DATI PER LETTERA E RICEVUTE</span><span class="filo"></span></div>
+    <div class="due">
+<dc-import name="Dato" tema="sito" etichetta="CODICE FISCALE" valore="DCHGLI90A41L219X" hint-size="100%,62px"></dc-import>
+<dc-import name="Dato" tema="sito" etichetta="RESIDENTE A" valore="Via Roma 12, 10100 Torino" hint-size="100%,62px"></dc-import>
+<dc-import name="Dato" tema="sito" etichetta="IBAN" valore="IT60 X054 2811 1010 0000 0123 456" hint-size="100%,62px"></dc-import>
+<dc-import name="Dato" tema="sito" etichetta="TELEFONO" valore="333 123 4567" hint-size="100%,62px"></dc-import>
+    </div>
+    <div class="riga"><span class="et">TARIFFE</span><span class="filo"></span></div>
+    <div class="due">
+<dc-import name="Dato" tema="sito" etichetta="JUDO RAGAZZI" valore="25,00 € a lezione" hint-size="100%,62px"></dc-import>
+<dc-import name="Dato" tema="sito" etichetta="JUDO ADULTI" valore="30,00 € a lezione" hint-size="100%,62px"></dc-import>
+    </div>
+    <div class="riga"><span class="et">LETTERA D’INCARICO</span><span class="filo"></span></div>
+    <span class="testo">L’ultima lettera è del 3 settembre 2026. Si rifà quando cambiano i dati o le tariffe.</span>
+    <dc-import name="Chip" tema="sito" label="Scarica la lettera" hint-size="170px,40px"></dc-import>
+    <div class="riga"><span class="et">PRESENZE DEL MESE</span><span class="filo"></span></div>
+    <div class="due">
+<dc-import name="Dato" tema="sito" etichetta="LEZIONI FATTE" valore="14" hint-size="100%,62px"></dc-import>
+<dc-import name="Dato" tema="sito" etichetta="COMPENSO DEL MESE" valore="350,00 €" hint-size="100%,62px"></dc-import>
+    </div>
+    <span class="testo">Le lezioni segnate sul tablet e in segreteria, mese per mese.</span>
+    <div class="piede"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pericolo" label="Togli l’accesso" hint-size="170px,48px"></dc-import></div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":860,"height":2400}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

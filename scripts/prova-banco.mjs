@@ -130,7 +130,7 @@ titolo('luoghi del Banco')
   const voci = (id) => (LUOGHI.find((l) => l.id === id)?.voci ?? []).map((v) => [v.voce, v.nome])
   ok('OGGI', voci('oggi'), [['dafare', 'OGGI'], ['settimana', 'SETTIMANA'], ['presenze', 'PRESENZE']])
   ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['compensi', 'COMPENSI'], ['personale', 'ACCESSI']])
-  ok('CORSI', voci('corsi'), [['corsi', 'CORSI']])
+  ok('CORSI', voci('corsi'), [['corsi', 'CORSI'], ['gare', 'GARE']])
   // CONTABILITÀ è il primo: l'estratto conto è dove si apre di più.
   ok('SOLDI', voci('soldi'), [['contabilita', 'CONTABILITÀ'], ['importazioni', 'IMPORTAZIONI'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
   ok('PALESTRA', voci('palestra'), [['statistiche', 'STATISTICHE'], ['segnalazioni', 'SEGNALAZIONI'], ['sito', 'SITO'], ['regole', 'IMPOSTAZIONI']])

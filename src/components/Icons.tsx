@@ -157,6 +157,7 @@ export const ICONE_MENU = {
   iscritti: voce(<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>),
   settimana: voce(<><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></>),
   corsi: voce(<><circle cx="12" cy="8" r="6" /><path d="M15.5 12.9 17 22l-5-3-5 3 1.5-9.1" /></>),
+  gare: voce(<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2Z" />),
   listino: voce(<><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" /><circle cx="7" cy="7" r="1" /></>),
   istruttori: voce(<><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>),
   compensi: voce(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M9 13h6M9 17h4" /></>),
@@ -234,4 +235,24 @@ export const ICONE_SCHEDA_ISCRITTO = {
   documenti: voce(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M8 13h8M8 17h8" /></>),
   quota: ICONE_CONTI.banconota,
   corsi: ICONE_MENU.corsi,
+}
+
+/** Le icone delle schede di una persona del personale: la chiave è l'`IdSchedaPersonale` di lib/schedePersonale. */
+export const ICONE_SCHEDA_PERSONALE = {
+  persona: voce(<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21a8 8 0 0 1 16 0" />),
+  accesso: voce(<path d="M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z M8 11V8a4 4 0 0 1 8 0v3" />),
+  dati: voce(<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z M14 3v5h5 M9 13h6 M9 17h6" />),
+  presenze: voce(<path d="M8 3v4 M16 3v4 M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z M4 9h16 M9 15l2 2 4-4" />),
+}
+
+/** Le icone davanti alle intestazioni di sezione della scheda di una persona del personale. */
+export const ICONE_SEZIONE_PERSONALE = {
+  ruolo: voce(<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />),
+  kanji: voce(<path d="M4 20l4-1 11-11-3-3L5 16z M14 6l3 3" />),
+  accesso: ICONE_SCHEDA_PERSONALE.accesso,
+  pin: voce(<path d="M5 5h.01 M12 5h.01 M19 5h.01 M5 12h.01 M12 12h.01 M19 12h.01 M5 19h.01 M12 19h.01 M19 19h.01" strokeWidth={3} />),
+  dati: ICONE_SCHEDA_PERSONALE.dati,
+  tariffe: voce(<path d="M17 7.5A6 6 0 1 0 17 16.5 M5 10h9 M5 14h9" />),
+  lettera: voce(<path d="M4 6h16v12H4z M4 7l8 6 8-6" />),
+  presenze: ICONE_SCHEDA_PERSONALE.presenze,
 }

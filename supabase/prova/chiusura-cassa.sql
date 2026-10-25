@@ -552,7 +552,7 @@ select (select count(*) from chiusure_cassa) as quante \gset
 select atteso('rilanciato, i dati sono gli stessi', impronta(), :'prima');
 select atteso('…le chiusure sono le stesse', (select count(*)::text from chiusure_cassa), :'quante');
 select atteso('…le voci della differenza ancora due', (select count(*)::text from voci_contabili where nome = 'Differenza di cassa' and di_sistema), '2');
-select atteso('…le voci di sistema in tutto quattro', (select count(*)::text from voci_contabili where di_sistema and nome <> 'Compensi istruttori'), '4');
+select atteso('…le voci di sistema in tutto quattro', (select count(*)::text from voci_contabili where di_sistema and nome not in ('Compensi istruttori', 'Gare')), '4');
 select atteso('…i permessi sono gli stessi', (select coalesce(string_agg(p, ',' order by p), 'niente') from unnest(array['select', 'insert', 'update', 'delete']) p where has_table_privilege('authenticated', 'public.chiusure_cassa', p)), 'select');
 select atteso('…anon ancora fuori', (select coalesce(string_agg(p.proname, ', '), 'nessuna') from pg_proc p where p.pronamespace = 'public'::regnamespace and has_function_privilege('anon', p.oid, 'execute')
   and p.proname in ('chiudi_cassa', 'annulla_chiusura_cassa', 'previsto_cassa', 'registra_movimento', 'annulla_movimento')), 'nessuna');

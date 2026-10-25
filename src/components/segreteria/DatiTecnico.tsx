@@ -5,6 +5,7 @@ import { chiaveGiorno, dataLunga } from '../../lib/sala'
 import { centesimiDaEuro, cosaNonVaEuroOra, euroDaScrivere, euroOra, righeTariffe } from '../../lib/tariffe'
 import { campoCheNonVa, compensoDi, corsiFuoriLettera, cosaNonVaLettera, datiPerLettera, lettereDellaScheda, QUALIFICHE, rigaLettera, scelteDaProporre, stagioneDi, type DatiLettera, type Lettera, type ScelteLettera } from '../../lib/lettere'
 import { Campo, chiedi, Guaio, Riga, useAvviso, useCarica, Tasto } from './comune'
+import { ICONE_SEZIONE_PERSONALE } from '../Icons'
 import { ModificaAnagrafica, type CampoAnagrafica } from './Iscritti'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -59,7 +60,7 @@ export function DatiTecnico({ d, p, fai, onSalvato }: { d: DatiSegreteria; p: Pe
 
   return (
     <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo="DATI PER LETTERA E RICEVUTE">
+      <Riga titolo="DATI PER LETTERA E RICEVUTE" icona={<ICONE_SEZIONE_PERSONALE.dati size={18} />}>
         {an.dato && (
           <button type="button" className="num sg-chip" onClick={() => setModifica({ ...(an.dato?.di?.dati ?? {}) })}>
             {an.dato.di ? 'Modifica i dati' : 'Aggiungi i dati'}
@@ -98,7 +99,7 @@ export function Tariffe({ d, p, fai, onSalvato }: { d: DatiSegreteria; p: Person
   const [scrive, setScrive] = useState<{ corso: string; testo: string } | null>(null)
   if (dati.guaio) return (
     <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo="TARIFFE" />
+      <Riga titolo="TARIFFE" icona={<ICONE_SEZIONE_PERSONALE.tariffe size={18} />} />
       <Guaio testo={dati.guaio} />
     </div>
   )
@@ -118,7 +119,7 @@ export function Tariffe({ d, p, fai, onSalvato }: { d: DatiSegreteria; p: Person
 
   return (
     <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo="TARIFFE" />
+      <Riga titolo="TARIFFE" icona={<ICONE_SEZIONE_PERSONALE.tariffe size={18} />} />
       {righe.length === 0 && <span className="sg-sotto">Nessun corso: le tariffe si scrivono per i corsi che insegna.</span>}
       {righe.length > 0 && (
         <div role="table" aria-label={`Tariffe di ${p.nome}`} className="sg-tabella">
@@ -218,7 +219,7 @@ export function LetteraIncarico({ d, p, fai, versione }: { d: DatiSegreteria; p:
   if (dati.guaio)
     return (
       <div className="stack" style={{ gap: 8 }}>
-        <Riga titolo="LETTERA D’INCARICO" />
+        <Riga titolo="LETTERA D’INCARICO" icona={<ICONE_SEZIONE_PERSONALE.lettera size={18} />} />
         <Guaio testo={dati.guaio} />
       </div>
     )
@@ -240,7 +241,7 @@ export function LetteraIncarico({ d, p, fai, versione }: { d: DatiSegreteria; p:
     return (
       // Un modulo aperto dentro la scheda: il bordo dice dove comincia e finisce.
       <div className="stack" style={{ gap: 12, padding: '14px 16px', border: '2px solid var(--text)' }}>
-        <Riga titolo={`LETTERA D’INCARICO · ${scelte.stagione}`} />
+        <Riga titolo={`LETTERA D’INCARICO · ${scelte.stagione}`} icona={<ICONE_SEZIONE_PERSONALE.lettera size={18} />} />
         <div className="sg-due sg-scheda-campi">
           {data('dal', 'DAL')}
           {data('al', 'AL')}
@@ -319,7 +320,7 @@ export function LetteraIncarico({ d, p, fai, versione }: { d: DatiSegreteria; p:
 
   return (
     <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo={`LETTERA D’INCARICO · ${stagione}`} />
+      <Riga titolo={`LETTERA D’INCARICO · ${stagione}`} icona={<ICONE_SEZIONE_PERSONALE.lettera size={18} />} />
       {valida ? (
         <div className="stack" style={{ gap: 10, padding: '14px 16px', border: '2px solid var(--line-soft)' }}>
           <span className="row" style={{ gap: 12, flexWrap: 'wrap' }}>

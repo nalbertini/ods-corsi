@@ -3,6 +3,7 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { elencoMovimenti, giornoChiuso, NOME_CASSA_CONTO, oggiARoma, type Cassa, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento, type VoceContabile } from '../../lib/contabilita'
 import { candidatiInOrdine, dettoNuovo, gruppiDaDecidere, nomeSimile, riepilogoEntrato, riepilogoGruppo, righeEntrato, type GruppoDaDecidere, type RigaEntrato, type ScelteInCorso } from '../../lib/satispayScarico'
 import { entratoBanca, ultimaImportazione } from '../../lib/importaBanca'
+import { daClassificare, FONTI_DA_CLASSIFICARE, vistaDaClassificare, type FonteDaClassificare } from '../../lib/daClassificare'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { Chip } from '../ds'
 import { Campo, chiedi, Guaio, SchedaPiena, Testa, useAvviso, useCarica, Tasto } from './comune'
@@ -20,6 +21,8 @@ const quando = (iso: string) => new Date(iso).toLocaleString('it-IT', { timeZone
 const nomeChip = (descrizione: string) => descrizione.replace(/^Cliente /, '')
 const pagamenti = (n: number) => (n === 1 ? '1 pagamento' : `${n} pagamenti`)
 const riquadroFonte = { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: '12px 18px', padding: '14px 18px' } as const
+/** Le righe di «Da classificare» che si vedono per prime: con lo storico sono centinaia. */
+const RIGHE_DA_CLASSIFICARE = 20
 const rigaTabella = { gap: 14, padding: '10px 14px', borderBottom: '1px solid var(--line-soft)', alignItems: 'center', flexWrap: 'wrap' } as const
 
 /** Gli ultimi 12 mesi, dal più recente, come `AAAA-MM` col nome da mostrare. */
@@ -34,9 +37,10 @@ function mesi(oggi: string): Array<[string, string]> {
 
 /**
  * IMPORTAZIONI, in I CONTI: quel che arriva da Satispay e dalla banca, quando è arrivato, cosa resta da decidere
- * e «Cosa è entrato» per ricontrollare un mese. Le regole sono in `satispayScarico.ts` e `importaBanca.ts`.
+ * «Da classificare» (tutto quel che è in contabilità senza una voce vera) e «Cosa è entrato» per ricontrollare un mese.
+ * Le regole sono in `satispayScarico.ts`, `importaBanca.ts` e `daClassificare.ts`.
  */
-export function Importazioni({ d }: { d: DatiSegreteria }) {
+export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassifica: (movimentoId: string) => void }) {
   const casse = useCarica(() => d.casse(), [d])
   const voci = useCarica(() => d.voci(), [d])
   const manuali = useCarica(() => d.movimenti(), [d])
@@ -49,6 +53,8 @@ export function Importazioni({ d }: { d: DatiSegreteria }) {
   const stato = useCarica(() => d.statoScaricoSatispay(), [d])
   const { avviso, fai } = useAvviso()
   const [vista, setVista] = useState<'primo' | 'importa' | Fonte | null>(null)
+  const [fonteVista, setFonteVista] = useState<'' | FonteDaClassificare>('')
+  const [quante, setQuante] = useState(RIGHE_DA_CLASSIFICARE)
 
   const guaio = [casse, voci, manuali, chiusure].map((x) => x.guaio).find(Boolean)
   const pronto = !!(casse.dato && voci.dato && manuali.dato && chiusure.dato && (incassi.dato || incassi.guaio))
@@ -64,6 +70,9 @@ export function Importazioni({ d }: { d: DatiSegreteria }) {
   const ultima = ultimaImportazione(righe)
   const gruppi = s ? gruppiDaDecidere(s.daDecidere) : []
   const casi = s?.daDecidere.length ?? 0
+  const da = daClassificare(righe)
+  const pagina = vistaDaClassificare(da.righe, fonteVista, quante)
+  const nVoci = da.righe.length === 1 ? '1 voce' : `${da.righe.length} voci`
 
   if (vista === 'satispay' || vista === 'banca') {
     return (
@@ -127,6 +136,62 @@ export function Importazioni({ d }: { d: DatiSegreteria }) {
           {gruppi.map((g) => (
             <Gruppo key={g.pagamenti.map((p) => p.satispayId).join(',')} d={d} g={g} fai={fai} onFatto={rileggi} />
           ))}
+        </section>
+      )}
+
+      {pronto && (
+        <section aria-label="Da classificare" className="stack" style={{ gap: 14, paddingTop: 6 }}>
+          <div className="row" style={{ flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+            <h2 className="sg-riquadro-titolo" style={{ margin: 0 }}>
+              {da.righe.length ? `DA CLASSIFICARE · ${nVoci.toUpperCase()}` : 'DA CLASSIFICARE'}
+            </h2>
+            <span className="sg-sotto">{da.righe.length ? 'Già in contabilità, senza una voce vera. Le più vecchie in alto.' : 'Niente da classificare.'}</span>
+          </div>
+          {da.righe.length > 0 && (
+            <>
+              <div className="row" role="group" aria-label="Da dove arrivano" style={{ gap: 10, flexWrap: 'wrap' }}>
+                <Chip acceso={pagina.fonte === ''} onClick={() => { setFonteVista(''); setQuante(RIGHE_DA_CLASSIFICARE) }}>{`Tutte · ${da.righe.length}`}</Chip>
+                {FONTI_DA_CLASSIFICARE.filter((f) => da.righe.some((r) => r.fonte === f)).map((f) => (
+                  <Chip key={f} acceso={pagina.fonte === f} onClick={() => { setFonteVista(f); setQuante(RIGHE_DA_CLASSIFICARE) }}>{`${f} · ${da.righe.filter((r) => r.fonte === f).length}`}</Chip>
+                ))}
+              </div>
+              <div role="table" aria-label="Voci da classificare" className="sg-tabella">
+                <div role="row" className="sg-lista-testa sg-riga-da-classificare">
+                  <span role="columnheader" className="sg-etichetta">DATA</span>
+                  <span role="columnheader" className="sg-etichetta">ORIGINE</span>
+                  <span role="columnheader" className="sg-etichetta">MOVIMENTO</span>
+                  <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>IMPORTO</span>
+                  <span role="columnheader" />
+                </div>
+                <div role="rowgroup" className="sg-tabella-corpo">
+                  {pagina.visibili.map((r) => (
+                    <div key={r.id} role="row" className="sg-riga-da-classificare" style={{ borderBottom: '1px solid var(--line-soft)' }}>
+                      <span role="cell" className="sg-da-data">{dataRicevuta(r.data)}</span>
+                      <span role="cell" className="sg-etichetta">{r.fonte.toUpperCase()}</span>
+                      <span role="cell" className="sg-da-descrizione">{r.descrizione}</span>
+                      <span role="cell" className="num sg-da-importo" style={{ color: r.tipo === 'entrata' ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}>
+                        {r.tipo === 'entrata' ? '+' : '−'}{soldi(r.importo)}
+                      </span>
+                      <span role="cell" className="sg-da-tasto">
+                        <button type="button" className="sg-btn sg-btn-linea" aria-label={`Classifica ${r.descrizione}`} onClick={() => onClassifica(r.id)}>Classifica</button>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {pagina.restano > 0 && (
+                  <div style={{ padding: '10px 14px' }}>
+                    <button type="button" className="sg-btn sg-btn-linea" onClick={() => setQuante((n) => n + RIGHE_DA_CLASSIFICARE)}>
+                      {`Mostra altre ${pagina.prossime} · ne restano ${pagina.restano}`}
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, fontSize: 14 }}>
+                <b>{nVoci}: entrate +{soldi(da.entrate.importo)}, uscite −{soldi(da.uscite.importo)}</b>
+                <span className="sg-sotto">coincide con MOVIMENTI → Da classificare</span>
+              </div>
+            </>
+          )}
         </section>
       )}
 

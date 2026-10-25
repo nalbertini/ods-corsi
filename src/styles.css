@@ -433,6 +433,7 @@
 :root[data-look='sito'] .sg-riquadro[data-fatto='true'] { box-shadow: inset 4px 0 0 var(--verde); }
 :root[data-look='sito'] .sg-riquadro[data-avviso='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 /* Il tasto principale è il giallo del marchio (uno per schermata); il tasto a linea e i filtri hanno il blu dei campi. */
+:root[data-look='sito'] .riquadro[data-tono='guaio'] { box-shadow: inset 4px 0 0 var(--rosso); }
 :root[data-look='sito'] .sg-btn-pieno { background: var(--giallo); color: var(--su-colore); }
 /* Un tasto spento resta un blocco grigio anche nel look del sito: se no sembra acceso e non risponde. */
 :root[data-look='sito'] .sg-btn:disabled { background: var(--surface-2); color: var(--dim); }
@@ -1138,6 +1139,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .cifra { font-size: 26px; font-weight: 700; }
 .riga-tasti { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .link-sec { color: var(--sec); }
+/* Un link da toccare col dito (la mappa di una gara): riga sua, alto 44px. */
+.link-alto { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; color: var(--text); text-decoration: underline; text-decoration-color: var(--blu); text-underline-offset: 3px; overflow-wrap: anywhere; }
 .testo-pieno { color: var(--text); }
 .una-riga { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .esito { gap: 14px; padding: 20px 20px 28px; }
@@ -2708,6 +2711,8 @@ label.sg-btn { cursor: pointer; }
 .sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno { color: var(--surface); }
 @media (max-width: 1000px) {
   .sg-schede-scheda .scheda { flex-direction: column; gap: 2px; padding: 4px; white-space: normal; text-align: center; letter-spacing: 0.08em; font-size: 13px; }
+  /* Con «IN MODIFICA» sotto il nome PERSONA è più alta: tutte uguali, se no la riga salta. */
+  .sg-schede-personale .scheda { min-height: 61px; }
 }
 @media (max-width: 480px) {
   .sg-scheda-piede-fisso > .sg-btn { padding: 0 6px; letter-spacing: 0.08em; font-size: 14px; }
