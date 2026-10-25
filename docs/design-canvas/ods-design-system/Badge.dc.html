@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito: Inter (qui da Google Fonts, in app file locale OFL). -->
+  <!-- Inter (qui da Google Fonts, in app file locale OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -18,7 +18,7 @@
 </helmet>
 <span title="{{titolo}}" aria-label="{{titolo}}" style="display: inline-block; box-sizing: border-box; width: {{larghezza}}; text-align: {{allinea}}; padding: {{s.padding}}; border: {{s.border}}; background: {{s.bg}}; color: {{s.fg}}; border-radius: {{s.radius}}; font-family: {{s.family}}; font-size: {{s.fontSize}}; font-weight: {{s.peso}}; letter-spacing: {{s.spacing}}; line-height: {{s.lineHeight}}; white-space: nowrap"><sc-if value="{{pallino}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: {{s.punto}}; margin-right: {{s.dopoPunto}}; vertical-align: 1px"></span></sc-if><sc-if value="{{conIcona}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; vertical-align: -2px; margin-right: 5px"><dc-import name="Icona" nome="{{icona}}" misura="14" colore="{{s.fg}}" hint-size="14px,14px"></dc-import></span></sc-if>{{label}}</span>
 </x-dc>
-<script data-dc-script data-props='{"label":{"editor":"text","default":"PROVA"},"icona":{"editor":"text","default":""},"tipo":{"editor":"enum","options":["prova","bollino","tag","segno"],"default":"prova"},"tono":{"editor":"enum","options":["neutro","rosso","giallo","verde","spento"],"default":"neutro"},"larghezza":{"editor":"text","default":"auto"},"compatto":{"editor":"boolean","default":false},"forma":{"editor":"enum","options":["tag","pallino"],"default":"tag"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":140,"height":40}}'>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"PROVA"},"icona":{"editor":"text","default":""},"tipo":{"editor":"enum","options":["prova","bollino","tag","segno"],"default":"prova"},"tono":{"editor":"enum","options":["neutro","rosso","giallo","verde","spento"],"default":"neutro"},"larghezza":{"editor":"text","default":"auto"},"compatto":{"editor":"boolean","default":false},"forma":{"editor":"enum","options":["tag","pallino"],"default":"tag"},"$preview":{"width":140,"height":40}}'>
 // COSTRUITO «icone dappertutto» (../icone-dappertutto/; `Tag` di segreteria/comune.tsx con `icona`): `icona` = un nome di Icona.dc.html (src/lib/icone.ts), a linea, tratto 1.75, aria-hidden, nel colore del testo; vuoto = com'è oggi.
 // Riproduzione 1:1 dei piccoli segni di stato di src/styles.css:
 // - prova   = .prova-marchio (riga 457): 11px, 0.12em, testo giallo-testo, bordo 2px giallo, padding 1px 6px.
@@ -29,18 +29,16 @@
 //             nell'elenco delle pagine del SITO). E' il numero giallo accanto alle voci del menu di segreteria.
 // - segno   = .sg-segno-regola (riga 1509): 12px, 0.12em, bordo 1.5px del colore del testo, padding 2px 6px;
 //             tono rosso / giallo / verde / spento. E' il segno IN REGOLA della lista iscritti.
-// `compatto` (tema sito, segno): solo il simbolo in un quadretto di 28px, la parola nel title.
-// `forma` pallino (tema sito, segno) = .sg-segno-elenco (src/styles.css): niente bordo ne' fondo, un pallino pieno di 8px
+// `compatto` (segno): solo il simbolo in un quadretto di 28px, la parola nel title.
+// `forma` pallino (segno) = .sg-segno-elenco (src/styles.css): niente bordo ne' fondo, un pallino pieno di 8px
 // del colore dello stato e la parola in testo scuro 13px, peso 500. Compatto (telefono, sotto 768px) il pallino diventa
 // ✕ rosso o … giallo, 15px 700: la forma dice lo stato anche senza il colore; la parola nel title.
 // `larghezza` (default auto) fissa la larghezza: in una colonna i segni stanno tutti larghi uguali.
-// tema sito (look del sito della segreteria, `:root[data-look='sito']` in src/styles.css): ogni segno e' un tag bianco con bordo
+// Look del sito (look del sito della segreteria, `:root[data-look='sito']` in src/styles.css): ogni segno e' un tag bianco con bordo
 // e testo dello stesso colore, raggio 6px, Inter, e il segno prima della parola: ✕ manca, … aspetta, ✓ fatto. Il giallo pieno non c'e'
 // piu': 'aspetta' e' giallo scuro #8f6a00 su bianco. Il neutro e' #46606f. Il bollino diventa un tag giallo scuro.
 // Tutti hanno la classe `num` nel codice (Saira Condensed).
 const T = {
-  scuro: { bg: '#121212', dim: '#8c8c88', giallo: '#f4c31b', rosso: '#e4292a', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
-  chiaro: { bg: '#f4f4f1', dim: '#656561', giallo: '#f4c31b', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
   sito: { bg: '#ffffff', dim: '#46606f', giallo: '#f4c31b', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', suRosso: '#ffffff' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
@@ -48,45 +46,32 @@ const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const tipo = p.tipo || 'prova';
     const tono = p.tono || 'neutro';
-    const sito = p.tema === 'sito';
-    let s;
+        let s;
     let segno = '';
-    if (sito) {
-      // Ogni stato e' un tag bianco col bordo e il testo del suo colore; il segno prima della parola.
-      const SEGNI = { rosso: '✕ ', giallo: '… ', verde: '✓ ' };
-      const fg = tipo === 'bollino' || tipo === 'prova' ? c.gialloTesto : tono === 'rosso' ? c.rossoTesto : tono === 'giallo' ? c.gialloTesto : tono === 'verde' ? c.verdeTesto : c.dim;
-      if (tipo === 'tag' || tipo === 'segno') segno = SEGNI[tono] || '';
-      const bordo = tipo === 'prova' ? '2px' : '1.5px';
-      s = { padding: tipo === 'tag' ? '1px 8px' : tipo === 'segno' ? '2px 8px' : '2px 6px', border: bordo + ' solid ' + fg, bg: c.bg, fg, fontSize: tipo === 'tag' || tipo === 'segno' ? '12px' : '11px', spacing: '0.02em', lineHeight: 'normal' };
-    } else if (tipo === 'bollino') {
-      s = { padding: '2px 6px', border: '0', bg: c.giallo, fg: c.suColore, fontSize: '11px', spacing: '0.18em', lineHeight: 'normal' };
-    } else if (tipo === 'tag') {
-      const [bg, fg] = tono === 'rosso' ? [c.rosso, c.suRosso] : tono === 'giallo' ? [c.giallo, c.suColore] : tono === 'verde' ? [c.verde, c.suColore] : [c.dim, c.bg];
-      s = { padding: '0 4px', border: '0', bg, fg, fontSize: '12px', spacing: '0.12em', lineHeight: 'normal' };
-    } else if (tipo === 'segno') {
-      const fg = tono === 'rosso' ? c.rossoTesto : tono === 'giallo' ? c.gialloTesto : tono === 'verde' ? c.verdeTesto : c.dim;
-      s = { padding: '2px 6px', border: '1.5px solid ' + fg, bg: 'transparent', fg, fontSize: '12px', spacing: '0.12em', lineHeight: '1.3' };
-    } else {
-      s = { padding: '1px 6px', border: '2px solid ' + c.giallo, bg: 'transparent', fg: c.gialloTesto, fontSize: '11px', spacing: '0.12em', lineHeight: 'normal' };
-    }
-    // COSTRUITO (token --tinta-* di src/styles.css): con l'icona (tema sito, tag e segno) l'icona prende il posto del segno ✕ … ✓, e il tag bianco bordato
+    // Ogni stato e' un tag bianco col bordo e il testo del suo colore; il segno prima della parola.
+    const SEGNI = { rosso: '✕ ', giallo: '… ', verde: '✓ ' };
+    const fg = tipo === 'bollino' || tipo === 'prova' ? c.gialloTesto : tono === 'rosso' ? c.rossoTesto : tono === 'giallo' ? c.gialloTesto : tono === 'verde' ? c.verdeTesto : c.dim;
+    if (tipo === 'tag' || tipo === 'segno') segno = SEGNI[tono] || '';
+    const bordo = tipo === 'prova' ? '2px' : '1.5px';
+    s = { padding: tipo === 'tag' ? '1px 8px' : tipo === 'segno' ? '2px 8px' : '2px 6px', border: bordo + ' solid ' + fg, bg: c.bg, fg, fontSize: tipo === 'tag' || tipo === 'segno' ? '12px' : '11px', spacing: '0.02em', lineHeight: 'normal' };
+    // COSTRUITO (token --tinta-* di src/styles.css): con l'icona (tag e segno) l'icona prende il posto del segno ✕ … ✓, e il tag bianco bordato
     // diventa una pastiglia tinta senza bordo: icona e simbolo insieme, sul bordo, erano troppo segni per una parola.
     const TINTE = { rosso: '#fbe9e9', giallo: '#fcf6e6', verde: '#e3f2e8', neutro: '#e6eef3', spento: '#e6eef3' };
-    if (sito && p.icona && (tipo === 'tag' || tipo === 'segno') && p.forma !== 'pallino') {
+    if (p.icona && (tipo === 'tag' || tipo === 'segno') && p.forma !== 'pallino') {
       segno = '';
       s = { ...s, padding: '4px 10px 4px 8px', border: '0', bg: TINTE[tono] || TINTE.neutro, peso: '600' };
     }
-    const pallino = sito && tipo === 'segno' && p.forma === 'pallino';
+    const pallino = tipo === 'segno' && p.forma === 'pallino';
     if (pallino) {
       s = { ...s, padding: '2px 0', border: '0', bg: 'transparent', punto: s.fg, fg: '#0d2a3d', fontSize: '13px', spacing: '0', peso: '500', dopoPunto: '7px' };
       segno = '';
     }
     s.peso = s.peso || '700';
-    s.family = sito ? INTER : COND;
-    s.radius = sito ? '6px' : '0';
+    s.family = INTER;
+    s.radius = '6px';
     // Compatto: solo il segno (✕ … ✓), la parola resta nel title e per chi legge lo schermo.
     const compatto = (p.compatto === true || p.compatto === 'true') && (!!segno || pallino);
     if (pallino && compatto) Object.assign(s, { fg: s.punto, fontSize: '15px', peso: '700' });

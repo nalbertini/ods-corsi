@@ -27,14 +27,14 @@
     <span role="cell" style="font-size: 14px; font-variant-numeric: tabular-nums; color: {{coloreRicevuta}}">{{ricevuta}}</span>
     <div role="cell" style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
       <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-        <sc-if value="{{conSegnoLargo}}" hint-placeholder-val="{{ true }}"><dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="200px,26px"></dc-import></sc-if>
+        <sc-if value="{{conSegnoLargo}}" hint-placeholder-val="{{ true }}"><dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" hint-size="200px,26px"></dc-import></sc-if>
         <sc-if value="{{haSottoLargo}}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: #46606f">{{sotto}}</span></sc-if>
       </div>
       <sc-for list="{{anche}}" as="x" hint-placeholder-count="0"><span style="font-size: 13px; color: #46606f">+ {{x.t}}</span></sc-for>
     </div>
     <div role="cell" style="display: grid; grid-template-columns: 80px 170px; gap: 14px; align-items: center">
       <span style="display: flex; justify-content: flex-end"><sc-if value="{{conSeconda}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px">{{seconda}}</span></sc-if></span>
-      <span style="display: flex"><sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" larghezza="170px" hint-size="170px,44px"></dc-import></sc-if></span>
+      <span style="display: flex"><sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" larghezza="170px" hint-size="170px,44px"></dc-import></sc-if></span>
     </div>
   </div>
 </sc-if>
@@ -45,14 +45,14 @@
       <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: {{coloreImporto}}">{{importo}}</span>
     </div>
     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-      <sc-if value="{{conSegno}}" hint-placeholder-val="{{ true }}"><dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="200px,26px"></dc-import></sc-if>
+      <sc-if value="{{conSegno}}" hint-placeholder-val="{{ true }}"><dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" hint-size="200px,26px"></dc-import></sc-if>
       <span style="font-size: 13px; color: #46606f; font-variant-numeric: tabular-nums">{{lezioni}} lez. · {{ore}}</span>
     </div>
     <sc-if value="{{haSotto}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #46606f">{{sotto}}</span></sc-if>
     <sc-for list="{{anche}}" as="x" hint-placeholder-count="0"><span style="font-size: 13px; color: #46606f">+ {{x.t}}</span></sc-for>
     <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
       <sc-if value="{{conSeconda}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px">{{seconda}}</span></sc-if>
-      <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" larghezza="170px" hint-size="170px,44px"></dc-import></sc-if>
+      <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" larghezza="170px" hint-size="170px,44px"></dc-import></sc-if>
     </div>
   </div>
 </sc-if>

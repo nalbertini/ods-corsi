@@ -1,5 +1,6 @@
 // Controllo prima di pubblicare un canvas: node docs/design-canvas/ods-design-system/verifica.mjs [cartella ...]
-// Senza argomenti controlla tutte le cartelle di docs/design-canvas.
+// Senza argomenti controlla la sola libreria: le sezioni passate sono archivio, coi colori di prima
+// (nero, bianco, Tatami) che non sono piu' in src/styles.css; una sezione nuova si controlla passandola.
 // Errori (exit 1): un colore esadecimale che non e' in src/styles.css, DESIGN.md o COLORI di
 // src/lib/segreteria.ts o dai token-proposta.md delle sezioni (cioe' inventato); un <dc-import> senza hint-size o verso un file che non c'e'.
 // Come nel Toolkit, riconosce solo #rrggbb a 6 cifre: scrivere sempre cosi'.
@@ -18,7 +19,7 @@ const ammessi = new Set(
 )
 const cartelle = process.argv.length > 2
   ? process.argv.slice(2).map((c) => resolve(c))
-  : readdirSync(base).map((n) => join(base, n)).filter((p) => statSync(p).isDirectory())
+  : [join(base, 'ods-design-system')]
 
 let errori = 0
 for (const cartella of cartelle) {

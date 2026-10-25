@@ -21,7 +21,7 @@
       <h2 style="display: flex; align-items: center; gap: 10px; margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: 0.04em; line-height: 1"><sc-if value="{{haIcona}}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{coloreIcona}}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none" aria-hidden="true"><path d="{{icona}}"></path></svg></sc-if><span>{{titolo}} <span style="font-variant-numeric: tabular-nums; color: #46606f">· {{conto}}</span></span></h2>
       <sc-if value="{{haSotto}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; color: #46606f; line-height: 1.4">{{sotto}}</span></sc-if>
     </div>
-    <sc-if value="{{conTasto}}" hint-placeholder-val="{{ false }}"><dc-import name="Bottone" label="{{azione}}" variante="{{variante}}" contesto="segreteria" tema="sito" larghezza="{{larghezzaTasto}}" hint-size="300px,48px"></dc-import></sc-if>
+    <sc-if value="{{conTasto}}" hint-placeholder-val="{{ false }}"><dc-import name="Bottone" label="{{azione}}" variante="{{variante}}" contesto="segreteria" larghezza="{{larghezzaTasto}}" hint-size="300px,48px"></dc-import></sc-if>
   </div>
 </sc-if>
 <sc-if value="{{chiuso}}" hint-placeholder-val="{{ false }}">

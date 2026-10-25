@@ -42,7 +42,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["carta","sconto"],"default":"carta"},"titolo":{"editor":"text","default":"UN FIGLIO O UNA FIGLIA"},"frase":{"editor":"text","default":"Mentre fai Judo adulti, si allena anche lui: ecco i corsi per bambini vicini al tuo orario."},"righe":{"editor":"text","default":"STESSA ORA:Lotta 3:*lunedì e mercoledì 18.00-19.30*|SUBITO PRIMA:Judo 3:*lunedì* e giovedì *18.00-19.00*|STESSI GIORNI:Judo kids:*mercoledì e venerdì 17.00-18.00*"},"risparmio":{"editor":"text","default":"Con Lotta 3 annuale risparmiate 56 €"},"tasto":{"editor":"text","default":"+ AGGIUNGI UN FIGLIO"},"testoSconto":{"editor":"text","default":"Sull\u2019annuale che costa meno della famiglia. Più siete, più conviene."},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":260}}'>
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["carta","sconto"],"default":"carta"},"titolo":{"editor":"text","default":"UN FIGLIO O UNA FIGLIA"},"frase":{"editor":"text","default":"Mentre fai Judo adulti, si allena anche lui: ecco i corsi per bambini vicini al tuo orario."},"righe":{"editor":"text","default":"STESSA ORA:Lotta 3:*lunedì e mercoledì 18.00-19.30*|SUBITO PRIMA:Judo 3:*lunedì* e giovedì *18.00-19.00*|STESSI GIORNI:Judo kids:*mercoledì e venerdì 17.00-18.00*"},"risparmio":{"editor":"text","default":"Con Lotta 3 annuale risparmiate 56 €"},"tasto":{"editor":"text","default":"+ AGGIUNGI UN FIGLIO"},"testoSconto":{"editor":"text","default":"Sull\u2019annuale che costa meno della famiglia. Più siete, più conviene."},"$preview":{"width":360,"height":260}}'>
 // Riproduzione del passo LA FAMIGLIA di src/components/IscrizioneAPassi.tsx (.famiglia-* di src/styles.css).
 // tipo = sconto: il riquadro .card.famiglia-sconto, bordo `verde`, −20% Saira 30px e SCONTO FAMIGLIA in `verde-testo`, il testo 14px.
 // tipo = carta: una carta di carteDellaFamiglia in un Riquadro: titolo Saira 22px (.famiglia-carta-titolo), la frase, fino a tre righe
@@ -53,14 +53,13 @@
 // .famiglia-carta-legenda 13px `sec`: «In grassetto i giorni che vanno col tuo orario.», «grassetto» 700 `text`.
 // righe: «ETICHETTA:corso:orario» separate da |; nell'orario i pezzi in evidenza fra asterischi; vuoto = nessuna riga.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', faint: '#46606f', tasto: '#0d2a3d', tratteggio: '#14709f', blu: '#14709f', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', suRosso: '#ffffff' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     // «*lunedì* e giovedì *18.00-19.00*»: fra asterischi i pezzi in evidenza (le posizioni dispari dopo lo split).
     const pezzi = (orario) => orario.split('*').map((testo, i) => ({ testo, peso: i % 2 ? 700 : 400, colore: i % 2 ? c.text : c.dim })).filter((x) => x.testo !== '');
     const righe = String(p.righe ?? 'STESSA ORA:Lotta 3:*lunedì e mercoledì 18.00-19.30*').split('|').filter((x) => x.trim() !== '').map((x) => {

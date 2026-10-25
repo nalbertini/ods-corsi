@@ -39,10 +39,9 @@
   <div style="display: inline-flex; align-items: center; align-self: flex-start; gap: 8px; min-height: 44px; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: {{c.sec}}"><span style="width: 10px; font-size: 17px">+</span>VEDI TUTTE LE RIGHE</div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nuove":{"editor":"int","default":120},"inPalestra":{"editor":"int","default":20},"daSistemare":{"editor":"int","default":7},"righe":{"editor":"text","default":""},"$preview":{"width":640,"height":560},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"}}'>
+<script data-dc-script data-props='{"nuove":{"editor":"int","default":120},"inPalestra":{"editor":"int","default":20},"daSistemare":{"editor":"int","default":7},"righe":{"editor":"text","default":""},"$preview":{"width":640,"height":560}}'>
 const T = {
-  scuro: { surface: '#1c1c1c', surface2: '#242424', bg: '#121212', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', verde: '#16a54a', verdeTesto: '#16a54a' },
-  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', bg: '#f4f4f1', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', verde: '#12913f', verdeTesto: '#0b7a33' },
+  sito: { surface: '#ffffff', surface2: '#cfe6f4', bg: '#eef5fa', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', giallo: '#f4c31b', gialloTesto: '#8f6a00', verde: '#12913f', verdeTesto: '#0b7a33' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
@@ -50,7 +49,7 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const righe = String(p.righe ?? '').split(';;').filter(Boolean).map((s) => {
       const [foglio, riga, nome, motivo, opzioni = '', scelta = '0'] = s.split('|');
       const o = opzioni.split('#').filter(Boolean);

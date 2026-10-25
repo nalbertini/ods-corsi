@@ -15,7 +15,7 @@ const Segno = ({ n, detto }: { n: number; detto: string }) =>
 
 /**
  * La testata de «Il Banco»: in cima la ricerca, i tasti di sempre (link,
- * guida, tema) e chi è dentro; sotto i cinque luoghi, e sotto ancora le voci
+ * guida) e chi è dentro; sotto i cinque luoghi, e sotto ancora le voci
  * del luogo aperto. Non sa niente dei dati: riceve i numeri e dice dove si va.
  */
 export function BarraBanco({
@@ -29,7 +29,6 @@ export function BarraBanco({
   cerca,
   link,
   guida,
-  tema,
   onVai,
   onIstruttori,
   onEsci,
@@ -47,7 +46,6 @@ export function BarraBanco({
   cerca: ReactNode
   link: ReactNode
   guida: ReactNode
-  tema: ReactNode
   onVai: (v: Voce) => void
   onIstruttori?: () => void
   onEsci?: () => void
@@ -101,7 +99,6 @@ export function BarraBanco({
           {linkAperto && <div className="bn-link-voci sg-voci">{link}</div>}
         </div>
         {guida}
-        {tema}
         <span className="bn-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
           <span style={{ fontSize: 12, color: 'var(--dim)' }}>{ruolo}</span>

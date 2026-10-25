@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito: Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <!-- Look sito: Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -38,34 +38,30 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"frase":{"editor":"text","default":""},"eta":{"editor":"text","default":"Dai 6 ai 10 anni"},"orari":{"editor":"text","default":"Lunedì e mercoledì 17:30-18:30|Sabato 10:00-11:00"},"saldo":{"editor":"boolean","default":true},"dataSaldo":{"editor":"text","default":"31/8"},"notaTrimestre":{"editor":"text","default":""},"prezzi":{"editor":"text","default":"120 €|310 €|105 €"},"etichette":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"link":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":380,"height":300}}'>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"frase":{"editor":"text","default":""},"eta":{"editor":"text","default":"Dai 6 ai 10 anni"},"orari":{"editor":"text","default":"Lunedì e mercoledì 17:30-18:30|Sabato 10:00-11:00"},"saldo":{"editor":"boolean","default":true},"dataSaldo":{"editor":"text","default":"31/8"},"notaTrimestre":{"editor":"text","default":""},"prezzi":{"editor":"text","default":"120 €|310 €|105 €"},"etichette":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"link":{"editor":"boolean","default":true},"$preview":{"width":380,"height":300}}'>
 // Riproduzione 1:1 della scheda di un corso nel listino: `Costo` in src/components/ds.tsx (righe 255-322) con
 // .card, .costo e figli in src/styles.css (righe 249 e 669-686: .costo, .costo-griglia, .costo-testa,
-// .costo-euro, .costo-frase, .costo-link, e riga 564 .costo-etichetta). Il corso e' in Saira obliqua maiuscola come il nome di una lezione.
+// .costo-euro, .costo-frase, .costo-link, e riga 564 .costo-etichetta). Il corso e' in Big Shoulders maiuscola.
 // orari: separati da `|`. prezzi: righe separate da `;`, celle da `|` — saldo, annuale, trimestre (senza
 // `saldo`: annuale, trimestre). Con `etichette` la prima cella di ogni riga e' l'etichetta (es. "Adulti").
 // Una cella vuota o "-" e' un trattino spento (`faint`), come un prezzo non ancora scritto.
 // notaTrimestre va a capo sotto TRIMESTRE. nota = riga gialla in fondo; link = SCOPRI IL CORSO.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', gialloTesto: '#f4c31b' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', gialloTesto: '#8f6a00' },
-  // Tema sito (iscrizione-sito/token-proposta.md): bianco, filo #cfe6f4, inchiostro #0d2a3d, testo spento #46606f (6,64:1 sul bianco). `faint` serve al trattino di un prezzo mancante e resta leggibile.
+  // Look sito (iscrizione-sito/token-proposta.md): bianco, filo #cfe6f4, inchiostro #0d2a3d, testo spento #46606f (6,64:1 sul bianco). `faint` serve al trattino di un prezzo mancante e resta leggibile.
   sito: { surface: '#ffffff', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', faint: '#46606f', gialloTesto: '#8f6a00' },
 };
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
-const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
 const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    const sito = p.tema === 'sito';
+    const c = T.sito;
     const saldo = p.saldo === undefined ? true : truthy(p.saldo);
     const etichette = truthy(p.etichette);
     const n = saldo ? 3 : 2;
-    const testa = (testo, allinea) => ({ testo, allinea: allinea || 'stretch', corpo: sito ? '14px' : '11px', spazio: sito ? '0.08em' : '0.12em', altezza: '1.2', colore: c.dim });
+    const testa = (testo, allinea) => ({ testo, allinea: allinea || 'stretch', corpo: '14px', spazio: '0.08em', altezza: '1.2', colore: c.dim });
     const celle = [];
     if (etichette) celle.push(testa(''));
     if (saldo) celle.push(testa('SALDO ' + (p.dataSaldo ?? '31/8')));
@@ -77,13 +73,13 @@ class Component extends DCLogic {
       for (let i = 0; i < n; i++) {
         const v = campi[i];
         const vuoto = v === undefined || v === '' || v === '-';
-        celle.push({ testo: vuoto ? '—' : v, allinea: 'stretch', corpo: sito ? '28px' : '20px', spazio: 'normal', altezza: 'normal', colore: vuoto ? c.faint : c.text });
+        celle.push({ testo: vuoto ? '—' : v, allinea: 'stretch', corpo: '28px', spazio: 'normal', altezza: 'normal', colore: vuoto ? c.faint : c.text });
       }
     }
     return {
-      c, cond: sito ? BIG : COND, testoFam: sito ? INTER : "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      raggio: sito ? '6px' : '0', inclina: sito ? 'normal' : 'oblique 9deg', peso: sito ? 800 : 700,
-      corsoCorpo: sito ? '24px' : '19px', linkCorpo: sito ? '17px' : '13px', linkSpazio: sito ? '0.08em' : '0.16em',
+      c, cond: BIG, testoFam: INTER,
+      raggio: '6px', inclina: 'normal', peso: 800,
+      corsoCorpo: '24px', linkCorpo: '17px', linkSpazio: '0.08em',
       corso: p.corso ?? 'Judo kids',
       frase: p.frase ?? '',
       haFrase: String(p.frase ?? '') !== '',

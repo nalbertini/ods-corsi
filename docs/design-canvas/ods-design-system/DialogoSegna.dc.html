@@ -21,19 +21,19 @@
     <sc-for list="{{persone}}" as="x" hint-placeholder-count="4">
       <div style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 4px 4px 4px 12px; border-bottom: 1px solid #cfe6f4">
         <span style="flex: 1; min-width: 0; font-size: 15px; font-weight: 600">{{x.nome}}<span style="display: block; font-size: 13px; font-weight: 400; font-variant-numeric: tabular-nums; color: #46606f">{{x.voce}}</span></span>
-        <dc-import name="Bottone" label="✕ Escludi" variante="linea" contesto="segreteria" tema="sito" hint-size="130px,44px"></dc-import>
+        <dc-import name="Bottone" label="✕ Escludi" variante="linea" contesto="segreteria" hint-size="130px,44px"></dc-import>
       </div>
     </sc-for>
     <sc-if value="{{haPiu}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; font-size: 13px; color: #46606f; background: #eef5fa">{{piu}}</div></sc-if>
   </div>
   <div style="display: grid; grid-template-columns: {{colonne}}; gap: 12px">
-    <dc-import name="Campo" contesto="segreteria" tema="sito" etichetta="VALE FINO AL" valore="31/07/2027" hint-size="100%,72px"></dc-import>
-    <dc-import name="Campo" contesto="segreteria" tema="sito" etichetta="NOTA" valore="Dal vecchio programma" hint-size="100%,72px"></dc-import>
+    <dc-import name="Campo" contesto="segreteria" etichetta="VALE FINO AL" valore="31/07/2027" hint-size="100%,72px"></dc-import>
+    <dc-import name="Campo" contesto="segreteria" etichetta="NOTA" valore="Dal vecchio programma" hint-size="100%,72px"></dc-import>
   </div>
   <span style="font-size: 14px; line-height: 1.5; color: #46606f">Se la data non è giusta per qualcuno, si corregge persona per persona dalla scheda: QUOTA E PAGAMENTI › Pagata senza ricevuta dell’app.</span>
   <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px">
-    <dc-import name="Bottone" label="Annulla" variante="linea" contesto="segreteria" tema="sito" hint-size="130px,48px"></dc-import>
-    <dc-import name="Bottone" label="Segna" variante="pieno" contesto="segreteria" tema="sito" hint-size="130px,56px"></dc-import>
+    <dc-import name="Bottone" label="Annulla" variante="linea" contesto="segreteria" hint-size="130px,48px"></dc-import>
+    <dc-import name="Bottone" label="Segna" variante="pieno" contesto="segreteria" hint-size="130px,56px"></dc-import>
   </div>
 </div>
 </x-dc>

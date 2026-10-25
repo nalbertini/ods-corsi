@@ -17,14 +17,12 @@
 </helmet>
 <div style="width: 100%; padding: 4px; background: {{c.giallo}}; color: {{c.suColore}}; font-family: {{cond}}; font-size: {{corpo}}; font-weight: {{peso}}; letter-spacing: {{spazio}}; text-align: center">{{testo}}<span style="display: {{esciVisto}}; align-items: center; min-height: 44px; padding: 0 8px; margin-left: 4px; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px">ESCI DALLA PROVA</span></div>
 </x-dc>
-<script data-dc-script data-props='{"testo":{"editor":"text","default":"DATI DI PROVA · ORARIO VERO, ISCRITTI INVENTATI"},"esci":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":40}}'>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"DATI DI PROVA · ORARIO VERO, ISCRITTI INVENTATI"},"esci":{"editor":"boolean","default":false},"$preview":{"width":390,"height":40}}'>
 // Riproduzione 1:1 del nastro .nastro-prova (src/styles.css riga 491) in cima all'area degli iscritti (AreaIscritti.tsx riga 76): Saira 12px 700 0.18em,
 // testo `su-colore` su fondo `giallo`, centrato, padding 4px. E' il segno che i dati sono inventati.
-// tema sito = sotto :root[data-look='sito'] (sala, area iscritti, istruttori): Big Shoulders 13px 800 0.08em, inchiostro #0d2a3d sul giallo.
+// sotto :root[data-look='sito'] (sala, area iscritti, istruttori): Big Shoulders 13px 800 0.08em, inchiostro #0d2a3d sul giallo.
 // esci: il tasto ESCI DALLA PROVA (.nastro-prova-esci): alto 44px, sottolineato, senza «·» davanti, stesso font (`NastroProva` di ds.tsx: sala e pagina Iscrizioni), quando la prova e' scelta.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
   sito: { giallo: '#f4c31b', suColore: '#0d2a3d' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
@@ -33,8 +31,8 @@ const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-const sito = p.tema === 'sito';
+    const c = T.sito;
+const sito = true;
 return { c, cond: sito ? "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif" : COND, corpo: sito ? '13px' : '12px', peso: sito ? 800 : 700, spazio: sito ? '0.08em' : '0.18em', testo: p.testo ?? 'DATI DI PROVA · ORARIO VERO, ISCRITTI INVENTATI', esciVisto: truthy(p.esci) ? 'inline-flex' : 'none' };
   }
 }

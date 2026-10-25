@@ -13,7 +13,7 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
-  <!-- Tema sito: Big Shoulders Display 800 per i tasti .tb-btn, come Bottone. -->
+  <!-- Look sito: Big Shoulders Display 800 per i tasti .tb-btn, come Bottone. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;display=swap">
 </helmet>
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 22px; width: 100%; padding: 22px 24px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-left: 8px solid {{tinta}}; color: {{c.text}}">
@@ -85,7 +85,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"stato":{"editor":"enum","options":["aperta","dopo"],"default":"aperta"},"ora":{"editor":"text","default":"17:00–18:00"},"corso":{"editor":"text","default":"Lotta 2"},"kanji":{"editor":"text","default":"闘"},"sotto":{"editor":"text","default":"Coach, Federico, Maura, Nicola · 8 segnati su 14"},"tinta":{"editor":"text","default":"#16a54a"},"dalle":{"editor":"text","default":"18:30"},"timer":{"editor":"text","default":""},"timerDa":{"editor":"text","default":"IL TIMER DI QUESTA LEZIONE"},"senzaTasto":{"editor":"boolean","default":false},"areaIstruttore":{"editor":"boolean","default":false},"istruttori":{"editor":"text","default":""},"recupero":{"editor":"boolean","default":false},"attivita":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":808,"height":260}}'>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["aperta","dopo"],"default":"aperta"},"ora":{"editor":"text","default":"17:00–18:00"},"corso":{"editor":"text","default":"Lotta 2"},"kanji":{"editor":"text","default":"闘"},"sotto":{"editor":"text","default":"Coach, Federico, Maura, Nicola · 8 segnati su 14"},"tinta":{"editor":"text","default":"#16a54a"},"dalle":{"editor":"text","default":"18:30"},"timer":{"editor":"text","default":""},"timerDa":{"editor":"text","default":"IL TIMER DI QUESTA LEZIONE"},"senzaTasto":{"editor":"boolean","default":false},"areaIstruttore":{"editor":"boolean","default":false},"istruttori":{"editor":"text","default":""},"recupero":{"editor":"boolean","default":false},"attivita":{"editor":"text","default":""},"$preview":{"width":808,"height":260}}'>
 // Riproduzione 1:1 della lezione grande della home del tablet: <div className="tb-aperta"> in
 // src/components/tablet/TabletHome.tsx con .tb-aperta*, .tb-dalle in src/styles.css. Nell'app la card aperta e' tutta un
 // tasto che apre l'appello (senzaTasto + areaIstruttore, i nomi stanno sotto): il tasto SEGNA LA PRESENZA e la riga del
@@ -98,13 +98,11 @@
 // - senzaTasto: toglie SEGNA LA PRESENZA, quando l'appello sta sotto, nella lista dei nomi.
 // - areaIstruttore: il tasto AREA ISTRUTTORE (.tb-btn-linea con Lucchetto) a destra; con `istruttori` ha sotto il kanji e i
 //   nomi (variante non usata di default): in quel caso il kanji non sta piu' nella riga sotto il titolo, che dice solo il conto.
-// - recupero: TI SEI DIMENTICATO DI SEGNARTI? (bordo giallo nei temi scuro e chiaro, blu nel tema sito come ogni .tb-btn-linea; icona Recupero), sopra AREA ISTRUTTORE nella stessa colonna.
+// - recupero: TI SEI DIMENTICATO DI SEGNARTI? (bordo blu come ogni .tb-btn-linea; icona Recupero), sopra AREA ISTRUTTORE nella stessa colonna.
 // - attivita: cosa si fa in questa lezione, se il corso cambia attivita' da un giorno all'altro (RANDORI, TECNICA...):
 //   un'etichetta a bordo accanto all'orario. Proposta, non esiste ancora nel codice.
 // - kanji: un timbro da 32px per carattere (.kanji[data-medio]).
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', giallo: '#f4c31b', rossoTesto: '#ff5a52', tbFam: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", tbStile: 'oblique 9deg', tbPeso: '700', tbSp: '0.12em', tbRaggio: '0', tbBordo: '#333333', tbRecupero: '#f4c31b', tbVerde: '#16a54a' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', giallo: '#f4c31b', rossoTesto: '#b81d1d', tbFam: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", tbStile: 'oblique 9deg', tbPeso: '700', tbSp: '0.12em', tbRaggio: '0', tbBordo: '#d4d4ce', tbRecupero: '#f4c31b', tbVerde: '#12913f' },
   sito: { surface: '#ffffff', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', verde: '#12913f', giallo: '#f4c31b', rossoTesto: '#b81d1d', tbFam: "'Big Shoulders Display', 'Helvetica Neue', Arial, sans-serif", tbStile: 'normal', tbPeso: '800', tbSp: '0.06em', tbRaggio: '6px', tbBordo: '#14709f', tbRecupero: '#14709f', tbVerde: '#f4c31b' },
 };
 class Component extends DCLogic {
@@ -113,7 +111,7 @@ class Component extends DCLogic {
     const dopo = p.stato === 'dopo';
     const timer = p.timer ?? '';
     return {
-      c: T[p.tema] || T.sito,
+      c: T.sito,
       areaIstruttore: p.areaIstruttore === true || p.areaIstruttore === 'true',
       attivita: p.attivita ?? '',
       haAttivita: !!p.attivita,

@@ -58,7 +58,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["testo","select","area","sola-lettura","scelta","spunta"],"default":"testo"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"etichetta":{"editor":"text","default":"NOME"},"valore":{"editor":"text","default":""},"segnaposto":{"editor":"text","default":""},"codice":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"notaTono":{"editor":"enum","options":["guaio","avviso"],"default":"guaio"},"acceso":{"editor":"boolean","default":false},"manca":{"editor":"boolean","default":false},"scelto":{"editor":"boolean","default":false},"una":{"editor":"boolean","default":false},"riga":{"editor":"text","default":""},"orario":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":90}}'>
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["testo","select","area","sola-lettura","scelta","spunta"],"default":"testo"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"etichetta":{"editor":"text","default":"NOME"},"valore":{"editor":"text","default":""},"segnaposto":{"editor":"text","default":""},"codice":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"notaTono":{"editor":"enum","options":["guaio","avviso"],"default":"guaio"},"acceso":{"editor":"boolean","default":false},"manca":{"editor":"boolean","default":false},"scelto":{"editor":"boolean","default":false},"una":{"editor":"boolean","default":false},"riga":{"editor":"text","default":""},"orario":{"editor":"text","default":""},"$preview":{"width":360,"height":90}}'>
 // Riproduzione 1:1 dei campi, nei due contesti.
 // contesto "app" (il modulo di iscrizione: Campo, NotaCampo e SceltaCorsi di src/components/ds.tsx righe 122-200,
 //   usati da src/components/ModuloIscrizione.tsx; src/styles.css righe 575-665 e 1201-1205): .modulo-campo = colonna, gap 6px;
@@ -78,8 +78,6 @@
 // Per scelta e spunta il testo e' `valore`.
 // Il fuoco, il segnaposto del browser e il cursore non sono riprodotti (stati dinamici).
 const T = {
-  scuro: { surface: '#1c1c1c', surface2: '#242424', bg: '#121212', line: '#333333', lineCampo: '#6e6e6a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52' },
-  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', bg: '#f4f4f1', line: '#d4d4ce', lineCampo: '#8a8a85', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d' },
   // PROPOSTA «modulo di iscrizione nell'aspetto del sito» (A2, docs/design-canvas/sito-approvato/token-proposta.md; CSS in src/lib/sitoGenera.ts:
   // :root, raggio 6px). lineCampo = blu del sito (4,96:1 sul fondo, 5,46:1 sul bianco); `dim` = #46606f, inchiostro attenuato (6,03:1 sul fondo,
   // 5,15:1 su #cfe6f4); `suInchiostro` = bianco sul segmento pieno. Valori e rapporti: iscrizione-sito/token-proposta.md.
@@ -93,12 +91,11 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    const sito = p.tema === 'sito';
-    const sg = p.contesto === 'segreteria';
+    const c = T.sito;
+        const sg = p.contesto === 'segreteria';
     // `sito` + contesto segreteria = look del sito della segreteria (:root[data-look='sito']): etichetta in Inter 12px 600 (non Big Shoulders),
     // campo bianco col bordo blu, raggio 6px, `acceso` col bordo giallo scuro #8f6a00 (il giallo pieno e' solo del tasto principale).
-    const sgSito = sito && sg;
+    const sgSito = sg;
     const tipo = p.tipo || 'testo';
     const etichetta = p.etichetta ?? 'NOME';
     const nota = p.nota ?? '';
@@ -115,10 +112,10 @@ class Component extends DCLogic {
     // «*lunedì* e giovedì *18.00-19.00*»: fra asterischi i pezzi in evidenza (le posizioni dispari dopo lo split).
     const orario = orarioScritto.split('*').map((testo, i) => ({ testo, peso: i % 2 ? 700 : 400, colore: i % 2 ? c.text : coloreRiga })).filter((x) => x.testo !== '');
     return {
-      c, cond: sgSito ? INTER : sito ? BIG : COND, testoFam: sito ? INTER : BODY,
+      c, cond: sgSito ? INTER : BIG, testoFam: INTER,
       // Il carattere del sito e' piu' stretto: l'etichetta sale da 12px a 15px (800, 0.08em); campi e scelte hanno il raggio da 6px (la casella da 4px).
-      etichettaCorpo: sgSito ? '12px' : sito ? '15px' : '12px', etichettaPeso: sgSito ? 600 : sito ? 800 : 700, etichettaSpazio: sgSito ? '0.12em' : sito ? '0.08em' : '0.18em',
-      raggio: sito ? '6px' : '0', raggioPiccolo: sito ? '4px' : '0', corpoScelta: sito ? '16px' : '15px', corpoRiga: sito ? '14px' : '13px',
+      etichettaCorpo: sgSito ? '12px' : '15px', etichettaPeso: sgSito ? 600 : 800, etichettaSpazio: sgSito ? '0.12em' : '0.08em',
+      raggio: '6px', raggioPiccolo: '4px', corpoScelta: '16px', corpoRiga: '14px',
       suInchiostro: c.suInchiostro || c.bg,
       etichetta, conEtichetta: etichetta !== '',
       coloreEtichetta: truthy(p.manca) ? c.rossoTesto : c.dim,
@@ -127,11 +124,11 @@ class Component extends DCLogic {
       allinea: area ? 'flex-start' : 'center',
       alto: area ? (sg ? '88px' : '104px') : sg ? '44px' : '52px',
       padding: area ? (sg ? '10px 12px' : '12px 14px 0') : sg ? '0 12px' : '0 14px',
-      sfondo: sola ? 'transparent' : sg && !sito ? c.bg : c.surface,
+      sfondo: sola ? 'transparent' : sg && !c.bg,
       stileBordo: sola ? 'dashed' : 'solid',
       bordo: guaio ? c.rosso : truthy(p.acceso) ? (sgSito ? c.gialloTesto : c.giallo) : c.lineCampo,
       coloreValore: sola ? c.dim : valore !== '' ? c.text : c.dim,
-      famiglia: sito ? INTER : codice ? COND : BODY,
+      famiglia: INTER,
       tabulare: codice ? 'tabular-nums' : 'normal',
       corpo: sg ? '15px' : '17px',
       spazio: codice ? '0.08em' : 'normal',

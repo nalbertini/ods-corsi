@@ -800,7 +800,7 @@
   .sg-tasto-menu[aria-expanded='true'] { border-color: var(--text); }
 }
 
-/* Sui telefoni più stretti la guida e il tema si avvicinano, per lasciare il logo. */
+/* Sui telefoni più stretti la guida e il resto si avvicinano, per lasciare il logo. */
 @media (max-width: 380px) {
   .sg-barra-tel { gap: 6px; }
 }
@@ -1089,7 +1089,7 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 .sito-orario-righe { list-style: none; margin: 0; padding: 0; }
 .sito-orario-riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0 10px; padding: 14px 16px; border-left: 6px solid var(--blu); background: var(--surface-2); font-family: var(--cond); font-size: 24px; font-weight: 800; line-height: 1; text-transform: uppercase; }
 .sito-orario-ora { white-space: nowrap; font-size: 22px; }
-/* L'anteprima vera segue il tema come gli altri riquadri: il fondo azzurro del sito sta dentro la pagina. */
+/* L'anteprima vera segue l'aspetto come gli altri riquadri: il fondo azzurro del sito sta dentro la pagina. */
 .sito-anteprima-pagina { width: 100%; height: 720px; border: 2px solid var(--line); background: var(--surface); }
 /* L'editor delle pagine (Puck, col suo aspetto: sempre chiaro, coi suoi colori) prende tutto lo schermo; sotto il velo (10) dei dialoghi, così domande e scelta della foto gli stanno sopra. */
 .sito-puck { position: fixed; inset: 0; z-index: 9; background: var(--puck-color-white); color: var(--puck-color-text); color-scheme: light; }

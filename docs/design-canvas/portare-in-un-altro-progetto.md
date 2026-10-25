@@ -115,13 +115,12 @@ Passo 0 — Scoperta (poi fermati e mostrami il risultato)
    e quante volte compaiono.
 
 Passo 1 — Libreria (`docs/design-canvas/<libreria>/`)
-- `Main.dc.html`: le fondamenta (colori, neutri e testo in scuro e chiaro se
-  l'app ha i due temi, tipografia, raggi, bordi, ombre, spaziature, misure
+- `Main.dc.html`: le fondamenta (colori, neutri e testo, tipografia, raggi, bordi, ombre, spaziature, misure
   del tocco).
 - `Pagina.dc.html` e `PaginaTelefono.dc.html` (o le cornici dei dispositivi
   che servono): menu, testata, margini e sfondo come nell'app. Una schermata
   nuova si copia da qui.
-- Un `<Nome>.dc.html` per ogni componente del passo 0, con la prop `tema` e
+- Un `<Nome>.dc.html` per ogni componente del passo 0, con
   props per ogni stato (variante, stato, vuoto, errore, selezionato). Il
   valore di riserva di ogni prop nel codice è LO STESSO dichiarato in
   `data-props`: un `?? ''` dove il default non è vuoto lascia il componente

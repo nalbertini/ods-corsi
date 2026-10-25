@@ -168,7 +168,7 @@ const COLORE_TIMER: Record<string, string> = {
   cooldown: 'var(--blu)',
 }
 const coloreDi = (t: StatoTimer) => (t.status === 'done' ? 'var(--verde)' : t.kind ? COLORE_TIMER[t.kind] : 'var(--line)')
-/** Lo stesso colore quando è scritto: giallo e verde puri sul tema chiaro non si leggono. */
+/** Lo stesso colore quando è scritto: giallo e verde puri sul fondo chiaro non si leggono. */
 const testoDi = (t: StatoTimer) =>
   coloreDi(t).replace('var(--giallo)', 'var(--giallo-testo)').replace('var(--verde)', 'var(--verde-testo)').replace('var(--line)', 'var(--dim)')
 /** Un allenamento che conta: avviato e non finito. */
@@ -518,7 +518,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
             />
           )}
           <Suspense fallback={scheda === 'timer' ? <p className="tb-nota" style={{ padding: 32 }}>Un attimo…</p> : null}>
-            <TimerSala incorporato={incorporato} visibile={scheda === 'timer'} sito />
+            <TimerSala incorporato={incorporato} visibile={scheda === 'timer'} />
           </Suspense>
         </div>
         {conYoutube && <VideoSala />}

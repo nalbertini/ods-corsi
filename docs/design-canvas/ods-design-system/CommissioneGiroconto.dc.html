@@ -20,7 +20,7 @@
   <span style="font-size: 14px; color: {{c.dim}}">Se la differenza non è la commissione (un versamento a metà, un errore), togli la spunta e scrivila tu.</span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"dal":{"editor":"text","default":"13/10"},"al":{"editor":"text","default":"19/10"},"incassato":{"editor":"text","default":"410,00 €"},"pagamenti":{"editor":"text","default":"31 pagamenti, meno 1 rimborso"},"inBanca":{"editor":"text","default":"404,30 €"},"commissione":{"editor":"text","default":"5,70 €"},"spunta":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":760,"height":150}}'>
+<script data-dc-script data-props='{"dal":{"editor":"text","default":"13/10"},"al":{"editor":"text","default":"19/10"},"incassato":{"editor":"text","default":"410,00 €"},"pagamenti":{"editor":"text","default":"31 pagamenti, meno 1 rimborso"},"inBanca":{"editor":"text","default":"404,30 €"},"commissione":{"editor":"text","default":"5,70 €"},"spunta":{"editor":"boolean","default":true},"$preview":{"width":760,"height":150}}'>
 // COSTRUITA (blocco `commissione` di `NuovoGiroconto` in src/components/segreteria/Contabilita.tsx; proposta e storia in ../satispay-scarico/):
 // compare dentro il riquadro GIROCONTO FRA LE CASSE, dopo i campi, solo quando DA e' la cassa Satispay, la voce «Commissioni bancarie» c'e' e
 // l'importo e' valido (il campo si chiama ARRIVATI IN BANCA invece di IMPORTO). Colonna con gap 6px, padding 14px 16px, fondo `bg` (la pagina,
@@ -30,15 +30,13 @@
 // commissione» e la nota del giroconto aggiunge «; la commissione si annulla a parte». Il tasto di uscita si chiama «No, torna indietro»
 // (nella proposta «Annulla»); le date sono GG/MM (nella proposta «13 al 19 ottobre»); il fondo e' `bg` come nella proposta.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', giallo: '#f4c31b', rosso: '#ff5a52', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', giallo: '#8f6a00', rosso: '#b81d1d', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
   sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', giallo: '#8f6a00', rosso: '#b81d1d', cond: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif", body: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
 };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    return { c: T[p.tema] || T.sito, dal: p.dal ?? '', al: p.al ?? '', incassato: p.incassato ?? '', pagamenti: p.pagamenti ?? '', inBanca: p.inBanca ?? '', commissione: p.commissione ?? '', spunta: truthy(p.spunta ?? true) };
+    return { c: T.sito, dal: p.dal ?? '', al: p.al ?? '', incassato: p.incassato ?? '', pagamenti: p.pagamenti ?? '', inBanca: p.inBanca ?? '', commissione: p.commissione ?? '', spunta: truthy(p.spunta ?? true) };
   }
 }
 </script>

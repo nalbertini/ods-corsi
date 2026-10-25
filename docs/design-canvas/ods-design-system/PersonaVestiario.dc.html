@@ -29,22 +29,21 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Luca Rossi"},"riquadro":{"editor":"boolean","default":false},"righe":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":60}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Luca Rossi"},"riquadro":{"editor":"boolean","default":false},"righe":{"editor":"text","default":""},"$preview":{"width":350,"height":60}}'>
 // `Persona` di src/components/OrdinaVestiario.tsx: per chi e', in chiaro. L'etichetta PER (.rule-label: Saira 15px 700 0.24em `dim`) e sotto
 // il nome come si scrive (.vestiario-persona: Barlow 17px 600 `text`), non in maiuscolo spaziato. In IL RIEPILOGO sta sopra le righe
 // di quella persona.
 // riquadro = il Riquadro stretto di TI SERVE ALTRO? (fondo `surface`, bordo 2px `line`, padding 14px, gap 4px): il nome e sotto quel che
 // c'e' gia' (.stima-riga 15px, cifra in .num), righe «cosa:prezzo» separate da |; senza righe «Per ora niente.».
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const riquadro = truthy(p.riquadro);
     const righe = String(p.righe ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
       const i = s.lastIndexOf(':');

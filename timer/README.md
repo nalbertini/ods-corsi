@@ -107,10 +107,7 @@ Corsi, che su un tablet di sala riapre il tablet della sua sala. C'è solo lì
 (ODS Corsi se lo ricorda in `ods-corsi:modo`): altrove la radice è la pagina
 di scelta, con gli istruttori e le altre aree, e dal timer lì non si va.
 
-Il **tema** è nero o bianco, e lo stesso di ODS Corsi: le due app stanno sullo
-stesso dominio e usano la stessa chiave (`ods-tema`), quindi scelto in una vale
-anche nell'altra. Si sceglie da Impostazioni; finché nessuno sceglie, segue il
-dispositivo.
+Il **tema** è uno solo, quello del sito della palestra, come in ODS Corsi: non c'è un tasto per cambiarlo e un `ods-tema` rimasto nel browser viene ignorato.
 
 ## La libreria di esercizi
 

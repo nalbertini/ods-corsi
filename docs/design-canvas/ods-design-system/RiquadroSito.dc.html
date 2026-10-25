@@ -27,7 +27,7 @@
     <span style="flex: 1 1 360px; min-width: 0; font-size: 13px; line-height: 1.45; color: #46606f">Numeri indicativi, dal contatore del sito: conta le visite, non le pagine viste. La stessa persona entro 8 ore è una visita sola.</span>
     <div style="display: flex; align-items: center; gap: 12px; flex: {{flessoAggiorna}}">
       <span style="font-size: 13px; color: #46606f; font-variant-numeric: tabular-nums; white-space: nowrap" role="status">{{letti}}</span>
-      <div style="flex: {{flessoTasto}}"><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Aggiorna" variante="linea" disabled="{{aggiornaSpento}}" larghezza="100%" hint-size="100%,48px"></dc-import></div>
+      <div style="flex: {{flessoTasto}}"><dc-import name="Bottone" contesto="segreteria" label="Aggiorna" variante="linea" disabled="{{aggiornaSpento}}" larghezza="100%" hint-size="100%,48px"></dc-import></div>
     </div>
   </div>
 
@@ -73,7 +73,7 @@
     <div style="display: grid; grid-template-columns: {{colonneMese}}; gap: 18px 28px; align-items: start">
       <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
         <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">VISITE MESE PER MESE</span>
-        <dc-import name="Colonne" tema="sito" mesi="{{mesiColonne}}" sopra="{{sopra}}" dettaglio="{{dettaglio}}" hint-size="100%,206px"></dc-import>
+        <dc-import name="Colonne" mesi="{{mesiColonne}}" sopra="{{sopra}}" dettaglio="{{dettaglio}}" hint-size="100%,206px"></dc-import>
       </div>
       <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0; overflow-x: auto">
         <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">HANNO TOCCATO</span>

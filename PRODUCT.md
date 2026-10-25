@@ -29,7 +29,7 @@ Non è un gestionale per palestre generico: è fatto su misura per le abitudini 
 
 ## Operating Context
 
-- Reception con un computer, spesso in una stanza illuminata (per questo esiste il tema chiaro).
+- Reception con un computer, spesso in una stanza illuminata.
 - Sale (Tatami, Lotta…) con un tablet al muro per sala; la palestra può avere poco segnale.
 - Istruttori col proprio telefono durante la lezione.
 - Carta che resta carta: certificato medico e copia del documento in segreteria.

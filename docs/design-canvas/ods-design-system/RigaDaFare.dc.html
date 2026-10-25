@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito: Inter (qui da Google Fonts, in app file locale OFL). -->
+  <!-- Inter (qui da Google Fonts, in app file locale OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -33,26 +33,24 @@
     </sc-if>
   </div>
   <div style="flex-shrink: 0; align-self: center">
-    <dc-import name="Bottone" label="{{tasto}}" variante="{{variante}}" contesto="segreteria" tema="{{tema}}" hint-size="150px,44px"></dc-import>
+    <dc-import name="Bottone" label="{{tasto}}" variante="{{variante}}" contesto="segreteria" hint-size="150px,44px"></dc-import>
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"n":{"editor":"text","default":"3"},"titolo":{"editor":"text","default":"iscritti senza certificato valido"},"sotto":{"editor":"text","default":"Il certificato medico manca o è scaduto: senza, in sala non si entra."},"tasto":{"editor":"text","default":"Vedi tutti"},"livello":{"editor":"enum","options":["blocca","presto"],"default":"blocca"},"elenco":{"editor":"text","default":""},"rosso":{"editor":"text","default":""},"colonne":{"editor":"enum","options":["1","2"],"default":"2"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":100}}'>
+<script data-dc-script data-props='{"n":{"editor":"text","default":"3"},"titolo":{"editor":"text","default":"iscritti senza certificato valido"},"sotto":{"editor":"text","default":"Il certificato medico manca o è scaduto: senza, in sala non si entra."},"tasto":{"editor":"text","default":"Vedi tutti"},"livello":{"editor":"enum","options":["blocca","presto"],"default":"blocca"},"elenco":{"editor":"text","default":""},"rosso":{"editor":"text","default":""},"colonne":{"editor":"enum","options":["1","2"],"default":"2"},"$preview":{"width":1000,"height":100}}'>
 // Riproduzione 1:1 di una riga di DA FARE: .sg-dafare-riga + .sg-dafare-n + .sg-dafare-titolo (src/styles.css righe
 // 1683-1693), disegnata da `DaFare` in src/components/segreteria/DaFare.tsx. Fondo `surface`, bordo 2px `line`,
 // padding 16px 18px, gap 20px. Il numero Saira 44px 700, min 64px, a destra: rosso-testo se `livello` e' blocca,
 // giallo-testo se e' presto (il rosso solo per quello che e' gia' un guaio). Titolo Saira 22px 700; sotto, 14px `sec`.
 // Il tasto e' un .sg-btn-linea (Bottone, segreteria), lo stesso su ogni riga: «Vedi tutti» (TASTO_DA_FARE in daFareChi.ts).
 // Non riprodotti: le lezioni da aprire sotto gli appelli e il ritorno a capo sotto i 700px.
-// tema sito (`:root[data-look='sito']`): tessera bianca senza bordo, raggio 6px, barra a sinistra di 4px (rosso se blocca, giallo scuro se e' presto);
+// (`:root[data-look='sito']`): tessera bianca senza bordo, raggio 6px, barra a sinistra di 4px (rosso se blocca, giallo scuro se e' presto);
 // numero e titolo in Inter (il titolo 21px 700 senza spaziatura).
 // `elenco` = «Nome~perché|…»: i primi nomi sotto la frase (.sg-dafare-chi, al massimo PRIMI_DA_FARE = 5), ognuno apre dove si
 // sistema. Nome 15px 600 sottolineato in `line`, alto 44px; perché 14px `sec`, in rosso-testo se contiene una parola di `rosso`
 // (separate da «|»: nell'app, il certificato). Se nome e perché non stanno insieme il perché va a capo. `colonne` 1 o 2
 // (COLONNE_DA_FARE): le due colonne sono auto-fill da 300px, quindi su spazi stretti tornano una.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', rossoTesto: '#ff5a52', gialloTesto: '#f4c31b' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00' },
   sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
@@ -60,14 +58,14 @@ const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    const sito = p.tema === 'sito';
+    const c = T.sito;
+    const sito = true;
     return {
       fam: sito ? INTER : COND, titoloCorpo: sito ? '21px' : '22px', titoloSpazio: sito ? '0' : '0.03em',
       bordo: sito ? '0' : '2px solid ' + c.line, raggio: sito ? '6px' : '0',
       barra: sito ? 'inset 4px 0 0 ' + (p.livello === 'presto' ? c.gialloTesto : '#e4292a') : 'none',
       variante: 'linea',
-      c, tema: p.tema || 'scuro', n: p.n ?? '3', titolo: p.titolo ?? 'iscritti senza certificato valido',
+      c, n: p.n ?? '3', titolo: p.titolo ?? 'iscritti senza certificato valido',
       sotto: p.sotto ?? 'Il certificato medico manca o è scaduto: senza, in sala non si entra.', tasto: p.tasto ?? 'Vedi tutti',
       conElenco: !!p.elenco, colonne: p.colonne === '1' ? '1fr' : 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
       voci: (p.elenco || '').split('|').filter(Boolean).slice(0, 5).map((x) => {

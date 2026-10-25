@@ -43,7 +43,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"mesi":{"editor":"text","default":"mag:4120|giu:3380|lug:910|ago:240|set:9850|ott:6420"},"euro":{"editor":"boolean","default":false},"sopra":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":520,"height":210}}'>
+<script data-dc-script data-props='{"mesi":{"editor":"text","default":"mag:4120|giu:3380|lug:910|ago:240|set:9850|ott:6420"},"euro":{"editor":"boolean","default":false},"sopra":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":""},"$preview":{"width":520,"height":210}}'>
 // `Colonne` di src/components/segreteria/Statistiche.tsx (righe 342-389): le colonne di un valore solo, mese per mese, dentro i riquadri di STATISTICHE
 // (RiquadroStatistica le mette sotto il titolo). Valori da src/styles.css (righe 2609-2631): la scala a sinistra (tetto, meta' e 0; 11px `dim`, alta
 // 180px), il piano con due fili `line-soft` (in cima e a 90px), una colonna per mese col binario alto 180px e il filo sotto 2px `line`; il pieno largo al
@@ -52,10 +52,8 @@
 // mesi: "etichetta:valore|..." dal piu' vecchio; l'ultimo e' il mese in corso. Tutti a 0 = «Niente da contare in questo periodo.» (.sg-sotto).
 // sopra: l'indice (da 0) della colonna col suggerimento aperto (sotto il dito o il mouse), con `dettaglio` le righe separate da «|» (la prima in
 // grassetto), come .sg-colonna-suggerimento: fondo `text`, testo `bg`, 12px 500; dalla meta' in poi si apre verso sinistra.
-// tema sito (`:root[data-look='sito']`): i numeri (.num) sono in Inter.
+// Look del sito (`:root[data-look='sito']`): i numeri (.num) sono in Inter.
 const T = {
-  scuro: { surface: '#1c1c1c', bg: '#121212', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', blu: '#1b8ac4' },
-  chiaro: { surface: '#ffffff', bg: '#f4f4f1', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', blu: '#1b8ac4' },
   sito: { surface: '#ffffff', bg: '#eef5fa', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', blu: '#14709f' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
@@ -72,9 +70,7 @@ function tetto(x) {
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const tema = p.tema || 'sito';
-    const c = T[tema] || T.sito;
-    const sito = tema === 'sito';
+    const c = T.sito;
     const euro = truthy(p.euro);
     const fmt = (n) => euro ? Math.round(n).toLocaleString('it-IT') + ' €' : n.toLocaleString('it-IT', { maximumFractionDigits: 1 });
     const mesi = String(p.mesi ?? '').split('|').filter(Boolean).map((s) => { const [e, v] = s.split(':'); return { e, v: Number(v) || 0 }; });
@@ -92,8 +88,8 @@ class Component extends DCLogic {
     const tel = truthy(p.telefono);
     return {
       c, titolo: p.titolo ?? '', nota: p.nota ?? '',
-      eti: sito ? INTER : COND, num: sito ? INTER : COND, testo: sito ? INTER : BARLOW, body: sito ? INTER : BARLOW,
-      bordo: sito ? '0' : '2px solid ' + c.line, raggio: sito ? '6px' : '0',
+      eti: INTER, num: INTER, testo: INTER, body: INTER,
+      bordo: '0', raggio: '6px',
       aCapo: tel ? 'wrap' : 'nowrap', baseNota: tel ? '100%' : 'auto',
       haTotale: !!p.totale, totale: p.totale ?? '', totaleDopo: p.totaleDopo ?? '',
       vuoto, pieno: !vuoto, n: mesi.length, colonne,

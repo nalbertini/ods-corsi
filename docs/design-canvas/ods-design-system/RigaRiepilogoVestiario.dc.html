@@ -20,8 +20,8 @@
     <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 4px; font-size: 14px; color: {{c.sec}}; text-decoration: underline; text-underline-offset: 3px">Togli</span>
   </div>
   <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px">
-    <dc-import name="Campo" tipo="select" etichetta="TAGLIA" valore="{{taglia}}" segnaposto="Scegli" nota="{{guaio}}" tema="{{tema}}" hint-size="100%,76px"></dc-import>
-    <dc-import name="Campo" tipo="select" etichetta="QUANTI" valore="{{quanti}}" tema="{{tema}}" hint-size="100%,76px"></dc-import>
+    <dc-import name="Campo" tipo="select" etichetta="TAGLIA" valore="{{taglia}}" segnaposto="Scegli" nota="{{guaio}}" hint-size="100%,76px"></dc-import>
+    <dc-import name="Campo" tipo="select" etichetta="QUANTI" valore="{{quanti}}" hint-size="100%,76px"></dc-import>
   </div>
   <div style="display: flex; align-items: center; gap: 12px; padding-top: 6px; border-top: 2px solid {{c.line}}; font-size: 17px; font-weight: 700">
     <span style="flex-grow: 1; font-size: 14px; font-weight: 400; line-height: 1.4; color: {{c.dim}}">{{conto}}</span>
@@ -29,24 +29,22 @@
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"capo":{"editor":"text","default":"Judogi bianco"},"taglia":{"editor":"text","default":"130"},"quanti":{"editor":"text","default":"1"},"conto":{"editor":"text","default":"1 × 35 €"},"prezzo":{"editor":"text","default":"35 €"},"guaio":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":220}}'>
+<script data-dc-script data-props='{"capo":{"editor":"text","default":"Judogi bianco"},"taglia":{"editor":"text","default":"130"},"quanti":{"editor":"text","default":"1"},"conto":{"editor":"text","default":"1 × 35 €"},"prezzo":{"editor":"text","default":"35 €"},"guaio":{"editor":"text","default":""},"$preview":{"width":350,"height":220}}'>
 // `RigaRiepilogo` di src/components/OrdinaVestiario.tsx: una riga di IL RIEPILOGO, nel passo CHI ORDINA. Le righe stanno raggruppate per
 // persona sotto PersonaVestiario: qui per chi non si ripete. .card.stack.riquadro (fondo `surface`, bordo 2px `line`, padding 14px, gap 8px):
 // il capo (.passo-titolo 17px 600) e «Togli» (.vestiario-togli: almeno 44x44px, padding 0 4px, 14px `sec`, sottolineato); TAGLIA e QUANTI
 // da cambiare qui (.vestiario-due); in fondo il conto .stima-riga.stima-totale (filo 2px `line`, 17px 700; «N × prezzo» 14px `dim`).
 // guaio = la nota rossa sotto TAGLIA (la taglia non c'e' piu' nel capo, dopo MANDA L'ORDINE).
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     return {
-      c, cond: COND, tema: p.tema || 'scuro',
-      capo: p.capo ?? 'Judogi bianco',
+      c, cond: COND, capo: p.capo ?? 'Judogi bianco',
       taglia: p.taglia ?? '130', quanti: p.quanti ?? '1', guaio: p.guaio ?? '',
       conto: p.conto ?? '1 × 35 €', prezzo: p.prezzo ?? '35 €',
     };

@@ -25,7 +25,7 @@
   </div>
 </section>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"CASSA CONTANTI"},"testoInizio":{"editor":"text","default":"Saldo al 1 gen 2025"},"inizio":{"editor":"text","default":"1.250,00 €"},"entrate":{"editor":"text","default":"+ 19.400,00 €"},"uscite":{"editor":"text","default":"− 6.300,00 €"},"giroconti":{"editor":"text","default":"− 12.000,00 €"},"testoFine":{"editor":"text","default":"Saldo al 31 dic 2025"},"fine":{"editor":"text","default":"2.350,00 €"},"nonDisponibile":{"editor":"boolean","default":false},"nonDisp":{"editor":"text","default":"Saldo non disponibile: la cassa parte il 01/03/2025."},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":340,"height":220}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"CASSA CONTANTI"},"testoInizio":{"editor":"text","default":"Saldo al 1 gen 2025"},"inizio":{"editor":"text","default":"1.250,00 €"},"entrate":{"editor":"text","default":"+ 19.400,00 €"},"uscite":{"editor":"text","default":"− 6.300,00 €"},"giroconti":{"editor":"text","default":"− 12.000,00 €"},"testoFine":{"editor":"text","default":"Saldo al 31 dic 2025"},"fine":{"editor":"text","default":"2.350,00 €"},"nonDisponibile":{"editor":"boolean","default":false},"nonDisp":{"editor":"text","default":"Saldo non disponibile: la cassa parte il 01/03/2025."},"$preview":{"width":340,"height":220}}'>
 // Riproduzione 1:1 del riquadro di cassa di Bilancio.tsx (<section className="sg-riquadro"> con RigaSaldo), nello stile di `Numero`:
 // fondo `surface`, bordo 2px `line`, padding 16px 18px, gap 6px; titolo = nome della cassa in maiuscolo, .sg-etichetta (12px 700,
 // 0.2em, `dim`). Righe «Saldo iniziale, Entrate, Uscite, Giroconti» a 14px con la cifra .num 15px 700; la finale con filo sopra e
@@ -34,8 +34,6 @@
 // senza segno. nonDisponibile: al posto delle righe la frase «Saldo non disponibile: la cassa parte il GG/MM/AAAA.» (14px).
 // Nell'app stanno in una griglia auto-fit minmax(300px, 1fr) sotto SALDI DELLE CASSE.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561' },
   sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
@@ -46,7 +44,7 @@ class Component extends DCLogic {
     const p = this.props;
     const nd = truthy(p.nonDisponibile);
     return {
-      c: T[p.tema] || T.sito, cond: COND, corpo: CORPO,
+      c: T.sito, cond: COND, corpo: CORPO,
       nome: (p.nome ?? '').toUpperCase(),
       nonDisp: p.nonDisp ?? '', mostraNonDisp: nd ? 'block' : 'none', mostraRighe: nd ? 'none' : 'flex',
       testoInizio: p.testoInizio ?? '', inizio: p.inizio ?? '', entrate: p.entrate ?? '', uscite: p.uscite ?? '',

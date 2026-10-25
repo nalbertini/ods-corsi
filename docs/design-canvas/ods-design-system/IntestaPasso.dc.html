@@ -20,21 +20,20 @@
     <sc-if value="{{riempi}}" hint-placeholder-val="{{ true }}">
       <span style="display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 12px; border: 2px dashed {{c.gialloTesto}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 14px; font-weight: 700; letter-spacing: 0.14em; color: {{c.gialloTesto}}">RIEMPI</span>
     </sc-if>
-    <dc-import name="Badge" tipo="prova" label="PROVA" tema="{{ tema }}" hint-size="70px,26px"></dc-import>
+    <dc-import name="Badge" tipo="prova" label="PROVA" hint-size="70px,26px"></dc-import>
   </span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"riempi":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":64}}'>
+<script data-dc-script data-props='{"riempi":{"editor":"boolean","default":true},"$preview":{"width":390,"height":64}}'>
 // La riga in cima ai passi del modulo a passi (`.passo-intesta` di src/styles.css, `IscrizioneAPassi.tsx`): RICHIESTA DI ISCRIZIONE (Saira 12px 0.18em `dim`)
 // e, solo in prova, il bollino PROVA; accanto, nei passi che si possono riempire (`riempibile`), RIEMPI (`.passo-riempi`: 44px, bordo 2px tratteggiato e testo `gialloTesto`, 14px 0.14em).
 const T = {
-  scuro: { text: '#f2f2f0', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b' },
-  chiaro: { text: '#161616', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00' },
+  sito: { text: '#0d2a3d', dim: '#46606f', giallo: '#f4c31b', gialloTesto: '#8f6a00' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    return { c: T[p.tema] || T.scuro, riempi: p.riempi ?? true, tema: p.tema ?? 'scuro' };
+    return { c: T.sito, riempi: p.riempi ?? true };
   }
 }
 </script>

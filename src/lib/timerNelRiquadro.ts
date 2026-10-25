@@ -22,7 +22,7 @@
 export function perLaSala(css: string): string {
   return (
     css
-      .replace(/:root\[data-tema=(['"]?)(chiaro|tatami|sito)\1\]/g, ':host([data-tema=$2])')
+      .replace(/:root\[data-tema=(['"]?)sito\1\]/g, ':host([data-tema=sito])')
       .replace(/:root/g, ':host')
       // L'altezza della pagina: qui la dà il tablet, qualche riga più sotto.
       .replace(/html\s*,\s*body\s*,\s*#root\s*\{[^}]*\}/g, '')
@@ -40,13 +40,4 @@ export function perLaSala(css: string): string {
         return `@container${forma}{`
       })
   )
-}
-
-/**
- * Il `data-tema` dell'host del timer incorporato: quello di `<html>`, tranne nella pagina TIMER dell'app
- * istruttori, che ha il look del sito come il resto dell'area: lì è `sito`, un tema che solo l'app sceglie
- * (il selettore del timer non lo offre). Il tablet di sala e il timer fuori dall'app seguono il tema.
- */
-export function temaDelTimer(temaHtml: string | undefined, sito: boolean): string | undefined {
-  return sito ? 'sito' : temaHtml
 }

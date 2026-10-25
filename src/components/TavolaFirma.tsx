@@ -7,8 +7,7 @@ import { Icona } from './Icons'
  * Il riquadro dove si firma col dito, o col mouse dal computer.
  *
  * La firma si tiene come tratti, punti in pixel del riquadro, e non come
- * immagine: sullo schermo si disegna col colore del tema (bianca sul fondo
- * scuro), e per il modulo se ne fa un PNG a parte, con l'inchiostro blu della
+ * immagine: sullo schermo si disegna col colore del testo del sito, e per il modulo se ne fa un PNG a parte, con l'inchiostro blu della
  * penna, su fondo trasparente e ritagliato attorno alla firma (`firmaPng`).
  */
 
@@ -90,12 +89,8 @@ function Tela({ id, tratti, onTratti, onTocco, limita, descritto }: { id?: strin
     misura()
     const o = typeof ResizeObserver === 'function' ? new ResizeObserver(misura) : null
     o?.observe(c)
-    // Il tema cambia il colore dell'inchiostro sullo schermo.
-    const tema = new MutationObserver(ridisegna)
-    tema.observe(document.documentElement, { attributes: true })
     return () => {
       o?.disconnect()
-      tema.disconnect()
     }
   }, [])
 

@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito: Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -22,13 +22,13 @@
       <span style="font-family: {{cifraFam}}; font-variant-numeric: tabular-nums; font-size: {{cifraCorpo}}; font-weight: {{cifraPeso}}; line-height: 0.95; white-space: nowrap; color: {{v.colore}}">{{v.n}}</span>
       <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
         <span style="font-family: {{titoloFam}}; font-size: {{titoloCorpo}}; font-weight: {{titoloPeso}}; letter-spacing: {{titoloSpazio}}">{{v.titolo}}</span>
-        <sc-if value="{{conNota}}" hint-placeholder-val="{{ true }}"><span style="font-size: 16px; color: {{c.dim}}">{{v.nota}}</span></sc-if>
+        
       </span>
     </div>
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"voci":{"editor":"text","default":"2|APPELLI NON FATTI|senza appello, ultimi 30 giorni|r; 5|CERTIFICATI SCADUTI|scaduti o mancanti|r; 7|PAGAMENTI|quote non in regola|r; 3|RICHIESTE ONLINE|da accogliere|g"},"colonne":{"editor":"int","default":4,"min":2,"max":5},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":1284,"height":108}}'>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"2|APPELLI NON FATTI|senza appello, ultimi 30 giorni|r; 5|CERTIFICATI SCADUTI|scaduti o mancanti|r; 7|PAGAMENTI|quote non in regola|r; 3|RICHIESTE ONLINE|da accogliere|g"},"colonne":{"editor":"int","default":4,"min":2,"max":5},"$preview":{"width":1284,"height":108}}'>
 // Riproduzione 1:1 della striscia COSA MANCA (`CosaManca` di src/components/segreteria/CosaManca.tsx; .sg-mancano,
 // .sg-mancano-casella, -n, -testi, -titolo, -nota di src/styles.css righe 1546-1565): griglia di caselle, fondo `surface`,
 // bordo 2px `riga-campo`; ogni casella min 100px, padding 14px 22px, gap 18px, filetto a sinistra 2px `tratteggio`,
@@ -38,13 +38,11 @@
 // v = a posto (verde-testo), n = non si sa (cifra `dim`, «—»). Un numero 0 e' sempre verde con ✓ davanti (mai uno 0 verde
 // quando il conto non si sa: lo dice la regola di src/lib/cosaManca.ts). Con 2 colonne (sotto i 1240px) la riga dopo ha
 // il filetto sopra.
-// tema sito (`:root[data-look='sito']`): tessera bianca senza bordo, raggio 6px; cinque caselle (`colonne` 5), alte 72px, padding 14px 18px, gap 12px,
+// Look del sito (`:root[data-look='sito']`): tessera bianca senza bordo, raggio 6px; cinque caselle (`colonne` 5), alte 72px, padding 14px 18px, gap 12px,
 // contenuto centrato; cifra Big Shoulders 44px (36px sotto i 1360px), titolo Inter 14px 600 senza spaziatura, e niente nota (e' quella fissa, che il look
 // nasconde); tra le caselle il filetto da 2px blu; il segno 'aspetta' sotto e' giallo scuro, non il giallo del marchio.
 // Non riprodotti: il tasto RICONTA e le due misure intermedie (1241-1480px e schermo basso).
 const T = {
-  scuro: { surface: '#1c1c1c', rigaCampo: '#6e6e6a', tratteggio: '#4a4a46', text: '#f2f2f0', dim: '#8c8c88', rossoTesto: '#ff5a52', gialloTesto: '#f4c31b', verdeTesto: '#16a54a' },
-  chiaro: { surface: '#ffffff', rigaCampo: '#8a8a85', tratteggio: '#b0b0aa', text: '#161616', dim: '#656561', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33' },
   sito: { surface: '#ffffff', rigaCampo: '#14709f', tratteggio: '#14709f', text: '#0d2a3d', dim: '#46606f', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33' },
 };
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
@@ -53,13 +51,12 @@ const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const t = T[p.tema] || T.scuro;
-    const sito = p.tema === 'sito';
-    const colonne = Number(p.colonne) || (sito ? 5 : 4);
+    const t = T.sito;
+        const colonne = Number(p.colonne) || (5);
     const c = { ...t };
     const TONI = {
       r: { colore: t.rossoTesto, segno: '#e4292a' },
-      g: { colore: t.gialloTesto, segno: sito ? t.gialloTesto : '#f4c31b' },
+      g: { colore: t.gialloTesto, segno: t.gialloTesto},
       v: { colore: t.verdeTesto, segno: '#16a54a' },
       n: { colore: t.dim, segno: t.tratteggio },
     };
@@ -76,11 +73,11 @@ class Component extends DCLogic {
       };
     });
     return {
-      c, voci, colonne, conNota: !sito,
-      bordo: sito ? '0' : '2px solid ' + t.rigaCampo, raggio: sito ? '6px' : '0',
-      vuoto: sito ? '12px' : '18px', altezza: sito ? '72px' : '100px', riempimento: sito ? '14px 18px' : '14px 22px', allinea: sito ? 'center' : 'flex-start',
-      cifraFam: sito ? BIG : COND, cifraCorpo: sito ? '44px' : '64px', cifraPeso: sito ? 800 : 700,
-      titoloFam: sito ? INTER : COND, titoloCorpo: sito ? '14px' : '19px', titoloPeso: sito ? 600 : 700, titoloSpazio: sito ? '0' : '0.12em',
+      c, voci, colonne,
+      bordo: '0', raggio: '6px',
+      vuoto: '12px', altezza: '72px', riempimento: '14px 18px', allinea: 'center',
+      cifraFam: BIG, cifraCorpo: '44px', cifraPeso: 800,
+      titoloFam: INTER, titoloCorpo: '14px', titoloPeso: 600, titoloSpazio: '0',
     };
   }
 }

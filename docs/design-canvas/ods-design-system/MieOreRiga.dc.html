@@ -26,20 +26,19 @@
   <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; color: {{coloreStato}}">{{stato}}</span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"giorno":{"editor":"text","default":"Lunedì 5 ottobre"},"orario":{"editor":"text","default":"17:30–18:30 · 1 h"},"nota":{"editor":"text","default":""},"stato":{"editor":"text","default":"CONFERMATA"},"tono":{"editor":"enum","options":["fatto","avviso","spento"],"default":"fatto"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":110}}'>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"giorno":{"editor":"text","default":"Lunedì 5 ottobre"},"orario":{"editor":"text","default":"17:30–18:30 · 1 h"},"nota":{"editor":"text","default":""},"stato":{"editor":"text","default":"CONFERMATA"},"tono":{"editor":"enum","options":["fatto","avviso","spento"],"default":"fatto"},"$preview":{"width":360,"height":110}}'>
 // Riproduzione 1:1 della riga di LE MIE ORE: la funzione Riga di src/components/MieOre.tsx (righe 172-191) con .card,
 // .mie-ore-riga e .mie-ore-stato in src/styles.css (righe 533-538). Corso obliquo (.lezione-nome, 19px), giorno e ora in
 // `dim`, la nota piccola, e a destra lo stato in 12px spaziato.
 // - tono fatto: barra a sinistra verde, stato verde-testo (CONFERMATA). avviso: giallo-testo (DA CONFERMARE, NESSUNO SI E' SEGNATO).
 //   spento: barra `line` e stato `dim`.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', dim: '#8c8c88', text: '#f2f2f0', verde: '#16a54a', verdeTesto: '#16a54a', gialloTesto: '#f4c31b' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', dim: '#656561', text: '#161616', verde: '#12913f', verdeTesto: '#0b7a33', gialloTesto: '#8f6a00' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', dim: '#46606f', text: '#0d2a3d', verde: '#12913f', verdeTesto: '#0b7a33', gialloTesto: '#8f6a00' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const tono = p.tono === 'avviso' || p.tono === 'spento' ? p.tono : 'fatto';
     return {
       c,

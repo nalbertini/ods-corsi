@@ -7,7 +7,7 @@
 <body>
 <x-dc>
 <helmet>
-  <!-- Tema sito: Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -21,7 +21,7 @@
   <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: auto">
     <span style="font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; color: {{coloreConto}}">{{conto}}</span>
     <sc-for list="{{tag}}" as="x" hint-placeholder-count="2">
-      <dc-import name="Badge" tipo="tag" tono="{{x.tono}}" label="{{x.testo}}" tema="sito" hint-size="110px,22px"></dc-import>
+      <dc-import name="Badge" tipo="tag" tono="{{x.tono}}" label="{{x.testo}}" hint-size="110px,22px"></dc-import>
     </sc-for>
   </span>
 </div>

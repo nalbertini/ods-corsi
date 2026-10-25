@@ -8,7 +8,6 @@ import { segnalaTimerAperto } from '../lib/aggiornamento'
 import { type Interrotto, salvaInterrotto, scordaInterrotto } from '../lib/ripresa'
 import { useWakeLock } from '../lib/wakeLock'
 import { apriSessione, chiudiSessione } from '../lib/mediaSession'
-import { coloreFondo } from '../lib/tema'
 import { giroCorrente, lineaDelTempo, oraDiFine, righeDaMostrare, righeScaletta } from '../lib/scaletta'
 import { useMedia } from '../lib/useMedia'
 import { Digits, STATE_COLOR, SU_STATE } from './Quadrante'
@@ -19,6 +18,9 @@ import { Close, Next, Pause, Play, Prev } from './Icons'
 import { MusicaBar } from './MusicaBar'
 import { useMusica, useMusicaAlTimer } from '../lib/useMusica'
 import type { StatoTimer } from '../lib/incorporato'
+
+/** Il fondo del sito: la barra del browser lo riprende quando non c'è un lavoro in corso. */
+const FONDO = '#eef5fa'
 
 export function TimerScreen({
   workout,
@@ -232,8 +234,8 @@ export function TimerScreen({
       setRest: '#1b8ac4',
       cooldown: '#1b8ac4',
     }
-    meta?.setAttribute('content', view.status === 'running' && kind ? map[kind] : coloreFondo())
-    return () => meta?.setAttribute('content', coloreFondo())
+    meta?.setAttribute('content', view.status === 'running' && kind ? map[kind] : FONDO)
+    return () => meta?.setAttribute('content', FONDO)
   }, [seg?.kind, view.status])
 
   // Uscire a metà non butta via il lavoro fatto: stop() lo registra come interrotto.
@@ -287,7 +289,7 @@ export function TimerScreen({
   // A fine allenamento comanda il verde: bordo, barra e pulsante devono dire
   // la stessa cosa, non restare sul colore dell'ultimo intervallo.
   const tinta = done ? 'var(--verde)' : color
-  // Sul rosso del lavoro il testo è bianco; sugli altri colori lo dice il tema.
+  // Sul rosso del lavoro il testo è bianco; sugli altri colori lo dice l'aspetto del sito.
   const suTinta = !done && seg ? SU_STATE[seg.kind] : 'var(--su-colore)'
 
   const rounds = seg?.rounds ?? workout.rounds

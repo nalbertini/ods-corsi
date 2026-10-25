@@ -42,7 +42,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Cognome Nome"},"stato":{"editor":"enum","options":["niente","presente","assente"],"default":"niente"},"marchio":{"editor":"enum","options":["","dal-tablet","dopo"],"default":""},"prova":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":420,"height":70}}'>
+<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Cognome Nome"},"stato":{"editor":"enum","options":["niente","presente","assente"],"default":"niente"},"marchio":{"editor":"enum","options":["","dal-tablet","dopo"],"default":""},"prova":{"editor":"boolean","default":false},"$preview":{"width":420,"height":70}}'>
 // Riproduzione 1:1 della riga dell'appello dell'area istruttore del tablet: .tb-riga, .tb-riga-segno, .tb-riga-nome e
 // .tb-marchio (TabletIstruttore.tsx, righe 411-434; src/styles.css, righe 1127-1143). Alta 60px, nome da 18px,
 // spunta o croce da 22px a sinistra (non il glifo della riga dell'app: qui sono le icone Spunta e Croce).
@@ -51,15 +51,13 @@
 // - marchio: «dal-tablet» = DAL TABLET (si e' segnato da se' sul tablet), «dopo» = SEGNATO DOPO (giallo: segnato a lezione finita);
 //   compaiono solo su un presente. prova: il marchio PROVA (.prova-marchio, 15px nel tablet); TOGLI (.prova-togli, 44px) e' accanto alla riga, dentro .riga-prova.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', verde: '#16a54a', rosso: '#e4292a', rossoTesto: '#ff5a52', gialloTesto: '#f4c31b' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', verde: '#12913f', rosso: '#e4292a', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00' },
   sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', verde: '#12913f', rosso: '#e4292a', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00' },
 };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
+    const c = T.sito;
     const st = p.stato === 'presente' || p.stato === 'assente' ? p.stato : 'niente';
     const dopo = p.marchio === 'dopo';
     const marchio = st === 'presente' && (dopo || p.marchio === 'dal-tablet') ? (dopo ? 'SEGNATO DOPO' : 'DAL TABLET') : '';

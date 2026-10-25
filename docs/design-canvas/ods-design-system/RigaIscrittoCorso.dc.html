@@ -18,26 +18,25 @@
   <span style="font-size: 15px; font-weight: 600">{{cognome}}</span>
   <span style="font-size: 15px; font-weight: 600">{{nome}}</span>
   <span style="font-size: 13px; color: {{c.sec}}; font-variant-numeric: tabular-nums">{{dal}}</span>
-  <span><dc-import name="Badge" tipo="segno" tono="{{certTono}}" label="{{certificato}}" tema="{{tema}}" hint-size="150px,24px"></dc-import></span>
-  <span><dc-import name="Badge" tipo="segno" tono="{{quotaTono}}" label="{{quota}}" tema="{{tema}}" hint-size="150px,24px"></dc-import></span>
+  <span><dc-import name="Badge" tipo="segno" tono="{{certTono}}" label="{{certificato}}" hint-size="150px,24px"></dc-import></span>
+  <span><dc-import name="Badge" tipo="segno" tono="{{quotaTono}}" label="{{quota}}" hint-size="150px,24px"></dc-import></span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"cognome":{"editor":"text","default":"Abbate"},"nome":{"editor":"text","default":"Christian"},"dal":{"editor":"text","default":"12 settembre 2026"},"certificato":{"editor":"text","default":"VALIDO FINO AL 01/06/2027"},"certTono":{"editor":"enum","options":["rosso","giallo","verde","spento"],"default":"verde"},"quota":{"editor":"text","default":"PAGATA"},"quotaTono":{"editor":"enum","options":["rosso","giallo","verde","spento"],"default":"verde"},"stato":{"editor":"enum","options":["normale","fuoco"],"default":"normale"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":900,"height":56}}'>
+<script data-dc-script data-props='{"cognome":{"editor":"text","default":"Abbate"},"nome":{"editor":"text","default":"Christian"},"dal":{"editor":"text","default":"12 settembre 2026"},"certificato":{"editor":"text","default":"VALIDO FINO AL 01/06/2027"},"certTono":{"editor":"enum","options":["rosso","giallo","verde","spento"],"default":"verde"},"quota":{"editor":"text","default":"PAGATA"},"quotaTono":{"editor":"enum","options":["rosso","giallo","verde","spento"],"default":"verde"},"stato":{"editor":"enum","options":["normale","fuoco"],"default":"normale"},"$preview":{"width":900,"height":56}}'>
 // PROPOSTA «iscritti del corso»: una riga del tab ISCRITTI di un corso, nella forma di RigaIscritto (.sg-riga-iscritto, alta almeno
 // 50px, padding 0 14px, filetto 1px `surface-2`) con la griglia della testata TestataTabella
 // «minmax(0,1.1fr) minmax(0,1fr) 150px minmax(0,170px) minmax(0,170px)» (`.sg-riga-iscritto-corso`, src/styles.css): COGNOME, NOME, ISCRITTO DAL, CERTIFICATO, QUOTA. Il segno dice anche a parole cosa manca
 // (NO CERTIFICATO, CERT. SCADUTO, SCADE IL 25/10, DA PAGARE: le parole di `paroleInRegola`/timbri), mai solo il colore. Si clicca tutta la riga (apre la scheda
 // dell'iscritto): `fuoco` e' il contorno 2px `text` dentro la riga, come la riga scelta di RigaIscritto.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
 };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    return { c, tema: p.tema || 'scuro', cognome: p.cognome ?? 'Abbate', nome: p.nome ?? 'Christian', dal: p.dal ?? '12 settembre 2026',
+    const c = T.sito;
+    return { c, cognome: p.cognome ?? 'Abbate', nome: p.nome ?? 'Christian', dal: p.dal ?? '12 settembre 2026',
       certificato: p.certificato ?? 'VALIDO FINO AL 01/06/2027', certTono: p.certTono || 'verde', quota: p.quota ?? 'PAGATA', quotaTono: p.quotaTono || 'verde',
       sfondo: p.stato === 'fuoco' ? c.surface2 : 'transparent' };
   }

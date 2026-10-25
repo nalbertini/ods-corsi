@@ -147,7 +147,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   // Quanti controlli dello stato di fila non hanno risposto: dopo qualche giro lo si dice.
   const erroriStato = useRef(0)
 
-  // Finché il modulo è aperto ha l'aspetto del sito, non quello del tema dell'app.
+  // Finché il modulo è aperto ha l'aspetto del sito.
   useEffect(() => apriAspettoModulo(), [])
 
   // Si contano solo le richieste vere dalla pagina pubblica: né la prova né l'area degli iscritti (`nucleo`).

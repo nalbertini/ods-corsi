@@ -38,7 +38,7 @@
   </div>
 </sc-if>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"aggiungi"},"misura":{"editor":"text","default":"20"},"colore":{"editor":"text","default":"currentColor"},"tratto":{"editor":"text","default":"1.75"},"etichetta":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":24,"height":24}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"aggiungi"},"misura":{"editor":"text","default":"20"},"colore":{"editor":"text","default":"currentColor"},"tratto":{"editor":"text","default":"1.75"},"etichetta":{"editor":"text","default":""},"$preview":{"width":24,"height":24}}'>
 // COSTRUITO «icone dappertutto» (src/lib/icone.ts, `Icona` di src/components/Icons.tsx; il timer le prende da li'): l'insieme unico delle icone di ODS Corsi. Un disegno solo, quello delle voci del menu
 // (`voce()` in src/components/Icons.tsx): a linea, 24x24, tratto 1,75, punte e giunture tonde, colore `currentColor`.
 // Le icone che ci sono gia' hanno i tracciati copiati da Icons.tsx (ICONE_MENU, ICONE_CONTI, ICONE_IMPOSTAZIONI...) e dai
@@ -152,23 +152,17 @@ const GRUPPI = [
   ]],
   ['APP', [
     ['impostazioni', ['M20 7h-9M14 17H4', C(7, 7, 3), C(17, 17, 3)]],
-    ['tema chiaro', [C(12, 12, 4), 'M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4']],
-    ['tema scuro', ['M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z']],
     ['computer', [R(2, 3, 20, 14, 2), 'M8 21h8M12 17v4']],
     ['dati sicuri', ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', 'M9 12l2 2 4-4']],
     ['guida', [C(12, 12, 10), 'M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3', 'M12 17h.01'], 1],
   ]],
 ];
 const ICONE = Object.fromEntries(GRUPPI.flatMap(([, v]) => v.map(([n, t]) => [n, t])));
-const T = {
-  scuro: { fondo: '#121212', carta: '#1c1c1c', testo: '#f2f2f0', dim: '#8c8c88', line: '#333333', nuova: '#f4c31b' },
-  chiaro: { fondo: '#f4f4f1', carta: '#ffffff', testo: '#161616', dim: '#656561', line: '#d4d4ce', nuova: '#8f6a00' },
-  sito: { fondo: '#eef5fa', carta: '#ffffff', testo: '#0d2a3d', dim: '#46606f', line: '#cfe6f4', nuova: '#8f6a00' },
-};
+const T = { fondo: '#eef5fa', carta: '#ffffff', testo: '#0d2a3d', dim: '#46606f', line: '#cfe6f4', nuova: '#8f6a00' };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
+    const c = T;
     const nome = p.nome || 'aggiungi';
     const tutte = nome === 'tutte';
     const misura = String(p.misura || '20').replace('px', '');

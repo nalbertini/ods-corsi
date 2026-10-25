@@ -16,25 +16,25 @@
 </helmet>
 <div role="row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; min-height: 48px; margin-left: 16px; padding: 8px 0 8px 14px; border-left: 3px solid #cfe6f4; color: #0d2a3d; flex-direction: {{direzione}}">
   <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 130px; flex: 0 1 240px">
-    <dc-import name="Badge" tipo="segno" tono="neutro" label="EXTRA" tema="sito" hint-size="70px,26px"></dc-import>
+    <dc-import name="Badge" tipo="segno" tono="neutro" label="EXTRA" hint-size="70px,26px"></dc-import>
     <span style="font-size: 14px; line-height: 1.35; overflow-wrap: anywhere">{{descrizione}}</span>
   </div>
   <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 90px">{{importo}}</span>
   <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; flex: 1; min-width: 200px">
     <div style="display: flex; flex-wrap: wrap; gap: 6px">
-      <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="160px,26px"></dc-import>
-      <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" tema="sito" hint-size="210px,26px"></dc-import></sc-if>
+      <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" hint-size="160px,26px"></dc-import>
+      <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" hint-size="210px,26px"></dc-import></sc-if>
     </div>
     <span style="font-size: 13px; color: #46606f; line-height: 1.35">{{nota}}</span>
   </div>
   <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 1 280px">
     <span role="checkbox" aria-checked="{{firmata}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; font-weight: 600"><span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #0d2a3d; border-radius: 4px; background: {{fondoSpunta}}; color: #ffffff; font-size: 16px; font-weight: 700">{{segnoSpunta}}</span>Firmata</span>
-    <dc-import name="Bottone" label="Ristampa" variante="linea" contesto="segreteria" tema="sito" hint-size="110px,44px"></dc-import>
-    <sc-if value="{{nonPagata}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="Segna pagato" variante="linea" contesto="segreteria" tema="sito" hint-size="140px,44px"></dc-import></sc-if>
+    <dc-import name="Bottone" label="Ristampa" variante="linea" contesto="segreteria" hint-size="110px,44px"></dc-import>
+    <sc-if value="{{nonPagata}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="Segna pagato" variante="linea" contesto="segreteria" hint-size="140px,44px"></dc-import></sc-if>
     <sc-if value="{{nonPagata}}" hint-placeholder-val="{{ true }}">
       <div style="display: flex; flex-basis: 100%; gap: 10px; justify-content: flex-end">
-        <dc-import name="Bottone" label="Modifica" variante="linea" contesto="segreteria" tema="sito" hint-size="110px,44px"></dc-import>
-        <dc-import name="Bottone" label="Annulla" variante="pericolo" contesto="segreteria" tema="sito" hint-size="100px,44px"></dc-import>
+        <dc-import name="Bottone" label="Modifica" variante="linea" contesto="segreteria" hint-size="110px,44px"></dc-import>
+        <dc-import name="Bottone" label="Annulla" variante="pericolo" contesto="segreteria" hint-size="100px,44px"></dc-import>
       </div>
     </sc-if>
   </div>

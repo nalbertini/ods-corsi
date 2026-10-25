@@ -27,24 +27,22 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"testo":{"editor":"text","default":"Ricevuta annullata"},"guaio":{"editor":"boolean","default":false},"azione":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":460,"height":80}}'>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"Ricevuta annullata"},"guaio":{"editor":"boolean","default":false},"azione":{"editor":"text","default":""},"$preview":{"width":460,"height":80}}'>
 // L'avviso dopo un'azione della segreteria (`useAvviso` di src/components/segreteria/comune.tsx righe 221-275; .sg-avviso di
 // src/styles.css righe 2534-2546): nell'app sta fisso in basso a destra (36px dal lato, 28px dal fondo; sul telefono 16px dai lati,
 // riga 2892), qui disegnato da solo. Al massimo 460px, padding 10px 10px 10px 18px, gap 14px, 15px 600; fondo `text` e testo `bg`
 // (l'inverso della pagina); `guaio` = fondo `rosso` e testo `su-rosso`, e resta finche' non lo si chiude (role alert).
 // Il tasto: .sg-avviso-chiudi (alto 44px, padding 0 12px, bordo 2px del colore del testo, --cond 13px 700 0.14em) con «Chiudi»;
 // con un'`azione` (RIAPRI, MANDA PER EMAIL…) il tasto ha la parola dell'azione e accanto c'e' la ✕ (.sg-avviso-x, 44px).
-// tema sito (righe 240-268): --text #0d2a3d, --bg #eef5fa, --cond Big Shoulders Display, testo in Inter.
+// Look del sito (righe 240-268): --text #0d2a3d, --bg #eef5fa, --cond Big Shoulders Display, testo in Inter.
 const T = {
-  scuro: { text: '#f2f2f0', bg: '#121212', rosso: '#e4292a', suRosso: '#ffffff', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
-  chiaro: { text: '#161616', bg: '#f4f4f1', rosso: '#e4292a', suRosso: '#ffffff', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
   sito: { text: '#0d2a3d', bg: '#eef5fa', rosso: '#e4292a', suRosso: '#ffffff', cond: "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif", body: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
 };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const guaio = truthy(p.guaio);
     const azione = p.azione ?? '';
     return {

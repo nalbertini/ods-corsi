@@ -21,16 +21,14 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"durate":{"editor":"text","default":"30″;45″;1′;1′30;2′;3′"},"attiva":{"editor":"text","default":"1′30"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":1240,"height":50}}'>
+<script data-dc-script data-props='{"durate":{"editor":"text","default":"30″;45″;1′;1′30;2′;3′"},"attiva":{"editor":"text","default":"1′30"},"$preview":{"width":1240,"height":50}}'>
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', tasto: '#b8b8b2', blu: '#1b8ac4', suColore: '#121212' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', tasto: '#4a4a46', blu: '#1b8ac4', suColore: '#121212' },
   sito: { surface: '#ffffff', line: '#cfe6f4', tasto: '#0d2a3d', blu: '#14709f', suColore: '#0d2a3d' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
+    const c = T.sito;
     const voci = String(p.durate ?? '30″;45″;1′;1′30;2′;3′').split(';').filter(Boolean).map((n) => {
       const on = n === p.attiva;
       return { nome: n, fondo: on ? c.blu : c.surface, bordo: on ? c.blu : c.line, testo: on ? c.suColore : c.tasto };

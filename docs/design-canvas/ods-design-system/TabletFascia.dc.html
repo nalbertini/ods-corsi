@@ -13,7 +13,7 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
-  <!-- Tema sito: Big Shoulders Display 800 per i tasti .tb-btn, come Bottone. -->
+  <!-- Look sito: Big Shoulders Display 800 per i tasti .tb-btn, come Bottone. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;display=swap">
 </helmet>
 <div style="display: flex; align-items: center; gap: 18px; width: 100%; padding: 18px 22px; background: {{c.surface}}; border: 3px solid {{bordo}}; box-shadow: {{ombra}}; color: {{c.text}}">
@@ -31,23 +31,21 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["fatto","attesa","gia","errore"],"default":"fatto"},"titolo":{"editor":"text","default":"BUON ALLENAMENTO, GIULIA!"},"sotto":{"editor":"text","default":"Presenza segnata. Toccato il nome sbagliato? Annulla qui."},"tasto":{"editor":"text","default":"ANNULLA"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":820,"height":120}}'>
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["fatto","attesa","gia","errore"],"default":"fatto"},"titolo":{"editor":"text","default":"BUON ALLENAMENTO, GIULIA!"},"sotto":{"editor":"text","default":"Presenza segnata. Toccato il nome sbagliato? Annulla qui."},"tasto":{"editor":"text","default":"ANNULLA"},"$preview":{"width":820,"height":120}}'>
 // Riproduzione 1:1 della fascia che compare in fondo all'elenco dei nomi dopo un tocco: .tb-fascia e .tb-fascia-titolo in
 // src/styles.css (righe 1051-1068), FasciaTocco in src/components/tablet/tocchi.tsx (righe 184-262). Bordo da 3px, titolo
 // da 30px obliquo, la frase sotto (.tb-sotto, 17px, `sec`) e a destra un tasto grande a linea (TabletTasto, grande).
 // - tipo fatto: bordo verde, spunta verde da 40px. attesa: come fatto, ma giallo (manca la rete, la presenza e' in coda).
 //   gia: bordo `text`, niente spunta (X E' GIA' TRA I PRESENTI). errore: bordo rosso e titolo rosso (NON E' ANDATA).
 // - tasto: ANNULLA | VA BENE; vuoto = nessun tasto (la fascia ANNULLATO non l'ha).
-// - L'ombra sale dal fondo: nera sul tema scuro, leggera sul chiaro (riga 1061), altrimenti diventa una fascia grigia.
+// - L'ombra sale dal fondo: leggera, come nel look del sito (riga 1061), altrimenti diventa una fascia grigia.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', ombra: '0 -12px 40px rgba(0, 0, 0, 0.6)', tbFam: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", tbStile: 'oblique 9deg', tbPeso: '700', tbSp: '0.12em', tbRaggio: '0', tbBordo: '#333333', tbRecupero: '#f4c31b', tbVerde: '#16a54a' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', ombra: '0 -8px 28px rgba(0, 0, 0, 0.16)', tbFam: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", tbStile: 'oblique 9deg', tbPeso: '700', tbSp: '0.12em', tbRaggio: '0', tbBordo: '#d4d4ce', tbRecupero: '#f4c31b', tbVerde: '#12913f' },
   sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', ombra: '0 -8px 28px rgba(0, 0, 0, 0.16)', tbFam: "'Big Shoulders Display', 'Helvetica Neue', Arial, sans-serif", tbStile: 'normal', tbPeso: '800', tbSp: '0.06em', tbRaggio: '6px', tbBordo: '#14709f', tbRecupero: '#14709f', tbVerde: '#f4c31b' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
+    const c = T.sito;
     const tipo = ['fatto', 'attesa', 'gia', 'errore'].includes(p.tipo) ? p.tipo : 'fatto';
     return {
       c,

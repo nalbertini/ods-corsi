@@ -4,7 +4,7 @@
 //   node scripts/prova-timer-accessibilita.mjs
 //
 // Lo zoom non si blocca, la pagina ha un <main>, e la scheda accesa in basso
-// resta leggibile (4,5:1) sul tema chiaro. Trovati da Lighthouse sul timer.
+// resta leggibile (4,5:1) sul fondo della barra. Trovati da Lighthouse sul timer.
 // ---------------------------------------------------------------------------
 import { readFileSync } from 'node:fs'
 
@@ -31,25 +31,18 @@ const contrasto = (a, b) => {
   return (x + 0.05) / (y + 0.05)
 }
 
-const blocco = css.match(/:root\[data-tema='chiaro'\] \{([^}]*)\}/)?.[1] ?? ''
+const SITO = ":root[data-tema='sito']"
+const blocco = css.match(/:root\[data-tema='sito'\] \{([^}]*)\}/)?.[1] ?? ''
 const menu = blocco.match(/--menu:\s*(#[0-9a-f]{6})/i)?.[1]
-const scheda = css.match(/:root\[data-tema='chiaro'\] \.tab\[data-on='true'\] \{\s*color:\s*(#[0-9a-f]{6})/i)?.[1]
-ok('la scheda accesa del tema chiaro ha un colore suo', Boolean(scheda), true)
-ok('e si legge sul fondo della barra (4,5:1)', scheda && menu ? contrasto(scheda, menu) >= 4.5 : false, true)
+const blu = blocco.match(/--blu:\s*(#[0-9a-f]{6})/i)?.[1]
+ok('la scheda accesa è in --blu', /\.tab\[data-on='true'\]\s*\{\s*color:\s*var\(--blu\)/.test(css), true)
+ok('e si legge sul fondo della barra (4,5:1)', blu && menu ? contrasto(blu, menu) >= 4.5 : false, true)
 
 // La versione in fondo alla barra: --faint è per i decori (sotto 4,5:1 sullo scuro), il testo usa --dim.
 ok('la versione in fondo alla barra non è --faint', /\.sidebar-versione\s*\{[^}]*var\(--faint\)/.test(css), false)
 const variabile = (selettore, nome) => css.match(new RegExp(`${selettore.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`))?.[1].match(new RegExp(`${nome}:\\s*(#[0-9a-f]{6})`, 'i'))?.[1]
-for (const [tema, radice, dim, menu] of [
-  ['scuro', ':root', ':root', ':root'],
-  ['chiaro', ":root[data-tema='chiaro']", ":root[data-tema='chiaro']", ":root[data-tema='chiaro']"],
-  // Nel tema tatami la barra ha i suoi colori (--dim chiaro su --menu scuro).
-  ['tatami', ":root[data-tema='tatami']", ":root[data-tema='tatami'] .sidebar,\n:root[data-tema='tatami'] .tabbar", ":root[data-tema='tatami']"],
-  ['sito', ":root[data-tema='sito']", ":root[data-tema='sito']", ":root[data-tema='sito']"],
-]) {
-  const d = variabile(dim, '--dim')
-  const m = variabile(menu, '--menu')
-  ok(`la versione si legge sulla barra · ${tema} (4,5:1)`, d && m ? contrasto(d, m) >= 4.5 : false, true)
-}
+const d = variabile(SITO, '--dim')
+const m = variabile(SITO, '--menu')
+ok('la versione si legge sulla barra (4,5:1)', d && m ? contrasto(d, m) >= 4.5 : false, true)
 
 process.exit(fallite ? 1 : 0)
