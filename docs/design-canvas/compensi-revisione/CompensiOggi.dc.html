@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+  </style>
+</helmet>
+<!-- OGGI: COMPENSI di settembre com'e' nell'app (lo screenshot della richiesta). Quattro riquadri, il riquadro di Prepara e stampa, sei chip, poi una riga per tecnico
+     in ordine di nome: i fermi, quello da fare e chi aspetta una firma sono mescolati. Ogni riga ha il segno, una frase sotto e il link, spesso con le stesse parole.
+     Merlin ha solo una lezione senza la sua firma: NIENTE DA PAGARE, PER ORA, e la lezione con C’ERA / Non c’era a riga aperta. -->
+<div style="display: flex; width: 1440px; min-height: 1500px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0"><dc-import name="Menu" tema="sito" autorizzazioni="segreteria e amministrazione" attiva="COMPENSI" compensi="{{ true }}" numeri="RICHIESTE ONLINE:3, PRESENZE ISTRUTTORI:3" nome="Marco Rossi" ruolo="Segreteria e amministrazione" altezza="1500px" hint-size="240px,1500px"></dc-import></div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 class="big" style="margin: 0; font-size: 34px">COMPENSI</h1>
+      <span class="frase">Le ricevute dei tecnici, mese per mese: per ogni corso, ore confermate × la sua tariffa. Si stampano, si fanno firmare, si segnano pagate.</span>
+    </div>
+    <div style="display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap"><div style="width: 240px"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="MESE" valore="Settembre 2026" nota="" nota-tono="avviso" hint-size="100%,80px"></dc-import></div></div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px"><dc-import name="Numero" tema="sito" titolo="TECNICI" valore="7" sotto="con lezioni confermate" hint-size="100%,110px"></dc-import><dc-import name="Numero" tema="sito" titolo="DA FARE" valore="1" sotto="120,00 €" hint-size="100%,110px"></dc-import><dc-import name="Numero" tema="sito" titolo="FERMI" valore="5" sotto="da sistemare prima" allarme="{{ true }}" hint-size="100%,110px"></dc-import><dc-import name="Numero" tema="sito" titolo="DA PAGARE" valore="0" sotto="0,00 €" hint-size="100%,110px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px 16px; background: #ffffff; border: 2px solid #cfe6f4">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Prepara e stampa le ricevute (1)" variante="pieno" hint-size="332px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="+ Compenso extra" variante="linea" hint-size="200px,48px"></dc-import>
+      <span class="frase" style="flex: 1; min-width: 260px">Un PDF solo con la 1 da fare. Salta Ballabio Katia (senza tariffa per Judo kids), Berta Giulia (mancano i dati), Fornetti Luca (senza tariffa per Karate), Merigo Sara (senza tariffa per Judo 2) e Vuillermin Marco (senza tariffa per Judo 3).</span>
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap"><dc-import name="Chip" tema="sito" label="Tutti" acceso="{{ true }}" hint-size="105px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Da fare" acceso="{{ false }}" numero="1" tono-numero="giallo" hint-size="123px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Da pagare" acceso="{{ false }}" hint-size="120px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Da riportare firmate" acceso="{{ false }}" hint-size="210px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Manca la firma" acceso="{{ false }}" numero="4" tono-numero="giallo" hint-size="180px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Extra" acceso="{{ false }}" hint-size="90px,44px"></dc-import></div>
+    <div style="display: flex; flex-direction: column">
+      <dc-import name="TestataTabella" tema="sito" colonne="|TECNICO|LEZIONI|ORE|IMPORTO|A CHE PUNTO|" griglia="28px minmax(0,1.3fr) 70px 70px 110px minmax(0,1.6fr) 250px" ordinata="TECNICO" ultima-a-destra="{{ false }}" hint-size="100%,32px"></dc-import>
+      <dc-import name="RigaCompenso" nome="Ballabio Katia" stato="senza-tariffa" lezioni="6" ore="9" importo="" corso="Judo kids" hint-size="100%,76px"></dc-import>
+      <dc-import name="RigaCompenso" nome="Berta Giulia" stato="senza-dati" lezioni="8" ore="12" importo="180,00 €" hint-size="100%,76px"></dc-import>
+      <dc-import name="RigaCompenso" nome="Fornetti Luca" stato="senza-tariffa" lezioni="5" ore="7,5" importo="" corso="Karate" attese="Karate:mer 23/9 ore 19:Innella Maurizio" hint-size="100%,96px"></dc-import>
+      <dc-import name="RigaCompenso" nome="Innella Maurizio" stato="da-fare" lezioni="8" ore="8" importo="120,00 €" hint-size="100%,76px"></dc-import>
+      <dc-import name="RigaCompenso" nome="Merigo Sara" stato="senza-tariffa" lezioni="4" ore="6" importo="" corso="Judo 2" attese="Judo 2:ven 25/9 ore 18:Innella Maurizio" hint-size="100%,96px"></dc-import>
+      <dc-import name="RigaCompenso" nome="Vuillermin Marco" stato="senza-tariffa" lezioni="3" ore="4,5" importo="" corso="Judo 3" attese="Judo 3:lun 21/9 ore 18:Merlin Alessandro" hint-size="100%,96px"></dc-import>
+      <dc-import name="RigaCompenso" nome="Merlin Alessandro" stato="solo-attese" lezioni="0" ore="0" importo="" aperta="{{ true }}" attese="Judo 3:lun 28/9 ore 18:Innella Maurizio" hint-size="100%,220px"></dc-import>
+    </div>
+    <span class="frase">Chi non ha lezioni confermate nel mese c’è se ha un compenso extra o gli manca la firma in una lezione tenuta in due. Le lezioni da sostituto si pagano a chi c’era, con la sua tariffa per quel corso.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

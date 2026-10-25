@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="dialog" aria-label="{{titolo}}" style="display: flex; flex-direction: column; gap: 14px; width: 100%; padding: {{imbottitura}}; background: #ffffff; border: 2px solid #0d2a3d; border-radius: 6px; color: #0d2a3d">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 700; letter-spacing: 0.04em; line-height: 1.05">{{titolo}}</span>
+  <span style="font-size: 14px; line-height: 1.5; color: #46606f">{{sotto}}</span>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px">
+    <dc-import name="Bottone" label="Prepara la ricevuta" variante="pieno" contesto="segreteria" tema="sito" hint-size="220px,56px"></dc-import>
+  </div>
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">PER CORSO</span>
+  <div role="table" aria-label="Per corso" style="display: flex; flex-direction: column; border-top: 2px solid #cfe6f4">
+    <sc-for list="{{corsi}}" as="k" hint-placeholder-count="2">
+      <div role="row" style="display: grid; grid-template-columns: minmax(0, 1fr) 60px 120px 90px; gap: 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span role="cell">{{k.corso}}</span>
+        <span role="cell" style="font-variant-numeric: tabular-nums; text-align: right">{{k.ore}} h</span>
+        <span role="cell" style="font-variant-numeric: tabular-nums; text-align: right">{{k.tariffa}}</span>
+        <span role="cell" style="font-variant-numeric: tabular-nums; text-align: right; font-weight: 600">{{k.importo}}</span>
+      </div>
+    </sc-for>
+    <div role="row" style="display: grid; grid-template-columns: minmax(0, 1fr) 60px 120px 90px; gap: 12px; align-items: baseline; padding: 8px 0; font-size: 15px; font-weight: 700">
+      <span role="cell">Totale</span>
+      <span role="cell" style="font-variant-numeric: tabular-nums; text-align: right">{{ore}} h</span>
+      <span role="cell"></span>
+      <span role="cell" style="font-variant-numeric: tabular-nums; text-align: right">{{totale}}</span>
+    </div>
+  </div>
+  <div style="display: flex; gap: 20px; flex-wrap: wrap">
+    <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">+ Compenso extra</span>
+    <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">Apri la scheda ›</span>
+  </div>
+  <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px">
+    <dc-import name="Bottone" label="Chiudi" variante="linea" contesto="segreteria" tema="sito" hint-size="130px,48px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Innella Maurizio"},"mese":{"editor":"text","default":"settembre"},"corsi":{"editor":"text","default":"Judo 3:4:15,00 € l’ora:60,00 €|Karate:4:15,00 € l’ora:60,00 €"},"ore":{"editor":"text","default":"8"},"totale":{"editor":"text","default":"120,00 €"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":620,"height":480}}'>
+// COSTRUITO (`DialogoRicevuta` in Compensi.tsx; storia in docs/design-canvas/compensi-revisione): la finestra che si apre dal nome o dal tasto «Prepara la ricevuta»
+// di una riga di COMPENSI. Il nome del tecnico (h2 Big Shoulders 26px), sotto lo stato del compenso (`SegnoCompenso`), i tasti della ricevuta (`AzioniRicevuta`:
+// qui Prepara la ricevuta; poi Modifica il compenso, ristampa, annulla), le sue extra, PER CORSO (ore × tariffa = importo, col Totale), i link «+ Compenso extra»
+// e «Apri la scheda ›», e in fondo solo Chiudi: la ricevuta si fa coi tasti sopra, non c'è un Annulla che si confonde con «annulla la ricevuta».
+// Stesso pannello di `DialogoSegna`: velo, bianco, bordo 2px inchiostro, raggio 6px, padding 28px.
+// `corsi` = «corso:ore:tariffa:importo» separati da |. Telefono: padding 18px.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tel = p.telefono === true || p.telefono === 'true';
+    const corsi = String(p.corsi ?? 'Judo 3:4:15,00 € l’ora:60,00 €|Karate:4:15,00 € l’ora:60,00 €').split('|').filter(Boolean).map((r) => {
+      const [corso, ore, tariffa, importo] = r.split(':');
+      return { corso, ore, tariffa, importo };
+    });
+    return {
+      titolo: p.nome ?? 'Innella Maurizio',
+      sotto: `Compenso di ${p.mese ?? 'settembre'} da preparare`,
+      corsi, ore: p.ore ?? '8', totale: p.totale ?? '120,00 €', imbottitura: tel ? '18px' : '28px',
+    };
+  }
+}
+</script>
+</body>
+</html>

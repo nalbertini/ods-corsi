@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .gruppo { display: flex; flex-direction: column; }
+    .cifra { font-size: 15px; color: #0d2a3d; font-weight: 700; font-variant-numeric: tabular-nums; }
+  </style>
+</helmet>
+<!-- PROPOSTA: gli stessi gruppi sul telefono, righe impilate, stesse azioni. Prepara e stampa a tutta larghezza nella testa di DA FARE. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1900px; background: #eef5fa">
+  <dc-import name="BarraTelefono" tema="sito" luogo="SEGRETERIA" da-fare="5" hint-size="100%,62px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 18px; padding: 20px 16px 28px">
+    <div style="display: flex; flex-direction: column; gap: 4px"><h1 class="big" style="margin: 0; font-size: 34px">COMPENSI</h1><span class="frase">Per ogni corso, ore confermate × la sua tariffa.</span></div>
+    <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="MESE" valore="Settembre 2026" nota="" nota-tono="avviso" hint-size="100%,80px"></dc-import>
+    <div style="display: flex; flex-wrap: wrap; gap: 4px 16px"><span class="frase"><span class="cifra" style="color: #b81d1d">6</span> fermi</span><span class="frase"><span class="cifra">330,00 €</span> da pagare</span><span class="frase"><span class="cifra">345,00 €</span> pagati</span></div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap"><dc-import name="Chip" tema="sito" label="Manca la firma" acceso="{{ false }}" numero="4" tono-numero="giallo" hint-size="180px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Extra" acceso="{{ false }}" numero="2" tono-numero="neutro" hint-size="110px,44px"></dc-import></div>
+    <section class="gruppo">
+      <dc-import name="GruppoCompensi" titolo="DA SISTEMARE PRIMA" icona="sistemare" conto="6" tono="rosso" sotto="Finché non sono a posto, la loro ricevuta non si fa." telefono="{{ true }}" hint-size="100%,80px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Berta Giulia" stato="senza-dati" manca="manca l’IBAN" lezioni="8" ore="12" importo="180,00 €" telefono="{{ true }}" hint-size="100%,150px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Fornetti Luca" stato="senza-tariffa" corso="Karate" lezioni="5" ore="7,5" anche="1 lezione senza la sua firma ↓" telefono="{{ true }}" hint-size="100%,150px"></dc-import>
+      <span class="frase" style="padding: 10px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4">e altri 4 ›</span>
+    </section>
+    <section class="gruppo">
+      <dc-import name="GruppoCompensi" titolo="DA FARE" icona="stampa" conto="2 · 345,00 €" tono="neutro" sotto="Un PDF solo con queste 2." azione="Prepara le ricevute (2)" variante="pieno" telefono="{{ true }}" hint-size="100%,130px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Innella Maurizio" stato="da-fare" lezioni="8" ore="8" importo="120,00 €" telefono="{{ true }}" hint-size="100%,140px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Neri Paolo" stato="da-fare" lezioni="10" ore="15" importo="225,00 €" telefono="{{ true }}" hint-size="100%,140px"></dc-import>
+    </section>
+    <section class="gruppo">
+      <dc-import name="GruppoCompensi" titolo="DA PAGARE" icona="paga" conto="2 · 330,00 €" tono="giallo" sotto="Firmate." telefono="{{ true }}" hint-size="100%,70px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Gialli Anna" stato="da-pagare" lezioni="8" ore="12" importo="180,00 €" anche="1 extra da pagare · 150,00 € ↓" telefono="{{ true }}" hint-size="100%,170px"></dc-import>
+      <dc-import name="RigaCompensoCorta" stato="extra" nome="Stage di judo del 19 settembre a Varese" importo="150,00 €" telefono="{{ true }}" hint-size="100%,150px"></dc-import>
+    </section>
+    <section class="gruppo">
+      <dc-import name="GruppoCompensi" titolo="ASPETTANO UNA FIRMA" icona="attesa" conto="4 lezioni" tono="neutro" sotto="Non fermano nessuna ricevuta." telefono="{{ true }}" hint-size="100%,70px"></dc-import>
+      <dc-import name="RigaSenzaFirma" tecnico="Merlin Alessandro" corso="Judo 3" giorno="lun 28/9 · 18:00" chi="Innella Maurizio" telefono="{{ true }}" hint-size="100%,140px"></dc-import>
+    </section>
+    <dc-import name="GruppoCompensi" titolo="PAGATE" icona="pagate" conto="2" tono="verde" chiuso="{{ true }}" sotto="345,00 €" hint-size="100%,58px"></dc-import>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

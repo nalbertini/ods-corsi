@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .gruppo { display: flex; flex-direction: column; gap: 0; }
+    .cifra { font-size: 15px; color: #0d2a3d; font-weight: 700; font-variant-numeric: tabular-nums; }
+  </style>
+</helmet>
+<!-- PROPOSTA: COMPENSI raggruppati per il passo che manca, nell'ordine in cui la segreteria lavora: DA SISTEMARE PRIMA → DA FARE → DA FAR FIRMARE → DA PAGARE,
+     poi ASPETTANO UNA FIRMA (le lezioni in due: non fermano niente) e PAGATE chiuse in fondo. Al posto dei quattro riquadri, una riga di riepilogo.
+     Restano due filtri, «Manca la firma» ed «Extra»: «Tutti», «Da fare», «Da pagare» e «Da riportare firmate» sono i gruppi. Prepara e stampa e' l'unico giallo,
+     nella testa di DA FARE. Una tabella sola con una sola intestazione (TECNICO, CORSI, LEZIONI, ORE, TARIFFA, IMPORTO, IBAN, RICEVUTA, NOTE), disegnata a 1920px: a 1440 le nove colonne non ci stanno: quel che manca lo dice la sua cella, in rosso; i gruppi sono fasce dentro la tabella, e nelle righe il segno c'e' solo nei fermi (il motivo): il resto lo dice la fascia. Le colonne non si spostano; ogni riga ha un segno solo e un'azione sola, le altre cose del tecnico in piccolo («+ …»). Le azioni sono uguali su tutte le righe: un Bottone a linea di 170px sempre nello stesso posto, e accanto, se c'e', Ristampa o «Non c’era» in testo; anche l'extra e' una riga della tabella.
+     Le persone sono quelle dello screenshot; Gialli, Neri, Bianchi e Rossi sono aggiunti per mostrare tutti i gruppi. -->
+<div style="display: flex; width: 1920px; min-height: 1900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0"><dc-import name="Menu" tema="sito" autorizzazioni="segreteria e amministrazione" attiva="COMPENSI" compensi="{{ true }}" numeri="RICHIESTE ONLINE:3, PRESENZE ISTRUTTORI:3" nome="Marco Rossi" ruolo="Segreteria e amministrazione" altezza="1900px" hint-size="240px,1900px"></dc-import></div>
+  <main style="display: flex; flex-direction: column; gap: 22px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 class="big" style="margin: 0; font-size: 34px">COMPENSI</h1>
+      <span class="frase">Per ogni corso, ore confermate × la sua tariffa. Si sistemano, si stampano, si fanno firmare, si pagano.</span>
+    </div>
+    <div style="display: flex; gap: 18px; align-items: flex-end; flex-wrap: wrap">
+      <div style="width: 240px"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="MESE" valore="Settembre 2026" nota="" nota-tono="avviso" hint-size="100%,80px"></dc-import></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: baseline; flex: 1; min-width: 320px; padding-bottom: 12px">
+        <span class="frase"><span class="cifra">13</span> tecnici</span>
+        <span class="frase"><span class="cifra" style="color: #b81d1d">6</span> fermi</span>
+        <span class="frase"><span class="cifra">330,00 €</span> da pagare</span>
+        <span class="frase"><span class="cifra">345,00 €</span> pagati</span>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; padding-bottom: 4px"><dc-import name="Chip" tema="sito" label="Manca la firma" acceso="{{ false }}" numero="4" tono-numero="giallo" hint-size="180px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Extra" acceso="{{ false }}" numero="2" tono-numero="neutro" hint-size="110px,44px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" label="+ Compenso extra" variante="linea" hint-size="200px,44px"></dc-import></div>
+    </div>
+    <div role="table" aria-label="Compensi di settembre" style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #cfe6f4">
+      <div style="padding-top: 12px; background: #ffffff"><dc-import name="TestataTabella" tema="sito" colonne="TECNICO+persona|CORSI+corsi|LEZIONI+calendario|ORE+orologio|TARIFFA+tariffa|IMPORTO+euro|IBAN+carta|RICEVUTA+ricevuta|NOTE+nota|&#8203;" griglia="minmax(0,1.1fr) minmax(0,1fr) 96px 64px 100px 100px 64px 128px minmax(0,1.2fr) 250px" ordinata="TECNICO" destra="LEZIONI|ORE|TARIFFA|IMPORTO" ultima-a-destra="{{ false }}" hint-size="100%,32px"></dc-import></div>
+    <section class="gruppo">
+      <dc-import name="GruppoCompensi" tabella="{{ true }}" titolo="DA SISTEMARE PRIMA" icona="sistemare" conto="6" tono="rosso" sotto="Finché non sono a posto, la loro ricevuta non si fa." hint-size="100%,70px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Ballabio Katia" corsi="Judo kids" stato="senza-tariffa" corso="Judo kids" lezioni="6" ore="9" hint-size="100%,58px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Berta Giulia" corsi="Judo 1" stato="senza-dati" manca="manca l’IBAN" lezioni="8" ore="12" importo="180,00 €" hint-size="100%,64px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Fornetti Luca" corsi="Karate" stato="senza-tariffa" corso="Karate" lezioni="5" ore="7,5" anche="1 lezione senza la sua firma ↓" hint-size="100%,70px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Merigo Sara" corsi="Judo 2" stato="senza-tariffa" corso="Judo 2" lezioni="4" ore="6" anche="1 lezione senza la sua firma ↓" hint-size="100%,70px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Rossi Marco" corsi="Judo adulti" stato="da-confermare" quante="3" lezioni="5" ore="7,5" hint-size="100%,58px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Vuillermin Marco" corsi="Judo 3" stato="senza-tariffa" corso="Judo 3" lezioni="3" ore="4,5" hint-size="100%,58px"></dc-import>
+    </section>
+
+    <section class="gruppo">
+      <dc-import name="GruppoCompensi" tabella="{{ true }}" titolo="DA FARE" icona="stampa" conto="2 · 345,00 €" tono="neutro" sotto="Un PDF solo con queste 2, da stampare e consegnare. Gli extra si stampano uno per uno." azione="Prepara le ricevute (2)" variante="pieno" hint-size="100%,70px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Innella Maurizio" corsi="Judo 3, Karate" stato="da-fare" lezioni="8" ore="8" importo="120,00 €" hint-size="100%,58px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Neri Paolo" corsi="Judo adulti" stato="da-fare" lezioni="10" ore="15" importo="225,00 €" hint-size="100%,58px"></dc-import>
+    </section>
+
+    <section class="gruppo">
+      <dc-import name="GruppoCompensi" tabella="{{ true }}" titolo="DA FAR FIRMARE" icona="firma" conto="1" tono="giallo" sotto="Stampate e consegnate. Quando tornano firmate, «Segna firmata» e passano a DA PAGARE." hint-size="100%,70px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Bianchi Sara" corsi="Judo kids" stato="da-firmare" quando="2/10" lezioni="6" ore="9" importo="135,00 €" hint-size="100%,64px"></dc-import>
+    </section>
+
+    <section class="gruppo">
+      <dc-import name="GruppoCompensi" tabella="{{ true }}" titolo="DA PAGARE" icona="paga" conto="2 · 330,00 €" tono="giallo" sotto="Firmate. «Segna pagato» le scrive in Contabilità." hint-size="100%,70px"></dc-import>
+      <dc-import name="RigaCompensoCorta" nome="Gialli Anna" corsi="Judo adulti, Judo 2" stato="da-pagare" lezioni="8" ore="12" importo="180,00 €" anche="1 extra da pagare · 150,00 € ↓|1 lezione senza la sua firma ↓" hint-size="100%,84px"></dc-import>
+      <dc-import name="RigaCompensoCorta" stato="extra" nome="Stage di judo del 19 settembre a Varese" importo="150,00 €" hint-size="100%,64px"></dc-import>
+    </section>
+
+    <section class="gruppo">
+      <dc-import name="GruppoCompensi" tabella="{{ true }}" titolo="ASPETTANO UNA FIRMA" icona="attesa" conto="4 lezioni" tono="neutro" sotto="Lezioni tenute in due: il tecnico era previsto e non ha firmato. Non fermano nessuna ricevuta. Se c’era, entra nel suo compenso del mese." hint-size="100%,70px"></dc-import>
+      <dc-import name="RigaSenzaFirma" tecnico="Fornetti Luca" corsi="Karate" corso="Karate" giorno="mer 23/9 · 19:00" chi="Innella Maurizio" hint-size="100%,58px"></dc-import>
+      <dc-import name="RigaSenzaFirma" tecnico="Gialli Anna" corsi="Judo adulti, Judo 2" corso="Judo adulti" giorno="gio 24/9 · 20:00" chi="Neri Paolo" hint-size="100%,58px"></dc-import>
+      <dc-import name="RigaSenzaFirma" tecnico="Merigo Sara" corsi="Judo 2" corso="Judo 2" giorno="ven 25/9 · 18:00" chi="Innella Maurizio" hint-size="100%,58px"></dc-import>
+      <dc-import name="RigaSenzaFirma" tecnico="Merlin Alessandro" corsi="Judo 3" corso="Judo 3" giorno="lun 28/9 · 18:00" chi="Innella Maurizio" hint-size="100%,58px"></dc-import>
+      <span class="frase" style="padding: 10px 14px 12px; background: #ffffff">Merlin Alessandro ha solo questa lezione: non ha una riga sua sopra. Se c’era, compare in DA FARE.</span>
+    </section>
+
+    <dc-import name="GruppoCompensi" tabella="{{ true }}" titolo="PAGATE" icona="pagate" conto="2" tono="verde" chiuso="{{ true }}" sotto="345,00 € · si aprono per ristampare" hint-size="100%,58px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1920,"height":1900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

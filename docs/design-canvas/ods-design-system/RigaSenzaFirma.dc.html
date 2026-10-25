@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="row" style="display: flex; flex-direction: column; width: 100%; border-bottom: 1px solid #cfe6f4; background: #ffffff; color: #0d2a3d">
+<sc-if value="{{largo}}" hint-placeholder-val="{{ true }}">
+  <div style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 96px 64px 100px 100px 64px 128px minmax(0, 1.2fr) 264px; gap: 14px; align-items: center; min-height: 56px; padding: 6px 14px; font-size: 14px">
+    <span role="cell" style="font-size: 15px; font-weight: 600">{{tecnico}}</span>
+    <span role="cell" style="font-size: 14px">{{corso}}</span>
+    <span role="cell" style="font-size: 15px; font-variant-numeric: tabular-nums; text-align: right">1</span>
+    <span role="cell" style="font-size: 15px; text-align: right; color: #46606f">—</span>
+    <span role="cell" style="font-size: 14px; text-align: right; color: #46606f">—</span>
+    <span role="cell" style="font-size: 15px; text-align: right; color: #46606f">—</span>
+    <span role="cell" style="font-size: 14px; text-align: center; color: #46606f">—</span>
+    <span role="cell" style="font-size: 14px; color: #46606f">—</span>
+    <span role="cell" style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-variant-numeric: tabular-nums">{{giorno}}</span><span style="color: #46606f">ha firmato {{chi}}</span></span>
+    <span role="cell" style="display: grid; grid-template-columns: 80px 170px; gap: 14px; align-items: center"><span style="display: inline-flex; align-items: center; justify-content: flex-end; white-space: nowrap; min-height: 44px; font-size: 14px; color: #46606f; text-decoration: underline; text-underline-offset: 3px">Non c’era</span><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" tema="sito" larghezza="170px" hint-size="170px,44px"></dc-import></span>
+  </div>
+</sc-if>
+<sc-if value="{{telefono}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; font-size: 14px">
+    <span style="font-size: 15px; font-weight: 600">{{tecnico}}</span>
+    <span>{{corso}} · {{giorno}}</span>
+    <span style="color: #46606f">ha firmato {{chi}}</span>
+    <span style="display: flex; gap: 14px; align-items: center"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; text-decoration: underline; text-underline-offset: 3px">Non c’era</span><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" tema="sito" larghezza="170px" hint-size="170px,44px"></dc-import></span>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tecnico":{"editor":"text","default":"Merlin Alessandro"},"corso":{"editor":"text","default":"Judo 3"},"giorno":{"editor":"text","default":"lun 28/9 · 18:00"},"chi":{"editor":"text","default":"Innella Maurizio"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1600,"height":58}}'>
+// COSTRUITO (Compensi.tsx, .sg-compensi-* di src/segreteria.css; storia in docs/design-canvas/compensi-revisione): una lezione tenuta in due dove il tecnico era previsto e non ha firmato, nel gruppo ASPETTANO UNA FIRMA
+// di COMPENSI. Stessi dati e stesse azioni di `SenzaFirmaElenco` in Compensi.tsx (corso, giorno e ora, chi ha firmato; C’ERA a linea = presenza confermata,
+// entra nel compenso; «Non c’era» = la firma non si chiede piu'), ma in un elenco solo per tutti i tecnici, un tocco per lezione, nessuna finestra.
+// Le colonne sono quelle di `RigaCompensoCorta` (una tabella sola per tutta la pagina): 1 lezione, ore, tariffa, importo e IBAN «—» finche' non e' confermata,
+// il corso in CORSI, RICEVUTA «—», giorno e chi ha firmato nelle NOTE. Le azioni come in RigaCompensoCorta: C’era e' il Bottone a linea di 170px, «Non c’era» il testo prima del tasto. Il tecnico e' su ogni riga: e' la lista per telefonare. `telefono` la impila.
+const vero = (v, d) => (v === undefined ? d : v === true || v === 'true');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const telefono = vero(p.telefono, false);
+    return { largo: !telefono, telefono, tecnico: p.tecnico ?? 'Merlin Alessandro', corso: p.corso ?? 'Judo 3', giorno: p.giorno ?? 'lun 28/9 · 18:00', chi: p.chi ?? 'Innella Maurizio' };
+  }
+}
+</script>
+</body>
+</html>

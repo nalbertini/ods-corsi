@@ -1129,28 +1129,58 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sg-riga-bilancio > :first-child { grid-column: 1 / -1; }
 }
 
-/* COMPENSI: la riga del tecnico, i corsi in colonna, il «Per corso» che dice che si apre; sul telefono la riga si impila. */
+/* COMPENSI: il conto «Per corso» nel dialogo del tecnico; le righe delle extra, nel dialogo e nella scheda. */
 .sg-compenso-corso { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 14px; align-items: center; }
-.sg-compenso-per-corso > summary::before { content: '▸ '; }
-.sg-compenso-per-corso[open] > summary::before { content: '▾ '; }
 .sg-segno-regola[data-tono='neutro'] { color: var(--text); }
-/* MANCA LA SUA FIRMA: corso, giorno, chi ha firmato, i due tasti; le colonne restano ferme coi nomi lunghi. */
-.sg-senza-firma { display: grid; grid-template-columns: minmax(0, 1fr) 130px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 52px; padding: 6px 0; border-top: 1px solid var(--line-soft); font-size: 14px; }
-.sg-senza-firma-corso { min-width: 0; overflow-wrap: anywhere; }
-.sg-senza-firma-sotto { display: contents; }
-.sg-senza-firma-chi { min-width: 0; color: var(--sec); }
-/* Due segni accanto (PRESENZE DA CONFERMARE, MANCA LA FIRMA · N LEZIONI) in una colonna stretta: vanno a capo dentro, non escono. */
 .sg-compenso-riga .sg-segno-regola { white-space: normal; }
 @media (max-width: 480px) {
-  .sg-senza-firma { grid-template-columns: minmax(0, 1fr) auto; padding: 8px 0; }
-  .sg-senza-firma-corso { font-weight: 600; grid-column: 1; }
-  .sg-senza-firma-sotto { display: block; grid-column: 1; font-size: 13px; color: var(--sec); }
-  .sg-senza-firma-sotto > * + *::before { content: ' · '; }
-  .sg-senza-firma > :last-child { grid-column: 2; grid-row: 1 / span 2; }
   .sg-compenso-riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
   .sg-compenso-riga > :nth-child(n + 3) { grid-column: 1 / -1; }
-  .sg-numeri[data-telefono-due] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .sg-numeri[data-telefono-due] > :nth-child(1) { display: none; }
+}
+/* COMPENSI, la tabella: una griglia sola per testata, gruppi e righe, così le colonne restano in fila in tutta la pagina. */
+.sg-compensi { container-type: inline-size; }
+.sg-compensi-griglia { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 96px 64px 100px 100px 64px 128px minmax(0, 1.2fr) 264px; gap: 14px; align-items: center; }
+.sg-compensi-testa { padding: 0 14px 6px; border-bottom: 2px solid var(--line-soft); }
+.sg-compensi-riga { min-height: 56px; padding: 6px 14px; background: var(--surface); border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+.sg-compensi-riga > * { min-width: 0; overflow-wrap: anywhere; }
+.sg-compensi-nome { font-size: 15px; font-weight: 600; }
+/* Il nome apre il dialogo del tecnico: sembra testo, ma è alto quanto un dito. */
+.sg-compensi-apri { min-height: 44px; min-width: 44px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.sg-compensi-apri:hover { text-decoration: underline; text-underline-offset: 3px; }
+.sg-compensi-cifra { font-size: 15px; text-align: right; font-variant-numeric: tabular-nums; }
+.sg-compensi-importo { font-size: 15px; font-weight: 700; text-align: right; }
+.sg-compensi-vuoto { color: var(--dim); }
+.sg-compensi-iban { text-align: center; font-size: 16px; font-weight: 700; }
+.sg-compensi-iban [data-tono='verde'] { color: var(--verde-testo); }
+.sg-compensi-iban [data-tono='rosso'] { color: var(--rosso-testo); }
+.sg-compensi-note { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+.sg-compensi-note .sg-segno-regola { white-space: normal; }
+/* Il tasto sempre allo stesso posto, a destra; il testo (Ristampa, Non c’era) subito prima. */
+.sg-compensi-azioni { display: grid; grid-template-columns: 80px 170px; gap: 14px; align-items: center; }
+.sg-compensi-azioni > :first-child { display: flex; justify-content: flex-end; white-space: nowrap; }
+.sg-compensi-azioni > button { width: 170px; grid-column: 2; }
+.sg-compensi-telefono { display: none; }
+.sg-compensi-gruppo { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px 14px; padding: 22px 14px 10px; background: var(--bg); border-bottom: 3px solid var(--line-soft); }
+.sg-compensi-gruppo[data-tono='rosso'] { border-bottom-color: var(--rosso-testo); }
+.sg-compensi-gruppo[data-tono='giallo'] { border-bottom-color: var(--giallo); }
+.sg-compensi-gruppo-titolo { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.04em; }
+.sg-compensi-gruppo[data-tono='rosso'] .sg-compensi-gruppo-titolo svg { color: var(--rosso-testo); }
+.sg-compensi-conto { color: var(--dim); }
+.sg-compensi-pagate { margin-top: 22px; border-left: 4px solid var(--verde-testo); }
+.sg-compensi-pagate > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; min-height: 56px; padding: 6px 14px; background: var(--bg); cursor: pointer; list-style: none; }
+.sg-compensi-pagate > summary::-webkit-details-marker { display: none; }
+.sg-compensi-pagate[open] > summary > :first-child { transform: rotate(90deg); }
+.sg-compensi-pagate-titolo { font-size: 20px; font-weight: 800; letter-spacing: 0.04em; }
+/* Sotto i 1350px le dieci colonne non ci stanno: la riga si stringe a nome e importo, sotto le note e il tasto; le cifre vanno nelle note. */
+@container (max-width: 1350px) {
+  .sg-compensi-testa, .sg-compensi-largo { display: none; }
+  .sg-compensi-telefono { display: inline; }
+  .sg-compensi-griglia { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+  .sg-compensi-riga { padding: 10px 14px; }
+  .sg-compensi-note, .sg-compensi-azioni { grid-column: 1 / -1; }
+  .sg-compensi-azioni { grid-template-columns: auto 170px; justify-content: start; }
+  .sg-compensi-azioni > :first-child { justify-content: flex-start; }
+  .sg-compensi-azioni > :first-child:empty { display: none; }
 }
 
 /* IMPOSTAZIONI: sette schede non stanno in una riga sul telefono, vanno a capo. */

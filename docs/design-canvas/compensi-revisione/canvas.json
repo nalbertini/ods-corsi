@@ -1,0 +1,198 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-25T10:00:00Z"
+ },
+ "title": "Compensi · revisione",
+ "launch": {
+  "view": "canvas",
+  "page": "proposta"
+ },
+ "pages": [
+  {
+   "id": "proposta",
+   "name": "Oggi e proposta"
+  },
+  {
+   "id": "componenti",
+   "name": "Componenti"
+  }
+ ],
+ "boards": {
+  "CompensiOggi.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 1440,
+   "h": 1500,
+   "page": "proposta",
+   "title": "Oggi"
+  },
+  "CompensiProposta.dc.html": {
+   "x": 1520,
+   "y": 300,
+   "w": 1920,
+   "h": 1900,
+   "page": "proposta",
+   "title": "Proposta · computer"
+  },
+  "CompensiPropostaTelefono.dc.html": {
+   "x": 3520,
+   "y": 300,
+   "w": 390,
+   "h": 1900,
+   "page": "proposta",
+   "title": "Proposta · telefono"
+  },
+  "GruppoCompensi.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 1100,
+   "h": 70,
+   "page": "componenti",
+   "title": "GruppoCompensi · nuovo"
+  },
+  "RigaCompensoCorta.dc.html": {
+   "x": 1180,
+   "y": 300,
+   "w": 1600,
+   "h": 64,
+   "page": "componenti",
+   "title": "RigaCompensoCorta · nuovo"
+  },
+  "RigaSenzaFirma.dc.html": {
+   "x": 2860,
+   "y": 300,
+   "w": 1600,
+   "h": 58,
+   "page": "componenti",
+   "title": "RigaSenzaFirma · nuovo"
+  },
+  "RigaCompenso.dc.html": {
+   "x": 0,
+   "y": 490,
+   "w": 1100,
+   "h": 76,
+   "page": "componenti",
+   "title": "RigaCompenso"
+  },
+  "RigaExtra.dc.html": {
+   "x": 1180,
+   "y": 490,
+   "w": 1100,
+   "h": 110,
+   "page": "componenti",
+   "title": "RigaExtra"
+  },
+  "TestataTabella.dc.html": {
+   "x": 2360,
+   "y": 490,
+   "w": 900,
+   "h": 40,
+   "page": "componenti",
+   "title": "TestataTabella"
+  },
+  "Menu.dc.html": {
+   "x": 0,
+   "y": 720,
+   "w": 240,
+   "h": 900,
+   "page": "componenti",
+   "title": "Menu"
+  },
+  "Bottone.dc.html": {
+   "x": 320,
+   "y": 720,
+   "w": 260,
+   "h": 80,
+   "page": "componenti",
+   "title": "Bottone"
+  },
+  "Campo.dc.html": {
+   "x": 660,
+   "y": 720,
+   "w": 360,
+   "h": 90,
+   "page": "componenti",
+   "title": "Campo"
+  },
+  "Chip.dc.html": {
+   "x": 1100,
+   "y": 720,
+   "w": 180,
+   "h": 50,
+   "page": "componenti",
+   "title": "Chip"
+  },
+  "Numero.dc.html": {
+   "x": 1360,
+   "y": 720,
+   "w": 220,
+   "h": 120,
+   "page": "componenti",
+   "title": "Numero"
+  },
+  "Badge.dc.html": {
+   "x": 1660,
+   "y": 720,
+   "w": 140,
+   "h": 40,
+   "page": "componenti",
+   "title": "Badge"
+  },
+  "BarraTelefono.dc.html": {
+   "x": 1880,
+   "y": 720,
+   "w": 390,
+   "h": 62,
+   "page": "componenti",
+   "title": "BarraTelefono"
+  },
+  "DialogoRicevuta.dc.html": {
+   "x": 3990,
+   "y": 300,
+   "w": 620,
+   "h": 480,
+   "page": "proposta",
+   "title": "Prepara la ricevuta · la finestra"
+  }
+ },
+ "order": [
+  "CompensiProposta.dc.html",
+  "CompensiOggi.dc.html",
+  "CompensiPropostaTelefono.dc.html",
+  "DialogoRicevuta.dc.html",
+  "GruppoCompensi.dc.html",
+  "RigaCompensoCorta.dc.html",
+  "RigaSenzaFirma.dc.html",
+  "RigaCompenso.dc.html",
+  "RigaExtra.dc.html",
+  "TestataTabella.dc.html",
+  "Menu.dc.html",
+  "Bottone.dc.html",
+  "Campo.dc.html",
+  "Chip.dc.html",
+  "Numero.dc.html",
+  "Badge.dc.html",
+  "BarraTelefono.dc.html"
+ ],
+ "notes": {
+  "titolo-proposta": {
+   "x": 0,
+   "y": 0,
+   "text": "Compensi: i tecnici raggruppati per cosa c’è da fare, con una riga più corta",
+   "kind": "title1",
+   "maxW": 3430,
+   "page": "proposta"
+  },
+  "titolo-componenti": {
+   "x": 0,
+   "y": 0,
+   "text": "Componenti: i tre nuovi in alto, poi quelli della libreria",
+   "kind": "title1",
+   "maxW": 3460,
+   "page": "componenti"
+  }
+ },
+ "designSystems": []
+}
