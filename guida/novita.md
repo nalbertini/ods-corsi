@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.216.2 — 25 ottobre 2026
+
+### Risolto
+
+- In STATISTICHE il corso da filtrare si tocca meglio, non è più troppo basso
+
 ## 0.216.1 — 25 ottobre 2026
 
 ### Risolto
