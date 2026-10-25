@@ -3,11 +3,13 @@
 --   * `abbina_pagatori_movimento(movimento, corsi)`: le persone che il movimento «Da classificare» può essere (Contabilità,
 --     riquadro «Suggerito»). Un punteggio somma i segnali: nome e cognome interi nel testo; nome e cognome del genitore
 --     (anagrafiche) → i figli; codice fiscale letto dalla causale (`movimenti_codici_letti`, solo bancari nuovi) del
---     genitore o della persona; importo → `corsi` (i corsi del listino con quell'importo) a cui è iscritta, col cognome;
---     lo storico (un altro movimento con le stesse parole, senza le cifre, già collegato a lei); il cognome proprio o del
---     genitore. Rende solo id, nome, cognome, `come` (il segnale più forte), `gia_iscritto` (iscrizione che copre il
---     giorno del movimento, non oggi) e `sicuro` (il primo, alto e staccato dal secondo): mai il punteggio. In ordine di
---     punteggio, a pari prima chi non è iscritto. Al massimo 8, solo persone attive.
+--     genitore o della persona; l'importo, se è il prezzo di un corso del listino a cui è iscritta, col cognome (i corsi
+--     li ricava il database: `corsi` non conta); lo storico (un altro movimento con le stesse parole, senza le cifre, già
+--     collegato a lei); il nome di battesimo con una parola del corso a cui è iscritta; il cognome proprio o del
+--     genitore, che da solo propone solo se nessuno ha di più (di uno solo; di più, gli iscritti quel giorno, se no in
+--     qualunque momento). Rende solo id, nome, cognome, `come` (il segnale più forte), `gia_iscritto` (iscrizione che
+--     copre il giorno del movimento, non oggi) e `sicuro` (il primo, alto e staccato dal secondo; mai per nome e corso):
+--     mai il punteggio. In ordine di punteggio, a pari prima chi non è iscritto. Al massimo 8, solo persone attive.
 --   * `abbina_testo_banca(testo, movimenti)`: per «Importa banca → Da decidere», quali dei movimenti già scritti
 --     (causale «Cliente NOME per …», o persona collegata) sono di chi è nel testo, per nome o per genitore. Rende solo
 --     `movimento_id` e `come`.
@@ -83,6 +85,39 @@ insert into iscrizioni (corso_id, persona_id, dal, al) values
   ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000014', '2026-09-01', '2026-10-15'),
   ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000015', '2026-09-01', null);
 
+-- Regole 5 e 6, viste dal 9/10/2026. Greco: Rita iscritta, Sara lo era, Tea mai. Riva: Eva lo era, Ivo lo sarà, Leo
+-- mai. Pozzi: nessuno iscritto. Pia Sala è figlia di Ugo Tosi. Ada Moro iscritta. Giulia Esposito a Psicomotricità,
+-- Giulia Marino a Judo; Nora Galli ad Aikido 2 adesso, Nora Fabbri e Olga Ricci la stagione scorsa.
+insert into persone (id, nome, cognome, ruolo) values
+  ('eeeeeeee-0000-0000-0000-000000000021', 'Rita', 'Greco', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000022', 'Sara', 'Greco', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000023', 'Tea', 'Greco', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000024', 'Eva', 'Riva', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000025', 'Ivo', 'Riva', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000026', 'Leo', 'Riva', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000027', 'Lia', 'Pozzi', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000028', 'Ugo', 'Pozzi', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000029', 'Pia', 'Sala', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000030', 'Ada', 'Moro', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000031', 'Giulia', 'Esposito', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000032', 'Giulia', 'Marino', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000033', 'Nora', 'Fabbri', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000034', 'Nora', 'Galli', 'iscritto'),
+  ('eeeeeeee-0000-0000-0000-000000000035', 'Olga', 'Ricci', 'iscritto');
+insert into anagrafiche (persona_id, genitore_nome, genitore_cognome) values ('eeeeeeee-0000-0000-0000-000000000029', 'Ugo', 'Tosi');
+insert into corsi (id, nome) values ('cccccccc-0000-0000-0000-000000000002', 'Psicomotricità'), ('cccccccc-0000-0000-0000-000000000003', 'Aikido 2');
+insert into iscrizioni (corso_id, persona_id, dal, al) values
+  ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000021', '2026-09-01', null),
+  ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000022', '2025-09-01', '2026-06-30'),
+  ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000024', '2025-09-01', '2026-06-30'),
+  ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000025', '2026-11-01', null),
+  ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000030', '2026-09-01', null),
+  ('cccccccc-0000-0000-0000-000000000002', 'eeeeeeee-0000-0000-0000-000000000031', '2026-09-01', null),
+  ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000032', '2026-09-01', null),
+  ('cccccccc-0000-0000-0000-000000000003', 'eeeeeeee-0000-0000-0000-000000000033', '2025-09-01', '2026-06-30'),
+  ('cccccccc-0000-0000-0000-000000000003', 'eeeeeeee-0000-0000-0000-000000000034', '2026-09-01', null),
+  ('cccccccc-0000-0000-0000-000000000003', 'eeeeeeee-0000-0000-0000-000000000035', '2025-09-01', '2026-06-30');
+
 -- I movimenti da classificare, scritti come li scrive l'import della banca (sono tutti del 9/10/2026, nel Conto
 -- Corrente): alcuni col codice fiscale letto dalla causale.
 create or replace function riga(k text, d text, cf text[] default null) returns jsonb language sql immutable as $$
@@ -112,8 +147,33 @@ select importa_prima_nota(jsonb_build_array(
   riga('storico-cognome', 'Da GALLO TRN 40 BONIFICO SEPA'),
   riga('storico-cognome-prima', 'Da GALLO TRN 41 BONIFICO SEPA'),
   riga('storico-annullato', 'Da NERI PIA TRN 50 BONIFICO SEPA'),
-  riga('storico-annullato-prima', 'Da NERI PIA TRN 51 BONIFICO SEPA')));
+  riga('storico-annullato-prima', 'Da NERI PIA TRN 51 BONIFICO SEPA'),
+
+  riga('greco', 'Da GRECO TRN 30 BONIFICO SEPA'),
+  riga('riva', 'Da RIVA TRN 31 BONIFICO SEPA'),
+  riga('pozzi', 'Da POZZI TRN 32 BONIFICO SEPA'),
+  riga('tosi', 'Da TOSI TRN 33 BONIFICO SEPA'),
+  riga('moro', 'Da MORO TRN 34 BONIFICO SEPA'),
+  riga('psico', 'Retta psicomotricita'' Giulia TRN 35'),
+  riga('aikido-nora', 'Retta aikido Nora TRN 36'),
+  riga('aikido-olga', 'Retta aikido Olga TRN 37'),
+  riga('cifre', 'Retta 2 Olga TRN 38'),
+  riga('solo-nome', 'Retta Giulia TRN 39'),
+  riga('cognome-e-corso', 'Retta aikido Nora Riva TRN 40'),
+  riga('greco-tea', 'Da GRECO TEA TRN 42 BONIFICO SEPA'),
+  riga('ferri-senza-corso', 'Da FERRI TRN 22 BONIFICO SEPA'),
+  riga('ennio-corso', 'Da Ferri Ennio TRN 21 BONIFICO SEPA'),
+  riga('gallo-due-volte', 'Da GALLO GALLO TRN 43 BONIFICO SEPA')));
 reset role;
+-- Il listino: Judo costa 40 € a trimestre. Due movimenti li paga quell'importo (gli altri sono di 50 €, che non è di
+-- nessun corso).
+update impostazioni set listino = jsonb_build_object('corsi', jsonb_build_array(
+  jsonb_build_object('corsoId', 'cccccccc-0000-0000-0000-000000000001', 'prezzi', jsonb_build_array(jsonb_build_object('saldo', 150, 'trimestre', 40))),
+  jsonb_build_object('corsoId', '', 'prezzi', jsonb_build_array(jsonb_build_object('trimestre', 40))),
+  jsonb_build_object('corsoId', 'cccccccc-0000-0000-0000-000000000002', 'prezzi', jsonb_build_array(jsonb_build_object('trimestre', '40')))));
+update movimenti set importo = 4000 where descrizione in ('Da FERRI TRN 20 BONIFICO SEPA', 'Da Ferri Ennio TRN 21 BONIFICO SEPA');
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
 
 \echo ''
 \echo '--- 1. il codice fiscale letto: si tiene, non si vede, si cancella ---'
@@ -182,25 +242,46 @@ select atteso('due codici nella causale: contano tutti e due',
 select atteso('collegato a una persona, il codice non c''è più: resta il nome',
   tenta($$select abbinati('Da GALLO MARTA TRN 5 BONIFICO SEPA')$$), 'Marta Gallo (nome intero)');
 select atteso('un codice di nessuno non propone nessuno', tenta($$select abbinati('Da ROSSI GINO TRN 6 BONIFICO SEPA')$$), 'nessuno');
-select atteso('un movimento senza codice letto: solo regole 1 e 2', tenta($$select abbinati('Da ROSSI GINO TRN 7 BONIFICO SEPA')$$), 'nessuno');
-select atteso('solo il cognome (o solo il nome) non basta', tenta($$select abbinati('Da PRUDENTE LUCIANO BONIFICO SEPA')$$), 'nessuno');
+select atteso('un movimento senza codice letto né altro: nessuno', tenta($$select abbinati('Da ROSSI GINO TRN 7 BONIFICO SEPA')$$), 'nessuno');
+select atteso('il cognome di due persone mai iscritte non basta (né il solo nome)', tenta($$select abbinati('Da PRUDENTE LUCIANO BONIFICO SEPA')$$), 'nessuno');
 select atteso('prima chi non è iscritto il giorno del movimento, in fondo chi lo è (anche se oggi non lo è più)',
   tenta($$select abbinati('Da Ferri Anna, Ferri Bruno, Ferri Carlo, Ferri Dora BONIFICO SEPA')$$),
   'Bruno Ferri (nome intero); Carlo Ferri (nome intero); Anna Ferri (nome intero, già iscritto); Dora Ferri (nome intero, già iscritto)');
 select atteso('un iscritto solo si propone lo stesso, col segno «già iscritto»', tenta($$select abbinati('Da Ferri Ennio BONIFICO SEPA')$$), 'Ennio Ferri (nome intero, già iscritto)');
 select atteso('…ma non è mai «sicuro»', tenta($$select preselezionato('Da Ferri Ennio BONIFICO SEPA')$$), 'nessuno');
--- L'importo: l'app dice quali corsi costano l'importo del movimento (dal listino); il database guarda chi è iscritto
--- a quei corsi il giorno del movimento e ha nel testo il cognome suo o del genitore. Qui l'iscrizione è a favore.
+-- L'importo: il database cerca nel listino i corsi che costano l'importo del movimento, e guarda chi è iscritto a
+-- quei corsi il giorno del movimento e ha nel testo il cognome suo o del genitore. Qui l'iscrizione è a favore.
 select atteso('il solo cognome + iscritto al corso dell''importo (anche chi finisce il 15/10), non «già iscritto»; non Bruno (finita) né Carlo (da novembre)',
-  tenta($$select abbinati('Da FERRI TRN 20 BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$),
+  tenta($$select abbinati('Da FERRI TRN 20 BONIFICO SEPA')$$),
   'Anna Ferri (corso e cognome); Dora Ferri (corso e cognome); Ennio Ferri (corso e cognome)');
 select atteso('…da soli non bastano a essere «sicuro»',
-  tenta($$select preselezionato('Da FERRI TRN 20 BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$), 'nessuno');
-select atteso('…senza il corso dell''importo, il solo cognome non basta', tenta($$select abbinati('Da FERRI TRN 20 BONIFICO SEPA')$$), 'nessuno');
-select atteso('…e un corso che nessuno frequenta non propone nessuno', tenta($$select abbinati('Da FERRI TRN 20 BONIFICO SEPA', array[gen_random_uuid()])$$), 'nessuno');
+  tenta($$select preselezionato('Da FERRI TRN 20 BONIFICO SEPA')$$), 'nessuno');
+select atteso('i corsi li ricava il database: quelli passati da chi chiama non contano',
+  tenta($$select abbinati('Da FERRI TRN 20 BONIFICO SEPA', array[gen_random_uuid()])$$),
+  'Anna Ferri (corso e cognome); Dora Ferri (corso e cognome); Ennio Ferri (corso e cognome)');
+select atteso('…né per «già iscritto» e «sicuro»: Ennio paga 50 €, che non è il prezzo di Judo',
+  tenta($$select abbinati('Da Ferri Ennio BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[]) || ' · '
+    || preselezionato('Da Ferri Ennio BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$), 'Ennio Ferri (nome intero, già iscritto) · nessuno');
+select atteso('senza il corso dell''importo vale il solo cognome: i Ferri iscritti quel giorno',
+  tenta($$select abbinati('Da FERRI TRN 22 BONIFICO SEPA')$$), 'Anna Ferri (cognome); Dora Ferri (cognome); Ennio Ferri (cognome)');
 select atteso('nome intero e corso dell''importo si sommano: Ennio primo, l''iscrizione a quel corso è a favore; l''importo non sparisce',
-  tenta($$select abbinati('Da Ferri Ennio BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$), 'Ennio Ferri (nome intero); Anna Ferri (corso e cognome); Dora Ferri (corso e cognome)');
-select atteso('…e «sicuro»', tenta($$select preselezionato('Da Ferri Ennio BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$), 'Ennio');
+  tenta($$select abbinati('Da Ferri Ennio TRN 21 BONIFICO SEPA')$$), 'Ennio Ferri (nome intero); Anna Ferri (corso e cognome); Dora Ferri (corso e cognome)');
+select atteso('…e «sicuro»', tenta($$select preselezionato('Da Ferri Ennio TRN 21 BONIFICO SEPA')$$), 'Ennio');
+select atteso('il cognome del genitore, di uno solo', tenta($$select abbinati('Da TOSI TRN 33 BONIFICO SEPA')$$), 'Pia Sala (cognome)');
+select atteso('…ma il solo cognome non è mai «sicuro», neanche di uno solo', tenta($$select preselezionato('Da TOSI TRN 33 BONIFICO SEPA')$$), 'nessuno');
+select atteso('…di uno solo, iscritto quel giorno: col segno', tenta($$select abbinati('Da MORO TRN 34 BONIFICO SEPA')$$), 'Ada Moro (cognome, già iscritto)');
+select atteso('…di più persone: solo chi è iscritto il giorno del movimento', tenta($$select abbinati('Da GRECO TRN 30 BONIFICO SEPA')$$), 'Rita Greco (cognome)');
+select atteso('…se nessuno lo è, chi lo è stato o lo sarà', tenta($$select abbinati('Da RIVA TRN 31 BONIFICO SEPA')$$), 'Eva Riva (cognome); Ivo Riva (cognome)');
+select atteso('…se nessuno ha iscrizioni, nessuno', tenta($$select abbinati('Da POZZI TRN 32 BONIFICO SEPA')$$), 'nessuno');
+select atteso('il nome intero passa davanti agli omonimi iscritti, ed è «sicuro»',
+  tenta($$select abbinati('Da GRECO TEA TRN 42 BONIFICO SEPA') || ' · ' || preselezionato('Da GRECO TEA TRN 42 BONIFICO SEPA')$$), 'Tea Greco (nome intero) · Tea');
+select atteso('nome di battesimo + un corso a cui è iscritta (l''apostrofo non conta)', tenta($$select abbinati('Retta psicomotricita'' Giulia TRN 35')$$), 'Giulia Esposito (nome e corso)');
+select atteso('…mai «sicuro»', tenta($$select preselezionato('Retta psicomotricita'' Giulia TRN 35')$$), 'nessuno');
+select atteso('…chi è iscritto quel giorno vince su chi lo era prima', tenta($$select abbinati('Retta aikido Nora TRN 36')$$), 'Nora Galli (nome e corso)');
+select atteso('…se nessuno lo è quel giorno, vale un''iscrizione in qualunque momento', tenta($$select abbinati('Retta aikido Olga TRN 37')$$), 'Olga Ricci (nome e corso)');
+select atteso('…le cifre del nome del corso non bastano', tenta($$select abbinati('Retta 2 Olga TRN 38')$$), 'nessuno');
+select atteso('…il solo nome non basta', tenta($$select abbinati('Retta Giulia TRN 39')$$), 'nessuno');
+select atteso('nome e corso vince sul solo cognome', tenta($$select abbinati('Retta aikido Nora Riva TRN 40')$$), 'Nora Galli (nome e corso)');
 reset role;
 delete from ricerche_pagatori;  -- le prove sono tante: il tetto si prova nella sezione 4
 select chi('22222222-2222-2222-2222-222222222222');
@@ -210,6 +291,8 @@ select atteso('lo storico: le stesse parole (le cifre non contano) già collegat
 select atteso('…da solo non è «sicuro»', tenta($$select preselezionato('Da CONTI MARIO TRN 30 BONIFICO SEPA')$$), 'nessuno');
 select atteso('storico e cognome insieme: «sicuro»', tenta($$select abbinati('Da GALLO TRN 40 BONIFICO SEPA') || ' · ' || preselezionato('Da GALLO TRN 40 BONIFICO SEPA')$$), 'Marta Gallo (storico) · Marta');
 select atteso('un movimento collegato e poi annullato non fa storico', tenta($$select abbinati('Da NERI PIA TRN 50 BONIFICO SEPA')$$), 'nessuno');
+select atteso('lo storico vuole le stesse parole, anche ripetute: «Gallo Gallo» è «Gallo»',
+  tenta($$select abbinati('Da GALLO GALLO TRN 43 BONIFICO SEPA')$$), 'Marta Gallo (storico)');
 select atteso('il movimento collegato non è storico di sé stesso: resta il nome',
   tenta($$select abbinati('Da GALLO MARTA TRN 5 BONIFICO SEPA')$$), 'Marta Gallo (nome intero)');
 select atteso('al massimo otto', tenta($$select count(*)::text from abbina_pagatori_movimento(id_mov('Da Rosa Pini BONIFICO SEPA'))$$), '8');

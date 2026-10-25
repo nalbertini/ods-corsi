@@ -118,10 +118,13 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
   cognome); il nome e cognome del **genitore** come sono nei dati di registrazione (i minori li paga di
   solito un genitore: si propongono i figli); un **codice fiscale** scritto nella causale; un bonifico
   **con lo stesso testo** già collegato a una persona (stesso conto, cambiano solo numeri e date);
-  l'**importo**, se è quello di un corso a cui è iscritta e il cognome è nel testo. In cima va chi ne
-  ha di più; a pari, chi ha già l'iscrizione in corso quel giorno va dopo, col segno. Sotto le schede
-  una riga dice il motivo della prima. Il solo cognome non basta. La prima è già scelta solo se è
-  chiaramente avanti alle altre; se no scegli tu, e **Conferma** resta spento finché non scegli. Per un'uscita la persona non c'è.
+  l'**importo**, se è quello di un corso a cui è iscritta e il cognome è nel testo; il **nome** con una
+  parola del **corso** a cui è iscritta (per esempio «Giulia psicomotricità»); il **cognome**, suo o del
+  genitore. In cima va chi ne ha di più; a pari, chi ha già l'iscrizione in corso quel giorno va dopo,
+  col segno. Sotto le schede una riga dice il motivo della prima. Se nessuno ha di più, si propone chi
+  ha il solo **cognome** (se è di più persone, chi di loro è iscritto quel giorno, o se nessuno chi lo è
+  stato). La prima è già scelta solo se è chiaramente avanti alle altre, e mai per il solo cognome o
+  per nome e corso; se no scegli tu, e **Conferma** resta spento finché non scegli. Per un'uscita la persona non c'è.
   **Conferma** collega la voce e la persona e non crea una ricevuta: la quota resta da pagare finché non
   registri l’incasso nella scheda della persona. **Scegli tu** non cambia niente: mette la proposta nei campi qui sotto, e decidi lì.
   Senza suggerimento, il riquadro non c'è.
