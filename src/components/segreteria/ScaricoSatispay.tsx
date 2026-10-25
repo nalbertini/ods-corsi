@@ -87,11 +87,11 @@ function PrimoScarico({ d, fai, onFatto, onChiudi }: { d: DatiSegreteria; fai: F
   const tutti = c.incassi + c.rimborsi + c.modulo + c.pagamenti + c.a_mano + c.da_decidere + c.prima
   const scritti = c.incassi + c.rimborsi
   const righe: Array<[number, string, string]> = [
-    [c.incassi, 'incassi del negozio entrano', ' in «Da classificare», col segno DA SATISPAY. La voce la scegli dopo, con Cambia voce.'],
+    [c.incassi, 'incassi del negozio entrano', ' in «Da classificare». La voce la scegli dopo, con Cambia voce.'],
     [c.rimborsi, 'rimborsi entrano come uscite', ', anche loro in «Da classificare».'],
     [c.modulo, 'sono pagamenti del modulo di iscrizione', ': sono già fra gli incassi degli iscritti o in una ricevuta. Non si scrivono una seconda volta.'],
     [c.pagamenti, 'sono già fra gli incassi degli iscritti', ': pagati in palestra con Satispay e registrati lì, stesso giorno e stesso importo. Non si scrivono una seconda volta.'],
-    [c.a_mano, 'erano già scritti a mano', ': stesso giorno, stesso importo, un solo movimento possibile. Resta quello a mano, con la sua voce; prende il segno DA SATISPAY.'],
+    [c.a_mano, 'erano già scritti a mano', ': stesso giorno, stesso importo, un solo movimento possibile. Resta quello a mano, con la sua voce.'],
     [c.da_decidere, 'sono da decidere', ': un giorno già chiuso, o più movimenti a mano con lo stesso importo quel giorno. Non entrano: li trovi in MOVIMENTI, nell’avviso giallo.'],
     [c.prima, 'sono di prima dell’inizio dei conti', ': non entrano.'],
   ]
@@ -162,7 +162,7 @@ function DaDecidereScheda({ d, casi, fai, onFatto }: { d: DatiSegreteria; casi: 
                 </div>
                 <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
                   {c.candidati.map((m) => (
-                    <button key={m.id} type="button" className="sg-btn sg-btn-linea" onClick={() => decidi(c, 'a_mano', 'Il movimento a mano prende il segno DA SATISPAY', m.id)}>
+                    <button key={m.id} type="button" className="sg-btn sg-btn-linea" onClick={() => decidi(c, 'a_mano', 'Il pagamento è quel movimento a mano', m.id)}>
                       È «{m.descrizione}»
                     </button>
                   ))}
@@ -170,7 +170,7 @@ function DaDecidereScheda({ d, casi, fai, onFatto }: { d: DatiSegreteria; casi: 
                     {c.candidati.length === 2 ? 'Nessuno dei due: scrivilo' : 'Nessuno: scrivilo'}
                   </button>
                 </div>
-                <span className="sg-sotto">Se è uno di questi, resta quello a mano con la sua voce, e prende il segno DA SATISPAY.</span>
+                <span className="sg-sotto">Se è uno di questi, resta quello a mano con la sua voce.</span>
               </>
             )}
           </section>

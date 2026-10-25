@@ -25,6 +25,8 @@ nuovo. Diventano token dell'app solo dopo il sì.
 - **Giallo pieno `#f4c31b`: è del marchio.** Solo il tasto principale (uno per schermata) e la voce corrente
   del menu. Mai uno stato.
 - **«Aspetta, non blocca»** è testo e bordo `#8f6a00` su tessera bianca, mai un riempimento giallo.
+- **Giallo tenue** (`#8f6a00` al 10% sul bianco, `#f4f0e6`): solo il fondo delle righe di MOVIMENTI da sistemare (Da classificare, Varie
+  o senza voce), perché saltino all'occhio in un elenco lungo. Mai un tasto né un segno.
 - **Rosso** = manca o blocca. **Verde** = fatto. Lo stato si legge sempre a parole con un segno (✕, …, ✓),
   non dal solo colore.
 

@@ -77,6 +77,7 @@ import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scar
 import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri } from './CollegaPersona'
 import { Bilancio } from './Bilancio'
+import { rigaDaSistemare } from '../../lib/bilancio'
 import { ScaricoSatispay } from './ScaricoSatispay'
 import { commissioneSatispay, NOME_CASSA_SATISPAY, spesaCommissione } from '../../lib/satispayScarico'
 
@@ -551,14 +552,13 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
             {trovate.slice(0, viste).map((r) => {
               const e = dellEstratto.get(r.id)
               return (
-              <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} data-scelto={aperto?.id === r.id} data-scelta={scelti.has(r.id)} data-senza-casella={!cambiabile(r)} onClick={() => { if (r.origine !== 'movimento' && r.personaId && onPersona) onPersona(r.personaId); else { setScrivo(null); setAperto(r) } }}>
+              <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} data-scelto={aperto?.id === r.id} data-scelta={scelti.has(r.id)} data-senza-casella={!cambiabile(r)} data-da-sistemare={rigaDaSistemare(r)} onClick={() => { if (r.origine !== 'movimento' && r.personaId && onPersona) onPersona(r.personaId); else { setScrivo(null); setAperto(r) } }}>
                 <span role="cell" className="sg-scelta-riga" onClick={(e) => e.stopPropagation()}>
                   {cambiabile(r) && <input type="checkbox" checked={scelti.has(r.id)} onChange={() => alterna(r.id)} aria-label={`Scegli ${r.descrizione} del ${dataRicevuta(r.data)}`} />}
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{dataRicevuta(r.data)}</span>
                 <span role="cell" style={{ fontSize: 15, fontWeight: 600, textDecoration: r.annullato ? 'line-through' : undefined }}>
                   <button type="button" className="sg-riga-apri">{r.descrizione}</button>
-                  {r.satispayId && <span className="num sg-tag" style={{ marginLeft: 8 }}>Da Satispay</span>}
                   {r.origineImport?.startsWith('banca:') && <span className="num sg-tag" style={{ marginLeft: 8 }}>Dalla banca</span>}
                   {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
                   {/* Lo stato del collegamento alla persona sta accanto alla descrizione: la colonna PERSONA non c'è più. */}
