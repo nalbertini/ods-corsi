@@ -108,6 +108,8 @@ export const NOME_CASSA_SATISPAY = 'Satispay'
 export const CAMBIO_CASSA_SATISPAY = '2026-10-01'
 export const VOCE_QUOTA = 'Quota associativa'
 export const VOCE_CORSI = 'Corsi e altri pagamenti'
+/** Le quote delle gare (`114-gare.sql`): una voce a sé, per sapere quanto entra e quanto si spende per le gare. */
+export const VOCE_GARE = 'Gare'
 /** Un'entrata su una quota o un corso, scritta a mano, ha la persona che ha pagato (`98-quote-persona.sql`). */
 export const vuolePersona = (tipo: string, voceNome: string | null | undefined): boolean =>
   tipo === 'entrata' && (voceNome === VOCE_QUOTA || voceNome === VOCE_CORSI)
@@ -132,8 +134,11 @@ export const cassaDelMetodo = (metodo: string, data: string): 'contanti' | 'cont
 }
 const NOME_CASSA = { contanti: NOME_CASSA_CONTANTI, conto: NOME_CASSA_CONTO, satispay: NOME_CASSA_SATISPAY }
 
-/** La voce di sistema di un incasso: la quota associativa, o tutto il resto. */
-export const voceDiSistema = (voce: string) => (voce.trim().toLowerCase() === 'quota associativa' ? VOCE_QUOTA : VOCE_CORSI)
+/** La voce di sistema di un incasso: la quota associativa, le gare, o tutto il resto. */
+export const voceDiSistema = (voce: string) => {
+  const v = voce.trim().toLowerCase()
+  return v === 'quota associativa' ? VOCE_QUOTA : v === 'gare' ? VOCE_GARE : VOCE_CORSI
+}
 
 /** Dove va un incasso in CONTABILITÀ, detto prima di registrarlo: la cassa e la voce che `incassiDerivati` gli darà. */
 export const doveEntraInContabilita = (metodo: string, voce: string, data: string) =>
@@ -154,7 +159,7 @@ export function incassiDerivati(righe: RigaPagamento[], casse: Cassa[]): RigaMov
     importo: r.importo,
     descrizione: r.chi,
     // Il metodo lo dice la colonna CASSA e la quota la voce sotto il nome: qui resta quel che le colonne non dicono.
-    sotto: [voceDiSistema(r.voce) === VOCE_QUOTA ? '' : r.voce, r.ricevuta ? `ricevuta ${r.ricevuta.numero}/${r.ricevuta.anno}` : r.senzaRichiesta ? '' : 'senza ricevuta'].filter(Boolean).join(' · ') || undefined,
+    sotto: [voceDiSistema(r.voce) === VOCE_CORSI ? r.voce : '', r.ricevuta ? `ricevuta ${r.ricevuta.numero}/${r.ricevuta.anno}` : r.senzaRichiesta ? '' : 'senza ricevuta'].filter(Boolean).join(' · ') || undefined,
     personaId: r.personaId,
     voce: voceDiSistema(r.voce),
     cassaId: cassa(NOME_CASSA[cassaDelMetodo(r.metodo, r.data)]),

@@ -36,12 +36,12 @@ console.log('\nI cinque gruppi')
 ok('titoli e voci, nell\'ordine', Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.titolo, g.voci]) : GRUPPI, [
   ['Ogni giorno', [['dafare', 'Da fare'], ['richieste', 'Richieste online'], ['presenze', 'Presenze']]],
   ['Iscritti e soldi', [['iscritti', 'Iscritti']]],
-  ['Corsi e orari', [['settimana', 'Settimana'], ['corsi', 'Corsi'], ['listino', 'Listino']]],
+  ['Corsi e orari', [['settimana', 'Settimana'], ['corsi', 'Corsi'], ['gare', 'Gare'], ['listino', 'Listino']]],
   ['Istruttori', [['istruttori', 'Presenze istruttori'], ['compensi', 'Compensi'], ['personale', 'Istruttori e accessi']]],
   ['Il resto', [['statistiche', 'Statistiche'], ['vestiario', 'Vestiario'], ['segnalazioni', 'Segnalazioni'], ['sito', 'Sito']]],
 ])
-const ID16 = 'dafare settimana richieste presenze iscritti corsi istruttori compensi personale statistiche listino vestiario segnalazioni sito'.split(' ')
-ok('le 14 voci (senza TESSERE e PAGAMENTI, unite in ISCRITTI e CONTABILITÀ) ci sono, una volta sola',
+const ID16 = 'dafare settimana richieste presenze iscritti corsi gare istruttori compensi personale statistiche listino vestiario segnalazioni sito'.split(' ')
+ok('le 15 voci (senza TESSERE e PAGAMENTI, unite in ISCRITTI e CONTABILITÀ) ci sono, una volta sola',
   Array.isArray(GRUPPI) ? GRUPPI.flatMap((g) => g.voci.map(([id]) => id)).sort() : GRUPPI, [...ID16].sort())
 ok('solo «Il resto» è secondario',
   Array.isArray(GRUPPI) ? GRUPPI.filter((g) => g.secondario === true).map((g) => g.titolo) : GRUPPI, ['Il resto'])
@@ -115,7 +115,7 @@ const luoghi = await impacchetta("export { LUOGHI } from './src/lib/luoghiBanco'
 ok('LUOGHI: i cinque luoghi con le loro voci', (luoghi.LUOGHI ?? []).map((l) => [l.id, l.voci.map((v) => v.voce)]), [
   ['oggi', ['dafare', 'settimana', 'presenze']],
   ['persone', ['iscritti', 'richieste', 'istruttori', 'compensi', 'personale']],
-  ['corsi', ['corsi']],
+  ['corsi', ['corsi', 'gare']],
   ['soldi', ['contabilita', 'listino', 'vestiario']],
   ['palestra', ['statistiche', 'segnalazioni', 'sito', 'regole']],
 ])

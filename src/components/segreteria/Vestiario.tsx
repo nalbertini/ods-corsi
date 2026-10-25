@@ -9,6 +9,7 @@ import {
   MAX_CAPI,
   MAX_QUANTI,
   alGiorno,
+  giorniA,
   ilGiorno,
   mancanoOrdine,
   inEuro,
@@ -356,12 +357,6 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
       {avviso}
     </>
   )
-}
-
-/** «fra 22 giorni», «oggi», «domani». */
-function giorniA(oggi: string, giorno: string) {
-  const n = Math.round((Date.parse(giorno) - Date.parse(oggi)) / 86_400_000)
-  return n === 0 ? 'oggi' : n === 1 ? 'domani' : `fra ${n} giorni`
 }
 
 type Fai = ReturnType<typeof useAvviso>['fai']

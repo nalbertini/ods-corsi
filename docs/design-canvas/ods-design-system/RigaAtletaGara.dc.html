@@ -8,58 +8,62 @@
 <x-dc>
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: grid; grid-template-columns: {{griglia}}; align-items: center; gap: 16px; min-height: 56px; padding: 8px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4">
-  <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
-    <span style="font-size: 15px; font-weight: 600">{{nome}}<sc-if value="{{minorenne}}" hint-placeholder-val="{{ false }}"><svg aria-label="minorenne" role="img" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d2a3d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 8px; vertical-align: -2px"><circle cx="12" cy="5" r="2.5"/><path d="M8 21v-6l-2-3 3-3h6l3 3-2 3v6"/></svg></sc-if></span>
-    <sc-if value="{{telefono}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #46606f">{{sotto}}</span></sc-if>
+<div style="display: grid; grid-template-columns: {{griglia}}; align-items: center; gap: {{gap}}; min-height: 56px; padding: 8px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4">
+  <span style="grid-column: {{colNome}}; font-size: 15px; font-weight: 600; min-width: 0">{{nome}}<sc-if value="{{minorenne}}" hint-placeholder-val="{{ false }}"><svg aria-label="minorenne" role="img" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d2a3d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 8px; vertical-align: -2px"><circle cx="12" cy="5" r="2.5"/><path d="M8 21v-6l-2-3 3-3h6l3 3-2 3v6"/></svg></sc-if></span>
+  <span style="font-size: 14px; font-variant-numeric: tabular-nums">{{nascita}}</span>
+  <span style="font-size: 13px; min-width: 0">{{corso}}</span>
+  <span>
+    <sc-if value="{{tipoManca}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #b81d1d; border-radius: 6px; background: #ffffff; color: #b81d1d; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: normal">&#10005; {{certificato}}</span></sc-if>
+    <sc-if value="{{tipoAspetta}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #8f6a00; border-radius: 6px; background: #ffffff; color: #8f6a00; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: normal">&#8230; {{certificato}}</span></sc-if>
+    <sc-if value="{{tipoFatto}}" hint-placeholder-val="{{ true }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #0b7a33; border-radius: 6px; background: #ffffff; color: #0b7a33; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: normal">&#10003; {{certificato}}</span></sc-if>
+    <sc-if value="{{tipoNeutro}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #46606f; border-radius: 6px; background: #ffffff; color: #46606f; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: normal">{{certificato}}</span></sc-if>
   </span>
-  <sc-if value="{{largo}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; font-weight: 500">{{nascita}}</span></sc-if>
-  <sc-if value="{{largo}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #0d2a3d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{corso}}</span></sc-if>
-  <span style="display: flex; align-items: flex-start; gap: 7px; font-size: 13px; font-weight: 500; line-height: 1.35"><span aria-hidden="true" style="flex: none; width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: {{punto}}"></span><span>{{certificato}}<sc-if value="{{certificatoTel}}" hint-placeholder-val="{{ false }}"><span style="display: block; color: #b81d1d">Quota da pagare</span></sc-if></span></span>
-  <sc-if value="{{largo}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: {{coloreNota}}; border-bottom: {{rigaNota}}; padding: 4px 0">{{nota}}</span></sc-if>
-  <sc-if value="{{conQuota}}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500"><span aria-hidden="true" style="flex: none; width: 8px; height: 8px; border-radius: 50%; background: {{puntoQuota}}"></span><span style="flex: 1">{{quota}}</span><sc-if value="{{conIncassa}}" hint-placeholder-val="{{ false }}"><button style="min-height: 36px; padding: 0 12px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; font: 600 13px Inter, Arial, sans-serif; color: #14709f; cursor: pointer">Incassa</button></sc-if></span></sc-if>
-  <sc-if value="{{conTogli}}" hint-placeholder-val="{{ true }}"><button style="justify-self: end; min-height: 44px; padding: 0 12px; background: transparent; border: 0; border-radius: 6px; font: 600 14px Inter, Arial, sans-serif; color: #b81d1d; cursor: pointer">Togli</button></sc-if>
+  <span style="min-width: 0; font-size: 13px"><span style="display: flex; align-items: center; min-height: 44px; color: {{coloreNota}}">{{nota}}</span></span>
+  <sc-if value="{{conQuota}}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px">
+    <sc-if value="{{pagata}}" hint-placeholder-val="{{ false }}"><span><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #0b7a33; border-radius: 6px; background: #ffffff; color: #0b7a33; font-size: 12px; font-weight: 700; letter-spacing: 0.02em">&#10003; Pagata</span> {{quota}}</span></sc-if>
+    <sc-if value="{{daPagare}}" hint-placeholder-val="{{ true }}"><span style="font-weight: 700; color: #b81d1d">{{quota}}</span><button style="min-height: 44px; padding: 0 14px; background: transparent; border: 2px solid #14709f; border-radius: 6px; font: 600 16px Inter, Arial, sans-serif; color: #0d2a3d; cursor: pointer">Incassa</button></sc-if>
+  </span></sc-if>
+  <span style="grid-column: {{colTogli}}; text-align: right"><sc-if value="{{daPagare}}" hint-placeholder-val="{{ true }}"><button style="min-height: 44px; padding: 0 14px; background: transparent; border: 2px solid #b81d1d; border-radius: 6px; font: 600 16px Inter, Arial, sans-serif; color: #b81d1d; cursor: pointer">Togli</button></sc-if></span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Bianchi Luca"},"minorenne":{"editor":"boolean","default":false},"nascita":{"editor":"text","default":"2009"},"corso":{"editor":"text","default":"Judo agonisti"},"certificato":{"editor":"text","default":"Valido fino al 3 marzo 2027"},"tono":{"editor":"enum","options":["verde","giallo","rosso"],"default":"verde"},"nota":{"editor":"text","default":"−66 kg"},"sola":{"editor":"boolean","default":false},"telefono":{"editor":"boolean","default":false},"quota":{"editor":"text","default":""},"pagata":{"editor":"boolean","default":false},"griglia":{"editor":"text","default":""},"$preview":{"width":1240,"height":64}}'>
-// PROPOSTA (../gare/): la riga di un atleta nella scheda di una gara, solo nel look del sito. Stessa misura e filetto della
-// riga di ISCRITTI (alta almeno 56px, padding 8px 14px, filetto `surface-2`). Colonne: ATLETA (15px 600, col bambino a linea
-// 16px dei minorenni come in ISCRITTI), NATO (l'anno, per distinguere gli omonimi e la categoria d'eta'), CORSO, CERTIFICATO
-// ALLA DATA DELLA GARA (pallino + frase: verde «Valido fino al …», giallo «Caricato, da confermare» — un certificato non confermato
-// dalla segreteria non vale —, rosso «Scade il … , prima della gara» o «Manca»), NOTA (scritta dalla segreteria, es. la categoria
-// di peso; vuota = «aggiungi nota» `dim` sottolineato a puntini), TOGLI (testo rosso-testo, 44px: toglie dalla gara, non dalla palestra).
-// sola: per l'istruttore, senza TOGLI e con la nota solo da leggere. telefono: una colonna per l'atleta (con sotto anno e corso) e
-// una per il certificato; la nota va sotto nell'atleta. quota (vuota = gara senza quota, niente colonna): la frase della QUOTA,
-// pallino verde con `pagata` («Pagata · ricevuta 41/2026»), rosso senza («Da pagare · 30 €») e il tasto INCASSA, che apre la
-// conferma di REGISTRA IL PAGAMENTO già compilata (voce Gare): il movimento in CONTABILITÀ si fa da sé, la ricevuta con la spunta.
-// Con `sola` niente INCASSA; al telefono la quota va sotto il certificato, solo da pagare. Per un minorenne l'istruttore vede il nome e basta (niente contatti).
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Bianchi Luca"},"minorenne":{"editor":"boolean","default":false},"nascita":{"editor":"text","default":"2009"},"corso":{"editor":"text","default":"Judo agonisti"},"certificato":{"editor":"text","default":"Valido, scade 3 marzo 2027"},"tono":{"editor":"enum","options":["verde","giallo","rosso","neutro"],"default":"verde"},"nota":{"editor":"text","default":"−66 kg"},"quota":{"editor":"text","default":""},"pagata":{"editor":"boolean","default":false},"telefono":{"editor":"boolean","default":false},"griglia":{"editor":"text","default":""},"$preview":{"width":1240,"height":64}}'>
+// COSTRUITA (src/components/segreteria/Gare.tsx, `SchedaGara`, tabella ATLETI; stile in src/segreteria.css, blocco GARE): la riga di un
+// atleta nella scheda di una gara, solo nel look del sito. Come la riga di ISCRITTI: alta almeno 56px, padding 8px 14px, gap 14px, filetto
+// `surface-2`. Colonne: ATLETA (cognome e nome, 15px 600; l'omino a linea dei minorenni), NATO (l'anno, 14px), CORSO (13px),
+// CERTIFICATO AL <giorno della gara> (un `.sg-tag` del look del sito, parole di `scrittaCertificato` in src/lib/gare.ts: verde ✓ «Valido, scade
+// 3 marzo 2027», giallo … «Caricato, da confermare» — un certificato non confermato dalla segreteria non vale —, rosso ✕ «Scade 2 novembre, prima
+// della gara» o «Manca», neutro senza segno «Non serve»), NOTA (la scrive la segreteria, es. il peso; vuota e' un bottone «aggiungi nota» `dim`
+// alto 44px, `.sg-gara-nota`), QUOTA, TOGLI (bottone a linea rossa, 44px: toglie dalla gara, non dalla palestra).
+// quota (vuota = gara senza quota, niente colonna): con `pagata` il tag verde «Pagata» e dopo «metodo, data» (testo in `quota`); senza,
+// «Da pagare · 30 €» rosso in grassetto e il tasto INCASSA (bottone a linea `riga-campo`), che apre il cassetto di REGISTRA IL PAGAMENTO
+// gia' compilato (voce Gare): il movimento in CONTABILITÀ si fa da sé.
+// Sopra i 1001px le colonne sono minmax(0,1.4fr) 48px minmax(0,1fr) minmax(200px,1.4fr) minmax(0,1.2fr) minmax(0,1.4fr) 80px; senza quota
+// (`quota` vuota) la NOTA prende minmax(0,1.6fr) e la QUOTA non c'e'. Fino a 1000px (`telefono`): due colonne uguali, l'ATLETA su tutta la
+// larghezza (1° figlio), niente testata, gap di riga 6px; nato e corso, certificato e nota, quota e tasto si dividono le righe.
+// NON e' costruito il caso `sola` (istruttore senza TOGLI): l'istruttore legge le gare in I MIEI > GARE, in schede (vedi `SchedaGara`).
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const t = (v) => v === true || v === 'true';
-    const sola = t(p.sola);
     const telefono = t(p.telefono);
-    const nota = p.nota ?? '';
     const quota = p.quota ?? '';
     const pagata = t(p.pagata);
-    const conQuota = !!quota && !telefono;
-    // Le colonne: atleta, (nato, corso), certificato, (nota), (quota), (togli).
-    const colonne = telefono ? ['minmax(0, 1fr)', '150px'] : ['minmax(0, 1fr)', '70px', 'minmax(0, 0.8fr)', '240px', '130px', ...(conQuota ? ['220px'] : []), ...(sola ? [] : ['70px'])];
+    const nota = p.nota ?? '';
+    const conQuota = !!quota;
+    const tono = p.tono || 'verde';
     return {
-      nome: p.nome ?? '', minorenne: t(p.minorenne), nascita: p.nascita ?? '', corso: p.corso ?? '', certificato: p.certificato ?? '',
-      quota, conQuota, conIncassa: conQuota && !pagata && !sola, puntoQuota: pagata ? '#12913f' : '#e4292a',
-      certificatoTel: telefono && quota && !pagata ? `${p.certificato ?? ''} · quota da pagare` : '',
-      punto: { verde: '#12913f', giallo: '#f4c31b', rosso: '#e4292a' }[p.tono] || '#12913f',
-      nota: nota || (sola ? '' : 'aggiungi nota'), coloreNota: nota ? '#0d2a3d' : '#46606f', rigaNota: sola ? '0' : '1px dotted #46606f',
-      conTogli: !sola && !telefono, largo: !telefono, telefono,
-      sotto: [p.nascita, p.corso, nota].filter(Boolean).join(' · '),
-      griglia: p.griglia || colonne.join(' '),
+      nome: p.nome ?? '', minorenne: t(p.minorenne), nascita: p.nascita || '—', corso: p.corso || '—', certificato: p.certificato ?? '',
+      tipoManca: tono === 'rosso', tipoAspetta: tono === 'giallo', tipoFatto: tono === 'verde', tipoNeutro: tono === 'neutro',
+      nota: nota || 'aggiungi nota', coloreNota: nota ? '#0d2a3d' : '#46606f',
+      conQuota, quota, pagata, daPagare: !pagata,
+      griglia: p.griglia || (telefono ? 'minmax(0, 1fr) minmax(0, 1fr)' : conQuota ? 'minmax(0, 1.4fr) 48px minmax(0, 1fr) minmax(200px, 1.4fr) minmax(0, 1.2fr) minmax(0, 1.4fr) 80px' : 'minmax(0, 1.4fr) 48px minmax(0, 1fr) minmax(200px, 1.4fr) minmax(0, 1.6fr) 80px'),
+      gap: telefono ? '6px 14px' : '14px', colNome: telefono ? '1 / -1' : 'auto', colTogli: 'auto',
     };
   }
 }

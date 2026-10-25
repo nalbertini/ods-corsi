@@ -3,7 +3,9 @@ import { attivitaDelGiorno, COME_IL_GIORNO, NESSUNA_ATTIVITA, sceltaAttivitaLezi
 import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso, lunedi, oraDi, perEsteso } from '../../lib/sala'
 import { dati, type Dati } from '../../lib/dati'
-import { Back } from '../Icons'
+import { Back, ICONE_MENU } from '../Icons'
+import { datiGare } from '../../lib/gareDati'
+import { gareDellaSettimana, type Gara } from '../../lib/gare'
 import { useSchermo } from '../../lib/largo'
 import type { ChiProva } from '../../lib/prove'
 import { unaVolta } from '../../lib/prove'
@@ -33,6 +35,7 @@ export function Settimana({
   posto,
   onPosto,
   onConti,
+  onGara,
 }: {
   d: DatiSegreteria
   /** Settimana, sala e lezione aperta stanno nell'indirizzo: le tiene la segreteria. */
@@ -40,6 +43,8 @@ export function Settimana({
   onPosto: (p: Omit<Posto, 'voce'>, passo: 'push' | 'replace') => void
   /** Un appello segnato o una lezione cambiata: i conti di COSA MANCA si rileggono. */
   onConti?: () => void
+  /** Toccare una gara la apre in GARE. */
+  onGara?: (id: string) => void
 }) {
   const { lezione: aperta, sala = '' } = posto
   // Una chiave e non la data: la stessa settimana a ogni giro non rilegge la griglia.
@@ -57,6 +62,13 @@ export function Settimana({
   const sett = useCarica(() => d.settimana(giorni[0], giorni[6]), [d, giorni])
   const sale = useCarica(() => d.sale(), [d])
   const pronto = useCarica(() => d.prontoFino(), [d])
+  // Le gare non hanno un'ora: stanno in una riga loro, sui giorni che coprono. Se non si leggono
+  // (prima di `114-gare.sql`) la riga non c'è: la settimana resta quella delle lezioni.
+  const gare = useCarica(async () => {
+    const { gare, atleti } = await (await datiGare()).leggi({ ruolo: 'staff', personaId: '', corsiInsegnati: [] })
+    return gareDellaSettimana(gare.filter((g) => !g.annullata), primo).map((x) => ({ ...x, atleti: atleti.filter((a) => a.garaId === x.gara.id).length }))
+  }, [primo])
+  const gareSett = gare.dato ?? []
 
   // Una lezione che non c'è più (un link vecchio, una straordinaria tolta):
   // si resta sulla sua settimana e lo si dice. Solo quando la settimana
@@ -104,7 +116,7 @@ export function Settimana({
 
   const lezioni = (sett.dato ?? []).filter((l) => !sala || l.salaId === sala)
   const ore = [...new Set(lezioni.map((l) => oraDi(l.inizio)))].sort()
-  const stretti = giorniStretti(giorni, sett.dato === null ? null : lezioni.map((l) => l.inizio))
+  const stretti = giorniStretti(giorni, sett.dato === null ? null : lezioni.map((l) => l.inizio), gareSett.flatMap((x) => x.giorni))
   const oggi = chiaveGiorno(new Date())
   const adesso = Date.now()
   const lezione = sett.dato?.find((l) => l.id === aperta?.id) ?? null
@@ -243,6 +255,11 @@ export function Settimana({
           {sett.dato !== null && oreDelGiorno.length === 0 && (
             <p className="sg-sotto">Nessuna lezione {sala ? 'in questa sala ' : ''}in questo giorno.</p>
           )}
+          {gareSett
+            .filter((x) => x.giorni.includes(delGiorno))
+            .map((x) => (
+              <TesseraGara key={x.gara.id} gara={x.gara} giorni={x.giorni} atleti={x.atleti} onApri={() => onGara?.(x.gara.id)} />
+            ))}
           <div className="sg-giorno-lista">
             {oreDelGiorno.map((ora) => (
               <Fila key={ora} ora={ora}>
@@ -270,6 +287,20 @@ export function Settimana({
                 </div>
               )
             })}
+
+            {gareSett.length > 0 && (
+              <div className="sg-gare-sett">
+                <span className="sg-gare-testa" style={{ gridRow: `1 / span ${gareSett.length}` }}>
+                  <Coppa size={13} />
+                  GARE
+                </span>
+                {gareSett.map((x, i) => (
+                    <div key={x.gara.id} style={{ gridRow: i + 1, gridColumn: `${giorni.findIndex((g) => chiaveGiorno(g) === x.giorni[0]) + 2} / span ${x.giorni.length}` }}>
+                      <TesseraGara gara={x.gara} giorni={x.giorni} atleti={x.atleti} onApri={() => onGara?.(x.gara.id)} />
+                    </div>
+                ))}
+              </div>
+            )}
 
             {sett.dato === null && !sett.guaio && <p className="sg-sotto" style={{ gridColumn: '2 / -1' }}>Sto leggendo la settimana…</p>}
             {sett.dato !== null && ore.length === 0 && (
@@ -348,6 +379,29 @@ export function Settimana({
       )}
       {avviso}
     </>
+  )
+}
+
+const Coppa = ICONE_MENU.gare
+const giornoCorto = (k: string) => {
+  const g = new Date(`${k}T12:00`)
+  return `${CORTI[g.getDay()]} ${g.getDate()}`
+}
+
+function TesseraGara({ gara, giorni, atleti, onApri }: { gara: Gara; giorni: string[]; atleti: number; onApri: () => void }) {
+  const quando = giorni.length > 1 ? `${giornoCorto(giorni[0])} – ${giornoCorto(giorni[giorni.length - 1])}` : giornoCorto(giorni[0])
+  return (
+    <button type="button" className="sg-gara-sett" onClick={onApri}>
+      <span className="num sg-gara-sett-quando">
+        <Coppa size={13} />
+        Gara · {quando}
+      </span>
+      <span style={{ fontWeight: 700 }}>{gara.nome}</span>
+      {gara.luogo && <span className="sg-gara-sett-dove">{gara.luogo}</span>}
+      <span className="num sg-gara-sett-dove">
+        {atleti} {atleti === 1 ? 'atleta' : 'atleti'}
+      </span>
+    </button>
   )
 }
 

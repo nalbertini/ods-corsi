@@ -28,6 +28,8 @@ ok('il database è raggiungibile, anche in tempo reale', direttiva(p, 'connect-s
 ok('un database con dominio suo si legge dall’indirizzo', direttiva(politicaCsp('https://db.palestra.it/rest/v1'), 'connect-src')?.includes('https://db.palestra.it'), true)
 ok('senza database (modalità prova) non resta un indirizzo mezzo scritto', direttiva(politicaCsp(undefined), 'connect-src')?.some((s) => s.includes('undefined')), false)
 ok('un indirizzo che non è un indirizzo non apre niente', direttiva(politicaCsp('boh'), 'connect-src')?.filter((s) => s !== "'self'" && !s.includes('spotify')), [])
+ok('senza la chiave di Places, Google non si raggiunge', direttiva(p, 'connect-src')?.some((s) => s.includes('google')), false)
+ok('con la chiave, solo i suggerimenti degli indirizzi: nessuno script di Google', [direttiva(politicaCsp('https://abc.supabase.co', true), 'connect-src')?.filter((s) => s.includes('google')), direttiva(politicaCsp('https://abc.supabase.co', true), 'script-src')?.some((s) => s.includes('google'))], [['https://places.googleapis.com'], false])
 ok('nessuna direttiva che una <meta> ignora', /frame-ancestors|report-uri|sandbox/.test(p), false)
 
 ok('un @import di un altro sito si toglie', senzaImportEsterni('@import "https://rsms.me/inter/inter.css";:root{--a:1}'), ':root{--a:1}')

@@ -561,6 +561,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pg_column_size(dati)%')),
   ('113-genitore-non-iscritto.sql', 'la segreteria aggiunge il genitore non iscritto come titolare del nucleo dei figli',
     exists (select 1 from dentro where nome = 'aggiungi_genitore' and corpo like '%genitore_non_iscritto%')
-    and exists (select 1 from pg_trigger where tgname = 'iscrizioni_togli_genitore_non_iscritto' and not tgisinternal))
+    and exists (select 1 from pg_trigger where tgname = 'iscrizioni_togli_genitore_non_iscritto' and not tgisinternal)),
+  ('114-gare.sql', 'le gare, con la quota a voci, chi accompagna, gli atleti e l''incasso in CONTABILITÀ',
+    exists (select 1 from dentro where nome = 'incassa_gara' and corpo like '%registra_pagamento_diretto%')
+    and exists (select 1 from pg_trigger where tgname = 'gare_atleti_unione' and not tgisinternal))
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -502,3 +502,9 @@ export function riepilogoOrdine(o: Pick<Ordine, 'nome' | 'cognome' | 'righe' | '
     `Parte solo quello pagato entro ${ilGiorno(chiude)}.`,
   ].join('\n')
 }
+
+/** «fra 22 giorni», «oggi», «domani». */
+export function giorniA(oggi: string, giorno: string) {
+  const n = Math.round((Date.parse(giorno) - Date.parse(oggi)) / 86_400_000)
+  return n === 0 ? 'oggi' : n === 1 ? 'domani' : `fra ${n} giorni`
+}

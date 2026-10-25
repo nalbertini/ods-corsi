@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #ffffff; border-radius: 6px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase">{{nome}}</span>
+    <span style="font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums">{{quando}}</span>
+    <sc-if value="{{dove}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; line-height: 1.4; color: #46606f">{{dove}}</span></sc-if>
+    <sc-if value="{{mappa}}" hint-placeholder-val="{{ true }}"><span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 15px; font-weight: 600; color: #14709f; text-decoration: underline">Apri la mappa &#8599;</span></sc-if>
+  </div>
+  <sc-if value="{{conAvviso}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; background: #ffffff; border-radius: 6px; box-shadow: inset 4px 0 0 #b81d1d"><span style="font-size: 15px; font-weight: 700">{{avviso}}</span><span style="font-size: 14px; line-height: 1.4; color: #46606f">La segreteria li sta sentendo.</span></div></sc-if>
+  <sc-if value="{{corso}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; line-height: 1.4; color: #0d2a3d">Corso: {{corso}}</span></sc-if>
+  <sc-if value="{{nota}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; line-height: 1.4; color: #0d2a3d">{{nota}}</span></sc-if>
+  <sc-if value="{{certGuaio}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; background: #ffffff; border-radius: 6px; box-shadow: inset 4px 0 0 #b81d1d"><span style="font-size: 15px; font-weight: 700">{{certificato}}</span><sc-if value="{{dettaglio}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; line-height: 1.4; color: #46606f">{{dettaglio}}</span></sc-if></div></sc-if>
+  <sc-if value="{{certFatto}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; line-height: 1.4; color: #0b7a33">{{certificato}}</span></sc-if>
+  <sc-if value="{{quota}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 4px">
+    <span style="font-size: 14px; line-height: 1.4; color: #46606f">QUOTA</span>
+    <span style="display: flex; justify-content: space-between; font-size: 15px"><span>Iscrizione</span><span style="font-variant-numeric: tabular-nums">{{quota}}</span></span>
+    <span style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums"><span>{{stato}}</span><span>{{quota}}</span></span>
+  </div></sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Trofeo Città di Varese"},"quando":{"editor":"text","default":"14–15 novembre · tra 20 giorni"},"dove":{"editor":"text","default":"PalaWhirlpool, Varese · organizza FIJLKAM Lombardia"},"mappa":{"editor":"boolean","default":true},"corso":{"editor":"text","default":"Judo agonisti"},"nota":{"editor":"text","default":"−66 kg"},"certificato":{"editor":"text","default":"Certificato: valido fino al 3 marzo 2027"},"certTono":{"editor":"enum","options":["fatto","guaio","nessuno"],"default":"fatto"},"dettaglio":{"editor":"text","default":""},"avviso":{"editor":"text","default":""},"quota":{"editor":"text","default":"30 €"},"pagata":{"editor":"boolean","default":false},"$preview":{"width":390,"height":300}}'>
+// COSTRUITA: la gara letta in una scheda, dall'istruttore (src/components/MieGare.tsx, I MIEI > GARE: un atleta per riga con corso,
+// certificato e nota, `avviso` se qualcuno non ha il certificato) e dall'iscritto (src/components/GareIscritto.tsx, LE MIE GARE: il suo corso,
+// la sua nota, il certificato per la gara e la QUOTA). Questa scheda e' la parte comune, solo nel look del sito: `.card` bianca di 14px, gap 10px, senza bordo.
+// Testa: il nome come `ob` 18px in maiuscolo (Big Shoulders), la data a 14px 700, luogo e organizzatore in `dim` (`Dettaglio`) e sotto,
+// su una riga sua alta 44px, il link «Apri la mappa ↗» (`.link-alto`, solo se c'e' l'indirizzo). Poi: `avviso` = `Riquadro` guaio stretto
+// (barra rossa a sinistra); corso e nota in `Dettaglio` `testo`; il certificato col `certTono`: guaio = `Riquadro` stretto con `dettaglio`,
+// fatto = frase verde, nessuno = niente; la QUOTA con la voce e il totale, «Pagata» o «Da pagare» (`pagata`).
+// Non c'e' tabella: istruttore e iscritto non hanno TOGLI, INCASSA ne' la nota da scrivere. Le gare passate dell'iscritto sono una riga di
+// testo («nome · date», «annullata»), non una scheda.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const t = (v) => v === true || v === 'true';
+    const tono = p.certTono || 'fatto';
+    return {
+      nome: p.nome ?? '', quando: p.quando ?? '', dove: p.dove ?? '', mappa: t(p.mappa), corso: p.corso ?? '', nota: p.nota ?? '',
+      conAvviso: !!p.avviso, avviso: p.avviso ?? '', certificato: p.certificato ?? '', dettaglio: p.dettaglio ?? '',
+      certGuaio: tono === 'guaio', certFatto: tono === 'fatto', quota: p.quota ?? '', stato: t(p.pagata) ? 'Pagata' : 'Da pagare',
+    };
+  }
+}
+</script>
+</body>
+</html>

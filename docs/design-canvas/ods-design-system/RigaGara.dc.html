@@ -8,54 +8,66 @@
 <x-dc>
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: grid; grid-template-columns: {{griglia}}; align-items: center; gap: 16px; min-height: 64px; padding: 10px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; cursor: pointer">
-  <span style="opacity: {{opacita}}; display: flex; flex-direction: column; gap: 2px">
-    <b style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">{{giorno}}</b>
-    <span style="font-size: 12px; font-weight: 600; color: #46606f">{{mese}}</span>
+<div style="display: grid; grid-template-columns: {{griglia}}; align-items: center; gap: {{gap}}; min-height: 56px; padding: 8px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; color: {{testo}}; cursor: pointer">
+  <span style="font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums">{{data}}</span>
+  <span style="grid-column: {{colNome}}; min-width: 0; font-size: 15px; font-weight: 600"><span style="text-decoration: {{barrata}}">{{nome}}</span><sc-if value="{{annullata}}" hint-placeholder-val="{{ false }}"> <span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #46606f; border-radius: 6px; background: #ffffff; color: #46606f; font-size: 12px; font-weight: 700; letter-spacing: 0.02em">Annullata</span></sc-if><span style="display: block; font-size: 12px; font-weight: 400; color: #46606f">{{dove}}</span></span>
+  <span style="font-size: 15px; font-variant-numeric: tabular-nums">{{atleti}}</span>
+  <span>
+    <sc-if value="{{certTag}}" hint-placeholder-val="{{ true }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #b81d1d; border-radius: 6px; background: #ffffff; color: #b81d1d; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap">&#10005; {{certificati}}</span></sc-if>
+    <sc-if value="{{certOk}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #0b7a33; border-radius: 6px; background: #ffffff; color: #0b7a33; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap">&#10003; Tutti validi</span></sc-if>
+    <sc-if value="{{certTesto}}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: #46606f">{{certificati}}</span></sc-if>
   </span>
-  <span style="opacity: {{opacita}}; display: flex; flex-direction: column; gap: 2px; min-width: 0">
-    <span style="font-size: 15px; font-weight: 600; text-decoration: {{barrata}}">{{nome}}<sc-if value="{{annullata}}" hint-placeholder-val="{{ false }}"><span style="margin-left: 10px; display: inline-block; padding: 1px 8px; border: 1.5px solid #46606f; border-radius: 6px; font-size: 12px; font-weight: 700; color: #46606f; vertical-align: 1px; text-decoration: none">Annullata</span></sc-if></span>
-    <span style="font-size: 13px; color: #46606f; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{dove}}</span>
+  <span>
+    <sc-if value="{{quoteTag}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #b81d1d; border-radius: 6px; background: #ffffff; color: #b81d1d; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap">&#10005; {{quote}}</span></sc-if>
+    <sc-if value="{{quoteTesto}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; color: #46606f">{{quote}}</span></sc-if>
   </span>
-  <span style="opacity: {{opacita}}; font-size: 15px; font-weight: 600; text-align: right">{{atleti}}</span>
-  <span style="opacity: {{opacita}}; display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500"><sc-if value="{{conCertificati}}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{punto}}"></span></sc-if>{{certificati}}</span>
-  <span style="display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; opacity: {{opacitaQuote}}"><sc-if value="{{conQuote}}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{puntoQuote}}"></span></sc-if>{{quote}}</span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"data":{"editor":"text","default":"SAB 14|novembre 2026"},"nome":{"editor":"text","default":"Trofeo Città di Varese"},"dove":{"editor":"text","default":"PalaWhirlpool, Varese · FIJLKAM Lombardia"},"atleti":{"editor":"text","default":"8"},"senza":{"editor":"text","default":"2"},"stato":{"editor":"enum","options":["futura","passata","annullata"],"default":"futura"},"dapagare":{"editor":"text","default":""},"griglia":{"editor":"text","default":"90px minmax(0, 1fr) 80px 220px 160px"},"$preview":{"width":1000,"height":72}}'>
-// PROPOSTA (../gare/): la riga dell'elenco GARE della segreteria, solo nel look del sito. Fondo bianco, filetto `surface-2`
-// sotto come la riga di ISCRITTI; si clicca tutta e apre la gara. Data in Big Shoulders 22px (giorno) e mese 12px `dim`;
-// nome 15px 600 e sotto luogo e organizzatore 13px `dim`; atleti a destra; certificati: «Tutti validi» col pallino verde,
-// «N senza certificato valido» col pallino rosso (nell'app il conto lo fa `src/lib/gare.ts`, alla data della gara).
-// stato: futura = normale; passata = opacita' 0.6, i certificati non si contano piu' (si legge la storia, non c'e' niente da fare);
-// annullata = nome barrato, tag «Annullata» `dim`, opacita' 0.6.
-// data: «GIORNO|mese anno» separati da |.
-// dapagare: le QUOTE, vuoto = gara senza quota («—» `dim`); «0» = «Tutte pagate» col pallino verde; N = «N da pagare» col
-// pallino rosso, anche a gara passata (i soldi restano da chiedere: la colonna non si spegne con la riga).
+<script data-dc-script data-props='{"data":{"editor":"text","default":"14 novembre"},"nome":{"editor":"text","default":"Trofeo Città di Varese"},"dove":{"editor":"text","default":"PalaWhirlpool, Varese"},"atleti":{"editor":"text","default":"8"},"senza":{"editor":"text","default":"2"},"stato":{"editor":"enum","options":["futura","passata","annullata"],"default":"futura"},"dapagare":{"editor":"text","default":""},"importo":{"editor":"text","default":""},"telefono":{"editor":"boolean","default":false},"griglia":{"editor":"text","default":""},"$preview":{"width":1000,"height":72}}'>
+// COSTRUITA (src/components/segreteria/Gare.tsx, `Elenco`; stile in src/segreteria.css, blocco GARE): la riga dell'elenco GARE,
+// solo nel look del sito. Si clicca tutta e apre la gara. Come la riga di ISCRITTI (`.sg-riga-iscritto`): alta almeno 56px, padding
+// 8px 14px, gap 14px, filetto `surface-2`. Colonne: DATA (14px 700, «14 novembre»; a gara passata c'e' anche l'anno), GARA (nome
+// 15px 600, sotto il luogo a 12px `dim`), ATLETI (numero 15px), CERTIFICATI, QUOTE.
+// Certificati (alla data della gara, li conta `avvisoCertificati` di src/lib/gare.ts): senza atleti «—»; con `senza` > 0 il tag rosso
+// «N atleti senza certificato valido»; se no il tag verde «Tutti validi». Sono `.sg-tag` del look del sito (bianco, bordo 1.5px, ✕ / ✓).
+// Quote (`contiGara`): `dapagare` vuoto = «Senza quota» (`dim`); N > 0 il tag rosso «N da pagare · importo» (`importo`); 0 «Tutte pagate»
+// (`dim`, niente tag). Con atleti = 0 il testo e' «importo a atleta» (`importo`), come nell'app.
+// stato: passata e annullata hanno il testo `dim` e NON l'opacita' (si leggono ancora, come l'ordine annullato); annullata ha il nome
+// barrato e il tag «Annullata». Il tag dei certificati e delle quote resta col suo colore.
+// Sopra i 1001px: 120px minmax(0,1.6fr) 70px minmax(190px,1.4fr) minmax(190px,1.4fr). Fino a 1000px (`telefono`): due colonne uguali,
+// la GARA su tutta la larghezza (2° figlio), niente testata, gap di riga 6px.
+// L'istruttore e l'iscritto non vedono questa riga: leggono le gare in schede (vedi `SchedaGara`).
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const [giorno, mese] = String(p.data ?? 'SAB 14|novembre 2026').split('|');
+    const t = (v) => v === true || v === 'true';
     const stato = p.stato || 'futura';
     const senza = Number(p.senza ?? 0);
-    const futura = stato === 'futura';
+    const atleti = Number(p.atleti ?? 0);
+    const telefono = t(p.telefono);
     const dapagare = String(p.dapagare ?? '').trim();
+    const importo = String(p.importo ?? '').trim();
+    const futura = stato === 'futura';
+    // Nell'app l'avviso dei certificati c'e' anche a gara passata e annullata: gli atleti sono righe come le altre.
+    const certTag = atleti > 0 && senza > 0;
+    const certOk = atleti > 0 && senza === 0;
+    const daPagareN = Number(dapagare);
     return {
-      giorno, mese: mese ?? '', nome: p.nome ?? '', dove: p.dove ?? '', atleti: (p.atleti ?? '0') + ' atleti',
-      annullata: stato === 'annullata', barrata: stato === 'annullata' ? 'line-through' : 'none', opacita: futura ? '1' : '0.6',
-      conCertificati: futura, punto: senza ? '#e4292a' : '#12913f',
-      certificati: !futura ? (stato === 'annullata' ? '' : 'Gara passata') : senza ? senza + ' senza certificato valido' : 'Tutti validi',
-      conQuote: dapagare !== '', puntoQuote: Number(dapagare) ? '#e4292a' : '#12913f',
-      quote: dapagare === '' ? '—' : Number(dapagare) ? dapagare + ' da pagare' : 'Tutte pagate',
-      // a gara passata le celle si spengono a 0.6, tranne le quote ancora da pagare
-      opacitaQuote: futura || Number(dapagare) ? '1' : '0.6',
-      griglia: p.griglia || '90px minmax(0, 1fr) 80px 220px 160px',
+      data: String(p.data ?? '').replace('|', ' '), nome: p.nome ?? '', dove: p.dove ?? '', atleti: String(atleti),
+      annullata: stato === 'annullata', barrata: stato === 'annullata' ? 'line-through' : 'none',
+      testo: futura ? '#0d2a3d' : '#46606f',
+      certTag, certOk, certTesto: atleti === 0,
+      certificati: atleti === 0 ? '—' : senza + (senza === 1 ? ' atleta' : ' atleti') + ' senza certificato valido',
+      quoteTag: dapagare !== '' && daPagareN > 0, quoteTesto: !(dapagare !== '' && daPagareN > 0),
+      quote: dapagare === '' ? 'Senza quota' : daPagareN > 0 ? daPagareN + ' da pagare' + (importo ? ' · ' + importo : '') : (atleti ? 'Tutte pagate' : importo + ' a atleta'),
+      griglia: p.griglia || (telefono ? 'minmax(0, 1fr) minmax(0, 1fr)' : '120px minmax(0, 1.6fr) 70px minmax(190px, 1.4fr) minmax(190px, 1.4fr)'),
+      gap: telefono ? '6px 14px' : '14px', colNome: telefono ? '1 / -1' : 'auto',
     };
   }
 }
