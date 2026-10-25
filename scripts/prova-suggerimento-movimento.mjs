@@ -113,6 +113,15 @@ ok('la parola da cercare del movimento: solo entrata da classificare, senza pers
   m.parolaDelMovimento(riga({ descrizione: 'Satispay · Elisa M.', annullato: true })),
   m.parolaDelMovimento(riga({ descrizione: 'Satispay · Elisa M.', voce: 'Gare' })),
 ]), ['elisa', null, null, null, null])
+ok('chi cerca la persona: anche senza un nome nel testo («Da VACCARO ANDREA»)', prova(() => [
+  m.cercaPersonaDelMovimento(riga({ descrizione: 'Da VACCARO ANDREA retta figlio' })),
+  m.parolaDelMovimento(riga({ descrizione: 'Da VACCARO ANDREA retta figlio' })),
+  m.cercaPersonaDelMovimento(riga({ descrizione: 'Da VACCARO ANDREA', tipo: 'uscita' })),
+]), [true, null, false])
+ok('la nota «in fondo» solo con più schede', [
+  m.motivoCandidati([{ come: 'nome intero', giaIscritto: true }]).includes('in fondo'),
+  m.motivoCandidati([{ come: 'genitore', giaIscritto: false }, { come: 'genitore', giaIscritto: true }]).includes('in fondo'),
+], [false, true])
 
 console.log('\n5. quando il blocco non c\'è')
 for (const [cosa, r] of [

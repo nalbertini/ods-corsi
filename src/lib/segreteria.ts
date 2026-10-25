@@ -16,6 +16,7 @@ import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, R
 import { euro, mancanoDatiSocio } from './ricevute'
 import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
+import type { Abbinato } from './abbinaMovimenti'
 import type { PagamentoSatispay } from './satispay'
 import type { ContiScarico, PagamentoNegozio, SceltaGruppo, SceltaSatispay, StatoScarico } from './satispayScarico'
 import type { VoceCorso } from './corsiDaPagare'
@@ -811,6 +812,13 @@ export interface DatiSegreteria {
   nomiPersone(ids: string[]): Promise<Array<{ id: string; nome: string; cognome: string }>>
   /** Chi ha pagato, cercato per nome: almeno tre lettere, al massimo otto, solo nome e cognome (`cerca_pagatori`). */
   cercaPagatori(scritto: string): Promise<Array<{ id: string; nome: string; cognome: string }>>
+  /**
+   * Chi può aver pagato un movimento non identificato: nome, genitore, codice fiscale letto, importo e corso (`118-abbina-movimenti.sql`).
+   * `corsi`: i corsi che costano quell'importo (`corsiConImporto`). Senza il file, ricade sul solo nome: lista vuota.
+   */
+  abbinaPagatori(movimentoId: string, corsi?: string[]): Promise<Abbinato[]>
+  /** Per «Importa banca»: di questi movimenti già scritti, quali portano a persone col nome intero o col genitore nel testo. */
+  abbinaTestoBanca(testo: string, movimentoIds: string[]): Promise<Array<{ movimentoId: string; come: 'nome intero' | 'genitore' }>>
   /** Le casse con il loro saldo iniziale (`59-contabilita.sql`). Solo per l'amministrazione, come tutto quello che segue. */
   casse(): Promise<Cassa[]>
   voci(): Promise<VoceContabile[]>

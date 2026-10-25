@@ -23,6 +23,7 @@ import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
+import { funzioneAssente, type Abbinato } from './abbinaMovimenti'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
 import { cartaPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
@@ -1727,7 +1728,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async importaMovimentiBanca(dati) {
-      return Number(ok(await db.rpc('importa_prima_nota', { dati })))
+      // La funzione legge `codice_fiscale_letto` (snake_case), come le altre chiavi del JSON.
+      const righe = dati.map(({ codiceFiscaleLetto, ...resto }) => (codiceFiscaleLetto?.length ? { ...resto, codice_fiscale_letto: codiceFiscaleLetto } : resto))
+      return Number(ok(await db.rpc('importa_prima_nota', { dati: righe })))
     },
 
     async annullaImportazioneBanca(creatoIl) {
@@ -1941,6 +1944,21 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async cercaPagatori(scritto) {
       const righe = ok(await db.rpc('cerca_pagatori', { scritto })) as Array<{ persona_id: string; nome: string; cognome: string }>
       return righe.map((r) => ({ id: r.persona_id, nome: r.nome, cognome: r.cognome }))
+    },
+
+    async abbinaPagatori(movimento, corsi) {
+      const r = await db.rpc('abbina_pagatori_movimento', { movimento, corsi: corsi?.length ? corsi : null })
+      // Senza 118-abbina-movimenti.sql la funzione non c'è: si propone solo per nome, come prima.
+      if (r.error && funzioneAssente(r.error)) return []
+      const righe = ok(r) as Array<{ persona_id: string; nome: string; cognome: string; come: Abbinato['come']; gia_iscritto: boolean }>
+      return righe.map((x) => ({ id: x.persona_id, nome: x.nome, cognome: x.cognome, come: x.come, giaIscritto: x.gia_iscritto }))
+    },
+
+    async abbinaTestoBanca(testo, movimenti) {
+      const r = await db.rpc('abbina_testo_banca', { testo, movimenti })
+      if (r.error && funzioneAssente(r.error)) return []
+      const righe = ok(r) as Array<{ movimento_id: string; come: 'nome intero' | 'genitore' }>
+      return righe.map((x) => ({ movimentoId: x.movimento_id, come: x.come }))
     },
 
     async registraPagamentoDiretto(d: DatiPagamentoDiretto) {

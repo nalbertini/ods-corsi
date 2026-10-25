@@ -76,7 +76,8 @@ import { ImportaBanca } from './ImportaBanca'
 import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica, Tasto, TestaColonna } from './comune'
 import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri, SchedaCandidata } from './CollegaPersona'
-import { confermaDi, parolaDelMovimento, suggerisciMovimento } from '../../lib/suggerimentoMovimento'
+import { cercaPersonaDelMovimento, confermaDi, motivoCandidati, parolaDelMovimento, suggerisciMovimento } from '../../lib/suggerimentoMovimento'
+import { corsiConImporto } from '../../lib/abbinaMovimenti'
 import { Bilancio } from './Bilancio'
 import { rigaDaSistemare } from '../../lib/bilancio'
 import { ScaricoSatispay } from './ScaricoSatispay'
@@ -962,9 +963,16 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
   const voceGuaio = voceId && voceId !== voceAttuale?.id ? cosaNonVaCambioVoce([riga.id], [riga], voci, voceId, personaId) : null
   const [collegando, setCollegando] = useState(false)
   // Il suggerimento: la voce dalle righe uguali, la persona dal nome nel testo. Propone e basta: si scrive solo con «Conferma».
+  const cerca = manuale && cercaPersonaDelMovimento(riga)
   const parola = manuale ? parolaDelMovimento(riga) : null
-  const trovate = useCarica(() => (parola ? d.cercaPagatori(parola) : Promise.resolve([])), [d, parola])
-  const sug = useMemo(() => parola && (trovate.dato === null || trovate.guaio) ? null : suggerisciMovimento(riga, righe, voci, trovate.dato ?? []), [riga, righe, voci, parola, trovate.dato, trovate.guaio])
+  // Prima gli abbinamenti del database (nome, genitore, codice fiscale, importo e corso); se non trova nessuno, il solo nome.
+  const trovate = useCarica(async () => {
+    if (!cerca) return { nomi: [], abbinati: [] }
+    const listino = await d.listino().catch(() => null)
+    const abbinati = await d.abbinaPagatori(riga.id, listino ? corsiConImporto(riga.importo, listino.listino.corsi) : [])
+    return { nomi: abbinati.length || !parola ? [] : await d.cercaPagatori(parola), abbinati }
+  }, [d, cerca, parola, riga.id, riga.importo])
+  const sug = useMemo(() => cerca && (trovate.dato === null || trovate.guaio) ? null : suggerisciMovimento(riga, righe, voci, trovate.dato?.nomi ?? [], trovate.dato?.abbinati ?? []), [riga, righe, voci, cerca, trovate.dato, trovate.guaio])
   const [sugScelta, setSugScelta] = useState<string | null>(null)
   const [daSolo, setDaSolo] = useState(false)
   const confermaSug = sug ? confermaDi(sug, sugScelta) : null
@@ -1062,9 +1070,9 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
                 {sug.persona === 'candidati' && (
                   <div className="stack" style={{ gap: 8 }} role="radiogroup" aria-label="Persona suggerita">
                     {sug.candidati.map((c) => (
-                      <SchedaCandidata key={c.id} nome="persona-suggerita" c={{ id: c.id, nome: c.nome, cognome: c.cognome, corsi: [] }} scelta={c.id === (sugScelta ?? sug.preselezionato)} onScegli={() => setSugScelta(c.id)} />
+                      <SchedaCandidata key={c.id} nome="persona-suggerita" c={{ id: c.id, nome: c.nome, cognome: c.cognome, corsi: c.giaIscritto ? ['già iscritta o iscritto in quel giorno'] : [] }} scelta={c.id === (sugScelta ?? sug.preselezionato)} onScegli={() => setSugScelta(c.id)} />
                     ))}
-                    <span className="sg-sotto">{sug.candidati[0].come === 'nome intero' && sug.candidati.length === 1 ? 'Il nome nel testo combacia con questa scheda.' : 'Il nome nel testo potrebbe essere di chi paga, non di chi frequenta: controlla.'}</span>
+                    <span className="sg-sotto">{motivoCandidati(sug.candidati)}</span>
                   </div>
                 )}
                 {sug.persona === 'nessuna-spesa' && <span className="sg-sotto">Nessuna: è una spesa, non serve.</span>}

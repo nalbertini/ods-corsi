@@ -1,5 +1,8 @@
 import { giornoChiuso, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento } from './contabilita'
+import { STRUTTURA_CF } from './codiceFiscale'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
+import { nomeDallaCausale } from './movimentiPersona'
+import type { ComeAbbinato } from './abbinaMovimenti'
 
 /**
  * La «Lista movimenti» di BancoPosta (CSV scaricato dall'home banking), letta nel browser e pronta per
@@ -21,6 +24,8 @@ export interface MovimentoBanca {
   descrizione: string
   causale: string
   chiave: string
+  /** Fino a due codici fiscali scritti nella causale (struttura valida): servono a proporre i figli, non si mostrano. */
+  codiceFiscaleLetto: string[]
 }
 
 export interface RigaBancaScartata {
@@ -40,7 +45,7 @@ export interface AnteprimaBanca {
   entrano: MovimentoBanca[]
   giaImportati: MovimentoBanca[]
   coperti: { movimento: MovimentoBanca; con: RigaMovimento }[]
-  daDecidere: { movimento: MovimentoBanca; candidati: RigaMovimento[] }[]
+  daDecidere: { movimento: MovimentoBanca; candidati: RigaMovimento[]; preselezionato: string | null; come: Record<string, ComeAbbinato> }[]
   avvisi: { tipo: 'satispay' | 'contanti'; conteggio: number; totale: number }[]
   scartate: RigaBancaScartata[]
   /** I movimenti letti che non sono nel futuro, e il loro periodo: i conti dell'anteprima partono da qui. */
@@ -58,6 +63,7 @@ export interface DatoImportBanca {
   importo: number
   descrizione: string
   voce: string
+  codiceFiscaleLetto?: string[]
 }
 
 export const PREFISSO_CHIAVE_BANCA = 'banca:'
@@ -72,6 +78,11 @@ const CODICE_FISCALE = /\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b/g
 const SIGLA = /\b(?:IBAN|C\.?F\.?)\s*:?\s*(?=\S)/gi
 
 const centesimi = (testo: string) => Math.round(Number(testo.replace(',', '.')) * 100)
+
+// Prima di puliscila, che i codici li toglie dalla descrizione: restano a parte, solo quelli con la struttura giusta.
+function codiciLetti(testo: string): string[] {
+  return [...new Set(testo.match(CODICE_FISCALE) ?? [])].filter((c) => STRUTTURA_CF.test(c)).slice(0, 2)
+}
 
 function puliscila(testo: string): string {
   return testo
@@ -129,7 +140,7 @@ export function leggiBanca(testo: string): LetturaBanca {
     const base = `${giorno.replace(/-/g, '')}:${hash}`
     const n = viste.get(base) ?? 0
     viste.set(base, n + 1)
-    movimenti.push({ riga, data: giorno, tipo, importo, descrizione: descrizione || 'Movimento della banca', causale: (c[4] ?? '').trim(), chiave: `${PREFISSO_CHIAVE_BANCA}${base}:${n}` })
+    movimenti.push({ riga, data: giorno, tipo, importo, descrizione: descrizione || 'Movimento della banca', causale: (c[4] ?? '').trim(), chiave: `${PREFISSO_CHIAVE_BANCA}${base}:${n}`, codiceFiscaleLetto: codiciLetti(grezzo) })
   }
   const date = movimenti.map((x) => x.data).sort()
   return { movimenti, scartate, dal: date[0] ?? null, al: date[date.length - 1] ?? null }
@@ -137,11 +148,13 @@ export function leggiBanca(testo: string): LetturaBanca {
 
 const giorniTra = (a: string, b: string) => Math.abs(Date.parse(a) - Date.parse(b)) / 86_400_000
 
+const parolePiene = (s: string): string[] => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().split(/[^\p{L}0-9']+/u).filter(Boolean)
+
 /**
  * Cosa succederebbe importando, senza scrivere niente. `righe` sono i movimenti già in elenco, `scelte` le
  * decisioni della segreteria: l'id del pagamento giusto, o «nessuno» (è un movimento nuovo).
  */
-export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], contoId: string, oggi: string, scelte: Record<string, string> = {}): AnteprimaBanca {
+export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], contoId: string, oggi: string, scelte: Record<string, string> = {}, perGenitore: Record<string, string[]> = {}): AnteprimaBanca {
   const scartate = [...lettura.scartate]
   // Una riga già coperta da un movimento a mano è importata quanto una scritta nuova.
   const giaImportate = new Set(righe.flatMap((r) => [r.origineImport, r.bancaChiave]).filter((k): k is string => !!k))
@@ -181,7 +194,7 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
       usati.add(scelto.id)
       coperti.push({ movimento: mv, con: scelto })
     } else {
-      daDecidere.push({ movimento: mv, candidati })
+      daDecidere.push({ movimento: mv, ...inCimaChiSembra(mv, candidati, perGenitore[mv.chiave] ?? []) })
     }
   }
 
@@ -212,9 +225,29 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
   }
 }
 
+/**
+ * Tra i candidati, in cima chi ha nome e cognome interi nel testo della banca; se nessuno, i figli del genitore che
+ * il database ha riconosciuto (`perGenitore`: id delle persone). Uno solo si preseleziona; gli altri restano per data.
+ */
+function inCimaChiSembra(mv: MovimentoBanca, candidati: RigaMovimento[], figli: string[]): { candidati: RigaMovimento[]; preselezionato: string | null; come: Record<string, ComeAbbinato> } {
+  const nelle = new Set(parolePiene(mv.descrizione))
+  const perNome = candidati.filter((r) => {
+    const p = parolePiene(nomeDallaCausale(r.descrizione) ?? '')
+    return p.length > 1 && p.every((w) => nelle.has(w))
+  })
+  const perGenitore = perNome.length ? [] : candidati.filter((r) => figli.includes(r.id) || (!!r.personaId && figli.includes(r.personaId)))
+  const sale = perNome.length ? perNome : perGenitore
+  const come: ComeAbbinato = perNome.length ? 'nome intero' : 'genitore'
+  return {
+    candidati: [...sale, ...candidati.filter((r) => !sale.includes(r))],
+    preselezionato: sale.length === 1 ? sale[0].id : null,
+    come: Object.fromEntries(sale.map((r) => [r.id, come])),
+  }
+}
+
 /** Le righe per `importa_prima_nota`: solo quelle che entrano, nel Conto Corrente, da classificare. */
 export function datiImportBanca(a: AnteprimaBanca): DatoImportBanca[] {
-  return a.entrano.map((x) => ({ chiave: x.chiave, data: x.data, cassa: 'conto', tipo: x.tipo, importo: x.importo, descrizione: x.descrizione, voce: VOCE_DA_CLASSIFICARE }))
+  return a.entrano.map((x) => ({ chiave: x.chiave, data: x.data, cassa: 'conto', tipo: x.tipo, importo: x.importo, descrizione: x.descrizione, voce: VOCE_DA_CLASSIFICARE, ...(x.codiceFiscaleLetto.length ? { codiceFiscaleLetto: x.codiceFiscaleLetto } : {}) }))
 }
 
 export const MASSIMO_PER_IMPORTAZIONE = 1000

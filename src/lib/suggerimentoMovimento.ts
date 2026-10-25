@@ -1,5 +1,6 @@
 import { VOCE_DIFFERENZA, VOCE_VARIE, vociOfferte, vuolePersonaRiga, type RigaMovimento, type VoceContabile } from './contabilita'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
+import { ordinaAbbinati, type Abbinato, type ComeAbbinato } from './abbinaMovimenti'
 import { normalizzaNome, nomeDallaCausale, type PersonaPerNome } from './movimentiPersona'
 
 /**
@@ -8,7 +9,7 @@ import { normalizzaNome, nomeDallaCausale, type PersonaPerNome } from './movimen
  * né di quel che devono pagare (l'amministrazione non li vede): la persona si cerca per nome con `cercaPagatori`.
  */
 
-export type Come = 'nome intero' | 'nome e iniziale'
+export type Come = ComeAbbinato | 'nome e iniziale'
 
 /** Il nome nel testo del movimento: «Satispay · Elisa M.» → «Elisa M.»; «Cliente X per …» → «X». */
 export function nomeDalTesto(descrizione: string): string | null {
@@ -75,8 +76,12 @@ export function vocePerDescrizione(riga: RigaMovimento, righe: RigaMovimento[], 
 
 /** La parola con cui cercare le schede per questo movimento; `null` se il blocco non deve cercare niente (non è un'entrata da classificare, o ha già la persona). */
 export function parolaDelMovimento(riga: RigaMovimento): string | null {
-  if (riga.origine !== 'movimento' || riga.annullato || riga.tipo !== 'entrata' || riga.personaId || riga.voce !== VOCE_DA_CLASSIFICARE) return null
-  return parolaDaCercare(nomeDalTesto(riga.descrizione))
+  return cercaPersonaDelMovimento(riga) ? parolaDaCercare(nomeDalTesto(riga.descrizione)) : null
+}
+
+/** Il blocco deve cercare la persona (nome, genitore, codice fiscale, importo): anche se dal testo non si ricava un nome, come nei bonifici («Da VACCARO ANDREA»). */
+export function cercaPersonaDelMovimento(riga: RigaMovimento): boolean {
+  return riga.origine === 'movimento' && !riga.annullato && riga.tipo === 'entrata' && !riga.personaId && riga.voce === VOCE_DA_CLASSIFICARE
 }
 
 export type PersonaSuggerita = 'candidati' | 'nessuna-spesa' | 'nessuna-senza-persona' | 'gia-collegata' | 'da-scegliere'
@@ -86,13 +91,13 @@ export interface SuggerimentoMovimento {
   caso: 'A' | 'B' | 'C' | 'D'
   voce: VoceSuggerita | null
   persona: PersonaSuggerita
-  candidati: Array<PersonaPerNome & { come: Come }>
-  /** Solo con un candidato solo: più di uno si sceglie. */
+  candidati: Array<PersonaPerNome & { come: Come; giaIscritto: boolean }>
+  /** Solo con un candidato solo, e non già iscritto: più di uno si sceglie. */
   preselezionato: string | null
 }
 
 /** Il blocco «Suggerito» di un movimento da classificare; `null` per ogni altro movimento: lì non c'è. */
-export function suggerisciMovimento(riga: RigaMovimento, righe: RigaMovimento[], voci: VoceContabile[], persone: PersonaPerNome[]): SuggerimentoMovimento | null {
+export function suggerisciMovimento(riga: RigaMovimento, righe: RigaMovimento[], voci: VoceContabile[], persone: PersonaPerNome[], abbinati: Abbinato[] = []): SuggerimentoMovimento | null {
   if (riga.origine !== 'movimento' || riga.annullato || (riga.tipo !== 'entrata' && riga.tipo !== 'uscita') || riga.voce !== VOCE_DA_CLASSIFICARE) return null
   const voce = vocePerDescrizione(riga, righe, voci)
   const senza = { voce, candidati: [], preselezionato: null }
@@ -100,13 +105,19 @@ export function suggerisciMovimento(riga: RigaMovimento, righe: RigaMovimento[],
   if (riga.tipo === 'uscita') return { caso: voce ? 'C' : 'D', ...senza, persona: 'nessuna-spesa' }
   // Lo storico non porta la persona (vuolePersonaRiga): lì si propone solo la voce.
   if (riga.origineImport?.startsWith('prima-nota:') || (voce && !vuolePersonaRiga(riga, voce.nome))) return { caso: voce ? 'C' : 'D', ...senza, persona: 'nessuna-senza-persona' }
+  // Le persone abbinate dal database (nome, genitore, codice fiscale) vincono sul solo nome; senza, vale il nome.
   const perId = new Map(persone.map((p) => [p.id, p]))
-  const candidati = abbinaPerNomeOIniziale(nomeDalTesto(riga.descrizione), persone).flatMap((c) => {
-    const p = perId.get(c.id)
-    return p ? [{ id: p.id, nome: p.nome, cognome: p.cognome, come: c.come }] : []
-  })
+  const { candidati, preselezionato } = abbinati.length
+    ? ordinaAbbinati(abbinati)
+    : {
+        candidati: abbinaPerNomeOIniziale(nomeDalTesto(riga.descrizione), persone).flatMap((c) => {
+          const p = perId.get(c.id)
+          return p ? [{ id: p.id, nome: p.nome, cognome: p.cognome, come: c.come, giaIscritto: false }] : []
+        }),
+        preselezionato: null,
+      }
   if (!candidati.length) return { caso: voce ? 'C' : 'D', ...senza, persona: voce ? 'da-scegliere' : 'nessuna-senza-persona' }
-  return { caso: candidati.length === 1 ? 'A' : 'B', voce, persona: 'candidati', candidati, preselezionato: candidati.length === 1 ? candidati[0].id : null }
+  return { caso: candidati.length === 1 ? 'A' : 'B', voce, persona: 'candidati', candidati, preselezionato: abbinati.length ? preselezionato : candidati.length === 1 ? candidati[0].id : null }
 }
 
 /** Cosa scrive «Conferma»; `null` se non si può ancora (manca la voce o la persona): il tasto resta spento. */
@@ -116,4 +127,17 @@ export function confermaDi(s: SuggerimentoMovimento, sceltaId: string | null): {
   if (s.persona !== 'candidati') return { voceId: s.voce.voceId }
   const id = sceltaId ?? s.preselezionato
   return id && s.candidati.some((c) => c.id === id) ? { voceId: s.voce.voceId, personaId: id } : null
+}
+
+/** La riga sotto i candidati: perché sono questi. Il motivo è quello del primo, che ha vinto la regola: gli altri hanno lo stesso. */
+export function motivoCandidati(candidati: ReadonlyArray<{ come: Come; giaIscritto: boolean }>): string {
+  const [primo] = candidati
+  const base =
+    primo?.come === 'nome intero' && candidati.length === 1 ? 'Il nome nel testo combacia con questa scheda.'
+    : primo?.come === 'nome intero' ? 'Nome e cognome sono nel testo, ma la scheda è più di una: scegli.'
+    : primo?.come === 'genitore' ? 'Nei dati di registrazione il genitore ha il nome che c’è nel testo: di solito paga per i figli.'
+    : primo?.come === 'codice fiscale' ? 'Il codice fiscale scritto nella causale è di questa persona o del suo genitore.'
+    : primo?.come === 'corso e cognome' ? 'L’importo è quello di un corso a cui è iscritta e il cognome è nel testo.'
+    : 'Il nome nel testo potrebbe essere di chi paga, non di chi frequenta: controlla.'
+  return candidati.length > 1 && candidati.some((c) => c.giaIscritto) ? `${base} Chi ha già l’iscrizione in corso è in fondo.` : base
 }

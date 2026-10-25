@@ -110,8 +110,13 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
   **Quota associativa** o **Corsi e altri pagamenti** chiede la **persona**, se non ce l'ha già.
 - **Il suggerimento**: un movimento su **Da classificare** apre con un riquadro giallo,
   **Suggerito · conferma tu**. La **voce** è quella delle altre righe uguali (almeno due, tutte
-  sulla stessa voce); la **persona** è la scheda col nome scritto nel testo («Satispay · Elisa M.»):
-  il nome intero, o nome e iniziale del cognome. Un nome solo non basta. Se le schede possibili sono
+  sulla stessa voce); la **persona** si cerca in questo ordine, fermandosi alla prima regola che trova qualcuno:
+  il nome scritto nel testo («Satispay · Elisa M.»: nome intero, o nome e iniziale del cognome); poi il
+  nome e cognome del **genitore** come sono nei dati di registrazione (i minori li paga di solito
+  un genitore: si propongono i figli); poi un **codice fiscale** scritto nella causale; poi l'**importo**:
+  se è quello di un corso del listino, gli iscritti a quel corso col cognome nel testo. Chi ha già
+  l'iscrizione in corso quel giorno va in fondo, col segno. Sotto le schede una riga dice perché sono
+  queste. Un nome solo non basta. Se le schede possibili sono
   più d'una, scegli tu e **Conferma** resta spento finché non scegli. Per un'uscita la persona non c'è.
   **Conferma** collega la voce e la persona e non crea una ricevuta: la quota resta da pagare finché non
   registri l’incasso nella scheda della persona. **Scegli tu** non cambia niente: mette la proposta nei campi qui sotto, e decidi lì.
@@ -230,7 +235,7 @@ l'app ne legge solo i movimenti, e toglie dalla descrizione IBAN e codici fiscal
 Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**. Dice
 quanti movimenti ci sono, quanti entrano e per quanto, e poi:
 
-- **Da decidere**: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo) e più di un possibile pagamento. Scegli quello giusto, oppure **Nessuno: scrivilo**. Finché non scegli, non entra.
+- **Da decidere**: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo) e più di un possibile pagamento. Scegli quello giusto, oppure **Nessuno: scrivilo**. Finché non scegli, non entra. Se il testo ha nome e cognome di una persona (o del suo genitore), quella scheda è già in evidenza con «Sembra questo»: **Conferma quelli che sembrano giusti** li conferma tutti insieme, e una riga con una sola scheda così non cambia finché non confermi.
 - **Avvisi**: i **versamenti da Satispay** entrano, ma i soldi sono già negli incassi Satispay: dopo, in MOVIMENTI, controllali uno per uno: se sono già negli incassi Satispay, annullali, o spostali con **Cambia voce** su un giroconto da Satispay, per non contarli due volte. Controlla anche i versamenti di contanti.
 - **Scartati**: righe con la data o l'importo illeggibili, o con la data nel futuro. Correggili nel file e riprova.
 - **Già coperti**: movimenti già scritti a mano, o già importati. Non si scrivono di nuovo; se l'abbinamento è sbagliato, **Non è questo**. Dopo l'importazione si ricontrollano in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).

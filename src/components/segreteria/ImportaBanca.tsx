@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { NOME_CASSA_CONTO, oggiARoma, type Cassa, type RigaMovimento } from '../../lib/contabilita'
 import { anteprimaBanca, copertiDaSalvare, datiImportBanca, leggiBanca, MASSIMO_PER_IMPORTAZIONE, ultimaImportazione, type LetturaBanca } from '../../lib/importaBanca'
@@ -21,7 +21,22 @@ export function ImportaBanca({ d, casse, righe, fai, onRileggi, onVedi }: { d: D
   const [scritti, setScritti] = useState<number | null>(null)
   const conto = casse.find((c) => c.nome === NOME_CASSA_CONTO)
   const ultima = useMemo(() => ultimaImportazione(righe), [righe])
-  const a = useMemo(() => (lettura && conto ? anteprimaBanca(lettura, righe, conto.id, oggiARoma(), scelte) : null), [lettura, righe, conto, scelte])
+  // Chi ha pagato lo dice il database (nome intero o genitore nel testo): una volta per movimento, poi si riordina.
+  const [perGenitore, setPerGenitore] = useState<Record<string, string[]>>({})
+  const chiesti = useRef(new Set<string>())
+  const prima = useMemo(() => (lettura && conto ? anteprimaBanca(lettura, righe, conto.id, oggiARoma(), scelte) : null), [lettura, righe, conto, scelte])
+  useEffect(() => {
+    // Ogni domanda consuma il tetto di ricerche del database (60 in 10 minuti, diviso col suggerimento in CONTABILITÀ): al massimo trenta.
+    for (const { movimento: m, candidati } of (prima?.daDecidere ?? []).slice(0, 30)) {
+      if (chiesti.current.has(m.chiave) || m.tipo !== 'entrata') continue
+      chiesti.current.add(m.chiave)
+      d.abbinaTestoBanca(m.descrizione, candidati.map((c) => c.id))
+        .then((r) => setPerGenitore((x) => ({ ...x, [m.chiave]: r.filter((y) => y.come === 'genitore').map((y) => y.movimentoId) })))
+        // Senza risposta resta l'ordine per data: niente errore per un suggerimento.
+        .catch(() => undefined)
+    }
+  }, [d, prima])
+  const a = useMemo(() => (lettura && conto ? anteprimaBanca(lettura, righe, conto.id, oggiARoma(), scelte, perGenitore) : null), [lettura, righe, conto, scelte, perGenitore])
 
   const scegliFile = async (file: File | undefined) => {
     if (!file) return
@@ -133,22 +148,27 @@ export function ImportaBanca({ d, casse, righe, fai, onRileggi, onVedi }: { d: D
             <section aria-label="Da decidere" className="sg-riquadro stack" style={{ gap: 12, padding: '14px 18px', borderColor: 'var(--giallo-testo)' }}>
               <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>{a.daDecidere.length} DA DECIDERE · NON ENTRANO FINCHÉ NON SCEGLI</span>
               <span style={{ fontSize: 15 }}>Per ognuno vedi i pagamenti già scritti che potrebbero essere lo stesso. Scegli quello giusto, oppure «Nessuno: scrivilo».</span>
-              {a.daDecidere.map(({ movimento: m, candidati }) => (
+              {a.daDecidere.map(({ movimento: m, candidati, preselezionato, come }) => (
                 <div key={m.chiave} className="stack" style={{ gap: 8, padding: '10px 0', borderTop: '1px solid var(--line-soft)' }}>
                   <div className="row" style={{ justifyContent: 'space-between', gap: 12 }}>
                     <span><b>{dataRicevuta(m.data)}</b> · {m.descrizione}</span>
                     <b className="num">{m.tipo === 'entrata' ? '+ ' : '− '}{soldi(m.importo)}</b>
                   </div>
+                  {preselezionato && <span className="sg-etichetta">SEMBRA QUESTO</span>}
                   <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
                     {candidati.map((c) => (
-                      <button key={c.id} type="button" className="sg-btn sg-btn-linea" onClick={() => setScelte((s) => ({ ...s, [m.chiave]: c.id }))}>
+                      <button key={c.id} type="button" className={`sg-btn ${c.id === preselezionato ? 'sg-btn-pieno' : 'sg-btn-linea'}`} onClick={() => setScelte((s) => ({ ...s, [m.chiave]: c.id }))}>
                         {c.descrizione} · {dataRicevuta(c.data)}
                       </button>
                     ))}
-                    <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setScelte((s) => ({ ...s, [m.chiave]: 'nessuno' }))}>Nessuno: scrivilo</button>
+                    <button type="button" className={`sg-btn ${preselezionato ? 'sg-btn-linea' : 'sg-btn-pieno'}`} onClick={() => setScelte((s) => ({ ...s, [m.chiave]: 'nessuno' }))}>Nessuno: scrivilo</button>
                   </div>
+                  {preselezionato && <span className="sg-sotto">{come[preselezionato] === 'genitore' ? 'Nei dati di registrazione il genitore ha il nome che c’è nel testo.' : 'Nome e cognome sono nel testo del movimento.'}</span>}
                 </div>
               ))}
+              {a.daDecidere.some((x) => x.preselezionato) && (
+                <div><button type="button" className="sg-btn sg-btn-pieno" onClick={() => setScelte((s) => ({ ...s, ...Object.fromEntries(a.daDecidere.flatMap((x) => (x.preselezionato ? [[x.movimento.chiave, x.preselezionato]] : []))) }))}>Conferma quelli che sembrano giusti ({a.daDecidere.filter((x) => x.preselezionato).length})</button></div>
+              )}
               {a.daDecidere.length > 1 && (
                 <div><button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelte((s) => ({ ...s, ...Object.fromEntries(a.daDecidere.map((x) => [x.movimento.chiave, 'nessuno'])) }))}>Nessuno è già scritto: scrivili tutti e {a.daDecidere.length}</button></div>
               )}

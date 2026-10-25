@@ -40,6 +40,7 @@ import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
+import { abbinaMovimento, type PersonaDaAbbinare } from './abbinaMovimenti'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
@@ -209,7 +210,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
   const scriviCollegamento = (movimentoId: string, dopo: string | undefined, lotto?: string) => {
     const movimenti = contabilita().movimenti
     const prima = movimenti.find((x) => x.id === movimentoId)?.personaId
-    a().movimenti = movimenti.map((x) => (x.id === movimentoId ? { ...x, personaId: dopo } : x))
+    // Come il database: collegato, il codice fiscale letto dalla causale non serve più e si dimentica.
+    a().movimenti = movimenti.map((x) => (x.id === movimentoId ? { ...x, personaId: dopo, codiciLetti: dopo ? undefined : x.codiciLetti } : x))
     a().collegamentiPersona = [...(a().collegamentiPersona ?? []), { movimentoId, prima, dopo, lotto, quando: new Date().toISOString() }]
   }
   /** Trenta giorni dopo la scadenza il file se ne va, la data resta: come `pulisci_certificati` del database. */
@@ -1509,6 +1511,33 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return trovaPagatori(a().persone, scritto)
     },
 
+    async abbinaPagatori(movimentoId, corsi) {
+      const m = contabilita().movimenti.find((x) => x.id === movimentoId)
+      if (!m) return []
+      const persone = a().persone.map((p): PersonaDaAbbinare => {
+        const dati = anagraficaDi(p.id)?.dati
+        return {
+          id: p.id, nome: p.nome, cognome: p.cognome, attiva: p.attiva,
+          codiceFiscale: dati?.codiceFiscale ?? null, genitoreNome: dati?.genitoreNome ?? null, genitoreCognome: dati?.genitoreCognome ?? null, genitoreCodiceFiscale: dati?.genitoreCodiceFiscale ?? null,
+          iscrizioni: a().iscrizioni.filter((i) => i.personaId === p.id).map((i) => ({ corsoId: i.corsoId, dal: i.dal, al: i.al ?? null })),
+        }
+      })
+      return abbinaMovimento({ testo: m.descrizione, data: m.data, codiciFiscali: m.codiciLetti ?? [], corsiImporto: corsi }, persone).candidati
+    },
+
+    async abbinaTestoBanca(testo, movimentoIds) {
+      const persone = a().persone.map((p): PersonaDaAbbinare => {
+        const dati = anagraficaDi(p.id)?.dati
+        return { id: p.id, nome: p.nome, cognome: p.cognome, attiva: p.attiva, codiceFiscale: null, genitoreNome: dati?.genitoreNome ?? null, genitoreCognome: dati?.genitoreCognome ?? null, genitoreCodiceFiscale: null, iscrizioni: [] }
+      })
+      // Solo nome intero o genitore, come `abbina_testo_banca`: niente CF né importo, il testo della banca non li dà.
+      const trovati = abbinaMovimento({ testo, data: '9999-12-31', codiciFiscali: [], corsiImporto: [] }, persone).candidati
+      if (!trovati.length) return []
+      const come = trovati[0].come === 'genitore' ? 'genitore' : 'nome intero'
+      const ids = new Set(trovati.map((t) => t.id))
+      return contabilita().movimenti.filter((x) => movimentoIds.includes(x.id) && x.personaId && ids.has(x.personaId)).map((x) => ({ movimentoId: x.id, come }))
+    },
+
     async casse() {
       return contabilita().casse.map((c) => ({ ...c }))
     },
@@ -1618,7 +1647,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         const voce = voci.find((v) => v.nome.trim().toLowerCase() === d.voce.trim().toLowerCase() && v.tipo === d.tipo)
         const no = cosaNonVaMovimento({ ...d, cassaId: conto.id, voceId: voce?.id }, voci.map((v) => (v.id === voce?.id ? { ...v, attiva: true } : v)), casse, oggiARoma(), contabilita().chiusure)
         if (no) throw new Error(no)
-        return { id: `m-${unico()}`, tipo: d.tipo, data: d.data, importo: d.importo, voceId: voce?.id ?? '', cassaId: conto.id, descrizione: d.descrizione.trim(), origineImport: d.chiave, creatoIl: quando }
+        return { id: `m-${unico()}`, tipo: d.tipo, data: d.data, importo: d.importo, voceId: voce?.id ?? '', cassaId: conto.id, descrizione: d.descrizione.trim(), origineImport: d.chiave, creatoIl: quando, ...(d.codiceFiscaleLetto?.length ? { codiciLetti: d.codiceFiscaleLetto.slice(0, 2) } : {}) }
       })
       a().movimenti = [...movimenti, ...righe]
       salva()

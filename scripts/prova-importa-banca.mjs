@@ -164,6 +164,67 @@ console.log('\n7. quello che si manda al database')
   ok('…una riga da decidere senza scelta non parte', prova(() => m.datiImportBanca(anteprima([riga({ id: 'p', tipo: 'entrata', importo: 12000, data: '2026-10-02' }), riga({ id: 'q', tipo: 'entrata', importo: 12000, data: '2026-10-04' })])).length), 6)
 }
 
+console.log('\n8. il codice fiscale letto dalla causale: si tiene a parte, la descrizione resta pulita')
+{
+  const una = (testo, tipo = 'ACCREDITO') => prova(() => m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', testo, tipo))).movimenti[0])
+  const cf = (testo) => prova(() => una(testo).codiceFiscaleLetto)
+  ok('un codice valido (16 caratteri, struttura del codice fiscale) si legge', cf('Da Prudente Genitore PRDDNC70A01L219K saldo'), ['PRDDNC70A01L219K'])
+  ok('…anche con la sigla davanti, e la descrizione non lo mostra', prova(() => [una('Da Anna Bianchi CF BNCNNA80A41H501Z lezioni').codiceFiscaleLetto, una('Da Anna Bianchi CF BNCNNA80A41H501Z lezioni').descrizione]), [['BNCNNA80A41H501Z'], 'Da Anna Bianchi lezioni ACCREDITO'])
+  ok('nel file di prova: il primo movimento ha il suo, gli altri nessuno', prova(() => mv.map((x) => x.codiceFiscaleLetto)), [['BNCNNA80A41H501Z'], [], [], [], [], [], [], []])
+  ok('un codice che non ha la struttura (mese «Z») si scarta, e dalla descrizione se ne va lo stesso', prova(() => [cf('Da Rossi BNCNNA80Z41H501Z saldo'), una('Da Rossi BNCNNA80Z41H501Z saldo').descrizione]), [[], 'Da Rossi saldo ACCREDITO'])
+  ok('un codice di quindici caratteri si scarta', cf('Da Rossi BNCNNA80A41H501 saldo'), [])
+  ok('un testo senza codici: elenco vuoto, mai «undefined»', cf('Da Rossi saldo'), [])
+  ok('al massimo due codici per causale, i primi', cf('Da A PRDDNC70A01L219K e BNCNNA80A41H501Z e GLLMRT85C45L219P'), ['PRDDNC70A01L219K', 'BNCNNA80A41H501Z'])
+  ok('lo stesso codice due volte conta uno', cf('Da A PRDDNC70A01L219K e PRDDNC70A01L219K'), ['PRDDNC70A01L219K'])
+  ok('il codice non compare in nessun altro campo del movimento (né nella chiave)', prova(() => { const { codiceFiscaleLetto, ...resto } = una('Da A PRDDNC70A01L219K saldo'); return JSON.stringify(resto).includes('PRDDNC70A01L219K') }), false)
+  ok('la chiave non cambia: leggere lo stesso file due volte dà le stesse chiavi', prova(() => m.leggiBanca(CSV).movimenti.map((x) => x.chiave)), mv.map((x) => x.chiave))
+  const a = prova(() => m.anteprimaBanca(m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', 'Da A CF PRDDNC70A01L219K saldo', 'ACCREDITO'), mov('06/10/2026', '', '60,00', 'Da B saldo', 'ACCREDITO'))), [], 'conto', OGGI))
+  const d = prova(() => m.datiImportBanca(a))
+  ok('verso il database il codice parte con la riga che entra: `codiceFiscaleLetto`', prova(() => d[0].codiceFiscaleLetto), ['PRDDNC70A01L219K'])
+  ok('…e una riga senza codici non ha il campo (le righe di sempre restano com\'erano)', prova(() => 'codiceFiscaleLetto' in d[1]), false)
+  ok('…e la descrizione che parte è pulita', prova(() => d[0].descrizione), 'Da A saldo ACCREDITO')
+  ok('un movimento coperto da uno scritto a mano non salva il codice: è già collegato', prova(() => {
+    const c = m.anteprimaBanca(m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', 'Da A CF PRDDNC70A01L219K saldo'))), [riga({ id: 'mano', tipo: 'entrata', importo: 5000, data: '2026-10-05' })], 'conto', OGGI)
+    return [c.coperti.length, m.copertiDaSalvare(c).some((x) => JSON.stringify(x).includes('PRDDNC70A01L219K'))]
+  }), [1, false])
+}
+
+console.log('\n9. «Da decidere»: la persona giusta in cima, e preselezionata se è una sola')
+{
+  // Candidati a pari distanza (un giorno prima e un giorno dopo), se no il più vicino sarebbe già coperto.
+  const entrata = (id, descrizione, data) => riga({ id, tipo: 'entrata', importo: 5000, data, descrizione })
+  const decidi = (testo, candidati, perGenitore = {}) => {
+    const l = m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', testo, 'ACCREDITO')))
+    const a = m.anteprimaBanca(l, candidati, 'conto', OGGI, {}, perGenitore)
+    const d = a.daDecidere[0]
+    return { ordine: d?.candidati.map((c) => c.id), preselezionato: d?.preselezionato, come: d?.come, chiave: l.movimenti[0].chiave }
+  }
+  const prudente = 'Da PRUDENTE DOMENICO,MANCA FEDERICA PAOLA, TRN 1 per Quota associativa 2026/2027 Prudente Manuel BONIFICO SEPA'
+  const cs = [entrata('rossi', 'Cliente ROSSI LUCA per QUOTA ASSOCIATIVA', '2026-10-04'), entrata('luca', 'Cliente PRUDENTE LUCA per QUOTA ASSOCIATIVA', '2026-10-04'), entrata('manuel', 'Cliente PRUDENTE MANUEL per QUOTA ASSOCIATIVA', '2026-10-06')]
+  const r = prova(() => decidi(prudente, cs))
+  ok('nome e cognome interi nel testo: Manuel Prudente primo (Domenico è il genitore, e un cognome solo non basta)', r.ordine, ['manuel', 'rossi', 'luca'])
+  ok('…preselezionato, col segno «nome intero»', [r.preselezionato, r.come], ['manuel', { manuel: 'nome intero' }])
+  ok('…resta da decidere: niente si scrive senza conferma', prova(() => m.anteprimaBanca(m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', prudente, 'ACCREDITO'))), cs, 'conto', OGGI).coperti.length), 0)
+  ok('gli altri restano nell\'ordine di prima, per vicinanza di data', prova(() => decidi('Da PRUDENTE MANUEL BONIFICO', cs).ordine.slice(1)), ['rossi', 'luca'])
+  ok('nome e cognome in altro ordine, senza maiuscole né accenti', prova(() => decidi('da manuél prudente trn', cs).ordine[0]), 'manuel')
+  ok('un cognome solo (Prudente) non basta: nessuno sale, nessuno è preselezionato', prova(() => { const x = decidi('Da PRUDENTE DOMENICO TRN 1', cs); return [x.ordine, x.preselezionato, x.come] }), [['rossi', 'luca', 'manuel'], null, {}])
+  ok('due con nome e cognome interi (omonimi): salgono tutti e due, nessuno preselezionato', prova(() => { const x = decidi(prudente, [...cs, entrata('omonimo', 'Cliente MANUEL PRUDENTE per CORSO', '2026-10-04')]); return [x.ordine.slice(0, 2).sort(), x.preselezionato] }), [['manuel', 'omonimo'], null])
+
+  const vaccaro = 'Da VACCARO ANDREA TRN 99 BONIFICO SEPA'
+  const fs = [entrata('gallo', 'Cliente GALLO MARTA per CORSO', '2026-10-04'), entrata('sofia', 'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA', '2026-10-06')]
+  const g = (ids) => prova(() => { const x = decidi(vaccaro, fs, ids === null ? {} : { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', vaccaro, 'ACCREDITO'))).movimenti[0].chiave]: ids }); return x })
+  ok('nessun candidato col nome, uno è figlio di Andrea Vaccaro (lo dice il database): sale in cima, «genitore»', [g(['sofia']).ordine, g(['sofia']).come], [['sofia', 'gallo'], { sofia: 'genitore' }])
+  ok('…se è l\'unico, preselezionato', g(['sofia']).preselezionato, 'sofia')
+  ok('senza risposta del database (funzione assente o niente) l\'ordine resta quello per data', [g(null).ordine, g(null).preselezionato, g(null).come], [['gallo', 'sofia'], null, {}])
+  ok('due figli dello stesso genitore: salgono tutti e due, a scegliere a mano', prova(() => { const x = decidi(vaccaro, [...fs, entrata('elia', 'Cliente BRUNO ELIA per QUOTA ASSOCIATIVA', '2026-10-04')], { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', vaccaro, 'ACCREDITO'))).movimenti[0].chiave]: ['sofia', 'elia'] }); return [x.ordine.slice(0, 2).sort(), x.preselezionato] }), [['elia', 'sofia'], null])
+  ok('il nome vince sul genitore: la regola 2 si prova solo se la 1 non trova nessuno', prova(() => {
+    const t = 'Da VACCARO ANDREA per Gallo Marta TRN 99'
+    const x = decidi(t, fs, { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', t, 'ACCREDITO'))).movimenti[0].chiave]: ['sofia'] })
+    return [x.ordine[0], x.preselezionato, x.come]
+  }), ['gallo', 'gallo', { gallo: 'nome intero' }])
+  ok('un movimento senza nomi né genitori non cambia: stesso ordine di oggi (per data), niente preselezionato', prova(() => { const x = decidi('Bonifico generico TRN 5', cs); return [x.ordine, x.preselezionato] }), [['rossi', 'luca', 'manuel'], null])
+}
+
 // L'ultima importazione ancora in piedi, per «Annulla tutta l'importazione».
 {
   const r = (id, creatoIl, extra = {}) => ({ id, origine: 'movimento', tipo: 'entrata', data: '2026-10-01', importo: 100, descrizione: 'x', voce: 'Da classificare', cassaId: 'conto', annullato: false, origineImport: `banca:${id}`, creatoIl, ...extra })
