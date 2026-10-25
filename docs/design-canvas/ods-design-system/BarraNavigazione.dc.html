@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito: Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -25,7 +25,7 @@
   </sc-for>
 </nav>
 </x-dc>
-<script data-dc-script data-props='{"voci":{"editor":"text","default":"CALENDARIO|TIMER|I MIEI|ORE"},"attiva":{"editor":"text","default":"CALENDARIO"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":66}}'>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"CALENDARIO|TIMER|I MIEI|ORE"},"attiva":{"editor":"text","default":"CALENDARIO"},"$preview":{"width":390,"height":66}}'>
 // PROPOSTA «Navigazione», variante B scelta (non ancora nell'app): quattro voci CALENDARIO · TIMER · I MIEI · ORE; la segreteria che non insegna ne ha due, CALENDARIO · TIMER (senza ORE).
 //  la barra in basso del telefono per l'app degli istruttori, al posto del
 // tasto STRUMENTI sotto il calendario. Stesse voci e stessi nomi del menu a sinistra dello schermo largo (MenuIstruttori, prop
@@ -37,13 +37,11 @@
 // Sta in flusso in fondo alla pagina (nell'app: `position: sticky; bottom: 0`, con padding-bottom
 // `env(safe-area-inset-bottom)`): la striscia dell'allenamento sta in alto sotto la testata, quindi le due non si toccano.
 // voci: nomi separati da | (CALENDARIO, TIMER, I MIEI, ORE hanno la loro icona; un altro nome prende quella del foglio).
-// tema sito (COSTRUITA, `:root[data-look='sito'] .barra-nav` e `.barra-voce` in src/styles.css): fondo inchiostro #0d2a3d con testo #cfe6f4 e filo #46606f, voci in Inter 12px 600, SENZA spaziatura (non c'e' l'obliquo), con padding di 2px ai lati:
+// Look del sito (COSTRUITA, `:root[data-look='sito'] .barra-nav` e `.barra-voce` in src/styles.css): fondo inchiostro #0d2a3d con testo #cfe6f4 e filo #46606f, voci in Inter 12px 600, SENZA spaziatura (non c'e' l'obliquo), con padding di 2px ai lati:
 // l'etichetta va a capo invece di tagliarsi se la voce e' stretta (quattro voci su 375px). La voce corrente e' gialla #f4c31b (barra e fondo) con l'inchiostro e in grassetto 700 (il giallo del marchio e' per la voce corrente, come nel menu);
 // si legge anche dal grassetto e dal pieno, non solo dal colore. Alta 64px.
 // attiva: il nome della voce corrente. Non riprodotti: il passaggio del mouse e il fuoco.
 const T = {
-  scuro: { menu: '#161616', surface: '#1c1c1c', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4' },
-  chiaro: { menu: '#ebebe7', surface: '#ffffff', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a' },
   sito: { menu: '#0d2a3d', surface: '#f4c31b', lineSoft: '#46606f', text: '#0d2a3d', sec: '#cfe6f4', barraCorrente: '#f4c31b' },
 };
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -61,15 +59,14 @@ const FOGLIO = ['M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    const sito = p.tema === 'sito';
-    const nomi = String(p.voci ?? 'CALENDARIO|TIMER|I MIEI|ORE').split('|').map((t) => t.trim()).filter(Boolean);
+    const c = T.sito;
+        const nomi = String(p.voci ?? 'CALENDARIO|TIMER|I MIEI|ORE').split('|').map((t) => t.trim()).filter(Boolean);
     const voci = nomi.map((testo) => {
       const corrente = testo === (p.attiva || 'CALENDARIO');
       const [d1, d2, d3] = ICONE[testo] || FOGLIO;
-      return { testo, d1, d2, d3, peso: sito ? (corrente ? 700 : 600) : 700, barra: corrente ? (c.barraCorrente || c.text) : 'transparent', sfondo: corrente ? c.surface : 'transparent', colore: corrente ? c.text : c.sec };
+      return { testo, d1, d2, d3, peso: (corrente ? 700 : 600), barra: corrente ? (c.barraCorrente || c.text) : 'transparent', sfondo: corrente ? c.surface : 'transparent', colore: corrente ? c.text : c.sec };
     });
-    return { c: sito ? { ...c, text: '#ffffff' } : c, voci, fam: sito ? INTER : 'inherit', famVoce: sito ? INTER : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", spazioVoce: sito ? '0' : '0.1em', corpoVoce: sito ? '12px' : '13px', aCapo: sito ? 'normal' : 'nowrap', paddingVoce: sito ? '0 2px' : '0 4px' };
+    return { c: { ...c, text: '#ffffff' }, voci, fam: INTER, famVoce: INTER, spazioVoce: '0', corpoVoce: '12px', aCapo: 'normal', paddingVoce: '0 2px'};
   }
 }
 </script>

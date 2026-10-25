@@ -37,7 +37,7 @@
   </span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"numero":{"editor":"text","default":"1"},"titolo":{"editor":"text","default":"Leggi il modulo"},"dettaglio":{"editor":"text","default":"Quello per maggiorenni, o quello per minori che firma il genitore."},"iban":{"editor":"text","default":""},"dettaglio2":{"editor":"text","default":""},"tasti":{"editor":"text","default":"MAGGIORENNI|MINORI"},"primoPrincipale":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":180}}'>
+<script data-dc-script data-props='{"numero":{"editor":"text","default":"1"},"titolo":{"editor":"text","default":"Leggi il modulo"},"dettaglio":{"editor":"text","default":"Quello per maggiorenni, o quello per minori che firma il genitore."},"iban":{"editor":"text","default":""},"dettaglio2":{"editor":"text","default":""},"tasti":{"editor":"text","default":"MAGGIORENNI|MINORI"},"primoPrincipale":{"editor":"boolean","default":false},"$preview":{"width":360,"height":180}}'>
 // Riproduzione 1:1 di un passo della pagina ISCRIZIONI: <li className="card passo"> di src/components/IscrizioniScreen.tsx (righe 59-70)
 // con .passo, .passo-num, .passo-testo, .passo-titolo, .passo-dettaglio, .passo-btn, .iban e .riga-tasti di src/styles.css (righe 557 e 570-591).
 // Il numero e' in Saira 26px (.passo-num.num); titolo 17px 600; dettaglio 14px `dim`. L'azione sotto il testo e' quella del passo (Azione, Pagamento):
@@ -46,8 +46,7 @@
 // dettaglio e dettaglio2 sono frasi separate da `|` (nel passo del pagamento: il dettaglio del passo e la riga della quota prima dell'IBAN).
 // Vuoto quel che non serve. Il passaggio del mouse non e' riprodotto.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', faint: '#46606f', tasto: '#0d2a3d', tratteggio: '#14709f', blu: '#14709f', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', suRosso: '#ffffff' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
@@ -55,7 +54,7 @@ const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
 const principale = truthy(p.primoPrincipale);
     const tasti = lista(p.tasti ?? 'MAGGIORENNI|MINORI', '|').map((testo, i) => i === 0 && principale
       ? { testo, sfondo: c.rosso, bordo: '0', colore: c.suRosso }

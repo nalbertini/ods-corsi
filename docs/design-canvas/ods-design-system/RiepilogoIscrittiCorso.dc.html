@@ -20,20 +20,19 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"voci":{"editor":"text","default":"16/20:neutro|3 SENZA CERTIFICATO:rosso|4 DA PAGARE:rosso"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":640,"height":24}}'>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"16/20:neutro|3 SENZA CERTIFICATO:rosso|4 DA PAGARE:rosso"},"$preview":{"width":640,"height":24}}'>
 // PROPOSTA «riepilogo degli iscritti di un corso» (RiepilogoCorso in Corsi.tsx, da `riepilogoCorso` di src/lib/segreteria.ts): una riga sopra
 // la ricerca del tab ISCRITTI. `voci` = «testo:tono» separate da «|»; il tono colora solo il testo (mai il colore da solo: la parola dice cosa).
 // Il conto n/capienza e' neutro (giallo «CORSO PIENO», rosso «1 IN PIU' DEI POSTI»); le voci a zero spariscono e, se nessuno ha guai, resta
 // «TUTTO IN REGOLA» verde. Stesso carattere dei conti accanto alla ricerca (.num, 13px 700 0.12em).
 const T = {
-  scuro: { dim: '#8c8c88', sec: '#c9c9c4', rosso: '#ff5a52', giallo: '#f4c31b', verde: '#16a54a' },
-  chiaro: { dim: '#656561', sec: '#3d3d3a', rosso: '#b81d1d', giallo: '#8f6a00', verde: '#0b7a33' },
+  sito: { dim: '#46606f', sec: '#0d2a3d', rosso: '#b81d1d', giallo: '#8f6a00', verde: '#0b7a33' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const voci = String(p.voci ?? '').split('|').filter(Boolean).map((x, i) => {
       const [testo, tono = 'neutro'] = x.split(':');
       const colore = tono === 'rosso' ? c.rosso : tono === 'giallo' ? c.giallo : tono === 'verde' ? c.verde : c.sec;

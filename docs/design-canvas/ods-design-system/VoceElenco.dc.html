@@ -24,7 +24,7 @@
   <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; color: {{c.sec}}; font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap">{{tasto}}</span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Judo kids"},"riassunto":{"editor":"text","default":"nati 2016-2019 — saldo 300 € · annuale 310 € · trimestre 105 €"},"guaio":{"editor":"text","default":""},"tasto":{"editor":"text","default":"CAMBIA"},"bollino":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":700,"height":64}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Judo kids"},"riassunto":{"editor":"text","default":"nati 2016-2019 — saldo 300 € · annuale 310 € · trimestre 105 €"},"guaio":{"editor":"text","default":""},"tasto":{"editor":"text","default":"CAMBIA"},"bollino":{"editor":"text","default":""},"$preview":{"width":700,"height":64}}'>
 // bollino = .sg-tag[data-tipo='presto'] giallo accanto al nome (12px 700 0.12em, padding 0 4px): SENZA TIPO in CATALOGO E CHIUSURA del
 // vestiario (segreteria/Vestiario.tsx), perche' basta un capo senza tipo e la pagina mostra tutti i capi insieme.
 // Riproduzione 1:1 di una voce chiusa di LISTINO > I CORSI: <div className="sg-voce-elenco"> di src/components/segreteria/Listino.tsx
@@ -32,14 +32,13 @@
 // min 48px, padding 6px 12px, gap 12px. Il nome 15px 700; `guaio` una riga 14px rosso-testo (Senza corso: scegli il corso da CAMBIA);
 // il riassunto 12px `dim`. A destra il .sg-chip (44px, Saira 13px 0.12em, bordo 2px `line`, testo `sec`).
 const T = {
-  scuro: { giallo: '#f4c31b', suColore: '#121212', bg: '#121212', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rossoTesto: '#ff5a52' },
-  chiaro: { giallo: '#f4c31b', suColore: '#121212', bg: '#f4f4f1', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', rossoTesto: '#b81d1d' },
+  sito: { giallo: '#f4c31b', suColore: '#0d2a3d', bg: '#eef5fa', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rossoTesto: '#b81d1d' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const guaio = p.guaio ?? '';
     return {
       c, cond: COND,

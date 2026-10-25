@@ -14,11 +14,11 @@
   </style>
 </helmet>
 <div style="display: grid; grid-template-columns: {{griglia}}; grid-template-areas: {{aree}}; gap: {{distanza}}; align-items: center; width: {{larghezza}}; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; color: #0d2a3d">
-  <span style="grid-area: data; font-size: 13px; color: #3d3d3a">{{data}}</span>
+  <span style="grid-area: data; font-size: 13px; color: #0d2a3d">{{data}}</span>
   <span style="grid-area: fonte; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #46606f">{{fonte}}</span>
   <span style="grid-area: desc; font-size: 15px; font-weight: 600; min-width: 0">{{descrizione}}</span>
   <span style="grid-area: importo; font-size: 16px; font-weight: 700; text-align: right; white-space: nowrap; color: {{coloreImporto}}">{{importo}}</span>
-  <div style="grid-area: tasto; text-align: right"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Classifica" hint-size="110px,40px"></dc-import></div>
+  <div style="grid-area: tasto; text-align: right"><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Classifica" hint-size="110px,40px"></dc-import></div>
 </div>
 </x-dc>
 <script data-dc-script data-props='{"data":{"editor":"text","default":"12/10/2026"},"fonte":{"editor":"text","default":"A MANO"},"descrizione":{"editor":"text","default":"Rimborso materiale tatami"},"importo":{"editor":"text","default":"−35,00 €"},"uscita":{"editor":"enum","options":["true","false"],"default":"true"},"telefono":{"editor":"enum","options":["false","true"],"default":"false"},"$preview":{"width":1000,"height":60}}'>

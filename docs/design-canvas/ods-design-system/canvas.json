@@ -872,7 +872,7 @@
       "y": -220,
       "w": 460,
       "page": "page-2",
-      "text": "Componenti importabili con <dc-import>. Ogni chip in alto e' una prop: variante, stato, tema... Le props si passano come attributi (kebab-case), i booleani come aperta=\"{{ true }}\". Tutti hanno la prop tema (scuro | chiaro)."
+      "text": "Componenti importabili con <dc-import>. Ogni chip in alto e' una prop: variante, stato... Le props si passano come attributi (kebab-case), i booleani come aperta=\"{{ true }}\"."
     }
   ],
   "launch": {

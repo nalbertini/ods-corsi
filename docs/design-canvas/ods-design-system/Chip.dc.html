@@ -9,7 +9,7 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
-  <!-- Tema sito: Inter (qui da Google Fonts, in app file locale OFL). -->
+  <!-- Inter (qui da Google Fonts, in app file locale OFL). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
@@ -17,17 +17,15 @@
   </style>
 <span style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; background: {{sfondo}}; border: 2px solid {{bordo}}; border-radius: {{raggio}}; color: {{colore}}; font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: {{corpo}}; font-weight: {{peso}}; letter-spacing: {{spazio}}; white-space: nowrap; max-width: 100%; overflow: hidden; opacity: {{opacita}}"><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis">{{segno}}{{label}}</span><sc-if value="{{haNumero}}" hint-placeholder-val="{{ false }}"><span style="flex: none; padding: {{riempNumero}}; border: {{bordoNumero}}; border-radius: {{raggio}}; background: {{fondoNumero}}; color: {{testoNumero}}; font-size: 12px; letter-spacing: {{spazio}}">{{numero}}</span></sc-if></span>
 </x-dc>
-<script data-dc-script data-props='{"label":{"editor":"text","default":"DA PAGARE"},"acceso":{"editor":"boolean","default":false},"pieno":{"editor":"boolean","default":false},"disabled":{"editor":"boolean","default":false},"numero":{"editor":"text","default":""},"tonoNumero":{"editor":"enum","options":["neutro","rosso","giallo"],"default":"neutro"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":180,"height":50}}'>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"DA PAGARE"},"acceso":{"editor":"boolean","default":false},"pieno":{"editor":"boolean","default":false},"disabled":{"editor":"boolean","default":false},"numero":{"editor":"text","default":""},"tonoNumero":{"editor":"enum","options":["neutro","rosso","giallo"],"default":"neutro"},"$preview":{"width":180,"height":50}}'>
 // Riproduzione 1:1 di .sg-chip di src/styles.css (righe 1462-1467), il tasto piccolo della segreteria: filtri sopra le tabelle
 // (Iscritti.tsx, Richieste.tsx), CAMBIA e ↑ SU / ↓ GIÙ del LISTINO, SCHEDA di PRESENZE. Alto 44px, padding 0 12px, bordo 2px `line`,
 // Saira 13px 700 0.12em, testo `sec`. acceso = aria-pressed (bordo e testo `text`, fondo `surface-2`); pieno = .sg-chip-pieno (fondo
 // `text`, testo `bg`); disabled = opacita' 0.4. numero: un .sg-tag dentro il chip (tonoNumero neutro / rosso / giallo, come Badge tag). Un nome lungo si taglia con «…» (max-width 100%), il numero resta.
-// tema sito (`:root[data-look='sito']`): Inter 15px 600 senza spaziatura, raggio 6px, bordo blu #14709f; il filtro scelto e' blu pieno con testo
+// Look del sito (`:root[data-look='sito']`): Inter 15px 600 senza spaziatura, raggio 6px, bordo blu #14709f; il filtro scelto e' blu pieno con testo
 // bianco e il segno ✓ davanti (non solo un altro colore); `pieno` e' lo stesso blu. Il numero e' un tag bianco con bordo.
-// tema sito e disabled: blocco `surface-2` #cfe6f4, testo `dim` #46606f, bordo trasparente, niente opacita' (styles.css, `.sg-chip:disabled` del look sito).
+// Look del sito e disabled: blocco `surface-2` #cfe6f4, testo `dim` #46606f, bordo trasparente, niente opacita' (styles.css, `.sg-chip:disabled` del look sito).
 const T = {
-  scuro: { bg: '#121212', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', suColore: '#121212', suRosso: '#ffffff' },
-  chiaro: { bg: '#f4f4f1', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', suColore: '#121212', suRosso: '#ffffff' },
   sito: { bg: '#ffffff', surface2: '#ffffff', line: '#14709f', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#b81d1d', giallo: '#8f6a00', suColore: '#0d2a3d', suRosso: '#b81d1d', blu: '#14709f' },
 };
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -36,25 +34,24 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const acceso = truthy(p.acceso), pieno = truthy(p.pieno);
     const numero = p.numero ?? '';
     const tn = p.tonoNumero || 'neutro';
-    const sito = p.tema === 'sito';
-    const spento = truthy(p.disabled);
-    const blu = (pieno || acceso) && !(sito && spento);
+        const spento = truthy(p.disabled);
+    const blu = (pieno || acceso) && !spento;
     return {
-      cond: sito ? INTER : COND, label: p.label ?? 'DA PAGARE',
-      corpo: sito ? '15px' : '13px', peso: sito ? 600 : 700, spazio: sito ? '0' : '0.12em', raggio: sito ? '6px' : '0',
-      segno: sito && acceso ? '✓ ' : '',
-      sfondo: sito && spento ? '#cfe6f4' : sito ? (blu ? c.blu : c.bg) : pieno ? c.text : acceso ? c.surface2 : 'transparent',
-      bordo: sito && spento ? 'transparent' : sito ? (blu ? c.blu : c.line) : pieno || acceso ? c.text : c.line,
-      colore: sito && spento ? c.dim : sito ? (blu ? '#ffffff' : c.text) : pieno ? c.bg : acceso ? c.text : c.sec,
-      opacita: spento && !sito ? '0.4' : '1',
+      cond: INTER, label: p.label ?? 'DA PAGARE',
+      corpo: '15px', peso: 600, spazio: '0', raggio: '6px',
+      segno: acceso ? '✓ ' : '',
+      sfondo: spento ? '#cfe6f4' : (blu ? c.blu : c.bg),
+      bordo: spento ? 'transparent' : (blu ? c.blu : c.line),
+      colore: spento ? c.dim : (blu ? '#ffffff' : c.text),
+      opacita: spento && !'0.4',
       numero, haNumero: numero !== '',
-      riempNumero: sito ? '1px 8px' : '0 4px', bordoNumero: sito ? '1.5px solid ' + (tn === 'rosso' ? c.rosso : tn === 'giallo' ? c.giallo : c.suColore) : '0',
-      fondoNumero: sito ? c.bg : tn === 'rosso' ? c.rosso : tn === 'giallo' ? c.giallo : c.dim,
-      testoNumero: sito ? c.suColore : tn === 'rosso' ? c.suRosso : tn === 'giallo' ? c.suColore : c.bg,
+      riempNumero: '1px 8px', bordoNumero: '1.5px solid ' + (tn === 'rosso' ? c.rosso : tn === 'giallo' ? c.giallo : c.suColore),
+      fondoNumero: c.bg,
+      testoNumero: c.suColore,
     };
   }
 }

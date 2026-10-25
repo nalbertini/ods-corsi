@@ -20,12 +20,12 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"voci":{"editor":"text","default":"Ottobre 2026|Mese scorso|Tutto l’anno|Tutto"},"scelta":{"editor":"text","default":"Mese scorso"},"tema":{"editor":"enum","options":["sito"],"default":"sito","section":"Tema"},"$preview":{"width":460,"height":52}}'>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"Ottobre 2026|Mese scorso|Tutto l’anno|Tutto"},"scelta":{"editor":"text","default":"Mese scorso"},"$preview":{"width":460,"height":52}}'>
 // `Segmenti` di comune.tsx, `.sg-segmenti` in styles.css: le scelte che si escludono a vicenda in un pezzo solo, al posto di una fila
 // di .sg-chip staccati (PERIODO e VISTA di CONTABILITÀ → MOVIMENTI). Ogni voce alta 44px (48 col bordo), va a capo se non ci sta, bordo 2px `riga-campo` #14709f, raggio 6px come .sg-chip del look sito;
 // fra una voce e l'altra un filo 1px `line` #cfe6f4. La voce scelta e' blu pieno con testo bianco e ✓ davanti, come il chip acceso:
 // lo stato non sta solo nel colore. Nell'app: un role="group" con aria-label e un <button aria-pressed> per voce.
-// Solo tema sito: la segreteria e' sempre chiara.
+// La segreteria ha un solo aspetto, il look del sito.
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;

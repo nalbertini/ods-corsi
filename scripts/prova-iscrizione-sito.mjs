@@ -85,36 +85,23 @@ try {
 } catch (e) {
   ok('src/lib/aspettoModulo.ts si carica', e.errors?.[0]?.text ?? e.message, 'ok')
 }
-const BARRA = { scuro: '#121212', chiaro: '#f4f4f1', tatami: '#ebe6d0' }
 if (modulo) {
-  for (const t of ['scuro', 'chiaro', 'tatami']) {
-    const a = ambiente({ salvato: t })
-    const tema = await carica(await impacchetta("export * from './src/lib/tema'"))
-    tema.avviaTema()
-    const m = await carica(modulo)
-    const chiudi = vedi(() => m.apriAspettoModulo(a.doc))
-    ok(`tema ${t}: apri mette data-modulo="sito"`, a.modulo(), 'sito')
-    ok(`tema ${t}: apri mette il theme-color del sito`, a.meta.content, '#eef5fa')
-    ok(`tema ${t}: apri dà indietro chiudi()`, typeof chiudi, 'function')
-    // L'utente tocca il tasto del tema nel modulo: la scelta vale dopo, il modulo resta chiaro.
-    tema.scegliTema('tatami')
-    ok(`tema ${t}: il tasto del tema non rimette il theme-color mentre il modulo è aperto`, a.meta.content, '#eef5fa')
-    ok(`tema ${t}: il modulo resta chiaro`, a.modulo(), 'sito')
-    vedi(() => chiudi())
-    ok(`tema ${t}: chiudi toglie data-modulo`, a.modulo(), null)
-    ok(`tema ${t}: chiudi rimette il theme-color del tema scelto (tatami)`, a.meta.content, BARRA.tatami)
-    tema.scegliTema(t)
-    ok(`tema ${t}: dopo chiudi applica() torna a lavorare`, a.meta.content, BARRA[t])
-  }
-  // Chiudere senza aver cambiato tema: torna il colore del tema di partenza.
-  for (const t of ['scuro', 'chiaro', 'tatami']) {
-    const a = ambiente({ salvato: t })
-    const tema = await carica(await impacchetta("export * from './src/lib/tema'"))
-    tema.avviaTema()
-    const m = await carica(modulo)
-    const chiudi = vedi(() => m.apriAspettoModulo(a.doc))
-    vedi(() => chiudi())
-    ok(`tema ${t}: apri e chiudi riportano la barra a ${BARRA[t]}`, [a.modulo(), a.meta.content], [null, BARRA[t]])
+  const a = ambiente({})
+  const m = await carica(modulo)
+  const chiudi = vedi(() => m.apriAspettoModulo(a.doc))
+  ok('apri mette data-modulo="sito"', a.modulo(), 'sito')
+  ok('apri dà indietro chiudi()', typeof chiudi, 'function')
+  ok('la barra del browser non si tocca: sta già in index.html', a.meta.content, null)
+  vedi(() => chiudi())
+  ok('chiudi toglie data-modulo', a.modulo(), null)
+  // Chi aveva scelto un tema (nero, bianco, Tatami) lo ha ancora in `ods-tema`: va ignorato, senza errori né riscritture.
+  for (const salvato of ['scuro', 'chiaro', 'tatami']) {
+    const s = ambiente({ salvato })
+    const ms = await carica(modulo)
+    const ch = vedi(() => ms.apriAspettoModulo(s.doc))
+    ok(`con ods-tema="${salvato}" il modulo ha comunque l'aspetto del sito`, s.modulo(), 'sito')
+    ok(`con ods-tema="${salvato}" la chiave non si tocca`, globalThis.localStorage.getItem('ods-tema'), salvato)
+    vedi(() => ch())
   }
 }
 
@@ -196,21 +183,18 @@ for (const [nome, token] of [['Big Shoulders Display', '--cond'], ['Inter', '--b
   ok(`@font-face '${riserva}': Arial locale con size-adjust e ascent-override`, [/local\(['"]?Arial/.test(f), /size-adjust:/.test(f), /ascent-override:/.test(f), /descent-override:/.test(f)], [true, true, true, true])
   ok(`${token} del modulo: subito dopo ${nome} viene '${riserva}'`, new RegExp(`^['"]?${nome}['"]?\\s*,\\s*'${riserva}'`).test(T[token] ?? ''), true)
 }
-const radice = dichiarazioni(rOra.find((r) => r.selettori.includes(':root'))?.corpo ?? '')
-ok(':root --cond resta Saira Condensed', /Saira Condensed/.test(radice['--cond'] ?? ''), true)
-ok(':root --body resta Barlow', /Barlow/.test(radice['--body'] ?? ''), true)
 
 console.log('\nIl confinamento')
 ok('ci sono regole del modulo', delModulo.length > 0, true)
 ok('ogni regola che nomina data-modulo comincia per ' + PREFISSO, rOra.filter((r) => r.selettori.some((x) => x.includes('data-modulo')) && !r.selettori.every((x) => x.startsWith(PREFISSO))).map((r) => r.selettori.join(',')), [])
 // Solo le regole che nominano il modulo: un'altra PR può aggiungere il suo CSS (la segreteria, il timer…), purché il modulo resti confinato.
 if (prima !== null) ok('ogni regola nuova del modulo comincia per ' + PREFISSO + ' (o è un @font-face)', nuove.filter((r) => r.selettori.some((s) => s.includes('data-modulo')) && !r.selettori.every((s) => s.startsWith(PREFISSO) || s === '@font-face')).map((r) => r.selettori.join(',')), [])
-for (const sel of [':root', ":root[data-tema='chiaro']", ":root[data-tema='tatami']"])
-  if (prima !== null) ok(`il blocco ${sel} non è cambiato`, rOra.filter((r) => r.selettori.includes(sel)).map(chiaveR), rPrima.filter((r) => r.selettori.includes(sel)).map(chiaveR))
 // Il look della segreteria (`data-look`, PR successive a questa) ha la sua prova (`prova:look`): le sue regole possono cambiare.
 const delLook = (r) => r.selettori.some((x) => x.includes('data-look'))
 // Le regole di Tatami per le classi della segreteria (`.sg-*`) sono state tolte: la segreteria è sempre nel look del sito (`prova:tema` lo controlla).
 const tatamiSegreteria = (r) => r.selettori.some((x) => x.includes("data-tema='tatami'") && x.includes('.sg-'))
+// I temi nero, bianco e Tatami e il loro tasto sono tolti di proposito (`prova:tema`): l'aspetto è uno solo, quello del sito. Le regole del blocco base `:root` (colori e caratteri) sono passate sotto `data-look='sito'`.
+const temiTolti = (r) => r.selettori.some((x) => /data-tema='(chiaro|tatami)'|tasto-tema|^:root$/.test(x)) || (r.selettori.includes('.tb-fascia') && /box-shadow/.test(r.corpo))
 // La griglia a due colonne della pagina d'ingresso (passi | costi) e le regole dell'elenco dei passi sono tolte di proposito: ora è una colonna sola (`prova:iscrizione-pagina`). Le altre regole restano tutte.
 const impaginazioneVecchia = (r) => /grid-area:\s*nota/.test(r.corpo) || r.selettori.some((x) => /^\.scroll > \.iscrizioni$|^\.iscrizioni-passi$|^\.iscrizioni #costi$|^\.passi$|^\.passo$|^\.passo-num$|^\.passo-testo$|^\.pagamento$/.test(x))
 // L'editor a pezzi non ha più i tre pannelli di Puck (parti, pagina, campi) ma la sua pagina e due schede: le regole sulla sua impaginazione di prima (`.sito-pezzi > div`, le classi interne di Puck) sono tolte di proposito.
@@ -278,7 +262,7 @@ const listinoLargo = (r) => r.selettori.includes('.sg-listino') && /max-width:\s
 const senzaSalti = (r) => (/--cond:\s*'Big Shoulders Display', 'Arial Narrow'/.test(r.corpo) && /--body:\s*Inter, 'Helvetica Neue'/.test(r.corpo)) || r.selettori.includes('.iscrizioni-costi-attesa > *')
 // La scheda di una gara ha le righe degli atleti a due piani (`.sg-gara-atleta`, `prova:gare`): la tabella a colonne `.sg-riga-atleta-gara` e le sue regole (anche quelle condivise con `.sg-riga-gara`) sono tolte di proposito.
 const schedaGaraRivista = (r) => r.selettori.some((x) => /sg-riga-atleta-gara/.test(x))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !senzaSalti(r) && !schedaGaraRivista(r) && !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !iscrittiFamiglia(r) && !listinoLargo(r) && !finestraLarga(r) && !schedeTabletConIcona(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !senzaSalti(r) && !schedaGaraRivista(r) && !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !temiTolti(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !iscrittiFamiglia(r) && !listinoLargo(r) && !finestraLarga(r) && !schedeTabletConIcona(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
@@ -301,9 +285,6 @@ ok('FATTO resta rosso, spento torna al filo', [/border-color:\s*var\(--rosso\)/.
 ok('fuoco su link e caselle: la regola del modulo batte quelle di base (0,3,0)', delModulo.some((r) => r.selettori.includes(PREFISSO + ' :focus-visible')), true)
 ok('fuoco da tastiera: contorno 3px var(--blu)', delModulo.some((r) => r.selettori.some((s) => s.includes(':focus')) && /outline:\s*3px solid var\(--blu\)/.test(r.corpo)), true)
 
-// Il tasto del tema, a modulo aperto: il modulo è sempre chiaro, il tasto cambierebbe solo l'icona. Sparisce con una regola sotto il prefisso.
-ok('a modulo aperto il tasto del tema non si vede', delModulo.some((r) => r.selettori.includes(`${PREFISSO} .tasto-tema`) && /display:\s*none/.test(r.corpo)), true)
-ok('il tasto del tema porta la classe che il modulo nasconde', /className="[^"]*(?<![\w-])tasto-tema(?![\w-])/.test(readFileSync('src/components/TastoTema.tsx', 'utf8')), true)
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

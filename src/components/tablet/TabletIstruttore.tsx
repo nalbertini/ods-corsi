@@ -426,7 +426,7 @@ export function TabletIstruttore({
   )
 }
 
-/** `colore` per il bordo, `scritto` per l'etichetta: giallo e verde puri sul tema chiaro non si leggono. */
+/** `colore` per il bordo, `scritto` per l'etichetta: giallo e verde puri sul fondo chiaro non si leggono. */
 const PRESENZA: Record<PresenzaIstruttore['stato'], { titolo: string; testo: string; colore: string; scritto: string }> = {
   confermata: { titolo: 'LA TUA PRESENZA È SEGNATA', testo: 'Eri previsto su questa lezione.', colore: 'var(--verde)', scritto: 'var(--verde-testo)' },
   da_confermare: {

@@ -177,7 +177,7 @@ export function PaginaTimer({
         </div>
       )}
       <Suspense fallback={<p className="pad" style={{ color: 'var(--dim)' }}>Un attimo…</p>}>
-        <TimerSala incorporato={conScheda} visibile={visibile} sito />
+        <TimerSala incorporato={conScheda} visibile={visibile} />
       </Suspense>
       {musica}
     </div>

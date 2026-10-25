@@ -23,7 +23,7 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"titolo":{"editor":"text","default":"CERTIFICATO"},"parola":{"editor":"text","default":"SCADUTO"},"tono":{"editor":"enum","options":["rosso","giallo","verde","spento"],"default":"rosso"},"righe":{"editor":"text","default":"il 12 marzo:giallo"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":120}}'>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"CERTIFICATO"},"parola":{"editor":"text","default":"SCADUTO"},"tono":{"editor":"enum","options":["rosso","giallo","verde","spento"],"default":"rosso"},"righe":{"editor":"text","default":"il 12 marzo:giallo"},"$preview":{"width":240,"height":120}}'>
 // Riproduzione 1:1 del timbro in cima alla scheda di un iscritto: .sg-timbro e figli (src/styles.css)
 // disegnato da `Timbri` in src/components/segreteria/Iscritti.tsx, con le parole di `timbriScheda`.
 // Nell'app sono in fila tutti larghi uguale (.sg-timbri: grid-auto-flow column, grid-auto-columns minmax(0, 1fr),
@@ -33,20 +33,17 @@
 // 12px 14px, gap 4px. Titolo Saira 12px 0.2em `dim`; la parola Saira 22px, interlinea 1.05, nel colore-testo dello
 // stato (rosso-testo, giallo-testo, verde-testo, `dim`); le righe 14px 0.12em. Una riga gialla ha il bordo 2px giallo
 // e il testo giallo-testo.
-// tema sito (`:root[data-look='sito'] .sg-timbro`, styles.css riga 381 e 462-463): fondo bianco, raggio 6px, giallo = giallo-testo.
+// Look del sito (`:root[data-look='sito'] .sg-timbro`, styles.css riga 381 e 462-463): fondo bianco, raggio 6px, giallo = giallo-testo.
 // tono: lo stato. righe: "testo:tono" separati da | (tono giallo o vuoto). Non riprodotti: bordo `text` al
 // passaggio del mouse e il fuoco da tastiera.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', tasto: '#b8b8b2', menu: '#161616' },
-  sito: { bg: '#ffffff', surface: '#ffffff', surface2: '#eef5fa', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a', giallo: '#8f6a00', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#0d2a3d' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#ebebe7' },
+  sito: { bg: '#ffffff', surface: '#ffffff', surface2: '#eef5fa', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a', giallo: '#8f6a00', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', tasto: '#0d2a3d', menu: '#0d2a3d' },
 };
-const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
 const tono = p.tono || 'rosso';
     const BORDO = { rosso: c.rosso, giallo: c.giallo, verde: c.verde, spento: c.line };
     const TESTO = { rosso: c.rossoTesto, giallo: c.gialloTesto, verde: c.verdeTesto, spento: c.dim };
@@ -58,7 +55,7 @@ const tono = p.tono || 'rosso';
       return { testo, colore: giallo ? c.gialloTesto : 'inherit', bordo: giallo ? '2px solid ' + c.giallo : '0', padding: giallo ? '0 6px' : '0' };
     });
     return {
-      raggio: p.tema === 'sito' ? '6px' : '0', fam: p.tema === 'sito' ? INTER : COND,
+      raggio: '6px', fam: INTER,
       c, righe, titolo: p.titolo ?? 'CERTIFICATO', parola: p.parola ?? 'SCADUTO',
       bordo: BORDO[tono] || c.line, coloreParola: TESTO[tono] || c.text,
       coloreBase: tono === 'spento' ? c.dim : c.sec,

@@ -28,15 +28,13 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Orrù Tommaso"},"aMano":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":560,"height":64}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Orrù Tommaso"},"aMano":{"editor":"boolean","default":true},"$preview":{"width":560,"height":64}}'>
 // COSTRUITA (`MovimentoAperto` di `Contabilita.tsx`; ../quote-persona/): la riga PERSONA del movimento aperto in CONTABILITÀ,
 // sopra i dati, sulle entrate di «Quota associativa» e «Corsi e altri pagamenti» o quando la persona c'è già. Etichetta
 // `.sg-etichetta` larga 130px, il nome a 15px (vuoto: «Nessuna: di chi è?» in rosso-testo), poi i `.sg-link` a 15px alti 44px
 // (`DITO`): «Apri la scheda ›» con la persona; sui movimenti a mano (`aMano`) «Cambia persona» / «Collega a una persona» e «Scollega».
 // Filetto sotto `line-soft`, padding 8px 0, gap 14px, a capo sul telefono.
 const T = {
-  scuro: { text: '#f2f2f0', dim: '#8c8c88', lineSoft: '#2a2a2a', rossoTesto: '#ff5a52' },
-  chiaro: { text: '#161616', dim: '#656561', lineSoft: '#e2e2dd', rossoTesto: '#b81d1d' },
   sito: { text: '#0d2a3d', dim: '#46606f', lineSoft: '#cfe6f4', rossoTesto: '#b81d1d' },
 };
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -44,12 +42,12 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
+    const c = T.sito;
     const nome = p.nome ?? 'Orrù Tommaso';
     const conPersona = nome !== '';
     const aMano = p.aMano === undefined ? true : truthy(p.aMano);
     return {
-      c, fam: p.tema === 'sito' || !p.tema ? INTER : 'Barlow, Arial, sans-serif', nome, conPersona, senzaPersona: !conPersona,
+      c, fam: INTER, nome, conPersona, senzaPersona: !conPersona,
       aMano, cambia: conPersona ? 'Cambia persona' : 'Collega a una persona', scollega: conPersona,
     };
   }

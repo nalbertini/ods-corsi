@@ -35,18 +35,9 @@ const token = (selettore) => {
   for (const m of css.matchAll(re)) for (const [, k, v] of m[1].matchAll(/(--[\w-]+):\s*(#[0-9a-f]{6})/gi)) t[k] = v
   return t
 }
-const radice = token(':root')
-const temi = {
-  scuro: radice,
-  chiaro: { ...radice, ...token(":root[data-tema='chiaro']") },
-  tatami: { ...radice, ...token(":root[data-tema='tatami']") },
-  sito: { ...radice, ...token(":root[data-look='sito']") },
-}
-// Dentro il menu i token cambiano nel look sito. Il Tatami non c'è: la segreteria e gli istruttori
-// hanno sempre il look sito (`lib/aspettoSegreteria.ts`), che comanda sul tema.
+const temi = { sito: token(":root[data-look='sito']") }
+// Dentro il menu i token cambiano.
 const dentroMenu = {
-  scuro: temi.scuro,
-  chiaro: temi.chiaro,
   sito: { ...temi.sito, ...token(":root[data-look='sito'] .sg-menu") },
 }
 

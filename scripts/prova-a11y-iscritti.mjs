@@ -45,8 +45,7 @@ ok('il nome dello stato nel riepilogo prende il colore del tono', colore('.mia-p
 ok('VEDI TUTTE non è --blu (3,5:1 sul chiaro)', colore('.mia-vedi-tutte'), 'var(--text)')
 
 const token = (sel) => Object.fromEntries([...(css.match(new RegExp(`^${sel.replace(/[[\]().']/g, '\\$&')} \\{([^}]*)\\}`, 'm'))?.[1] ?? '').matchAll(/(--[\w-]+):\s*(#[0-9a-f]{6})/gi)].map((m) => [m[1], m[2]]))
-const radice = token(':root')
-const temi = { scuro: radice, chiaro: { ...radice, ...token(":root[data-tema='chiaro']") } }
+const temi = { sito: token(":root[data-look='sito']") }
 for (const [n, t] of Object.entries(temi)) ok(`--dim sul fondo delle schede ≥ 4,5 · ${n}`, contrasto(t['--dim'], t['--surface']) >= 4.5, true)
 
 // Le linguette della scheda iscritto hanno un'icona, decorativa: il nome resta quello della linguetta.

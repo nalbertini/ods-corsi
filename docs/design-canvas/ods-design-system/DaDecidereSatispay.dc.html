@@ -20,8 +20,8 @@
   <span style="font-size: 14px">{{testo}}</span>
   <sc-if value="{{chiuso}}" hint-placeholder-val="{{ true }}">
     <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px">
-      <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="pieno" label="{{tastoOggi}}" hint-size="220px,48px"></dc-import>
-      <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="linea" label="Lascialo fuori" hint-size="150px,48px"></dc-import>
+      <dc-import name="Bottone" contesto="segreteria" variante="pieno" label="{{tastoOggi}}" hint-size="220px,48px"></dc-import>
+      <dc-import name="Bottone" contesto="segreteria" variante="linea" label="Lascialo fuori" hint-size="150px,48px"></dc-import>
     </div>
   </sc-if>
   <sc-if value="{{doppio}}" hint-placeholder-val="{{ false }}">
@@ -36,15 +36,15 @@
     </div>
     <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px">
       <sc-for list="{{candidati}}" as="m" hint-placeholder-count="2">
-        <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="linea" label="{{m.tasto}}" hint-size="230px,48px"></dc-import>
+        <dc-import name="Bottone" contesto="segreteria" variante="linea" label="{{m.tasto}}" hint-size="230px,48px"></dc-import>
       </sc-for>
-      <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="pieno" label="{{tastoNessuno}}" hint-size="250px,48px"></dc-import>
+      <dc-import name="Bottone" contesto="segreteria" variante="pieno" label="{{tastoNessuno}}" hint-size="250px,48px"></dc-import>
     </div>
     <span style="font-size: 14px; color: {{c.dim}}">Se è uno di questi, resta quello a mano con la sua voce, e prende il segno DA SATISPAY.</span>
   </sc-if>
 </section>
 </x-dc>
-<script data-dc-script data-props='{"motivo":{"editor":"enum","options":["giorno_chiuso","doppione"],"default":"giorno_chiuso"},"rimborso":{"editor":"boolean","default":false},"chi":{"editor":"text","default":"Marco B."},"importo":{"editor":"text","default":"12,00"},"data":{"editor":"text","default":"sabato 18/10/2026"},"oggi":{"editor":"text","default":"22/10"},"candidati":{"editor":"text","default":"Lezione di prova · Rossi Anna|Lezioni di prova|Conto Corrente;Maglietta ODS taglia M|Vestiario|Conto Corrente"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":820,"height":260}}'>
+<script data-dc-script data-props='{"motivo":{"editor":"enum","options":["giorno_chiuso","doppione"],"default":"giorno_chiuso"},"rimborso":{"editor":"boolean","default":false},"chi":{"editor":"text","default":"Marco B."},"importo":{"editor":"text","default":"12,00"},"data":{"editor":"text","default":"sabato 18/10/2026"},"oggi":{"editor":"text","default":"22/10"},"candidati":{"editor":"text","default":"Lezione di prova · Rossi Anna|Lezioni di prova|Conto Corrente;Maglietta ODS taglia M|Vestiario|Conto Corrente"},"$preview":{"width":820,"height":260}}'>
 // COSTRUITA (`DaDecidereScheda` in src/components/segreteria/ScaricoSatispay.tsx; proposta e storia in ../satispay-scarico/): un caso della pagina
 // «Pagamenti Satispay da decidere» (`SchedaPiena`, si apre da «Guarda i N casi»), sopra la frase «N pagamenti Satispay da decidere. Finche' non
 // scegli, non entrano.» (15px). Il caso e' un `.sg-riquadro` normale (padding 18px 20px, gap 12px, bordo 2px `line`: il giallo sta solo
@@ -56,8 +56,6 @@
 // «Nessuno dei due: scrivilo» (con due candidati; «Nessuno: scrivilo» con piu') e la nota `dim` «Se e' uno di questi, resta quello a mano…».
 // `candidati`: descrizione|voce|cassa separati da «;». Tasti da 48px (nella proposta 44px).
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', giallo: '#f4c31b', rosso: '#ff5a52', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', giallo: '#8f6a00', rosso: '#b81d1d', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
   sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', giallo: '#8f6a00', rosso: '#b81d1d', cond: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif", body: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
 };
 const truthy = (v) => v === true || v === 'true';
@@ -72,7 +70,7 @@ class Component extends DCLogic {
       return { descrizione, voce: voce ? ' · ' + voce : '', cassa: cassa ?? '', importo: '+' + imp + ' €', tasto: 'È «' + descrizione + '»' };
     });
     return {
-      c: T[p.tema] || T.sito, tema: p.tema || 'sito',
+      c: T.sito,
       chiuso, doppio: !chiuso,
       aria: chiuso ? 'Giorno chiuso' : 'Forse già scritto a mano',
       etichetta: chiuso ? 'CADE IN UN GIORNO GIÀ CHIUSO' : 'FORSE GIÀ SCRITTO A MANO',

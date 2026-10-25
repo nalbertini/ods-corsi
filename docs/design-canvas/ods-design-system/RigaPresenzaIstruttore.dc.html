@@ -32,8 +32,8 @@
   </span>
   <span style="display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; text-align: right">
     <sc-if value="{{daConfermare}}" hint-placeholder-val="{{ true }}">
-      <dc-import name="Bottone" label="CONFERMA" variante="vai" contesto="segreteria" tema="{{tema}}" hint-size="130px,48px"></dc-import>
-      <dc-import name="Bottone" label="RIFIUTA" variante="linea" contesto="segreteria" tema="{{tema}}" hint-size="110px,48px"></dc-import>
+      <dc-import name="Bottone" label="CONFERMA" variante="vai" contesto="segreteria" hint-size="130px,48px"></dc-import>
+      <dc-import name="Bottone" label="RIFIUTA" variante="linea" contesto="segreteria" hint-size="110px,48px"></dc-import>
     </sc-if>
     <sc-if value="{{gestita}}" hint-placeholder-val="{{ false }}">
       <span style="display: flex; flex-direction: column; gap: 2px">
@@ -45,7 +45,7 @@
   </span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Marco Rossi"},"corso":{"editor":"text","default":"Judo kids"},"quando":{"editor":"text","default":"lunedì 5 ottobre, 17:30–18:30"},"previsti":{"editor":"text","default":"Marco Rossi"},"entrata":{"editor":"text","default":"17:24"},"come":{"editor":"text","default":"col PIN"},"tinta":{"editor":"text","default":"#1b8ac4"},"stato":{"editor":"enum","options":["da_confermare","confermata","rifiutata"],"default":"da_confermare"},"gestita":{"editor":"text","default":"da Elena, ieri"},"griglia":{"editor":"text","default":"1fr 1.5fr 1fr 130px 240px"},"nonSegnati":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":80}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Marco Rossi"},"corso":{"editor":"text","default":"Judo kids"},"quando":{"editor":"text","default":"lunedì 5 ottobre, 17:30–18:30"},"previsti":{"editor":"text","default":"Marco Rossi"},"entrata":{"editor":"text","default":"17:24"},"come":{"editor":"text","default":"col PIN"},"tinta":{"editor":"text","default":"#1b8ac4"},"stato":{"editor":"enum","options":["da_confermare","confermata","rifiutata"],"default":"da_confermare"},"gestita":{"editor":"text","default":"da Elena, ieri"},"griglia":{"editor":"text","default":"1fr 1.5fr 1fr 130px 240px"},"nonSegnati":{"editor":"text","default":""},"$preview":{"width":1000,"height":80}}'>
 // Riproduzione 1:1 della riga di PRESENZE ISTRUTTORI: .sg-riga-presenza-istr + .sg-presenza-istr (src/styles.css
 // righe 1596-1604) in src/components/segreteria/PresenzeIstruttori.tsx (righe 317-372). Griglia 1fr 1.5fr 1fr 130px
 // 240px, gap 14px, alta almeno 64px, padding 8px 14px, filetto sotto 1px `surface-2`, barra a sinistra di 6px nel
@@ -61,21 +61,19 @@
 // gestita: il testo sotto la parola ("da Elena, ieri"); vuoto con stato da_confermare. La testata e' TestataTabella
 // con griglia uguale e grande acceso.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', tasto: '#b8b8b2', menu: '#161616' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#ebebe7' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', tasto: '#0d2a3d', menu: '#0d2a3d' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
 const stato = p.stato || 'da_confermare';
     const conf = stato === 'confermata';
     const daConfermare = stato === 'da_confermare';
     return {
-      c, tema: p.tema || 'scuro',
-      nome: p.nome ?? 'Marco Rossi', corso: p.corso ?? 'Judo kids', quando: p.quando ?? 'lunedì 5 ottobre, 17:30–18:30', previsti: p.previsti || 'nessuno',
+      c, nome: p.nome ?? 'Marco Rossi', corso: p.corso ?? 'Judo kids', quando: p.quando ?? 'lunedì 5 ottobre, 17:30–18:30', previsti: p.previsti || 'nessuno',
       entrata: p.entrata ?? '17:24', come: p.come ?? 'col PIN', tinta: p.tinta || c.line,
       griglia: p.griglia || '1fr 1.5fr 1fr 130px 240px',
       opacita: stato === 'rifiutata' ? '0.5' : '1',

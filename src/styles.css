@@ -153,122 +153,17 @@
   line-gap-override: 0%;
 }
 
-/* I colori del marchio Officine Dello Sport. */
+/* L'aspetto è uno solo, quello del sito della palestra: colori e caratteri stanno sotto
+   `:root[data-look='sito']`, più sotto, e `<html>` lo porta già scritto in `index.html`.
+   Qui restano le cose che non dipendono dall'aspetto. */
 :root {
-  --bg: #121212;
-  --surface: #1c1c1c;
-  --surface-2: #242424;
-  --line: #333333;
-  --line-soft: #2a2a2a;
-  /* Il bordo di campi e scelte: sul fondo scuro arriva a 3:1 (WCAG 1.4.11), `--line` no. */
-  --riga-campo: #6e6e6a;
-  --text: #f2f2f0;
-  --sec: #c9c9c4;
-  --dim: #8c8c88;
-  --faint: #5a5a56;
-
-  --blu: #1b8ac4;
-  --rosso: #e4292a;
-  --giallo: #f4c31b;
-  --verde: #16a54a;
-  /* Il giallo scritto: sul nero è quello del marchio, sul bianco si scurisce,
-     altrimenti non si legge. */
-  --giallo-testo: #f4c31b;
-  /* Lo stesso per il verde scritto: sul bianco quello del marchio non arriva
-     al contrasto che serve a un testo piccolo. */
-  --verde-testo: #16a54a;
-  /* E per il rosso: quello del marchio su queste superfici scure si ferma a
-     3,8:1, sotto il 4,5:1 di un testo piccolo. Va bene per bordi e fondi. */
-  --rosso-testo: #ff5a52;
-  /* Le scritte sopra i colori del marchio restano scure in tutti e due i temi;
-     sul rosso invece bianche: il nero si ferma a 4,1:1, il bianco arriva a 4,5:1. */
-  --su-colore: #121212;
-  --su-rosso: #ffffff;
-  --tasto: #b8b8b2;
-  --tratteggio: #4a4a46;
-  --menu: #161616;
-
-  --cond: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif;
-  --body: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
-
-  color-scheme: dark;
 }
 
-/* Il tema bianco: per il computer della reception in una stanza illuminata, o
-   per chi lo preferisce. Si sceglie dal tasto col sole e la luna (vedi
-   `lib/tema.ts`); finché nessuno sceglie, segue il dispositivo. */
-:root[data-tema='chiaro'] {
-  --bg: #f4f4f1;
-  --surface: #ffffff;
-  --surface-2: #e9e9e5;
-  --line: #d4d4ce;
-  --line-soft: #e2e2dd;
-  --riga-campo: #8a8a85;
-  --text: #161616;
-  --sec: #3d3d3a;
-  --dim: #656561;
-  --faint: #a8a8a3;
-
-  --verde: #12913f;
-  --giallo-testo: #8f6a00;
-  --verde-testo: #0b7a33;
-  --rosso-testo: #b81d1d;
-  --tasto: #4a4a46;
-  --tratteggio: #b0b0aa;
-  --menu: #ebebe7;
-
-  color-scheme: light;
-}
-
-/* Il tema Tatami: la paglia del pavimento del dojo, il bordo nero di stoffa dei
-   tatami, il menu verde muschio. È un tema chiaro: segue le regole del bianco, ma
-   i colori scritti (giallo, verde, rosso, testo spento) sono un po' più scuri,
-   perché sulla paglia i valori del bianco non arrivano a 4,5:1 (`prova:tema`
-   lo calcola). Si sceglie dal tasto del tema (vedi `lib/tema.ts`). */
-:root[data-tema='tatami'] {
-  --bg: #ebe6d0;
-  --surface: #f6f3e4;
-  --surface-2: #d9d2b0;
-  --line: #bdb68f;
-  --line-soft: #cfc9a8;
-  --riga-campo: #6b6a5c;
-  --text: #1d1d1b;
-  --sec: #3d3d3a;
-  --dim: #5a594c;
-  --faint: #646350;
-
-  --verde: #12913f;
-  --giallo-testo: #6f5200;
-  --verde-testo: #096228;
-  --rosso-testo: #a81a1a;
-  --tasto: #3d3d3a;
-  --tratteggio: #a39d7c;
-  --menu: #2f3d2b;
-
-  color-scheme: light;
-}
-/* La barra in basso degli istruttori è verde scuro dentro una pagina chiara: lì dentro il testo è chiaro.
-   (La segreteria ha il suo aspetto, `data-look`, e non passa da qui.) */
-:root[data-tema='tatami'] .barra-nav {
-  --text: #f6f3e4;
-  --sec: #cfd6c0;
-  --dim: #cfd6c0;
-  --tasto: #cfd6c0;
-  --line: #5d6e58;
-  --line-soft: #44543f;
-  /* Il testo senza colore suo (il marchio) eredita dal body: lì dentro va chiaro anche lui. */
-  color: #f6f3e4;
-}
-/* Nella barra in basso la scheda corrente è chiara, quindi il testo e il segno scuri. */
-:root[data-tema='tatami'] .barra-voce[aria-current='page'] { border-top-color: #1d1d1b; color: #1d1d1b; }
-
-/* Il look del sito per la segreteria e l'amministrazione (`lib/aspettoSegreteria.ts`): stessi
-   colori e caratteri del modulo di iscrizione (`data-modulo='sito'`, più sotto), che qui sono
-   sempre chiari, e il menu in inchiostro come il piede del sito. Sta dopo i temi chiaro e
-   Tatami perché a parità di specificità vince l'ordine; `prova:look` lo controlla. */
+/* L'aspetto dell'app: colori e caratteri del sito della palestra, gli stessi del modulo di
+   iscrizione (`data-modulo='sito'`, più sotto, che sta dopo e vince a parità di specificità),
+   e il menu in inchiostro come il piede del sito. `prova:look` controlla l'ordine. */
 :root[data-look='sito'] {
   --bg: #eef5fa;
   --surface: #ffffff;
@@ -299,7 +194,7 @@
 
   color-scheme: light;
 }
-/* Il menu è inchiostro dentro una pagina chiara: lì dentro il testo è chiaro, come per il Tatami. */
+/* Il menu è inchiostro dentro una pagina chiara: lì dentro il testo è chiaro. */
 :root[data-look='sito'] .sg-menu,
 :root[data-look='sito'] .sg-barra-tel,
 :root[data-look='sito'] .bn-alto {
@@ -353,8 +248,6 @@
 :root[data-look='sito'] .sg-voce[aria-current='page'] { font-weight: 700; }
 /* I titoli dei gruppi sono scritti con l'iniziale maiuscola nel codice; il maiuscolo è dello stile, come le etichette di colonna. */
 :root[data-look='sito'] .sg-gruppo-titolo { font-family: var(--body); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; }
-/* Il tema qui è uno solo: il tasto non serve. */
-:root[data-look='sito'] .tasto-tema { display: none; }
 /* La striscia COSA MANCA: cinque caselle in una riga (numero e titolo, senza la nota); sul telefono, due per riga come prima. */
 :root[data-look='sito'] .sg-mancano { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 :root[data-look='sito'] .sg-mancano-nota[data-fissa='true'] { display: none; }
@@ -1058,7 +951,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
   color: var(--su-colore); background: var(--giallo); text-align: center; padding: 4px;
 }
 /* ESCI DALLA PROVA: alto 44px per il dito, il nastro cresce con lui. Senza «·» davanti: a capo resta pulito.
-   Il fuoco è `su-colore` perché il nastro è giallo in tutti e due i temi. */
+   Il fuoco è `su-colore` perché il nastro è giallo. */
 .nastro-prova-esci {
   display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; margin-left: 4px;
   font: inherit; letter-spacing: inherit; color: inherit; white-space: nowrap;
@@ -1230,7 +1123,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 /* Età e orari sotto il nome del corso: per scegliere senza tornare al listino. */
 .modulo-corso-testo { gap: 2px; min-width: 0; }
 .modulo-corso-riga { font-size: 13px; font-weight: 400; color: var(--dim); line-height: 1.35; }
-/* Sul fondo del tasto scelto il testo spento non arriva a 4,5:1 nel tema chiaro. */
+/* Sul fondo del tasto scelto il testo spento non arriva a 4,5:1 sul fondo chiaro. */
 .modulo-corso[aria-pressed='true'] .modulo-corso-riga { color: var(--sec); }
 /* Nell'orario a pezzi (TestoAPezzi) i giorni che vanno col tuo orario: in grassetto, gli altri restano spenti. */
 .orario-evidenza { font-weight: 700; color: var(--text); }
@@ -1818,7 +1711,7 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .tb-tessera[data-attesa] svg { color: var(--giallo-testo); }
 .tb-tessera-attesa { font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: var(--giallo-testo); }
 
-/* Il compleanno: giallo pieno coi temi; nel look sito (sala e istruttori lo hanno sempre) è giallo scritto con un filo, come .sg-bollino. */
+/* Il compleanno: giallo scritto con un filo, come .sg-bollino. */
 .segno-compleanno {
   display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; padding: 2px 7px 2px 5px;
   background: var(--giallo); color: var(--su-colore); border-radius: 3px;
@@ -1844,14 +1737,11 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
   position: sticky; bottom: var(--safe-b); z-index: 1; flex-shrink: 0;
   display: flex; align-items: center; gap: 18px; padding: 18px 22px;
   background: var(--surface); border: 3px solid var(--text);
-  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.16);
 }
 .tb-fascia[data-tipo='fatto'] { border-color: var(--verde); }
 .tb-fascia[data-tipo='errore'] { border-color: var(--rosso); }
 .tb-fascia[data-attesa] { border-color: var(--giallo); }
-/* Sul tema chiaro un'ombra così scura diventa una fascia grigia. */
-:root[data-tema='chiaro'] .tb-fascia,
-:root[data-tema='tatami'] .tb-fascia { box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.16); }
 /* Un tasto che apre un pannello si accende finché è aperto (PROVE). */
 .tb-btn-linea[aria-expanded='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 /* Le prove sono dell'app e della segreteria: sul tablet il loro testo sale al minimo della sala. */
@@ -2619,8 +2509,8 @@ label.sg-btn { cursor: pointer; }
 /* Il modulo di iscrizione con l'aspetto del sito pubblico (tatami blu e giallo,
    `docs/design-canvas/iscrizione-sito/`). Sempre chiaro: lo accende
    `lib/aspettoModulo.ts` finché il modulo è aperto, anche aperto dall'area
-   iscritti. I colori sono i cinque del sito più i toni degli stati del tema
-   bianco; `--dim` è l'inchiostro attenuato, perché sul fondo e sulla tessera
+   iscritti. I colori sono i cinque del sito più i toni degli stati del sito;
+   `--menu` resta azzurro anche qui, dove `data-look` c'è già: il modulo vince per ordine. `--dim` è l'inchiostro attenuato, perché sul fondo e sulla tessera
    chiara nessun colore del sito arriva a 4,5:1 (`prova:iscrizione-sito` li calcola). */
 :root[data-modulo='sito'] {
   --bg: #eef5fa;
@@ -2688,8 +2578,6 @@ label.sg-btn { cursor: pointer; }
 :root[data-modulo='sito'] .campo.num { font-family: var(--body); font-variant-numeric: tabular-nums; }
 /* L'invio chiude il modulo: largo quanto i campi, non a inizio riga come gli altri tasti. */
 :root[data-modulo='sito'] .modulo-piede .passo-btn { align-self: stretch; }
-/* Il modulo è sempre chiaro: il tasto del tema in testata cambierebbe solo l'icona, quindi a modulo aperto non c'è. */
-:root[data-modulo='sito'] .tasto-tema { display: none; }
 
 /* La scheda iscritto a schede: la linguetta dice a parole se c'è qualcosa da sistemare, e il piede resta in vista. */
 .sg-schede-scheda .scheda { white-space: nowrap; gap: 8px; }

@@ -25,7 +25,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"NATO IL"},"valore":{"editor":"text","default":"10 giugno 2012"},"codice":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"tono":{"editor":"enum","options":["","giallo","rosso"],"default":""},"icona":{"editor":"enum","options":["","telefono","email"],"default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":80}}'>
+<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"NATO IL"},"valore":{"editor":"text","default":"10 giugno 2012"},"codice":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"tono":{"editor":"enum","options":["","giallo","rosso"],"default":""},"icona":{"editor":"enum","options":["","telefono","email"],"default":""},"$preview":{"width":360,"height":80}}'>
 // Un dato in lettura della scheda iscritto: Campo di src/components/segreteria/comune.tsx con dentro
 // .sg-valore (src/styles.css: .sg-etichetta 12px 700 0.18em `dim`, .sg-valore 16px 500 1.3). Vuoto = «—» in `dim`.
 // codice = il codice fiscale (`num`, 0.04em). Nel look sito l'etichetta e' Inter, non Saira (:root[data-look='sito'] .sg-etichetta).
@@ -33,8 +33,6 @@
 // per un dato che serve e manca (il codice fiscale del genitore di un minorenne).
 // `icona` telefono o email davanti all'etichetta dei contatti, nel tratto di src/components/Icons.tsx (24, linea 2).
 const T = {
-  scuro: { text: '#f2f2f0', dim: '#8c8c88', giallo: '#f4c31b', rosso: '#ff5a52' },
-  chiaro: { text: '#161616', dim: '#656561', giallo: '#8f6a00', rosso: '#b81d1d' },
   sito: { text: '#0d2a3d', dim: '#46606f', giallo: '#8f6a00', rosso: '#b81d1d' },
 };
 const SAIRA = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
@@ -44,16 +42,15 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    const sito = p.tema === 'sito';
-    const valore = p.valore ?? '';
+    const c = T.sito;
+        const valore = p.valore ?? '';
     const tono = p.tono ? c[p.tono] : '';
     const nota = p.nota ?? '';
     return {
       etichetta: p.etichetta ?? 'NATO IL',
       valore: valore || '—',
-      famiglia: sito ? INTER : SAIRA,
-      famigliaValore: sito ? INTER : BARLOW,
+      famiglia: INTER,
+      famigliaValore: INTER,
       spazioValore: truthy(p.codice) ? '0.04em' : 'normal',
       coloreEtichetta: tono || c.dim,
       coloreValore: valore ? c.text : c.dim,

@@ -36,17 +36,17 @@
         <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-bottom: 1px solid {{c.line}}; font-size: 14px">
           <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px">
             <span style="display: flex; align-items: center; gap: 8px; flex: 1 1 200px; min-width: 0"><b>Satispay · {{g.chi}}</b>
-              <sc-if value="{{g.haSimile}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tema="sito" tipo="tag" tono="neutro" label="{{g.tagSimile}}" hint-size="220px,22px"></dc-import></sc-if>
+              <sc-if value="{{g.haSimile}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="tag" tono="neutro" label="{{g.tagSimile}}" hint-size="220px,22px"></dc-import></sc-if>
             </span>
             <span style="text-align: right; font-variant-numeric: tabular-nums">{{importoPiu}}</span>
           </div>
           <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px">
             <span style="font-size: 13px; color: {{c.dim}}">È già scritto per</span>
             <sc-for list="{{g.scelte}}" as="s" hint-placeholder-count="3">
-              <dc-import name="Chip" tema="sito" label="{{s.label}}" acceso="{{s.acceso}}" disabled="{{s.spento}}" hint-size="180px,44px"></dc-import>
+              <dc-import name="Chip" label="{{s.label}}" acceso="{{s.acceso}}" disabled="{{s.spento}}" hint-size="180px,44px"></dc-import>
             </sc-for>
             <span style="font-size: 13px; color: {{c.dim}}">oppure</span>
-            <dc-import name="Chip" tema="sito" label="Incasso nuovo" acceso="{{g.nuovo}}" hint-size="150px,44px"></dc-import>
+            <dc-import name="Chip" label="Incasso nuovo" acceso="{{g.nuovo}}" hint-size="150px,44px"></dc-import>
           </div>
           <sc-if value="{{g.altrui}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: {{c.dim}}">{{g.altrui}}</span></sc-if>
         </div>
@@ -54,7 +54,7 @@
     </div>
     <span style="font-size: 14px; color: {{coloreRiepilogo}}">{{riepilogo}}</span>
     <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px">
-      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="{{tastoConferma}}" disabled="{{spento}}" hint-size="300px,48px"></dc-import>
+      <dc-import name="Bottone" contesto="segreteria" variante="pieno" label="{{tastoConferma}}" disabled="{{spento}}" hint-size="300px,48px"></dc-import>
     </div>
   </sc-if>
   <sc-if value="{{chiuso}}" hint-placeholder-val="{{ false }}">
@@ -66,13 +66,13 @@
       </sc-for>
     </div>
     <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px">
-      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="{{tastoOggi}}" hint-size="240px,48px"></dc-import>
-      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="{{tastoFuori}}" hint-size="160px,48px"></dc-import>
+      <dc-import name="Bottone" contesto="segreteria" variante="pieno" label="{{tastoOggi}}" hint-size="240px,48px"></dc-import>
+      <dc-import name="Bottone" contesto="segreteria" variante="linea" label="{{tastoFuori}}" hint-size="160px,48px"></dc-import>
     </div>
   </sc-if>
 </section>
 </x-dc>
-<script data-dc-script data-props='{"motivo":{"editor":"enum","options":["doppione","chiuso"],"default":"doppione"},"fonte":{"editor":"text","default":"SATISPAY"},"data":{"editor":"text","default":"lunedì 01/09/2025"},"importo":{"editor":"text","default":"50,00"},"oggi":{"editor":"text","default":"25/10"},"pagamenti":{"editor":"text","default":"Rinaldo M.|;Maria S.|3|3;Samuele M.|1|1"},"movimenti":{"editor":"text","default":"Cliente MARCHI SAMUELE|Quota associativa|Cassa Contanti;Cliente FEMIA NICOLO'|Quota associativa|Cassa Contanti;Cliente CIROLLI MARIA STELLA|Quota associativa|Cassa Contanti"},"tema":{"editor":"enum","options":["sito"],"default":"sito","section":"Tema"},"$preview":{"width":880,"height":560}}'>
+<script data-dc-script data-props='{"motivo":{"editor":"enum","options":["doppione","chiuso"],"default":"doppione"},"fonte":{"editor":"text","default":"SATISPAY"},"data":{"editor":"text","default":"lunedì 01/09/2025"},"importo":{"editor":"text","default":"50,00"},"oggi":{"editor":"text","default":"25/10"},"pagamenti":{"editor":"text","default":"Rinaldo M.|;Maria S.|3|3;Samuele M.|1|1"},"movimenti":{"editor":"text","default":"Cliente MARCHI SAMUELE|Quota associativa|Cassa Contanti;Cliente FEMIA NICOLO'|Quota associativa|Cassa Contanti;Cliente CIROLLI MARIA STELLA|Quota associativa|Cassa Contanti"},"$preview":{"width":880,"height":560}}'>
 // COSTRUITA (`Gruppo` in `Importazioni.tsx`; ../importazioni/): un gruppo della lista «Da decidere» della sezione IMPORTAZIONI, al posto di una scheda per pagamento
 // (`DaDecidereSatispay`). Si raggruppa per fonte, giorno e importo: i movimenti a mano si leggono una volta sola.
 // Un `.sg-riquadro` (padding 18px 20px, gap 14px, bordo 2px `line`), `.sg-etichetta` in `giallo-testo` e la fonte in `dim` a destra.

@@ -5,14 +5,14 @@ build. Non sostituisce una verifica con uno screen reader o con persone vere.
 
 Criterio di riferimento: WCAG 2.2 AA (a, aa, 2.1 a/aa, 2.2 aa per axe), come
 da «Accessibility & Inclusion» in `PRODUCT.md`: bersagli ≥ 44px, contrasto alto
-nei due temi, stati non affidati al solo colore, fuoco da tastiera visibile.
+nell'unico aspetto (quello del sito), stati non affidati al solo colore, fuoco da tastiera visibile.
 
 ## Esito delle prove
 
 | Prova | Cosa copre | Esito |
 |---|---|---|
 | `prova:a11y-axe` | axe-core su 11 schermate (segreteria, tablet, area iscritti, iscrizione, timer) | ok, con 5 violazioni gravi note (sotto) |
-| `prova:a11y-iscritti` | contrasto `--dim` nelle schede, due temi | ok (10) |
+| `prova:a11y-iscritti` | contrasto `--dim` nelle schede, aspetto del sito | ok (10) |
 | `prova:a11y-dietro-login` | testi su una riga nelle schermate dietro il login | ok (6) |
 | `prova:a11y-segreteria-bersagli` | altezza minima dei bersagli in segreteria | ok (1) |
 | `prova:a11y-segreteria-menu` | numeri e parole letti dallo screen reader nella barra del banco | ok (4) |
@@ -52,7 +52,6 @@ nei due temi, stati non affidati al solo colore, fuoco da tastiera visibile.
   iscritti oltre la prima vista, tablet oltre la scelta della sala.
 - Cosa axe non vede: ordine di lettura, testi alternativi sensati, uso reale
   con VoiceOver o TalkBack, zoom al 200 %, navigazione solo da tastiera.
-- Tema scuro: coperto solo dove una prova lo dice (`a11y-iscritti`).
 
 ## Come si rifà
 

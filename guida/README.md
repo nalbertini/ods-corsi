@@ -119,14 +119,11 @@ nastro giallo.
 
 In prova i PIN del tablet sono 1234 (Maurizio), 2468 (Maura) e 5678 (Fabio).
 
-## I temi
+## L'aspetto
 
-L'app è nera, come il marchio. Se in palestra con tanta luce si legge male,
-il tasto in alto cambia tema: a ogni tocco passa al successivo, **nero**,
-**bianco** e **Tatami** (paglia chiara e menu verde scuro), poi si ricomincia.
-L'icona del tasto mostra il tema dove porta: il sole per il bianco, il tatami
-per il Tatami, la luna per il nero. Vale per quel dispositivo, e anche per il
-timer.
+App e timer hanno un solo aspetto, quello del sito della palestra: sfondo
+chiaro, blu e giallo. Non c'è più il tasto che cambia tema: chi lo aveva
+scelto ritrova l'app com'è adesso, senza fare niente.
 
 ## Le guide delle singole parti
 

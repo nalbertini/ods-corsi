@@ -16,8 +16,7 @@ diverso.
 
 ## Cosa c'è nella pagina
 
-La pagina ha l'aspetto del sito della palestra (blu e giallo, sempre chiaro,
-qualunque sia il tema dell'app) ed è corta: si legge dall'alto, in questo
+La pagina ha l'aspetto del sito della palestra (blu e giallo) ed è corta: si legge dall'alto, in questo
 ordine.
 
 1. **Il titolo**: il marchio della palestra, «Iscriviti a Officine Dello
@@ -224,7 +223,7 @@ La richiesta **non è ancora un'iscrizione**: arriva in segreteria, in
 [RICHIESTE ONLINE](segreteria/richieste.md), dove qualcuno guarda i file e la
 accoglie.
 
-Il modulo ha l'aspetto del sito della palestra: sfondo chiaro, blu e giallo, anche se il telefono è in tema scuro. Il tasto del tema in alto, a modulo aperto, non c'è: il modulo resta chiaro in ogni caso; ricompare quando si chiude.
+Il modulo ha l'aspetto del sito della palestra: sfondo chiaro, blu e giallo.
 
 ## Il modulo a passi (solo in prova)
 
@@ -316,7 +315,7 @@ firmato da un altro adulto), il modulo lo chiama per nome: «Firma Paola, che è
 maggiorenne», **L'OK DI PAOLA**, **LA CARTA D'IDENTITÀ DI PAOLA**. Per chi si è aggiunto con **IO**, la
 casella delle foto porta il suo nome (**LE FOTO E I VIDEO DI NICOLA**).
 
-Quando c'è da scegliere fra due cose (**IO, SONO ADULTO** o **MIO FIGLIO**, **TRIMESTRE** o **ANNUALE**, **AUTORIZZO** o **NON AUTORIZZO**) la scelta fatta si riempie: è il tasto pieno. I corsi, dove se ne possono scegliere più d'uno, hanno invece la casella con la spunta. I bordi dei campi sono più chiari, anche nel tema scuro.
+Quando c'è da scegliere fra due cose (**IO, SONO ADULTO** o **MIO FIGLIO**, **TRIMESTRE** o **ANNUALE**, **AUTORIZZO** o **NON AUTORIZZO**) la scelta fatta si riempie: è il tasto pieno. I corsi, dove se ne possono scegliere più d'uno, hanno invece la casella con la spunta.
 
 I corsi per grandi (quelli che la segreteria segna con un'età minima in **LISTINO**, per esempio la Pesistica dai 16 anni) non compaiono per un bambino troppo piccolo: sotto l'elenco una frase dice quali e di chiamare la segreteria. Per chi ha l'età compare fra i corsi per lui, con scritto «dai 16 anni».
 

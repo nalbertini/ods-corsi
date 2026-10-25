@@ -20,7 +20,7 @@
   <div aria-disabled="true" style="display: flex; align-items: center; min-height: 44px; padding: 10px 12px; background: {{sfondo}}; border: 2px solid {{bordo}}; border-radius: {{raggio}}; font-size: 15px; line-height: 1.4; color: {{c.dim}}; cursor: not-allowed; overflow-wrap: anywhere">{{valore}}</div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"ORARIO SUL SITO"},"valore":{"editor":"text","default":"Ora vale CORSI · Lunedì e giovedì · 18:00–19:00 / Sabato · 10:00–11:00"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":420,"height":100}}'>
+<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"ORARIO SUL SITO"},"valore":{"editor":"text","default":"Ora vale CORSI · Lunedì e giovedì · 18:00–19:00 / Sabato · 10:00–11:00"},"$preview":{"width":420,"height":100}}'>
 // Riproduzione 1:1 di .sg-campo.sito-spento (src/styles.css, blocco «L'orario dai corsi nel pannello SITO») dentro il Campo di
 // segreteria/comune.tsx, come lo usa OrarioSito.tsx per l'«ORARIO SUL SITO» quando la pagina e' collegata: NON e' il Campo
 // `sola-lettura` (che e' trasparente e tratteggiato). Qui il campo e' pieno: fondo `surface-2`, bordo 2px `line` (quello di .sg-campo); nel look sito la regola `:root[data-look='sito'] .sg-campo` (riga 401) vince su .sito-spento: fondo `surface` e bordo `riga-campo` (blu), solo il testo `dim` e il cursore restano da spento,
@@ -28,8 +28,6 @@
 // testo scritto a mano ma «Ora vale CORSI · » e le righe dell'orario unite da « / » (testiOrario). Etichetta come .sg-etichetta (12px 700 0.18em `dim`;
 // look sito: Inter 600 0.12em). Il testo a mano resta nella pagina: scollegando il corso si ritrova (lo dice una frase .sg-sotto sotto il campo).
 const T = {
-  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', blu: '#1b8ac4', giallo: '#f4c31b', gialloTesto: '#f4c31b' },
-  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', blu: '#1b8ac4', giallo: '#f4c31b', gialloTesto: '#8f6a00' },
   sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', blu: '#14709f', giallo: '#f4c31b', gialloTesto: '#8f6a00' },
 };
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
@@ -39,9 +37,8 @@ const BODY = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
-    const sito = p.tema === 'sito' || !p.tema;
-    return { c, corpoFam: sito ? INTER : BODY, cond: sito ? INTER : COND, corpoEt: '12px', pesoEt: sito ? 600 : 700, spazioEt: sito ? '0.12em' : '0.18em', raggio: sito ? '6px' : '0', sfondo: sito ? c.surface : c.surface2, bordo: sito ? c.blu : c.line, etichetta: p.etichetta ?? '', valore: p.valore ?? '' };
+    const c = T.sito;
+        return { c, corpoFam: INTER, cond: INTER, corpoEt: '12px', pesoEt: 600, spazioEt: '0.12em', raggio: '6px', sfondo: c.surface, bordo: c.blu, etichetta: p.etichetta ?? '', valore: p.valore ?? '' };
   }
 }
 </script>

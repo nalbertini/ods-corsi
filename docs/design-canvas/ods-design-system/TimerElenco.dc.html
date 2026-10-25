@@ -44,34 +44,28 @@
   <div style="padding: 10px 20px; background: {{c.bg}}">
     <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; border: 2px solid {{c.musica}}; color: {{c.musica}}; border-radius: {{raggio}}; font-family: {{cond}}; font-style: {{ob}}; font-size: 17px; font-weight: 700; letter-spacing: 0.14em"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>ACCENDI LA MUSICA</span>
   </div>
-  <dc-import name="BarraNavigazione" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="TIMER" tema="{{temaBarra}}" hint-size="100%,66px"></dc-import>
+  <dc-import name="BarraNavigazione" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="TIMER" hint-size="100%,66px"></dc-import>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"altezza":{"editor":"text","default":"780px"},"tema":{"editor":"enum","options":["scuro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":780}}'>
+<script data-dc-script data-props='{"altezza":{"editor":"text","default":"780px"},"$preview":{"width":390,"height":780}}'>
 // La pagina TIMER dell'area istruttori com'e' costruita: il timer di timer/src incorporato (HomeScreen.tsx) con STRUMENTI
 // (cronometro e conto alla rovescia) e I TUOI TIMER, la barra ACCENDI LA MUSICA e la BarraNavigazione dell'app.
 // Valori da timer/src/styles.css: .rule, .card, .wcard (86px), .wcard-name, .badge-tipo, .play-btn (52px, bordo --rosso).
-// tema scuro = com'era prima del look (fondo #121212, Saira Condensed e Barlow, ▶ rossi); il tablet di sala ha ancora questo timer, nel tema dell'app.
-// tema sito = COSTRUITO (TimerSala con `sito`, blocco :root[data-tema='sito'] di timer/src/styles.css): i token del look sito di src/styles.css (fondo #eef5fa, carte bianche, filo #cfe6f4,
+// Look del sito, COSTRUITO (TimerSala con `sito`, blocco :root[data-tema='sito'] di timer/src/styles.css): i token del look sito di src/styles.css (fondo #eef5fa, carte bianche, filo #cfe6f4,
 // inchiostro #0d2a3d, Big Shoulders e Inter, angoli 6px su carte e tasti); i ▶ (--play) e ACCENDI LA MUSICA blu #14709f invece che rossi.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', dim: '#8c8c88', tasto: '#b8b8b2', lineaTasto: '#333333', play: '#e4292a', musica: '#1b8ac4' },
   sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', tasto: '#14709f', lineaTasto: '#14709f', play: '#14709f', musica: '#14709f' },
 };
-const SAIRA = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
-const BARLOW = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const sito = p.tema === 'sito';
-    const c = sito ? T.sito : T.scuro;
+    const c = T.sito;
     return {
       c, altezza: p.altezza || '780px',
-      cond: sito ? BIG : SAIRA, corpo: sito ? INTER : BARLOW, ob: sito ? 'normal' : 'oblique 9deg',
-      corpoTitolo: sito ? '26px' : '22px', pesoTitolo: sito ? 800 : 700, raggio: sito ? '6px' : '0',
-      temaBarra: sito ? 'sito' : 'scuro',
+      cond: BIG, corpo: INTER, ob: 'normal',
+      corpoTitolo: '26px', pesoTitolo: 800, raggio: '6px',
       sezioni: [
         { titolo: 'STRUMENTI', conto: '2', righe: [
           { tipo: 'CRONOMETRO', durata: '', nome: 'CRONOMETRO', nota: 'conta in salita · segna i giri' },

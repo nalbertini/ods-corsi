@@ -22,19 +22,18 @@
   <span aria-hidden="true">&#8250;</span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"text","default":"JUDOGI"},"riga":{"editor":"text","default":"3 capi · dai 6 €"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":60}}'>
+<script data-dc-script data-props='{"tipo":{"editor":"text","default":"JUDOGI"},"riga":{"editor":"text","default":"3 capi · dai 6 €"},"$preview":{"width":350,"height":60}}'>
 // Un tipo nel passo IL TIPO della pagina degli ordini (src/components/OrdinaVestiario.tsx): un <button class="modulo-corso"> senza spunta.
 // .modulo-corso (min 52px, padding 8px 12px, fondo `surface`, bordo 2px `riga-campo`, 15px 600), .modulo-corso-riga sotto il nome (13px
 // `dim`: «3 capi · dai 6 €», o il prezzo solo se e' uno) e › a destra. Un tocco porta alla pagina del tipo: niente scelta accesa, niente
 // AVANTI (BarraPasso con `senzaAvanti`).
 const T = {
-  scuro: { surface: '#1c1c1c', rigaCampo: '#6e6e6a', text: '#f2f2f0', dim: '#8c8c88' },
-  chiaro: { surface: '#ffffff', rigaCampo: '#8a8a85', text: '#161616', dim: '#656561' },
+  sito: { surface: '#ffffff', rigaCampo: '#14709f', text: '#0d2a3d', dim: '#46606f' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    return { c: T[p.tema] || T.scuro, tipo: p.tipo ?? 'JUDOGI', riga: p.riga ?? '3 capi · dai 6 €' };
+    return { c: T.sito, tipo: p.tipo ?? 'JUDOGI', riga: p.riga ?? '3 capi · dai 6 €' };
   }
 }
 </script>

@@ -82,9 +82,7 @@ Le pagine sono quattro, con lo stesso nome ovunque: **CALENDARIO**, **TIMER**,
 telefono stanno nella barra in basso; la pagina in cui siete ha una riga sopra
 ed è scritta più chiara, non solo di un altro colore. Sul computer e sul tablet
 in orizzontale sono nel menu a sinistra, che ha la stessa faccia della
-segreteria, e in fondo il tasto **?** della guida e, sotto il vostro nome, **Esci**. Questa
-area è sempre chiara, a prescindere dal tema scelto altrove: qui il tasto del
-tema non c'è. Chi è della segreteria e non insegna non ha **ORE**: non
+segreteria, e in fondo il tasto **?** della guida e, sotto il vostro nome, **Esci**. Ha l'aspetto del sito della palestra. Chi è della segreteria e non insegna non ha **ORE**: non
 ha ore sue.
 
 ## L'appello

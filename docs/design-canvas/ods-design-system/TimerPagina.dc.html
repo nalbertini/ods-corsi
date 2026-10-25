@@ -43,7 +43,7 @@
     <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
       <div style="display: flex; align-items: center; gap: 14px; min-height: 86px; padding: 13px 15px; background: {{c.surface}}; border: 2px solid {{c.giallo}}">
         <span style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0">
-          <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 9px; background: #f4c31b; color: #121212; font-size: 10px; font-weight: 700; letter-spacing: 0.16em">CIRCUITO</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">24 MIN</span></span>
+          <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 9px; background: #f4c31b; color: #0d2a3d; font-size: 10px; font-weight: 700; letter-spacing: 0.16em">CIRCUITO</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">24 MIN</span></span>
           <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 21px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05">CIRCUITO FORZA</span>
         </span>
         <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 52px; height: 52px; border: 2px solid {{c.giallo}}; color: {{c.gialloTesto}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></span>
@@ -61,7 +61,7 @@
       <sc-for list="{{delCorso}}" as="r" hint-placeholder-count="2">
         <div style="display: flex; align-items: center; gap: 14px; min-height: 86px; padding: 13px 15px; background: {{c.surface}}; border: 2px solid {{c.line}}">
           <span style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0">
-            <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 9px; background: {{r.tinta}}; color: #121212; font-size: 10px; font-weight: 700; letter-spacing: 0.16em">{{r.tipo}}</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">{{r.durata}}</span></span>
+            <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 9px; background: {{r.tinta}}; color: #0d2a3d; font-size: 10px; font-weight: 700; letter-spacing: 0.16em">{{r.tipo}}</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">{{r.durata}}</span></span>
             <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 21px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05">{{r.nome}}</span>
           </span>
           <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 52px; height: 52px; border: 2px solid {{r.tinta}}; color: {{r.tinta}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></span>
@@ -79,7 +79,7 @@
     <sc-for list="{{altri}}" as="r" hint-placeholder-count="2">
       <div style="display: flex; align-items: center; gap: 14px; min-height: 86px; padding: 13px 15px; background: {{c.surface}}; border: 2px solid {{c.line}}">
         <span style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0">
-          <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 9px; background: {{r.tinta}}; color: #121212; font-size: 10px; font-weight: 700; letter-spacing: 0.16em">{{r.tipo}}</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">{{r.durata}}</span></span>
+          <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 9px; background: {{r.tinta}}; color: #0d2a3d; font-size: 10px; font-weight: 700; letter-spacing: 0.16em">{{r.tipo}}</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">{{r.durata}}</span></span>
           <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 21px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05">{{r.nome}}</span>
         </span>
         <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 52px; height: 52px; border: 2px solid {{r.tinta}}; color: {{r.tinta}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></span>
@@ -95,11 +95,11 @@
 
   <div style="flex-grow: 1; min-height: 20px"></div>
   <sc-if value="{{conBarra}}" hint-placeholder-val="{{ true }}">
-  <dc-import name="BarraNavigazione" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="TIMER" tema="{{tema}}" hint-size="100%,66px"></dc-import>
+  <dc-import name="BarraNavigazione" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="TIMER" hint-size="100%,66px"></dc-import>
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"lezione":{"editor":"text","default":"Judo kids · martedì 18:30 · Sala 1"},"conLezione":{"editor":"boolean","default":true},"conCorso":{"editor":"boolean","default":true},"corso":{"editor":"text","default":"DEL CORSO · JUDO KIDS"},"indietro":{"editor":"text","default":"APPELLO"},"senzaRete":{"editor":"boolean","default":false},"conMusica":{"editor":"boolean","default":false},"conImpostazioni":{"editor":"boolean","default":false},"conTitolo":{"editor":"boolean","default":true},"conBarra":{"editor":"boolean","default":true},"tutti":{"editor":"text","default":""},"cronometro":{"editor":"boolean","default":false},"altezza":{"editor":"text","default":"780px"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":390,"height":780}}'>
+<script data-dc-script data-props='{"lezione":{"editor":"text","default":"Judo kids · martedì 18:30 · Sala 1"},"conLezione":{"editor":"boolean","default":true},"conCorso":{"editor":"boolean","default":true},"corso":{"editor":"text","default":"DEL CORSO · JUDO KIDS"},"indietro":{"editor":"text","default":"APPELLO"},"senzaRete":{"editor":"boolean","default":false},"conMusica":{"editor":"boolean","default":false},"conImpostazioni":{"editor":"boolean","default":false},"conTitolo":{"editor":"boolean","default":true},"conBarra":{"editor":"boolean","default":true},"tutti":{"editor":"text","default":""},"cronometro":{"editor":"boolean","default":false},"altezza":{"editor":"text","default":"780px"},"$preview":{"width":390,"height":780}}'>
 // PROPOSTA (non ancora nell'app): la pagina TIMER dentro l'app istruttori, elenco dei timer (la «casa» di timer/src/App.tsx,
 // vedi timer/design/Home.dc.html per le righe: tipo 10px 0.16em su fondo tinta, durata cond 14px, nome .ob 21px, tasto ▶ 52px).
 // Senza marchio, senza SALA e senza versione (la testata e il menu sono quelli dell'app che la contiene). In cima, se si arriva dal
@@ -111,8 +111,6 @@
 // Variante B della navigazione: conTitolo=false e conBarra=false (il titolo TIMER e le schede li disegna la pagina, la barra è BarraNavigazione); tutti="LIBRERIA" cambia l'etichetta dell'elenco; cronometro mostra il tasto tratteggiato CRONOMETRO LIBERO sotto l'elenco.
 // Valori: surface/line/line-soft/menu/dim/giallo di src/styles.css; tinte dei tipi come in timer/design/Home.dc.html.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', tasto: '#b8b8b2', menu: '#161616', blu: '#1b8ac4', verde: '#16a54a', rosso: '#e4292a' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', tasto: '#4a4a46', menu: '#ebebe7', blu: '#1b8ac4', verde: '#12913f', rosso: '#e4292a' },
   sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', giallo: '#f4c31b', gialloTesto: '#8f6a00', tasto: '#0d2a3d', menu: '#0d2a3d', blu: '#14709f', verde: '#12913f', rosso: '#e4292a' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
@@ -120,7 +118,7 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
+    const c = T.sito;
     const conLezione = truthy(p.conLezione ?? true);
     const conCorso = truthy(p.conCorso ?? true);
     const ind = p.indietro ?? 'APPELLO';

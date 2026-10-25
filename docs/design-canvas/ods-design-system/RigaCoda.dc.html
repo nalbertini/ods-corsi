@@ -20,22 +20,21 @@
     <span style="font-size: 13px; line-height: 1.35; color: {{c.sec}}">{{sotto}}</span>
   </div>
   <div style="flex-shrink: 0">
-    <dc-import name="Bottone" label="{{tasto}}" variante="{{variante}}" contesto="segreteria" tema="{{tema}}" hint-size="150px,48px"></dc-import>
+    <dc-import name="Bottone" label="{{tasto}}" variante="{{variante}}" contesto="segreteria" hint-size="150px,48px"></dc-import>
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"titolo":{"editor":"text","default":"Judo adulti · appello non fatto"},"sotto":{"editor":"text","default":"Erano alle 19:00. 12 iscritti da segnare."},"tasto":{"editor":"text","default":"FAI L&#39;APPELLO"},"livello":{"editor":"enum","options":["blocca","presto"],"default":"blocca"},"rosso":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":440,"height":84}}'>
+<script type="text/x-dc" data-dc-script data-props='{"titolo":{"editor":"text","default":"Judo adulti · appello non fatto"},"sotto":{"editor":"text","default":"Erano alle 19:00. 12 iscritti da segnare."},"tasto":{"editor":"text","default":"FAI L&#39;APPELLO"},"livello":{"editor":"enum","options":["blocca","presto"],"default":"blocca"},"rosso":{"editor":"boolean","default":false},"$preview":{"width":440,"height":84}}'>
 // Riproduzione di una riga della coda DA FARE AL BANCO: .bn-riga, .bn-riga-titolo, .bn-riga-sotto (src/styles.css) disegnata da `Oggi` e prodotta da `codaBanco` (src/lib/codaBanco.ts).
 // Bordo sinistro 8px: rosso se `livello` e' blocca (e' gia' un guaio), giallo se e' presto (aspetta una risposta). Il tasto e' rosso solo per FAI LA RICEVUTA (`rosso`), se no a linea.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surfaceAlta: '#242424', menu: '#161616', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', rossoTesto: '#ff5a52', verdeTesto: '#16a54a', suColore: '#121212' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surfaceAlta: '#e9e9e5', menu: '#ebebe7', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33', suColore: '#121212' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', surfaceAlta: '#cfe6f4', menu: '#0d2a3d', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33', suColore: '#0d2a3d' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    return { c, tema: p.tema || 'scuro', titolo: p.titolo ?? 'Judo adulti · appello non fatto', sotto: p.sotto ?? 'Erano alle 19:00. 12 iscritti da segnare.', tasto: p.tasto ?? "FAI L'APPELLO", colore: p.livello === 'presto' ? c.giallo : c.rosso, variante: p.rosso ? 'rosso' : 'linea' };
+    const c = T.sito;
+    return { c, titolo: p.titolo ?? 'Judo adulti · appello non fatto', sotto: p.sotto ?? 'Erano alle 19:00. 12 iscritti da segnare.', tasto: p.tasto ?? "FAI L'APPELLO", colore: p.livello === 'presto' ? c.giallo : c.rosso, variante: p.rosso ? 'rosso' : 'linea' };
   }
 }
 </script>

@@ -1,6 +1,5 @@
 import { lazy, type ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Logo } from './components/Logo'
-import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
 import { NastroProva } from './components/ds'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
@@ -88,7 +87,7 @@ function Aree() {
   if (area === 'collega')
     return (
       <div className="app">
-        <Testata luogo="CONTABILITÀ" senzaTema h1 />
+        <Testata luogo="CONTABILITÀ" h1 />
         <main className="scroll">
           <Collega />
         </main>
@@ -98,11 +97,10 @@ function Aree() {
 }
 
 /**
- * `guida` è la pagina della guida da aprire col tasto «?», se c'è. `senzaTema`
- * per le aree sempre chiare (istruttori): il tasto non avrebbe cosa cambiare.
+ * `guida` è la pagina della guida da aprire col tasto «?», se c'è.
+ * `h1`: il luogo è il titolo della pagina, quando la pagina non ne ha uno suo.
  */
-/** `h1`: il luogo è il titolo della pagina, quando la pagina non ne ha uno suo. */
-function Testata({ luogo, guida, senzaTema, h1, children }: { luogo: string; guida?: string; senzaTema?: boolean; h1?: boolean; children?: ReactNode }) {
+function Testata({ luogo, guida, h1, children }: { luogo: string; guida?: string; h1?: boolean; children?: ReactNode }) {
   // La scheda del browser dice dove si è, come la testata.
   useEffect(() => {
     document.title = titolo(luogo)
@@ -119,7 +117,6 @@ function Testata({ luogo, guida, senzaTema, h1, children }: { luogo: string; gui
           ?
         </a>
       )}
-      {!senzaTema && <TastoTema />}
       {children}
     </header>
   )
@@ -161,7 +158,7 @@ function PortaUnica() {
   }, [])
   return (
     <div className="app">
-      <Testata luogo="ACCESSO" senzaTema />
+      <Testata luogo="ACCESSO" />
       <main className="scroll">
         {doppio?.persona ? (
           <SceltaArea persona={doppio.persona} aree={doppio.aree} onScelta={passaA} />
@@ -192,7 +189,7 @@ function TutteLeAree() {
   ]
   return (
     <div className="app">
-      <Testata luogo="CORSI" guida={INDIRIZZO_GUIDA} senzaTema h1 />
+      <Testata luogo="CORSI" guida={INDIRIZZO_GUIDA} h1 />
       <main className="scroll">
         <div className="pad stack scelta" style={{ gap: 10, paddingTop: 16, paddingBottom: 16 }}>
           {voci.map(([a, titolo, testo]) => (
@@ -233,7 +230,7 @@ function Iscrizioni() {
   return (
     <div className="app">
       {/* La pagina ha il marchio sopra il titolo: una sola intestazione. */}
-      {testata && <Testata luogo={vista === 'vestiario' ? 'VESTIARIO' : 'ISCRIZIONI'} senzaTema />}
+      {testata && <Testata luogo={vista === 'vestiario' ? 'VESTIARIO' : 'ISCRIZIONI'} />}
       {inProvaScelta && <NastroProva testo="PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA" onEsci={() => scegliProva(false)} />}
       <main className="scroll">
         {/* Il flusso a passi è solo in prova e solo con #nuova: il vecchio resta com'è. */}
@@ -251,7 +248,7 @@ function Iscrizioni() {
 function Iscritti() {
   return (
     <div className="app">
-      <Testata luogo="ISCRITTI" senzaTema />
+      <Testata luogo="ISCRITTI" />
       <main className="scroll"><AreaIscritti /></main>
     </div>
   )
@@ -378,7 +375,7 @@ function Istruttori() {
     <Porta
       cornice={(x) => (
         <div className="app">
-          <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} senzaTema h1 />
+          <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} h1 />
           <main className="scroll">{x}</main>
         </div>
       )}
@@ -413,7 +410,7 @@ function Istruttori() {
           {largo ? (
             <MenuIstruttori chi={chi} onEsci={onEsci} voci={voci} pagina={pagina} onPagina={dalMenu} />
           ) : (
-            <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} senzaTema h1 />
+            <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} h1 />
           )}
           {!largo && striscia}
           <main ref={corpo} className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
@@ -529,7 +526,7 @@ function MenuIstruttori({
 function AreaGuida() {
   return (
     <div className="app">
-      <Testata luogo="GUIDA" senzaTema />
+      <Testata luogo="GUIDA" />
       <Guida />
     </div>
   )

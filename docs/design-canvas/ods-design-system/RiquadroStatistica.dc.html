@@ -24,7 +24,7 @@
     <span style="font-size: 14px; color: #0d2a3d"><span style="font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700">{{somma}}</span> {{sommaDopo}}</span>
   </sc-if>
   <sc-if value="{{haMesi}}" hint-placeholder-val="{{ false }}">
-    <dc-import name="Colonne" tema="sito" mesi="{{mesi}}" euro="{{euro}}" sopra="{{sopra}}" dettaglio="{{dettaglio}}" hint-size="100%,206px"></dc-import>
+    <dc-import name="Colonne" mesi="{{mesi}}" euro="{{euro}}" sopra="{{sopra}}" dettaglio="{{dettaglio}}" hint-size="100%,206px"></dc-import>
   </sc-if>
   <div style="display: {{mostraElenchi}}; grid-template-columns: {{colonneElenchi}}; gap: 20px 32px; align-items: start">
     <sc-for list="{{elenchi}}" as="e" hint-placeholder-count="2">

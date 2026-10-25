@@ -20,21 +20,19 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"voci":{"editor":"text","default":"LEZIONI|IN REGOLA|NUCLEO"},"acceso":{"editor":"text","default":"LEZIONI"},"segnoSu":{"editor":"text","default":""},"tonoSegno":{"editor":"enum","options":["giallo","rosso"],"default":"giallo"},"parolaSegno":{"editor":"text","default":"DA SISTEMARE"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":390,"height":50}}'>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"LEZIONI|IN REGOLA|NUCLEO"},"acceso":{"editor":"text","default":"LEZIONI"},"segnoSu":{"editor":"text","default":""},"tonoSegno":{"editor":"enum","options":["giallo","rosso"],"default":"giallo"},"parolaSegno":{"editor":"text","default":"DA SISTEMARE"},"$preview":{"width":390,"height":50}}'>
 // PROPOSTA (../area-iscritti-tab/): i tab della pagina dell'iscritto in AreaIscritti.tsx, sul telefono: LEZIONI | IN REGOLA | NUCLEO
 // (NUCLEO c'e' solo per il titolare di un nucleo). Stesso pattern di SchedeIscritto: alti 44px, bordo 2px, colonne uguali, quello
 // acceso con fondo `surface-2`, bordo e testo `text`; il segno d'avviso e' sempre puntino + parola (mai solo colore), in 11px
 // sotto il nome, e sul tab acceso il giallo diventa `text` per il contrasto. `voci` sono i tab separati da «|»; `segnoSu` e' il
 // nome del tab che porta il segno (vuoto = nessuno), `tonoSegno` giallo o rosso, `parolaSegno` la parola.
 const T = {
-  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
-  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', dim: '#656561', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
   sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
+    const c = T.sito;
     const schede = String(p.voci || 'LEZIONI|IN REGOLA|NUCLEO').split('|').map((nome) => {
       const on = nome === p.acceso;
       const ha = !!p.segnoSu && nome === p.segnoSu;
@@ -47,7 +45,7 @@ class Component extends DCLogic {
         sfondo: on ? c.surface2 : c.surface, bordo: on ? c.text : c.line, colore: on ? c.text : c.dim,
       };
     });
-    return { schede, carattere: p.tema === 'sito' ? "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif" : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif" };
+    return { schede, carattere: "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif" };
   }
 }
 </script>

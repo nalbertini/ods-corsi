@@ -22,11 +22,11 @@
           <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-size: 14px; color: {{c.sec}}; text-decoration: underline; text-underline-offset: 3px">Togli</span>
         </sc-if>
       </div>
-      <dc-import name="Campo" tipo="testo" etichetta="PER CHI · NOME E COGNOME" valore="{{perChi}}" segnaposto="Nome e cognome" tema="{{tema}}" hint-size="100%,76px"></dc-import>
-      <dc-import name="Campo" tipo="select" etichetta="CAPO" valore="{{capoApp}}" segnaposto="Scegli il capo" tema="{{tema}}" hint-size="100%,76px"></dc-import>
+      <dc-import name="Campo" tipo="testo" etichetta="PER CHI · NOME E COGNOME" valore="{{perChi}}" segnaposto="Nome e cognome" hint-size="100%,76px"></dc-import>
+      <dc-import name="Campo" tipo="select" etichetta="CAPO" valore="{{capoApp}}" segnaposto="Scegli il capo" hint-size="100%,76px"></dc-import>
       <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px">
-        <dc-import name="Campo" tipo="select" etichetta="TAGLIA" valore="{{taglia}}" segnaposto="Scegli" nota="{{guaio}}" tema="{{tema}}" hint-size="100%,100px"></dc-import>
-        <dc-import name="Campo" tipo="select" etichetta="QUANTI" valore="{{quantita}}" tema="{{tema}}" hint-size="100%,76px"></dc-import>
+        <dc-import name="Campo" tipo="select" etichetta="TAGLIA" valore="{{taglia}}" segnaposto="Scegli" nota="{{guaio}}" hint-size="100%,100px"></dc-import>
+        <dc-import name="Campo" tipo="select" etichetta="QUANTI" valore="{{quantita}}" hint-size="100%,76px"></dc-import>
       </div>
       <sc-if value="{{haPrezzo}}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; align-items: center; gap: 12px; padding-top: 6px; border-top: 2px solid {{c.line}}; font-size: 17px; font-weight: 700">
@@ -52,7 +52,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"numero":{"editor":"text","default":"1"},"perChi":{"editor":"text","default":"Luca Rossi"},"capo":{"editor":"text","default":"Judogi bianco"},"prezzoCapo":{"editor":"text","default":"35 €"},"taglia":{"editor":"text","default":"130"},"quantita":{"editor":"text","default":"1"},"prezzo":{"editor":"text","default":"35 €"},"conto":{"editor":"text","default":"1 × 35 €"},"guaio":{"editor":"text","default":""},"togli":{"editor":"boolean","default":false},"etichette":{"editor":"boolean","default":false},"griglia":{"editor":"text","default":"minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":400}}'>
+<script data-dc-script data-props='{"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"numero":{"editor":"text","default":"1"},"perChi":{"editor":"text","default":"Luca Rossi"},"capo":{"editor":"text","default":"Judogi bianco"},"prezzoCapo":{"editor":"text","default":"35 €"},"taglia":{"editor":"text","default":"130"},"quantita":{"editor":"text","default":"1"},"prezzo":{"editor":"text","default":"35 €"},"conto":{"editor":"text","default":"1 × 35 €"},"guaio":{"editor":"text","default":""},"togli":{"editor":"boolean","default":false},"etichette":{"editor":"boolean","default":false},"griglia":{"editor":"text","default":"minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px"},"$preview":{"width":350,"height":400}}'>
 // NON PIU' USATO il contesto "app": la pagina degli ordini ora va a passi (SchedaCapo nella pagina del tipo, RigaRiepilogoVestiario in
 // IL RIEPILOGO) e `RigaOrdine` non c'e' piu' in OrdinaVestiario.tsx; resta come storia delle tavole di ../vestiario/. Vale il contesto "segreteria".
 // Riproduzione 1:1 di una riga di un ordine di vestiario, nei due contesti.
@@ -73,8 +73,7 @@
 //   sotto i 1000px la testata sparisce, le etichette (.sg-etichetta) si vedono e la riga va su due colonne: `etichette` vero e
 //   griglia="minmax(0, 1fr) minmax(0, 1fr)".
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const BODY = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -82,7 +81,7 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T.sito;
     const sg = p.contesto === 'segreteria';
     const guaio = p.guaio ?? '';
     const capo = p.capo ?? 'Judogi bianco';
@@ -94,8 +93,7 @@ class Component extends DCLogic {
       colore: valore ? c.text : c.dim, famiglia: num ? COND : BODY, bordo: rosso ? c.rosso : c.line,
     });
     return {
-      c, cond: COND, tema: p.tema || 'scuro',
-      app: !sg, sg,
+      c, cond: COND, app: !sg, sg,
       titolo: 'RIGA ' + (p.numero ?? '1'),
       perChi: p.perChi ?? 'Luca Rossi',
       capoApp: capo ? capo + (prezzoCapo ? ' · ' + prezzoCapo : '') : '',

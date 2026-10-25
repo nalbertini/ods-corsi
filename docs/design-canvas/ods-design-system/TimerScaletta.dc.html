@@ -32,21 +32,18 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"righe":{"editor":"text","default":"work:LOTTA TERRA:30:1;rest:RECUPERO:15:1;work:LOTTA TERRA:30:7;setRest:RIPOSO TRA LE SERIE:60:1"},"altri":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":420,"height":320}}'>
+<script data-dc-script data-props='{"righe":{"editor":"text","default":"work:LOTTA TERRA:30:1;rest:RECUPERO:15:1;work:LOTTA TERRA:30:7;setRest:RIPOSO TRA LE SERIE:60:1"},"altri":{"editor":"text","default":""},"$preview":{"width":420,"height":320}}'>
 const T = {
-  scuro: { dim: '#8c8c88', line: '#2a2a2a', text: '#f2f2f0', sec: '#b8b8b2', suColore: '#121212', suRosso: '#ffffff' },
-  chiaro: { dim: '#656561', line: '#e2e2dd', text: '#161616', sec: '#4a4a46', suColore: '#121212', suRosso: '#ffffff' },
   sito: { dim: '#46606f', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', suColore: '#0d2a3d', suRosso: '#ffffff' },
 };
-const COL = { prepare: '#f4c31b', work: '#e4292a', rest: '#16a54a', setRest: '#1b8ac4', cooldown: '#1b8ac4' };
-const COLCH = { rest: '#12913f' };
+const COL = { prepare: '#f4c31b', work: '#e4292a', rest: '#12913f', setRest: '#14709f', cooldown: '#14709f' };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.sito;
+    const c = T.sito;
     const righe = String(p.righe ?? 'work:LOTTA TERRA:30:1;rest:RECUPERO:15:1;work:LOTTA TERRA:30:7;setRest:RIPOSO TRA LE SERIE:60:1').split(';').filter(Boolean).map((s, i) => {
       const [stato, nome, durata, volte] = s.split(':');
-      const colore = (p.tema !== 'scuro' && COLCH[stato]) || COL[stato] || '#8c8c88';
+      const colore = COL[stato] || '#8c8c88';
       const corrente = i === 0;
       return {
         nome,

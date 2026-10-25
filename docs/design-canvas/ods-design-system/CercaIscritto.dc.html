@@ -55,7 +55,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"testo":{"editor":"text","default":"ros"},"gruppi":{"editor":"text","default":"ISCRITTI:5=Rossi Giulia~Yoga|Rossi Marco~9 anni · Judo kids~non attiva|Rossetti Anna~Pilates;RICHIESTE ONLINE:1=Rossi Elena~arrivata ieri~DA ACCOGLIERE"},"scelto":{"editor":"text","default":"0"},"leggo":{"editor":"boolean","default":false},"offline":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":376,"height":420}}'>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"ros"},"gruppi":{"editor":"text","default":"ISCRITTI:5=Rossi Giulia~Yoga|Rossi Marco~9 anni · Judo kids~non attiva|Rossetti Anna~Pilates;RICHIESTE ONLINE:1=Rossi Elena~arrivata ieri~DA ACCOGLIERE"},"scelto":{"editor":"text","default":"0"},"leggo":{"editor":"boolean","default":false},"offline":{"editor":"boolean","default":false},"$preview":{"width":376,"height":420}}'>
 // La ricerca in cima al menu di segreteria com'e' costruita (src/components/segreteria/CercaIscritto.tsx, src/lib/ricerca.ts,
 // .sg-cerca* in src/styles.css righe 1488-1502): .sg-cerca, ma l'elenco e' un pannello piu' largo (368px), fisso, che esce dal
 // menu e galleggia sul corpo, a gruppi. La riga scelta con le frecce ha, oltre al fondo `surface-2`, la barra a sinistra (inset 4px `text`). Ogni gruppo: titolo spaziato (12px, `dim`, riga sottile, totale a destra), al piu' 3
@@ -65,13 +65,11 @@
 // bollino giallo (DA ACCOGLIERE), altrimenti testo 12px a destra (non attiva, accolta, rifiutata).
 // Lo stato (src/lib/ricerca.ts, RigaTrovata.stato; storia in ../cerca-stato/): quarto campo della riga, "stato" = le parole di paroleInRegola che non vanno,
 // "parola:tono+parola:tono" (certificato, poi quota), oppure "ok" = in regola: solo il ✓ verde (.sg-cerca-ok, 20px), la parola sta nell'aria-label.
-// Sta a destra, una parola sotto l'altra; nel tema sito e' il .sg-segno-regola sito (bianco, bordo 1.5px, raggio 6px, ✕ / … / ✓ davanti).
-// tema sito: i token di `:root[data-look='sito'] .sg-cerca-elenco` (src/styles.css riga 287), Inter.
+// Sta a destra, una parola sotto l'altra; e' il .sg-segno-regola sito (bianco, bordo 1.5px, raggio 6px, ✕ / … / ✓ davanti).
+// Look del sito: i token di `:root[data-look='sito'] .sg-cerca-elenco` (src/styles.css riga 287), Inter.
 // scelto: la riga evidenziata (da 0, contando tutte le righe). offline: la frase «non riesco ad aggiornare l'elenco» sotto i gruppi.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', suColore: '#121212', rossoTesto: '#ff5a52', gialloTesto: '#f4c31b', verdeTesto: '#16a54a' },
   sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', giallo: '#ffffff', suColore: '#8f6a00', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', suColore: '#121212', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -80,8 +78,7 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const sito = p.tema === 'sito';
-    const c = { ...(T[p.tema] || T.scuro), font: sito ? INTER : 'Barlow, sans-serif', cond: sito ? INTER : COND, raggio: sito ? '6px' : '0', spazio: sito ? '0.02em' : '0.12em', bordoBollino: sito ? '1.5px solid #8f6a00' : '0', segnoBollino: sito ? '… ' : '' };
+        const c = { ...(T.sito), font: INTER, cond: INTER, raggio: '6px', spazio: '0.02em', bordoBollino: '1.5px solid #8f6a00', segnoBollino: '… '};
     const tinta = (tono) => tono === 'rosso' ? c.rossoTesto : tono === 'giallo' ? c.gialloTesto : tono === 'verde' ? c.verdeTesto : c.dim;
     const testo = p.testo ?? 'ros';
     const mostra = testo.trim().length > 0;
@@ -96,7 +93,7 @@ class Component extends DCLogic {
         const [nome, sotto = '', nota = '', stato = ''] = r.split('~');
         const stati = stato === 'ok' ? [] : stato.split('+').filter(Boolean).map((x) => {
           const [parola, tono = 'rosso'] = x.split(':');
-          return { testo: (sito ? SEGNI[tono] || '' : '') + parola, colore: tinta(tono) };
+          return { testo: (SEGNI[tono] || '') + parola, colore: tinta(tono) };
         });
         const bollino = nota !== '' && nota === nota.toUpperCase();
         const spento = nota === 'non attiva' || nota === 'rifiutata';

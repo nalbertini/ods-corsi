@@ -33,24 +33,22 @@
     </sc-if>
   </span>
   <div style="display: flex; flex-wrap: wrap; gap: 10px; flex-basis: 100%">
-    <dc-import name="TabletTasto" label="{{tastoTutti}}" variante="verde" spento="{{spentoTutti}}" tema="{{tema}}" hint-size="260px,60px"></dc-import>
-    <dc-import name="TabletTasto" label="{{tastoAltri}}" variante="linea" spento="{{spentoAltri}}" tema="{{tema}}" hint-size="260px,60px"></dc-import>
-    <dc-import name="TabletTasto" label="PROVE" variante="linea" acceso="{{proveAperte}}" tema="{{tema}}" hint-size="140px,60px"></dc-import>
+    <dc-import name="TabletTasto" label="{{tastoTutti}}" variante="verde" spento="{{spentoTutti}}" hint-size="260px,60px"></dc-import>
+    <dc-import name="TabletTasto" label="{{tastoAltri}}" variante="linea" spento="{{spentoAltri}}" hint-size="260px,60px"></dc-import>
+    <dc-import name="TabletTasto" label="PROVE" variante="linea" acceso="{{proveAperte}}" hint-size="140px,60px"></dc-import>
   </div>
   <sc-if value="{{conConferma}}" hint-placeholder-val="{{ true }}">
     <span style="flex-basis: 100%; font-size: 17px; line-height: 1.5; font-weight: 600; color: {{c.gialloTesto}}">Lezione passata: tocca ancora per confermare, o lascia stare e non cambia niente.</span>
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"corso":{"editor":"text","default":"Lotta 2"},"quando":{"editor":"text","default":"oggi, 17:00–18:00"},"attivita":{"editor":"text","default":""},"sotto":{"editor":"text","default":"3 segnati da sé sul tablet · tocca un nome per cambiarlo"},"presenti":{"editor":"text","default":"8"},"iscritti":{"editor":"text","default":"14"},"prove":{"editor":"text","default":"0"},"tuttiPresenti":{"editor":"boolean","default":true},"altriAssenti":{"editor":"boolean","default":true},"proveAperte":{"editor":"boolean","default":false},"conferma":{"editor":"enum","options":["","tutti","altri"],"default":"tutti"},"daSegnare":{"editor":"text","default":"4"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":808,"height":170}}'>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Lotta 2"},"quando":{"editor":"text","default":"oggi, 17:00–18:00"},"attivita":{"editor":"text","default":""},"sotto":{"editor":"text","default":"3 segnati da sé sul tablet · tocca un nome per cambiarlo"},"presenti":{"editor":"text","default":"8"},"iscritti":{"editor":"text","default":"14"},"prove":{"editor":"text","default":"0"},"tuttiPresenti":{"editor":"boolean","default":true},"altriAssenti":{"editor":"boolean","default":true},"proveAperte":{"editor":"boolean","default":false},"conferma":{"editor":"enum","options":["","tutti","altri"],"default":"tutti"},"daSegnare":{"editor":"text","default":"4"},"$preview":{"width":808,"height":170}}'>
 // Come TabletTestaAppello, per una lezione passata (conConferma in TabletIstruttore.tsx, righe 196-205 e 361-368): la lezione e'
 // gia' storia, quindi il primo tocco su TUTTI PRESENTI o GLI ALTRI ASSENTI non segna niente ma cambia la scritta del tasto in
 // «CONFERMA: N PRESENTI» (o ASSENTI) e sotto i tre tasti compare la frase gialla (giallo-testo, 600), su tutta la riga. Si annulla
 // da sola dopo 5 secondi o cambiando lezione. Il secondo tocco segna davvero.
 // - conferma: tutti | altri = il tasto premuto una volta (vuoto: stato normale, senza frase). daSegnare: N della scritta.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', gialloTesto: '#f4c31b' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', gialloTesto: '#8f6a00' },
   sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', gialloTesto: '#8f6a00' },
 };
 const truthy = (v) => v === true || v === 'true';
@@ -60,7 +58,7 @@ class Component extends DCLogic {
     const k = p.conferma === undefined ? 'tutti' : p.conferma;
     const n = p.daSegnare ?? '4';
     return {
-      c: T[p.tema] || T.sito, tema: p.tema === 'chiaro' || p.tema === 'scuro' ? p.tema : 'sito',
+      c: T.sito,
       corso: p.corso ?? 'Lotta 2', quando: p.quando ?? 'oggi, 17:00–18:00',
       attivita: p.attivita ?? '', haAttivita: !!p.attivita,
       sotto: p.sotto ?? '3 segnati da sé sul tablet · tocca un nome per cambiarlo',

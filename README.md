@@ -16,7 +16,7 @@ L'app ha sei indirizzi veri, ognuno con il suo accesso
 
 | | |
 |---|---|
-| `istruttori/` | Il calendario e l'appello, per istruttori e segreteria, nell'aspetto del sito (blu e giallo, sempre chiaro; il cronometro resta scuro). |
+| `istruttori/` | Il calendario e l'appello, per istruttori e segreteria, nell'aspetto del sito (blu e giallo). |
 | `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria (anche insieme a quello di istruttore o di amministrazione). |
 | `amministrazione/` | L'area dei conti: CONTABILITÀ e LISTINO, per chi ha il ruolo di amministrazione. Non vede le persone (`supabase/55-amministrazione.sql`). |
 | `iscrizioni/` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
@@ -286,7 +286,7 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   segreteria le vede nella richiesta (ARRIVATA DA, CI HA CONOSCIUTO) e le conta in STATISTICHE, per persona e per corso,
   e le eliminate da nuove, come lo spam, non contano più (`src/lib/provenienza.ts`, `supabase/74-provenienza-richieste.sql`).
 - **L'aspetto del modulo di iscrizione** è quello del sito (tatami blu e giallo, Big Shoulders Display e
-  Inter), sempre chiaro anche col tema scuro; lo accende `src/lib/aspettoModulo.ts` finché il modulo è aperto
+  Inter); lo accende `src/lib/aspettoModulo.ts` finché il modulo è aperto
   (`data-modulo` su `<html>`, colori in `styles.css`; `npm run prova:iscrizione-sito`).
 - **L'area degli iscritti**: dal telefono, chi frequenta vede
   le prossime lezioni dei suoi corsi (con le annullate, i sostituti e i
@@ -323,12 +323,10 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   altre aree (segreteria, sala, iscrizioni), nemmeno in prova; al primo accesso l'account si lega da sé alla persona con la
   stessa email. Chi vuole iscriversi ha la pagina pubblica (`iscrizioni/`),
   che la segreteria copia con **COPIA LINK ISCRIZIONI**.
-- **Tre temi**: il nero del marchio, il bianco e il **Tatami** (paglia chiara
-  e menu verde scuro). Il tasto in testata (in segreteria nel riquadro in
-  basso) passa al successivo a ogni tocco e lo sceglie per quel dispositivo,
-  anche per il timer; finché nessuno sceglie, l'app segue il tema del
-  dispositivo (nero o bianco, mai Tatami). Sul tablet di sala il tasto sta
-  accanto all'ora.
+- **Un solo aspetto**: quello del sito (blu e giallo, sfondo chiaro) in app e
+  timer, fissato su `<html>` (`data-look`, nel timer `data-tema`). Non c'è più
+  il tasto del tema né la scelta salvata; un `ods-tema` rimasto nel browser
+  si ignora.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa. Anche sul
   tablet di sala, dove il nome toccato resta segnato con IN ATTESA DI RETE.
@@ -353,7 +351,7 @@ npm run preview
 ```
 
 Le due app stanno sulla stessa origine e quindi condividono il
-`localStorage`: il tema (`ods-tema`) è lo stesso, e i dati di ognuna hanno il
+`localStorage`: i dati di ognuna hanno il
 suo prefisso. Per chi aveva il timer al vecchio indirizzo
 (`nalbertini.github.io/Timer-/`) i timer salvati ci sono ancora, perché
 l'origine non cambia; l'app installata sul telefono o sul tablet, però, va
@@ -382,7 +380,7 @@ le clip della voce incisa e il catalogo degli esercizi, da **Impostazioni** ed
 timer. Maurizio, i segnali, il volume, lo schermo e la musica che segue il
 timer si scelgono nelle impostazioni del timer dentro il tablet, e valgono per
 tutti i tablet (`supabase/10-timer-sale.sql`, `supabase/14-timer-dal-tablet.sql`):
-cambiati su uno, gli altri li prendono al giro dopo. Lì non ci sono l'accesso, il tema, il salvataggio
+cambiati su uno, gli altri li prendono al giro dopo. Lì non ci sono l'accesso, il salvataggio
 su file e la versione, che sono di ODS Corsi: resta la fonte della musica con
 Spotify.
 
@@ -591,9 +589,9 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome (sul tablet al massimo venti, cercate scrivendo), tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:a11y-axe` | axe-core in un Chromium vero sulle schermate principali in modalità prova (segreteria, sala, area iscritti, iscrizione, timer). Serve la build (`npm run build:tutto`) e `npx playwright install chromium`. Una violazione grave non in `scripts/a11y-note.json` (con il motivo) fa fallire; in CI è un lavoro a parte. |
 | `npm run prova:timer-istruttori` | Il timer nell'app istruttori: le voci di navigazione per ruolo (CALENDARIO, TIMER, I MIEI, ORE), il timer aperto dall'appello con la lezione, lo stato dell'allenamento per la striscia (calcolato dall'orologio), la domanda prima di sostituire un allenamento in corso, l'avviso senza rete. |
-| `npm run prova:istruttori-look` | L'area istruttore col look del sito: sempre chiara anche con scuro o Tatami salvato (la scelta non si cancella e torna fuori dall'area), niente tasto del tema, passare da segreteria a istruttori senza passare dallo scuro, le parole di stato dell'appello e del calendario col segno davanti (`src/lib/etichetteAppello.ts`), le regole del CSS (giallo solo su tasto principale e voce corrente, sola lettura in giallo scuro su bianco, striscia chiara) e la guida. |
+| `npm run prova:istruttori-look` | L'area istruttore col look del sito: niente tasto del tema, le parole di stato dell'appello e del calendario col segno davanti (`src/lib/etichetteAppello.ts`), le regole del CSS (giallo solo su tasto principale e voce corrente, sola lettura in giallo scuro su bianco, striscia chiara) e la guida. |
 | `npm run prova:informativa` | Per quanto si tengono le presenze nell'informativa: solo un numero di mesi valido dal database cambia il testo; un errore, il tempo scaduto o l'app senza database lasciano quello della pagina, che non dice un numero. |
-| `npm run prova:tema` | I tre temi (nero, bianco, Tatami): quale resta dopo l'avvio, un valore salvato che non si conosce, il tasto che passa al successivo, il colore della barra del browser, il timer già pubblicato che trova un tema che non conosce, i contrasti dei colori del Tatami (anche nel menu verde) e i blocchi uguali fra app e timer. |
+| `npm run prova:tema` | Un solo aspetto: il meccanismo dei temi (file, tasto, scelta salvata) non c'è più, `<html>` nasce già col look del sito in app e timer, la barra del browser ha il suo fondo, nessun tema scuro o Tatami nel CSS e nel codice. |
 | `npm run prova:appello-liste` | L'appello della segreteria a tre tasti: chi sta in DA SEGNARE, PRESENTI o ASSENTI (il giustificato fra gli assenti, le prove fuori), i conti che tornano sempre, il tasto con cui si apre, la riga che prende il posto dopo un tocco, TUTTI PRESENTI solo sui non segnati e l'annuncio per chi non vede lo schermo. |
 | `npm run prova:appello-ordine` | L'ordine dell'appello per presenze: gli iscritti dal più presente al meno presente a quella lezione (ultime 12 svolte, non annullate, stesso corso e stesso giorno della settimana in fuso italiano, l'ora non conta), solo `presente` conta, la lezione aperta no, a parità il cognome, le prove in fondo, nessuna riga che si sposta dopo un tocco, la lezione passata riaperta con i non segnati in cima, la modalità prova e il database (finto) con la stessa uscita e, se lo storico non si legge, l'appello per cognome senza errori. |
 | `npm run prova:frequenza` | Chi viene e chi si sta perdendo (`src/lib/frequenza.ts`): presenti su dovute senza i giustificati, annullate e lezioni senza appello fuori, chi ha 3 o più assenze di fila con l'ultima presenza e i corsi, lo stesso risultato di PRESENZE di prima; `GIORNI_RECENTI` (60), quanto indietro guarda `chi_manca`. |

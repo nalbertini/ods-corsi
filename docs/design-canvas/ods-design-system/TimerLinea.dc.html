@@ -26,22 +26,21 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"blocchi":{"editor":"text","default":"work:30,rest:15,work:30,rest:15,work:30"},"attuale":{"editor":"int","default":0},"avanzamento":{"editor":"float","default":0,"min":0,"max":1,"step":0.01},"alto":{"editor":"text","default":"34px"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":600,"height":40}}'>
-const COL = { prepare: '#f4c31b', work: '#e4292a', rest: '#16a54a', setRest: '#1b8ac4', cooldown: '#1b8ac4' };
+<script data-dc-script data-props='{"blocchi":{"editor":"text","default":"work:30,rest:15,work:30,rest:15,work:30"},"attuale":{"editor":"int","default":0},"avanzamento":{"editor":"float","default":0,"min":0,"max":1,"step":0.01},"alto":{"editor":"text","default":"34px"},"$preview":{"width":600,"height":40}}'>
+const COL = { prepare: '#f4c31b', work: '#e4292a', rest: '#12913f', setRest: '#14709f', cooldown: '#14709f' };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const att = Number(p.attuale ?? 0);
     const av = Math.max(0, Math.min(1, Number(p.avanzamento ?? 0)));
-    const chiaro = p.tema !== 'scuro'; // chiaro e sito: stesse regole, cambia solo l'inchiostro del contorno
     const blocchi = String(p.blocchi ?? 'work:30,rest:15,work:30,rest:15,work:30').split(',').filter(Boolean).map((s, i) => {
       const [stato, durata] = s.split(':');
       return {
         durata: Number(durata) || 1,
-        colore: (chiaro && stato === 'rest') ? '#12913f' : (COL[stato] || '#8c8c88'),
+        colore: COL[stato] || '#8c8c88',
         opacita: 0.28,
         riempito: i < att ? '100%' : i === att ? (av * 100).toFixed(1) + '%' : '0%',
-        contorno: i === att ? '2px solid ' + (p.tema === 'sito' ? '#0d2a3d' : chiaro ? '#161616' : '#f2f2f0') : 'none',
+        contorno: i === att ? '2px solid ' + '#0d2a3d' : 'none',
       };
     });
     return { blocchi, alto: p.alto || '34px' };

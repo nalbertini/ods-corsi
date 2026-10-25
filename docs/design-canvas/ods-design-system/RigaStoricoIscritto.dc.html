@@ -21,13 +21,13 @@
     </sc-if>
     <sc-if value="{{spazio}}" hint-placeholder-val="{{ false }}"><span style="flex: none; width: 44px"></span></sc-if>
     <span style="display: flex; align-items: center; flex: 1 1 90px; min-width: 0; min-height: 44px; margin: -13px 0; font-size: 15px; font-weight: 600">{{nome}}</span>
-    <dc-import name="Badge" tipo="segno" tono="{{quotaTono}}" label="{{quota}}" tema="sito" hint-size="120px,24px"></dc-import>
+    <dc-import name="Badge" tipo="segno" tono="{{quotaTono}}" label="{{quota}}" hint-size="120px,24px"></dc-import>
   </div>
   <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-left: {{rientro}}">
     <span style="font-size: 14px; font-variant-numeric: tabular-nums; color: #0d2a3d">{{voce}}</span>
     <sc-if value="{{haCollegato}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 600; color: #0d2a3d">{{collegato}}</span></sc-if>
-    <sc-if value="{{parziale}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="PARZIALE?" tema="sito" hint-size="110px,24px"></dc-import></sc-if>
-    <sc-if value="{{haErrore}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="rosso" label="{{errore}}" tema="sito" hint-size="190px,24px"></dc-import></sc-if>
+    <sc-if value="{{parziale}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="PARZIALE?" hint-size="110px,24px"></dc-import></sc-if>
+    <sc-if value="{{haErrore}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="rosso" label="{{errore}}" hint-size="190px,24px"></dc-import></sc-if>
   </div>
   <sc-if value="{{conLink}}" hint-placeholder-val="{{ false }}">
     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding-left: {{rientro}}">

@@ -2,57 +2,25 @@
 name: ODS Corsi
 description: Il calendario dei corsi e il registro delle presenze di Officine Dello Sport, Collegno.
 colors:
-  nero-palestra: "#121212"
-  superficie: "#1c1c1c"
-  superficie-alta: "#242424"
-  menu: "#161616"
-  riga: "#333333"
-  riga-tenue: "#2a2a2a"
-  riga-campo: "#6e6e6a"
-  tratteggio: "#4a4a46"
-  testo: "#f2f2f0"
-  testo-secondario: "#c9c9c4"
-  testo-spento: "#8c8c88"
-  testo-flebile: "#5a5a56"
-  tasto: "#b8b8b2"
+  fondo: "#eef5fa"
+  superficie: "#ffffff"
+  superficie-alta: "#cfe6f4"
+  menu: "#0d2a3d"
+  riga: "#cfe6f4"
+  riga-campo: "#14709f"
+  tratteggio: "#14709f"
+  testo: "#0d2a3d"
+  testo-spento: "#46606f"
+  blu: "#14709f"
   rosso-ingranaggio: "#e4292a"
-  verde-ingranaggio: "#16a54a"
+  verde-ingranaggio: "#12913f"
   giallo-ingranaggio: "#f4c31b"
-  blu-ingranaggio: "#1b8ac4"
   viola-corso: "#8b5cc4"
-  su-colore: "#121212"
+  su-colore: "#0d2a3d"
   su-rosso: "#ffffff"
-  rosso-testo: "#ff5a52"
-  rosso-testo-chiaro: "#b81d1d"
-  carta-chiara: "#f4f4f1"
-  superficie-chiara: "#ffffff"
-  superficie-alta-chiara: "#e9e9e5"
-  riga-chiara: "#d4d4ce"
-  riga-campo-chiara: "#8a8a85"
-  testo-chiaro: "#161616"
-  testo-spento-chiaro: "#656561"
-  verde-chiaro: "#12913f"
-  verde-testo-chiaro: "#0b7a33"
-  giallo-testo-chiaro: "#8f6a00"
-  paglia: "#ebe6d0"
-  paglia-chiara: "#f6f3e4"
-  paglia-scura: "#d9d2b0"
-  cucitura-paglia: "#bdb68f"
-  cucitura-tenue: "#cfc9a8"
-  riga-campo-paglia: "#6b6a5c"
-  orlo: "#1d1d1b"
-  muschio: "#2f3d2b"
-  testo-secondario-paglia: "#3d3d3a"
-  testo-spento-paglia: "#5a594c"
-  tratteggio-paglia: "#a39d7c"
-  testo-flebile-paglia: "#646350"
-  blu-su-muschio: "#6cc0ec"
-  verde-testo-paglia: "#096228"
-  giallo-testo-paglia: "#6f5200"
-  rosso-testo-paglia: "#a81a1a"
-  su-muschio: "#cfd6c0"
-  riga-muschio: "#5d6e58"
-  riga-tenue-muschio: "#44543f"
+  rosso-testo: "#b81d1d"
+  verde-testo: "#0b7a33"
+  giallo-testo: "#8f6a00"
 typography:
   display:
     fontFamily: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif"
@@ -179,7 +147,7 @@ components:
 
 ODS Corsi è segnaletica di sala prima che interfaccia. Si usa in piedi, col telefono in una mano durante l'appello, da un tablet appeso al muro guardato da due metri, dal computer della reception tra una telefonata e l'altra. Ogni scelta visiva risponde a quella scena: fondo nero pieno, i cinque colori degli ingranaggi del marchio usati come segnali, lettere condensate in maiuscolo obliquo che si leggono dalla porta, bersagli alti quanto un dito di fretta. *Prima si legge da lontano, poi si fa bello* (lo dice il codice stesso).
 
-La densità è quella di un tabellone: poche cose, grandi, con contrasto netto. Niente angoli arrotondati, niente ombre decorative, niente sfumature: la profondità la fanno i bordi da 2px e il passaggio da `superficie` a `superficie-alta`. Lo stato si capisce dal colore del bordo e dal segno grande a sinistra prima ancora di leggere il nome. Il tema chiaro esiste per la reception illuminata: stessi segnali, carta calda invece del nero. Il terzo tema, **Tatami**, è anch'esso chiaro: fondo `paglia` (la stuoia del dojo), superfici `paglia-chiara` e `paglia-scura`, testo e bordi `orlo` (il nero della stoffa che orla i tatami), menu `muschio` con testo chiaro (`su-muschio`). I segnali sono gli stessi; i testi scritti in giallo, verde e rosso sono più scuri di quelli del chiaro (`giallo-testo-paglia`, `verde-testo-paglia`, `rosso-testo-paglia`) perché sulla paglia quelli del bianco non arrivano a 4,5:1. Si sceglie dal tasto del tema, che passa nero → bianco → Tatami, ed è uno solo per app e timer. Cambiano solo i colori: layout e componenti sono gli stessi.
+La densità è quella di un tabellone: poche cose, grandi, con contrasto netto. Niente angoli arrotondati, niente ombre decorative, niente sfumature: la profondità la fanno i bordi da 2px e il passaggio da `superficie` a `superficie-alta`. Lo stato si capisce dal colore del bordo e dal segno grande a sinistra prima ancora di leggere il nome. L'aspetto è uno solo, quello del sito della palestra: fondo azzurro, superfici bianche, inchiostro blu scuro, blu e giallo. Il nero, il bianco e il Tatami sono stati tolti, col tasto che li cambiava.
 
 Il sistema rifiuta l'aspetto da SaaS generico: niente card morbide con ombra, niente pillole arrotondate, niente gradienti, niente icone decorative dove basta una parola in maiuscolo.
 
@@ -193,29 +161,28 @@ Il sistema rifiuta l'aspetto da SaaS generico: niente card morbide con ombra, ni
 
 ## Colors
 
-Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i neutri sono grigi caldi, appena verso il giallo.
+Gli azzurri e l'inchiostro del sito con i segnali puri presi dagli ingranaggi del logo.
 
 ### Primary
-- **Rosso Ingranaggio** (#e4292a): ciò che manca o non va — l'assenza nell'appello, il SENZA APPELLO, i dati mancanti, gli errori — e, in segreteria, solo i tasti di ciò che non si annulla (FAI LA RICEVUTA, STAMPATO CANCELLALO, IMPORTA). Fuori dalla segreteria resta anche l'azione principale (`btn-primary`, avvio del timer) e il timbro kanji. Non è un colore dei corsi. Uguale nei due temi per bordi e fondi; come testo piccolo diventa **Rosso Testo** (`--rosso-testo`: #ff5a52 sul tema scuro, #b81d1d sul chiaro), perché il rosso del marchio si ferma a 3,8:1.
+- **Rosso Ingranaggio** (#e4292a): ciò che manca o non va — l'assenza nell'appello, il SENZA APPELLO, i dati mancanti, gli errori — e, in segreteria, solo i tasti di ciò che non si annulla (FAI LA RICEVUTA, STAMPATO CANCELLALO, IMPORTA). Fuori dalla segreteria resta anche l'azione principale (`btn-primary`, avvio del timer) e il timbro kanji. Non è un colore dei corsi.  come testo piccolo diventa **Rosso Testo** (`--rosso-testo`: #b81d1d), perché il rosso del marchio si ferma a 3,8:1.
 
 ### Secondary
-- **Verde Ingranaggio** (#16a54a; #12913f sul tema chiaro): conferma e presenza. Come testo piccolo sul tema chiaro diventa **Verde Testo** (#0b7a33, `--verde-testo`), come il giallo. Tasto `btn-go`, "SEGNA LA PRESENZA" del tablet, riga presente, conteggio completo, toast di conferma.
+- **Verde Ingranaggio** (#12913f): conferma e presenza. Come testo piccolo diventa **Verde Testo** (#0b7a33, `--verde-testo`), come il giallo. Tasto `btn-go`, "SEGNA LA PRESENZA" del tablet, riga presente, conteggio completo, toast di conferma.
 
 ### Tertiary
-- **Giallo Ingranaggio** (#f4c31b): avviso e attenzione. Bordi delle prove, spia della coda offline, giorno di oggi, bollino PROVA. Come testo sul tema chiaro diventa **Giallo Testo** (#8f6a00), perché il giallo puro sul bianco non si legge.
-- **Blu Ingranaggio** (#1b8ac4): informazione quieta. I puntini delle lezioni nella striscia dei giorni, le barre delle statistiche.
+- **Giallo Ingranaggio** (#f4c31b): avviso e attenzione. Bordi delle prove, spia della coda offline, giorno di oggi, bollino PROVA. Come testo diventa **Giallo Testo** (#8f6a00), perché il giallo puro sul bianco non si legge.
+- **Blu Ingranaggio** (#14709f): informazione quieta. I puntini delle lezioni nella striscia dei giorni, le barre delle statistiche.
 
 ### Neutral
-- **Nero Palestra** (#121212 / chiaro #f4f4f1): fondo di pagina; anche il testo sopra i colori del marchio (`su-colore`) in entrambi i temi.
-- **Superficie** (#1c1c1c / chiaro #ffffff): card, righe, campi.
-- **Superficie Alta** (#242424 / chiaro #e9e9e5): stato selezionato (giorno scelto, scheda attiva, chip premuto).
-- **Menu** (#161616 / chiaro #ebebe7): la colonna del menu di segreteria.
-- **Riga** (#333333 / chiaro #d4d4ce): i bordi da 2px di ogni contenitore e tasto.
-- **Riga Campo** (#6e6e6a / chiaro #8a8a85): il bordo dei campi e delle scelte del modulo, a 3:1 sul fondo (WCAG 1.4.11): `Riga` sul nero non ci arriva. Campi, scelte e il tasto INDIETRO dei passi; il resto resta su `Riga`.
-- **Riga Tenue** (#2a2a2a / chiaro #e2e2dd): divisori, linea dei titoletti, separatori tra colonne.
-- **Tratteggio** (#4a4a46 / chiaro #b0b0aa): bordi tratteggiati di "aggiungi" e del riquadro firma.
-- **Testo** (#f2f2f0 / chiaro #161616), **Testo Secondario** (#c9c9c4 / #3d3d3a), **Testo Spento** (#8c8c88 / #656561), **Testo Flebile** (#5a5a56 / #a8a8a3): quattro gradini di testo, dal nome al segnaposto. Il segnaposto dei campi della segreteria (Cerca iscritto) usa lo Spento, non il Flebile: è l’unica indicazione di cosa scrivere e deve leggersi.
-- **Tasto** (#b8b8b2 / chiaro #4a4a46): il testo dei tasti a linea a riposo, che si accende in `testo` al passaggio.
+- **Fondo** (#eef5fa): fondo di pagina; il testo sopra i colori del marchio (`su-colore`) è l'inchiostro #0d2a3d.
+- **Superficie** (#ffffff): card, righe, campi.
+- **Superficie Alta** (#cfe6f4): stato selezionato (giorno scelto, scheda attiva, chip premuto).
+- **Menu** (#0d2a3d): la colonna del menu di segreteria, con testo bianco e azzurro.
+- **Riga** (#cfe6f4): i bordi di ogni contenitore e tasto; anche divisori e linea dei titoletti.
+- **Riga Campo** (#14709f): il bordo dei campi, delle scelte del modulo e del tasto INDIETRO, a 3:1 sul fondo (WCAG 1.4.11); il resto resta su `Riga`.
+- **Tratteggio** (#14709f): bordi tratteggiati di "aggiungi" e del riquadro firma.
+- **Testo** (#0d2a3d) e **Testo Spento** (#46606f): due gradini di testo, dal nome al segnaposto (il segnaposto dei campi usa lo Spento: è l'unica indicazione di cosa scrivere e deve leggersi). `Testo Secondario` è uguale a `Testo`.
+- **Tasto** (#0d2a3d): il testo dei tasti a linea a riposo.
 
 ### Named Rules
 **La Regola del Segnale Unico.** Ogni colore del marchio ha un significato e uno solo. Il rosso non decora, il verde non è "brand": se un elemento è verde, qualcosa è fatto o presente. In segreteria il rosso dice solo «manca» o «non si torna indietro». Nella settimana è rosso solo il SENZA APPELLO; istruttore? e sala? sono grigi, perché sono buchi del corso e il rosso lo hanno in CORSI. Le lezioni passate con l'appello fatto si fanno da parte (fondo trasparente, bordo tenue). In DA FARE il numero è rosso solo per ciò che è già un guaio (appelli, certificati mancanti, quote); giallo (`giallo-testo`) per ciò che aspetta una risposta o scade presto, come i numeri del menu; le stampe stanno in una riga neutra in fondo.
@@ -224,7 +191,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 
 **La Regola della Tinta del Corso.** Il colore di un corso arriva come `--tinta` e vive solo su un bordo spesso (sinistra 6–8px, o in alto 4–6px). Mai come fondo pieno.
 
-**La Regola del Testo sul Colore.** Sopra verde, giallo e blu pieno il testo è `su-colore` (#121212), in entrambi i temi. Sopra il rosso è bianco (#ffffff): il nero si ferma a 4,1:1, il bianco arriva a 4,5:1.
+**La Regola del Testo sul Colore.** Sopra verde, giallo e blu pieno il testo è `su-colore` (#0d2a3d). Sopra il rosso è bianco (#ffffff): il nero si ferma a 4,1:1, il bianco arriva a 4,5:1.
 
 ## Typography
 
@@ -319,7 +286,7 @@ Quadrato 44px con bordo 2px `riga` e segno in `tasto`; quando contiene una parol
 - **PAGAMENTO** (modulo a passi, penultimo passo): una frase `testo` («Un pagamento solo per tutti.» con più persone), l'etichetta IL CONTO (o IL CONTO DELLA FAMIGLIA) e un `Riquadro` stretto con le righe di `.stima` (sconto in `verde`), il totale, la frase «Paga questo totale…», l'IBAN `.iban`, la causale e i tasti COPIA IBAN, COPIA CAUSALE, PAGA CON SATISPAY; sotto, LA RICEVUTA · FACOLTATIVA con un `CaricaFile` solo per tutti e, se il totale è cambiato dopo averla caricata, l'avviso in `giallo-testo`.
 - **IL PAGAMENTO del modulo pubblico** (`IlPagamento` in `ModuloIscrizione.tsx`, tema sito; dal nucleo dell'area iscritti resta QUANTO COSTA): QUANTO PAGHI, un `Riquadro` stretto con le righe di `.stima` e il totale, e PAGHI CON, due scelte `una` (Satispay, Bonifico; «In segreteria» non c'è) con la riga sotto il nome, nessuna già scelta, una sotto l'altra sotto i 560px (`.scelta-pago`). Satispay c'è solo nei casi semplici, un corso della sua età con una riga di prezzo nel listino della segreteria: se no la scelta non compare e una frase 14px `testo-spento` dice perché («Niente Satispay per ora: …»). Con Satispay sotto c'è «Paghi in fondo al modulo, prima di mandare la richiesta: 450,00 € con Satispay.» e si paga nella sezione **PAGA**, in fondo, dopo ALTRO (vedi sotto); col bonifico IBAN `.iban`, causale, COPIA IBAN e COPIA CAUSALE e la ricevuta (`CaricaFile`), obbligatoria. La sezione compare dopo aver scelto un corso. Gli importi scritti nelle frasi hanno lo spazio che non va a capo prima di «€».
 - **PAGA del modulo pubblico** (in fondo a `ModuloIscrizione.tsx`, con Satispay; tutto quello che si vede lo decide `statoRiquadroPaga` in `src/lib/satispay.ts`): un `Riquadro` stretto dentro `.paga-riquadro`, col bordo 2px `blu` (da pagare), `verde-testo` (pagato), `giallo-testo` (non è andato), `rosso-testo` (non vale più); dentro la cifra `.paga-cifra` (Saira 34px 800, `testo`, `verde-testo` solo da pagato, coi centesimi), la riga «Quota associativa e annuale <corso>.» e la frase, 15px (`Dettaglio` `testo`, `fatto` «✓ Pagati con Satispay alle 15.12. Ora manda la richiesta.», `avviso` che comincia con «! », `guaio`). Sotto, al posto del tasto giallo di oggi, il tasto principale a tutta riga: **PAGA 450,00 € CON SATISPAY** è un link già pronto (si apre al tocco, mai da solo dopo un'attesa), poi **MANDA LA RICHIESTA**; **RIPROVA CON SATISPAY** se non è andato, **CHIAMA LA SEGRETERIA** (`tel:`) se il pagamento non vale più; mentre si prepara, PREPARO IL PAGAMENTO… spento. Finché il resto del modulo non è a posto il tasto non c'è e sotto una riga 14px dice cosa manca («Prima di pagare: …»); sotto il tasto le note 14px («Se chiudi Satispay senza confermare…», «Oppure torna a «Paghi con» e scegli il bonifico.»).
-- **PAGA con la carta** (`CampiCarta.tsx`, sotto il riquadro PAGA quando in PAGHI CON c'è Carta): il tasto principale **PAGA 450,00 € CON LA CARTA** apre i campi (al loro posto, e il fuoco va ai campi; ANNULLA lo riporta al tasto). Sopra, solo se il telefono li sa usare, **Paga con Apple Pay** e **Paga con Google Pay** (`.tasto-wallet`: alti 52px, raggio 10px, fondo `black` e testo `su-rosso` (bianco) in tutti i temi, come chiedono Apple e Google, col bordo 2px `riga-campo` che lo stacca dal fondo scuro; 17px 600), poi «oppure scrivi i dati della carta» 14px `testo-spento` tra due fili `riga`. I quattro campi (NUMERO DELLA CARTA, SCADENZA, CODICE DI SICUREZZA, NOME SULLA CARTA) hanno le nostre etichette `.modulo-etichetta`; dentro li disegna il circuito nei suoi riquadri, coi colori del tema letti al momento (bordo 2px `riga-campo`, `testo` sul fuoco, 17px). Sotto, il tasto principale PAGA 450,00 € (CONFERMO IL PAGAMENTO… mentre lavora, RIPROVA A CONFERMARE se la rete è caduta dopo la conferma), due note 14px e ANNULLA.
+- **PAGA con la carta** (`CampiCarta.tsx`, sotto il riquadro PAGA quando in PAGHI CON c'è Carta): il tasto principale **PAGA 450,00 € CON LA CARTA** apre i campi (al loro posto, e il fuoco va ai campi; ANNULLA lo riporta al tasto). Sopra, solo se il telefono li sa usare, **Paga con Apple Pay** e **Paga con Google Pay** (`.tasto-wallet`: alti 52px, raggio 10px, fondo `black` e testo `su-rosso` (bianco), come chiedono Apple e Google, col bordo 2px `riga-campo` che lo stacca dal fondo scuro; 17px 600), poi «oppure scrivi i dati della carta» 14px `testo-spento` tra due fili `riga`. I quattro campi (NUMERO DELLA CARTA, SCADENZA, CODICE DI SICUREZZA, NOME SULLA CARTA) hanno le nostre etichette `.modulo-etichetta`; dentro li disegna il circuito nei suoi riquadri, coi colori del tema letti al momento (bordo 2px `riga-campo`, `testo` sul fuoco, 17px). Sotto, il tasto principale PAGA 450,00 € (CONFERMO IL PAGAMENTO… mentre lavora, RIPROVA A CONFERMARE se la rete è caduta dopo la conferma), due note 14px e ANNULLA.
 - **Ritorno da Satispay** (`RitornoDalPagamento` di `PagamentoOnline.tsx`, a `iscrizioni/?satispay=`): `TitoloEsito` e frasi `.esito-testo`: PAGAMENTO RICEVUTO in `verde` («Torna alla scheda dove hai compilato il modulo e premi MANDA LA RICHIESTA.»), PAGAMENTO IN ATTESA, IL PAGAMENTO NON È ANDATO e PAGAMENTO NON TROVATO in `giallo-testo`, RICHIESTA ARRIVATA · PAGATO se la richiesta l'ha già preso. Nessun tasto prima della richiesta (porterebbe a un modulo nuovo, e si pagherebbe di nuovo); TORNA ALLE ISCRIZIONI solo a richiesta arrivata.
 - **Pagamento online** (`PagamentoOnline`, il flusso di prima, a `iscrizioni/?pagamento=`): `TitoloEsito` e frasi `.esito-testo` secondo com'è andato: RICHIESTA ARRIVATA in `giallo-testo` (manca il pagamento, con PAGA 450 € CON SATISPAY), RICHIESTA ARRIVATA · PAGATO in `verde` (quanto, quando, per chi, e TORNA ALLE ISCRIZIONI), IL PAGAMENTO NON È ANDATO in `giallo-testo` (RIPROVA CON SATISPAY). Senza pagamento il titolo è PAGAMENTO.
 - **QUANTO COSTA nel modulo di oggi** (`QuantoCosta` di `ModuloIscrizione.tsx`): sotto COME PAGHI, da UNA PERSONA IN PIÙ (la pagina pubblica ha IL PAGAMENTO); `Riquadro` stretto con le righe di `.stima`, il totale, l'IBAN `.iban`, la causale e COPIA IBAN, COPIA CAUSALE, PAGA CON SATISPAY. Senza nome la causale non c'è: al suo posto «Scrivi nome e cognome per la causale.» in `giallo-testo`, e niente COPIA CAUSALE. Dalla pagina pubblica la RICEVUTA DEL PAGAMENTO non ha parola accanto (è obbligatoria); da UNA PERSONA IN PIÙ resta PUOI PAGARE IN SEGRETERIA.
@@ -397,7 +364,7 @@ In cima alla scheda di un iscritto (`.sg-timbro`), da non confondere col timbro 
 L'ultimo riquadro di STATISTICHE (`StatisticheSito.tsx`, `.sg-sito-*`), nel look del sito come gli altri: tessera bianca con la testa di `Riga`. Le **frasi** che informano (si conta dal, il corso che non conta, i tocchi stimati) stanno in una **fascia azzurra** (`fondo`, raggio 6px, padding 10px 14px, 14px) **senza segno**: non sono guai; in prova la fascia ha la barra `giallo-testo` a sinistra e «… Prova». Il **guaio** è il `Guaio` di `comune.tsx` **col titolo** (NON LETTO, il titolo 16px 700, la frase che dice cosa fare), sul `fondo` con la barra `rosso` di 4px a sinistra, dentro il riquadro: gli altri riquadri restano. Le **barre** (pagine, provenienze) sono quelle di PRESENZE con il **nome su due righe** (nome 15px 600, sotto l'indirizzo 12px `testo-spento`) e il numero a destra; sul telefono il nome e il numero sopra, la barra sotto; «Diretto o non si sa» a parte sotto un filo. La **tabella mese per mese** è `.sg-stat-tabella` con la riga **TOTALE** (filo 2px sopra, grassetto) e la nota del mese («dal 20», «fino a oggi») sotto il nome; fino a 1200px va sotto le colonne, sul telefono col mese corto (OTT 2026) e celle strette. «Aggiorna» è un tasto a linea: il giallo non serve, la pagina non ha un tasto principale.
 
 ### L'editor delle pagine del sito
-Il pannello SITO apre ogni pagina in Puck (`EditorPuck.tsx`) **col suo aspetto**, non col look del sito: sempre chiaro, anche col tema scuro dell'app, coi tasti `Button` di Puck (Pubblica è il `primary`). I campi nostri dentro il suo pannello (`.sito-puck-campo`, `.sito-puck-nota`) prendono le sue variabili (`--puck-color-*`): alti 44px, raggio 4px, bordo `grey-09`; l'avviso in `yellow-04`, il troppo e la riga del perché in `red-04`. I valori di Puck che usiamo (`@puckeditor/core` 0.23): testo `black` #000000, testo secondario `grey-04` #5a5a5a, bordi `grey-09` #dcdcdc, fondo `white` #ffffff, tasto primario `azure-04` #0158ad, avviso `yellow-04` #645a00, troppo `red-04` #ac1f35. I tasti sono alti 44px (`--puck-button-medium-space-y: 12px`); sotto i 458px i nostri campi passano a 16px come i suoi. La pagina al centro, nell'iframe, ha il CSS vero del sito (`CSS_SITO`): una parte ISTRUTTORE si vede come la tessera del sito, e l'avviso sotto una parte che interrompe gli istruttori è una riga 14px 600 col «!» davanti, nel colore del testo.
+Il pannello SITO apre ogni pagina in Puck (`EditorPuck.tsx`) **col suo aspetto**, non col look del sito: sempre chiaro, coi tasti `Button` di Puck (Pubblica è il `primary`). I campi nostri dentro il suo pannello (`.sito-puck-campo`, `.sito-puck-nota`) prendono le sue variabili (`--puck-color-*`): alti 44px, raggio 4px, bordo `grey-09`; l'avviso in `yellow-04`, il troppo e la riga del perché in `red-04`. I valori di Puck che usiamo (`@puckeditor/core` 0.23): testo `black` #000000, testo secondario `grey-04` #5a5a5a, bordi `grey-09` #dcdcdc, fondo `white` #ffffff, tasto primario `azure-04` #0158ad, avviso `yellow-04` #645a00, troppo `red-04` #ac1f35. I tasti sono alti 44px (`--puck-button-medium-space-y: 12px`); sotto i 458px i nostri campi passano a 16px come i suoi. La pagina al centro, nell'iframe, ha il CSS vero del sito (`CSS_SITO`): una parte ISTRUTTORE si vede come la tessera del sito, e l'avviso sotto una parte che interrompe gli istruttori è una riga 14px 600 col «!» davanti, nel colore del testo.
 
 ### Riga del compenso
 Una riga di COMPENSI (`Compensi.tsx`, `.sg-compenso-riga`; in libreria `RigaCompenso`): cognome e nome (15px 600), il compenso (15px 700, «—» se manca una tariffa o ci sono presenze da decidere), «N lezioni · N ore», il segno dello stato (`.sg-segno-regola`, stretto attorno alla parola, mai a tutta colonna) con sotto il perché in 13px `sec`, e i tasti. Stati: PRESENZE DA CONFERMARE, SENZA TARIFFA, MANCANO I DATI (rossi, col collegamento dove si sistemano), RICEVUTA DA FARE (neutro: MODIFICA IL COMPENSO a linea, PREPARA LA RICEVUTA pieno), FATTA · DA PAGARE (giallo, con il segno giallo DA RIPORTARE FIRMATA finché la spunta è vuota, e SEGNA PAGATO **a linea** per chi cura anche la contabilità), PAGATA (verde, senza ANNULLA: la data e «prima si annulla il pagamento in CONTABILITÀ» stanno nella frase sotto), NON TORNA PIÙ (rosso, solo ANNULLA E RIFAI: non si paga). I tasti stanno in una colonna a destra (`flex: 0 1 280px`) e vanno a capo lì dentro. I quattro numeri sono TECNICI, DA FARE, FERMI, DA PAGARE; i filtri Tutti, Da fare, Da pagare, Da riportare firmate. Con la ricevuta: la spunta **Firmata** da 24px, RISTAMPA a linea, e ANNULLA rosso **su una riga sua**, mai accanto a RISTAMPA. «▸ Per corso» apre una griglia corso / ore / tariffa / importo; la tariffa che manca è il segno rosso SENZA TARIFFA. Sotto i 480px la riga si impila (nome e importo in alto, il resto a tutta larghezza) e dei quattro numeri restano DA FARE, FERMI e DA PAGARE.
@@ -411,12 +378,12 @@ Nella scheda di chi insegna, sotto PRESENZE: il numero COMPENSO (in euro, «—�
 Il pannello di COMPENSI (`PannelloPaga` in `Compensi.tsx`), senza velo, sotto l'elenco: bordo 2px `text`, larghezza massima 820px, padding 22px 24px. All'apertura la pagina scorre fin lì e il fuoco va sul titolo («Segna pagato · Cognome Nome», `sg-riquadro-titolo`). Le ricevute fatte e non pagate del tecnico, già spuntate (spunte da 24px su righe da 44px), DATA DEL PAGAMENTO (oggi di Roma, mai nel futuro), CASSA in due chip (Conto Corrente per primo), il riepilogo di quello che si scrive in CONTABILITÀ (Tipo, Cassa, Voce, Importo, Descrizione) in un riquadro `line-soft`, il perché in rosso sopra i tasti se non si può, LASCIA STARE a linea e SEGNA PAGATO <totale> pieno.
 
 ### Nastro della prova
-In cima quando i dati sono di prova (`NastroProva` di `ds.tsx`, `.nastro-prova`): area iscritti, sala e pagina Iscrizioni. Saira 12px 700 a 0.18em, `su-colore` su `giallo` in tutti e due i temi, centrato, padding 4px. Con la prova scelta da chi usa l'app (resta accesa su quel telefono) c'è **ESCI DALLA PROVA** (`.nastro-prova-esci`): sottolineato, alto 44px per il dito (il nastro cresce con lui), senza «·» davanti così a capo resta pulito, contorno di fuoco `su-colore`.
+In cima quando i dati sono di prova (`NastroProva` di `ds.tsx`, `.nastro-prova`): area iscritti, sala e pagina Iscrizioni. Saira 12px 700 a 0.18em, `su-colore` su `giallo`, centrato, padding 4px. Con la prova scelta da chi usa l'app (resta accesa su quel telefono) c'è **ESCI DALLA PROVA** (`.nastro-prova-esci`): sottolineato, alto 44px per il dito (il nastro cresce con lui), senza «·» davanti così a capo resta pulito, contorno di fuoco `su-colore`.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** usare i token di `:root` (`--bg`, `--surface`, `--line`, `--rosso`…) e mai esadecimali sciolti: il tema chiaro li ridefinisce.
+- **Do** usare i token di `:root` (`--bg`, `--surface`, `--line`, `--rosso`…) e mai esadecimali sciolti: il look del sito li ridefinisce.
 - **Do** dare a ogni stato un bordo colorato e un segno grande, così si legge da lontano.
 - **Do** tenere i bersagli ad almeno 44px, 56px per le righe che si toccano in piedi, 60px+ sul tablet.
 - **Do** scrivere tasti ed etichette in maiuscolo Saira Condensed, tasti obliqui 9°.

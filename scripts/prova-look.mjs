@@ -3,15 +3,12 @@
 //
 //   node scripts/prova-look.mjs
 //
-// Sono sempre chiare: `lib/aspettoSegreteria.ts` mette `data-look="sito"` su
-// <html> quando l'area è segreteria, amministrazione, istruttori o iscritti, `tema.ts` allora forza
-// `chiaro` senza toccare `ods-tema` (che resta per tablet e timer),
-// e `styles.css` ridefinisce i token solo sotto `:root[data-look='sito']`.
-// Il Banco prende solo colori e caratteri; il tasto del tema lì sparisce.
+// Sono sempre chiare: `index.html` mette `data-look="sito"` su <html> e
+// `styles.css` ridefinisce i token solo sotto `:root[data-look='sito']`.
+// Il Banco prende solo colori e caratteri.
 // ---------------------------------------------------------------------------
 import { execSync } from 'node:child_process'
 import { readdirSync, readFileSync } from 'node:fs'
-import { build } from 'esbuild'
 
 let guai = 0
 let asserzioni = 0
@@ -20,13 +17,6 @@ const ok = (cosa, avuto, voluto) => {
   const va = JSON.stringify(avuto) === JSON.stringify(voluto)
   console.log(va ? '  ✓' : '  ✗', cosa, va ? '' : `— atteso ${JSON.stringify(voluto)}, avuto ${JSON.stringify(avuto)}`)
   if (!va) guai++
-}
-const vedi = (f) => {
-  try {
-    return f()
-  } catch (e) {
-    return `ERRORE: ${e.message}`
-  }
 }
 
 // --- WCAG, come in prova-tema.mjs --------------------------------------------
@@ -42,102 +32,12 @@ const arriva = (cosa, a, b, soglia) => ok(cosa, !!a && !!b && contrasto(a, b) >=
 // Un valore che manca (blocco non scritto) non conta come «non arriva»: è un caso rosso.
 const nonArriva = (cosa, a, b, soglia) => ok(cosa, !!a && !!b && contrasto(a, b) < soglia, true)
 
-const impacchetta = async (contents) => {
-  const { outputFiles } = await build({
-    stdin: { contents, resolveDir: '.', loader: 'ts' },
-    bundle: true, format: 'esm', platform: 'node', write: false, logLevel: 'silent',
-    define: { 'import.meta.env': '{}' },
-  })
-  return outputFiles[0].text
-}
-let n = 0
-const carica = (testo) => import('data:text/javascript;base64,' + Buffer.from(testo + `\n// ${++n}`).toString('base64'))
-
-/** Un <html> finto (dataset e attributi) con localStorage, finestra e meta theme-color. */
-const ambiente = ({ salvato = null, luce: chiaro = false, look = false } = {}) => {
-  const attr = new Map()
-  const chiave = (k) => 'data-' + k.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())
-  const dataset = new Proxy({}, {
-    get: (_, k) => (attr.has(chiave(String(k))) ? attr.get(chiave(String(k))) : undefined),
-    set: (_, k, v) => (attr.set(chiave(String(k)), String(v)), true),
-    deleteProperty: (_, k) => (attr.delete(chiave(String(k))), true),
-  })
-  const html = {
-    dataset,
-    setAttribute: (k, v) => attr.set(k, String(v)),
-    removeAttribute: (k) => attr.delete(k),
-    getAttribute: (k) => (attr.has(k) ? attr.get(k) : null),
-    hasAttribute: (k) => attr.has(k),
-  }
-  const meta = { content: null, setAttribute(k, v) { if (k === 'content') this.content = v } }
-  const doc = { documentElement: html, querySelector: (s) => (s === 'meta[name="theme-color"]' ? meta : null) }
-  const dati = new Map(salvato === null ? [] : [['ods-tema', salvato]])
-  const scritture = []
-  const sotto = { storage: [], media: [] }
-  globalThis.localStorage = {
-    getItem: (k) => (dati.has(k) ? dati.get(k) : null),
-    setItem: (k, v) => (scritture.push(['set', k, v]), dati.set(k, String(v))),
-    removeItem: (k) => (scritture.push(['del', k]), dati.delete(k)),
-  }
-  globalThis.window = {
-    matchMedia: () => ({ matches: chiaro, addEventListener: (_, f) => sotto.media.push(f) }),
-    addEventListener: (ev, f) => ev === 'storage' && sotto.storage.push(f),
-  }
-  globalThis.document = doc
-  if (look) html.setAttribute('data-look', 'sito')
-  return {
-    doc, meta, dati, scritture,
-    look: () => html.getAttribute('data-look'),
-    tema: () => dataset.tema,
-    accendi: () => html.setAttribute('data-look', 'sito'),
-    spegni: () => html.removeAttribute('data-look'),
-    storage: (e) => sotto.storage.forEach((f) => f(e)),
-    sistema: () => sotto.media.forEach((f) => f({})),
-  }
-}
-
-// --- 1. lookDellArea ---------------------------------------------------------
-// Le aree col look del sito: il tablet di sala (col timer dentro), segreteria, amministrazione, istruttori, iscritti, la porta (`scelta`), la guida e il consenso a Claude (`collega`).
-const LOOK_AREE = ['segreteria', 'amministrazione', 'istruttori', 'iscritti', 'sala', 'scelta', 'guida', 'collega']
-const AREE = ['segreteria', 'amministrazione', 'iscrizioni', 'iscritti', 'istruttori', 'sala', 'guida', 'collega', 'scelta']
-console.log('\nL\'aspetto per area (src/lib/aspettoSegreteria.ts)')
-let asp
-try {
-  asp = await carica(await impacchetta("export * from './src/lib/aspettoSegreteria'"))
-} catch (e) {
-  ok('src/lib/aspettoSegreteria.ts si carica', e.errors?.[0]?.text ?? e.message, 'ok')
-}
-for (const a of AREE) ok(`lookDellArea('${a}')`, asp ? vedi(() => asp.lookDellArea(a)) : 'manca', LOOK_AREE.includes(a) ? 'sito' : null)
-
-// --- 2. accendi e spegni su un documento finto -------------------------------
-console.log('\nAccendere e spegnere data-look')
-for (const a of AREE) {
-  const e = ambiente()
-  vedi(() => asp.applicaLook(a, e.doc))
-  ok(`area ${a}: data-look su <html>`, e.look(), LOOK_AREE.includes(a) ? 'sito' : null)
-}
+// --- 1. l'aspetto è uno solo, acceso da index.html ---------------------------
+console.log('\nL\'aspetto del sito su <html>')
+ok('index.html: <html data-look="sito">', /<html[^>]*\bdata-look="sito"/.test(readFileSync('index.html', 'utf8')), true)
 {
-  const e = ambiente()
-  vedi(() => asp.applicaLook('segreteria', e.doc))
-  vedi(() => asp.applicaLook('iscrizioni', e.doc))
-  ok('da segreteria a iscrizioni (hashchange): si spegne', e.look(), null)
-  vedi(() => asp.applicaLook('amministrazione', e.doc))
-  ok('da iscrizioni ad amministrazione: si riaccende', e.look(), 'sito')
-  vedi(() => asp.applicaLook('amministrazione', e.doc))
-  ok('due volte la stessa area: resta acceso', e.look(), 'sito')
-}
-{
-  // Il look forza il chiaro: nell'area iscritti il tasto del tema non servirebbe a niente.
   const app = readFileSync('src/App.tsx', 'utf8')
-  ok('la Testata di ISCRITTI è senzaTema', /<Testata luogo="ISCRITTI"[^>]*\bsenzaTema\b/.test(app), true)
-  // Lo stesso per la porta, con e senza accesso: il look forza il chiaro anche lì.
-  ok('la Testata della porta (ACCESSO) è senzaTema', /<Testata luogo="ACCESSO"[^>]*\bsenzaTema\b/.test(app), true)
-  // Il timer del tablet di sala ha il tema sito come il resto della sala: senza la prop resterebbe col tema scelto.
-  ok('la Testata della GUIDA è senzaTema', /<Testata luogo="GUIDA"[^>]*\bsenzaTema\b/.test(app), true)
-  ok('la Testata di COLLEGA (CONTABILITÀ) è senzaTema', /<Testata luogo="CONTABILITÀ"[^>]*\bsenzaTema\b/.test(app), true)
-  ok('la Testata di tutte le aree (CORSI) è senzaTema', /<Testata luogo="CORSI"[^>]*\bsenzaTema\b/.test(app), true)
-  ok('la Testata delle iscrizioni (ISCRIZIONI/VESTIARIO) è senzaTema', /<Testata luogo=\{vista === 'vestiario' \? 'VESTIARIO' : 'ISCRIZIONI'\}[^>]*\bsenzaTema\b/.test(app), true)
-  ok('tutta l\'area iscrizioni accende l\'aspetto del sito', /function Iscrizioni\(\)[\s\S]*?apriAspettoModulo\(\)/.test(app), true)
+  ok('tutta l\'area iscrizioni accende l\'aspetto del modulo', /function Iscrizioni\(\)[\s\S]*?apriAspettoModulo\(\)/.test(app), true)
   // Il calendario dell'istruttore ha la tinta in alto; l'iscritto la tiene a sinistra, come prima.
   ok('le lezioni dell\'iscritto: la tinta del corso resta il filo a sinistra',
     /:root\[data-look='sito'\] \.mia-lezione \{[^}]*border-top: 0;[^}]*border-left: 6px solid var\(--tinta\)/.test(readFileSync('src/styles.css', 'utf8')), true)
@@ -147,46 +47,7 @@ for (const a of AREE) {
 }
 {
   const main = readFileSync('src/main.tsx', 'utf8')
-  const i = main.indexOf('applicaLook(')
-  ok('main.tsx chiama applicaLook prima di createRoot', i >= 0 && i < main.indexOf('createRoot('), true)
-  ok('main.tsx lo chiama anche a ogni hashchange', /hashchange[\s\S]{0,200}applicaLook\(|applicaLook\([\s\S]{0,200}hashchange/.test(main), true)
-}
-
-// --- 3. tema.ts con il look acceso -------------------------------------------
-console.log('\nIl tema con il look acceso (src/lib/tema.ts)')
-const temaTesto = await impacchetta("export * from './src/lib/tema'")
-const BARRA = { scuro: '#121212', chiaro: '#f4f4f1', tatami: '#ebe6d0' }
-{
-  const e = ambiente({ salvato: 'tatami', look: true })
-  const t = await carica(temaTesto)
-  t.avviaTema()
-  ok('avvio con look acceso e ods-tema=tatami: chiaro', e.tema(), 'chiaro')
-  ok('theme-color del sito (#eef5fa)', e.meta.content, '#eef5fa')
-  for (const v of ['scuro', 'chiaro', 'tatami']) {
-    e.dati.set('ods-tema', v)
-    e.storage({ key: 'ods-tema', newValue: v })
-    ok(`evento storage con ${v}: resta chiaro`, [e.tema(), e.meta.content], ['chiaro', '#eef5fa'])
-  }
-  e.storage({ key: null })
-  ok('storage svuotato (key null): resta chiaro', e.tema(), 'chiaro')
-  e.sistema()
-  ok('cambio del tema di sistema: resta chiaro', e.tema(), 'chiaro')
-  ok('ods-tema non è stato né riscritto né cancellato (resta l\'ultimo valore messo qui sopra)', [e.scritture, e.dati.get('ods-tema')], [[], 'tatami'])
-}
-for (const sistema of [true, false]) {
-  const e = ambiente({ luce: sistema, look: true })
-  const t = await carica(temaTesto)
-  t.avviaTema()
-  e.sistema()
-  ok(`senza scelta, sistema ${sistema ? 'chiaro' : 'scuro'}: chiaro, e ods-tema non scritto`, [e.tema(), e.scritture], ['chiaro', []])
-}
-for (const salvato of ['scuro', 'chiaro', 'tatami']) {
-  const e = ambiente({ salvato, look: true })
-  const t = await carica(temaTesto)
-  t.avviaTema()
-  e.spegni()
-  e.storage({ key: 'ods-tema' }) // qualunque applica() dopo lo spegnimento
-  ok(`look spento, ods-tema=${salvato}: torna il tema salvato e la sua barra`, [e.tema(), e.meta.content, e.dati.get('ods-tema')], [salvato, BARRA[salvato], salvato])
+  ok('main.tsx non sceglie più l\'aspetto per area', /applicaLook|lookDellArea|avviaTema/.test(main), false)
 }
 
 // --- 4. il CSS ---------------------------------------------------------------
@@ -223,8 +84,6 @@ const M = bloccoModulo ? dichiarazioni(bloccoModulo.corpo) : {}
 
 console.log('\nI colori (blocco ' + LOOK + ')')
 ok('c\'è il blocco dei token', !!bloccoLook, true)
-const iTatami = rOra.findLastIndex((r) => r.selettori.length === 1 && r.selettori[0] === ":root[data-tema='tatami']")
-ok('viene dopo il blocco data-tema=\'tatami\' (a parità di specificità vince l\'ordine)', !!bloccoLook && rOra.indexOf(bloccoLook) > iTatami, true)
 ok('color-scheme: light', /color-scheme:\s*light/.test(bloccoLook?.corpo ?? ''), true)
 ok('--menu è #0d2a3d', T['--menu'], '#0d2a3d')
 ok('stessi token del blocco data-modulo (nessuno in più o in meno)', Object.keys(T).sort(), Object.keys(M).sort())
@@ -236,7 +95,7 @@ ok('--body comincia con Inter', /^['"]?Inter['"]?\s*,/.test(T['--body'] ?? ''), 
 
 console.log('\nI blocchi che non cambiano')
 if (prima !== null) {
-  for (const sel of [':root', ":root[data-tema='chiaro']", ":root[data-tema='tatami']", MODULO])
+  for (const sel of [MODULO])
     ok(`il blocco ${sel} è identico a quello di prima`, rOra.filter((r) => r.selettori.includes(sel)).map(esatta), rPrima.filter((r) => r.selettori.includes(sel)).map(esatta))
 }
 const delLook = rOra.filter((r) => r.selettori.some((s) => s.includes('data-look')))
@@ -257,11 +116,6 @@ for (const c of ['.sg-btn', '.sg-chip', '.sg-voce', '.sg-tag', '.sg-etichetta'])
   ok(`${c}: var(--body)`, sotto(c).some((r) => fam(r) === 'var(--body)'), true)
 for (const c of ['.sg-titolo', '.sg-dafare-n', '.sg-mancano-n'])
   ok(`${c}: non cambia famiglia (resta --cond)`, sotto(c).map(fam).filter((f) => f && f !== 'var(--cond)'), [])
-
-// --- 6. il tasto del tema ----------------------------------------------------
-console.log('\nIl tasto del tema')
-ok('sotto il look .tasto-tema è display: none', delLook.some((r) => r.selettori.includes(`${LOOK} .tasto-tema`) && /display:\s*none/.test(r.corpo)), true)
-ok('TastoTema.tsx porta ancora la classe tasto-tema', /className="[^"]*(?<![\w-])tasto-tema(?![\w-])/.test(readFileSync('src/components/TastoTema.tsx', 'utf8')), true)
 
 // --- 7. i contrasti ----------------------------------------------------------
 console.log('\nI contrasti dei colori del look')
@@ -318,7 +172,7 @@ ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .tb-btn-verde, .app
 ok('.sg-btn-pieno: fondo var(--giallo), testo var(--su-colore)', ha('.sg-btn-pieno', /background(-color)?:\s*var\(--giallo\)/) && ha('.sg-btn-pieno', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // Ogni regola di fuori del look con un .sg- e il giallo pieno ne ha una gemella nel look col giallo scritto.
 // Tutte le regole con il giallo pieno, non solo quelle .sg-: l'appello, il Banco e il nastro di prova sono nella stessa area.
-// Restano fuori il tablet, la pagina TIMER (scura, i token del tema scuro: ha il suo giallo del marchio), i timer degli istruttori e il tasto del modulo di iscrizione: non sono in segreteria.
+// Restano fuori il tablet, la pagina TIMER, i timer degli istruttori: non sono in segreteria.
 const FUORI_DALLA_SEGRETERIA = /\.tb-|\.faccia-timer|\.miei-timer|data-modulo|\.btn-primary/
 const giallePiene = rOra.filter((r) => !r.selettori.some((s) => s.includes('data-look')) && GIALLO_PIENO.test(r.corpo)).flatMap((r) => r.selettori.filter((s) => s !== ':root' && !FUORI_DALLA_SEGRETERIA.test(s)))
 for (const s of [...new Set(giallePiene)]) {
