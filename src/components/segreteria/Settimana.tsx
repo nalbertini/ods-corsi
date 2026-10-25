@@ -15,7 +15,8 @@ import { annuncio, chiSegnaTuttiPresenti, segnaNonSegnati, contiListe, dividiEle
 import { finestraDelMese, giorniDellaSettimana, giorniStretti, meseDellaSettimana, nomeTitoloSettimana, postoDopoIlGiorno, titoloSettimana, type MeseDelCalendario } from '../../lib/calendarioSettimana'
 import { etichetteLezione } from '../../lib/etichetteLezione'
 import { CalendarioSettimana } from './CalendarioSettimana'
-import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
+import { chiusoIl, chiusureDellaSettimana, cosaNonVaChiusura, giorniOltreIlCalendario, nelPassato, periodoInLettere, rigaChiusura, SENZA_CHIUSURE, testoConferma, testoTogli, avvisoFatto, avvisoTolta, type Chiusura, type ContoChiusura } from '../../lib/chiusure'
+import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Segmenti, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
 
@@ -56,12 +57,15 @@ export function Settimana({
   const sfoglia = (x: Date) => vai({ settimana: chiaveGiorno(x) }, 'replace')
   const scegliSala = (id: string) => vai({ sala: id || undefined }, 'replace')
   const [nuova, setNuova] = useState(false)
+  const [chiudendo, setChiudendo] = useState(false)
   const { avviso, avvisa, fai } = useAvviso()
 
   const giorni = useMemo(() => giorniDellaSettimana(primo), [primo])
   const sett = useCarica(() => d.settimana(giorni[0], giorni[6]), [d, giorni])
   const sale = useCarica(() => d.sale(), [d])
   const pronto = useCarica(() => d.prontoFino(), [d])
+  // `null` anche finché 118-chiusure.sql non c'è: allora niente fascia, e il tasto lo dice.
+  const chiusure = useCarica(() => d.chiusurePalestra(), [d])
   // Le gare non hanno un'ora: stanno in una riga loro, sui giorni che coprono. Se non si leggono
   // (prima di `117-gare.sql`) la riga non c'è: la settimana resta quella delle lezioni.
   const gare = useCarica(async () => {
@@ -120,6 +124,39 @@ export function Settimana({
   const oggi = chiaveGiorno(new Date())
   const adesso = Date.now()
   const lezione = sett.dato?.find((l) => l.id === aperta?.id) ?? null
+  const nomeSala = (id: string | null) => (id ? (sale.dato?.find((s) => s.id === id)?.nome ?? 'una sala') : null)
+  // Con una sala scelta, le chiusure delle altre sale non riguardano la griglia.
+  const chiuseQui = chiusureDellaSettimana(chiusure.dato ?? [], primo).filter((c) => !sala || c.salaId === null || c.salaId === sala)
+  const chiusureCambiate = () => {
+    void sett.ricarica()
+    void chiusure.ricarica()
+    setGiroLezioni((g) => g + 1)
+    onConti?.()
+  }
+  const apriChiusura = async () => {
+    // Si rilegge al tocco: se il file non c'è ancora lo si dice, invece di un dialogo che non può chiudere niente.
+    const c = await d.chiusurePalestra().catch((e: unknown) => {
+      avvisa(messaggio(e), true)
+      return undefined
+    })
+    if (c === undefined) return
+    if (c === null) return avvisa(SENZA_CHIUSURE, true)
+    setChiudendo(true)
+  }
+  const togli = async (c: Chiusura) => {
+    if (!(await chiedi(testoTogli(c, nomeSala(c.salaId)), 'Togli la chiusura', { pericolo: true }))) return
+    const r: { n?: number } = {}
+    await fai(
+      async () => {
+        r.n = await d.togliChiusura(c.id)
+      },
+      undefined,
+      () => {
+        avvisa(avvisoTolta(r.n ?? 0))
+        chiusureCambiate()
+      },
+    )
+  }
 
   // Sul telefono sette colonne non ci stanno: un giorno per volta, scelto
   // dalla striscia dei giorni; da sé oggi, se è in questa settimana.
@@ -178,6 +215,9 @@ export function Settimana({
         titolo="SETTIMANA"
         sotto={`Le lezioni dell’orario dei corsi: aprine una per l’appello, il sostituto o per annullarla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato)}: si allunga da sé, e subito da IMPOSTAZIONI → LA STAGIONE.` : ''}`}
       >
+        <button type="button" className="sg-btn sg-btn-linea" onClick={() => void apriChiusura()}>
+          Chiusura dal… al…
+        </button>
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => setNuova(true)}>
           + Lezione straordinaria
         </button>
@@ -237,6 +277,16 @@ export function Settimana({
       </div>
 
       {sett.guaio && <Guaio testo={sett.guaio} />}
+
+      {chiuseQui.map((c) => (
+        <div key={c.id} className="sg-chiusa">
+          <span className="sg-chiusa-tag">CHIUSA</span>
+          <span className="grow">{rigaChiusura(c, nomeSala(c.salaId))}</span>
+          <button type="button" className="sg-btn sg-btn-linea sg-pericolo" onClick={() => void togli(c)}>
+            Togli la chiusura
+          </button>
+        </div>
+      ))}
 
       {telefono ? (
         <>
@@ -367,6 +417,7 @@ export function Settimana({
         <Straordinaria
           d={d}
           giorno={chiaveGiorno(giorni.some((g) => chiaveGiorno(g) === oggi) ? new Date() : giorni[0])}
+          chiusure={chiusure.dato ?? []}
           onChiudi={() => setNuova(false)}
           fai={fai}
           onFatto={(inizio) => {
@@ -374,6 +425,24 @@ export function Settimana({
             sfoglia(lunedi(inizio))
             void sett.ricarica()
             setGiroLezioni((g) => g + 1)
+          }}
+        />
+      )}
+      {chiudendo && (
+        <ChiusuraPalestra
+          d={d}
+          sale={sale.dato ?? []}
+          chiusure={chiusure.dato ?? []}
+          prontoFino={pronto.dato ?? null}
+          oggi={oggi}
+          nomeSala={nomeSala}
+          fai={fai}
+          togli={togli}
+          onChiudi={() => setChiudendo(false)}
+          onFatto={(testo) => {
+            setChiudendo(false)
+            avvisa(testo)
+            chiusureCambiate()
           }}
         />
       )}
@@ -950,12 +1019,14 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
 function Straordinaria({
   d,
   giorno,
+  chiusure,
   onChiudi,
   onFatto,
   fai,
 }: {
   d: DatiSegreteria
   giorno: string
+  chiusure: Chiusura[]
   onChiudi: () => void
   onFatto: (inizio: Date) => void
   fai: Fai
@@ -968,13 +1039,15 @@ function Straordinaria({
   const [durata, setDurata] = useState(60)
   const scelto = corso || attivi[0]?.id || ''
   const dialogo = useDialogo<HTMLFormElement>(onChiudi)
+  // Una straordinaria l'ha voluta qualcuno: nasce prevista anche in un giorno chiuso, ma lo si dice.
+  const chiuso = chiusoIl(chiusure, data, attivi.find((c) => c.id === scelto)?.salaId ?? null)
 
   const aggiungi = async (e: FormEvent) => {
     e.preventDefault()
     const [a, m, g] = data.split('-').map(Number)
     const [h, min] = ora.split(':').map(Number)
     const inizio = new Date(a, m - 1, g, h, min)
-    await fai(() => d.straordinaria(scelto, inizio, durata), 'Lezione aggiunta', () => onFatto(inizio))
+    await fai(() => d.straordinaria(scelto, inizio, durata), chiuso ? 'Lezione aggiunta: è prevista anche se la palestra è chiusa quel giorno.' : 'Lezione aggiunta', () => onFatto(inizio))
   }
 
   return (
@@ -1014,12 +1087,123 @@ function Straordinaria({
             />
           </Campo>
         </div>
+        {chiuso && (
+          <p className="sg-nota-gialla" role="status">
+            La palestra è chiusa quel giorno ({periodoInLettere(chiuso.dal, chiuso.al)}). Questa lezione si aggiunge lo stesso, prevista.
+          </p>
+        )}
         <div className="row" style={{ gap: 10, paddingTop: 6 }}>
           <button type="button" className="sg-btn sg-btn-linea grow" onClick={onChiudi}>
             Lascia stare
           </button>
           <Tasto type="submit" tono="pieno" className="grow" disabled={!scelto}>
             Aggiungi
+          </Tasto>
+        </div>
+      </form>
+    </>
+  )
+}
+
+/** Natale, Pasqua, un ponte: le lezioni del periodo si annullano in un colpo, dopo aver detto quante sono. */
+function ChiusuraPalestra({
+  d,
+  sale,
+  chiusure,
+  prontoFino,
+  oggi,
+  nomeSala,
+  fai,
+  togli,
+  onChiudi,
+  onFatto,
+}: {
+  d: DatiSegreteria
+  sale: Array<{ id: string; nome: string }>
+  chiusure: Chiusura[]
+  prontoFino: string | null
+  oggi: string
+  nomeSala: (id: string | null) => string | null
+  fai: Fai
+  /** Il `togli` di Settimana: chiede conferma e poi toglie. */
+  togli: (c: Chiusura) => Promise<void>
+  onChiudi: () => void
+  onFatto: (avviso: string) => void
+}) {
+  const [dal, setDal] = useState('')
+  const [al, setAl] = useState('')
+  const [sala, setSala] = useState('')
+  const [errore, setErrore] = useState<string | null>(null)
+  const dialogo = useDialogo<HTMLFormElement>(onChiudi)
+  const valido = !cosaNonVaChiusura(dal, al)
+  const oltre = valido && prontoFino ? giorniOltreIlCalendario(dal, al, prontoFino) : []
+
+  const conta = async (e: FormEvent) => {
+    e.preventDefault()
+    const no = cosaNonVaChiusura(dal, al)
+    setErrore(no)
+    if (no) return
+    const r: { conto?: ContoChiusura; lezioni?: number } = {}
+    if (!(await fai(async () => {
+      r.conto = await d.contaChiusura(dal, al, sala || null)
+    })) || !r.conto) return
+    const { titolo, righe } = testoConferma(r.conto, dal, al, nomeSala(sala || null))
+    // Il passato si chiude (una lezione dimenticata), ma chi lo fa deve saperlo.
+    if (r.conto.lezioni && nelPassato(dal, oggi)) righe.unshift('Il periodo comincia prima di oggi: si annullano anche lezioni già passate.')
+    if (!(await chiedi([titolo, ...righe].join('\n'), 'Chiudi la palestra', { pericolo: true }))) return
+    await fai(
+      async () => {
+        r.lezioni = (await d.chiudi(dal, al, sala || null)).lezioni
+      },
+      undefined,
+      () => onFatto(avvisoFatto(dal, al, r.lezioni ?? 0)),
+    )
+  }
+
+  return (
+    <>
+      <button type="button" className="sg-velo" aria-label="Chiudi" onClick={onChiudi} />
+      <form ref={dialogo} role="dialog" aria-modal="true" tabIndex={-1} aria-label="Chiusura della palestra" className="sg-dialogo" onSubmit={(e) => void conta(e)}>
+        <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em' }}>CHIUSURA DELLA PALESTRA</span>
+        <span className="sg-sotto" style={{ lineHeight: 1.5 }}>
+          Le lezioni del periodo diventano ANNULLATE. Prima di farlo l’app dice quante sono.
+        </span>
+        <div className="sg-due sg-chiusura-date">
+          <Campo id="c-dal" etichetta="DAL">
+            <input id="c-dal" className="sg-campo" type="date" value={dal} onChange={(e) => setDal(e.target.value)} required />
+          </Campo>
+          <Campo id="c-al" etichetta="AL (COMPRESO)">
+            <input id="c-al" className="sg-campo" type="date" value={al} min={dal || undefined} onChange={(e) => setAl(e.target.value)} required />
+          </Campo>
+        </div>
+        {sale.length > 1 && (
+          <Segmenti etichetta="SALE" voci={[['', 'Tutte le sale'], ...sale.map((s) => [s.id, s.nome] as const)]} scelta={sala} onScegli={setSala} />
+        )}
+        {errore && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{errore}</span>}
+        {oltre.length > 0 && prontoFino && (
+          <p className="sg-nota-gialla">
+            Il calendario arriva al <b>{dataLunga(prontoFino)}</b>: le lezioni dei giorni dopo le crea più avanti, e nasceranno già annullate.
+          </p>
+        )}
+        {chiusure.length > 0 && (
+          <div className="sg-chiusure-decise">
+            <span className="sg-etichetta">CHIUSURE GIÀ DECISE</span>
+            {chiusure.map((c) => (
+              <div key={c.id} className="row" style={{ gap: 10, alignItems: 'center' }}>
+                <span className="grow">{rigaChiusura(c, nomeSala(c.salaId))}</span>
+                <button type="button" className="sg-btn sg-btn-linea sg-pericolo" aria-label={`Togli la chiusura ${periodoInLettere(c.dal, c.al)}`} onClick={() => void togli(c)}>
+                  Togli
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="row" style={{ gap: 10, paddingTop: 6 }}>
+          <button type="button" className="sg-btn sg-btn-linea grow" onClick={onChiudi}>
+            Lascia stare
+          </button>
+          <Tasto type="submit" tono="pieno" className="grow">
+            Conta le lezioni
           </Tasto>
         </div>
       </form>

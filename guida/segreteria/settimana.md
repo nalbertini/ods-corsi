@@ -103,3 +103,30 @@ ricorrenze — un recupero, un evento, una prova aperta.
 
 Gli iscritti del corso sono già nell'appello. Se era un errore, aprirla e
 premere **Togli questa lezione straordinaria**.
+Se quel giorno la palestra è chiusa, una nota gialla lo dice: la lezione si
+aggiunge lo stesso, prevista.
+
+## Chiusura della palestra
+
+**Chiusura dal… al…**, accanto a **+ Lezione straordinaria**: per Natale,
+Pasqua o un ponte annulla in un colpo tutte le lezioni del periodo, invece
+di annullarle una per una.
+
+1. Scegliere **DAL** e **AL (COMPRESO)**: al massimo un anno. Se ci sono più
+   sale, si può chiudere una sala sola.
+2. **Conta le lezioni**: la domanda dice quante lezioni si annullano, quante
+   sono straordinarie e quali hanno già l'appello o una prova (presenze e
+   prove restano salvate). Se il periodo comincia prima di oggi, lo dice.
+3. **Chiudi la palestra**.
+
+Le lezioni dei giorni oltre il calendario pronto nasceranno già annullate,
+quando il calendario arriva lì. Gli iscritti **non vengono avvisati**: se
+serve, avvisali tu.
+
+Nelle settimane chiuse, sopra la griglia, una fascia **CHIUSA** dice il
+periodo, la sala e quante lezioni ha annullato. **Togli la chiusura** (nella fascia o nell'elenco dentro
+**Chiusura dal… al…**) rimette previste le lezioni annullate dalla chiusura,
+con le presenze che avevano; quelle annullate a mano restano annullate,
+anche quelle rimesse a mano e poi annullate di nuovo. Se un giorno è chiuso
+anche da un'altra chiusura (per esempio una sala e poi tutta la palestra),
+le sue lezioni restano annullate finché non si toglie anche quella.

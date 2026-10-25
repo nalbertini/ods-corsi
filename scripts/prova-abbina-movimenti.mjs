@@ -127,7 +127,7 @@ console.log('\n7. il riquadro «Suggerito» con le persone abbinate')
   const righe = [1, 2].map((i) => ({ ...base, id: `v${i}`, descrizione: `${testo} ${i}`, voce: 'Quota associativa' }))
   const riga = { ...base, id: 'r', descrizione: testo }
   const x = (id, giaIscritto = false, come = 'genitore') => ({ id, nome: id, cognome: 'Test', come, giaIscritto })
-  const sug = (abbinati) => prova(() => s.suggerisciMovimento(riga, righe, voci, [], abbinati))
+  const sug = (abbinati) => prova(() => s.suggerisciMovimento(riga, righe, voci, [], undefined, abbinati))
   const r1 = sug([x('sofia')])
   ok('un abbinato solo, non iscritto: caso A, preselezionato, «Conferma» acceso', prova(() => [r1.caso, r1.preselezionato, s.confermaDi(r1, null)]), ['A', 'sofia', { voceId: 'vq', personaId: 'sofia' }])
   ok('…col segno «genitore» e «già iscritto» a falso', prova(() => r1.candidati.map((c) => [c.id, c.come, c.giaIscritto])), [['sofia', 'genitore', false]])
@@ -139,7 +139,7 @@ console.log('\n7. il riquadro «Suggerito» con le persone abbinate')
   const r4 = sug([x('anna', true, 'nome intero'), x('bruno', false, 'nome intero')])
   ok('già iscritto in fondo, anche se il database lo rende per primo', prova(() => [r4.candidati.map((c) => c.id), r4.preselezionato]), [['bruno', 'anna'], null])
   ok('senza abbinati (funzione assente o nessun abbinato) vale il solo nome, senza errore', prova(() => { const r = s.suggerisciMovimento({ ...riga, descrizione: 'Cliente Gallo Marta per quota TRN 3' }, righe, voci, [{ id: 'marta', nome: 'Marta', cognome: 'Gallo' }]); return [r.candidati.map((c) => c.id), r.preselezionato] }), [['marta'], 'marta'])
-  ok('…e con la lista vuota dal database vale lo stesso il nome', prova(() => s.suggerisciMovimento({ ...riga, descrizione: 'Cliente Gallo Marta per quota TRN 3' }, righe, voci, [{ id: 'marta', nome: 'Marta', cognome: 'Gallo' }], []).candidati.map((c) => c.id)), ['marta'])
+  ok('…e con la lista vuota dal database vale lo stesso il nome', prova(() => s.suggerisciMovimento({ ...riga, descrizione: 'Cliente Gallo Marta per quota TRN 3' }, righe, voci, [{ id: 'marta', nome: 'Marta', cognome: 'Gallo' }], undefined, []).candidati.map((c) => c.id)), ['marta'])
 }
 
 console.log('\n8. funzione assente: ricade sul nome')

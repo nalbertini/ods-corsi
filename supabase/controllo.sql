@@ -581,7 +581,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('117-gare.sql', 'le gare, con la quota a voci, chi accompagna, gli atleti e l''incasso in CONTABILITÀ',
     exists (select 1 from dentro where nome = 'incassa_gara' and corpo like '%registra_pagamento_diretto%')
     and exists (select 1 from pg_trigger where tgname = 'gare_atleti_unione' and not tgisinternal)),
-  ('118-abbina-movimenti.sql', 'i movimenti non identificati propongono le persone anche dal genitore, dal codice fiscale e dall''importo',
+  ('118-chiusure.sql', 'le chiusure della palestra, che annullano le lezioni di un periodo e si tolgono',
+    to_regclass('public.chiusure_lezioni') is not null
+    and to_regprocedure('public.togli_chiusura(uuid)') is not null
+    and exists (select 1 from pg_trigger where tgname = 'sessioni_in_chiusura' and not tgisinternal)),
+  ('119-abbina-movimenti.sql', 'i movimenti non identificati propongono le persone anche dal genitore, dal codice fiscale e dall''importo',
     to_regclass('public.movimenti_codici_letti') is not null
     and exists (select 1 from dentro where nome = 'abbina_pagatori_movimento')
     and exists (select 1 from dentro where nome = 'abbina_testo_banca'))

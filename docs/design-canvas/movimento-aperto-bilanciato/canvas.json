@@ -1,0 +1,18 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-25T09:00:00Z" },
+  "title": "Finestra del movimento · riordino",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 808, "h": 820, "title": "Proposta · persona e voce suggerite" },
+    "Ripiego.dc.html": { "x": 888, "y": 0, "w": 808, "h": 860, "title": "Proposta · importo fuori listino, due omonimi" },
+    "Telefono.dc.html": { "x": 1776, "y": 0, "w": 390, "h": 1330, "title": "Proposta · telefono" },
+    "Oggi.dc.html": { "x": 0, "y": 940, "w": 808, "h": 760, "title": "Oggi (com'è adesso)" },
+    "Bottone.dc.html": { "x": 888, "y": 980, "w": 260, "h": 80, "title": "Bottone (libreria)" },
+    "Campo.dc.html": { "x": 1228, "y": 980, "w": 360, "h": 90, "title": "Campo (libreria)" }
+  },
+  "order": ["Oggi.dc.html", "Main.dc.html", "Ripiego.dc.html", "Telefono.dc.html", "Bottone.dc.html", "Campo.dc.html"],
+  "notes": {},
+  "designSystems": []
+}

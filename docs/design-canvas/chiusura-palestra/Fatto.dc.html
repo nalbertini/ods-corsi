@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA chiusura della palestra: Fatto. Parte dalla SETTIMANA di Settimana.tsx (come gare/Calendario.dc.html). -->
+<div style="position: relative; display: flex; width: 1440px; min-height: 1000px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" gare="true" attiva="SETTIMANA" numeri="RICHIESTE ONLINE:3" nome="Marco Rossi" ruolo="Segreteria" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · FATTO: LA SETTIMANA DICE CHE È CHIUSA</span>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; font-size: 34px">SETTIMANA</h1>
+        <span style="font-size: 14px; color: #46606f">Calendario pronto fino al 3 gennaio.</span>
+      </div>
+      <div style="display: flex; gap: 8px">
+        <span style="display: inline-flex; align-items: center; height: 44px; padding: 0 16px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; font-size: 15px; font-weight: 600">Chiusura dal… al…</span>
+        <span style="display: inline-flex; align-items: center; height: 44px; padding: 0 16px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; font-size: 15px; font-weight: 600">+ Lezione straordinaria</span>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span style="display: grid; place-items: center; width: 44px; height: 44px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; font-size: 22px">‹</span>
+      <span style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-width: 240px; height: 44px; padding: 0 14px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; font-size: 18px; font-weight: 700; letter-spacing: 0.06em">21 – 27 DICEMBRE <span style="font-size: 14px">▾</span></span>
+      <span style="display: grid; place-items: center; width: 44px; height: 44px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; font-size: 22px">›</span>
+      <span style="display: inline-flex; align-items: center; height: 36px; padding: 0 12px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; font-size: 15px; font-weight: 600; color: #0d2a3d">Oggi</span>
+      <span style="flex-grow: 1"></span>
+      <span style="display: inline-flex; align-items: center; height: 36px; padding: 0 12px; background: #14709f; border: 2px solid #14709f; border-radius: 6px; font-size: 15px; font-weight: 600; color: #ffffff">✓ Tutte</span>
+      <span style="display: inline-flex; align-items: center; height: 36px; padding: 0 12px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; font-size: 15px; font-weight: 600; color: #0d2a3d">Tatami</span>
+      <span style="display: inline-flex; align-items: center; height: 36px; padding: 0 12px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; font-size: 15px; font-weight: 600; color: #0d2a3d">Sala 2</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px; padding: 10px 14px; background: #ffffff; border: 2px solid #0d2a3d; border-left: 8px solid #0d2a3d; border-radius: 6px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em">CHIUSA</span>
+      <span style="flex-grow: 1; font-size: 15px">Dal <b>24 dicembre</b> al <b>6 gennaio</b> · Tutte le sale</span>
+      <span style="display: inline-flex; align-items: center; height: 36px; padding: 0 12px; border: 2px solid #14709f; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.14em">TOGLI LA CHIUSURA</span>
+    </div>
+    <div style="display: grid; grid-template-columns: 56px repeat(7, minmax(120px, 1fr))">
+      <span></span>
+      <div style="display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid #cfe6f4; color: #46606f"><span style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em">LUN</span><span style="font-size: 20px; font-weight: 700; color: #0d2a3d">21</span></div>
+      <div style="display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid #cfe6f4; color: #46606f"><span style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em">MAR</span><span style="font-size: 20px; font-weight: 700; color: #0d2a3d">22</span></div>
+      <div style="display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid #cfe6f4; color: #46606f"><span style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em">MER</span><span style="font-size: 20px; font-weight: 700; color: #0d2a3d">23</span></div>
+      <div style="display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid #cfe6f4; color: #46606f"><span style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em">GIO</span><span style="font-size: 20px; font-weight: 700; color: #0d2a3d">24</span></div>
+      <div style="display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid #cfe6f4; color: #46606f"><span style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em">VEN</span><span style="font-size: 20px; font-weight: 700; color: #0d2a3d">25</span></div>
+      <div style="display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid #cfe6f4; color: #46606f"><span style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em">SAB</span><span style="font-size: 20px; font-weight: 700; color: #0d2a3d">26</span></div>
+      <div style="display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid #cfe6f4; color: #46606f"><span style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em">DOM</span><span style="font-size: 20px; font-weight: 700; color: #0d2a3d">27</span></div>
+      <span style="padding-top: 10px; border-top: 2px solid #cfe6f4; font-size: 16px; font-weight: 700; color: #46606f">17:30</span>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"><dc-import name="LezioneSettimana" corso="Judo kids" orario="17:30–18:30" dove="Tatami · Marco R." tinta="#1b8ac4" conto="12/16" fatto="false" stato="normale" tag="" hint-size="100%,96px"></dc-import></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"><dc-import name="LezioneSettimana" corso="Judo kids" orario="17:30–18:30" dove="Tatami · Marco R." tinta="#1b8ac4" conto="11/16" fatto="false" stato="normale" tag="" hint-size="100%,96px"></dc-import></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"><dc-import name="LezioneSettimana" corso="Judo kids" orario="17:30–18:30" dove="Tatami · Marco R." tinta="#1b8ac4" conto="" fatto="false" stato="annullata" tag="Annullata" hint-size="100%,96px"></dc-import></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"><dc-import name="LezioneSettimana" corso="Judo kids" orario="17:30–18:30" dove="Tatami · Marco R." tinta="#1b8ac4" conto="" fatto="false" stato="annullata" tag="Annullata" hint-size="100%,96px"></dc-import></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+      <span style="padding-top: 10px; border-top: 2px solid #cfe6f4; font-size: 16px; font-weight: 700; color: #46606f">18:30</span>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"><dc-import name="LezioneSettimana" corso="Pilates" orario="18:30–19:30" dove="Sala 2 · Elena V." tinta="#8b5cc4" conto="8/9" fatto="false" stato="normale" tag="" hint-size="100%,96px"></dc-import></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"><dc-import name="LezioneSettimana" corso="Pilates" orario="18:30–19:30" dove="Sala 2 · Elena V." tinta="#8b5cc4" conto="" fatto="false" stato="annullata" tag="Annullata" hint-size="100%,96px"></dc-import></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"><dc-import name="LezioneSettimana" corso="Pilates" orario="10:00–11:00" dove="Sala 2 · Elena V." tinta="#8b5cc4" conto="" fatto="false" stato="annullata" tag="Annullata" hint-size="100%,96px"></dc-import></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+      <span style="padding-top: 10px; border-top: 2px solid #cfe6f4; font-size: 16px; font-weight: 700; color: #46606f">19:30</span>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"><dc-import name="LezioneSettimana" corso="Lotta adulti" orario="19:30–20:30" dove="Tatami · Paolo G." tinta="#16a54a" conto="14/16" fatto="false" stato="normale" tag="" hint-size="100%,96px"></dc-import></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"><dc-import name="LezioneSettimana" corso="Lotta adulti" orario="19:30–20:30" dove="Tatami · Paolo G." tinta="#16a54a" conto="14/16" fatto="false" stato="normale" tag="" hint-size="100%,96px"></dc-import></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"><dc-import name="LezioneSettimana" corso="Yoga" orario="19:30–20:30" dove="Sala 2 · Anna B." tinta="#f4c31b" conto="" fatto="false" stato="annullata" tag="Annullata" hint-size="100%,96px"></dc-import></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid #cfe6f4"></div>
+    </div>
+    <span style="font-size: 14px; line-height: 1.45; color: #46606f">Dal 24 le lezioni sono ANNULLATE: escono da «Appelli non fatti», dal tablet, dalle medie e dai compensi. La fascia CHIUSA si vede in ogni settimana che tocca la chiusura, e TOGLI LA CHIUSURA la toglie anche giorni dopo. Una lezione straordinaria aggiunta in un giorno chiuso nasce PREVISTA, con un avviso: «La palestra è chiusa quel giorno».</span>
+  </main>
+  <div style="position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%); width: 460px">
+    <dc-import name="Avviso" testo="Chiusa dal 24 dicembre al 6 gennaio: 39 lezioni annullate." azione="" hint-size="460px,80px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

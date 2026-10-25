@@ -22,7 +22,8 @@ prova tiene stanno in «Scoperti», in fondo.
 | Pagina pubblica `/iscrizioni/` | genitore, segreteria | richiesta mai inviata, prezzo diverso dal listino | `prova:iscrizione-pagina`, `prova:iscrizione-sito`, `prova:iscrizione-passi` | sì |
 | Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste`, `prova:segreteria`, `prova:coda`, `prova:certificati`, `prova:iscritti`, `prova:scheda-finestra`, `prova:iscrizione-pagina`, `iscrizioni.sql` | sì |
 | Da dove arrivano le richieste (`?da=`) | genitore, segreteria | richiesta fermata da un'etichetta, conteggi sbagliati | `prova:richieste`, `prova:provenienza`, `prova:sito-genera`, `prova:sito-statistiche`, `provenienza-richieste.sql` | sì |
-| Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:coda`, `prova:appello-cerca`, `prova:appello-ordine`, `prova:tablet`, `prova:colleghi`, `prova:segreteria`, `prova:testi`, `prova:etichette-lezione`, `prova:appello-liste`, `prova:frequenza`, `presenze-istruttori.sql`, `istruttori-dalle-lezioni.sql`, `tablet-conto-prove.sql`, `tablet.sql`, `presenze-finestra.sql`, `istruttore-collega.sql`, `accessi-piu-stretti.sql`, `rls.sql` | sì |
+| Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:coda`, `prova:appello-cerca`, `prova:appello-ordine`, `prova:tablet`, `prova:colleghi`, `prova:segreteria`, `prova:testi`, `prova:etichette-lezione`, `prova:appello-liste`, `prova:frequenza`, `prova:cosa-manca`, `presenze-istruttori.sql`, `istruttori-dalle-lezioni.sql`, `tablet-conto-prove.sql`, `tablet.sql`, `presenze-finestra.sql`, `istruttore-collega.sql`, `accessi-piu-stretti.sql`, `rls.sql` | sì |
+| Chiusura della palestra (lezioni annullate per un periodo, e tolte) | segreteria | presenze o appelli persi, lezione rimessa com'era sbagliata | `prova:chiusure`, `prova:cosa-manca`, `prova:segreteria`, `chiusure.sql` | sì, da fare |
 | Segno COMPLEANNO su tablet e appello | tablet di sala, istruttore | data di nascita di un minore esposta | `prova:compleanni`, `prova:tablet`, `108-compleanni.sql` | sì |
 | Ore degli istruttori | segreteria | compenso sbagliato | `prova:ore`, `prova:schede-personale`, `prova:timer-istruttori`, `prova:colleghi`, `prova:segreteria`, `presenze-istruttori.sql`, `presenze-finestra.sql`, `istruttore-collega.sql` | no |
 | Compensi dei tecnici (tariffe, lettere, ricevute, pagamento) | segreteria, tecnici | compenso sbagliato, pagato due volte, IBAN visto da chi non deve | `prova:compensi`, `prova:tariffe`, `prova:schede-personale`, `prova:segreteria`, `prova:iscritti`, `prova:lettere`, `prova:pericolo`, `prova:fogli-moduli`, `prova:compensi-pagati`, `prova:contabilita`, `prova:bilancio`, `prova:movimenti-persona`, `prova:mcp`, `prova:colleghi`, `ricevute-compensi.sql`, `tariffe-tecnici.sql`, `anagrafiche.sql`, `lettere-incarico.sql`, `compensi-pagati.sql`, `contabilita.sql`, `chiusura-cassa.sql`, `movimenti-persona.sql`, `manca-la-firma.sql`, `istruttore-collega.sql`, `presenze-istruttori.sql` | sì |
@@ -66,7 +67,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Voci da classificare in IMPORTAZIONI | amministrazione | voce persa dalla lista, totale sbagliato | `prova:importazioni`, `prova:suggerimento-movimento` | sì, da fare |
 | Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:segreteria`, `prova:contabilita`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
 | Quote e corsi scritti a mano hanno la persona | amministrazione (scrive), segreteria (vede la scheda) | quota che non si ritrova nella scheda | `prova:contabilita`, `prova:movimenti-persona`, `prova:segreteria`, `prova:suggerimento-movimento`, `quote-persona.sql`, `cambia-voce.sql`, `movimenti-persona.sql` | sì |
-| Movimento da classificare: voce e persona proposte | amministrazione (conferma), segreteria | persona o voce sbagliata scritta con un clic | `prova:suggerimento-movimento`, `prova:abbina-movimenti`, `prova:importa-banca`, `abbina-movimenti.sql` | sì, da fare |
+| Movimento da classificare: voce (anche dall'importo) e persona proposte | amministrazione (conferma), segreteria | persona o voce sbagliata scritta con un clic | `prova:suggerimento-movimento`, `prova:abbina-movimenti`, `prova:importa-banca`, `abbina-movimenti.sql` | sì, da fare |
 | Filtro «Pagato nel vecchio programma» | segreteria | segnato pagato per un incasso non suo | `prova:pagato-prima`, `prova:filtri-iscritti`, `pagato-vecchio-programma.sql` | sì |
 | Bilancio di un anno | amministrazione | movimento contato in due anni o in nessuno | `prova:bilancio` | sì |
 | Fatture dalla chat con Claude | amministrazione | movimento doppio o mai scritto, dati personali verso Claude | `prova:mcp`, `movimenti-dalla-chat.sql`, `contabilita.sql` | sì |
@@ -171,6 +172,11 @@ quando arriva la prova.
   senza voce proposta riceve i candidati; nessuna prova lo ferma (DA FARE).
 - Suggerimento da classificare: il nome già presente nel cognome («Maria M.»
   con «Maria Maria») non è provato (DA FARE).
+- Suggerimento da classificare: persona proposta ma nessuna voce (voce
+  della regola spenta): `confermaDi` deve dare `null`; dopo la voce dall'importo
+  nessuna prova lo asserisce (DA FARE).
+- Suggerimento da classificare: `Contabilita.tsx` non propone finché il
+  listino non è caricato (`listino === null`); nessuna prova (DA FARE).
 - Suggerimento da classificare: «scrive solo alla conferma» sta in
   `Contabilita.tsx`; nessuna prova, solo collaudo a mano.
 - Suggerimento da classificare: oltre otto candidati il nono manca, e «più

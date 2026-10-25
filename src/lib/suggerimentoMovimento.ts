@@ -1,7 +1,10 @@
-import { VOCE_DIFFERENZA, VOCE_VARIE, vociOfferte, vuolePersonaRiga, type RigaMovimento, type VoceContabile } from './contabilita'
+import { inEuro } from './vestiario'
+import { VOCE_CORSI, VOCE_DIFFERENZA, VOCE_QUOTA, VOCE_VARIE, vociOfferte, vuolePersonaRiga, type RigaMovimento, type VoceContabile } from './contabilita'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { ordinaAbbinati, type Abbinato, type ComeAbbinato } from './abbinaMovimenti'
 import { normalizzaNome, nomeDallaCausale, type PersonaPerNome } from './movimentiPersona'
+import { QUOTA_ASSOCIATIVA } from './costi'
+import type { Listino } from './listino'
 
 /**
  * Cosa propone l'app per un movimento «Da classificare»: la voce, dalle altre righe uguali, e la persona, dal nome
@@ -61,6 +64,8 @@ export interface VoceSuggerita {
   voceId: string
   nome: string
   motivo: string
+  /** Il motivo è un avviso (importo fuori listino): la schermata lo mette in evidenza. */
+  avviso?: true
 }
 
 /** Almeno due altre righe con lo stesso testo, già classificate, tutte sulla stessa voce: quella voce. */
@@ -72,6 +77,26 @@ export function vocePerDescrizione(riga: RigaMovimento, righe: RigaMovimento[], 
   if (altre.length < 2 || altre.some((r) => r.voce !== altre[0].voce)) return null
   const voce = vociOfferte(voci, riga.tipo).find((v) => v.nome === altre[0].voce)
   return voce ? { voceId: voce.id, nome: voce.nome, motivo: `Altre ${altre.length} voci uguali sono su «${voce.nome}»` } : null
+}
+
+const PREZZI = ['saldo', 'annuale', 'trimestre'] as const
+
+/**
+ * La voce di un'entrata che porta una persona, dall'importo: 50 € è la quota, il prezzo di un corso del listino è
+ * «Corsi e altri pagamenti», e un importo che non combacia va lì lo stesso, con l'avviso: è la voce che accoglie il resto,
+ * e la conferma resta di chi amministra. Senza listino contano solo la quota e il «fuori listino».
+ */
+function voceDaImporto(riga: RigaMovimento, voci: VoceContabile[], listino?: Listino): VoceSuggerita | null {
+  const voceDi = (nome: string, motivo: string, avviso?: true): VoceSuggerita | null => {
+    const v = vociOfferte(voci, 'entrata').find((x) => x.nome === nome)
+    return v ? { voceId: v.id, nome: v.nome, motivo, ...(avviso && { avviso }) } : null
+  }
+  const centesimi = (x: number) => Math.round(x * 100)
+  if (centesimi(listino?.quota ?? QUOTA_ASSOCIATIVA) === riga.importo) return voceDi(VOCE_QUOTA, `${inEuro(riga.importo / 100)} è la quota associativa`)
+  const trovati = (listino?.corsi ?? []).flatMap((c) => c.prezzi.flatMap((p) => PREZZI.flatMap((campo) => (p[campo] !== undefined && centesimi(p[campo]) === riga.importo ? [`${c.corso}${p.etichetta ? ` ${p.etichetta}` : ''}, ${campo}`] : []))))
+  if (!trovati.length) return voceDi(VOCE_CORSI, `${inEuro(riga.importo / 100)} non è un prezzo del listino: controlla che la voce sia giusta`, true)
+  const altri = trovati.length - 1
+  return voceDi(VOCE_CORSI, `${inEuro(riga.importo / 100)} è il prezzo di ${trovati[0]}${altri ? (altri === 1 ? ' e di un altro prezzo' : ` e di altri ${altri} prezzi`) : ''}`)
 }
 
 /** La parola con cui cercare le schede per questo movimento; `null` se il blocco non deve cercare niente (non è un'entrata da classificare, o ha già la persona). */
@@ -97,7 +122,7 @@ export interface SuggerimentoMovimento {
 }
 
 /** Il blocco «Suggerito» di un movimento da classificare; `null` per ogni altro movimento: lì non c'è. */
-export function suggerisciMovimento(riga: RigaMovimento, righe: RigaMovimento[], voci: VoceContabile[], persone: PersonaPerNome[], abbinati: Abbinato[] = []): SuggerimentoMovimento | null {
+export function suggerisciMovimento(riga: RigaMovimento, righe: RigaMovimento[], voci: VoceContabile[], persone: PersonaPerNome[], listino?: Listino, abbinati: Abbinato[] = []): SuggerimentoMovimento | null {
   if (riga.origine !== 'movimento' || riga.annullato || (riga.tipo !== 'entrata' && riga.tipo !== 'uscita') || riga.voce !== VOCE_DA_CLASSIFICARE) return null
   const voce = vocePerDescrizione(riga, righe, voci)
   const senza = { voce, candidati: [], preselezionato: null }
@@ -117,7 +142,8 @@ export function suggerisciMovimento(riga: RigaMovimento, righe: RigaMovimento[],
         preselezionato: null,
       }
   if (!candidati.length) return { caso: voce ? 'C' : 'D', ...senza, persona: voce ? 'da-scegliere' : 'nessuna-senza-persona' }
-  return { caso: candidati.length === 1 ? 'A' : 'B', voce, persona: 'candidati', candidati, preselezionato: abbinati.length ? preselezionato : candidati.length === 1 ? candidati[0].id : null }
+  // Con una persona da proporre la voce non resta vuota: l'importo la dice, se non bastano le righe uguali.
+  return { caso: candidati.length === 1 ? 'A' : 'B', voce: voce ?? voceDaImporto(riga, voci, listino), persona: 'candidati', candidati, preselezionato: abbinati.length ? preselezionato : candidati.length === 1 ? candidati[0].id : null }
 }
 
 /** Cosa scrive «Conferma»; `null` se non si può ancora (manca la voce o la persona): il tasto resta spento. */

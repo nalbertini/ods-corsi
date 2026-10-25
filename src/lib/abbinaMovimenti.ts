@@ -2,7 +2,7 @@ import { normalizzaNome } from './movimentiPersona'
 
 /**
  * Chi può aver pagato un movimento non identificato (banca o Satispay), con le stesse regole del database
- * (`supabase/118-abbina-movimenti.sql`, che le applica senza mostrare a chi amministra codici, genitori e date):
+ * (`supabase/119-abbina-movimenti.sql`, che le applica senza mostrare a chi amministra codici, genitori e date):
  *  1. nome e cognome interi nel testo;
  *  2. se nessuno, nome e cognome del genitore nel testo: i suoi figli;
  *  3. se nessuno, un codice fiscale letto dalla causale: del genitore, o dell'adulto che paga per sé;
