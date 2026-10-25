@@ -33,13 +33,13 @@ import { dataLunga } from '../../lib/sala'
 import { inCorso, type CorsoSeg, type DatiSegreteria, type Istruttore, type PersonaSeg } from '../../lib/segreteria'
 import { giorniA } from '../../lib/vestiario'
 import { Riquadro } from '../ds'
-import { Bozza, Campo, chiedi, chiediSpunta, Guaio, lasciare, Riga as Titolo, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useCarica, useDialogo } from './comune'
+import { Bozza, Campo, chiedi, chiediSpunta, Guaio, lasciare, Riga as Titolo, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useCarica } from './comune'
 import { NuovaRicevuta } from './Ricevute'
 
 /**
  * GARE: le gare a cui vanno gli atleti, chi ci va, il certificato alla data
  * della gara e la quota a voci. L'elenco si apre in una scheda a tutta pagina;
- * modificare, aggiungere atleti e incassare stanno in un cassetto. Le regole
+ * modificare, aggiungere atleti e incassare in una finestra sopra. Le regole
  * stanno in `gare.ts`, i dati in `gareDati.ts`.
  */
 
@@ -135,7 +135,7 @@ export function Gare({ d, apri, onCambiato }: { d: DatiSegreteria; /** Arrivando
 
       {cassetto?.a === 'modifica' && dati.dato && (
         <ModificaGara
-          key={cassetto.id ?? 'nuova'}
+          key={`modifica-${cassetto.id ?? 'nuova'}`}
           g={cassetto.id ? garaCassetto : undefined}
           gare={gare}
           pagati={garaCassetto ? atleti.filter((a) => a.garaId === garaCassetto.id && a.pagamento).length : 0}
@@ -511,47 +511,22 @@ function SchedaGara({
   )
 }
 
-/** Il cassetto a destra, come quello della lezione in CALENDARIO. */
-function Cassetto({ titolo, sotto, onChiudi, children }: { titolo: string; sotto?: string; onChiudi: () => void; children: React.ReactNode }) {
-  const ref = useDialogo<HTMLElement>(onChiudi)
+/** La finestra al centro, come la scheda di un istruttore: un cassetto a destra era stretto per i campi della gara. */
+function Cassetto({ titolo, sotto, torna, onChiudi, children }: { titolo: string; sotto?: string; torna: string; onChiudi: () => void; children: React.ReactNode }) {
   return (
-    <>
-      <button type="button" className="sg-velo" aria-label="Chiudi" onClick={onChiudi} />
-      <section ref={ref} role="dialog" aria-modal="true" tabIndex={-1} aria-label={titolo} className="sg-cassetto">
-        <div className="row" style={{ alignItems: 'flex-start', gap: 12 }}>
-          <div className="stack grow" style={{ gap: 4, minWidth: 0 }}>
-            <span
-              className="ob"
-              style={{
-                fontSize: 28,
-                fontWeight: 700,
-                letterSpacing: '0.04em',
-                lineHeight: 1,
-              }}
-            >
-              {titolo}
-            </span>
-            {sotto && (
-              <span
-                className="num"
-                style={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  letterSpacing: '0.14em',
-                  color: 'var(--dim)',
-                }}
-              >
-                {sotto}
-              </span>
-            )}
-          </div>
-          <button type="button" className="icon-btn" aria-label="Chiudi" onClick={onChiudi}>
-            ✕
-          </button>
-        </div>
-        {children}
-      </section>
-    </>
+    <SchedaPiena etichetta={titolo} torna={torna} onTorna={onChiudi}>
+      <div className="stack" style={{ gap: 4, minWidth: 0 }}>
+        <span className="ob" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
+          {titolo}
+        </span>
+        {sotto && (
+          <span className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.14em', color: 'var(--dim)' }}>
+            {sotto}
+          </span>
+        )}
+      </div>
+      {children}
+    </SchedaPiena>
   )
 }
 
@@ -670,7 +645,7 @@ function ModificaGara({
   )
 
   return (
-    <Cassetto titolo={g ? 'MODIFICA LA GARA' : 'NUOVA GARA'} sotto={g ? `${g.nome} · ${dateGara(g)}` : undefined} onChiudi={() => void chiudi()}>
+    <Cassetto titolo={g ? 'MODIFICA LA GARA' : 'NUOVA GARA'} sotto={g ? `${g.nome} · ${dateGara(g)}` : undefined} torna={g ? g.nome : 'Le gare'} onChiudi={() => void chiudi()}>
       <Bozza>
         <div className="stack" style={{ gap: 16 }}>
           <Campo id="ga-nome" etichetta="NOME">
@@ -770,7 +745,7 @@ function ModificaGara({
               testo: 'L’istruttore scelto vede questa gara anche se non insegna il corso degli atleti, e la trova nel suo elenco GARE. Si può scegliere più di uno.',
             }}
           >
-            <div role="group" aria-label="Istruttore che accompagna" className="stack" style={{ gap: 2 }}>
+            <div role="group" aria-label="Istruttore che accompagna" className="sg-spunte" style={{ gap: 2 }}>
               {istruttori.map((i) => (
                 <label key={i.id} className="sg-elenco-casella">
                   <input
@@ -859,7 +834,7 @@ function AggiungiAtleti({
   const aggiungi = () => void fai(async () => (await datiGare()).aggiungi(g.id, scelti), scelti.length === 1 ? 'Atleta aggiunto' : `${scelti.length} atleti aggiunti`, onFatto)
 
   return (
-    <Cassetto titolo="AGGIUNGI ATLETI" sotto={`${g.nome} · ${dateGara(g)}`} onChiudi={onChiudi}>
+    <Cassetto titolo="AGGIUNGI ATLETI" sotto={`${g.nome} · ${dateGara(g)}`} torna={g.nome} onChiudi={onChiudi}>
       <div className="stack" style={{ gap: 16 }}>
         <Campo id="ga-corso" etichetta="PARTI DA UN CORSO">
           <select
@@ -985,7 +960,7 @@ function Incassa({
   }
 
   return (
-    <Cassetto titolo="INCASSA" sotto={`${p.cognome} ${p.nome} · ${euroBreve(totale)}`} onChiudi={onChiudi}>
+    <Cassetto titolo="INCASSA" sotto={`${p.cognome} ${p.nome} · ${euroBreve(totale)}`} torna={g.nome} onChiudi={onChiudi}>
       <div className="stack" style={{ gap: 16 }}>
         <span className="sg-sotto">
           {g.nome}, {dateGara(g)}: {g.voci.map((v) => `${v.voce} ${euroBreve(v.importo)}`).join(' · ')}
