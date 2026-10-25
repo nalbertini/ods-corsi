@@ -444,7 +444,7 @@ function LezioniDaConfermare({ lezioni, lavora, onScegli }: { lezioni: LezioneSe
                 <span className="stack" style={{ gap: 4 }}>
                   {daDecidere.length > 1 &&
                     daDecidere.map((x) => (
-                      <label key={x.id} style={{ display: 'flex', gap: 8, alignItems: 'center', minHeight: 44, fontSize: 16, fontWeight: 600, cursor: 'pointer' }}>
+                      <label key={x.id} className="sg-elenco-casella" style={{ fontSize: 16, fontWeight: 600 }}>
                         <input type="checkbox" checked={miei.includes(x.id)} onChange={() => cambia(x.id)} disabled={lavora} />
                         {x.nome}
                       </label>
