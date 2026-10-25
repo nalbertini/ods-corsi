@@ -8,6 +8,7 @@ import { applicaScelte, capiDelTipo, mancaNellOrdine, nomeGiaUsato, ordineAMeta,
 import { chiedi, useDialogo } from './segreteria/comune'
 import { apertiLetti, datiVestiario } from '../lib/vestiarioDati'
 import { BarraPasso, Campo, Dettaglio, type Nota, Etichetta, Riquadro, Tasti, Tasto, TitoloEsito, Titoletto } from './ds'
+import { Icona } from './Icons'
 
 /**
  * La pagina degli ordini di vestiario, dal link COPIA LINK ORDINI
@@ -622,7 +623,8 @@ function FotoGrande({ url, nome, onChiudi }: { url: string; nome: string; onChiu
       <div className="pad vestiario-grande-testa">
         <span className="grow passo-titolo">{nome}</span>
         <button type="button" className="btn btn-ghost passo-btn" onClick={onChiudi}>
-          CHIUDI ✕
+          <Icona nome="chiudi" />
+          CHIUDI
         </button>
       </div>
       <span className="pad passo-dettaglio vestiario-grande-come">Allarga con due dita</span>
@@ -800,7 +802,7 @@ function Arrivato({ o, chiude, onAltro }: { o: Ordine; chiude: string; onAltro: 
           </Dettaglio>
           <Tasti>
             {/* Senza spazi: è così che lo vogliono i campi delle app della banca. */}
-            <Tasto onClick={() => copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+            <Tasto icona="copia" onClick={() => copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
             <Tasto onClick={() => copia('causale', causale)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>
             {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
           </Tasti>

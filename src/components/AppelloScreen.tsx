@@ -4,7 +4,7 @@ import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sal
 import { appelloAperto, eFuoriFinestra, etichettaFuoriFinestra, fraseFuoriFinestra } from '../lib/finestra'
 import { cercaNellElenco, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { inOrdineDiApertura, primiDaSegnare } from '../lib/frequenza'
-import { Back, Cronometro } from './Icons'
+import { Back, Cronometro, Icona } from './Icons'
 import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, TogliProva } from './Prove'
@@ -461,9 +461,11 @@ export function AppelloScreen({
             disabled={!d.elenco.length || (tuttiSegnati && !tuttiAssenti)}
             onClick={tuttiGliAltri}
           >
+            <Icona nome="fatto" />
             {tastoAppello({ segnatiIscritti, tuttiAssenti, tuttiSegnati })}
           </button>
           <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO?" onFai={azzera}>
+            <Icona nome="ricomincia" />
             AZZERA
           </DueTocchi>
         </div>}
@@ -501,7 +503,7 @@ export function AppelloScreen({
                 </span>
                 {x.id in gestite ? (
                   <span className="row num segnalata-esito" data-accolta={gestite[x.id]}>
-                    {gestite[x.id] ? '✓ SEGNATO PRESENTE' : 'RIFIUTATA: RESTA COM’ERA'}
+                    {gestite[x.id] ? <><Icona nome="fatto" misura={16} />SEGNATO PRESENTE</> : 'RIFIUTATA: RESTA COM’ERA'}
                   </span>
                 ) : (
                   <span className="row" style={{ gap: 8 }}>
@@ -509,6 +511,7 @@ export function AppelloScreen({
                       C’ERA: PRESENTE
                     </button>
                     <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px' }} onClick={() => void gestisci(x, false)}>
+                      <Icona nome="manca" />
                       RIFIUTA
                     </button>
                   </span>
@@ -615,7 +618,8 @@ export function AppelloScreen({
           parte (`CercaPersona`); qui sotto il tasto, in fondo, dove entra. */}
       {!soloLettura && <div className="pad" style={{ paddingTop: 4 }}>
         <button type="button" className="btn btn-dashed" style={{ minHeight: 52, fontSize: 16 }} onClick={() => setAggiungendo(true)}>
-          + AGGIUNGI CHI PROVA
+          <Icona nome="aggiungi" />
+          AGGIUNGI CHI PROVA
         </button>
       </div>}
 
@@ -673,7 +677,8 @@ export function AppelloScreen({
             chiede={domanda}
             onFai={chiudi}
           >
-            {tuttiSegnati ? 'CHIUDI L’APPELLO ✓' : `CHIUDI · ${assentiDetti}`}
+            {tuttiSegnati && <Icona nome="conferma" />}
+            {tuttiSegnati ? 'CHIUDI L’APPELLO' : `CHIUDI · ${assentiDetti}`}
           </DueTocchi>
           <span className="appello-aiuto">
             {tuttiSegnati

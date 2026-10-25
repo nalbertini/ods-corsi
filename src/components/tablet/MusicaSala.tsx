@@ -3,42 +3,19 @@ import type { Musica } from '../../../timer/src/lib/useMusica'
 import { PostoPlayer } from '../../../timer/src/components/PlayerYoutube'
 import { TESTI_MUSICA } from '../../../timer/src/lib/musicaLocale'
 import { formaBarraMusica, rigaLista, sottoMusica, type Dispositivo, type ListaMusica, type StatoMusica } from '../../lib/musica'
+import { Icona, Tracciati } from '../Icons'
+import { TRATTO_TABLET, type NomeIcona } from '../../lib/icone'
 import { type Disciplina, dellaDisciplina, disciplineConVoci, filtroValido } from '../../../timer/src/lib/discipline'
 
-type P = { size?: number }
-const Prec = ({ size = 22 }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <polygon points="19 20 9 12 19 4 19 20" />
-    <rect x="4" y="5" width="2.5" height="14" />
-  </svg>
-)
-const Succ = ({ size = 22 }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <polygon points="5 4 15 12 5 20 5 4" />
-    <rect x="17.5" y="5" width="2.5" height="14" />
-  </svg>
-)
-const Suona = ({ size = 22 }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <polygon points="6 3 21 12 6 21 6 3" />
-  </svg>
-)
-const Ferma = ({ size = 22 }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <rect x="6" y="4" width="4" height="16" />
-    <rect x="14" y="4" width="4" height="16" />
-  </svg>
-)
-const Spegni = ({ size = 22 }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden="true">
-    <path d="M6 6l12 12M18 6L6 18" />
-  </svg>
-)
-const Liste = ({ size = 24 }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden="true">
-    <path d="M4 6h16M4 12h16M4 18h10" />
-  </svg>
-)
+// I tasti della musica sul tablet: grandi, da un metro, col tratto del tablet.
+const Tasto = ({ nome }: { nome: NomeIcona }) => <Icona nome={nome} misura={22} tratto={TRATTO_TABLET} />
+/** Prima e dopo: un triangolo e la sbarra, come su ogni lettore; l'elenco unico non li ha. */
+const Prec = () => <Tracciati d={['M19 20 9 12l10-8z', 'M5 19V5']} misura={22} tratto={TRATTO_TABLET} />
+const Succ = () => <Tracciati d={['M5 4l10 8-10 8z', 'M19 5v14']} misura={22} tratto={TRATTO_TABLET} />
+const Suona = () => <Tasto nome="play" />
+const Ferma = () => <Tasto nome="pausa" />
+const Spegni = () => <Tasto nome="chiudi" />
+const Liste = () => <Tracciati d={['M4 6h16M4 12h16M4 18h10']} misura={24} tratto={TRATTO_TABLET} />
 
 const NOME_FONTE = {
   youtube: 'YouTube',

@@ -47,7 +47,7 @@ export function GareIscritto({ scheda }: { scheda: SchedaIscritto }) {
 
   return (
     <div className="stack">
-      <Titoletto conto={prossime.length || undefined}>LE MIE GARE</Titoletto>
+      <Titoletto icona="gara" conto={prossime.length || undefined}>LE MIE GARE</Titoletto>
       <div className="pad stack" style={{ gap: 14 }}>
         {prossime.map((m) => (
           <MiaGara key={m.gara.id} m={m} scheda={scheda} oggi={oggi} />

@@ -6,7 +6,7 @@ import { agganciaPerNome, anniDiNascita, annoScritto, cambiNellaBozza, corsiSceg
 import { centesimi } from '../../lib/ricevute'
 import { chiaveGiorno } from '../../lib/sala'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
-import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica, Tasto } from './comune'
 
 /*
  * Il listino si cambia in una bozza, tutto insieme, e si salva con un tasto
@@ -360,9 +360,9 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
                 Butta i cambi
               </button>
-              <button type="button" className="sg-btn sg-btn-pieno" disabled={!!guaio || lavora} onClick={salva}>
+              <Tasto tono="pieno" disabled={!!guaio || lavora} onClick={salva}>
                 Salva
-              </button>
+              </Tasto>
             </div>
           )}
         </div>
@@ -535,9 +535,9 @@ function SchedaCorso({
           Togli dal listino
         </button>
         <span className="grow" />
-        <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
+        <Tasto onClick={onChiudi}>
           Chiudi
-        </button>
+        </Tasto>
       </div>
     </div>
   )

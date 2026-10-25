@@ -5,7 +5,7 @@ import { personaCambiata } from '../../lib/segreteria'
 import { lette } from '../../lib/letture'
 import { daSpunte, insegna, nomeDelRuolo, puo, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { chiedi, Campo, Guaio, lasciare, MenuAzioni, Riga, SchedaPiena, suCarta, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, Guaio, lasciare, MenuAzioni, Riga, SchedaPiena, suCarta, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina, Tasto } from './comune'
 import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
@@ -356,9 +356,9 @@ function Aggiungi({
         <button type="button" className="sg-btn sg-btn-linea" onClick={onLasciaStare}>
           Lascia stare
         </button>
-        <button type="submit" className="sg-btn sg-btn-pieno">
+        <Tasto type="submit" tono="pieno">
           Aggiungi
-        </button>
+        </Tasto>
       </div>
     </form>
   )
@@ -527,9 +527,8 @@ function Scheda({
                 <button type="button" className="sg-btn sg-btn-linea" onClick={() => setModifica(null)}>
                   Lascia stare
                 </button>
-                <button
-                  type="button"
-                  className="sg-btn sg-btn-pieno"
+                <Tasto
+                  tono="pieno"
                   disabled={!modifica.nome.trim()}
                   onClick={() =>
                     void fai(() => d.salvaPersonale({ ...dati, ...modifica, email: p.collegato ? p.email : modifica.email }), 'Scheda salvata', async () => {
@@ -539,7 +538,7 @@ function Scheda({
                   }
                 >
                   Salva
-                </button>
+                </Tasto>
               </div>
             </div>
           ) : (

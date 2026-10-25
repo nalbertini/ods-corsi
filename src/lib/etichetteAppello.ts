@@ -28,7 +28,7 @@ export const codaAppello = (n: number): string => (n > 0 ? `… ${n} DA INVIARE`
 /** Sempre lo stesso tasto: un altro comparso al suo posto prenderebbe il secondo tocco. */
 export function tastoAppello(a: { segnatiIscritti: number; tuttiAssenti: boolean; tuttiSegnati: boolean }): string {
   if (a.segnatiIscritti === 0 || a.tuttiAssenti) return 'TUTTI PRESENTI'
-  return a.tuttiSegnati ? '✓ TUTTI SEGNATI' : 'GLI ALTRI PRESENTI'
+  return a.tuttiSegnati ? 'TUTTI SEGNATI' : 'GLI ALTRI PRESENTI'
 }
 
 export function statoLezione(l: { manca: boolean; iniziato: boolean; fatto: boolean; presentiIscritti: number }): { testo: string; tono?: Tono } {

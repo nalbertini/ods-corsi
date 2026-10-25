@@ -9,7 +9,7 @@ import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
 import { centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, daPagareCompensi, extraDelPagamento, avvisoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
-import { chiedi, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Testa, useAvviso, useCarica, useDialogo } from './comune'
+import { chiedi, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
 import { Numero } from './Presenze'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -182,9 +182,9 @@ export function AzioniRicevuta({
         {/* Annulla su una riga sua: sul telefono un dito sbagliato accanto a Ristampa annullerebbe. Una pagata non si annulla da qui. */}
         {!ricevuta.pagataIl && (
           <span style={{ flexBasis: '100%', display: 'flex' }}>
-            <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={occupato} onClick={() => void annulla()}>
+            <Tasto className="sg-pericolo" disabled={occupato} onClick={() => void annulla()}>
               {stato === 'non-torna' ? 'Annulla e rifai' : 'Annulla'}
-            </button>
+            </Tasto>
           </span>
         )}
       </span>
@@ -193,9 +193,9 @@ export function AzioniRicevuta({
   if (stato === 'da-fare')
     return (
       <span className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-        <button type="button" className="sg-btn sg-btn-linea" disabled={occupato} onClick={() => setCambia({ testo: euroDaScrivere(conto.calcolato), motivo: '' })}>
+        <Tasto disabled={occupato} onClick={() => setCambia({ testo: euroDaScrivere(conto.calcolato), motivo: '' })}>
           Modifica il compenso
-        </button>
+        </Tasto>
         <button type="button" className="sg-btn sg-btn-pieno" disabled={occupato} onClick={() => void prepara()}>
           Prepara la ricevuta
         </button>
@@ -368,12 +368,12 @@ function RigaExtra({ d, r, fai, onCambiato, onModifica, onPaga }: { d: DatiSegre
         {/* Modifica e Annulla su una riga loro, come per il mese: una pagata non si tocca da qui. */}
         {!r.pagataIl && (
           <span className="row" style={{ flexBasis: '100%', gap: 10, justifyContent: 'flex-end' }}>
-            <button type="button" className="sg-btn sg-btn-linea" disabled={occupato} onClick={onModifica}>
+            <Tasto disabled={occupato} onClick={onModifica}>
               Modifica
-            </button>
-            <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={occupato} onClick={() => void annulla()}>
+            </Tasto>
+            <Tasto className="sg-pericolo" disabled={occupato} onClick={() => void annulla()}>
               Annulla
-            </button>
+            </Tasto>
           </span>
         )}
       </span>

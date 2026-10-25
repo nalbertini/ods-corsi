@@ -3,6 +3,7 @@ import { dati as caricaDati, type Dati } from '../lib/dati'
 import { delMese, mesi, minutiDi, oreItaliane, type MiaPresenza } from '../lib/ore'
 import type { LezioneSenzaIstruttore } from '../lib/segreteria'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
+import { Icona } from './Icons'
 
 const STATO: Record<MiaPresenza['stato'], string> = { confermata: 'CONFERMATA', da_confermare: 'DA CONFERMARE', rifiutata: 'RIFIUTATA' }
 
@@ -179,7 +180,10 @@ function Riga({ corso, inizio, fine, stato, tono, nota }: { corso: string; inizi
         </span>
         {nota && <span style={{ fontSize: 13, color: 'var(--dim)' }}>{nota}</span>}
       </span>
-      <span className="mie-ore-stato">{stato}</span>
+      <span className="mie-ore-stato">
+        <Icona nome={tono === 'fatto' ? 'fatto' : tono === 'avviso' ? 'in attesa' : 'manca'} misura={14} />
+        {stato}
+      </span>
     </div>
   )
 }

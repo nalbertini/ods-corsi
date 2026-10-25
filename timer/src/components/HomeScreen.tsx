@@ -169,9 +169,11 @@ export function HomeScreen({
             </div>
             <div className="row" style={{ gap: 8 }}>
               <button className="btn btn-go grow" style={{ minHeight: 48, fontSize: 16 }} onClick={onRiprendi}>
+                <Play size={18} />
                 RIPRENDI
               </button>
               <button className="btn btn-ghost" style={{ minHeight: 48, fontSize: 16, padding: '0 18px' }} onClick={onScarta}>
+                <Trash />
                 SCARTA
               </button>
             </div>
