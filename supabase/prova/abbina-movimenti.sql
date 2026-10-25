@@ -172,8 +172,6 @@ update impostazioni set listino = jsonb_build_object('corsi', jsonb_build_array(
   jsonb_build_object('corsoId', '', 'prezzi', jsonb_build_array(jsonb_build_object('trimestre', 40))),
   jsonb_build_object('corsoId', 'cccccccc-0000-0000-0000-000000000002', 'prezzi', jsonb_build_array(jsonb_build_object('trimestre', '40')))));
 update movimenti set importo = 4000 where descrizione in ('Da FERRI TRN 20 BONIFICO SEPA', 'Da Ferri Ennio TRN 21 BONIFICO SEPA');
-select chi('22222222-2222-2222-2222-222222222222');
-set role authenticated;
 
 \echo ''
 \echo '--- 1. il codice fiscale letto: si tiene, non si vede, si cancella ---'
