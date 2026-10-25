@@ -222,7 +222,7 @@ export function Sito({ d }: { d: DatiSegreteria }) {
 
           {scheda === 'menu' && (
             menu.guaio ? <Guaio testo={menu.guaio} /> : menu.dato ? (
-              <div className="stack" style={{ gap: 24, maxWidth: 960 }}>
+              <div className="stack" style={{ gap: 24 }}>
                 <ElencoVoci d={d} dove="menu" titolo="MENU IN ALTO" voci={menu.dato.menu} pagine={tutte} ricarica={ricarica} />
                 <ElencoVoci d={d} dove="footer" titolo="FOOTER" voci={menu.dato.footer} pagine={tutte} ricarica={ricarica} />
               </div>
