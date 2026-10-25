@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Icone, tablet e aree</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>* { box-sizing: border-box; } body { margin: 0; }</style>
+</helmet>
+<div style="width: 1080px; min-height: 1700px; padding: 32px 40px; background: #eef5fa; color: #0d2a3d; font-family: Inter, Barlow, 'Helvetica Neue', Arial, sans-serif; display: flex; flex-direction: column; gap: 14px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; font-size: 14px; color: #8f6a00">TABLET, AREA ISTRUTTORI, AREA ISCRITTI</div>
+<div style="font-size: 15px; line-height: 1.45; color: #46606f; max-width: 820px">Le tre facce nel look del sito. Il tablet e l'appello hanno già Spunta e Croce disegnate, ma come caratteri (✓ ✕) o a tratto 3: qui diventano le icone dell'elenco. Il menu largo dell'area istruttori (CALENDARIO, TIMER, I MIEI, ORE) prende le stesse icone che ha già la barra del telefono.</div>
+<div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #46606f; margin-top: 4px">TABLET · OGGI</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<dc-import name="Bottone" label="ESCI" variante="linea" contesto="app" tema="sito" hint-size="84px,56px"></dc-import>
+<dc-import name="Bottone" label="TUTTI PRESENTI" variante="principale" contesto="app" tema="sito" hint-size="194px,56px"></dc-import>
+<dc-import name="Bottone" label="GLI ALTRI ASSENTI" variante="linea" contesto="app" tema="sito" hint-size="227px,56px"></dc-import>
+<dc-import name="Bottone" label="ANNULLA" variante="linea" contesto="app" tema="sito" hint-size="117px,56px"></dc-import>
+<dc-import name="Bottone" label="CANCELLA" variante="linea" contesto="app" tema="sito" hint-size="128px,56px"></dc-import>
+</div>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8f6a00; margin-top: 4px">TABLET · CON LE ICONE</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<dc-import name="Bottone" label="ESCI" icona="esci" variante="linea" contesto="app" tema="sito" hint-size="104px,56px"></dc-import>
+<dc-import name="Bottone" label="TUTTI PRESENTI" icona="fatto" variante="principale" contesto="app" tema="sito" hint-size="214px,56px"></dc-import>
+<dc-import name="Bottone" label="GLI ALTRI ASSENTI" icona="manca" variante="linea" contesto="app" tema="sito" hint-size="247px,56px"></dc-import>
+<dc-import name="Bottone" label="ANNULLA" icona="annulla" variante="linea" contesto="app" tema="sito" hint-size="137px,56px"></dc-import>
+<dc-import name="Bottone" label="CANCELLA" icona="cancella cifra" variante="linea" contesto="app" tema="sito" hint-size="148px,56px"></dc-import>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8f6a00; margin-top: 4px">TABLET · SPUNTA E CROCE GRANDI · TRATTO 2,5</div>
+<div style="font-size: 14px; line-height: 1.45; color: #46606f; max-width: 820px">Sui tasti grandi del tablet (40px) il tratto 1,75 si fa troppo leggero da lontano: lì le icone tengono un tratto più grosso, 2,5. Dappertutto il resto resta 1,75.</div>
+<div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
+<div style="width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; background: #ffffff; border: 2px solid #0b7a33; border-radius: 10px"><dc-import name="Icona" nome="conferma" misura="40" colore="#0b7a33" tratto="2.5" hint-size="40px,40px"></dc-import></div>
+<div style="width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; background: #ffffff; border: 2px solid #b81d1d; border-radius: 10px"><dc-import name="Icona" nome="chiudi" misura="40" colore="#b81d1d" tratto="2.5" hint-size="40px,40px"></dc-import></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #46606f; margin-top: 4px">AREA ISTRUTTORI · APPELLO · OGGI</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<dc-import name="Bottone" label="AGGIUNGI CHI PROVA" variante="tratteggiato" contesto="app" tema="sito" hint-size="238px,56px"></dc-import>
+<dc-import name="Bottone" label="AZZERA" variante="linea" contesto="app" tema="sito" hint-size="106px,56px"></dc-import>
+<dc-import name="Bottone" label="RIFIUTA" variante="pericolo" contesto="app" tema="sito" hint-size="117px,56px"></dc-import>
+<dc-import name="Bottone" label="CHIUDI L'APPELLO" variante="principale" contesto="app" tema="sito" hint-size="216px,56px"></dc-import>
+</div>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8f6a00; margin-top: 4px">AREA ISTRUTTORI · APPELLO · CON LE ICONE</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<dc-import name="Bottone" label="AGGIUNGI CHI PROVA" icona="aggiungi" variante="tratteggiato" contesto="app" tema="sito" hint-size="258px,56px"></dc-import>
+<dc-import name="Bottone" label="AZZERA" icona="ricomincia" variante="linea" contesto="app" tema="sito" hint-size="126px,56px"></dc-import>
+<dc-import name="Bottone" label="RIFIUTA" icona="annulla" variante="pericolo" contesto="app" tema="sito" hint-size="137px,56px"></dc-import>
+<dc-import name="Bottone" label="CHIUDI L'APPELLO" icona="conferma" variante="principale" contesto="app" tema="sito" hint-size="236px,56px"></dc-import>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #46606f; margin-top: 4px">AREA ISTRUTTORI · LE MIE ORE · OGGI</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<dc-import name="Badge" label="CONFERMATA" tipo="tag" tono="verde" tema="sito" hint-size="140px,28px"></dc-import>
+<dc-import name="Badge" label="DA CONFERMARE" tipo="tag" tono="giallo" tema="sito" hint-size="167px,28px"></dc-import>
+<dc-import name="Badge" label="RIFIUTATA" tipo="tag" tono="rosso" tema="sito" hint-size="131px,28px"></dc-import>
+</div>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8f6a00; margin-top: 4px">AREA ISTRUTTORI · LE MIE ORE · CON LE ICONE</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<dc-import name="Badge" label="CONFERMATA" icona="fatto" tipo="tag" tono="verde" tema="sito" hint-size="140px,28px"></dc-import>
+<dc-import name="Badge" label="DA CONFERMARE" icona="in attesa" tipo="tag" tono="giallo" tema="sito" hint-size="167px,28px"></dc-import>
+<dc-import name="Badge" label="RIFIUTATA" icona="manca" tipo="tag" tono="rosso" tema="sito" hint-size="131px,28px"></dc-import>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #46606f; margin-top: 4px">AREA ISCRITTI · I TITOLI · OGGI</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<div style="width: 400px"><dc-import name="Titoletto" label="LA PROSSIMA LEZIONE" tema="sito" piccolo="{{ true }}" hint-size="400px,40px"></dc-import></div>
+<div style="width: 400px"><dc-import name="Titoletto" label="CERTIFICATO E QUOTA" tema="sito" piccolo="{{ true }}" hint-size="400px,40px"></dc-import></div>
+<div style="width: 400px"><dc-import name="Titoletto" label="RICEVUTE" tema="sito" piccolo="{{ true }}" hint-size="400px,40px"></dc-import></div>
+<div style="width: 400px"><dc-import name="Titoletto" label="IL TUO NUCLEO" tema="sito" piccolo="{{ true }}" hint-size="400px,40px"></dc-import></div>
+</div>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8f6a00; margin-top: 4px">AREA ISCRITTI · I TITOLI · CON LE ICONE</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<div style="width: 400px"><dc-import name="Titoletto" label="LA PROSSIMA LEZIONE" icona="calendario" tema="sito" piccolo="{{ true }}" hint-size="400px,40px"></dc-import></div>
+<div style="width: 400px"><dc-import name="Titoletto" label="CERTIFICATO E QUOTA" icona="certificato" tema="sito" piccolo="{{ true }}" hint-size="400px,40px"></dc-import></div>
+<div style="width: 400px"><dc-import name="Titoletto" label="RICEVUTE" icona="ricevuta" tema="sito" piccolo="{{ true }}" hint-size="400px,40px"></dc-import></div>
+<div style="width: 400px"><dc-import name="Titoletto" label="IL TUO NUCLEO" icona="nucleo" tema="sito" piccolo="{{ true }}" hint-size="400px,40px"></dc-import></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #46606f; margin-top: 4px">AREA ISCRITTI · I TASTI · OGGI</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<dc-import name="Bottone" label="MANDA IL CERTIFICATO" variante="principale" contesto="app" tema="sito" hint-size="260px,56px"></dc-import>
+<dc-import name="Bottone" label="SEGNALA" variante="linea" contesto="app" tema="sito" hint-size="117px,56px"></dc-import>
+<dc-import name="Bottone" label="AGGIUNGI UNA PERSONA" variante="tratteggiato" contesto="app" tema="sito" hint-size="260px,56px"></dc-import>
+<dc-import name="Bottone" label="COPIA IBAN" variante="linea" contesto="app" tema="sito" hint-size="150px,56px"></dc-import>
+<dc-import name="Bottone" label="CHIAMA" variante="linea" contesto="app" tema="sito" hint-size="106px,56px"></dc-import>
+<dc-import name="Bottone" label="CONDIVIDI" variante="linea" contesto="app" tema="sito" hint-size="139px,56px"></dc-import>
+</div>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8f6a00; margin-top: 4px">AREA ISCRITTI · I TASTI · CON LE ICONE</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<dc-import name="Bottone" label="MANDA IL CERTIFICATO" icona="carica" variante="principale" contesto="app" tema="sito" hint-size="280px,56px"></dc-import>
+<dc-import name="Bottone" label="SEGNALA" icona="segnalazione" variante="linea" contesto="app" tema="sito" hint-size="137px,56px"></dc-import>
+<dc-import name="Bottone" label="AGGIUNGI UNA PERSONA" icona="aggiungi" variante="tratteggiato" contesto="app" tema="sito" hint-size="280px,56px"></dc-import>
+<dc-import name="Bottone" label="COPIA IBAN" icona="copia" variante="linea" contesto="app" tema="sito" hint-size="170px,56px"></dc-import>
+<dc-import name="Bottone" label="CHIAMA" icona="telefono" variante="linea" contesto="app" tema="sito" hint-size="126px,56px"></dc-import>
+<dc-import name="Bottone" label="CONDIVIDI" icona="condividi" variante="linea" contesto="app" tema="sito" hint-size="159px,56px"></dc-import>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #46606f; margin-top: 4px">AREA ISCRITTI · I SEGNI · OGGI</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<dc-import name="Badge" label="PAGATO" tipo="tag" tono="verde" tema="sito" hint-size="104px,28px"></dc-import>
+<dc-import name="Badge" label="DA PAGARE" tipo="tag" tono="rosso" tema="sito" hint-size="131px,28px"></dc-import>
+<dc-import name="Badge" label="IN REGOLA" tipo="tag" tono="verde" tema="sito" hint-size="131px,28px"></dc-import>
+<dc-import name="Badge" label="DA SISTEMARE" tipo="tag" tono="giallo" tema="sito" hint-size="158px,28px"></dc-import>
+</div>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8f6a00; margin-top: 4px">AREA ISCRITTI · I SEGNI · CON LE ICONE</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<dc-import name="Badge" label="PAGATO" icona="fatto" tipo="tag" tono="verde" tema="sito" hint-size="104px,28px"></dc-import>
+<dc-import name="Badge" label="DA PAGARE" icona="euro" tipo="tag" tono="rosso" tema="sito" hint-size="131px,28px"></dc-import>
+<dc-import name="Badge" label="IN REGOLA" icona="fatto" tipo="tag" tono="verde" tema="sito" hint-size="131px,28px"></dc-import>
+<dc-import name="Badge" label="DA SISTEMARE" icona="attenzione" tipo="tag" tono="giallo" tema="sito" hint-size="158px,28px"></dc-import>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1080,"height":1700}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

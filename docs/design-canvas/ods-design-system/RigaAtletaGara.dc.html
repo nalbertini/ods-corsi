@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: {{direzione}}; align-items: {{allinea}}; justify-content: space-between; gap: 10px 16px; min-height: 56px; padding: 10px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4">
+  <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 auto">
+    <span style="font-size: 15px; font-weight: 600">{{nome}}<sc-if value="{{minorenne}}" hint-placeholder-val="{{ false }}"><svg aria-label="minorenne" role="img" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d2a3d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 8px; vertical-align: -2px"><circle cx="12" cy="5" r="2.5"/><path d="M8 21v-6l-2-3 3-3h6l3 3-2 3v6"/></svg></sc-if></span>
+    <span style="font-size: 13px; color: #46606f">{{nascita}} &middot; {{corso}}</span>
+    <span style="display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap">
+    <sc-if value="{{tipoManca}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #b81d1d; border-radius: 6px; background: #ffffff; color: #b81d1d; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: normal">&#10005; {{certificato}}</span></sc-if>
+    <sc-if value="{{tipoAspetta}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #8f6a00; border-radius: 6px; background: #ffffff; color: #8f6a00; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: normal">&#8230; {{certificato}}</span></sc-if>
+    <sc-if value="{{tipoFatto}}" hint-placeholder-val="{{ true }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #0b7a33; border-radius: 6px; background: #ffffff; color: #0b7a33; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: normal">&#10003; {{certificato}}</span></sc-if>
+    <sc-if value="{{tipoNeutro}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #46606f; border-radius: 6px; background: #ffffff; color: #46606f; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; white-space: normal">{{certificato}}</span></sc-if>
+      <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: {{coloreNota}}">{{nota}}</span>
+    </span>
+  </div>
+  <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 1 300px; max-width: 300px">
+    <sc-if value="{{conQuota}}" hint-placeholder-val="{{ false }}"><span style="flex: 1 1 auto; font-size: 13px">
+      <sc-if value="{{pagata}}" hint-placeholder-val="{{ false }}"><span><span style="display: inline-block; padding: 1px 8px; border: 1.5px solid #0b7a33; border-radius: 6px; background: #ffffff; color: #0b7a33; font-size: 12px; font-weight: 700; letter-spacing: 0.02em">&#10003; Pagata</span> {{quota}}</span></sc-if>
+      <sc-if value="{{daPagare}}" hint-placeholder-val="{{ true }}"><span style="font-weight: 700; color: #b81d1d">{{quota}}</span></sc-if>
+    </span></sc-if>
+    <sc-if value="{{conQuota}}" hint-placeholder-val="{{ false }}"><sc-if value="{{daPagare}}" hint-placeholder-val="{{ true }}"><button style="min-height: 44px; padding: 0 14px; background: transparent; border: 2px solid #14709f; border-radius: 6px; font: 600 16px Inter, Arial, sans-serif; color: #0d2a3d; cursor: pointer">Incassa</button></sc-if></sc-if>
+    <sc-if value="{{daPagare}}" hint-placeholder-val="{{ true }}"><button aria-label="Togli dalla gara" style="width: 44px; height: 44px; background: transparent; border: 2px solid #b81d1d; border-radius: 6px; font: 600 16px Inter, Arial, sans-serif; color: #b81d1d; cursor: pointer">&#10005;</button></sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Bianchi Luca"},"minorenne":{"editor":"boolean","default":false},"nascita":{"editor":"text","default":"2009"},"corso":{"editor":"text","default":"Judo agonisti"},"certificato":{"editor":"text","default":"Valido, scade 3 marzo 2027"},"tono":{"editor":"enum","options":["verde","giallo","rosso","neutro"],"default":"verde"},"nota":{"editor":"text","default":"−66 kg"},"quota":{"editor":"text","default":""},"pagata":{"editor":"boolean","default":false},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1240,"height":64}}'>
+// COSTRUITA (src/components/segreteria/Gare.tsx, `SchedaGara`, elenco ATLETI; stile in src/segreteria.css, sezione LA SCHEDA DELLA GARA):
+// l'atleta di una gara, a DUE PIANI, solo nel look del sito (`.sg-gara-atleta`, `role="listitem"`): a sinistra `.sg-gara-atleta-chi` con il
+// nome (15px 600, l'omino a linea dei minorenni), «anno · corso» (13px `sec`) e `.sg-gara-atleta-stato`: il tag del certificato (`.sg-tag`,
+// parole di `scrittaCertificato` in src/lib/gare.ts: verde ✓, giallo … «Caricato, da confermare» perche' un certificato non confermato non vale,
+// rosso ✕, neutro «Non serve») e la NOTA (testo, o bottone «aggiungi nota» alto 44px); a destra `.sg-gara-azioni` (al massimo 300px): la quota
+// («Pagata» verde con «metodo, data», oppure «Da pagare · 90 €» rosso in grassetto col tasto Incassa a linea) e il tasto ✕ quadrato 44px,
+// rosso a linea, che toglie l'atleta dalla gara (non dalla palestra) e c'e' solo se non e' pagata; `aria-label` «Togli <nome> dalla gara».
+// `quota` vuota = gara senza quota: ne' quota ne' Incassa. Sotto i 700px (`telefono`) i piani vanno in colonna, gap 10px, azioni a tutta larghezza.
+// Niente testata di colonne: le colonne non ci sono piu' (erano la causa dei pulsanti che sbordavano). NON e' costruito il caso `sola`.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const t = (v) => v === true || v === 'true';
+    const telefono = t(p.telefono);
+    const quota = p.quota ?? '';
+    const pagata = t(p.pagata);
+    const nota = p.nota ?? '';
+    const conQuota = !!quota;
+    const tono = p.tono || 'verde';
+    return {
+      nome: p.nome ?? '', minorenne: t(p.minorenne), nascita: p.nascita || '—', corso: p.corso || '—', certificato: p.certificato ?? '',
+      tipoManca: tono === 'rosso', tipoAspetta: tono === 'giallo', tipoFatto: tono === 'verde', tipoNeutro: tono === 'neutro',
+      nota: nota || 'aggiungi nota', coloreNota: nota ? '#0d2a3d' : '#46606f',
+      conQuota, quota, pagata, daPagare: !pagata,
+      direzione: telefono ? 'column' : 'row', allinea: telefono ? 'stretch' : 'center',
+    };
+  }
+}
+</script>
+</body>
+</html>

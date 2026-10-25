@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .riga { display: flex; align-items: baseline; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; align-self: center; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .nome { margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .testo { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .kanji { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border: 2px solid #0d2a3d; font-size: 34px; font-weight: 700; }
+    .piede { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 16px; border-top: 2px solid #cfe6f4; }
+    .spenta { margin: 0; padding: 10px 12px; background: #cfe6f4; border-radius: 6px; font-size: 14px; line-height: 1.45; }
+    .scelte { display: flex; flex-wrap: wrap; gap: 8px; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #8f6a00">PROPOSTA · SEGRETERIA CHE NON INSEGNA: SOLO PERSONA E ACCESSO</span>
+  <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
+    <div style="display: flex; align-items: center; gap: 16px">
+      <div class="kanji">受</div>
+      <div style="display: flex; flex-direction: column; gap: 4px"><h2 class="nome">ROSSI ANNA</h2><span class="sotto">Segreteria</span></div>
+      <div style="margin-left: auto"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Altro ▾" hint-size="110px,48px"></dc-import></div>
+    </div>
+    <dc-import name="SchedePersonale" tema="sito" acceso="PERSONA" voci="ACCESSO|PERSONA" chiare="{{ true }}" hint-size="100%,44px"></dc-import>
+    <div class="due">
+<dc-import name="Dato" tema="sito" etichetta="EMAIL" valore="giulia.dechiara@esempio.it" hint-size="100%,62px"></dc-import>
+<dc-import name="Dato" tema="sito" etichetta="CORSI" valore="Judo ragazzi, Judo adulti" hint-size="100%,62px"></dc-import>
+    </div>
+    <dc-import name="Chip" tema="sito" label="Modifica" hint-size="170px,40px"></dc-import>
+    <div class="riga"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#46606f" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none; align-self: center" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg><span class="et">RUOLO</span><span class="filo"></span></div>
+    <div class="scelte"><dc-import name="Chip" tema="sito" label="Segreteria" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="Istruttore" acceso="{{ true }}" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="Amministratore" hint-size="170px,40px"></dc-import></div>
+    <div class="riga"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#46606f" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none; align-self: center" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z M14 6l3 3"></path></svg><span class="et">KANJI</span><span class="filo"></span></div>
+    <div class="scelte"><dc-import name="Chip" tema="sito" label="柔" acceso="{{ true }}" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="道" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="武" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="力" hint-size="170px,40px"></dc-import><dc-import name="Chip" tema="sito" label="気" hint-size="170px,40px"></dc-import></div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":860,"height":720}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

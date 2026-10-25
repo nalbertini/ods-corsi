@@ -14,11 +14,11 @@ import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaInizial
 import { ICONE_SCHEDA_ISCRITTO } from '../Icons'
 import { ImportaTessere, TessereDellaPersona } from './Tessere'
 import { lette } from '../../lib/letture'
-import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni, messaggio, Proposta, Riga, SchedaPiena, Stato, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni, messaggio, Proposta, Riga, SchedaPiena, Stato, Testa, useAvviso, useCarica, useOrdina, Tasto } from './comune'
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
 import type { Ricercata } from '../../lib/ricerca'
-import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, fratelliDaProporre, maggiorenneDal, propostaGenitore, SCONTO_FAMIGLIA } from '../../lib/nucleo'
+import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, fratelliDaProporre, maggiorenneDal, nucleoPerRicevuta, propostaGenitore, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { minorenne } from '../../lib/richieste'
 import { euro, voceQuota } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
@@ -29,7 +29,7 @@ import { cellaSollecito, fraseSollecitato, quotaNelVecchioDi } from '../../lib/s
 import { consiglioCorso, corsiDaPagare, nonPagati, statoCorsi, testoCorsoBreve, type StatoCorso } from '../../lib/corsiDaPagare'
 import { bollinoCorso, iscrizioniDellaScheda, riquadroCertificato, riquadroCorso, riquadroDocumento, riquadroQuota } from '../../lib/schedeIscritto'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
-import { ICONE_ISCRITTI } from '../Icons'
+import { Icona, ICONE_ISCRITTI } from '../Icons'
 
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
 const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto: 2, in_scadenza: 1, in_arrivo: 1, valido: 0, non_serve: 0 }
@@ -85,37 +85,11 @@ function TestaStretta({ parola, corta }: { parola: string; corta?: string }) {
       {corta ? (
         <span className="sg-testa-stretta">{corta}</span>
       ) : (
-        <svg className="sg-testa-stretta" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label={parola}>
-          {parola === 'QUOTA' ? (
-            <>
-              <path d="M18 7c-1.2-1.3-3-2-5-2a7 7 0 0 0 0 14c2 0 3.8-.7 5-2" />
-              <path d="M4 10h9M4 14h9" />
-            </>
-          ) : (
-            <>
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <path d="M14 2v6h6M12 11v6M9 14h6" />
-            </>
-          )}
-        </svg>
+        <span className="sg-testa-stretta">
+          <Icona nome={parola === 'QUOTA' ? 'quota' : 'certificato'} etichetta={parola} />
+        </span>
       )}
     </>
-  )
-}
-
-/** Davanti al contatto: si chiama o si scrive. Tratto 1.75 come le icone del menu. */
-function IconaContatto({ tipo }: { tipo: 'telefono' | 'email' }) {
-  return (
-    <svg className="sg-icona-contatto" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {tipo === 'telefono' ? (
-        <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z" />
-      ) : (
-        <>
-          <rect x="2" y="4" width="20" height="16" rx="2" />
-          <path d="m22 7-10 6L2 7" />
-        </>
-      )}
-    </svg>
   )
 }
 
@@ -472,9 +446,9 @@ export function Iscritti({
           }`}
         >
           {conTessereLette && (
-            <button type="button" className="sg-btn sg-btn-linea" onClick={() => setImporta(true)}>
+            <Tasto onClick={() => setImporta(true)}>
               Importa tessere
-            </button>
+            </Tasto>
           )}
           <button type="button" className="sg-btn sg-btn-pieno" onClick={onNuovo}>
             + Nuovo iscritto
@@ -579,13 +553,13 @@ export function Iscritti({
         {sollecitare && perSollecito.guaio && <Guaio titolo="WHATSAPP" testo={`La colonna dei solleciti non si è letta: ${perSollecito.guaio}`} />}
         <div role="table" aria-label="Iscritti" className="sg-tabella">
           <div role="row" className="sg-lista-testa sg-riga-iscritto sg-riga-iscritti" data-sollecito={sollecitare || undefined}>
-            {colonna('nome', 'NOME')}
+            {colonna('nome', 'NOME', { icona: 'persona' })}
             <span role="columnheader" className="sg-etichetta">FAMIGLIA</span>
-            {colonna('certificato', <TestaStretta parola="CERTIFICATO" />, { numeri: true })}
-            {colonna('quota', <TestaStretta parola="QUOTA" />, { numeri: true })}
-            {colonna('corsi', 'CORSI')}
-            {colonna('contatto', 'CONTATTO')}
-            {colonna('frequenza', <TestaStretta parola="30 GIORNI" corta="30 GG" />, { numeri: true, destra: true })}
+            {colonna('certificato', <TestaStretta parola="CERTIFICATO" />, { numeri: true, icona: 'certificato' })}
+            {colonna('quota', <TestaStretta parola="QUOTA" />, { numeri: true, icona: 'quota' })}
+            {colonna('corsi', 'CORSI', { icona: 'corso' })}
+            {colonna('contatto', 'CONTATTO', { icona: 'telefono' })}
+            {colonna('frequenza', <TestaStretta parola="30 GIORNI" corta="30 GG" />, { numeri: true, destra: true, icona: 'calendario' })}
             {sollecitare && <span role="columnheader" className="sg-etichetta sg-cella-sollecito-testa">WHATSAPP</span>}
           </div>
           <div className="sg-tabella-corpo">
@@ -642,7 +616,7 @@ export function Iscritti({
                     {cella.altri > 0 && <span className="sg-cella-piu">+{cella.altri}</span>}
                   </span>
                   <span role="cell" className="sg-cella-contatto" data-manca={!(p.email || p.telefono) || undefined}>
-                    {p.telefono ? <IconaContatto tipo="telefono" /> : p.email ? <IconaContatto tipo="email" /> : null}
+                    {(p.telefono || p.email) && <span className="sg-icona-contatto"><Icona nome={p.telefono ? 'telefono' : 'email'} misura={14} /></span>}
                     {p.telefono ?? p.email ?? 'nessun contatto'}
                   </span>
                   <span
@@ -748,9 +722,9 @@ function Nuovo({
         <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
           Lascia stare
         </button>
-        <button type="button" className="sg-btn sg-btn-pieno grow" disabled={!b.nome.trim() || !b.cognome.trim()} onClick={salva}>
+        <Tasto tono="pieno" className="grow" disabled={!b.nome.trim() || !b.cognome.trim()} onClick={salva}>
           Salva
-        </button>
+        </Tasto>
       </div>
     </>
   )
@@ -877,8 +851,7 @@ function Scheda({
   const liberi = attivi.filter((c) => !correnti.some((i) => i.corsoId === c.id))
   const venuto = storico.dato?.filter((x) => x.stato === 'presente').length ?? 0
   // Gli altri del nucleo familiare, per lo sconto famiglia della ricevuta.
-  const titolare = p.nucleo ? tutti.find((x) => x.id === p.nucleo) : p
-  const nucleo = titolare ? [titolare, ...tutti.filter((x) => x.nucleo === titolare.id && x.attiva)].filter((x) => x.id !== p.id) : []
+  const nucleo = nucleoPerRicevuta(p, tutti)
   const parenti = stessoContatto(p, tutti)
   // A segnalazioni spente niente timbro TESSERA né segno sulla linguetta: la sezione resta.
   const tessereDi = tessere && SEGNALA_TESSERE ? tessere.filter((t) => t.personaId === p.id) : undefined
@@ -1310,9 +1283,9 @@ function Scheda({
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setModifica(null)}>
               Lascia stare
             </button>
-            <button
-              type="button"
-              className="sg-btn sg-btn-pieno grow"
+            <Tasto
+              tono="pieno"
+              className="grow"
               disabled={!modifica.nome.trim() || !modifica.cognome.trim()}
               onClick={() => {
                 setGuaio('')
@@ -1333,7 +1306,7 @@ function Scheda({
               }}
             >
               Salva
-            </button>
+            </Tasto>
           </>
       </div>
       )}
@@ -1978,9 +1951,9 @@ export function ModificaAnagrafica({
         <button type="button" className="sg-btn sg-btn-linea" onClick={onFatto}>
           Lascia stare
         </button>
-        <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void fai(() => d.salvaAnagrafica(p.id, pulita, true), 'Dati anagrafici salvati', onFatto)}>
+        <Tasto tono="pieno" disabled={!!no} onClick={() => void fai(() => d.salvaAnagrafica(p.id, pulita, true), 'Dati anagrafici salvati', onFatto)}>
           Salva
-        </button>
+        </Tasto>
       </div>
     </div>
   )
@@ -2144,9 +2117,9 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setGesto(null)}>
               Lascia stare
             </button>
-            <button
-              type="button"
-              className="sg-btn sg-btn-pieno grow"
+            <Tasto
+              tono="pieno"
+              className="grow"
               disabled={!pronto}
               onClick={() =>
                 void fai(
@@ -2160,7 +2133,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
               }
             >
               Salva
-            </button>
+            </Tasto>
           </div>
         </div>
       ) : null}

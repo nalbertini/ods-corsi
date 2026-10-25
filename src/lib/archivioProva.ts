@@ -14,6 +14,8 @@ import type { EnteRicevuta, Ricevuta } from './ricevute'
 import type { InvioRicevuta } from './ricevuteEmail'
 import type { Anagrafica, FileSeg } from './segreteria'
 import type { TesseraSeg } from './tessere'
+import type { AtletaGara, Gara } from './gare'
+import { chiaveGiorno } from './sala'
 
 /**
  * L'archivio della modalità prova: corsi, orari, persone e iscrizioni.
@@ -156,6 +158,9 @@ export interface Archivio {
    * il database le aveva già create, e il trigger non le toglie.
    */
   dateCorsiDal?: string
+  /** Le gare e chi ci va, come `gare` e `gare_atleti` (117-gare.sql). */
+  gare?: Gara[]
+  gareAtleti?: AtletaGara[]
   /** Le ricevute dei pagamenti, come le righe di `ricevute` (16-ricevute.sql). */
   ricevute?: Ricevuta[]
   /** I tentativi di mandare le ricevute per email, come `invii_ricevute` (76-ricevute-email.sql): in prova nessuna mail parte. */
@@ -483,7 +488,32 @@ function iniziale(): Archivio {
     iscrizioni,
     lezioni: {},
     tessere: tessereDiProva(iscrizioni, CORSI.map((c) => ({ id: c.id, enteTessera: enteDelCorso(c.nome) }))),
+    ...gareDiProva(iscrizioni),
   }
+}
+
+/** Tre gare attorno a oggi: una passata, una vicina con atleti e quota, una annullata. */
+function gareDiProva(iscrizioni: IscrizioneProva[]): Pick<Archivio, 'gare' | 'gareAtleti'> {
+  const fra = (giorni: number) => {
+    const d = new Date()
+    return chiaveGiorno(new Date(d.getFullYear(), d.getMonth(), d.getDate() + giorni))
+  }
+  const di = (corso: string) => iscrizioni.filter((i) => i.corsoId === corso).map((i) => i.personaId)
+  const agonisti = [...new Set([...di('judo-agonisti').slice(0, 4), ...di('lotta-3').slice(0, 2)])]
+  const gare: Gara[] = [
+    { id: 'gara-passata', nome: 'Coppa d’autunno', dal: fra(-35), luogo: 'Palazzetto di Alessandria', organizzatore: 'FIJLKAM Piemonte', annullata: false, voci: [{ voce: 'Iscrizione', importo: 2500 }], accompagnatori: ['i-maurizio'] },
+    {
+      id: 'gara-vicina', nome: 'Trofeo Città di Varese', dal: fra(20), al: fra(21), luogo: 'PalaWhirlpool, Varese', indirizzo: 'Piazzale Gramsci, Varese', organizzatore: 'FIJLKAM Lombardia', annullata: false,
+      voci: [{ voce: 'Iscrizione', importo: 3000 }, { voce: 'Trasferimento in pullman', importo: 1500 }, { voce: 'Hotel, una notte', importo: 4500 }],
+      accompagnatori: ['i-maurizio', 'i-maura'],
+    },
+    { id: 'gara-annullata', nome: 'Torneo di Natale', dal: fra(60), luogo: 'Palestra Ods, Torino', organizzatore: 'FIJLKAM Piemonte', annullata: true, voci: [], accompagnatori: [] },
+  ]
+  const gareAtleti: AtletaGara[] = [
+    ...agonisti.slice(0, 3).map((personaId) => ({ garaId: 'gara-passata', personaId })),
+    ...agonisti.map((personaId, i) => ({ garaId: 'gara-vicina', personaId, ...(i === 0 ? { pagamento: { importo: 9000, voci: gare[1].voci.map((v) => ({ ...v })), metodo: 'Contanti', data: fra(-2) } } : {}) })),
+  ]
+  return { gare, gareAtleti }
 }
 
 function leggi(): Archivio {
@@ -497,6 +527,8 @@ function leggi(): Archivio {
         a.corsi = a.corsi.map((c) => ({ ...c, enteTessera: c.enteTessera ?? enteDelCorso(c.nome) }))
         a.tessere = tessereDiProva(a.iscrizioni ?? [], a.corsi)
       }
+      // Un archivio salvato prima delle gare: quelle di esempio, una volta sola.
+      if (!a.gare) Object.assign(a, gareDiProva(a.iscrizioni ?? []))
       // Un archivio di prima dell'email unica: il contatto era dove arrivava la posta, e diventa l'email.
       // `as` perché il campo non esiste più nel tipo: lo si legge solo dall'archivio salvato.
       a.persone = a.persone.map((p) => {

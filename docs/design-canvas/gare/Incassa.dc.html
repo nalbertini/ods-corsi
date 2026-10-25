@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: INCASSA dalla riga di un atleta. È la conferma di REGISTRA IL PAGAMENTO che c'è già (../pagamento-ricevuta/), compilata con l'importo della gara e la voce Gare: si sceglie solo come ha pagato. Il movimento in CONTABILITÀ si fa da sé; con la spunta si apre FAI LA RICEVUTA già compilata. Pagato, la riga dice «Pagata · ricevuta N/AAAA» o «Pagata · contanti, data». -->
+<div style="display: flex; flex-direction: column; gap: 8px; width: 600px; min-height: 720px">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · INCASSA LA QUOTA DELLA GARA</span>
+  <dc-import name="Segmenti" tema="sito" voci="Contanti|Bonifico|Satispay|POS" scelta="Contanti" hint-size="460px,52px"></dc-import>
+  <dc-import name="Dialogo" domanda="Registrare questo pagamento?" resto="90,00 € · Contanti
+Colombo Giulia
+mercoledì 21 ottobre 2026
+Gara · Trofeo Città di Varese, 14–15 novembre
+Iscrizione 30 € · Trasferimento 15 € · Hotel 45 €
+Entra in CONTABILITÀ: Cassa Contanti · Gare" spunta="Fai anche la ricevuta" spuntaNota="Si apre FAI LA RICEVUTA già compilata. Il pagamento si registra lì, una volta sola." tema="sito" tipo="conferma" no="No, torna alla gara" si="Sì, fai la ricevuta" altezza="600px" hint-size="600px,600px"></dc-import>
+  <span style="font-size: 14px; line-height: 1.45; color: #46606f">Sopra, come ha pagato. Per un minorenne il pagamento si scrive sulla persona, come le altre quote; la ricevuta va al genitore come sempre e ha una riga per ogni voce della quota.</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":600,"height":720}}'>class Component extends DCLogic { renderVals() { return {}; } }</script>
+</body>
+</html>

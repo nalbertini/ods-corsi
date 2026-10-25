@@ -4,7 +4,7 @@ import { bastaPerCercare, comeSiAnnulla, domandaAnnullaPagamento, domandaAnnulla
 import { avvisoCassaChiusa } from '../../lib/contabilita'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { rigaEmail } from '../../lib/ricevuteEmail'
-import { chiedi, messaggio, Riga, useCarica, type useAvviso } from './comune'
+import { chiedi, messaggio, Riga, useCarica, type useAvviso, Tasto } from './comune'
 import { RegistraPagamento } from './Ricevute'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -81,18 +81,18 @@ export function PagamentoAperto({ d, riga, fai, onChiudi, onFatto }: { d: DatiSe
       )}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         {come === 'ricevuta' && riga.ricevuta && (
-          <button type="button" className="sg-btn sg-btn-rosso" onClick={() => void annullaRicevuta()}>
+          <Tasto icona="annulla" tono="rosso" onClick={() => void annullaRicevuta()}>
             Annulla la ricevuta {riga.ricevuta.numero}/{riga.ricevuta.anno}
-          </button>
+          </Tasto>
         )}
         {come === 'pagamento' && (
-          <button type="button" className="sg-btn sg-btn-rosso" onClick={() => void annullaPagamento()}>
+          <Tasto tono="rosso" onClick={() => void annullaPagamento()}>
             Annulla il pagamento
-          </button>
+          </Tasto>
         )}
-        <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
+        <Tasto onClick={onChiudi}>
           Chiudi
-        </button>
+        </Tasto>
       </div>
     </section>
   )

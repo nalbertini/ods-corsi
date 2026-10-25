@@ -131,7 +131,7 @@ I due tasti in cima:
 - **TUTTI PRESENTI**: mette ✓ a tutti. È il modo più veloce: premetelo e poi
   toccate una volta gli assenti. Se qualcuno è già segnato diventa **GLI ALTRI
   PRESENTI**, e mette ✓ solo a chi non ha ancora un segno: le assenze già
-  messe restano. Quando tutti hanno un segno diventa **✓ TUTTI SEGNATI**, e
+  messe restano. Quando tutti hanno un segno diventa **TUTTI SEGNATI**, e
   non si tocca. Se invece gli iscritti sono tutti assenti (un appello chiuso per
   sbaglio, riaperto; chi prova non conta) torna **TUTTI PRESENTI**, e mette ✓
   a tutti.
@@ -161,7 +161,7 @@ Non c'è niente da salvare: ogni tocco parte subito.
 
 In fondo all'elenco c'è il tasto giallo per chiudere. Dice:
 
-- **CHIUDI L'APPELLO ✓** quando tutti hanno un segno;
+- **CHIUDI L'APPELLO**, con la spunta, quando tutti hanno un segno;
 - **CHIUDI · 3 ASSENTI** quando qualcuno è ancora da segnare:
   chiudendo, chi non ha un segno risulta **assente** (se è uno in prova, il
   tasto aggiunge **+1 PROVA**).
@@ -230,7 +230,7 @@ arriva prima.
 
 Chi non è iscritto a questa lezione e viene a provarla (o a fare la settimana
 di prova) lo aggiungete voi, senza aspettare la segreteria: in fondo
-all'elenco c'è **+ AGGIUNGI CHI PROVA**. Apre una pagina a parte, con la
+all'elenco c'è **AGGIUNGI CHI PROVA**. Apre una pagina a parte, con la
 tastiera già pronta.
 
 1. Scrivete il **nome o il cognome**, in qualunque ordine. Dalla terza lettera
@@ -367,6 +367,16 @@ vostri corsi e con le singole lezioni. I timer si fanno e si cambiano nel timer
 
 Si scelgono i vostri timer e quelli della palestra. Il collegamento lo vedono
 anche il tablet e il collega che fa la lezione al posto vostro.
+
+## Le gare
+
+Sotto i timer, in **I MIEI**, la sezione **GARE** (solo se ce n'è una in
+arrivo): le gare con atleti dei vostri corsi e quelle in cui siete fra gli
+accompagnatori. Per ognuna le date, il luogo (l'indirizzo apre la mappa), le
+note e gli atleti, ognuno col corso, il **certificato alla data della gara** e
+la nota della segreteria. In cima, in rosso, quanti non hanno il certificato
+valido: la segreteria li sta sentendo. Si legge soltanto: le gare, gli atleti e
+le quote li scrive la [segreteria](segreteria/gare.md).
 
 ## Le mie ore
 

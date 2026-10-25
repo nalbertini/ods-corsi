@@ -85,6 +85,7 @@ la nasconde da **IMPOSTAZIONI → QUESTO COMPUTER** ([guida](regole.md)): la sce
 | **Da fare** | La prima pagina: appelli mancanti, richieste nuove, presenze da confermare, certificati e pagamenti, contati, con il tasto per sistemarli | [Apri](da-fare.md) |
 | **Settimana** | La griglia della settimana, gli appelli mancanti, annullare, sostituti, lezioni straordinarie | [Apri](settimana.md) |
 | **Corsi** | I corsi: sala, istruttori, posti, colore, giorni e orari | [Apri](corsi.md) |
+| **Gare** | Le gare: date, luogo, accompagnatori, chi ci va col certificato alla data della gara, le quote | [Apri](gare.md) |
 | **Iscritti** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
 | **Richieste online** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
 | **Presenze** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |
@@ -128,8 +129,8 @@ dove si era, e una scheda iscritto o un corso si apre anche in un'altra
 finestra, copiandone il link. Sul telefono, col MENU
 aperto, Indietro chiude solo il menu.
 
-Il titolo della scheda del browser dice la voce aperta («Contabilità ·
-Segreteria · ODS Corsi»): con più schede aperte, nella cronologia e nei
+Il titolo della scheda del browser dice la voce aperta («Contabilità -
+Segreteria - Centro Judo»): con più schede aperte, nella cronologia e nei
 segnalibri si riconosce subito dove porta.
 
 Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
@@ -164,6 +165,15 @@ accanto al nome dice il verso (▲ crescente, ▼ decrescente). Chi non ha
 il dato, il «—», resta in fondo. In **CERTIFICATO** e **QUOTA** vengono prima i
 guai più grossi, in **STATO** prima quelle da guardare. L'ordine resta finché non si
 cambia voce del menu, anche aprendo una scheda e tornando.
+
+## Le icone
+
+I tasti che si usano ovunque hanno un'icona davanti alla parola, sempre la
+stessa: **Salva**, **Annulla**, **Aggiungi**, **Cerca**, **Elimina**,
+**Scarica**, **Stampa**, **Copia**, **Importa**, **Modifica**, **Chiudi**. Gli
+altri tasti restano con la sola parola. Nel nuovo aspetto gli stati con l'icona
+(in regola, da confermare, manca) sono un'etichetta colorata piena invece del
+bordo col segno ✓ o ✕.
 
 ## Il giro di una settimana normale
 

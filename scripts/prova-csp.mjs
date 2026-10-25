@@ -29,6 +29,9 @@ ok('un database con dominio suo si legge dall’indirizzo', direttiva(politicaCs
 ok('senza database (modalità prova) non resta un indirizzo mezzo scritto', direttiva(politicaCsp(undefined), 'connect-src')?.some((s) => s.includes('undefined')), false)
 const PAYPAL = ['https://www.paypal.com', 'https://*.paypal.com', 'https://*.paypalobjects.com']
 ok('un indirizzo che non è un indirizzo non apre niente', direttiva(politicaCsp('boh'), 'connect-src')?.filter((s) => s !== "'self'" && !s.includes('spotify') && !PAYPAL.includes(s) && s !== 'https://pay.google.com'), [])
+// Google Pay (pay.google.com) è della carta, non di Places.
+ok('senza la chiave di Places, Google non si raggiunge', direttiva(p, 'connect-src')?.some((s) => s.includes('googleapis')), false)
+ok('con la chiave, solo i suggerimenti degli indirizzi: nessuno script di Google', [direttiva(politicaCsp('https://abc.supabase.co', true), 'connect-src')?.filter((s) => s.includes('googleapis')), direttiva(politicaCsp('https://abc.supabase.co', true), 'script-src')?.some((s) => s.includes('googleapis'))], [['https://places.googleapis.com'], false])
 ok('nessuna direttiva che una <meta> ignora', /frame-ancestors|report-uri|sandbox/.test(p), false)
 
 // La carta nel modulo di iscrizione (PayPal: campi carta ospitati, Apple Pay, Google Pay): solo questi domini.

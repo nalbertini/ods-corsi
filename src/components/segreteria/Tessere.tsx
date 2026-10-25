@@ -14,7 +14,7 @@ import {
   type TesseraSeg,
   type TipoTessera,
 } from '../../lib/tessere'
-import { Campo, chiedi, messaggio, Riga, useAvviso } from './comune'
+import { Campo, chiedi, messaggio, Riga, useAvviso, Tasto } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 type Avvisa = ReturnType<typeof useAvviso>['avvisa']
@@ -143,9 +143,9 @@ export function TessereDellaPersona({
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setScrivi(false)}>
               Lascia stare
             </button>
-            <button
-              type="button"
-              className="sg-btn sg-btn-pieno grow"
+            <Tasto
+              tono="pieno"
+              className="grow"
               disabled={!b.ente.trim() || !b.codice.trim() || !b.dal}
               onClick={() =>
                 void fai(() => d.aggiungiTessera({ personaId: p.id, ...b }), 'Tessera aggiunta', () => {
@@ -156,7 +156,7 @@ export function TessereDellaPersona({
               }
             >
               Salva la tessera
-            </button>
+            </Tasto>
           </div>
         </div>
       ) : (
@@ -313,9 +313,9 @@ export function ImportaTessere({ d, ricarica }: { d: DatiSegreteria; ricarica: (
           <span style={{ fontSize: 15 }}>
             Fatto: {fatto.esito.nuove === 1 ? '1 tessera nuova' : `${fatto.esito.nuove} tessere nuove`}. Le trovi nella scheda di ogni persona, sotto «Tessere».
           </span>
-          <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={ricomincia}>
+          <Tasto style={{ alignSelf: 'flex-start' }} onClick={ricomincia}>
             Importa un altro foglio
-          </button>
+          </Tasto>
         </div>
       )}
     </section>

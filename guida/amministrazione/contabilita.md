@@ -195,15 +195,17 @@ evidenziata in giallo, come ogni movimento su «Da classificare», «Varie» o s
 - quelli **già negli incassi**: un pagamento col metodo Satispay registrato in
   palestra, stesso giorno e stesso importo;
 - quelli **già scritti a mano**: stesso giorno, stesso importo, un solo movimento
-  possibile in Conto Corrente o Satispay. Resta il tuo, con la sua voce;
+  possibile nella cassa Satispay. Resta il tuo, con la sua voce. Le entrate del
+  Conto Corrente non contano: un incasso Satispay non è un incasso della banca;
 - quelli di prima dell'inizio dei conti.
 
 **Da decidere**: se il giorno è già chiuso, o se quel giorno ci sono più movimenti
-a mano con lo stesso importo, il pagamento non entra: si decide in
+a mano in Satispay con lo stesso importo, il pagamento non entra: si decide in
 [IMPORTAZIONI](importazioni.md#da-decidere), a gruppi, con una conferma per gruppo.
 
-Dal 1° ottobre 2026 i pagamenti Satispay entrano nella cassa **Satispay**; quelli di
-prima nel Conto Corrente, come si faceva finora, così i saldi passati non cambiano.
+I pagamenti Satispay entrano tutti nella cassa **Satispay**, che parte dal 1°
+gennaio 2025, separata dal Conto Corrente. Quelli scritti in Conto Corrente prima
+di ottobre 2026 restano dove sono.
 Uno scarico si annulla movimento per movimento, come ogni movimento.
 
 Dopo ogni scarico che ha scritto qualcosa, lasciato pagamenti da decidere o non è

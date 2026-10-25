@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: AGGIUNGI ATLETI, cassetto a destra sopra la scheda della gara (Dialogo tipo cassetto: qui disegnato con i suoi valori, 520px). Due modi: PARTI DA UN CORSO (spunta tutti gli iscritti attivi del corso, poi si tolgono quelli che non vanno) o CERCA per nome. Ogni persona con anno di nascita, corso e certificato alla data della gara, per scegliere bene fra omonimi. Chi e' gia' nella gara e' spuntato e spento: non si aggiunge due volte. Solo iscritti attivi. -->
+<div style="position: relative; display: flex; width: 1440px; height: 900px; background: #eef5fa; overflow: hidden">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" gare="true" attiva="GARE" numeri="RICHIESTE ONLINE:3" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · AGGIUNGERE PIÙ ATLETI INSIEME</span>
+    <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; font-size: 34px"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#14709f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -4px; margin-right: 10px"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3M12 14v4M8 21h8M10 18h4"></path></svg>TROFEO CITTÀ DI VARESE</h1>
+  </main>
+  <div style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6)"></div>
+  <aside style="position: absolute; top: 0; right: 0; bottom: 0; width: 520px; display: flex; flex-direction: column; gap: 16px; padding: 28px; background: #ffffff; border-left: 2px solid #0d2a3d">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <b style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; font-size: 28px">AGGIUNGI ATLETI</b>
+        <span style="font-size: 14px; color: #46606f"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Trofeo Città di Varese · 14 e 15 novembre</span>
+      </div>
+      <span style="font-size: 22px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">✕</span>
+    </div>
+    <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="PARTI DA UN CORSO" valore="Judo agonisti · 12 iscritti" hint-size="100%,72px"></dc-import>
+    <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="O CERCA PER NOME" segnaposto="Cognome o nome" hint-size="100%,72px"></dc-import>
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <dc-import name="Titoletto" tema="sito" label="JUDO AGONISTI" conto="12" piccolo="true" hint-size="200px,28px"></dc-import>
+      <span style="font-size: 13px; font-weight: 600; color: #14709f; text-decoration: underline">Spunta tutti</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 0; overflow: hidden; flex: 1; border: 1px solid #cfe6f4; border-radius: 6px">
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; border-bottom: 1px solid #cfe6f4; opacity: 0.5">
+        <span style="flex: none; width: 22px; height: 22px; border: 2px solid #0d2a3d; border-radius: 4px; background: #0d2a3d; color: #ffffff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center">✓</span>
+        <span style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0"><b style="font-size: 15px; font-weight: 600">Bianchi Luca</b><span style="font-size: 13px; color: #46606f">nato nel 2009 · già in questa gara</span></span>
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; white-space: nowrap"><span style="width: 8px; height: 8px; border-radius: 50%; background: #12913f"></span>Valido</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; border-bottom: 1px solid #cfe6f4; opacity: 1">
+        <span style="flex: none; width: 22px; height: 22px; border: 2px solid #0d2a3d; border-radius: 4px; background: #0d2a3d; color: #ffffff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center">✓</span>
+        <span style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0"><b style="font-size: 15px; font-weight: 600">Brambilla Elisa</b><span style="font-size: 13px; color: #46606f">nata nel 2010 · Judo agonisti</span></span>
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; white-space: nowrap"><span style="width: 8px; height: 8px; border-radius: 50%; background: #12913f"></span>Valido</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; border-bottom: 1px solid #cfe6f4; opacity: 1">
+        <span style="flex: none; width: 22px; height: 22px; border: 2px solid #0d2a3d; border-radius: 4px; background: #ffffff; color: #ffffff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center"></span>
+        <span style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0"><b style="font-size: 15px; font-weight: 600">Conti Davide</b><span style="font-size: 13px; color: #46606f">nato nel 2011 · Judo agonisti, Judo kids</span></span>
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; white-space: nowrap"><span style="width: 8px; height: 8px; border-radius: 50%; background: #e4292a"></span>Manca</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; border-bottom: 1px solid #cfe6f4; opacity: 1">
+        <span style="flex: none; width: 22px; height: 22px; border: 2px solid #0d2a3d; border-radius: 4px; background: #0d2a3d; color: #ffffff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center">✓</span>
+        <span style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0"><b style="font-size: 15px; font-weight: 600">Galli Tommaso</b><span style="font-size: 13px; color: #46606f">nato nel 2009 · Judo agonisti</span></span>
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; white-space: nowrap"><span style="width: 8px; height: 8px; border-radius: 50%; background: #f4c31b"></span>Da confermare</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; border-bottom: 1px solid #cfe6f4; opacity: 1">
+        <span style="flex: none; width: 22px; height: 22px; border: 2px solid #0d2a3d; border-radius: 4px; background: #ffffff; color: #ffffff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center"></span>
+        <span style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0"><b style="font-size: 15px; font-weight: 600">Nerini Sara</b><span style="font-size: 13px; color: #46606f">nata nel 2011 · Judo agonisti</span></span>
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; white-space: nowrap"><span style="width: 8px; height: 8px; border-radius: 50%; background: #12913f"></span>Valido</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; border-bottom: 1px solid #cfe6f4; opacity: 1">
+        <span style="flex: none; width: 22px; height: 22px; border: 2px solid #0d2a3d; border-radius: 4px; background: #ffffff; color: #ffffff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center"></span>
+        <span style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0"><b style="font-size: 15px; font-weight: 600">Nerini Sara</b><span style="font-size: 13px; color: #46606f">nata nel 2013 · Judo kids, Judo agonisti</span></span>
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; white-space: nowrap"><span style="width: 8px; height: 8px; border-radius: 50%; background: #12913f"></span>Valido</span>
+      </label>
+    </div>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="principale" label="Aggiungi 2 atleti" larghezza="100%" hint-size="100%,56px"></dc-import>
+  </aside>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>class Component extends DCLogic { renderVals() { return {}; } }</script>
+</body>
+</html>

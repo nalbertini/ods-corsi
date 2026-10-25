@@ -83,7 +83,7 @@ function ComeSiPaga() {
           {PAGAMENTO.satispay && <Dettaglio>Oppure con Satispay, dall'app.</Dettaglio>}
           <Dettaglio>{COME_SI_PAGA.ricevuta}</Dettaglio>
           <Tasti>
-            <Tasto onClick={copia}>{copiato ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+            <Tasto icona="copia" onClick={copia}>{copiato ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
             {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
           </Tasti>
         </Riquadro>

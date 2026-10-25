@@ -288,6 +288,11 @@
   --giallo-testo: #8f6a00;
   --verde-testo: #0b7a33;
   --rosso-testo: #b81d1d;
+  /* Il fondo dei segni con l'icona (Tag): una tinta chiara dello stato, senza bordo; il testo resta -testo, sopra 4,5:1. */
+  --tinta-rosso: #fbe9e9;
+  --tinta-giallo: #fcf6e6;
+  --tinta-verde: #e3f2e8;
+  --tinta-neutro: #e6eef3;
   --su-colore: #0d2a3d;
   --su-rosso: #ffffff;
   --tasto: #0d2a3d;
@@ -428,6 +433,7 @@
 :root[data-look='sito'] .sg-riquadro[data-fatto='true'] { box-shadow: inset 4px 0 0 var(--verde); }
 :root[data-look='sito'] .sg-riquadro[data-avviso='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 /* Il tasto principale è il giallo del marchio (uno per schermata); il tasto a linea e i filtri hanno il blu dei campi. */
+:root[data-look='sito'] .riquadro[data-tono='guaio'] { box-shadow: inset 4px 0 0 var(--rosso); }
 :root[data-look='sito'] .sg-btn-pieno { background: var(--giallo); color: var(--su-colore); }
 /* Un tasto spento resta un blocco grigio anche nel look del sito: se no sembra acceso e non risponde. */
 :root[data-look='sito'] .sg-btn:disabled { background: var(--surface-2); color: var(--dim); }
@@ -533,6 +539,14 @@
 :root[data-look='sito'] .sg-tag[data-tipo='aspetta']::before,
 :root[data-look='sito'] .sg-tag[data-tipo='sostituto']::before { content: '… '; }
 :root[data-look='sito'] .sg-tag[data-tipo='fatto']::before { content: '✓ '; }
+/* Con l'icona il segno è una pastiglia tinta senza bordo: icona, simbolo e bordo insieme erano troppi segni per una parola. */
+:root[data-look='sito'] .sg-tag[data-icona] { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 8px; border: 0; border-radius: 6px; font-weight: 600; background: var(--tinta-neutro); }
+:root[data-look='sito'] .sg-tag[data-icona]::before { content: none; }
+:root[data-look='sito'] .sg-tag[data-icona][data-tipo='manca'] { background: var(--tinta-rosso); }
+:root[data-look='sito'] .sg-tag[data-icona][data-tipo='aspetta'],
+:root[data-look='sito'] .sg-tag[data-icona][data-tipo='sostituto'],
+:root[data-look='sito'] .sg-tag[data-icona][data-tipo='presto'] { background: var(--tinta-giallo); }
+:root[data-look='sito'] .sg-tag[data-icona][data-tipo='fatto'] { background: var(--tinta-verde); }
 /* Il giallo pieno è solo del tasto principale e della voce corrente: «aspetta» è testo e bordo in giallo scuro. */
 :root[data-look='sito'] .sg-bollino { background: var(--surface); color: var(--giallo-testo); border: 1.5px solid var(--giallo-testo); }
 :root[data-look='sito'] .sg-mancano-casella[data-stato='attesa'] { border-bottom-color: var(--giallo-testo); }
@@ -604,7 +618,7 @@
 /* Il tasto principale della schermata: sempre in vista, perché la testa resta ferma. */
 :root[data-look='sito'] .appello-testa .btn-go { background: var(--giallo); color: var(--su-colore); border-radius: 6px; letter-spacing: 0.04em; }
 :root[data-look='sito'] .appello-testa .btn-go:disabled { background: var(--surface-2); color: var(--dim); opacity: 1; }
-/* CHIUDI L'APPELLO ✓ resta giallo come CHIUDI · N ASSENTI: è lo stesso tasto, cambia solo cosa dice. */
+/* CHIUDI L'APPELLO resta giallo come CHIUDI · N ASSENTI: è lo stesso tasto, cambia solo cosa dice. */
 :root[data-look='sito'] .appello-fine .btn-go { background: var(--giallo); color: var(--su-colore); }
 
 :root[data-look='sito'] .riga-appello { background: var(--surface); border: 0; border-radius: 6px; box-shadow: inset 4px 0 0 transparent; }
@@ -778,7 +792,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .grow { flex-grow: 1; }
 
 .rule { display: flex; align-items: baseline; gap: 10px; padding: 22px 20px 10px; }
-.rule-label { font-family: var(--cond); font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); }
+.rule-label { display: inline-flex; align-items: center; gap: 8px; font-family: var(--cond); font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); }
 .rule-line { flex-grow: 1; height: 2px; background: var(--line-soft); }
 
 /* ---------- controlli ---------- */
@@ -1104,7 +1118,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .mie-ore-riga { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-left: 4px solid var(--line); }
 .mie-ore-riga[data-tono='fatto'] { border-left-color: var(--verde); }
 .mie-ore-riga[data-tono='avviso'] { border-left-color: var(--giallo-testo); }
-.mie-ore-stato { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; color: var(--dim); }
+.mie-ore-stato { display: inline-flex; align-items: center; gap: 4px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; color: var(--dim); }
 .mie-ore-riga[data-tono='fatto'] .mie-ore-stato { color: var(--verde-testo); }
 .mie-ore-riga[data-tono='avviso'] .mie-ore-stato { color: var(--giallo-testo); }
 .miei-timer-riga[data-suo='true'] { border-color: var(--giallo); border-left-color: var(--tinta); }
@@ -1127,6 +1141,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .cifra { font-size: 26px; font-weight: 700; }
 .riga-tasti { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .link-sec { color: var(--sec); }
+/* Un link da toccare col dito (la mappa di una gara): riga sua, alto 44px. */
+.link-alto { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; color: var(--text); text-decoration: underline; text-decoration-color: var(--blu); text-underline-offset: 3px; overflow-wrap: anywhere; }
 .testo-pieno { color: var(--text); }
 .una-riga { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .esito { gap: 14px; padding: 20px 20px 28px; }
@@ -1873,7 +1889,7 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
   height: 96px; border: 2px solid var(--line); background: var(--surface); color: var(--text);
   font-size: 38px; font-weight: 700; letter-spacing: 0.06em;
 }
-.tb-tasto[data-piccolo='true'] { font-size: 17px; }
+.tb-tasto[data-piccolo='true'] { font-size: 17px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
 .tb-tasto:active { background: var(--surface-2); }
 
 .tb-schede { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -2219,7 +2235,10 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 /* Le intestazioni che ordinano la tabella: la freccia si accende sulla colonna scelta. */
 .sg-ordina { display: inline-flex; align-items: center; min-height: 24px; gap: 4px; white-space: nowrap; font: inherit; letter-spacing: inherit; color: inherit; text-align: inherit; }
 .sg-ordina:hover, .sg-ordina[data-verso] { color: var(--text); }
-.sg-ordina-segno { font-size: 0.85em; letter-spacing: 0; opacity: 0.35; }
+.sg-ordina-segno { display: inline-flex; opacity: 0.35; }
+.sg-testa-icona { display: inline-flex; }
+.sg-testa-colonna { display: flex; align-items: center; gap: 4px; }
+@media (max-width: 767px) { .sg-testa-icona { display: none; } }
 .sg-ordina:hover .sg-ordina-segno, .sg-ordina[data-verso] .sg-ordina-segno { opacity: 1; }
 @media (max-width: 560px) {
   /* Nella scheda il nome prende la sua riga, e i due tasti si dividono quella sotto. */
@@ -2252,7 +2271,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 }
 .sg-finestra-velo { position: absolute; inset: 0; z-index: 0; }
 .sg-finestra {
-  position: relative; z-index: 1; display: flex; flex-direction: column; width: min(920px, 100%); min-height: 0;
+  position: relative; z-index: 1; display: flex; flex-direction: column; width: min(1200px, 100%); min-height: 0;
   background: var(--surface); border: 2px solid var(--text); border-top: 6px solid var(--tinta, var(--text));
 }
 .sg-finestra:focus { outline: none; }
@@ -2298,7 +2317,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 /* Si legge riga per riga a fine mese, per pagare: intestazioni e freccia
    più grandi delle altre tabelle, e il ripensamento resta link ma a 15px. */
 .sg-lista-testa.sg-riga-presenza-istr .sg-etichetta, .sg-testa-istr { font-size: 13px; }
-.sg-lista-testa.sg-riga-presenza-istr .sg-ordina-segno { font-size: 12px; }
 .sg-presenza-istr .sg-link { font-size: 15px; min-height: 44px; display: inline-flex; align-items: center; padding: 0 6px; }
 /* Un riquadro delle schede DOCUMENTI, QUOTA e CORSI: lo stato in grande, il dettaglio sotto, i tasti a destra. */
 .sg-stato { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 2px solid var(--line); }
@@ -2695,6 +2713,8 @@ label.sg-btn { cursor: pointer; }
 .sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno { color: var(--surface); }
 @media (max-width: 1000px) {
   .sg-schede-scheda .scheda { flex-direction: column; gap: 2px; padding: 4px; white-space: normal; text-align: center; letter-spacing: 0.08em; font-size: 13px; }
+  /* Con «IN MODIFICA» sotto il nome PERSONA è più alta: tutte uguali, se no la riga salta. */
+  .sg-schede-personale .scheda { min-height: 61px; }
 }
 @media (max-width: 480px) {
   .sg-scheda-piede-fisso > .sg-btn { padding: 0 6px; letter-spacing: 0.08em; font-size: 14px; }

@@ -29,7 +29,7 @@ ok('il tasto di ordinamento è alto almeno 24px', alto >= 24, true)
 ok('ogni schermata della sala ha un <main>', (tablet.match(/<div className="tb">/g) ?? []).length, 0)
 ok('la sala ha il suo <main>', (tablet.match(/<main className="tb">/g) ?? []).length >= 4, true)
 
-ok('i titoli di sezione sono h2, sotto l\'h1 della pagina', /<h2 className="sg-etichetta"[^>]*>\s*\{titolo\}/.test(comune), true)
+ok('i titoli di sezione sono h2, sotto l\'h1 della pagina', /<h2 className="sg-etichetta"[^>]*>\s*(\{icona\}\s*)?\{titolo\}/.test(comune), true)
 
 // Una tabella con ruoli ARIA ha per figli solo righe: il messaggio «nessun movimento»
 // e «Mostra altre» stanno in una riga con la loro cella.

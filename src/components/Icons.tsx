@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { ICONE, TRATTO, TRATTO_TABLET, type NomeIcona } from '../lib/icone'
 
 type P = { size?: number }
 const base = (size: number) => ({
@@ -7,13 +8,37 @@ const base = (size: number) => ({
   viewBox: '0 0 24 24',
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 2,
+  strokeWidth: TRATTO,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
 })
 
+/**
+ * Un'icona dell'elenco unico (lib/icone, come Icona.dc.html della libreria). Accanto a una parola è
+ * aria-hidden; da sola dice cosa fa con `etichetta`.
+ */
+export function Icona({ nome, misura = 18, tratto = TRATTO, etichetta }: { nome: NomeIcona; misura?: number; tratto?: number; etichetta?: string }) {
+  return (
+    <svg {...base(misura)} strokeWidth={tratto} style={{ flex: 'none' }} {...(etichetta ? { role: 'img', 'aria-label': etichetta } : { 'aria-hidden': true })}>
+      {ICONE[nome].map((d) => <path key={d} d={d} />)}
+    </svg>
+  )
+}
+
+/**
+ * I tracciati di un segno che l'elenco unico non ha (i loghi dei social, gli stati di una lezione),
+ * disegnati come le altre icone: chi li usa tiene solo i dati, non un altro disegno a mano.
+ */
+export function Tracciati({ d, misura = 18, tratto = TRATTO, className }: { d: readonly string[]; misura?: number; tratto?: number; className?: string }) {
+  return (
+    <svg {...base(misura)} strokeWidth={tratto} className={className} style={{ flex: 'none' }} aria-hidden="true">
+      {d.map((x) => <path key={x} d={x} />)}
+    </svg>
+  )
+}
+
 export const Back = ({ size = 18 }: P) => (
-  <svg {...base(size)} strokeWidth={2.5} aria-hidden="true">
+  <svg {...base(size)} aria-hidden="true">
     <polyline points="15 18 9 12 15 6" />
   </svg>
 )
@@ -67,14 +92,13 @@ export const Persone = ({ size = 20 }: P) => (
   </svg>
 )
 
-export const Spunta = ({ size = 24 }: P) => (
-  <svg {...base(size)} strokeWidth={3} aria-hidden="true">
-    <polyline points="4 12 10 18 20 6" />
-  </svg>
-)
+// Spunta e croce grandi sono i segni del tablet, letti da un metro: lì il tratto di 1,75 sparisce.
+const trattoSegno = (size: number) => (size >= 20 ? TRATTO_TABLET : TRATTO)
+
+export const Spunta = ({ size = 24 }: P) => <Icona nome="conferma" misura={size} tratto={trattoSegno(size)} />
 
 export const Torta = ({ size = 20 }: P) => (
-  <svg {...base(size)} strokeWidth={2.2} aria-hidden="true">
+  <svg {...base(size)} aria-hidden="true">
     <path d="M4 21h16" />
     <path d="M5 21v-7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v7" />
     <path d="M5 17c2.3 1.6 3.7 1.6 5.5 0s3.7-1.6 5.5 0c1 .9 2 1.2 3 .8" />
@@ -83,12 +107,7 @@ export const Torta = ({ size = 20 }: P) => (
   </svg>
 )
 
-export const Croce = ({ size = 20 }: P) => (
-  <svg {...base(size)} strokeWidth={3} aria-hidden="true">
-    <line x1="5" y1="5" x2="19" y2="19" />
-    <line x1="19" y1="5" x2="5" y2="19" />
-  </svg>
-)
+export const Croce = ({ size = 20 }: P) => <Icona nome="chiudi" misura={size} tratto={trattoSegno(size)} />
 
 export const Sole = ({ size = 20 }: P) => (
   <svg {...base(size)} aria-hidden="true">
@@ -120,11 +139,11 @@ export const Cursori = ({ size = 20 }: P) => (
   </svg>
 )
 
-/** Un'icona del menu: tratto più sottile delle altre (1,75), perché accanto al testo non deve pesare. */
+/** Un'icona del menu, scritta qui perché la usano già i suoi posti; le nuove passano da `Icona`. */
 const voce = (corpo: ReactNode) =>
   function IconaVoce({ size = 20 }: P) {
     return (
-      <svg {...base(size)} strokeWidth={1.75} aria-hidden="true" style={{ flex: 'none' }}>
+      <svg {...base(size)} aria-hidden="true" style={{ flex: 'none' }}>
         {corpo}
       </svg>
     )
@@ -138,6 +157,7 @@ export const ICONE_MENU = {
   iscritti: voce(<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>),
   settimana: voce(<><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></>),
   corsi: voce(<><circle cx="12" cy="8" r="6" /><path d="M15.5 12.9 17 22l-5-3-5 3 1.5-9.1" /></>),
+  gare: voce(<path d={ICONE.gara[0]} />),
   listino: voce(<><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" /><circle cx="7" cy="7" r="1" /></>),
   istruttori: voce(<><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>),
   compensi: voce(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M9 13h6M9 17h4" /></>),
@@ -215,4 +235,24 @@ export const ICONE_SCHEDA_ISCRITTO = {
   documenti: voce(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M8 13h8M8 17h8" /></>),
   quota: ICONE_CONTI.banconota,
   corsi: ICONE_MENU.corsi,
+}
+
+/** Le icone delle schede di una persona del personale: la chiave è l'`IdSchedaPersonale` di lib/schedePersonale. */
+export const ICONE_SCHEDA_PERSONALE = {
+  persona: voce(<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21a8 8 0 0 1 16 0" />),
+  accesso: voce(<path d="M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z M8 11V8a4 4 0 0 1 8 0v3" />),
+  dati: voce(<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z M14 3v5h5 M9 13h6 M9 17h6" />),
+  presenze: voce(<path d="M8 3v4 M16 3v4 M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z M4 9h16 M9 15l2 2 4-4" />),
+}
+
+/** Le icone davanti alle intestazioni di sezione della scheda di una persona del personale. */
+export const ICONE_SEZIONE_PERSONALE = {
+  ruolo: voce(<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />),
+  kanji: voce(<path d="M4 20l4-1 11-11-3-3L5 16z M14 6l3 3" />),
+  accesso: ICONE_SCHEDA_PERSONALE.accesso,
+  pin: voce(<path d="M5 4a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M12 4a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M19 4a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M5 11a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M12 11a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M19 11a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M5 18a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M12 18a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M19 18a1 1 0 1 0 0 2a1 1 0 1 0 0-2" />),
+  dati: ICONE_SCHEDA_PERSONALE.dati,
+  tariffe: voce(<path d="M17 7.5A6 6 0 1 0 17 16.5 M5 10h9 M5 14h9" />),
+  lettera: voce(<path d="M4 6h16v12H4z M4 7l8 6 8-6" />),
+  presenze: ICONE_SCHEDA_PERSONALE.presenze,
 }

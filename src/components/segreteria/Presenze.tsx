@@ -2,7 +2,7 @@ import { type ReactNode, type RefObject, useEffect, useMemo, useRef, useState } 
 import type { DatiSegreteria, ProvaSeg, RigaRegistro } from '../../lib/segreteria'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
-import { Guaio, Riga, Testa, useCarica } from './comune'
+import { Guaio, Riga, Testa, useCarica, Tasto } from './comune'
 import { mesi } from '../../lib/ore'
 import { accorcia, chiSiStaPerdendo, conAppello, DI_FILA, GIORNI_RECENTI } from '../../lib/frequenza'
 
@@ -98,9 +98,9 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
             </option>
           ))}
         </select>
-        <button type="button" className="sg-btn sg-btn-linea" disabled={!righe.length} onClick={() => scaricaCsv(righe, p.nome)}>
+        <Tasto disabled={!righe.length} onClick={() => scaricaCsv(righe, p.nome)}>
           Scarica CSV
-        </button>
+        </Tasto>
       </Testa>
       {schede}
 

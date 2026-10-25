@@ -21,6 +21,7 @@ import { cartaSePuoi } from '../lib/cartaPdf'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
 import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 import { AccessoIscritto } from './AccessoIscritto'
+import { GareIscritto } from './GareIscritto'
 import { riprendiDaGoogle, urlPulito } from '../lib/accessoIscritto'
 import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
@@ -57,6 +58,8 @@ import { CorsiDaPagare, RitornoCorso } from './PagaCorso'
 import { ritornoDelCorso } from '../lib/corsoSatispay'
 import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
 import { VERSIONE, VERSIONE_ESTESA } from '../lib/versione'
+import { Tracciati } from './Icons'
+import { ICONE, type NomeIcona } from '../lib/icone'
 
 /**
  * L'area degli iscritti, dal telefono: le prossime lezioni dei suoi corsi,
@@ -309,35 +312,26 @@ function Account({ dati, personaId, conEsci }: { dati: DatiIscritto; personaId: 
 }
 
 /** Le icone a linea delle voci della barra (stesse del design, BarraNavigazione). */
-const ICONE_TAB: Record<IdTabArea, string[]> = {
-  lezioni: ['M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M4 10h16', 'M8 3v4M16 3v4'],
-  regola: ['M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z', 'M8.5 12l2.5 2.5L15.5 9.5'],
-  nucleo: ['M9 11a3 3 0 1 0 0-6a3 3 0 0 0 0 6z', 'M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6', 'M16 5.5a3 3 0 0 1 0 5.5M18 14.5c1.8.8 3 2.6 3 5.5'],
-  contatti: ['M5 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-7l-4 4v-4H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z', 'M8 9h8M8 12h5'],
-}
+const ICONE_TAB: Record<IdTabArea, NomeIcona> = { lezioni: 'calendario', regola: 'dati sicuri', nucleo: 'nucleo', contatti: 'messaggio' }
 
 /** Le icone a linea di LEZIONI (stesse del design, MiaLezione e MiaPresenzaPiccola): accompagnano le parole, non le sostituiscono. */
 const CERCHIO = 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z'
-const ICONE_LEZIONE: Record<IconaCosa | IconaPresenza | 'istruttore' | 'giorno', string[]> = {
-  istruttore: ['M12 4a4 4 0 1 0 0 8a4 4 0 0 0 0-8z', 'M4 21a8 8 0 0 1 16 0'],
-  giorno: ['M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M4 10h16M8 3v4M16 3v4'],
-  sala: ['M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z', 'M12 7.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5z'],
+const ICONE_LEZIONE: Record<IconaCosa | IconaPresenza | 'istruttore' | 'giorno', readonly string[]> = {
+  istruttore: ICONE.persona, // la chiave di ICONE.istruttore è quella degli accessi: accanto a un nome serve una persona
+  giorno: ICONE.calendario,
+  sala: ICONE.mappa,
   annullata: [CERCHIO, 'M5.6 5.6l12.8 12.8'],
   sostituto: ['M7 7h13l-3-3', 'M17 17H4l3 3'],
   piu: [CERCHIO, 'M12 8v8M8 12h8'],
-  presente: [CERCHIO, 'M8 12.5l3 3l5-6'],
-  assente: [CERCHIO, 'M9 9l6 6M15 9l-6 6'],
+  presente: ICONE.fatto,
+  assente: ICONE.manca,
   giustificato: [CERCHIO, 'M8.5 12h7'],
   niente: [CERCHIO],
 }
 
 function Icona({ nome, misura = 16 }: { nome: keyof typeof ICONE_LEZIONE; misura?: number }) {
   return (
-    <svg width={misura} height={misura} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mia-icona">
-      {ICONE_LEZIONE[nome].map((d) => (
-        <path key={d} d={d} />
-      ))}
-    </svg>
+    <Tracciati d={ICONE_LEZIONE[nome]} misura={misura} className="mia-icona" />
   )
 }
 
@@ -424,6 +418,7 @@ function Pagina({
         <>
           <Presenze dati={dati} personaId={personaId} presenze={presenze} />
           <Prossime lezioni={lezioni} />
+          <GareIscritto scheda={scheda} />
         </>,
       )}
       {pannello(
@@ -453,11 +448,7 @@ function Pagina({
               className="barra-voce"
               onClick={() => onTab(id)}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                {ICONE_TAB[id].map((d) => (
-                  <path key={d} d={d} />
-                ))}
-              </svg>
+              <Tracciati d={ICONE[ICONE_TAB[id]]} misura={24} />
               <span className="num" aria-hidden="true">
                 {etichettaTab(id)}
                 {s && <span className="mia-barra-segno" data-tono={s.tono}> ●</span>}
@@ -517,7 +508,7 @@ function Prossime({ lezioni }: { lezioni: MiaLezione[] }) {
     <>
       {p && (
         <section>
-          <Titoletto>LA PROSSIMA LEZIONE</Titoletto>
+          <Titoletto icona="calendario">LA PROSSIMA LEZIONE</Titoletto>
           <div className="pad">
             <div className="mia-prossima">
               <Riquadro>
@@ -547,6 +538,7 @@ function Prossime({ lezioni }: { lezioni: MiaLezione[] }) {
       )}
       <section>
         <Titoletto
+          icona="corso"
           conto={
             piu ? (
               <button type="button" className="mia-vedi-tutte" aria-expanded={tutte} onClick={() => setTutte(!tutte)}>
@@ -647,6 +639,7 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
             </button>
           )
         }
+        icona="appello"
       >
         LE ULTIME PRESENZE
       </Titoletto>
@@ -697,6 +690,7 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
                               data-tono={s.stato === 'rifiutata' ? 'guaio' : 'avviso'}
                               title={s.stato === 'rifiutata' ? 'La segnalazione è stata rifiutata' : 'Segnalata: la conferma l’istruttore o la segreteria'}
                             >
+                              <Tracciati d={ICONE[s.stato === 'rifiutata' ? 'manca' : 'in attesa']} misura={14} />
                               {s.stato === 'rifiutata' ? 'RIFIUTATA' : 'DA CONFERMARE'}
                             </span>
                           )}
@@ -767,7 +761,7 @@ function InRegola({ scheda, dati, personaId, io, ricevute, onMandato }: { scheda
   const tono = (bene: boolean, quasi: boolean) => (bene ? undefined : quasi ? 'avviso' : 'guaio')
   return (
     <section>
-      <Titoletto>CERTIFICATO E QUOTA</Titoletto>
+      <Titoletto icona="certificato">CERTIFICATO E QUOTA</Titoletto>
       <div className="pad mie-schede">
         <Riquadro stretto>
           <Etichetta>CERTIFICATO MEDICO</Etichetta>
@@ -811,7 +805,7 @@ function MandaCertificato({ box, dati, personaId, onMandato }: { box: ReturnType
       <Dettaglio>{box.testo}</Dettaglio>
       <input ref={campo} type="file" accept="application/pdf,image/jpeg,image/png" hidden onChange={(e) => manda(e.target.files?.[0])} />
       <Tasti>
-        <Tasto variante={box.tasto === 'manda-altro' ? 'linea' : 'principale'} disabled={invio} onClick={() => campo.current?.click()}>
+        <Tasto variante={box.tasto === 'manda-altro' ? 'linea' : 'principale'} disabled={invio} icona="carica" onClick={() => campo.current?.click()}>
           {invio ? 'STO MANDANDO…' : box.tasto === 'manda-altro' ? 'MANDA UN ALTRO FILE' : 'MANDA IL CERTIFICATO'}
         </Tasto>
       </Tasti>
@@ -832,7 +826,7 @@ function Ricevute({ ricevute }: { ricevute: Ricevuta[] }) {
   }
   return (
     <section>
-      <Titoletto conto={ricevute.length || undefined}>RICEVUTE</Titoletto>
+      <Titoletto icona="ricevuta" conto={ricevute.length || undefined}>RICEVUTE</Titoletto>
       <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
         {ricevute.length === 0 && <Dettaglio>Nessuna ricevuta: quando paghi in segreteria, la trovi qui.</Dettaglio>}
         {ricevute.map((r) => (
@@ -891,7 +885,7 @@ function Nucleo({
   return (
     <>
       <section>
-        <Titoletto conto={membri.length}>IL TUO NUCLEO</Titoletto>
+        <Titoletto icona="nucleo" conto={membri.length}>IL TUO NUCLEO</Titoletto>
         <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
           {membri.map((p) => {
             const guai = avvisi(p, oggi)
@@ -905,6 +899,7 @@ function Nucleo({
                   <span style={{ fontSize: 13, color: 'var(--dim)' }}>{p.corsi.map((c) => c.nome).join(', ') || 'Nessun corso oggi'}</span>
                 </span>
                 <span className="num mia-lezione-cosa" data-tono={guai.some((g) => g.tono === 'guaio') ? 'guaio' : guai.length ? 'avviso' : 'fatto'}>
+                  <Tracciati d={ICONE[guai.length ? 'attenzione' : 'fatto']} misura={14} />
                   {guai.length ? 'DA SISTEMARE' : 'IN REGOLA'}
                 </span>
               </button>
@@ -925,7 +920,7 @@ function Nucleo({
           ))}
           <Dettaglio>Figli, coniuge, fratelli: il modulo parte coi tuoi dati, e la richiesta arriva in segreteria come le altre.</Dettaglio>
           <Tasti>
-            <Tasto variante="principale" onClick={onAggiungi}>
+            <Tasto variante="principale" icona="aggiungi" onClick={onAggiungi}>
               AGGIUNGI UNA PERSONA
             </Tasto>
           </Tasti>
@@ -974,14 +969,14 @@ function Nucleo({
 }
 
 /** Le icone a linea delle righe di CONTATTI. */
-const ICONE_RIGA: Record<string, string[]> = {
-  CHIAMA: ['M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z'],
-  WHATSAPP: ['M5 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-7l-4 4v-4H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z'],
-  'COME ARRIVARE': ['M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z', 'M10 10a2 2 0 1 0 4 0a2 2 0 1 0-4 0'],
+const ICONE_RIGA: Record<string, readonly string[]> = {
+  CHIAMA: ICONE.telefono,
+  WHATSAPP: ICONE.messaggio,
+  'COME ARRIVARE': ICONE.mappa,
   INSTAGRAM: ['M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z', 'M8.5 12a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0-7 0', 'M16.5 7.5h.01'],
   FACEBOOK: ['M14 4h3v3.5h-3a1 1 0 0 0-1 1V11h4l-.5 3.5H13V21h-3.5v-6.5H7V11h2.5V8.5A4.5 4.5 0 0 1 14 4z'],
-  GUIDA: ['M5 4h9a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z', 'M9 9h5'],
-  ESCI: ['M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5', 'M15 8l4 4-4 4', 'M19 12H9'],
+  GUIDA: ICONE.guida,
+  ESCI: ICONE.esci,
 }
 
 /** Il tab CONTATTI: per parlare con la palestra, in righe da toccare. */
@@ -989,11 +984,7 @@ function Contatti({ conEsci }: { conEsci: boolean }) {
   const riga = (v: VoceContatti) => {
     const dentro = (
       <>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          {(ICONE_RIGA[v.nome] ?? []).map((d) => (
-            <path key={d} d={d} />
-          ))}
-        </svg>
+        <Tracciati d={ICONE_RIGA[v.nome] ?? []} misura={24} />
         <span className="ob mia-riga-nome">{v.nome}</span>
         {v.nota && <span className="num mia-riga-nota">{v.nota}</span>}
         <span aria-hidden="true" className="mia-riga-vai">›</span>

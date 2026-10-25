@@ -1,7 +1,7 @@
 {
   "name": "ods-corsi",
   "private": true,
-  "version": "0.210.0",
+  "version": "0.214.0",
   "type": "module",
   "description": "Calendario dei corsi e registro delle presenze per Officine Dello Sport - Collegno",
   "scripts": {
@@ -15,6 +15,7 @@
     "sito:genera": "node scripts/genera-sito.mjs",
     "moduli:genera": "node scripts/genera-moduli.mjs",
     "prova:musica": "node scripts/prova-musica.mjs",
+    "prova:icone": "node scripts/prova-icone.mjs",
     "prova:a11y-iscritti": "node scripts/prova-a11y-iscritti.mjs",
     "prova:a11y-dietro-login": "node scripts/prova-a11y-dietro-login.mjs",
     "prova:a11y-segreteria-bersagli": "node scripts/prova-a11y-segreteria-bersagli.mjs",
@@ -153,6 +154,7 @@
     "prova:scheda": "node scripts/prova-scheda.mjs",
     "prova:scheda-persona": "node scripts/prova-scheda-persona.mjs",
     "prova:schede-iscritto": "node scripts/prova-schede-iscritto.mjs",
+    "prova:schede-personale": "node scripts/prova-schede-personale.mjs",
     "prova:sito-orario": "node scripts/prova-sito-orario.mjs",
     "prova:mcp": "node scripts/prova-mcp.mjs",
     "prova:frequenza": "node scripts/prova-frequenza.mjs",
@@ -171,6 +173,7 @@
     "prova:impostazioni": "node scripts/prova-impostazioni.mjs",
     "prova:nucleo": "node scripts/prova-nucleo.mjs",
     "prova:compleanni": "node scripts/prova-compleanni.mjs",
+    "prova:gare": "node scripts/prova-gare.mjs",
     "prova:a11y-axe": "node scripts/prova-a11y-axe.mjs"
   },
   "dependencies": {

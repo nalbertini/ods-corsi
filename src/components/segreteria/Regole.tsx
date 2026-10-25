@@ -8,7 +8,7 @@ import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
 import { idLinguettaImp, idPannelloImp, SCHEDA_IMPOSTAZIONI_INIZIALE, SCHEDE_IMPOSTAZIONI, tastoImpostazioni, type IdImpostazioni } from '../../lib/schedeImpostazioni'
-import { chiedi, Campo, MostraBozza, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { chiedi, Campo, MostraBozza, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica, Tasto } from './comune'
 import { EserciziPalestra, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 import { Importa } from './Importa'
@@ -715,9 +715,9 @@ function Stagione({ d, imp, avvisa, fai, poi }: {
         </Campo>
       </div>
       {cambiate && (
-        <button type="button" className="sg-btn" style={{ alignSelf: 'flex-start' }} onClick={() => void salva()}>
+        <Tasto style={{ alignSelf: 'flex-start' }} onClick={() => void salva()}>
           Salva le date
-        </button>
+        </Tasto>
       )}
       <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
         {fine
@@ -854,9 +854,9 @@ function AvvisiSegreteria({ d }: { d: DatiSegreteria }) {
           <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setB(null)}>
             Lascia stare
           </button>
-          <button
-            type="button"
-            className="sg-btn sg-btn-pieno grow"
+          <Tasto
+            tono="pieno"
+            className="grow"
             disabled={!!guaio(b.a) || !!guaio(b.cc)}
             onClick={() =>
               void fai(
@@ -870,7 +870,7 @@ function AvvisiSegreteria({ d }: { d: DatiSegreteria }) {
             }
           >
             Salva
-          </button>
+          </Tasto>
         </div>
       )}
       <span className="sg-sotto">Al più 50 avvisi al giorno: le ricevute alle famiglie vengono prima. Quelli in più li conta RICHIESTE ONLINE.</span>
