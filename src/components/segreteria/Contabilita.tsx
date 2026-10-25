@@ -77,7 +77,8 @@ import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scar
 import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri, SchedaCandidata } from './CollegaPersona'
 import { useListino } from '../Costi'
-import { confermaDi, parolaDelMovimento, suggerisciMovimento } from '../../lib/suggerimentoMovimento'
+import { cercaPersonaDelMovimento, confermaDi, motivoCandidati, parolaDelMovimento, suggerisciMovimento } from '../../lib/suggerimentoMovimento'
+import { corsiConImporto } from '../../lib/abbinaMovimenti'
 import { Bilancio } from './Bilancio'
 import { rigaDaSistemare } from '../../lib/bilancio'
 import { ScaricoSatispay } from './ScaricoSatispay'
@@ -963,11 +964,17 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
   const voceGuaio = voceId && voceId !== voceAttuale?.id ? cosaNonVaCambioVoce([riga.id], [riga], voci, voceId, personaId) : null
   const [collegando, setCollegando] = useState(false)
   // Il suggerimento: la voce dalle righe uguali, la persona dal nome nel testo. Propone e basta: si scrive solo con «Conferma».
+  const cerca = manuale && cercaPersonaDelMovimento(riga)
   const parola = manuale ? parolaDelMovimento(riga) : null
-  const trovate = useCarica(() => (parola ? d.cercaPagatori(parola) : Promise.resolve([])), [d, parola])
-  // Il listino serve alla voce dall'importo: finché non arriva il blocco non c'è, per non proporre «fuori listino» a torto.
+  // Il listino serve alla voce dall'importo e ai corsi di quell'importo: finché non arriva il blocco non c'è, per non proporre «fuori listino» a torto.
   const listino = useListino()
-  const sug = useMemo(() => parola && (trovate.dato === null || trovate.guaio || listino === null) ? null : suggerisciMovimento(riga, righe, voci, trovate.dato ?? [], listino?.listino), [riga, righe, voci, parola, trovate.dato, trovate.guaio, listino])
+  // Prima gli abbinamenti del database (nome, genitore, codice fiscale, importo e corso); se non trova nessuno, il solo nome.
+  const trovate = useCarica(async () => {
+    if (!cerca || listino === null) return { nomi: [], abbinati: [] }
+    const abbinati = await d.abbinaPagatori(riga.id, corsiConImporto(riga.importo, listino.listino.corsi))
+    return { nomi: abbinati.length || !parola ? [] : await d.cercaPagatori(parola), abbinati }
+  }, [d, cerca, parola, riga.id, riga.importo, listino])
+  const sug = useMemo(() => cerca && (trovate.dato === null || trovate.guaio || listino === null) ? null : suggerisciMovimento(riga, righe, voci, trovate.dato?.nomi ?? [], listino?.listino, trovate.dato?.abbinati ?? []), [riga, righe, voci, cerca, trovate.dato, trovate.guaio, listino])
   const [sugScelta, setSugScelta] = useState<string | null>(null)
   const [daSolo, setDaSolo] = useState(false)
   const confermaSug = sug ? confermaDi(sug, sugScelta) : null
@@ -1042,9 +1049,9 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
                 {sug.persona === 'candidati' && (
                   <div className="stack" style={{ gap: 8 }} role="radiogroup" aria-label="Persona suggerita">
                     {sug.candidati.map((c) => (
-                      <SchedaCandidata key={c.id} nome="persona-suggerita" c={{ id: c.id, nome: c.nome, cognome: c.cognome, corsi: [] }} scelta={c.id === (sugScelta ?? sug.preselezionato)} onScegli={() => setSugScelta(c.id)} />
+                      <SchedaCandidata key={c.id} nome="persona-suggerita" c={{ id: c.id, nome: c.nome, cognome: c.cognome, corsi: c.giaIscritto ? ['già iscritta o iscritto in quel giorno'] : [] }} scelta={c.id === (sugScelta ?? sug.preselezionato)} onScegli={() => setSugScelta(c.id)} />
                     ))}
-                    <span className="sg-sotto">{sug.candidati[0].come === 'nome intero' && sug.candidati.length === 1 ? 'Il nome nel testo combacia con questa scheda.' : 'Il nome nel testo potrebbe essere di chi paga, non di chi frequenta: controlla.'}</span>
+                    <span className="sg-sotto">{motivoCandidati(sug.candidati)}</span>
                   </div>
                 )}
                 {sug.persona === 'nessuna-spesa' && <span className="sg-sotto">Nessuna: è una spesa, non serve.</span>}

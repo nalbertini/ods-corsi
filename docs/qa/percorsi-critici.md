@@ -62,12 +62,12 @@ prova tiene stanno in «Scoperti», in fondo.
 | Scheda del personale (schede e «Altro») | segreteria | accesso tolto o persona eliminata per sbaglio, dati visti da chi non deve | `prova:schede-personale`, `prova:ruoli`, `prova:segreteria`, `prova:pericolo`, `disattiva-chiude-iscrizioni.sql`, `elimina-istruttore.sql` | sì |
 | Ruolo «amministrazione» | amministrazione, segreteria | persone viste da chi tiene solo i conti | `prova:menu`, `prova:ruoli`, `prova:pagamenti`, `prova:segreteria`, `amministrazione.sql`, `rls.sql`, `elimina-istruttore.sql` | sì |
 | Contabilità (movimenti, chiusure, voci, prima nota) | amministrazione | residuo che non torna, giorno chiuso riscritto | `prova:contabilita`, `prova:indirizzi`, `prova:banco`, `prova:avvisi-segreteria`, `prova:segreteria`, `prova:chiusura-pdf`, `prova:importa-prima-nota`, `prova:pericolo`, `chiusura-cassa.sql`, `contabilita.sql`, `rls.sql`, `importa-prima-nota.sql`, `cambia-voce.sql`, `prova:gare` | sì |
-| Importa dalla banca | amministrazione | movimento perso o scritto due volte | `prova:importa-banca`, `prova:importazioni`, `importa-banca.sql`, `importa-prima-nota.sql`, `importazioni.sql` | sì |
+| Importa dalla banca | amministrazione | movimento perso o scritto due volte | `prova:importa-banca`, `prova:importazioni`, `prova:abbina-movimenti`, `importa-banca.sql`, `importa-prima-nota.sql`, `importazioni.sql`, `abbina-movimenti.sql` | sì |
 | Importazioni: Satispay e banca sullo stesso movimento a mano | amministrazione | stesso incasso contato due volte, o perso | `prova:importazioni`, `prova:satispay-scarico`, `prova:importa-banca`, `importazioni.sql`, `satispay-scarico.sql`, `importa-banca.sql` | sì, da fare |
 | Voci da classificare in IMPORTAZIONI | amministrazione | voce persa dalla lista, totale sbagliato | `prova:importazioni`, `prova:suggerimento-movimento` | sì, da fare |
 | Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:segreteria`, `prova:contabilita`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
 | Quote e corsi scritti a mano hanno la persona | amministrazione (scrive), segreteria (vede la scheda) | quota che non si ritrova nella scheda | `prova:contabilita`, `prova:movimenti-persona`, `prova:segreteria`, `prova:suggerimento-movimento`, `quote-persona.sql`, `cambia-voce.sql`, `movimenti-persona.sql` | sì |
-| Movimento da classificare: voce (anche dall'importo) e persona proposte | amministrazione (conferma), segreteria | persona o voce sbagliata scritta con un clic | `prova:suggerimento-movimento` | sì, da fare |
+| Movimento da classificare: voce (anche dall'importo) e persona proposte | amministrazione (conferma), segreteria | persona o voce sbagliata scritta con un clic | `prova:suggerimento-movimento`, `prova:abbina-movimenti`, `prova:importa-banca`, `abbina-movimenti.sql` | sì, da fare |
 | Filtro «Pagato nel vecchio programma» | segreteria | segnato pagato per un incasso non suo | `prova:pagato-prima`, `prova:filtri-iscritti`, `pagato-vecchio-programma.sql` | sì |
 | Bilancio di un anno | amministrazione | movimento contato in due anni o in nessuno | `prova:bilancio` | sì |
 | Fatture dalla chat con Claude | amministrazione | movimento doppio o mai scritto, dati personali verso Claude | `prova:mcp`, `movimenti-dalla-chat.sql`, `contabilita.sql` | sì |
@@ -179,8 +179,19 @@ quando arriva la prova.
   listino non è caricato (`listino === null`); nessuna prova (DA FARE).
 - Suggerimento da classificare: «scrive solo alla conferma» sta in
   `Contabilita.tsx`; nessuna prova, solo collaudo a mano.
-- Suggerimento da classificare: `cerca_pagatori` rende al massimo otto, e
-  «più candidati» può mancarne uno; nessuna prova del suggerimento lo dice.
+- Suggerimento da classificare: oltre otto candidati il nono manca, e «più
+  candidati» non lo dice; il tetto è provato (`abbina-movimenti.sql`,
+  `prova:abbina-movimenti`), il messaggio no.
+- Suggerimento da classificare: il caricamento in `Contabilita.tsx` (listino
+  assente → solo importo escluso; nessun abbinato → ricerca per nome) sta nel
+  `.tsx`; nessuna prova, solo collaudo a mano.
+- Suggerimento da classificare: `ImportaBanca.tsx` (al massimo trenta
+  richieste; «Conferma quelli che sembrano giusti» scrive) sta nel `.tsx`:
+  solo collaudo a mano.
+- Suggerimento da classificare: la traduzione verso il database
+  (`codiceFiscaleLetto` → `codice_fiscale_letto`, `gia_iscritto` →
+  `giaIscritto`) sta in `segreteriaSupabase.ts`; le due metà sono provate, il
+  passaggio no.
 - Genitore non iscritto: «N persone attive» in testata all'elenco lo salta
   (`attiveOra`, nel `.tsx`); nessuna prova.
 - Scheda del personale: la conferma di «Togli l’accesso» e il tasto Elimina

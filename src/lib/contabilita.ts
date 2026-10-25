@@ -55,6 +55,8 @@ export interface MovimentoManuale {
   satispayId?: string
   /** Coperto da un movimento della banca (`114-importazioni.sql`): la sua chiave. Mai insieme a `satispayId`. */
   bancaChiave?: string
+  /** Solo modalità prova: i codici fiscali letti dalla causale, come `movimenti_codici_letti` nel database. */
+  codiciLetti?: string[]
 }
 
 /** Una chiusura della Cassa Contanti: il periodo da `dal` a `data`, quel che c'era «secondo i conti» e quel che si è contato. */

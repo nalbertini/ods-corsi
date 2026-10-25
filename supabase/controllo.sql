@@ -584,6 +584,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('118-chiusure.sql', 'le chiusure della palestra, che annullano le lezioni di un periodo e si tolgono',
     to_regclass('public.chiusure_lezioni') is not null
     and to_regprocedure('public.togli_chiusura(uuid)') is not null
-    and exists (select 1 from pg_trigger where tgname = 'sessioni_in_chiusura' and not tgisinternal))
+    and exists (select 1 from pg_trigger where tgname = 'sessioni_in_chiusura' and not tgisinternal)),
+  ('119-abbina-movimenti.sql', 'i movimenti non identificati propongono le persone anche dal genitore, dal codice fiscale e dall''importo',
+    to_regclass('public.movimenti_codici_letti') is not null
+    and exists (select 1 from dentro where nome = 'abbina_pagatori_movimento')
+    and exists (select 1 from dentro where nome = 'abbina_testo_banca'))
 ) as x(file, cosa, c)
 order by file, cosa;
