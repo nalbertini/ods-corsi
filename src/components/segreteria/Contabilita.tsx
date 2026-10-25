@@ -75,7 +75,8 @@ import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { ImportaBanca } from './ImportaBanca'
 import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica, Tasto, TestaColonna } from './comune'
 import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
-import { CampoPersona, CollegaAPersona, CollegaSicuri } from './CollegaPersona'
+import { CampoPersona, CollegaAPersona, CollegaSicuri, SchedaCandidata } from './CollegaPersona'
+import { confermaDi, parolaDelMovimento, suggerisciMovimento } from '../../lib/suggerimentoMovimento'
 import { Bilancio } from './Bilancio'
 import { rigaDaSistemare } from '../../lib/bilancio'
 import { ScaricoSatispay } from './ScaricoSatispay'
@@ -429,7 +430,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
       {collegando === 'mano' && sceltiRighe.length > 0 && <InVista><CollegaAPersona d={d} righe={sceltiRighe} fai={fai} onFatto={collegamentoFatto} onChiudi={chiudiCollega} /></InVista>}
       {aperto && (
         <SchedaPiena key={aperto.id} etichetta={`Movimento: ${aperto.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
-          <MovimentoAperto d={d} voci={voci} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} nomePersona={aperto.personaId ? nomiPersone.get(aperto.personaId) : undefined} fai={fai} onChiudi={() => void torna()} onFatto={() => { fatto(); void esitiLetti.ricarica() }} onPersona={onPersona} />
+          <MovimentoAperto d={d} voci={voci} righe={righe} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} nomePersona={aperto.personaId ? nomiPersone.get(aperto.personaId) : undefined} fai={fai} onChiudi={() => void torna()} onFatto={() => { fatto(); void esitiLetti.ricarica() }} onPersona={onPersona} />
         </SchedaPiena>
       )}
 
@@ -941,7 +942,7 @@ function NuovoGiroconto({ d, casse, voci, righe, chiusure, fai, onFatto, onChiud
 // Un link che si tocca col dito: alto 44px, come «mostra tutte» nei previsti.
 const DITO = { fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center' } as const
 
-function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, nomePersona, fai, onChiudi, onFatto, onPersona }: { d: DatiSegreteria; voci: VoceContabile[]; riga: RigaMovimento; chiusure: ChiusuraCassa[]; cassa: string; cassaA: string; nomePersona?: string; fai: Fai; onChiudi: () => void; onFatto: () => void; onPersona?: (personaId: string) => void }) {
+function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePersona, fai, onChiudi, onFatto, onPersona }: { d: DatiSegreteria; voci: VoceContabile[]; righe: RigaMovimento[]; riga: RigaMovimento; chiusure: ChiusuraCassa[]; cassa: string; cassaA: string; nomePersona?: string; fai: Fai; onChiudi: () => void; onFatto: () => void; onPersona?: (personaId: string) => void }) {
   const manuale = riga.origine === 'movimento'
   const giro = riga.tipo === 'giroconto'
   const chiuso = cosaNonVaAnnulloMovimento(riga, chiusure)
@@ -960,6 +961,21 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, nomePersona, 
   const personaId = personaScelta?.id ?? riga.personaId
   const voceGuaio = voceId && voceId !== voceAttuale?.id ? cosaNonVaCambioVoce([riga.id], [riga], voci, voceId, personaId) : null
   const [collegando, setCollegando] = useState(false)
+  // Il suggerimento: la voce dalle righe uguali, la persona dal nome nel testo. Propone e basta: si scrive solo con «Conferma».
+  const parola = manuale ? parolaDelMovimento(riga) : null
+  const trovate = useCarica(() => (parola ? d.cercaPagatori(parola) : Promise.resolve([])), [d, parola])
+  const sug = useMemo(() => parola && (trovate.dato === null || trovate.guaio) ? null : suggerisciMovimento(riga, righe, voci, trovate.dato ?? []), [riga, righe, voci, parola, trovate.dato, trovate.guaio])
+  const [sugScelta, setSugScelta] = useState<string | null>(null)
+  const [daSolo, setDaSolo] = useState(false)
+  const confermaSug = sug ? confermaDi(sug, sugScelta) : null
+  const sugGuaio = confermaSug ? cosaNonVaCambioVoce([riga.id], [riga], voci, confermaSug.voceId, confermaSug.personaId) : null
+  const scegliTu = () => {
+    if (!sug) return
+    if (sug.voce) setVoceId(sug.voce.voceId)
+    const c = sug.candidati.find((x) => x.id === (sugScelta ?? sug.preselezionato))
+    if (c) setPersonaScelta({ id: c.id, nome: c.nome, cognome: c.cognome, corsi: [] })
+    setDaSolo(true)
+  }
   const scollega = async () => {
     const si = await chiedi(`Scollegare «${riga.descrizione}» da ${nomePersona ?? 'questa persona'}? Il movimento resta com'è, senza persona.`, 'Sì, scollega', { no: 'No, lascialo' })
     if (si) void fai(() => d.scollegaMovimentiPersona([riga.id]), 'Movimento scollegato', onFatto)
@@ -1012,6 +1028,51 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, nomePersona, 
             <>
               <button type="button" className="sg-link" style={DITO} onClick={() => setCollegando(true)}>{riga.personaId ? 'Cambia persona' : 'Collega a una persona'}</button>
               {riga.personaId && <button type="button" className="sg-link" style={DITO} onClick={() => void scollega()}>Scollega</button>}
+            </>
+          )}
+        </div>
+      )}
+      {manuale && !riga.annullato && sug && !daSolo && (
+        <div className="stack" style={{ gap: 14, padding: '16px 18px', border: `2px solid ${sug.caso === 'D' ? 'var(--line)' : 'var(--giallo)'}`, background: 'var(--bg)' }}>
+          <span className="sg-etichetta">{sug.caso === 'D' ? 'SUGGERITO' : 'SUGGERITO · CONFERMA TU'}</span>
+          {sug.caso === 'D' ? (
+            <span className="sg-sotto">Non c'è un suggerimento: scegli la voce qui sotto.</span>
+          ) : (
+            <>
+              <div className="stack" style={{ gap: 4 }}>
+                <span className="sg-etichetta">VOCE</span>
+                {sug.voce ? (
+                  <>
+                    <b style={{ fontSize: 18 }}>{sug.voce.nome}</b>
+                    <span className="sg-sotto">{sug.voce.motivo}.</span>
+                  </>
+                ) : (
+                  <span className="sg-sotto">Non so la voce: scegli tu.</span>
+                )}
+              </div>
+              <div className="stack" style={{ gap: 8 }}>
+                <span className="sg-etichetta">{sug.caso === 'B' ? 'PERSONA · PIÙ DI UNA, SCEGLI' : 'PERSONA'}</span>
+                {sug.persona === 'candidati' && (
+                  <div className="stack" style={{ gap: 8 }} role="radiogroup" aria-label="Persona suggerita">
+                    {sug.candidati.map((c) => (
+                      <SchedaCandidata key={c.id} nome="persona-suggerita" c={{ id: c.id, nome: c.nome, cognome: c.cognome, corsi: [] }} scelta={c.id === (sugScelta ?? sug.preselezionato)} onScegli={() => setSugScelta(c.id)} />
+                    ))}
+                    <span className="sg-sotto">{sug.candidati[0].come === 'nome intero' && sug.candidati.length === 1 ? 'Il nome nel testo combacia con questa scheda.' : 'Il nome nel testo potrebbe essere di chi paga, non di chi frequenta: controlla.'}</span>
+                  </div>
+                )}
+                {sug.persona === 'nessuna-spesa' && <span className="sg-sotto">Nessuna: è una spesa, non serve.</span>}
+                {sug.persona === 'nessuna-senza-persona' && <span className="sg-sotto">Nessuna: questa voce non ha una persona.</span>}
+                {sug.persona === 'gia-collegata' && <span className="sg-sotto">Già collegata: cambia solo la voce.</span>}
+                {sug.persona === 'da-scegliere' && <span className="sg-sotto">Da scegliere: nessuna scheda ha il nome che c'è nel testo.</span>}
+              </div>
+              {sug.persona === 'candidati' && <span className="sg-sotto">Collega la voce e la persona. Non crea una ricevuta: la quota resta da pagare finché non registri l’incasso nella scheda della persona.</span>}
+              {sugGuaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{sugGuaio}</span>}
+              <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+                <button type="button" className="sg-btn sg-btn-pieno" disabled={!confermaSug || !!sugGuaio} onClick={() => confermaSug && void fai(() => d.cambiaVoceMovimenti([riga.id], confermaSug.voceId, confermaSug.personaId), `Voce cambiata in «${sug.voce?.nome ?? ''}»`, onFatto)}>
+                  {sug.persona === 'candidati' ? 'Conferma voce e persona' : 'Conferma la voce'}
+                </button>
+                <button type="button" className="sg-btn sg-btn-linea" onClick={scegliTu}>Scegli tu</button>
+              </div>
             </>
           )}
         </div>

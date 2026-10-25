@@ -60,7 +60,7 @@ restringono per origine. Si vedono le prime 20 voci: **Mostra altre** ne aggiung
 20. In fondo, il totale delle entrate e delle uscite di tutto l'elenco, non solo di
 quelle che si vedono.
 
-**Classifica** apre il movimento in MOVIMENTI, dove si sceglie la voce vera. Non c'è un
+**Classifica** apre il movimento in MOVIMENTI, dove si sceglie la voce vera. Se l'app riconosce la voce o la persona, le propone in un riquadro giallo e le scrive solo quando tocchi **Conferma** (vedi «Cambiare la voce» in CONTABILITÀ). Non c'è un
 tasto «fatto»: una voce esce dall'elenco da sola quando la classifichi, e così anche
 se la annulli.
 

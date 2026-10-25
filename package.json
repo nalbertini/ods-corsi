@@ -43,6 +43,7 @@
     "prova:contabilita": "node scripts/prova-contabilita.mjs",
     "prova:bilancio": "node scripts/prova-bilancio.mjs",
     "prova:movimenti-persona": "node scripts/prova-movimenti-persona.mjs",
+    "prova:suggerimento-movimento": "node scripts/prova-suggerimento-movimento.mjs",
     "prova:certificati": "node scripts/prova-certificati.mjs",
     "prova:campi": "node scripts/prova-campi.mjs",
     "prova:richieste": "node scripts/prova-richieste.mjs",

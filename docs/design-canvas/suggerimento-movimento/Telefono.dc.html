@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Telefono</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+.et { font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; }
+.sec { font-size: 14px; color: #0d2a3d; line-height: 1.4; }
+.box { border-radius: 6px; min-height: 48px; padding: 12px 14px; border: 2px solid #14709f; background: #ffffff; font-size: 16px; display: flex; align-items: center; justify-content: space-between; }
+.tasto { border-radius: 6px; min-height: 48px; padding: 0 16px; display: flex; justify-content: center; align-items: center; font-family: Inter, Arial, sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 0.12em; border: 2px solid #14709f; background: transparent; color: #14709f; }
+.tasto.pieno { background: #f4c31b; border-color: #8f6a00; color: #0d2a3d; }
+.tasto.rosso { border-color: #b81d1d; color: #b81d1d; }
+</style>
+</helmet>
+<div style="width: 430px; padding: 20px 20px 28px; display: flex; flex-direction: column; gap: 16px">
+<span class="et" style="color: #8f6a00; letter-spacing: 0.12em">PROPOSTA · SUL TELEFONO</span>
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span class="et">SATISPAY · 09/10/2026</span>
+<span style="font-family: Inter, Arial, sans-serif; font-size: 24px; font-weight: 700; letter-spacing: 0.04em">SATISPAY · ELISA M.</span>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px">
+<span style="font-family: Inter, Arial, sans-serif; font-size: 28px; font-weight: 700">+50,00 €</span>
+<span style="font-family: Inter, Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 3px 8px; border: 1px solid #46606f; color: #0d2a3d">ENTRATA</span>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 16px; border: 2px solid #f4c31b; background: #eef5fa">
+<span class="et" style="color: #8f6a00">SUGGERITO · CONFERMA TU</span>
+<div style="display: flex; flex-direction: column; gap: 4px"><span class="et">VOCE</span><b style="font-size: 18px">Corsi e altri pagamenti</b><span class="sec">50,00 € è una quota mensile. Altre 3 entrate uguali sono state messe qui.</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span class="et">PERSONA</span><b style="font-size: 18px">Marini Elisa</b><span class="sec">nascita 2012 · Judo kids · quota di ottobre da pagare 50,00 €</span><span class="sec">Perché lei: «Elisa» e cognome con la M. È l'unica così.</span></div>
+<div class="tasto pieno">CONFERMA VOCE E PERSONA</div>
+<div class="tasto">SCEGLI TU</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="et">VOCE</span><div class="box"><span>Da classificare</span><span aria-hidden="true">▾</span></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="et">PERSONA</span><div class="box"><span style="color: #46606f">Nessuna collegata</span><span class="et" style="color: #0d2a3d">CERCA</span></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="et">DESCRIZIONE</span><div class="box"><span>SATISPAY · ELISA M.</span></div></div>
+<div class="tasto">SALVA IL TESTO</div>
+<div class="tasto rosso">ANNULLA IL MOVIMENTO</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":430,"height":1300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
