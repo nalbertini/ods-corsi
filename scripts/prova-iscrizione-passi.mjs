@@ -808,8 +808,8 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   ok('«prezzo da confermare» non sta nella riga: lo dice la schermata', agi.senzaAnni.some((c) => c.riga?.includes('prezzo da confermare')), false)
   ok('gli adatti tengono la riga del listino', rigaDi(ag.adatti, 'judo-adulti'), rigaDi(perEta.adatti, 'judo-adulti'))
   ok('senza anni: tolti quelli proposti in cima e quelli del figlio', ag.senzaAnni.map((c) => c.id), perEta.senzaAnni.map((c) => c.id).filter((id) => !proposti(ag).includes(id) && id !== 'judo-agonisti'))
-  // Il listino non dice per che anni è Psicomotricità («3-4-5 anni» scritto): resta dov'è, non si propone e basta.
-  ok('Psicomotricità resta nei senza anni, non negli altri', [ag.senzaAnni.some((c) => c.id === 'psicomotricita'), ag.altri.some((c) => c.id === 'psicomotricita')], [true, false])
+  // Un corso di cui il listino non dice gli anni (in prova ogni voce li ha: Kendo è inventato) resta dov'è, non si propone e basta.
+  ok('Kendo resta nei senza anni, non negli altri', [agi.senzaAnni.some((c) => c.id === 'kendo'), agi.altri.some((c) => c.id === 'kendo')], [true, false])
   ok('il corso del figlio non è né nei senza anni né alla stessa ora', [ag.senzaAnni.some((c) => c.id === 'judo-agonisti'), ag.stessaOra.some((c) => c.id === 'judo-agonisti')], [false, false])
 
   // «Ti iscrivi anche tu?» e il foglio del genitore (`fraseAncheTu`, `suoDopoIscrivoAncheMe`, `scegliSuoCorso`,

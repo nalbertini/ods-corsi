@@ -89,9 +89,8 @@ export const SALDO_ENTRO = '2026-08-31'
 /** Se il prezzo a saldo vale ancora, da un giorno `AAAA-MM-GG`; `entro` è quello del listino. */
 export const saldoAperto = (giorno: string, entro = SALDO_ENTRO) => giorno <= entro
 
-// Gli anni di nascita (natiDal, natiAl) vengono dall'età scritta: dove non è
-// chiara (Psicomotricità in anni, gli agonisti, «dal 2011») restano vuoti, e
-// il corso va bene per tutti finché la segreteria non li scrive in LISTINO.
+// Gli anni di nascita (natiDal, natiAl) sono quelli del LISTINO della palestra,
+// così la prova propone i corsi per età come l'app vera.
 export const COSTI: VoceCosto[] = [
   {
     corso: 'Giocomotricità',
@@ -105,6 +104,8 @@ export const COSTI: VoceCosto[] = [
   {
     corso: 'Psicomotricità',
     eta: '3-4-5 anni',
+    natiDal: 2021,
+    natiAl: 2023,
     orari: ['venerdì 17.00-17.50', 'venerdì 18.10-19.00'],
     prezzi: [{ annuale: 300 }],
   },
@@ -142,6 +143,7 @@ export const COSTI: VoceCosto[] = [
   {
     corso: 'Judo agonisti',
     eta: 'solo judoka agonisti (2015-2014 e prima)',
+    natiAl: 2014,
     orari: ['martedì e giovedì 18.00-19.30'],
     prezzi: [{ saldo: 630, annuale: 660, trimestre: 230 }],
     nota: 'Solo in aggiunta a Judo 3 e Judo adulti.',
@@ -210,6 +212,7 @@ export const COSTI: VoceCosto[] = [
   {
     corso: 'Pesi agonisti',
     eta: 'dal 2011, solo agonisti',
+    natiAl: 2011,
     orari: ['martedì e giovedì 17.00-18.00'],
     prezzi: [{ saldo: 630, annuale: 660, trimestre: 230 }],
     nota: 'Specifico per judo e lotta.',
@@ -217,6 +220,7 @@ export const COSTI: VoceCosto[] = [
   {
     corso: 'MGA metodo globale autodifesa',
     eta: 'dal 2011',
+    natiAl: 2011,
     orari: ['venerdì 19.00-20.00'],
     prezzi: [{ saldo: 320, annuale: 340, trimestre: 130 }],
   },
