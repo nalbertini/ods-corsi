@@ -543,7 +543,9 @@
 :root[data-look='sito'] .sg-tag[data-icona] { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 8px; border: 0; border-radius: 6px; font-weight: 600; background: var(--tinta-neutro); }
 :root[data-look='sito'] .sg-tag[data-icona]::before { content: none; }
 :root[data-look='sito'] .sg-tag[data-icona][data-tipo='manca'] { background: var(--tinta-rosso); }
-:root[data-look='sito'] .sg-tag[data-icona]:is([data-tipo='aspetta'], [data-tipo='sostituto'], [data-tipo='presto']) { background: var(--tinta-giallo); }
+:root[data-look='sito'] .sg-tag[data-icona][data-tipo='aspetta'],
+:root[data-look='sito'] .sg-tag[data-icona][data-tipo='sostituto'],
+:root[data-look='sito'] .sg-tag[data-icona][data-tipo='presto'] { background: var(--tinta-giallo); }
 :root[data-look='sito'] .sg-tag[data-icona][data-tipo='fatto'] { background: var(--tinta-verde); }
 /* Il giallo pieno è solo del tasto principale e della voce corrente: «aspetta» è testo e bordo in giallo scuro. */
 :root[data-look='sito'] .sg-bollino { background: var(--surface); color: var(--giallo-testo); border: 1.5px solid var(--giallo-testo); }

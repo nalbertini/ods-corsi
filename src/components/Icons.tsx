@@ -250,7 +250,7 @@ export const ICONE_SEZIONE_PERSONALE = {
   ruolo: voce(<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />),
   kanji: voce(<path d="M4 20l4-1 11-11-3-3L5 16z M14 6l3 3" />),
   accesso: ICONE_SCHEDA_PERSONALE.accesso,
-  pin: voce(<path d="M5 5h.01 M12 5h.01 M19 5h.01 M5 12h.01 M12 12h.01 M19 12h.01 M5 19h.01 M12 19h.01 M19 19h.01" strokeWidth={3} />),
+  pin: voce(<path d="M5 4a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M12 4a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M19 4a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M5 11a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M12 11a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M19 11a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M5 18a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M12 18a1 1 0 1 0 0 2a1 1 0 1 0 0-2 M19 18a1 1 0 1 0 0 2a1 1 0 1 0 0-2" />),
   dati: ICONE_SCHEDA_PERSONALE.dati,
   tariffe: voce(<path d="M17 7.5A6 6 0 1 0 17 16.5 M5 10h9 M5 14h9" />),
   lettera: voce(<path d="M4 6h16v12H4z M4 7l8 6 8-6" />),
