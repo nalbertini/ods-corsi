@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.216.4 — 25 ottobre 2026
+
+### Risolto
+
+- Le caselle di PRESENZE ISTRUTTORI in segreteria sono grandi come le altre
+
 ## 0.216.3 — 25 ottobre 2026
 
 ### Modificato
