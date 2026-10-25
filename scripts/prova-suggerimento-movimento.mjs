@@ -96,8 +96,9 @@ const Cg = sug(q, due('Gare'), elisa)
 ok('C: entrata su una voce senza persona', [Cg.caso, Cg.persona, Cg.candidati.length], ['C', 'nessuna-senza-persona', 0])
 const D = sug(riga({ descrizione: 'Bonifico Enel' }), [], elisa)
 ok('D: niente da suggerire', [D.caso, D.voce, prova(() => m.confermaDi(D, null))], ['D', null, null])
+// Senza righe uguali la voce viene dall'importo: 5000 centesimi sono la quota (vedi sezione 4b).
 const senzaVoce = sug(q, [], elisa)
-ok('persona senza voce: si mostra, ma non si conferma', [senzaVoce.caso, senzaVoce.persona, prova(() => m.confermaDi(senzaVoce, null))], ['A', 'candidati', null])
+ok('persona senza righe uguali: la voce viene dall\'importo', [senzaVoce.caso, senzaVoce.persona, senzaVoce.voce?.nome], ['A', 'candidati', 'Quota associativa'])
 const dasc = sug(q, due('Quota associativa'), [])
 ok('voce da persona ma nessuna scheda: da scegliere', [dasc.persona, prova(() => m.confermaDi(dasc, null))], ['da-scegliere', null])
 const gia = sug(riga({ descrizione: 'Satispay · Elisa M.', personaId: 'a' }), due('Quota associativa'), elisa)
@@ -113,6 +114,28 @@ ok('la parola da cercare del movimento: solo entrata da classificare, senza pers
   m.parolaDelMovimento(riga({ descrizione: 'Satispay · Elisa M.', annullato: true })),
   m.parolaDelMovimento(riga({ descrizione: 'Satispay · Elisa M.', voce: 'Gare' })),
 ]), ['elisa', null, null, null, null])
+
+console.log('\n4b. la voce dall\'importo, quando la persona è proposta')
+const corso = (nome, prezzi) => ({ corso: nome, eta: '', orari: [], prezzi })
+const listino = { quota: 50, saldoEntro: '2026-08-31', offerte: [], corsi: [corso('Judo kids', [{ saldo: 240, annuale: 260, trimestre: 90 }]), corso('Pilates', [{ saldo: 240, annuale: 280 }])] }
+const sugL = (importoEuro, persone = elisa, altre = [], o = {}) => prova(() => m.suggerisciMovimento(riga({ descrizione: 'Satispay · Elisa M.', importo: importoEuro * 100, ...o }), altre, voci, persone, listino))
+const quota = sugL(50)
+ok('50 € è la quota associativa', [quota.voce?.nome, quota.voce?.motivo, prova(() => m.confermaDi(quota, null))], ['Quota associativa', '50 € è la quota associativa', { voceId: 'vq', personaId: 'a' }])
+const unCorso = sugL(90)
+ok('il prezzo di un corso: Corsi e altri pagamenti, e dice quale', [unCorso.voce?.nome, unCorso.voce?.motivo], ['Corsi e altri pagamenti', '90 € è il prezzo di Judo kids, trimestre'])
+ok('lo stesso prezzo su più corsi: ne cita uno e dice che ce ne sono altri', sugL(240).voce?.motivo, '240 € è il prezzo di Judo kids, saldo e di un altro prezzo')
+ok('un prezzo con l\'etichetta la cita', prova(() => m.suggerisciMovimento(riga({ descrizione: 'Satispay · Elisa M.', importo: 15000 }), [], voci, elisa, { ...listino, corsi: [corso('Karate', [{ etichetta: '2 GIORNI', annuale: 150 }])] }).voce?.motivo), '150 € è il prezzo di Karate 2 GIORNI, annuale')
+const fuori = sugL(85)
+ok('importo fuori listino: Corsi e altri pagamenti con l\'avviso, e si conferma', [fuori.voce?.nome, fuori.voce?.motivo, prova(() => m.confermaDi(fuori, null))], ['Corsi e altri pagamenti', '85 € non è un prezzo del listino: controlla che la voce sia giusta', { voceId: 'vc', personaId: 'a' }])
+ok('centesimi nell\'avviso', sugL(85.5).voce?.motivo, '85,50 € non è un prezzo del listino: controlla che la voce sia giusta')
+const piu = sugL(85, [P('a', 'Elisa', 'Mosca'), P('b', 'Elisa', 'Marchi')])
+ok('più candidati: la voce c\'è, il tasto resta spento finché non scegli', [piu.caso, piu.voce?.nome, prova(() => m.confermaDi(piu, null)), prova(() => m.confermaDi(piu, 'b'))], ['B', 'Corsi e altri pagamenti', null, { voceId: 'vc', personaId: 'b' }])
+ok('le righe uguali battono l\'importo', sugL(50, elisa, due('Gare')).voce?.nome, 'Gare')
+ok('senza persona candidata l\'importo non propone niente', [sugL(50, []).caso, sugL(50, []).voce], ['D', null])
+ok('un\'uscita non prende la voce dall\'importo', [sugL(50, elisa, [], { tipo: 'uscita' }).voce], [null])
+ok('senza listino resta la quota e il resto è fuori listino', prova(() => [m.suggerisciMovimento(riga({ descrizione: 'Satispay · Elisa M.', importo: 5000 }), [], voci, elisa).voce?.nome, m.suggerisciMovimento(riga({ descrizione: 'Satispay · Elisa M.', importo: 9000 }), [], voci, elisa).voce?.nome]), ['Quota associativa', 'Corsi e altri pagamenti'])
+ok('la voce spenta non si propone', prova(() => m.suggerisciMovimento(riga({ descrizione: 'Satispay · Elisa M.', importo: 5000 }), [], voci.map((v) => (v.id === 'vq' ? { ...v, attiva: false } : v)), elisa, listino).voce), null)
+ok('persona proposta ma voce spenta: non si conferma', prova(() => m.confermaDi(m.suggerisciMovimento(riga({ descrizione: 'Satispay · Elisa M.', importo: 5000 }), [], voci.map((v) => (v.id === 'vq' ? { ...v, attiva: false } : v)), elisa, listino), null)), null)
 
 console.log('\n5. quando il blocco non c\'è')
 for (const [cosa, r] of [

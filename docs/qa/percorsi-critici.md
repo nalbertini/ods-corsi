@@ -67,7 +67,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Voci da classificare in IMPORTAZIONI | amministrazione | voce persa dalla lista, totale sbagliato | `prova:importazioni`, `prova:suggerimento-movimento` | sì, da fare |
 | Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:segreteria`, `prova:contabilita`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
 | Quote e corsi scritti a mano hanno la persona | amministrazione (scrive), segreteria (vede la scheda) | quota che non si ritrova nella scheda | `prova:contabilita`, `prova:movimenti-persona`, `prova:segreteria`, `prova:suggerimento-movimento`, `quote-persona.sql`, `cambia-voce.sql`, `movimenti-persona.sql` | sì |
-| Movimento da classificare: voce e persona proposte | amministrazione (conferma), segreteria | persona o voce sbagliata scritta con un clic | `prova:suggerimento-movimento` | sì, da fare |
+| Movimento da classificare: voce (anche dall'importo) e persona proposte | amministrazione (conferma), segreteria | persona o voce sbagliata scritta con un clic | `prova:suggerimento-movimento` | sì, da fare |
 | Filtro «Pagato nel vecchio programma» | segreteria | segnato pagato per un incasso non suo | `prova:pagato-prima`, `prova:filtri-iscritti`, `pagato-vecchio-programma.sql` | sì |
 | Bilancio di un anno | amministrazione | movimento contato in due anni o in nessuno | `prova:bilancio` | sì |
 | Fatture dalla chat con Claude | amministrazione | movimento doppio o mai scritto, dati personali verso Claude | `prova:mcp`, `movimenti-dalla-chat.sql`, `contabilita.sql` | sì |
@@ -172,6 +172,11 @@ quando arriva la prova.
   senza voce proposta riceve i candidati; nessuna prova lo ferma (DA FARE).
 - Suggerimento da classificare: il nome già presente nel cognome («Maria M.»
   con «Maria Maria») non è provato (DA FARE).
+- Suggerimento da classificare: persona proposta ma nessuna voce (voce
+  della regola spenta): `confermaDi` deve dare `null`; dopo la voce dall'importo
+  nessuna prova lo asserisce (DA FARE).
+- Suggerimento da classificare: `Contabilita.tsx` non propone finché il
+  listino non è caricato (`listino === null`); nessuna prova (DA FARE).
 - Suggerimento da classificare: «scrive solo alla conferma» sta in
   `Contabilita.tsx`; nessuna prova, solo collaudo a mano.
 - Suggerimento da classificare: `cerca_pagatori` rende al massimo otto, e

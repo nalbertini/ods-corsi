@@ -15,11 +15,12 @@
 </helmet>
 <div style="display: flex; flex-direction: column; gap: 14px; width: 100%; padding: 16px 18px; border: 2px solid {{bordo}}; background: #eef5fa; color: #0d2a3d">
   <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: {{etichetta}}">{{titolo}}</span>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
   <sc-if value="{{haVoce}}" hint-placeholder-val="{{ true }}">
     <div style="display: flex; flex-direction: column; gap: 4px">
       <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f">VOCE</span>
       <b style="font-size: 18px">{{voce}}</b>
-      <span style="font-size: 14px; line-height: 1.4">{{motivo}}</span>
+      <span style="font-size: 14px; line-height: 1.4; font-weight: {{pesoMotivo}}; color: {{coloreMotivo}}">{{motivo}}</span>
     </div>
   </sc-if>
   <sc-if value="{{haPersona}}" hint-placeholder-val="{{ true }}">
@@ -29,18 +30,20 @@
       <span style="font-size: 14px; line-height: 1.4">{{perche}}</span>
     </div>
   </sc-if>
+  </div>
   <div style="display: flex; gap: 10px; flex-wrap: wrap">
     <span style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border: 2px solid #8f6a00; background: #f4c31b; font-weight: 700; font-size: 16px; letter-spacing: 0.12em">{{conferma}}</span>
     <span style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border: 2px solid #14709f; color: #14709f; font-weight: 700; font-size: 16px; letter-spacing: 0.12em">SCEGLI TU</span>
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"voce":{"editor":"text","default":"Corsi e altri pagamenti"},"motivo":{"editor":"text","default":"Altre 3 voci uguali sono su «Corsi e altri pagamenti»."},"persona":{"editor":"text","default":"Marini Elisa"},"perche":{"editor":"text","default":"Il nome nel testo combacia con questa scheda."},"$preview":{"width":440,"height":300}}'>
+<script data-dc-script data-props='{"voce":{"editor":"text","default":"Corsi e altri pagamenti"},"motivo":{"editor":"text","default":"Altre 3 voci uguali sono su «Corsi e altri pagamenti»."},"avviso":{"editor":"text","default":""},"persona":{"editor":"text","default":"Marini Elisa"},"perche":{"editor":"text","default":"Il nome nel testo combacia con questa scheda."},"$preview":{"width":720,"height":220}}'>
 // Il riquadro «Suggerito» di un movimento da classificare (Contabilita.tsx, `MovimentoAperto`, cerca `sug`;
 // regole in src/lib/suggerimentoMovimento.ts). Bordo `--giallo` #f4c31b, fondo `--bg` #eef5fa, padding 16px 18px, gap 14px;
 // etichette 12px 600 0.12em; tasto pieno giallo con bordo #8f6a00, tasto linea blu #14709f, alti 48px.
-// Con `voce` vuota il blocco VOCE non c'e' (tasto spento nell'app); con `persona` vuota non c'e' il blocco PERSONA.
+// VOCE e PERSONA stanno affiancate (2 colonne, sotto i 700px impilate). Con `voce` vuota il blocco VOCE non c'e' (tasto spento nell'app); con `persona` vuota non c'e' il blocco PERSONA.
 // Solo tema sito.
+// Con `avviso` non vuoto il motivo e' l'avviso «non e' un prezzo del listino»: giallo scuro, peso 600.
 const truthy = (s) => (s ?? '') !== '';
 class Component extends DCLogic {
   renderVals() {
@@ -48,7 +51,8 @@ class Component extends DCLogic {
     const haPersona = truthy(p.persona);
     return {
       bordo: '#f4c31b', etichetta: '#8f6a00', titolo: 'SUGGERITO · CONFERMA TU',
-      voce: p.voce ?? '', motivo: p.motivo ?? '', haVoce: truthy(p.voce),
+      voce: p.voce ?? '', motivo: truthy(p.avviso) ? p.avviso : (p.motivo ?? ''), haVoce: truthy(p.voce),
+      pesoMotivo: truthy(p.avviso) ? 600 : 400, coloreMotivo: truthy(p.avviso) ? '#8f6a00' : 'inherit',
       persona: p.persona ?? '', perche: p.perche ?? '', haPersona,
       conferma: haPersona ? 'CONFERMA VOCE E PERSONA' : 'CONFERMA LA VOCE',
     };

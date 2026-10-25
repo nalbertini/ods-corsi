@@ -109,8 +109,11 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
   cambiato** dice chi l'ha cambiata, quando e da quale voce veniva. Un movimento scritto qui che va su
   **Quota associativa** o **Corsi e altri pagamenti** chiede la **persona**, se non ce l'ha già.
 - **Il suggerimento**: un movimento su **Da classificare** apre con un riquadro giallo,
-  **Suggerito · conferma tu**. La **voce** è quella delle altre righe uguali (almeno due, tutte
-  sulla stessa voce); la **persona** è la scheda col nome scritto nel testo («Satispay · Elisa M.»):
+  **Suggerito · conferma tu**, con la **voce** e la **persona** affiancate. La **voce** è quella delle
+  altre righe uguali (almeno due, tutte sulla stessa voce); se non ci sono, si capisce dall'importo:
+  50 € è la **Quota associativa**, il prezzo di un corso del listino è **Corsi e altri pagamenti**, e un
+  importo che non combacia con nessun prezzo va lo stesso su **Corsi e altri pagamenti**, con un avviso
+  in giallo: controlla che sia giusta. La **persona** è la scheda col nome scritto nel testo («Satispay · Elisa M.»):
   il nome intero, o nome e iniziale del cognome. Un nome solo non basta. Se le schede possibili sono
   più d'una, scegli tu e **Conferma** resta spento finché non scegli. Per un'uscita la persona non c'è.
   **Conferma** collega la voce e la persona e non crea una ricevuta: la quota resta da pagare finché non
