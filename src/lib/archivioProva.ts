@@ -89,6 +89,8 @@ export interface PersonaProva {
   pagamento?: { stato: 'da_pagare' | 'in_parte' | 'pagato'; fino?: string; nota?: string }
   /** Il titolare del nucleo familiare di cui fa parte, per id; il titolare non ce l'ha (vedi `nucleo.ts`). */
   nucleo?: string
+  /** Aggiunto dalla segreteria per fare da titolare ai figli, senza corsi (vedi `aggiungiGenitore`). */
+  genitoreNonIscritto?: boolean
 }
 
 export interface IscrizioneProva {

@@ -121,7 +121,8 @@ function cosaManca(p: PersonaSeg, quota: number, oggi: string, opz: OpzioniSolle
  * genitore nell'anagrafica si scrive al genitore.
  */
 export function sollecitoDi(p: PersonaSeg, anagrafica: Anagrafica | undefined, quota: number, oggi: string, opz: OpzioniSollecito = {}): Sollecito | null {
-  if (!p.attiva) return null
+  // Il genitore non iscritto c'è per i figli: non ha quota né certificato da portare.
+  if (!p.attiva || p.genitoreNonIscritto) return null
   const manca = cosaManca(p, quota, oggi, opz)
   if (!manca.length) return null
 
@@ -174,6 +175,8 @@ export interface RigaGenitore {
   personaId: string
   genitoreNome?: string
   genitoreCognome?: string
+  genitoreCodiceFiscale?: string
+  codiceFiscale?: string
   quando: string
   /** Una riga della segreteria senza nessun dato: non conta, come in `anagraficaDi`. */
   vuota?: boolean
@@ -184,7 +187,7 @@ export interface RigaGenitore {
  * la più recente fra l'ultima richiesta accolta e i dati della segreteria (a
  * pari data la segreteria), anche se lì il genitore non c'è.
  */
-export function genitoriDa(richieste: RigaGenitore[], segreteria: RigaGenitore[]): Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>> {
+export function genitoriDa(richieste: RigaGenitore[], segreteria: RigaGenitore[]): Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome' | 'genitoreCodiceFiscale' | 'codiceFiscale'>> {
   const vince = new Map<string, RigaGenitore>()
   for (const r of richieste) {
     const c = vince.get(r.personaId)
@@ -195,7 +198,7 @@ export function genitoriDa(richieste: RigaGenitore[], segreteria: RigaGenitore[]
     if (!r.vuota && (!c || r.quando >= c.quando)) vince.set(r.personaId, r)
   }
   return new Map(
-    [...vince].map(([id, r]) => [id, Object.fromEntries(Object.entries({ genitoreNome: r.genitoreNome, genitoreCognome: r.genitoreCognome }).filter(([, v]) => v))]),
+    [...vince].map(([id, r]) => [id, Object.fromEntries(Object.entries({ genitoreNome: r.genitoreNome, genitoreCognome: r.genitoreCognome, genitoreCodiceFiscale: r.genitoreCodiceFiscale, codiceFiscale: r.codiceFiscale }).filter(([, v]) => v))]),
   )
 }
 

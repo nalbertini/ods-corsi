@@ -46,6 +46,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Importazione persone da CSV | segreteria | persona persa, duplicata o scritta male | `prova:importa` | no |
 | Anagrafiche, nuclei, doppioni | segreteria | persone duplicate o unite male | `prova:iscritti`, `prova:filtri-iscritti`, `prova:cerca-persone`, `prova:email-unica`, `prova:segreteria`, `prova:ricevute-email`, `prova:importa`, `anagrafiche.sql`, `non-doppioni.sql`, `unisci-doppioni.sql`, `cerca-persone.sql`, `email-unica.sql` | no |
 | Nucleo familiare | segreteria | figlio nel nucleo di un altro, titolare minorenne | `prova:nucleo`, `nucleo.sql` | sì, da fare |
+| Genitore non iscritto, titolare del nucleo dei figli | segreteria, genitore | genitore contato come iscritto o come quota da pagare; figlio senza titolare | `prova:nucleo`, `prova:filtri-iscritti`, `prova:cosa-manca`, `prova:sollecito`, `genitore-non-iscritto.sql`, `nucleo.sql` | sì, da fare |
 | Area degli iscritti sul database | iscritto, titolare di un nucleo, segreteria | un iscritto che vede un altro | `prova:iscritto-supabase`, `iscritto.sql`, `certificato-iscritto.sql`, `segreteria.sql` | no |
 | Entra con Google (iscritti) | iscritto, personale | entrare con l'account di un altro | `prova:iscritto-supabase` | sì, da fare |
 | Entra con Google (istruttori e segreteria) | istruttore, segreteria | Google estraneo collegato in silenzio | `prova:accesso-google` | no, da fare con un account vero |
@@ -140,6 +141,8 @@ quando arriva la prova.
 - Striscia: `useDaFare` e la regola degli appelli («cominciata» o «finita»).
 - Elenco ISCRITTI: la frase col conto dei minorenni e dei senza data, e il
   segno MINORENNE sulla riga, stanno nel `.tsx`; nessuna prova.
+- Genitore non iscritto: «N persone attive» in testata all'elenco lo salta
+  (`attiveOra`, nel `.tsx`); nessuna prova.
 
 ## Come si aggiorna
 

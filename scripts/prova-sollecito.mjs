@@ -89,6 +89,9 @@ const motivi = (p, anagrafica) => di(p, anagrafica)?.motivi ?? null
 const testo = (p, anagrafica) => di(p, anagrafica)?.testo ?? ''
 const certificato = (scade) => ({ certificato: { scade, conFile: !!scade }, pagamento: { stato: 'pagato' } })
 
+console.log('\n0. il genitore non iscritto: niente sollecito')
+ok('niente quota né certificato da chiedere a chi c\'è solo per i figli', di(persona({ genitoreNonIscritto: true, certificato: { conFile: false } })), null)
+
 console.log('\n1. il numero per wa.me: solo cifre, col prefisso del paese')
 ok('«333 123 4567» prende il 39', numeroWhatsApp('333 123 4567'), '393331234567')
 ok('«+39 333 1234567» resta col 39', numeroWhatsApp('+39 333 1234567'), '393331234567')
@@ -276,6 +279,8 @@ ok('la richiesta più recente della segreteria: la richiesta', genitori([riga('p
 ok('stessa data: la segreteria', genitori([riga('p3', '2026-09-01', 'Laura', 'Rossi')], [riga('p3', '2026-09-01', 'Marta', 'Rossi')])?.p3?.genitoreNome, 'Marta')
 ok('la segreteria più recente senza genitore (ma con altri dati): vince lo stesso, come nella scheda', genitori([riga('p4', '2026-09-01', 'Laura', 'Rossi')], [{ personaId: 'p4', quando: '2026-10-01' }])?.p4, {})
 ok('una riga della segreteria tutta vuota non conta: vince la richiesta, come nella scheda', genitori([riga('p6', '2026-09-01', 'Laura', 'Rossi')], [{ personaId: 'p6', quando: '2026-10-01', vuota: true }])?.p6, { genitoreNome: 'Laura', genitoreCognome: 'Rossi' })
+ok('il codice fiscale del genitore e quello della persona viaggiano con lui', genitori([{ personaId: 'p7', quando: '2026-09-01', genitoreNome: 'Laura', genitoreCognome: 'Rossi', genitoreCodiceFiscale: 'RSSLRA80A41F205Y', codiceFiscale: 'RSSMRC17E01F205X' }], [])?.p7, { genitoreNome: 'Laura', genitoreCognome: 'Rossi', genitoreCodiceFiscale: 'RSSLRA80A41F205Y', codiceFiscale: 'RSSMRC17E01F205X' })
+ok('i codici seguono la riga che vince, come il nome', genitori([{ personaId: 'p8', quando: '2026-09-01', genitoreNome: 'Laura', genitoreCodiceFiscale: 'RSSLRA80A41F205Y' }], [{ personaId: 'p8', quando: '2026-10-01', genitoreNome: 'Marta', genitoreCodiceFiscale: 'RSSMRT80A41F205Z', codiceFiscale: 'RSSMRC17E01F205X' }])?.p8, { genitoreNome: 'Marta', genitoreCodiceFiscale: 'RSSMRT80A41F205Z', codiceFiscale: 'RSSMRC17E01F205X' })
 const vuota = genitori([], [])
 ok('nessuna riga: la persona non c\'è', typeof vuota === 'object' && vuota !== null ? 'p5' in vuota : vuota, false)
 

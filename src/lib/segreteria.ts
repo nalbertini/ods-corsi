@@ -168,6 +168,8 @@ export interface PersonaSeg {
   satispayCorsi?: string[]
   /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`); col database lo dà `100-nucleo.sql`. */
   nucleo?: string
+  /** Il genitore aggiunto per fare da titolare ai figli, che non frequenta: niente corsi, quota né certificato (`113-genitore-non-iscritto.sql`). */
+  genitoreNonIscritto?: boolean
   /** `AAAA-MM-GG`, dall'anagrafica; senza, l'età non si sa e il certificato serve (vedi `serveCertificato`). */
   natoIl?: string
   /** Le sue tessere: non le dà `persone()`, le attacca `conTessere` (vedi `tessere.ts`). */
@@ -711,6 +713,13 @@ export interface DatiSegreteria {
    */
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>
+  /**
+   * Il genitore che non frequenta, titolare del nucleo di un figlio
+   * minorenne: una persona nuova col segno `genitoreNonIscritto` e il codice
+   * fiscale, e il figlio nel suo nucleo. Torna l'id. Col database è
+   * `aggiungi_genitore` di `113-genitore-non-iscritto.sql`.
+   */
+  aggiungiGenitore(figlioId: string, genitore: { nome: string; cognome: string; codiceFiscale: string }): Promise<string>
   rendiTitolare(personaId: string): Promise<void>
 
   /** Le ricevute di una persona, o tutte, dalla più recente; anche le annullate. */
@@ -793,7 +802,7 @@ export interface DatiSegreteria {
   /** «Annulla»: toglie l'ultimo sollecito se l'ha segnato chi è collegato da meno di 15 minuti; falso se non l'ha tolto o senza il file. */
   togliSollecito(personaId: string): Promise<boolean>
   /** Il genitore di ognuno, in un colpo, con la regola di `anagraficaDi`: per il sollecito ai minorenni nell'elenco. */
-  genitori(): Promise<Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>>>
+  genitori(): Promise<Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome' | 'genitoreCodiceFiscale' | 'codiceFiscale'>>>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
   pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
   /** Nome e cognome di chi ha pagato, e nient'altro: per chi segue i pagamenti senza vedere le persone (`55-amministrazione.sql`). */

@@ -14,11 +14,12 @@ import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaInizial
 import { ICONE_SCHEDA_ISCRITTO } from '../Icons'
 import { ImportaTessere, TessereDellaPersona } from './Tessere'
 import { lette } from '../../lib/letture'
-import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni, messaggio, Riga, SchedaPiena, Stato, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni, messaggio, Proposta, Riga, SchedaPiena, Stato, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
 import type { Ricercata } from '../../lib/ricerca'
-import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
+import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, fratelliDaProporre, maggiorenneDal, propostaGenitore, SCONTO_FAMIGLIA } from '../../lib/nucleo'
+import { minorenne } from '../../lib/richieste'
 import { euro, voceQuota } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 import { StoricoPersona } from './CollegaPersona'
@@ -369,7 +370,8 @@ export function Iscritti({
       return f && f.dovute ? f.presenti / f.dovute : null
     },
   })
-  const attiveOra = tutti.filter((p) => p.attiva)
+  // Il genitore non iscritto non è un iscritto: non conta fra le persone attive né fra i certificati in scadenza.
+  const attiveOra = tutti.filter((p) => p.attiva && !p.genitoreNonIscritto)
   const inScadenza = attiveOra.filter((p) => certificatoInScadenza(p, oggi)).length
   const nScaduti = corsiScaduti ? attiveOra.filter((p) => scopertiDi(p).length > 0).length : 0
   const persona = nuovo ? null : (tutti.find((p) => p.id === scelta) ?? null)
@@ -616,6 +618,7 @@ export function Iscritti({
                     </button>
                     {minorenneP(p) && <SegnoIscritto icona="bambino" parola="Minorenne" />}
                     {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>{TESTI_FILTRI['file-di-prima']}</span>}
+                    {p.genitoreNonIscritto && <span className="num sg-tag" style={{ marginLeft: 8 }}>Genitore non iscritto</span>}
                     {/* Sotto i 1000 px la colonna FAMIGLIA non c'è: la famiglia va sotto il nome. */}
                     {fam && (
                       <span className="sg-sotto-nome">
@@ -857,7 +860,14 @@ function Scheda({
   const minore = eMinorenne(p, datiAn, ora)
   // Finché non si sono letti, niente COSA MANCA: comparirebbe e poi cambierebbe. Se non si leggono, almeno i contatti.
   const letta = !!(an.dato || an.guaio)
-  const manca = letta ? cosaManca(p, datiAn, ora) : []
+  // Maggiorenne nel nucleo di un genitore non iscritto: la segreteria chiede a chi intestare le ricevute.
+  const diciotto = maggiorenneDal(tutti.map((x) => (x.id === p.id && natoIl ? { ...x, natoIl } : x)), p.id, chiaveGiorno(ora))
+  const manca = letta ? [...cosaManca(p, datiAn, ora), ...(diciotto ? [{ cosa: `Maggiorenne dal ${dataLunga(diciotto, false)}`, perche: 'chiedi a chi intestare le ricevute nuove' }] : [])] : []
+  // Chi fa solo da titolare non ha certificato, quota né corsi: la scheda è PERSONA. «Iscrivilo a un corso» apre il resto.
+  const [daIscrivere, setDaIscrivere] = useState(false)
+  const soloGenitore = !!p.genitoreNonIscritto && !daIscrivere
+  const vista: IdScheda = soloGenitore ? 'persona' : aperta
+  const figli = soloGenitore ? tutti.filter((x) => x.nucleo === p.id && x.attiva).map((x) => x.nome) : []
   const apriModifica = () => {
     setGuaio('')
     setAperta('persona')
@@ -892,10 +902,17 @@ function Scheda({
     <>
       <div className="sg-scheda-testa">
         <div className="stack" style={{ gap: 4 }}>
-          <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
-            {`${p.cognome} ${p.nome}`.toUpperCase()}
-          </h2>
-          <span style={{ fontSize: 13, color: 'var(--dim)' }}>{sottoNome(natoIl, p.creataIl, ora)}</span>
+          <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+            <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
+              {`${p.cognome} ${p.nome}`.toUpperCase()}
+            </h2>
+            {p.genitoreNonIscritto && <span className="num sg-tag">Genitore non iscritto</span>}
+          </div>
+          <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+            {soloGenitore
+              ? `${figli.length ? `Paga e firma per ${figli.join(' e ')}. ` : ''}Non ha corsi, quota né certificato, e non conta fra gli iscritti.`
+              : sottoNome(natoIl, p.creataIl, ora)}
+          </span>
         </div>
         {(azioni.sollecito || voci.length > 0) && (
           <div className="sg-scheda-testa-azioni">
@@ -971,7 +988,7 @@ function Scheda({
         </div>
       )}
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
-      {!unendo && !pagando && letta && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
+      {!unendo && !pagando && !soloGenitore && letta && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -1024,7 +1041,7 @@ function Scheda({
         <p className="sg-sotto" role="status">Carico la scheda…</p>
       ) : (
       <>
-      <div className="schede sg-schede sg-schede-scheda" role="tablist" aria-label="Parti della scheda" onKeyDown={tastiera}>
+      {!soloGenitore && <div className="schede sg-schede sg-schede-scheda" role="tablist" aria-label="Parti della scheda" onKeyDown={tastiera}>
         {SCHEDE.map((s) => {
           const segno = segni[s.id]
           const Icona = ICONE_SCHEDA_ISCRITTO[s.id]
@@ -1054,10 +1071,10 @@ function Scheda({
             </button>
           )
         })}
-      </div>
+      </div>}
 
       {/* Le schede lasciate si nascondono, non si smontano: quello che si sta scrivendo resta. */}
-      <div role="tabpanel" id={idPannello('persona')} aria-labelledby={idLinguetta('persona')} hidden={aperta !== 'persona'} className="stack" style={{ gap: 20, minWidth: 0 }}>
+      <div role={soloGenitore ? undefined : 'tabpanel'} id={idPannello('persona')} aria-labelledby={soloGenitore ? undefined : idLinguetta('persona')} hidden={vista !== 'persona'} className="stack" style={{ gap: 20, minWidth: 0 }}>
           <div className="stack" style={{ gap: 8 }}>
           <Riga titolo="CONTATTI">
             {!modifica && (
@@ -1106,7 +1123,7 @@ function Scheda({
           )}
 
           <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} an={an} natoIl={natoIl} minore={minore} fai={fai} onCambiato={() => { setGiroAnagrafica((g) => g + 1); onCambiato() }} />
-          <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />
+          <NucleoFamiliare d={d} p={p} tutti={tutti} natoIl={natoIl} minore={minore} fai={fai} onCambiato={onCambiato} onApri={onApri} giroAnagrafica={giroAnagrafica} />
           {nonDoppioni.length > 0 && (
             <div className="stack" style={{ gap: 8 }}>
               <Riga titolo="NON SONO DOPPIONI" />
@@ -1139,9 +1156,27 @@ function Scheda({
             </div>
           )}
 
+          {soloGenitore && (
+            <div className="stack" style={{ gap: 8 }}>
+              <Riga titolo="SE SI ISCRIVE" />
+              <div className="row" style={{ gap: 12, alignItems: 'center' }}>
+                <span className="sg-sotto grow">Diventa un iscritto come gli altri, resta titolare e i figli restano nel suo nucleo.</span>
+                <button
+                  type="button"
+                  className="num sg-chip"
+                  onClick={() => {
+                    setDaIscrivere(true)
+                    setAperta('corsi')
+                  }}
+                >
+                  Iscrivilo a un corso
+                </button>
+              </div>
+            </div>
+          )}
       </div>
 
-      <div role="tabpanel" id={idPannello('documenti')} aria-labelledby={idLinguetta('documenti')} hidden={aperta !== 'documenti'} className="stack" style={{ gap: 20, minWidth: 0 }}>
+      <div role="tabpanel" id={idPannello('documenti')} aria-labelledby={idLinguetta('documenti')} hidden={vista !== 'documenti'} className="stack" style={{ gap: 20, minWidth: 0 }}>
           <div id="sez-certificato">
             <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
@@ -1151,7 +1186,7 @@ function Scheda({
           </div>
       </div>
 
-      <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={aperta !== 'quota'}>
+      <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={vista !== 'quota'}>
         <div id="sez-quota" className="stack" style={{ gap: 24, minWidth: 0 }}>
             <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} statiCorsi={statiCorsi} fai={fai} onCambiato={onCambiato} onNuova={() => setPagando(true)} />
             <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onCambiato={onCambiato} contabilita={contabilita} riprendi={riprendi ?? undefined} onRicevuta={(x) => {
@@ -1163,7 +1198,7 @@ function Scheda({
         </div>
       </div>
 
-      <div role="tabpanel" id={idPannello('corsi')} aria-labelledby={idLinguetta('corsi')} hidden={aperta !== 'corsi'} className="stack" style={{ gap: 20, minWidth: 0 }}>
+      <div role="tabpanel" id={idPannello('corsi')} aria-labelledby={idLinguetta('corsi')} hidden={vista !== 'corsi'} className="stack" style={{ gap: 20, minWidth: 0 }}>
           <div className="stack" style={{ gap: 8 }}>
             <Riga titolo="ISCRIZIONI">
               {p.attiva && !iscrivendo && liberi.length > 0 && (
@@ -1566,16 +1601,22 @@ function NucleoFamiliare({
   d,
   p,
   tutti,
+  natoIl,
+  minore,
   fai,
   onCambiato,
   onApri,
+  giroAnagrafica,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
   tutti: PersonaSeg[]
+  natoIl: string | null
+  minore: boolean
   fai: Fai
   onCambiato: () => void
   onApri: (personaId: string) => void
+  giroAnagrafica: number
 }) {
   const [daAggiungere, setDaAggiungere] = useState('')
   const titolare = p.nucleo ? tutti.find((x) => x.id === p.nucleo) : p
@@ -1587,7 +1628,18 @@ function NucleoFamiliare({
     const x = tutti.find((y) => y.id === id)
     return x ? `${x.nome} ${x.cognome}` : ''
   }
-  const annuali = abbonamentiDalleRicevute(ricevute.dato ?? [], nomeDi, chiaveGiorno(new Date()))
+  const oggi = chiaveGiorno(new Date())
+  const annuali = abbonamentiDalleRicevute(ricevute.dato ?? [], nomeDi, oggi)
+  // La data della testata (`natoIlDi`), così età e nucleo dicono la stessa cosa.
+  const persone = tutti.map((x) => (x.id === p.id && natoIl ? { ...x, natoIl } : x))
+  // Il genitore e i fratelli si riconoscono dal codice fiscale: le anagrafiche di tutti servono solo a un minorenne senza nucleo.
+  const senzaNucleo = !p.nucleo && membri.length === 0
+  // `giroAnagrafica`: il codice fiscale del genitore corretto qui sopra cambia la proposta.
+  const genitori = useCarica(async () => (minore && senzaNucleo ? d.genitori() : null), [d, minore, senzaNucleo, ids, giroAnagrafica])
+  const proposta = genitori.dato ? propostaGenitore(persone, p.id, genitori.dato, oggi) : null
+  const fratelli = genitori.dato ? fratelliDaProporre(persone, p.id, genitori.dato, proposta) : []
+  const maggiorenne = maggiorenneDal(persone, p.id, oggi)
+  const fraAdulti = nucleo.length > 1 && nucleo.every((x) => !x.natoIl || !minorenne(x.natoIl))
   const minimo = doveVaLoSconto([], annuali)
   // Chi si può aggiungere: chi può entrare secondo le regole, prima chi ha lo stesso cognome.
   const candidati = p.nucleo
@@ -1605,9 +1657,11 @@ function NucleoFamiliare({
       </span>
       {x.nucleo && (
         <>
-          <button type="button" className="num sg-chip" onClick={() => void fai(() => d.rendiTitolare(x.id), `${x.nome} è titolare del nucleo`, onCambiato)}>
-            Titolare
-          </button>
+          {!(x.natoIl && minorenne(x.natoIl)) && (
+            <button type="button" className="num sg-chip" onClick={() => void fai(() => d.rendiTitolare(x.id), `${x.nome} è titolare del nucleo`, onCambiato)}>
+              Titolare
+            </button>
+          )}
           <button
             type="button"
             className="num sg-chip sg-pericolo"
@@ -1626,17 +1680,74 @@ function NucleoFamiliare({
   return (
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="NUCLEO FAMILIARE" />
-      {!p.nucleo && membri.length === 0 ? (
+      {senzaNucleo && minore ? (
+        <span className="sg-sotto">Non è in un nucleo. Chi è minorenne non fa da titolare: serve un adulto.</span>
+      ) : senzaNucleo ? (
         <span className="sg-sotto">Non è in un nucleo. Aggiungi qualcuno qui sotto, e ne diventa titolare: vedrà nella sua pagina anche le persone del nucleo.</span>
       ) : !titolare ? (
         <span className="sg-sotto">Il titolare del nucleo non c’è più: toglilo dal nucleo.</span>
       ) : (
         <>
-          {persona(titolare, 'Titolare: vede tutto il nucleo nella sua pagina')}
+          {persona(titolare, titolare.genitoreNonIscritto ? 'Titolare · genitore non iscritto' : 'Titolare: vede tutto il nucleo nella sua pagina')}
           {membri.map((x) => persona(x, 'Nel nucleo'))}
         </>
       )}
-      {!p.nucleo && (
+      {maggiorenne && (
+        <Proposta
+          titolo={`${p.nome} è maggiorenne dal ${dataLunga(maggiorenne, false)}`}
+          dettaglio={`È nel nucleo di ${titolare ? `${titolare.cognome} ${titolare.nome}` : 'un genitore'}, genitore non iscritto. Ora può avere un nucleo suo o restare qui: per le ricevute nuove, chiedi a chi intestarle.`}
+          bordo="2px solid var(--line)"
+        >
+          <span className="num sg-tag" data-tipo="aspetta">18 anni</span>
+        </Proposta>
+      )}
+      {fratelli.map((f) => (
+        <Proposta
+          key={f.titolare}
+          titolo={`Stesso genitore di ${nomeDi(f.personaId)}`}
+          dettaglio={`È nel nucleo di ${nomeDi(f.titolare)}: ${p.nome} entra lì, e lo sconto famiglia va sull’annuale che costa meno.`}
+          bordo="2px dashed var(--line)"
+        >
+          <button type="button" className="num sg-chip" onClick={() => void fai(() => d.mettiNelNucleo(p.id, f.titolare), 'Messo nella famiglia', onCambiato)}>
+            Mettilo nella famiglia
+          </button>
+        </Proposta>
+      ))}
+      {proposta?.tipo === 'nuovo' && (
+        <Proposta
+          titolo="Il genitore non è iscritto: aggiungilo"
+          dettaglio={`${proposta.cognome} ${proposta.nome}, dal blocco GENITORE: diventa titolare del nucleo, senza corsi né quota, e paga per i figli.`}
+          bordo="2px solid var(--blu)"
+        >
+          <button
+            type="button"
+            className="num sg-chip sg-chip-pieno"
+            disabled={!proposta.nome || !proposta.cognome}
+            onClick={() => void fai(() => d.aggiungiGenitore(p.id, { nome: proposta.nome, cognome: proposta.cognome, codiceFiscale: proposta.codiceFiscale }), 'Genitore aggiunto: è titolare del nucleo', onCambiato)}
+          >
+            Aggiungi il genitore
+          </button>
+        </Proposta>
+      )}
+      {(proposta?.tipo === 'iscritto' || proposta?.tipo === 'gia-in-elenco') && (
+        <Proposta
+          titolo={proposta.tipo === 'iscritto' ? `Il genitore è iscritto: ${nomeDi(proposta.titolare)}` : `C’è già ${nomeDi(proposta.titolare)} con questo codice fiscale: è la stessa persona?`}
+          dettaglio={`Stesso codice fiscale del blocco GENITORE. ${p.nome} entra nel suo nucleo, senza una seconda scheda.`}
+          bordo={proposta.tipo === 'iscritto' ? '2px solid var(--blu)' : '2px solid var(--giallo-testo)'}
+        >
+          <button type="button" className="num sg-chip sg-chip-pieno" onClick={() => void fai(() => d.mettiNelNucleo(p.id, proposta.titolare), 'Messo nel nucleo del genitore', onCambiato)}>
+            {proposta.tipo === 'iscritto' ? 'Metti nel suo nucleo' : `Usa ${nomeDi(proposta.titolare)}`}
+          </button>
+        </Proposta>
+      )}
+      {proposta?.tipo === 'manca-cf' && (
+        <Proposta
+          titolo={proposta.sbagliato ? 'Il codice fiscale del genitore non è giusto: correggilo qui sopra' : 'Per aggiungere il genitore serve il suo codice fiscale'}
+          dettaglio="Nel blocco GENITORE, qui sopra: va sulle ricevute e serve a riconoscere i fratelli."
+          bordo="2px dashed var(--line)"
+        />
+      )}
+      {senzaNucleo && !minore && (
         <div className="row" style={{ gap: 8 }}>
           <label htmlFor="n-agg" className="vh">
             Persona da aggiungere al nucleo
@@ -1665,6 +1776,7 @@ function NucleoFamiliare({
         </div>
       )}
       {p.nucleo && titolare && <span className="sg-sotto">Per aggiungere qualcuno, apri la scheda del titolare.</span>}
+      {fraAdulti && <span className="sg-sotto" style={{ fontSize: 12 }}>Fra adulti ognuno vede nella sua pagina anche le persone del nucleo, e il titolare paga per tutti. Nessuno firma per l’altro: firma ognuno per sé.</span>}
       {minimo ? (
         <span style={{ fontSize: 12, color: 'var(--sec)' }}>
           {minimo.scontato

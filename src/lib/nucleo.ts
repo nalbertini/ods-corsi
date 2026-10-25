@@ -1,4 +1,5 @@
 import type { Formula } from './richieste'
+import type { Anagrafica } from './segreteria'
 import { minorenne } from './richieste'
 import type { Ricevuta } from './ricevute'
 import { centesimi, euro, voceQuota, vociDelCorso } from './ricevute'
@@ -165,7 +166,7 @@ export function stimaIscrizione(
 }
 
 /** Una persona per le regole del nucleo: chi è, se è attiva, di quale nucleo fa parte e quando è nata. */
-type InNucleo = { id: string; attiva: boolean; nucleo?: string; natoIl?: string }
+type InNucleo = { id: string; attiva: boolean; nucleo?: string; natoIl?: string; genitoreNonIscritto?: boolean }
 
 export const TITOLARE_MINORENNE = 'Il titolare deve essere maggiorenne: scegli un adulto'
 
@@ -204,6 +205,99 @@ export function nuovoTitolare(persone: InNucleo[], personaId: string): Map<strin
   const m = new Map<string, string | null>([[personaId, null], [vecchio, personaId]])
   for (const x of persone) if (x.nucleo === vecchio && x.id !== personaId) m.set(x.id, personaId)
   return m
+}
+
+export const GENITORE_SENZA_CF = 'Per aggiungere il genitore serve il suo codice fiscale'
+export const GENITORE_GIA_IN_ELENCO = 'C’è già una persona con questo codice fiscale: mettilo nel suo nucleo'
+export const GENITORE_SENZA_NOME = 'Scrivi nome e cognome del genitore'
+
+/** I dati di una persona che servono per il suo genitore: il blocco GENITORE e il suo codice fiscale. */
+export type DatiGenitore = Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome' | 'genitoreCodiceFiscale' | 'codiceFiscale'>
+
+/** Il codice fiscale come lo scrive il database: maiuscolo, senza spazi; `null` se non sono 16 lettere e cifre. */
+export function codicePulito(cf: string | undefined): string | null {
+  const c = (cf ?? '').replace(/\s/g, '').toUpperCase()
+  return /^[A-Z0-9]{16}$/.test(c) ? c : null
+}
+
+/** Cosa propone la scheda di un minorenne senza nucleo: il genitore nuovo, quello che c'è già, o il codice che manca. */
+export type PropostaGenitore =
+  | { tipo: 'nuovo'; nome: string; cognome: string; codiceFiscale: string }
+  | { tipo: 'iscritto' | 'gia-in-elenco'; titolare: string }
+  | { tipo: 'manca-cf'; sbagliato?: true }
+
+/**
+ * Il genitore da mettere titolare del nucleo di un minorenne che non ne ha
+ * uno: `null` per un adulto, per chi non ha la data di nascita o è già in un
+ * nucleo. Il genitore si riconosce dal codice fiscale: se è già di un'altra
+ * persona si usa lei, senza doppioni (`aggiungi_genitore` fa la stessa prova).
+ */
+export function propostaGenitore(persone: InNucleo[], personaId: string, dati: Map<string, DatiGenitore>, oggi: string): PropostaGenitore | null {
+  const p = persone.find((x) => x.id === personaId)
+  if (!p?.natoIl || !minorenne(p.natoIl, new Date(`${oggi}T12:00:00`))) return null
+  if (p.nucleo || persone.some((x) => x.nucleo === p.id)) return null
+  const suoi = dati.get(personaId)
+  const scritto = suoi?.genitoreCodiceFiscale?.trim()
+  const cf = codicePulito(scritto)
+  // Il codice del figlio stesso è sbagliato quanto uno corto: `aggiungi_genitore` lo rifiuta.
+  if (!cf || cf === codicePulito(suoi?.codiceFiscale)) return scritto ? { tipo: 'manca-cf', sbagliato: true } : { tipo: 'manca-cf' }
+  const chi = persone.find((x) => x.id !== personaId && codicePulito(dati.get(x.id)?.codiceFiscale) === cf)
+  if (chi) return { tipo: chi.genitoreNonIscritto ? 'gia-in-elenco' : 'iscritto', titolare: chi.id }
+  return { tipo: 'nuovo', nome: suoi?.genitoreNome?.trim() ?? '', cognome: suoi?.genitoreCognome?.trim() ?? '', codiceFiscale: cf }
+}
+
+/**
+ * I fratelli già in un nucleo: le persone attive con lo stesso codice fiscale
+ * del genitore, nel nucleo di qualcuno che non è quello dove sta già lei.
+ */
+export function fratelliDi(persone: InNucleo[], personaId: string, dati: Map<string, DatiGenitore>): Array<{ personaId: string; titolare: string }> {
+  const p = persone.find((x) => x.id === personaId)
+  return p ? fratelliPerGenitore(persone, dati.get(personaId)?.genitoreCodiceFiscale, dati, p) : []
+}
+
+/**
+ * I fratelli da proporre nella scheda: uno per nucleo, non quello già
+ * proposto come genitore, e solo dove le regole del nucleo la fanno entrare.
+ */
+export function fratelliDaProporre(
+  persone: InNucleo[],
+  personaId: string,
+  dati: Map<string, DatiGenitore>,
+  proposta: PropostaGenitore | null,
+): Array<{ personaId: string; titolare: string }> {
+  const giaProposto = proposta && 'titolare' in proposta ? proposta.titolare : null
+  return fratelliDi(persone, personaId, dati).filter(
+    (f, i, tutti) => tutti.findIndex((y) => y.titolare === f.titolare) === i && f.titolare !== giaProposto && !cosaNonVaNucleo(persone, personaId, f.titolare),
+  )
+}
+
+/** I fratelli dal codice fiscale del genitore: anche per una richiesta che non è ancora una persona. */
+export function fratelliPerGenitore(
+  persone: InNucleo[],
+  codiceGenitore: string | undefined,
+  dati: Map<string, DatiGenitore>,
+  esclusa?: Pick<InNucleo, 'id' | 'nucleo'>,
+): Array<{ personaId: string; titolare: string }> {
+  const cf = codicePulito(codiceGenitore)
+  if (!cf) return []
+  return persone
+    .filter((x) => x.id !== esclusa?.id && x.attiva && x.nucleo && x.nucleo !== esclusa?.nucleo && codicePulito(dati.get(x.id)?.genitoreCodiceFiscale) === cf)
+    .map((x) => ({ personaId: x.id, titolare: x.nucleo! }))
+}
+
+/**
+ * Da quando è maggiorenne chi sta nel nucleo di un genitore non iscritto:
+ * ora può fare da titolare, e la segreteria lo deve sapere. `null` se è
+ * ancora minorenne o il titolare è un iscritto vero.
+ */
+export function maggiorenneDal(persone: InNucleo[], personaId: string, oggi: string): string | null {
+  const p = persone.find((x) => x.id === personaId)
+  if (!p?.natoIl || !p.nucleo || !persone.find((x) => x.id === p.nucleo)?.genitoreNonIscritto) return null
+  const [a, m, g] = p.natoIl.split('-').map(Number)
+  if (!a || !m || !g) return null
+  // Come `minorenne`: chi è nato il 29 febbraio, in un anno non bisestile compie gli anni il 1 marzo.
+  const dal = new Date(Date.UTC(a + 18, m - 1, g)).toISOString().slice(0, 10)
+  return dal <= oggi ? dal : null
 }
 
 /** La causale del bonifico per una persona: si ritrova in segreteria senza chiedere. */

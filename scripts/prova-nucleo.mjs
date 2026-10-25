@@ -16,14 +16,16 @@
 //   · unire due schede, eliminare un titolare, accogliere una richiesta «per
 //     il nucleo di» seguono il nucleo;
 //   · l'importazione dai fogli non crea né cambia nuclei;
-//   · senza il file SQL la scheda non si rompe.
+//   · senza il file SQL la scheda non si rompe;
+//   · il genitore non iscritto (`113-genitore-non-iscritto.sql`, provato da
+//     `supabase/prova/genitore-non-iscritto.sql`): le sezioni 14-17.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { archivio } from './src/lib/archivioProva'; export { cosaNonVaNucleo, nuovoTitolare } from './src/lib/nucleo'; export { contiChip } from './src/lib/filtriIscritti'; export { leggiFogli, importa } from './src/lib/importa'; export { carattereControllo, lettereCognome, lettereNome } from './src/lib/codiceFiscale'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { archivio } from './src/lib/archivioProva'; export { cosaNonVaNucleo, nuovoTitolare, doveVaLoSconto } from './src/lib/nucleo'; export * as nucleo from './src/lib/nucleo'; export { contiChip } from './src/lib/filtriIscritti'; export { leggiFogli, importa } from './src/lib/importa'; export { carattereControllo, lettereCognome, lettereNome } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -363,6 +365,166 @@ console.log('\n10. l\'importazione dai fogli non crea né cambia nuclei (regola 
 }
 
 // ---------------------------------------------------------------------------
+// Il genitore non iscritto e il nucleo di soli adulti. Una funzione che ancora
+// non c'è non ferma la prova: la rende rossa dicendolo.
+const GENITORE_SENZA_CF = 'Per aggiungere il genitore serve il suo codice fiscale'
+const GENITORE_GIA_IN_ELENCO = 'C’è già una persona con questo codice fiscale: mettilo nel suo nucleo'
+const GENITORE_SENZA_NOME = 'Scrivi nome e cognome del genitore'
+const CF = 'RSSMRA70A01H501X'
+const lib = (nome, ...args) => (typeof m.nucleo[nome] === 'function' ? m.nucleo[nome](...args) : `manca ${nome}`)
+
+console.log('\n14. le regole di nucleo.ts per il genitore (propostaGenitore, fratelliDi, maggiorenneDal)')
+{
+  const x = (id, extra = {}) => ({ id, attiva: true, ...extra })
+  const OGGI_ISO = '2026-10-25'
+  const dati = (o) => new Map(Object.entries(o))
+  const gen = { genitoreNome: 'Mario', genitoreCognome: 'Rossi', genitoreCodiceFiscale: CF }
+  const persone = [
+    x('f', { natoIl: '2015-03-01' }),
+    x('adulto', { natoIl: '1990-01-01' }),
+    x('senzaData'),
+    x('dentro', { natoIl: '2014-01-01', nucleo: 't' }),
+    x('t', { natoIl: '1980-01-01' }),
+    x('titolare', { natoIl: '1980-01-01' }),
+    x('figlio', { natoIl: '2012-01-01', nucleo: 'titolare' }),
+  ]
+  const prop = (id, d, ps = persone) => lib('propostaGenitore', ps, id, dati(d), OGGI_ISO)
+  ok('un minorenne col genitore e il suo codice: «nuovo», col codice pulito', prop('f', { f: gen }), { tipo: 'nuovo', nome: 'Mario', cognome: 'Rossi', codiceFiscale: CF })
+  const pulito = prop('f', { f: { ...gen, genitoreCodiceFiscale: ' rssmra70a01 h501x ' } })
+  ok('il codice con spazi e minuscole si pulisce', pulito?.codiceFiscale ?? pulito, CF)
+  ok('un adulto: nessuna proposta', prop('adulto', { adulto: gen }), null)
+  ok('senza data di nascita: nessuna proposta', prop('senzaData', { senzaData: gen }), null)
+  ok('chi è già in un nucleo: nessuna proposta', prop('dentro', { dentro: gen }), null)
+  ok('chi ha gente nel suo nucleo: nessuna proposta', prop('titolare', { titolare: gen }), null)
+  ok('il codice del genitore manca: «manca-cf»', prop('f', { f: { genitoreNome: 'Mario', genitoreCognome: 'Rossi' } }), { tipo: 'manca-cf' })
+  ok('senza nessun dato: «manca-cf»', prop('f', {}), { tipo: 'manca-cf' })
+  ok('quindici caratteri: «manca-cf», sbagliato', prop('f', { f: { ...gen, genitoreCodiceFiscale: 'RSSMRA70A01H501' } }), { tipo: 'manca-cf', sbagliato: true })
+  ok('con un segno che non è lettera né cifra: «manca-cf», sbagliato', prop('f', { f: { ...gen, genitoreCodiceFiscale: 'RSSMRA70A01H50-X' } }), { tipo: 'manca-cf', sbagliato: true })
+  ok('solo spazi: manca, non è sbagliato', prop('f', { f: { ...gen, genitoreCodiceFiscale: '   ' } }), { tipo: 'manca-cf' })
+  const altre = [...persone, x('mamma', { natoIl: '1975-01-01' }), x('padre', { natoIl: '1970-01-01', genitoreNonIscritto: true })]
+  ok('un\'altra persona ha quel codice: «iscritto», col suo id', prop('f', { f: gen, mamma: { codiceFiscale: CF.toLowerCase() } }, altre), { tipo: 'iscritto', titolare: 'mamma' })
+  ok('lo ha un genitore non iscritto: «gia-in-elenco»', prop('f', { f: gen, padre: { codiceFiscale: ` ${CF.slice(0, 8)} ${CF.slice(8)} ` } }, altre), { tipo: 'gia-in-elenco', titolare: 'padre' })
+  const se = prop('f', { f: { ...gen, codiceFiscale: CF } })
+  // Come `aggiungi_genitore`, che lo rifiuta: un figlio non è mai il suo genitore.
+  ok('il codice è della persona stessa: è sbagliato', se, { tipo: 'manca-cf', sbagliato: true })
+
+  // I fratelli: stesso genitore, già nel nucleo di qualcuno.
+  const f2 = [
+    x('f', { natoIl: '2015-03-01' }),
+    x('gp', { natoIl: '1975-01-01', genitoreNonIscritto: true }),
+    x('fr1', { natoIl: '2012-01-01', nucleo: 'gp' }),
+    x('fr2', { natoIl: '2010-01-01', nucleo: 'gp' }),
+    x('altroCodice', { natoIl: '2011-01-01', nucleo: 'gp' }),
+    x('senzaNucleo', { natoIl: '2013-01-01' }),
+    x('spenta', { natoIl: '2009-01-01', nucleo: 'gp', attiva: false }),
+    x('vuoto', { natoIl: '2009-01-01', nucleo: 'gp' }),
+  ]
+  const d2 = { f: { genitoreCodiceFiscale: CF }, fr1: { genitoreCodiceFiscale: CF.toLowerCase() }, fr2: { genitoreCodiceFiscale: ` ${CF} ` }, altroCodice: { genitoreCodiceFiscale: 'BNCLRA80A41H501Z' }, senzaNucleo: { genitoreCodiceFiscale: CF }, spenta: { genitoreCodiceFiscale: CF }, vuoto: {} }
+  ok('i fratelli: stesso codice, nel nucleo di qualcuno, attivi', lib('fratelliDi', f2, 'f', dati(d2)), [{ personaId: 'fr1', titolare: 'gp' }, { personaId: 'fr2', titolare: 'gp' }])
+  ok('senza il codice di lei, nessun fratello', lib('fratelliDi', f2, 'f', dati({ ...d2, f: {} })), [])
+  ok('chi è già nel nucleo dove sta lei non si propone', lib('fratelliDi', f2.map((p) => (p.id === 'f' ? { ...p, nucleo: 'gp' } : p)), 'f', dati(d2)), [])
+  const fr = lib('fratelliDi', f2, 'fr1', dati(d2))
+  ok('non lei stessa', Array.isArray(fr) ? fr.some((r) => r.personaId === 'fr1') : fr, false)
+  // La richiesta di un fratello, prima di accoglierla: non è ancora una persona, conta il codice del genitore.
+  ok('una richiesta col codice del genitore trova i fratelli', lib('fratelliPerGenitore', f2, ` ${CF.toLowerCase()}`, dati(d2)), [{ personaId: 'fr1', titolare: 'gp' }, { personaId: 'fr2', titolare: 'gp' }])
+  // Quelli da proporre nella scheda: uno per nucleo, non quello già proposto come genitore.
+  const proponi = (proposta, ps = f2) => lib('fratelliDaProporre', ps, 'f', dati(d2), proposta)
+  ok('due fratelli nello stesso nucleo: uno solo da proporre', proponi({ tipo: 'nuovo' }), [{ personaId: 'fr1', titolare: 'gp' }])
+  ok('il loro titolare è già la proposta del genitore: nessuno', proponi({ tipo: 'gia-in-elenco', titolare: 'gp' }), [])
+  ok('la proposta è un altro titolare: restano', proponi({ tipo: 'iscritto', titolare: 'altro' }), [{ personaId: 'fr1', titolare: 'gp' }])
+  ok('un nucleo dove non può entrare: non si propone', proponi(null, f2.map((p) => (p.id === 'f' ? { ...p, attiva: false } : p))), [])
+  ok('una richiesta senza codice del genitore: nessuno', lib('fratelliPerGenitore', f2, '', dati(d2)), [])
+
+  // Maggiorenne dal: il giorno dei diciotto anni, solo nel nucleo di un genitore non iscritto.
+  const nuc = (nonIscritto, natoIl) => [x('gp', { natoIl: '1975-01-01', ...(nonIscritto && { genitoreNonIscritto: true }) }), x('f', { natoIl, nucleo: 'gp' })]
+  const dal = (ps, id = 'f') => lib('maggiorenneDal', ps, id, OGGI_ISO)
+  ok('nato il 3 marzo 2008: maggiorenne dal 3 marzo 2026', dal(nuc(true, '2008-03-03')), '2026-03-03')
+  ok('diciotto anni oggi: dal giorno di oggi', dal(nuc(true, '2008-10-25')), '2026-10-25')
+  ok('diciotto anni domani: ancora minorenne', dal(nuc(true, '2008-10-26')), null)
+  ok('nato il 29 febbraio 2008: maggiorenne dal 1 marzo 2026, che non è bisestile', dal(nuc(true, '2008-02-29')), '2026-03-01')
+  ok('nato il 29 febbraio, diciotto anni in un anno bisestile: il 29', lib('maggiorenneDal', nuc(true, '2010-02-29'), 'f', '2028-03-01'), '2028-02-29')
+  ok('senza data di nascita: nessuna data', dal(nuc(true, undefined)), null)
+  ok('il titolare è un iscritto vero: nessuna data', dal(nuc(false, '2008-03-03')), null)
+  ok('chi non è nel nucleo di nessuno: nessuna data', dal([x('f', { natoIl: '2008-03-03' })]), null)
+
+  // Due sorelle adulte: già va, e lo sconto famiglia va sull'annuale che costa meno.
+  const sconto = m.doveVaLoSconto([{ chi: 'Anna', corso: 'Judo', importo: 34000 }], [{ chi: 'Bea', corso: 'Judo', importo: 28000 }])
+  ok('due adulte: lo sconto famiglia va sull\'annuale che costa meno (Bea)', sconto?.chi, 'Bea')
+  ok('Bea (29) entra nel nucleo di Anna (34)', m.cosaNonVaNucleo([x('anna', { natoIl: nato(34) }), x('bea', { natoIl: nato(29) })], 'bea', 'anna'), null)
+}
+
+console.log('\n15. la segreteria aggiunge il genitore non iscritto (sezione 14 del file SQL)')
+{
+  await crea('figlia', 'Lia', 'Genitori', nato(12))
+  await crea('figlio2', 'Gigi', 'Genitori', nato(9))
+  await crea('altra', 'Altra', 'Persona', nato(40))
+  await s.salvaAnagrafica(P.altra, { codiceFiscale: 'BNCLRA80A41H501Z' })
+  await crea('spenta', 'Spenta', 'Genitori', nato(10))
+  await s.attivaPersona(P.spenta, false)
+  await crea('conNucleo', 'Con', 'Nucleo', nato(11))
+  await s.mettiNelNucleo(P.conNucleo, P.altra)
+  const aggiungi = (figlio, g) => (typeof s.aggiungiGenitore === 'function' ? s.aggiungiGenitore(P[figlio], g) : Promise.reject(new Error('manca aggiungiGenitore')))
+  const mario = { nome: 'Mario', cognome: 'Rossi', codiceFiscale: ' rssmra70a01 h501x ' }
+  const quante = () => a.persone.length
+  const prima = quante()
+  const id = await aggiungi('figlia', mario).catch((e) => e.message)
+  ok('aggiungere il genitore dà l\'id della persona nuova', [typeof id, quante()], ['string', prima + 1])
+  const nuovo = a.persone.find((p) => p.id === id)
+  ok('è un iscritto attivo, «genitore non iscritto», col nome dato', nuovo && [nuovo.ruolo, nuovo.attiva, nuovo.genitoreNonIscritto, nuovo.nome, nuovo.cognome], ['iscritto', true, true, 'Mario', 'Rossi'])
+  ok('il suo codice fiscale è nell\'anagrafica, pulito', (await s.anagraficaDi(id).catch(() => null))?.dati.codiceFiscale, CF)
+  ok('la figlia entra nel suo nucleo', nucleoDi(P.figlia), id)
+  const nellElenco = (await s.persone()).find((p) => p.id === id)
+  ok('l\'elenco lo dà col segno, e senza nucleo suo', [nellElenco?.genitoreNonIscritto, nellElenco?.nucleo ?? null], [true, null])
+
+  await s.salvaAnagrafica(P.figlio2, { codiceFiscale: 'GNRGGI17A01H501K' })
+  const imp = impronta()
+  const n = quante()
+  ok('senza il nome: va scritto', await errore(() => aggiungi('figlio2', { ...mario, nome: '  ', codiceFiscale: 'VRDLGU80A01H501Y' })), GENITORE_SENZA_NOME)
+  ok('senza il cognome: va scritto', await errore(() => aggiungi('figlio2', { ...mario, cognome: '', codiceFiscale: 'VRDLGU80A01H501Y' })), GENITORE_SENZA_NOME)
+  ok('il codice del figlio stesso: già in elenco, non è il suo genitore', await errore(() => aggiungi('figlio2', { ...mario, codiceFiscale: 'gnrggi17a01h501k' })), GENITORE_GIA_IN_ELENCO)
+  ok('un codice fiscale non valido: serve il codice', await errore(() => aggiungi('figlio2', { ...mario, codiceFiscale: 'RSSMRA70A01H501' })), GENITORE_SENZA_CF)
+  ok('un codice fiscale vuoto: serve il codice', await errore(() => aggiungi('figlio2', { ...mario, codiceFiscale: '' })), GENITORE_SENZA_CF)
+  ok('il codice di un\'altra persona (anche in minuscolo): già in elenco', await errore(() => aggiungi('figlio2', { ...mario, codiceFiscale: 'bncl ra80a41h501z' })), GENITORE_GIA_IN_ELENCO)
+  ok('il codice del genitore appena aggiunto: già in elenco', await errore(() => aggiungi('figlio2', mario)), GENITORE_GIA_IN_ELENCO)
+  ok('un figlio già in un nucleo: il messaggio di sempre', await errore(() => aggiungi('conNucleo', { ...mario, codiceFiscale: 'VRDLGU80A01H501Y' })), DI_UN_ALTRO)
+  ok('un figlio disattivato: il messaggio di sempre', await errore(() => aggiungi('spenta', { ...mario, codiceFiscale: 'VRDLGU80A01H501Y' })), DISATTIVATA)
+  ok('un rifiuto non lascia una persona nuova, né cambia nuclei', [quante(), impronta()], [n, imp])
+
+  // Il genitore si iscrive: diventa un iscritto come gli altri, titolare, coi figli.
+  await s.iscrivi(id, 'lotta-2')
+  const dopo = (await s.persone()).find((p) => p.id === id)
+  ok('iscritto a un corso: il segno si toglie', dopo?.genitoreNonIscritto ?? false, false)
+  ok('resta titolare, la figlia resta', nucleoDi(P.figlia), id)
+
+  // Il modulo accolto conta come la scheda: il codice di una richiesta accolta, anche se la scheda ora ne dice un altro.
+  const r = m.creaRichiesteProva()
+  const pezzo = `${m.lettereCognome('Moduli')}${m.lettereNome('Ada')}80A41L219`
+  const cfAda = pezzo + m.carattereControllo(pezzo)
+  const modulo = { nome: 'Ada', cognome: 'Moduli', natoIl: '1980-01-01', natoA: 'Torino', codiceFiscale: cfAda, indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'ada@esempio.it', telefono: '347 111 2233', corsi: ['judo-adulti'], formula: 'annuale', regolamento: true }
+  const ada = await r.accogli(await r.invia(modulo))
+  await s.salvaAnagrafica(ada, { codiceFiscale: 'VRDLGU80A01H501Y' })
+  ok('il codice del modulo accolto: già in elenco', await errore(() => aggiungi('figlio2', { ...mario, codiceFiscale: cfAda })), GENITORE_GIA_IN_ELENCO)
+
+  // Una richiesta accolta sulla scheda del genitore lo iscrive: perde il segno, come col trigger.
+  const pezzoP = `${m.lettereCognome('Genitori')}${m.lettereNome('Pietro')}80A01L219`
+  const cfPietro = pezzoP + m.carattereControllo(pezzoP)
+  const pietro = await aggiungi('figlio2', { nome: 'Pietro', cognome: 'Genitori', codiceFiscale: cfPietro })
+  const suo = { ...modulo, nome: 'Pietro', cognome: 'Genitori', codiceFiscale: cfPietro, email: 'pietro@esempio.it' }
+  await r.accogli(await r.invia(suo), pietro)
+  ok('accolta la sua richiesta: il segno si toglie', (await s.persone()).find((p) => p.id === pietro)?.genitoreNonIscritto ?? false, false)
+
+  // genitori(): anche il codice del genitore e quello della persona.
+  await s.salvaAnagrafica(P.ugo, { genitoreNome: 'Luigi', genitoreCognome: 'Neri', genitoreCodiceFiscale: 'NRELGU70A01H501Q', codiceFiscale: 'NRIGUO10A01H501Z' })
+  ok('genitori() dà anche i codici fiscali', (await s.genitori()).get(P.ugo), { genitoreNome: 'Luigi', genitoreCognome: 'Neri', genitoreCodiceFiscale: 'NRELGU70A01H501Q', codiceFiscale: 'NRIGUO10A01H501Z' })
+
+  // Due adulte nello stesso nucleo (guardia: già va).
+  await crea('anna', 'Anna', 'Sorelle', nato(34))
+  await crea('bea', 'Bea', 'Sorelle', nato(29))
+  ok('due sorelle adulte: Bea entra nel nucleo di Anna', await metti('bea', 'anna'), 'nessun errore')
+  ok('il nucleo è di Anna', nucleoDi(P.bea), P.anna)
+}
+
+// ---------------------------------------------------------------------------
 // Il client del database, con un database finto: le funzioni del nucleo e la scheda che non si rompe.
 const rispostaOk = { data: null, error: null }
 const senzaTabelle = (risposta, chiamate) =>
@@ -453,6 +615,59 @@ console.log('\n13. col database: la richiesta per il nucleo parte col nucleo (se
   chiamate.length = 0
   await db.invia({ nome: 'Pino', cognome: 'Solo' })
   ok('senza nucleo, nessun titolare', chiamate[0][1].dati.nucleo_di ?? null, null)
+}
+
+console.log('\n16. col database: aggiungi_genitore (113-genitore-non-iscritto.sql)')
+{
+  const chiamate = []
+  const db = senzaTabelle({ data: 'uuid-nuovo', error: null }, chiamate)
+  const g = { nome: 'Mario', cognome: 'Rossi', codiceFiscale: CF }
+  const r = await (typeof db.aggiungiGenitore === 'function' ? db.aggiungiGenitore('f1', g) : Promise.resolve('manca aggiungiGenitore')).catch((e) => e.message)
+  ok('chiama aggiungi_genitore con figlio, nome, cognome, codice_fiscale, e rende l\'uuid', [r, chiamate], ['uuid-nuovo', [['aggiungi_genitore', { figlio: 'f1', nome: 'Mario', cognome: 'Rossi', codice_fiscale: CF }]]])
+  const no = (message, code = 'P0001') => senzaTabelle({ data: null, error: { code, message } }, [])
+  const prova = (database) => errore(() => (typeof database.aggiungiGenitore === 'function' ? database.aggiungiGenitore('f1', g) : Promise.reject(new Error('manca aggiungiGenitore'))))
+  ok('un rifiuto arriva com\'è: serve il codice', await prova(no(GENITORE_SENZA_CF)), GENITORE_SENZA_CF)
+  ok('un rifiuto arriva com\'è: già in elenco', await prova(no(GENITORE_GIA_IN_ELENCO)), GENITORE_GIA_IN_ELENCO)
+  ok('un rifiuto arriva com\'è: figlio già in un nucleo', await prova(no(DI_UN_ALTRO)), DI_UN_ALTRO)
+  for (const [code, message] of [['PGRST202', 'Could not find the function public.aggiungi_genitore(figlio, nome) in the schema cache'], ['42883', 'function public.aggiungi_genitore(uuid, text) does not exist']]) {
+    const detto = await prova(no(message, code))
+    ok(`senza il file SQL (${code}): «va lanciato 113-genitore-non-iscritto.sql», non il testo dell'API`, [/va lanciato 113-genitore-non-iscritto\.sql/i.test(detto), /schema cache|does not exist|function public/i.test(detto)], [true, false])
+  }
+}
+
+console.log('\n17. col database: l\'elenco legge il segno, e senza la colonna non si rompe')
+{
+  const catena = (risposta) => {
+    const q = { colonne: '' }
+    const c = new Proxy(function () {}, {
+      get: (_, p) => (p === 'range' ? (da) => (da ? oltre : c) : p === 'then' ? (bene, male) => Promise.resolve(risposta(q)).then(bene, male) : (...x) => (p === 'select' && (q.colonne = String(x[0])), c)),
+      apply: () => c,
+    })
+    return c
+  }
+  const riga = (id, extra = {}) => ({ id, nome: id, cognome: 'Prova', email: null, telefono: null, attiva: true, creata_il: '2026-01-01T10:00:00Z', iscrizioni: [], nucleo: null, ...extra })
+  const elenco = (righe, { colonna = true } = {}) => {
+    const chiesto = []
+    const db = m.creaSegreteriaSupabase({
+      from: (t) =>
+        catena((q) => {
+          if (t !== 'persone') return { data: [], error: null }
+          chiesto.push(q.colonne)
+          return !colonna && /genitore_non_iscritto/.test(q.colonne) ? { data: null, error: { code: '42703', message: 'column persone.genitore_non_iscritto does not exist' } } : { data: righe, error: null }
+        }),
+      rpc: async () => ({ data: [], error: null }),
+    })
+    return { db, chiesto }
+  }
+  const con = elenco([riga('g', { genitore_non_iscritto: true }), riga('f', { nucleo: 'g' }), riga('l', { genitore_non_iscritto: false })])
+  const lette = await con.db.persone()
+  ok('chi è genitore non iscritto ha il segno; gli altri no', lette.map((p) => [p.id, p.genitoreNonIscritto ?? false]), [['g', true], ['f', false], ['l', false]])
+  ok('la colonna si chiede al database', con.chiesto.some((c) => /genitore_non_iscritto/.test(c)), true)
+
+  const senza = elenco([riga('g'), riga('f', { nucleo: 'g' })], { colonna: false })
+  const x = await senza.db.persone().catch((e) => e.message)
+  ok('senza la colonna l\'elenco si legge lo stesso, senza il segno', Array.isArray(x) ? [x.length, x.some((p) => p.genitoreNonIscritto), x.find((p) => p.id === 'f')?.nucleo] : x, [2, false, 'g'])
+  ok('ma la colonna si era chiesta (e il nucleo si legge ancora)', senza.chiesto.some((c) => /genitore_non_iscritto/.test(c)), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

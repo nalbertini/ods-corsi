@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta A: aggiungi il genitore</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .riga { display: flex; align-items: baseline; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; align-self: center; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+    .sotto { font-size: 14px; color: #46606f; margin: 0; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+  </style>
+</helmet>
+<!-- 2 · PROPOSTA A. La scheda del minore non cambia sopra; cambia solo NUCLEO FAMILIARE: due proposte prima del menù, da leggere dall'alto. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #8f6a00">PROPOSTA A · SCHEDA DEL FIGLIO MINORENNE, NESSUN ADULTO NEL NUCLEO</span>
+  <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ROSSI MARCO</h2>
+      <span style="font-size: 13px; color: #46606f">12 anni · in elenco dal 2 settembre 2026</span>
+    </div>
+    <dc-import name="SchedeIscritto" tema="sito" acceso="PERSONA" chiare="{{ true }}" hint-size="100%,44px"></dc-import>
+    <div class="riga"><span class="et">GENITORE</span><span class="filo"></span></div>
+    <div class="due">
+      <dc-import name="Dato" tema="sito" etichetta="NOME" valore="Rossi Paolo" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="CODICE FISCALE" valore="RSSPLA80A01L219X" codice="{{ true }}" hint-size="100%,62px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="riga"><span class="et">NUCLEO FAMILIARE</span><span class="filo"></span></div>
+      <span class="sotto">Non è in un nucleo. Chi è minorenne non fa da titolare: serve un adulto.</span>
+      <!-- 1. Il genitore dal blocco GENITORE: nome e codice fiscale li prende da lì, la segreteria non riscrive niente. -->
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 2px solid #14709f; border-radius: 6px">
+        <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Il genitore non è iscritto: aggiungilo</span>
+          <span style="font-size: 13px; color: #46606f">Rossi Paolo · RSSPLA80A01L219X, dal blocco GENITORE. Diventa titolare del nucleo: niente corsi, quota o certificato, e non conta fra gli iscritti.</span>
+        </span>
+        <dc-import name="Chip" tema="sito" label="Aggiungi il genitore" pieno="{{ true }}" hint-size="200px,40px"></dc-import>
+      </div>
+      <!-- 2. Il suggerimento: un altro iscritto con lo stesso codice fiscale nel blocco GENITORE. Lo decide la segreteria, niente di automatico. -->
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 2px dashed #cfe6f4; border-radius: 6px">
+        <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Stesso genitore di Rossi Luca</span>
+          <span style="font-size: 13px; color: #46606f">9 anni · Judo bambini · stesso codice fiscale del genitore. Lo mette nel nucleo di Rossi Paolo insieme a Marco.</span>
+        </span>
+        <dc-import name="Chip" tema="sito" label="Mettilo nella famiglia" hint-size="210px,40px"></dc-import>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center">
+        <label for="agg" style="position: absolute; left: -9999px">Persona da aggiungere al nucleo</label>
+        <select id="agg" style="flex-grow: 1; min-width: 0; height: 44px; padding: 0 12px; font: inherit; font-size: 15px; color: #46606f; background: #ffffff; border: 2px dashed #cfe6f4; border-radius: 6px">
+          <option>Oppure metti Marco nel nucleo di un adulto…</option>
+        </select>
+        <dc-import name="Chip" tema="sito" label="Aggiungi" pieno="{{ true }}" disabled="{{ true }}" hint-size="110px,40px"></dc-import>
+      </div>
+      <span class="sotto" style="font-size: 12px">Nel menù ci sono solo gli adulti già in un nucleo o senza: Marco entra nel loro.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":860,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

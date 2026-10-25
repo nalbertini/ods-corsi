@@ -846,6 +846,15 @@
       "w": 350,
       "h": 300,
       "page": "page-2"
+    },
+    {
+      "file": "Proposta.dc.html",
+      "title": "Proposta",
+      "x": 0,
+      "y": 12608,
+      "w": 640,
+      "h": 90,
+      "page": "page-2"
     }
   ],
   "annotations": [

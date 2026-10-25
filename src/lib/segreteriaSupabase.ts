@@ -443,6 +443,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /certificato_caricato_il/.test(e.message ?? '')) return new Error(MANCA_CERTIFICATI)
   // Il nucleo familiare arriva con 100-nucleo.sql: finché non c'è, le funzioni non si trovano e la segreteria legge «va lanciato 100-nucleo.sql».
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /metti_nel_nucleo|togli_dal_nucleo|rendi_titolare/.test(e.message ?? '')) return new Error(NUCLEO_IN_AGGIORNAMENTO)
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /aggiungi_genitore/.test(e.message ?? ''))
+    return new Error('Aggiungere il genitore non è ancora attivo sul database: va lanciato 113-genitore-non-iscritto.sql')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /unisci_persone|anteprima_unione/.test(e.message ?? ''))
     return new Error('Unire due schede non è ancora attivo sul database: va lanciato 29-unisci-doppioni.sql')
   // Togliere un allegato: `togli_allegato` dice di no a chi non l'ha mandato.
@@ -1070,9 +1072,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         )
         return nascitaDelleFonti([...dalleAnagrafiche, ...dalleRichieste])
       })()
-      const campi = (nucleo: boolean) => `id, nome, cognome, email, ${nucleo ? 'nucleo, ' : ''}telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )`
+      // `nucleo`: le colonne del nucleo che il database ha già (100-nucleo.sql, 113-genitore-non-iscritto.sql).
+      const campi = (nucleo: string) => `id, nome, cognome, email, ${nucleo}telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )`
       const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'
-      const leggi = (schede: string | null, nucleo: boolean) =>
+      const leggi = (schede: string | null, nucleo: string) =>
         tutteLeRighe((prima, ultima) =>
           db
             .from('persone')
@@ -1082,8 +1085,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             .order('id')
             .range(prima, ultima),
         )
-      const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703' && !/nucleo/.test(x.error.message ?? '')
-      const leggiTutto = async (nucleo: boolean) => {
+      const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703' && !/nucleo|genitore_non_iscritto/.test(x.error.message ?? '')
+      const leggiTutto = async (nucleo: string) => {
         // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
         let r = await leggi(`${scheda}, certificato_caricato_il, certificato_in_attesa_il, documento_in_segreteria`, nucleo)
         // Senza 102-certificato-iscritto.sql manca la colonna dei file mandati dagli iscritti.
@@ -1095,11 +1098,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         if (r.error?.code === 'PGRST200') r = await leggi(null, nucleo)
         return r
       }
-      let r0 = await leggiTutto(true)
+      let r0 = await leggiTutto('nucleo, genitore_non_iscritto, ')
+      // Senza 113-genitore-non-iscritto.sql: l'elenco si vede lo stesso, senza il segno.
+      if (r0.error?.code === '42703' && /genitore_non_iscritto/.test(r0.error.message ?? '')) r0 = await leggiTutto('nucleo, ')
       // Un database dove 100-nucleo.sql non è ancora passato: l'elenco si vede lo stesso, senza nuclei.
-      if (r0.error?.code === '42703' && /nucleo/.test(r0.error.message ?? '')) r0 = await leggiTutto(false)
+      if (r0.error?.code === '42703' && /nucleo/.test(r0.error.message ?? '')) r0 = await leggiTutto('')
       const righe = ok(r0) as unknown as Array<{
-        id: string; nome: string; cognome: string; email: string | null; nucleo?: string | null; telefono: string | null; attiva: boolean; creata_il: string
+        id: string; nome: string; cognome: string; email: string | null; nucleo?: string | null; genitore_non_iscritto?: boolean; telefono: string | null; attiva: boolean; creata_il: string
         iscrizioni: Array<{ corso_id: string; dal: string; al: string | null }>
         schede_iscritti?: Scheda | Scheda[] | null
       }>
@@ -1122,6 +1127,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           cognome: r.cognome,
           email: r.email ?? undefined,
           nucleo: r.nucleo ?? undefined,
+          ...(r.genitore_non_iscritto && { genitoreNonIscritto: true }),
           telefono: r.telefono ?? undefined,
           attiva: r.attiva,
           creataIl: r.creata_il.slice(0, 10),
@@ -1196,6 +1202,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     // Il nucleo familiare (vedi `nucleo.ts`): le regole le dice il database, con gli stessi messaggi.
     async mettiNelNucleo(personaId, titolareId) {
       ok(await db.rpc('metti_nel_nucleo', { persona: personaId, titolare: titolareId }))
+    },
+    async aggiungiGenitore(figlioId, g) {
+      // `as`: aggiungi_genitore rende l'uuid della persona nuova.
+      return ok(await db.rpc('aggiungi_genitore', { figlio: figlioId, nome: g.nome, cognome: g.cognome, codice_fiscale: g.codiceFiscale })) as string
     },
     async togliDalNucleo(personaId) {
       ok(await db.rpc('togli_dal_nucleo', { persona: personaId }))
@@ -1566,13 +1576,20 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         tutte(tutteLeRighe((prima, ultima) => db.from('anagrafiche').select(`persona_id, ${CAMPI_ANAGRAFICA}, cambiata_il`).order('persona_id').range(prima, ultima))),
         tutte(
           tutteLeRighe((prima, ultima) =>
-            db.from('richieste_iscrizione').select('id, persona_id, genitore_nome, genitore_cognome, gestita_il, creata_il').eq('stato', 'accolta').not('persona_id', 'is', null).order('id').range(prima, ultima),
+            db.from('richieste_iscrizione').select('id, persona_id, genitore_nome, genitore_cognome, genitore_codice_fiscale, codice_fiscale, gestita_il, creata_il').eq('stato', 'accolta').not('persona_id', 'is', null).order('id').range(prima, ultima),
           ),
         ),
       ])
       // `as`: le righe sono quelle dei select qui sopra.
-      type Riga = { persona_id: string; genitore_nome: string | null; genitore_cognome: string | null }
-      const riga = (x: Riga, quando: string): RigaGenitore => ({ personaId: x.persona_id, genitoreNome: x.genitore_nome ?? undefined, genitoreCognome: x.genitore_cognome ?? undefined, quando })
+      type Riga = { persona_id: string; genitore_nome: string | null; genitore_cognome: string | null; genitore_codice_fiscale: string | null; codice_fiscale: string | null }
+      const riga = (x: Riga, quando: string): RigaGenitore => ({
+        personaId: x.persona_id,
+        genitoreNome: x.genitore_nome ?? undefined,
+        genitoreCognome: x.genitore_cognome ?? undefined,
+        genitoreCodiceFiscale: x.genitore_codice_fiscale ?? undefined,
+        codiceFiscale: x.codice_fiscale ?? undefined,
+        quando,
+      })
       return genitoriDa(
         (rich as Array<Riga & { gestita_il: string | null; creata_il: string }>).map((x) => riga(x, x.gestita_il ?? x.creata_il)),
         // Una riga della segreteria senza nessun dato non conta, come in `anagrafica()`.
