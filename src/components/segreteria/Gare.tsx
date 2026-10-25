@@ -34,7 +34,7 @@ import { dataLunga } from '../../lib/sala'
 import { inCorso, type CorsoSeg, type DatiSegreteria, type Istruttore, type PersonaSeg } from '../../lib/segreteria'
 import { giorniA } from '../../lib/vestiario'
 import { Riquadro } from '../ds'
-import { Bozza, Campo, chiedi, chiediSpunta, Guaio, lasciare, Riga as Titolo, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useCarica } from './comune'
+import { Bozza, Campo, chiedi, chiediSpunta, Guaio, lasciare, Riga as Titolo, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useCarica, Tasto } from './comune'
 import { NuovaRicevuta } from './Ricevute'
 
 /**
@@ -125,9 +125,9 @@ export function Gare({ d, apri, onCambiato }: { d: DatiSegreteria; /** Arrivando
 
       <div className="stack" style={{ gap: 18 }}>
         <Testa titolo="GARE" sotto="Le gare a cui vanno i nostri atleti. Il certificato si controlla alla data della gara, non a oggi.">
-          <button type="button" className="sg-btn sg-btn-pieno" disabled={!dati.dato} onClick={() => setCassetto({ a: 'modifica' })}>
+          <Tasto tono="pieno" disabled={!dati.dato} onClick={() => setCassetto({ a: 'modifica' })}>
             Nuova gara
-          </button>
+          </Tasto>
         </Testa>
         {guaio && <Guaio testo={guaio} />}
         {!guaio && (dati.dato === null || persone.dato === null) && <p className="sg-sotto">Un attimo…</p>}
@@ -441,9 +441,9 @@ function SchedaGara({
                           }
                         }}
                       />
-                      <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void salvaNota()}>
+                      <Tasto disabled={lavora} onClick={() => void salvaNota()}>
                         Salva
-                      </button>
+                      </Tasto>
                     </span>
                   ) : (
                     <button type="button" id={`ga-nota-apri-${r.personaId}`} className="sg-riga-apri sg-gara-nota" onClick={() => setNota({ id: r.personaId, testo: r.nota ?? '' })}>
@@ -469,18 +469,18 @@ function SchedaGara({
                         <span className="num" style={{ fontSize: 13, fontWeight: 700, color: 'var(--rosso-testo)' }}>
                           Da pagare · {euroBreve(conti.totale)}
                         </span>
-                        <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => onCassetto({ a: 'incassa', id: g.id, personaId: r.personaId })}>
+                        <Tasto disabled={lavora} onClick={() => onCassetto({ a: 'incassa', id: g.id, personaId: r.personaId })}>
                           Incassa
-                        </button>
+                        </Tasto>
                       </>
                     )}
                   </span>
                 )}
                 {/* Chi ha pagato resta nella gara (117-gare.sql): se non ci va, lo dice la nota. */}
                 {!r.pagata && (
-                  <button type="button" className="sg-btn sg-btn-linea sg-pericolo sg-gara-togli" disabled={lavora} aria-label={`Togli ${r.nome} ${r.cognome} dalla gara`} onClick={() => void togli(r)}>
+                  <Tasto className="sg-pericolo sg-gara-togli" disabled={lavora} aria-label={`Togli ${r.nome} ${r.cognome} dalla gara`} onClick={() => void togli(r)}>
                     ✕
-                  </button>
+                  </Tasto>
                 )}
               </div>
             </div>
@@ -489,16 +489,16 @@ function SchedaGara({
       </div>
 
       <div className="sg-gara-piede">
-        <button type="button" className="sg-btn sg-btn-linea" onClick={() => onCassetto({ a: 'modifica', id: g.id })}>
+        <Tasto onClick={() => onCassetto({ a: 'modifica', id: g.id })}>
           Modifica la gara
-        </button>
-        <button type="button" id="ga-stampa" className="sg-btn sg-btn-linea" disabled={!righe.length || lavora} onClick={() => void stampa()}>
+        </Tasto>
+        <Tasto id="ga-stampa" disabled={!righe.length || lavora} onClick={() => void stampa()}>
           Stampa l’elenco
-        </button>
+        </Tasto>
         {!g.annullata && (
-          <button type="button" className="sg-btn sg-btn-pieno sg-gara-piede-pieno" onClick={() => onCassetto({ a: 'aggiungi', id: g.id })}>
+          <Tasto tono="pieno" className="sg-gara-piede-pieno" onClick={() => onCassetto({ a: 'aggiungi', id: g.id })}>
             Aggiungi atleti
-          </button>
+          </Tasto>
         )}
       </div>
     </div>
@@ -711,9 +711,9 @@ function ModificaGara({
                   </button>
                 </div>
               ))}
-              <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => cambia({ voci: [...b.voci, { voce: '', importo: '' }] })}>
+              <Tasto style={{ alignSelf: 'flex-start' }} onClick={() => cambia({ voci: [...b.voci, { voce: '', importo: '' }] })}>
                 + Aggiungi una voce
-              </button>
+              </Tasto>
               {b.voci.length > 0 && (
                 <span className="num" style={{ fontSize: 15, fontWeight: 700 }}>
                   Totale a atleta {euroBreve(totale)}
@@ -773,22 +773,22 @@ function ModificaGara({
 
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
             {g && (
-              <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={lavora} onClick={() => void annulla()}>
+              <Tasto className="sg-pericolo" disabled={lavora} onClick={() => void annulla()}>
                 {g.annullata ? 'Rimetti la gara' : 'Annulla la gara'}
-              </button>
+              </Tasto>
             )}
             {g && eliminabile(g, oggi) && (
-              <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={lavora} onClick={() => void elimina()}>
+              <Tasto className="sg-pericolo" disabled={lavora} onClick={() => void elimina()}>
                 Elimina
-              </button>
+              </Tasto>
             )}
             <span className="grow" />
-            <button type="button" className="sg-btn sg-btn-linea" onClick={() => void chiudi()}>
+            <Tasto onClick={() => void chiudi()}>
               Lascia stare
-            </button>
-            <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora} onClick={() => salva()}>
+            </Tasto>
+            <Tasto tono="pieno" disabled={lavora} onClick={() => salva()}>
               Salva
-            </button>
+            </Tasto>
           </div>
         </div>
       </Bozza>
@@ -873,9 +873,9 @@ function AggiungiAtleti({
         {(cerca.trim() || corso) && (
           <Titolo titolo={cerca.trim() ? 'TROVATI' : (nomeCorso ?? '').toUpperCase()}>
             {liberi.length > 0 && (
-              <button type="button" className="sg-btn sg-btn-linea" onClick={() => spunta(liberi, !liberi.every((id) => scelti.includes(id)))}>
+              <Tasto onClick={() => spunta(liberi, !liberi.every((id) => scelti.includes(id)))}>
                 {liberi.every((id) => scelti.includes(id)) ? 'Deseleziona' : 'Spunta tutti'}
-              </button>
+              </Tasto>
             )}
           </Titolo>
         )}
@@ -908,12 +908,12 @@ function AggiungiAtleti({
 
         <div className="row" style={{ gap: 10 }}>
           <span className="grow" />
-          <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
+          <Tasto onClick={onChiudi}>
             Lascia stare
-          </button>
-          <button type="button" className="sg-btn sg-btn-pieno" disabled={!scelti.length || lavora} onClick={aggiungi}>
+          </Tasto>
+          <Tasto tono="pieno" disabled={!scelti.length || lavora} onClick={aggiungi}>
             {scelti.length === 1 ? 'Aggiungi 1 atleta' : `Aggiungi ${scelti.length} atleti`}
-          </button>
+          </Tasto>
         </div>
       </div>
     </Cassetto>
@@ -974,12 +974,12 @@ function Incassa({
         </Campo>
         <div className="row" style={{ gap: 10 }}>
           <span className="grow" />
-          <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
+          <Tasto onClick={onChiudi}>
             Lascia stare
-          </button>
-          <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora} onClick={() => void conferma()}>
+          </Tasto>
+          <Tasto tono="pieno" disabled={lavora} onClick={() => void conferma()}>
             Incassa {euroBreve(totale)}
-          </button>
+          </Tasto>
         </div>
       </div>
     </Cassetto>

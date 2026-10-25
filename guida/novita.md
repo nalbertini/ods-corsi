@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.215.0 — 25 ottobre 2026
+
+### Novità
+
+- I compensi dei tecnici sono raggruppati per cosa c'è da fare, con una riga più corta
+
+## 0.214.0 — 25 ottobre 2026
+
+### Novità
+
+- Le icone dappertutto, le stesse in segreteria, appello, area iscritti, tablet e timer
+
 ## 0.213.1 — 25 ottobre 2026
 
 ### Modificato

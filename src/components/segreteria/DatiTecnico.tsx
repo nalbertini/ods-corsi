@@ -4,7 +4,7 @@ import { conProvincia } from '../../lib/segreteria'
 import { chiaveGiorno, dataLunga } from '../../lib/sala'
 import { centesimiDaEuro, cosaNonVaEuroOra, euroDaScrivere, euroOra, righeTariffe } from '../../lib/tariffe'
 import { campoCheNonVa, compensoDi, corsiFuoriLettera, cosaNonVaLettera, datiPerLettera, lettereDellaScheda, QUALIFICHE, rigaLettera, scelteDaProporre, stagioneDi, type DatiLettera, type Lettera, type ScelteLettera } from '../../lib/lettere'
-import { Campo, chiedi, Guaio, Riga, useAvviso, useCarica } from './comune'
+import { Campo, chiedi, Guaio, Riga, useAvviso, useCarica, Tasto } from './comune'
 import { ICONE_SEZIONE_PERSONALE } from '../Icons'
 import { ModificaAnagrafica, type CampoAnagrafica } from './Iscritti'
 
@@ -296,9 +296,8 @@ export function LetteraIncarico({ d, p, fai, versione }: { d: DatiSegreteria; p:
           <button type="button" className="sg-btn sg-btn-linea" disabled={!!no} onClick={() => stampa(nuova)}>
             Vedi il PDF
           </button>
-          <button
-            type="button"
-            className="sg-btn sg-btn-pieno"
+          <Tasto
+            tono="pieno"
             disabled={!!no}
             onClick={async () => {
               // Prima si salva e si chiude il modulo, poi si scarica: se il PDF non esce, la lettera c'è già e si ristampa.
@@ -311,7 +310,7 @@ export function LetteraIncarico({ d, p, fai, versione }: { d: DatiSegreteria; p:
             }}
           >
             Salva e stampa
-          </button>
+          </Tasto>
         </div>
       </div>
     )
@@ -334,9 +333,9 @@ export function LetteraIncarico({ d, p, fai, versione }: { d: DatiSegreteria; p:
             {[valida.giorni, valida.tariffe.map((t) => `${euroOra(t.centesimi)} per ${t.corso}`).join(', '), `lettera del ${dataLunga(valida.data)}`].filter(Boolean).join(' · ')}
           </span>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-            <button type="button" className="sg-btn sg-btn-linea" onClick={() => stampa(valida)}>
+            <Tasto onClick={() => stampa(valida)}>
               Stampa la lettera
-            </button>
+            </Tasto>
             <button type="button" className="sg-btn sg-btn-linea" onClick={prepara}>
               Correggi
             </button>

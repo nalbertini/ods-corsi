@@ -16,7 +16,8 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; align-items: baseline; gap: 10px; padding: {{padding}}">
+<div style="display: flex; align-items: {{allinea}}; gap: 10px; padding: {{padding}}">
+  <sc-if value="{{conIcona}}" hint-placeholder-val="{{ false }}"><dc-import name="Icona" nome="{{icona}}" misura="20" colore="{{colore}}" hint-size="20px,20px"></dc-import></sc-if>
   <span style="font-family: {{famiglia}}; font-size: {{corpo}}; font-weight: {{peso}}; letter-spacing: {{spazio}}; color: {{colore}}">{{label}}</span>
   <div style="flex-grow: 1; height: 2px; background: {{riga}}"></div>
   <sc-if value="{{haConto}}" hint-placeholder-val="{{ true }}">
@@ -24,7 +25,8 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"label":{"editor":"text","default":"LEZIONI"},"conto":{"editor":"text","default":""},"dentro":{"editor":"boolean","default":false},"giallo":{"editor":"boolean","default":false},"piccolo":{"editor":"boolean","default":false},"$preview":{"width":360,"height":50}}'>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"LEZIONI"},"icona":{"editor":"text","default":""},"conto":{"editor":"text","default":""},"dentro":{"editor":"boolean","default":false},"giallo":{"editor":"boolean","default":false},"piccolo":{"editor":"boolean","default":false},"$preview":{"width":360,"height":50}}'>
+// COSTRUITO «icone dappertutto» (../icone-dappertutto/; `Titoletto` di ds.tsx, 20px nell'area iscritti): `icona` = un nome di Icona.dc.html, a linea, tratto 1.75, aria-hidden, nel colore del testo; vuoto = com'è oggi.
 // Riproduzione 1:1 di .rule / .rule-label / .rule-line / .rule-conto (src/styles.css righe 218-220 e 486-487) e
 // di Titoletto in src/components/ds.tsx. E' il titoletto di sezione con la riga: etichetta Saira 15px, 0.24em,
 // `dim`; riga da 2px `line-soft`; conto a destra (15px, 600, tabulare).
@@ -49,8 +51,10 @@ class Component extends DCLogic {
     const conto = p.conto ?? '';
     return {
       label: p.label ?? 'LEZIONI',
+      icona: p.icona || '', conIcona: !!p.icona,
       conto,
       haConto: String(conto) !== '',
+      allinea: p.icona ? 'center' : 'baseline',
       padding: truthy(p.dentro) ? '12px 0 0' : '22px 20px 10px',
       colore: truthy(p.giallo) ? c.gialloTesto : piccolo ? c.dim : (c.titolo || c.dim),
       famiglia: BIG, famigliaConto: INTER,

@@ -73,7 +73,7 @@ import { fraseDallaChat } from '../../lib/collega'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { ImportaBanca } from './ImportaBanca'
-import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica, Tasto, TestaColonna } from './comune'
 import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri } from './CollegaPersona'
 import { Bilancio } from './Bilancio'
@@ -534,12 +534,12 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                 aria-label={!scegliibili.length ? 'Nessun movimento da scegliere' : scegliibili.length === 1 ? 'Scegli il movimento che si può cambiare' : scegliibili.length === trovate.length ? `Scegli i ${scegliibili.length} movimenti trovati` : `Scegli i ${scegliibili.length} movimenti che si possono cambiare`}
               />
             </span>
-            <span role="columnheader" className="sg-etichetta">DATA</span>
-            <span role="columnheader" className="sg-etichetta">DESCRIZIONE</span>
-            <span role="columnheader" className="sg-etichetta">TIPO</span>
-            <span role="columnheader" className="sg-etichetta">CASSA</span>
-            <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>ENTRATE</span>
-            <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>USCITE</span>
+            <TestaColonna icona="calendario">DATA</TestaColonna>
+            <TestaColonna icona="documento">DESCRIZIONE</TestaColonna>
+            <TestaColonna icona="movimenti">TIPO</TestaColonna>
+            <TestaColonna icona="banca">CASSA</TestaColonna>
+            <TestaColonna icona="euro" destra>ENTRATE</TestaColonna>
+            <TestaColonna icona="euro" destra>USCITE</TestaColonna>
           </div>
           <div className="sg-tabella-corpo">
             {trovate.length === 0 && (
@@ -1068,19 +1068,19 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, nomePersona, 
                 Cambia la voce
               </button>
             )}
-            <button type="button" className="sg-btn sg-btn-linea" disabled={!descrizione.trim()} onClick={() => void fai(() => d.correggiTestoMovimento(riga.id, descrizione, nota.trim() || undefined), 'Testo corretto', onFatto)}>
+            <Tasto disabled={!descrizione.trim()} onClick={() => void fai(() => d.correggiTestoMovimento(riga.id, descrizione, nota.trim() || undefined), 'Testo corretto', onFatto)}>
               Salva il testo
-            </button>
+            </Tasto>
             {!chiuso && (
-              <button type="button" className="sg-btn sg-btn-rosso" disabled={chiedendo} onClick={() => void annulla()}>
+              <Tasto tono="rosso" disabled={chiedendo} onClick={() => void annulla()}>
                 Annulla il movimento
-              </button>
+              </Tasto>
             )}
           </>
         )}
-        <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
+        <Tasto onClick={onChiudi}>
           Chiudi
-        </button>
+        </Tasto>
       </div>
     </div>
   )
@@ -1344,9 +1344,9 @@ function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: {
             PDF
           </button>
           {cosaNonVaAnnulloChiusura(k.id, chiusure) === null && (
-            <button type="button" className="sg-btn sg-btn-rosso" onClick={() => void annulla(k)}>
+            <Tasto tono="rosso" onClick={() => void annulla(k)}>
               Annulla
-            </button>
+            </Tasto>
           )}
         </div>
       ))}
@@ -1391,9 +1391,9 @@ function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiud
       {guaio && !chiusura && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       {chiusura && <span className="sg-sotto">La cassa ha una chiusura: per cambiare il saldo iniziale annullala prima.</span>}
       <div>
-        <button type="button" className="sg-btn sg-btn-linea" disabled={!!guaio || cent === null || !!chiusura} onClick={() => cent !== null && void fai(() => d.salvaSaldoCassa(cassa.id, cent, dal || undefined), 'Saldo iniziale salvato', onCambiato)}>
+        <Tasto disabled={!!guaio || cent === null || !!chiusura} onClick={() => cent !== null && void fai(() => d.salvaSaldoCassa(cassa.id, cent, dal || undefined), 'Saldo iniziale salvato', onCambiato)}>
           Salva il saldo iniziale
-        </button>
+        </Tasto>
       </div>
     </section>
   )

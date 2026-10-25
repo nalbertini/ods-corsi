@@ -86,10 +86,13 @@ console.log('\nI colori (blocco ' + LOOK + ')')
 ok('c\'è il blocco dei token', !!bloccoLook, true)
 ok('color-scheme: light', /color-scheme:\s*light/.test(bloccoLook?.corpo ?? ''), true)
 ok('--menu è #0d2a3d', T['--menu'], '#0d2a3d')
-ok('stessi token del blocco data-modulo (nessuno in più o in meno)', Object.keys(T).sort(), Object.keys(M).sort())
+// Le tinte dei segni con l'icona (`prova:icone`) servono solo alla segreteria: il modulo d'iscrizione non ha Tag.
+const TINTE = { '--tinta-rosso': '#fbe9e9', '--tinta-giallo': '#fcf6e6', '--tinta-verde': '#e3f2e8', '--tinta-neutro': '#e6eef3' }
+ok('stessi token del blocco data-modulo (nessuno in più o in meno, tranne le tinte)', Object.keys(T).filter((k) => !(k in TINTE)).sort(), Object.keys(M).sort())
+ok('le tinte dei Tag, coi loro valori', Object.fromEntries(Object.keys(TINTE).map((k) => [k, T[k]])), TINTE)
 ok('stessi valori del blocco data-modulo tranne --menu', Object.keys(M).filter((k) => k !== '--menu' && T[k] !== M[k]), [])
 const AMMESSI = new Set(['#eef5fa', '#ffffff', '#cfe6f4', '#14709f', '#0d2a3d', '#46606f', '#f4c31b', '#b81d1d', '#e4292a', '#0b7a33', '#8f6a00', '#12913f'])
-ok('solo colori ammessi nel blocco', bloccoLook ? [...bloccoLook.corpo.matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map((m) => m[0].toLowerCase()).filter((c) => !AMMESSI.has(c)) : 'manca', [])
+ok('solo colori ammessi nel blocco (i 12 del sito e le tinte)', bloccoLook ? [...bloccoLook.corpo.matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map((m) => m[0].toLowerCase()).filter((c) => !AMMESSI.has(c) && !Object.values(TINTE).includes(c)) : 'manca', [])
 ok('--cond comincia con Big Shoulders Display', /^['"]?Big Shoulders Display['"]?\s*,/.test(T['--cond'] ?? ''), true)
 ok('--body comincia con Inter', /^['"]?Inter['"]?\s*,/.test(T['--body'] ?? ''), true)
 
@@ -209,8 +212,8 @@ arriva('#121212 su --verde (tasto «vai»): 4,5:1', '#121212', T['--verde'], 4.5
 for (const x of ['--giallo-testo', '--rosso-testo', '--verde-testo', '--dim']) arriva(`${x} su --surface (tag bianco): 4,5:1`, T[x], T['--surface'], 4.5)
 
 const AMMESSI_LOOK = new Set([...AMMESSI, '#121212'])
-ok('colori nelle regole del look: solo i 12 del sito, #ffffff e #121212',
-  delLook.flatMap((r) => (r.corpo.match(HEX) ?? []).map((h) => h.toLowerCase())).filter((h) => !AMMESSI_LOOK.has(h)), [])
+ok('colori nelle regole del look: solo i 12 del sito, #ffffff, #121212 e le tinte',
+  delLook.flatMap((r) => (r.corpo.match(HEX) ?? []).map((h) => h.toLowerCase())).filter((h) => !AMMESSI_LOOK.has(h) && !Object.values(TINTE).includes(h)), [])
 
 
 // Il menu in cinque gruppi: il titolo resta maiuscolo per CSS (il testo è con l'iniziale maiuscola), voci da 44px.
@@ -232,7 +235,7 @@ ok("il tasto «tocca di nuovo per eliminare» (.btn-primary[data-sicuro='true'])
 // Il bordo di .btn-ghost è var(--blu) (regola dell'appello, che vince sull'ordine): nel look vale quanto --riga-campo.
 for (const [c, bordo] of [['.btn-ghost', /border(-color)?:[^;]*var\(--blu\)/], ['.btn-dashed', /border(-color)?:[^;]*dashed[^;]*var\(--riga-campo\)/]])
   ok(`${c}: bordo ${c === '.btn-dashed' ? 'tratteggiato var(--riga-campo)' : 'var(--blu)'}, testo var(--text)`, ha(c, bordo) && ha(c, /(?<![-\w])color:\s*var\(--text\)/), true)
-// CHIUDI L'APPELLO ✓ (tutto segnato) è .btn-go: giallo come CHIUDI · N ASSENTI, approvato dall'utente.
+// CHIUDI L'APPELLO (tutto segnato) è .btn-go: giallo come CHIUDI · N ASSENTI, approvato dall'utente.
 ok(".appello-fine .btn-go: fondo var(--giallo), testo var(--su-colore)", ha('.appello-fine .btn-go', /background(-color)?:\s*var\(--giallo\)/) && ha('.appello-fine .btn-go', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // TUTTI PRESENTI spento: grigio come ogni tasto spento, non azzurro.
 ok('.appello-testa .btn-go:disabled: fondo var(--surface-2)', ha('.appello-testa .btn-go:disabled', /background(-color)?:\s*var\(--surface-2\)/) && !ha('.appello-testa .btn-go:disabled', /var\(--line\)/), true)

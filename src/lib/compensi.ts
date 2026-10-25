@@ -376,6 +376,68 @@ export function daPagareCompensi<R extends { stato: StatoCompenso; ricevuta?: Pi
   return { righe: daPagare, totale }
 }
 
+/** I gruppi di COMPENSI, nell'ordine in cui la segreteria lavora. */
+export type GruppoCompensi = 'da-sistemare' | 'da-fare' | 'da-far-firmare' | 'da-pagare' | 'pagate'
+const ORDINE_GRUPPI: GruppoCompensi[] = ['da-sistemare', 'da-fare', 'da-far-firmare', 'da-pagare', 'pagate']
+type CartaGruppo = Pick<RicevutaCompenso, 'firmata' | 'pagataIl' | 'importo'>
+
+/** Gli stati che fermano la ricevuta: il gruppo DA SISTEMARE PRIMA. */
+export const STATI_FERMI: readonly StatoCompenso[] = ['da-confermare', 'senza-tariffa', 'senza-dati', 'non-torna']
+
+/** Finché le ore non sono confermate o la tariffa manca, un importo sarebbe sbagliato; solo-extra non ha un compenso del mese. */
+export const senzaImporto = (stato: StatoCompenso) => stato === 'da-confermare' || stato === 'senza-tariffa' || stato === 'solo-extra'
+
+// «12/10» da una data o un istante ISO: nella colonna RICEVUTA il giorno basta.
+const giornoMese = (iso: string) => {
+  const [, mm, gg] = iso.slice(0, 10).split('-')
+  return `${Number(gg)}/${Number(mm)}`
+}
+/** La colonna RICEVUTA: fatta, firmata o pagata, col giorno. */
+export const aChePunto = (x?: Pick<RicevutaCompenso, 'firmata' | 'pagataIl' | 'data'> | null) =>
+  !x ? '—' : x.pagataIl ? `pagata il ${giornoMese(x.pagataIl)}` : x.firmata ? 'firmata' : `fatta il ${giornoMese(x.data)}`
+
+/** Il tasto di una riga di COMPENSI: dove si sistema, la ricevuta da fare, da segnare firmata o pagata; `null` se non ce n'è. */
+export type AzioneCompenso = 'presenze' | 'conto' | 'personale' | 'prepara' | 'firmata' | 'pagato'
+
+/**
+ * Il tasto di una ricevuta già fatta: prima firmata, poi pagata da chi può pagare.
+ * Una del mese (`delMese`) si paga solo se torna ancora col mese; un'extra non ha un conto da far tornare.
+ */
+export const azioneCarta = (stato: StatoCompenso, x: Pick<RicevutaCompenso, 'firmata' | 'pagataIl'>, delMese: boolean, puoPagare: boolean): AzioneCompenso | null =>
+  !x.firmata ? 'firmata' : !x.pagataIl && puoPagare && (!delMese || stato === 'fatta') ? 'pagato' : null
+
+/** Il tasto della riga del tecnico: un fermo si sistema dove nasce, poi la ricevuta del mese. */
+export function azioneRiga(r: { stato: StatoCompenso; ricevuta?: Pick<RicevutaCompenso, 'firmata' | 'pagataIl'> | null }, puoPagare: boolean): AzioneCompenso | null {
+  if (r.stato === 'da-confermare') return 'presenze'
+  if (r.stato === 'non-torna') return 'conto'
+  if (r.stato === 'senza-tariffa' || r.stato === 'senza-dati') return 'personale'
+  if (r.stato === 'da-fare') return 'prepara'
+  return r.ricevuta ? azioneCarta(r.stato, r.ricevuta, true, puoPagare) : null
+}
+
+/**
+ * Ogni tecnico nel primo gruppo che gli manca: prima i fermi, poi la ricevuta da fare, da far firmare (la sua o un'extra),
+ * da pagare, e le pagate. Chi aspetta solo una firma non ha gruppo: le lezioni senza firma sono un elenco a parte, di tutti.
+ * `pagati`: le ricevute del mese pagate e le extra pagate, in centesimi.
+ */
+export function gruppiCompensi<R extends { persona: { id: string; nome: string }; stato: StatoCompenso; ricevuta?: CartaGruppo | null; extra: CartaGruppo[]; senzaFirma: SenzaFirma[] }>(righe: R[]) {
+  const gruppo = (r: R): GruppoCompensi | null => {
+    if (r.stato === 'solo-attese') return null
+    if (STATI_FERMI.includes(r.stato)) return 'da-sistemare'
+    if (r.stato === 'da-fare') return 'da-fare'
+    const delMese = r.stato === 'fatta' || r.stato === 'pagata' ? r.ricevuta : null
+    if ((delMese && !delMese.firmata) || r.extra.some((x) => !x.firmata)) return 'da-far-firmare'
+    if (r.stato === 'fatta' || r.extra.some((x) => !x.pagataIl)) return 'da-pagare'
+    return 'pagate'
+  }
+  const dove = righe.map(gruppo)
+  return {
+    gruppi: ORDINE_GRUPPI.map((g) => ({ gruppo: g, righe: righe.filter((_, i) => dove[i] === g) })).filter((g) => g.righe.length),
+    senzaFirma: righe.flatMap((r) => r.senzaFirma.map((lezione): { persona: R['persona']; lezione: SenzaFirma } => ({ persona: r.persona, lezione }))),
+    pagati: righe.reduce((s, r) => s + (r.ricevuta?.pagataIl ? r.ricevuta.importo : 0) + r.extra.reduce((t, x) => t + (x.pagataIl ? x.importo : 0), 0), 0),
+  }
+}
+
 /** Quanto ha preso da noi in un anno: le ricevute pagate quell'anno, per data di pagamento (per cassa, come il BILANCIO). */
 export const presoNellAnno = (ricevute: Array<Pick<RicevutaCompenso, 'importo' | 'annullataIl' | 'pagataIl'>>, anno: number) =>
   ricevute.filter((r) => !r.annullataIl && r.pagataIl?.startsWith(`${anno}-`)).reduce((s, r) => s + r.importo, 0)

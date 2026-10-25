@@ -29,7 +29,7 @@ import {
   type Tabella,
 } from '../../lib/importa'
 import type { Destinazione, Voce } from './Segreteria'
-import { dataLunga, messaggio, Riga } from './comune'
+import { dataLunga, messaggio, Riga, Tasto } from './comune'
 
 type Foglio = { nome: string; testo: string; righe: number }
 
@@ -338,9 +338,9 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
               <button type="button" className="sg-btn sg-btn-linea" disabled={!!aspetta} onClick={daCapo}>
                 Carica di nuovo
               </button>
-              <button type="button" className="sg-btn sg-btn-rosso" disabled={!!aspetta || buone <= 0} onClick={() => void vai()}>
+              <Tasto icona="carica" tono="rosso" disabled={!!aspetta || buone <= 0} onClick={() => void vai()}>
                 Importa le {buone} righe buone
-              </button>
+              </Tasto>
             </div>
           </div>
 
@@ -383,9 +383,9 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
           )}
           {fatto.a.daSistemare.length > 0 && (
             <>
-              <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => void copia(testoResoconto(fatto.a))}>
+              <Tasto icona="copia" style={{ alignSelf: 'flex-start' }} onClick={() => void copia(testoResoconto(fatto.a))}>
                 {copiato ? 'Copiato' : 'Copia l’elenco'}
-              </button>
+              </Tasto>
               <span role="status" className="vh">{copiato ? 'Elenco copiato' : ''}</span>
             </>
           )}
@@ -393,9 +393,9 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
             <button type="button" className="sg-btn sg-btn-pieno" onClick={() => onVai('settimana')}>
               Vai alla settimana
             </button>
-            <button type="button" className="sg-btn sg-btn-linea" onClick={daCapo}>
+            <Tasto onClick={daCapo}>
               Importa di nuovo
-            </button>
+            </Tasto>
           </div>
         </div>
       )}

@@ -3,7 +3,7 @@ import { type Esercizio, normalizza } from '../lib/esercizi'
 import { uid } from '../lib/format'
 import { type Disciplina, dellaDisciplina, filtroValido, nomeDisciplina } from '../lib/discipline'
 import { FiltroDiscipline } from './DisciplinaScelta'
-import { Close, Plus, Trash } from './Icons'
+import { Close, Icona, Plus, Trash } from './Icons'
 
 /**
  * La scelta degli esercizi dal catalogo.
@@ -160,6 +160,7 @@ export function PickerEsercizi({
         }}
       >
         <button className="btn btn-ghost" style={{ minHeight: 54 }} onClick={() => setScelti([])} disabled={scelti.length === 0}>
+          <Icona nome="ricomincia" />
           AZZERA
         </button>
         <button

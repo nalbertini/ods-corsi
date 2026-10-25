@@ -1,6 +1,8 @@
 import { type KeyboardEvent, type ReactNode, type RefObject, useEffect, useRef, useState } from 'react'
 import { frecciaRadio, tabIndexRadio } from '../lib/frecceRadio'
 import type { Tappa } from '../lib/passiIscrizione'
+import type { NomeIcona } from '../lib/icone'
+import { Icona } from './Icons'
 
 /**
  * I pezzi del design system ODS Corsi che servono alle iscrizioni: le stesse
@@ -11,10 +13,13 @@ import type { Tappa } from '../lib/passiIscrizione'
  */
 
 /** L'etichetta spaziata con la riga che divide una pagina, e il conto a destra. */
-export function Titoletto({ children, conto, dentro }: { children: ReactNode; conto?: ReactNode; dentro?: boolean }) {
+export function Titoletto({ children, conto, dentro, icona }: { children: ReactNode; conto?: ReactNode; dentro?: boolean; icona?: NomeIcona }) {
   return (
     <div className={dentro ? 'rule rule-dentro' : 'rule'}>
-      <span className="rule-label" role="heading" aria-level={2}>{children}</span>
+      <span className="rule-label" role="heading" aria-level={2}>
+        {icona && <Icona nome={icona} misura={20} />}
+        {children}
+      </span>
       <div className="rule-line" />
       {conto !== undefined && <span className="num rule-conto">{conto}</span>}
     </div>
@@ -37,10 +42,20 @@ type PropTasto = {
   onClick?: () => void
   type?: 'button' | 'submit'
   disabled?: boolean
+  /** Solo sulle azioni che tornano uguali in tutta l'app (vedi `iconaAzione`). */
+  icona?: NomeIcona
 }
 
 /** Il tasto: MAIUSCOLO e obliquo; `principale` rosso, `vai` verde, `linea` col bordo. */
-export function Tasto({ variante = 'linea', children, href, scarica, qui, onClick, type = 'button', disabled }: PropTasto) {
+export function Tasto({ variante = 'linea', children: parola, href, scarica, qui, onClick, type = 'button', disabled, icona }: PropTasto) {
+  const children = icona ? (
+    <>
+      <Icona nome={icona} />
+      {parola}
+    </>
+  ) : (
+    parola
+  )
   if (href) {
     const fuori = qui ? {} : scarica ? { download: true } : { target: '_blank', rel: 'noopener noreferrer' }
     return (

@@ -3,7 +3,7 @@ import type { DatiSegreteria, LezioneStat, PersonaSeg, ProvaSeg } from '../../li
 import { comePaga, contaCertificati, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
-import { Colonne, Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
+import { Colonne, Guaio, Riga, Testa, useCarica, useOrdina, Tasto } from './comune'
 import { Numero } from './Presenze'
 import { StatisticheSito } from './StatisticheSito'
 import { richiesteFila } from '../../lib/filaSito'
@@ -175,9 +175,9 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
             </option>
           ))}
         </select>
-        <button type="button" className="sg-btn sg-btn-linea" disabled={!lezioni.length} onClick={() => scaricaCsv(lezioni, `${nomeCorso ?? 'tutti'} ${nomePeriodo}`)}>
+        <Tasto disabled={!lezioni.length} onClick={() => scaricaCsv(lezioni, `${nomeCorso ?? 'tutti'} ${nomePeriodo}`)}>
           Scarica CSV
-        </button>
+        </Tasto>
       </Testa>
 
       {stat.guaio && <Guaio testo={stat.guaio} />}

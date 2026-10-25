@@ -17,7 +17,8 @@ import { fonteDelLink, listaRicordata, musicaScelta, ricordaLista, ricordaSpenta
 import { svuotaTutte } from '../../lib/coda'
 import { uscita } from '../../lib/uscita'
 import { trattieniAggiornamento } from '../../lib/aggiornamento'
-import { Accensione, Cronometro, Nota, Persone } from '../Icons'
+import { Accensione, Cronometro, Icona, Nota, Persone } from '../Icons'
+import { TRATTO_TABLET } from '../../lib/icone'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Logo } from '../Logo'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
@@ -615,6 +616,7 @@ function ConfermaUscita({ nome, onEsci, onAnnulla }: { nome: string; onEsci: () 
             {aspetta ? 'UN ATTIMO…' : 'SÌ, ESCI'}
           </button>
           <button type="button" className="tb-btn tb-btn-grande tb-btn-linea" disabled={aspetta} onClick={onAnnulla}>
+            <Icona nome="annulla" misura={22} tratto={TRATTO_TABLET} />
             ANNULLA
           </button>
         </div>

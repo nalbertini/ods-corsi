@@ -84,10 +84,10 @@ prova tiene stanno in «Scoperti», in fondo.
 | Il Banco | segreteria | un guaio che non si vede | `prova:banco`, `prova:ruoli` | sì |
 | Scheda dell'iscritto a quattro schede | segreteria | un guaio nascosto su una scheda chiusa | `prova:scheda-iscritto`, `prova:schede-iscritto`, `prova:scheda` | sì |
 | COSA MANCA nella scheda dell'iscritto | segreteria | ricevuta bloccata senza CF, minore trattato da adulto | `prova:scheda-persona`, `prova:segreteria`, `prova:ricevuta` | sì |
-| Aspetto della segreteria e dell'amministrazione | segreteria, amministrazione | colori illeggibili, aspetto diverso dal sito | `prova:look`, `prova:menu`, `prova:banco`, `prova:sito-aspetto`, `prova:testi`, `prova:etichette-lezione`, `prova:segreteria`, `prova:richieste`, `prova:ricevuta`, `prova:pagamenti`, `prova:tessere`, `prova:certificati`, `prova:sito`, `prova:tema`, `scripts/prova-look.mjs` | sì |
-| Aspetto dell'area istruttori | istruttore | stato dell'appello letto male | `prova:istruttori-look`, `prova:look`, `prova:coda`, `prova:appello-cerca`, `prova:timer-istruttori` | sì |
-| Aspetto dei tasti del tablet di sala | sala, istruttore | un tasto che si legge come un altro | `prova:look`, `prova:tablet`, `prova:coda`, `prova:musica` | sì |
-| Aspetto dell'area iscritti | genitore, iscritto | tasto illeggibile o spento che sembra acceso | `prova:look` | sì |
+| Aspetto della segreteria e dell'amministrazione | segreteria, amministrazione | colori illeggibili, aspetto diverso dal sito | `prova:look`, `prova:menu`, `prova:banco`, `prova:sito-aspetto`, `prova:testi`, `prova:etichette-lezione`, `prova:segreteria`, `prova:richieste`, `prova:ricevuta`, `prova:pagamenti`, `prova:tessere`, `prova:certificati`, `prova:sito`, `prova:tema`, `prova:icone`, `scripts/prova-look.mjs` | sì |
+| Aspetto dell'area istruttori | istruttore | stato dell'appello letto male | `prova:istruttori-look`, `prova:look`, `prova:coda`, `prova:appello-cerca`, `prova:timer-istruttori`, `prova:icone` | sì |
+| Aspetto dei tasti del tablet di sala | sala, istruttore | un tasto che si legge come un altro | `prova:look`, `prova:tablet`, `prova:coda`, `prova:musica`, `prova:icone` | sì |
+| Aspetto dell'area iscritti | genitore, iscritto | tasto illeggibile o spento che sembra acceso | `prova:look`, `prova:icone` | sì |
 | Tasti che tolgono in segreteria | segreteria, amministrazione | dati tolti senza conferma | `prova:pericolo`, `prova:scheda-iscritto`, `prova:ricevuta`, `prova:pagamenti`, `prova:certificati`, `prova:vestiario`, `prova:tessere`, `prova:contabilita`, `prova:segreteria`, `disattiva-chiude-iscrizioni.sql` | sì |
 | Sito pubblico: solo quello che è pubblicato | visitatore del sito, segreteria | bozza in pubblico, link `javascript:` | `prova:sito`, `prova:sito-titoli`, `prova:sito-accedi`, `prova:sito-genera`, `prova:sito-immagini`, `prova:sito-pubblica`, `prova:sito-social`, `prova:sito-aspetto`, `prova:sito-tessere`, `prova:sito-collage`, `prova:sito-scala`, `prova:sito-home-nuova`, `prova:sito-home-aspetto`, `prova:sito-corsi-nuova`, `prova:sito-home`, `prova:sito-corso-nuovo`, `prova:sito-corso`, `prova:sito-pezzi`, `prova:sito-orario`, `prova:sito-contatti`, `prova:sito-istruttori`, `prova:sito-fasce`, `sito.sql`, `rls.sql`, `sito-immagini.sql`, `sito-pezzi.sql` | sì |
 | Chi siamo del sito | visitatore del sito, segreteria | paragrafo perso, regole su un'altra pagina | `prova:sito-chi-siamo-nuova`, `prova:sito-chi-siamo`, `prova:sito-genera`, `prova:sito-home-nuova` | sì |
@@ -119,9 +119,8 @@ quando arriva la prova.
 - **GRAVE** — Edge Function `paypal` (`index.ts`): il blocco della cattura
   oltre 30 minuti e il ramo del rifiuto non hanno prova; si tolgono senza che
   cada niente, e si incassano soldi che il modulo ha dato per non andati.
-- Tema salvato nel browser (`ods-tema` = scuro, chiaro, Tatami): nessuna
-  prova dice che resta inerte e non rompe il modulo di iscrizione; `prova:tema`
-  vieta solo che nel codice torni il meccanismo.
+- COMPENSI (`Compensi.tsx`): il doppio clic su «C'era», «Non c'era» e «Segna
+  firmata» è bloccato per tutto l'elenco. Senza prova (serve il browser): a mano.
 - Edge Function `paypal`: nessuna prova del flusso (prepara, crea l'ordine,
   cattura, rilettura dello stato).
 - Carta: la richiesta del browser non contiene campi della carta
@@ -197,6 +196,13 @@ quando arriva la prova.
 - Gare: «non ancora disponibile» finché `117-gare.sql` non è lanciato: nessuna
   prova.
 - Gare: `gareDellaSettimana` è provata, il collegamento in `Settimana.tsx` no.
+
+- Tasti grandi del tablet: `Tablet.tsx` e `TabletPin.tsx` usano `TRATTO_TABLET`,
+  ma `prova:icone` controlla solo la costante. Il tratto a 1,75 passa tutte le
+  prove (DA FARE).
+- Icona dei tasti di segreteria: `prova:icone` controlla che il nome sia in
+  `iconaAzione` e che il tasto passi da `Tasto`, non che l'icona compaia
+  (DA FARE).
 
 ## Come si aggiorna
 

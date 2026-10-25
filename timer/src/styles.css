@@ -227,6 +227,8 @@ input, textarea { font: inherit; color: inherit; }
 
 .rule { display: flex; align-items: baseline; gap: 10px; padding: 22px 20px 10px; }
 .rule-label { font-family: var(--cond); font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); }
+/* Il titolo di una sezione con la sua icona, come i titoli dell'app. */
+.titolo-icona { display: inline-flex; align-items: center; gap: 8px; }
 .rule-line { flex-grow: 1; height: 2px; background: var(--line-soft); }
 
 /* ---------- controlli ---------- */

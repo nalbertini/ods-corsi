@@ -33,7 +33,7 @@ import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoS
 import { chiaveGiorno } from '../../lib/sala'
 import { nuovoId } from '../../lib/prove'
 import { avvisoDopoRicevuta, avvisoManda, confermaEmail, daMandare, domandaManda, genitoreDellaMail, restaDopoManda, restaDopoRicevuta, siRiprova, statoPosta, ultimaMandata } from '../../lib/ricevuteEmail'
-import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, suCarta, useAvviso, useBozza, useCarica } from './comune'
+import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, suCarta, useAvviso, useBozza, useCarica, Tasto } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 type Avvisa = ReturnType<typeof useAvviso>['avvisa']
@@ -1011,9 +1011,9 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
           <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setB(null)}>
             Lascia stare
           </button>
-          <button
-            type="button"
-            className="sg-btn sg-btn-pieno grow"
+          <Tasto
+            tono="pieno"
+            className="grow"
             disabled={!b.nome.trim() || !b.codiceFiscale.trim()}
             onClick={() =>
               void fai(
@@ -1030,7 +1030,7 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
             }
           >
             Salva
-          </button>
+          </Tasto>
         </div>
       )}
       {avviso}

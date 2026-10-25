@@ -4,7 +4,7 @@ import { type Disciplina, dellaDisciplina, filtroValido, gruppiPerDisciplina } f
 import { listClips } from '../lib/clipStore'
 import { exerciseKey } from '../lib/voiceClips'
 import { uid } from '../lib/format'
-import { Plus, Trash } from './Icons'
+import { Icona, Plus, Trash } from './Icons'
 import { FiltroDiscipline, SceltaDisciplina } from './DisciplinaScelta'
 
 /**
@@ -316,6 +316,7 @@ export function EserciziScreen({
         {esito && <span style={{ fontSize: 13, color: 'var(--verde)' }}>{esito}</span>}
         <div className="row" style={{ gap: 8 }}>
           <button className="btn btn-ghost grow" style={{ minHeight: 48, fontSize: 15 }} onClick={ripristina}>
+            <Icona nome="ricomincia" />
             RIPRISTINA
           </button>
           <button

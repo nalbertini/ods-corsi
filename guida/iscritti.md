@@ -51,6 +51,9 @@ apre su questo), **DOCUMENTI**, per il titolare di un nucleo **FAMIGLIA**, e
 **●** rosso o giallo. Il tab scelto resta quando si cambia persona. Con le
 frecce della tastiera si passa da un tab all'altro.
 
+I titoli delle sezioni e gli stati (**IN REGOLA**, **DA CONFERMARE**,
+**DA SISTEMARE**, **RIFIUTATA**) hanno un'icona accanto alla parola.
+
 Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
 («Ciao Alessandro ▾»): si apre l'elenco dei membri.
 

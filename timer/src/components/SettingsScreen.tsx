@@ -22,7 +22,7 @@ import { VOLUME_BLOCCATO, leggiLink } from '../lib/youtube'
 import { aggiungiFileScelti, ascoltaAudio, statoAudio, svuotaFileScelti, togliFileScelto } from '../lib/musicaAudio'
 import { TESTI_MUSICA } from '../lib/musicaLocale'
 import { eHttp, leggiRadio, MESSAGGIO_HTTP } from '../lib/link'
-import { Chevron } from './Icons'
+import { Chevron, Icona } from './Icons'
 import { Logo } from './Logo'
 import { daRadice } from '../lib/radice'
 
@@ -187,7 +187,7 @@ export function SettingsScreen({
       {!sala && (
       <>
       <div className="rule">
-        <span className="rule-label">ESERCIZI</span>
+        <span className="rule-label titolo-icona"><Icona nome="esercizi" />ESERCIZI</span>
         <div className="rule-line" />
       </div>
       <div className="pad stack" style={{ gap: 8 }}>
@@ -305,7 +305,7 @@ export function SettingsScreen({
       {!sala && (
       <>
       <div className="rule">
-        <span className="rule-label">VOCE INCISA</span>
+        <span className="rule-label titolo-icona"><Icona nome="volume" />VOCE INCISA</span>
         <div className="rule-line" />
       </div>
       <div className="pad stack" style={{ gap: 8 }}>
@@ -445,6 +445,7 @@ export function SettingsScreen({
               setMessaggio(fatto)
             }}
           >
+            <Icona nome="salva" />
             SALVA TUTTO
           </button>
           <button
@@ -648,7 +649,7 @@ function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: 
   return (
     <>
       <div className="rule">
-        <span className="rule-label">MUSICA</span>
+        <span className="rule-label titolo-icona"><Icona nome="musica" />MUSICA</span>
         <div className="rule-line" />
       </div>
       <div className="pad stack" style={{ gap: 8 }}>

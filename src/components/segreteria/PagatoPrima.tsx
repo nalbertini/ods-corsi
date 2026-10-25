@@ -4,7 +4,7 @@ import { stagioneDi } from '../../lib/costi'
 import { frasePagatoPrima, NOTA_DI_DEFAULT, segnaPagatoPrima, type EsitoSegnatura, type PagatoNelVecchio, type RigaPagatoPrima } from '../../lib/pagatoPrima'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { chiaveGiorno } from '../../lib/sala'
-import { Campo, useDialogo } from './comune'
+import { Campo, useDialogo, Tasto } from './comune'
 
 /**
  * Il filtro «Pagato nel vecchio programma» dell'elenco ISCRITTI: chi ha un incasso dello storico nella stagione e nell'app
@@ -269,9 +269,9 @@ function Conferma({
           Se la data non è giusta per qualcuno, si corregge persona per persona dalla scheda: QUOTA E PAGAMENTI › Segna come pagata.
         </span>
         <div className="row" style={{ gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
+          <Tasto onClick={onChiudi}>
             Annulla
-          </button>
+          </Tasto>
           <button type="submit" className="sg-btn sg-btn-pieno" disabled={!fino || nomi.length === 0}>
             Segna
           </button>

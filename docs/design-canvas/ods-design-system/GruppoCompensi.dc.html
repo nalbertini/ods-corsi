@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 100%; color: #0d2a3d">
+<sc-if value="{{aperto}}" hint-placeholder-val="{{ true }}">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: {{spazio}}; background: {{fondo}}; border-bottom: 3px solid {{barra}}">
+    <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+      <h2 style="display: flex; align-items: center; gap: 10px; margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: 0.04em; line-height: 1"><sc-if value="{{haIcona}}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{coloreIcona}}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none" aria-hidden="true"><path d="{{icona}}"></path></svg></sc-if><span>{{titolo}} <span style="font-variant-numeric: tabular-nums; color: #46606f">· {{conto}}</span></span></h2>
+      <sc-if value="{{haSotto}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; color: #46606f; line-height: 1.4">{{sotto}}</span></sc-if>
+    </div>
+    <sc-if value="{{conTasto}}" hint-placeholder-val="{{ false }}"><dc-import name="Bottone" label="{{azione}}" variante="{{variante}}" contesto="segreteria" larghezza="{{larghezzaTasto}}" hint-size="300px,48px"></dc-import></sc-if>
+  </div>
+</sc-if>
+<sc-if value="{{chiuso}}" hint-placeholder-val="{{ false }}">
+  <div role="button" aria-expanded="false" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; background: #ffffff; border: 1px solid #cfe6f4; border-left: 4px solid {{barra}}">
+    <span aria-hidden="true" style="font-size: 14px; color: #46606f">▸</span>
+    <sc-if value="{{haIcona}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{coloreIcona}}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none" aria-hidden="true"><path d="{{icona}}"></path></svg></sc-if>
+    <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: 0.04em">{{titolo}} <span style="font-variant-numeric: tabular-nums; color: #46606f">· {{conto}}</span></span>
+    <span style="flex: 1; min-width: 0; font-size: 14px; color: #46606f">{{sotto}}</span>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"DA SISTEMARE PRIMA"},"conto":{"editor":"text","default":"6"},"sotto":{"editor":"text","default":"Finché non sono a posto, la loro ricevuta non si fa."},"tono":{"editor":"enum","options":["rosso","giallo","neutro","verde"],"default":"rosso"},"azione":{"editor":"text","default":""},"variante":{"editor":"enum","options":["pieno","linea"],"default":"pieno"},"icona":{"editor":"enum","options":["","sistemare","stampa","firma","paga","attesa","pagate"],"default":"sistemare"},"chiuso":{"editor":"boolean","default":false},"tabella":{"editor":"boolean","default":false},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1100,"height":70}}'>
+// COSTRUITO (Compensi.tsx, .sg-compensi-* di src/segreteria.css; storia in docs/design-canvas/compensi-revisione): la testa di un gruppo di COMPENSI. I gruppi sono i passi del mese, nell'ordine in cui la segreteria li fa:
+// DA SISTEMARE PRIMA (rosso: la ricevuta non si fa), DA FARE (con l'unico tasto giallo, Prepara e stampa), DA FAR FIRMARE, DA PAGARE (col totale), ASPETTANO UNA FIRMA
+// (le lezioni in due senza la firma del tecnico: non fermano niente), PAGATE (`chiuso`: una riga sola col conto e il totale, si apre col tocco).
+// Il titolo e' Big Shoulders 24px col conto in `dim`; sotto, la frase in `dim`; il filetto sotto e' del colore del `tono` (rosso #b81d1d, giallo #f4c31b,
+// neutro e verde `line-soft` #cfe6f4), mai l'unico segno: il titolo dice gia' tutto. Un gruppo vuoto non c'e'.
+// `tabella`: la testa sta dentro la tabella unica della pagina, come una fascia (fondo `bg` #eef5fa, stessi 14px di margine delle righe) fra le righe del gruppo prima e quelle
+// del suo: l'intestazione delle colonne e' una sola, in cima, e non si ripete.
+// `icona`: davanti al titolo, a linea come quelle del Menu (tratto 1,75, aria-hidden: la parola c'e' gia'), 22px aperto e 20px chiuso; rossa solo in DA SISTEMARE PRIMA,
+// perche' il giallo su bianco non si legge. sistemare il triangolo, stampa la stampante, firma la penna, paga l'euro (`pagamenti` del Menu), attesa l'orologio, pagate la spunta.
+const BARRE = { rosso: '#b81d1d', giallo: '#f4c31b', neutro: '#cfe6f4', verde: '#cfe6f4' };
+const ICONE = {
+  sistemare: 'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z M12 9v4 M12 17h.01',
+  stampa: 'M6 9V2h12v7 M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2 M6 14h12v8H6z',
+  firma: 'M12 20h9 M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z',
+  paga: 'M18 7c-1.2-1.3-3-2-5-2a7 7 0 0 0 0 14c2 0 3.8-.7 5-2 M4 10h9M4 14h9',
+  attesa: 'M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M12,6 L12,12 L16,14',
+  pagate: 'M20 6 9 17l-5-5',
+};
+const vero = (v, d) => (v === undefined ? d : v === true || v === 'true');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const chiuso = vero(p.chiuso, false);
+    const sotto = p.sotto ?? 'Finché non sono a posto, la loro ricevuta non si fa.';
+    return {
+      aperto: !chiuso, chiuso, titolo: p.titolo ?? 'DA SISTEMARE PRIMA', conto: p.conto ?? '6', sotto, haSotto: sotto !== '',
+      barra: BARRE[p.tono ?? 'rosso'] ?? '#cfe6f4', azione: p.azione ?? '', conTasto: (p.azione ?? '') !== '',
+      icona: ICONE[p.icona ?? 'sistemare'] ?? '', haIcona: !!ICONE[p.icona ?? 'sistemare'], coloreIcona: (p.tono ?? 'rosso') === 'rosso' ? '#b81d1d' : '#0d2a3d',
+      spazio: vero(p.tabella, false) ? '22px 14px 10px' : '6px 0 10px', fondo: vero(p.tabella, false) ? '#eef5fa' : 'transparent',
+      variante: p.variante ?? 'pieno', larghezzaTasto: vero(p.telefono, false) ? '100%' : 'auto',
+    };
+  }
+}
+</script>
+</body>
+</html>
