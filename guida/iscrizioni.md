@@ -145,8 +145,8 @@ Chi si iscrive risponde alle domande dal telefono:
   cancella dall'app; il certificato resta nell'app e lo vede solo la
   segreteria.
 - **Il pagamento**, dopo aver scelto un corso: **QUANTO PAGHI**, quota e
-  corso dal listino, e **PAGHI CON**, da scegliere fra **Satispay** e
-  **Bonifico** (nessuno è già scelto).
+  corso dal listino, e **PAGHI CON**, da scegliere fra **Satispay**,
+  **Carta** (quando c'è, vedi sotto) e **Bonifico** (nessuno è già scelto).
   - Con **Satispay** si paga **prima** di mandare, in fondo al modulo: dopo
     **ALTRO** c'è **PAGA** con l'importo, quello che calcola il database dal
     listino. Quando il resto del modulo è a posto (firma, caselle, documenti),
@@ -161,6 +161,19 @@ Chi si iscrive risponde alle domande dal telefono:
     ritrova il pagamento fatto, con gli stessi nome, email e corso. Satispay
     riporta a una pagina (`iscrizioni/?satispay=…`) che dice com'è andata e di
     tornare alla scheda del modulo.
+  - Con la **Carta** (di credito o di debito, tramite PayPal) si paga anche
+    lei **prima** di mandare, nello stesso riquadro **PAGA**: il tasto
+    **PAGA … CON LA CARTA** apre al suo posto i campi della carta (numero,
+    scadenza, codice di sicurezza, nome sulla carta), sopra **Paga con Apple
+    Pay** o **Paga con Google Pay** se il telefono li sa usare. **PAGA …**
+    conferma, **ANNULLA** torna indietro. I dati della carta li scrive e li
+    tiene PayPal: l'app non li vede e non li salva. Se la carta non passa, una
+    frase dice cosa controllare e c'è **RIPROVA CON LA CARTA**. Un pagamento
+    che resta in attesa più di 30 minuti diventa «non andato»; se poi arriva
+    la conferma, resta pagato. La commissione la paga la palestra. La Carta
+    c'è negli stessi casi di Satispay, e solo quando sul database ci sono le
+    chiavi PayPal (i segreti della funzione `paypal`): senza, **PAGHI CON**
+    resta Satispay e bonifico.
   - Pagato e poi cambiato corso, annuale/trimestre, nome o email, quel
     pagamento non vale per la richiesta: si rimette quello di prima, o si
     chiama la segreteria (**CHIAMA LA SEGRETERIA**). Pagato con Satispay e poi

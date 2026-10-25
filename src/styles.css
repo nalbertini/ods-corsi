@@ -1181,6 +1181,18 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .paga-riquadro .passo-dettaglio { font-size: 15px; }
 .paga-cifra { font-family: var(--cond); font-size: 34px; font-weight: 800; line-height: 1.1; }
 .paga-riquadro[data-bordo='fatto'] .paga-cifra { color: var(--verde-testo); }
+/* I campi della carta sotto il riquadro PAGA: i riquadri di PayPal prendono tutta la riga, Apple e Google Pay neri come vogliono loro. */
+.campi-carta { display: flex; flex-direction: column; gap: 10px; }
+.campi-carta:focus { outline: none; } /* il fuoco qui serve a chi usa lo screen reader; quello visibile resta sui tasti e sui campi */
+.campi-carta-campi { display: flex; flex-direction: column; gap: 6px; }
+.campo-carta { min-height: 52px; }
+.campo-carta-prova { display: flex; align-items: center; color: var(--dim); }
+/* Apple Pay e Google Pay: il tasto nero con la scritta bianca lo chiedono loro, in tutti i temi; non è un colore
+   del tema, per questo `black` e non un token (i blocchi :root restano fermi, `prova:look`). */
+.tasto-wallet { min-height: 52px; border: 2px solid var(--riga-campo); border-radius: 10px; background: black; color: var(--su-rosso); font-size: 17px; font-weight: 600; cursor: pointer; }
+.tasto-wallet:disabled { opacity: 0.5; cursor: default; }
+.campi-carta-oppure { display: flex; align-items: center; gap: 10px; color: var(--dim); font-size: 14px; }
+.campi-carta-oppure::before, .campi-carta-oppure::after { content: ''; flex: 1; border-top: 1px solid var(--line); }
 .passo-btn { min-height: 48px; padding: 0 16px; font-size: 16px; text-decoration: none; align-self: flex-start; }
 /* L'IBAN in grande, a gruppi di quattro: se va a capo, va a capo fra un gruppo e l'altro. */
 .iban-riga { display: block; overflow-wrap: anywhere; }

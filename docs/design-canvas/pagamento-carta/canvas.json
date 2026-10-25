@@ -1,0 +1,118 @@
+{
+ "v": 3,
+ "title": "Pagamento con la carta · accanto a Satispay",
+ "launch": {
+  "view": "canvas",
+  "page": "proposta"
+ },
+ "pages": [
+  {
+   "id": "proposta",
+   "name": "Proposta"
+  }
+ ],
+ "boards": {
+  "OggiPaghiCon.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 375,
+   "h": 620,
+   "page": "proposta",
+   "title": "Oggi · PAGHI CON: Satispay o bonifico"
+  },
+  "PaghiCon.dc.html": {
+   "x": 0,
+   "y": 800,
+   "w": 375,
+   "h": 620,
+   "page": "proposta",
+   "title": "1 · PAGHI CON: tre scelte"
+  },
+  "Fondo.dc.html": {
+   "x": 455,
+   "y": 800,
+   "w": 375,
+   "h": 560,
+   "page": "proposta",
+   "title": "2 · In fondo: PAGA CON LA CARTA"
+  },
+  "CampiCarta.dc.html": {
+   "x": 910,
+   "y": 800,
+   "w": 375,
+   "h": 1060,
+   "page": "proposta",
+   "title": "3 · I campi della carta, con Apple Pay e Google Pay"
+  },
+  "Pagato.dc.html": {
+   "x": 1365,
+   "y": 800,
+   "w": 375,
+   "h": 560,
+   "page": "proposta",
+   "title": "4 · Pagato: mandi"
+  },
+  "NonAndato.dc.html": {
+   "x": 1820,
+   "y": 800,
+   "w": 375,
+   "h": 560,
+   "page": "proposta",
+   "title": "5 · Se non è andata"
+  },
+  "RiapriDopo.dc.html": {
+   "x": 2275,
+   "y": 800,
+   "w": 375,
+   "h": 560,
+   "page": "proposta",
+   "title": "6 · Pagato, richiesta non partita (da decidere)"
+  },
+  "AreaIscritti.dc.html": {
+   "x": 0,
+   "y": 2000,
+   "w": 390,
+   "h": 820,
+   "page": "proposta",
+   "title": "7 · Area iscritti: la quota che manca"
+  },
+  "Segreteria.dc.html": {
+   "x": 470,
+   "y": 2000,
+   "w": 760,
+   "h": 420,
+   "page": "proposta",
+   "title": "8 · Segreteria: PAGAMENTI"
+  }
+ },
+ "order": [
+  "OggiPaghiCon.dc.html",
+  "PaghiCon.dc.html",
+  "Fondo.dc.html",
+  "CampiCarta.dc.html",
+  "Pagato.dc.html",
+  "NonAndato.dc.html",
+  "RiapriDopo.dc.html",
+  "AreaIscritti.dc.html",
+  "Segreteria.dc.html"
+ ],
+ "notes": {
+  "oggi": {
+   "x": 0,
+   "y": -120,
+   "text": "Oggi: il modulo pubblico delle iscrizioni",
+   "kind": "title1",
+   "maxW": 830,
+   "page": "proposta"
+  },
+  "titolo": {
+   "x": 0,
+   "y": 700,
+   "text": "Proposta: la carta di credito o di debito accanto a Satispay (PayPal, solo i campi carta)",
+   "kind": "title1",
+   "maxW": 2650,
+   "page": "proposta"
+  }
+ },
+ "designSystems": []
+}

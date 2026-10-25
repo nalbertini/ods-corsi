@@ -9,7 +9,23 @@ import { MASSIMO_PERSONE } from './passiIscrizione'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { caricaListino } from './listino'
 import { cosaNonVaNucleo, stimaIscrizione } from './nucleo'
-import { NOME_TROPPO_LUNGO, nonSemplice, PAGAMENTO_ALTRA_PERSONA, PAGAMENTO_ALTRA_SCELTA, PAGAMENTO_NON_ARRIVATO, PAGAMENTO_NON_VALE, senzaVoceDelCorso, type PagamentoSatispay } from './satispay'
+import {
+  ERRORE_CARTA,
+  NOME_TROPPO_LUNGO,
+  nonSemplice,
+  PAGAMENTO_ALTRA_PERSONA,
+  PAGAMENTO_ALTRA_SCELTA,
+  PAGAMENTO_CARTA_ALTRA_PERSONA,
+  PAGAMENTO_CARTA_ALTRA_SCELTA,
+  PAGAMENTO_CARTA_NON_ARRIVATO,
+  PAGAMENTO_CARTA_NON_VALE,
+  PAGAMENTO_NON_ARRIVATO,
+  PAGAMENTO_NON_VALE,
+  senzaVoceDelCorso,
+  siCattura,
+  statoCarta,
+  type PagamentoSatispay,
+} from './satispay'
 
 /**
  * Le richieste di iscrizione senza server.
@@ -227,11 +243,15 @@ export function creaRichiesteProva(): DatiRichieste {
       // Come `invia_iscrizione` in 83-satispay-prima.sql: il pagamento fatto prima, solo se è arrivato, mai preso,
       // per questa scelta e pagato da chi si iscrive.
       if (pagamentoSatispay) {
-        if (!pagato || pagato.richiestaId || pagato.presoIl || !pagato.corsoId) throw new Error(PAGAMENTO_NON_VALE)
-        if (pagato.stato !== 'pagato') throw new Error(PAGAMENTO_NON_ARRIVATO)
-        if (new Set(dati.corsi).size !== 1 || dati.corsi[0] !== pagato.corsoId || dati.formula !== pagato.formula) throw new Error(PAGAMENTO_ALTRA_SCELTA)
+        // Gli stessi controlli per i due circuiti, ognuno coi suoi testi.
+        const carta = pagato?.circuito === 'carta'
+        if (!pagato || pagato.richiestaId || pagato.presoIl || !pagato.corsoId) throw new Error(carta ? PAGAMENTO_CARTA_NON_VALE : PAGAMENTO_NON_VALE)
+        if (pagato.stato !== 'pagato') throw new Error(carta ? PAGAMENTO_CARTA_NON_ARRIVATO : PAGAMENTO_NON_ARRIVATO)
+        if (new Set(dati.corsi).size !== 1 || dati.corsi[0] !== pagato.corsoId || dati.formula !== pagato.formula)
+          throw new Error(carta ? PAGAMENTO_CARTA_ALTRA_SCELTA : PAGAMENTO_ALTRA_SCELTA)
         const uguale = (a = '', b = '') => a.trim().toLowerCase() === b.trim().toLowerCase()
-        if (!uguale(pagato.email, email) || !uguale(pagato.nome, dati.nome) || !uguale(pagato.cognome, dati.cognome)) throw new Error(PAGAMENTO_ALTRA_PERSONA)
+        if (!uguale(pagato.email, email) || !uguale(pagato.nome, dati.nome) || !uguale(pagato.cognome, dati.cognome))
+          throw new Error(carta ? PAGAMENTO_CARTA_ALTRA_PERSONA : PAGAMENTO_ALTRA_PERSONA)
       }
       const minore = minorenne(dati.natoIl)
       // Come il database: il luogo di nascita, se l'elenco lo conosce, è quello del codice.
@@ -297,7 +317,11 @@ export function creaRichiesteProva(): DatiRichieste {
       return true
     },
 
-    async prepara(x) {
+    async cartaAttiva() {
+      return { clientId: 'prova', sandbox: true }
+    },
+
+    async prepara(x, metodo) {
       // Come `satispay_prepara_prima`: quello vivo per la stessa scelta e persona (anche già pagato e non ancora
       // preso: chi ricarica la pagina non paga due volte), o uno nuovo con l'importo del listino.
       const nome = x.nome.trim()
@@ -305,26 +329,51 @@ export function creaRichiesteProva(): DatiRichieste {
       const email = x.email.trim().toLowerCase()
       if (!nome || !cognome || !email) throw new Error('Scrivi nome, cognome ed email prima di pagare')
       if (nome.length > 80 || cognome.length > 80 || email.length > 254) throw new Error(NOME_TROPPO_LUNGO)
+      if (metodo === 'carta' && !x.chiave) throw new Error('Ricarica la pagina e riprova a pagare')
       const corso = archivio.dati.corsi.find((c) => c.id === x.corso && c.attivo)
       if (!corso) throw new Error("Uno dei corsi scelti non c'è più: ricarica la pagina")
+      // Il listino prima di leggere i pagamenti: due tocchi insieme ritrovano lo stesso, come col lucchetto del database.
+      const { listino } = await caricaListino()
+      const stessa = (p: PagamentoSatispay) =>
+        p.circuito === metodo && !p.richiestaId && !p.presoIl && p.corsoId === x.corso && p.formula === x.formula &&
+        p.nome === nome && p.cognome === cognome && p.email === email && p.chiave === x.chiave
+      // Come il database: con la carta un ordine lasciato a metà da più di 30 minuti non si riprende.
+      const ora = new Date()
+      salvaSatispay(pagamentiSatispayProva().map((p) => (metodo === 'carta' && stessa(p) && p.stato === 'attesa' && statoCarta({ status: 'APPROVED' }, p.creatoIl, ora) === 'non-andato' ? { ...p, stato: 'non-andato' } : p)))
       const tutti = pagamentiSatispayProva()
       // Col percorso della pagina, come `?pagamento=` di `paga`: la `<base href="../">` porterebbe un link relativo fuori da iscrizioni/.
       const link = (id: string) => `${window.location.pathname}?prova&satispay=${encodeURIComponent(id)}`
-      const vivi = tutti.filter((p) => !p.richiestaId && !p.presoIl && p.stato !== 'non-andato' && p.corsoId === x.corso && p.formula === x.formula && p.nome === nome && p.cognome === cognome && p.email === email)
+      // In prova l'ordine PayPal è finto, e i campi carta lo «approvano» con `pagaCarta`.
+      const apri = (id: string) => (metodo === 'carta' ? { ordine: `PROVA-${id}` } : { link: link(id) })
+      const vivi = tutti.filter((p) => stessa(p) && p.stato !== 'non-andato')
       const vivo = vivi.find((p) => p.stato === 'pagato') ?? vivi[0]
       if (vivo?.stato === 'pagato') return { stato: 'pagato', id: vivo.id, importo: vivo.importo, pagatoIl: vivo.pagatoIl }
-      if (vivo) return { stato: 'attesa', id: vivo.id, importo: vivo.importo, link: link(vivo.id) }
-      const { listino } = await caricaListino()
+      if (vivo) return { stato: 'attesa', id: vivo.id, importo: vivo.importo, ...apri(vivo.id) }
       const corsi = [{ id: corso.id, nome: corso.nome }]
       const s = stimaIscrizione({ chi: `${cognome} ${nome}`, corsi, formula: x.formula }, [], chiaveGiorno(new Date()), listino)
       if (s.senzaPrezzo.length || senzaVoceDelCorso(corsi, listino).length || nonSemplice(corsi, listino)) throw new Error('Un corso non ha ancora il prezzo: paga col bonifico')
-      const id = `sp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
-      salvaSatispay([...tutti, { id, chi: `${cognome} ${nome}`, importo: s.totale, stato: 'attesa', creatoIl: new Date().toISOString(), corsoId: x.corso, corso: corso.nome, formula: x.formula, nome, cognome, email }])
-      return { stato: 'attesa', id, importo: s.totale, link: link(id) }
+      const id = `${metodo === 'carta' ? 'cp' : 'sp'}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+      salvaSatispay([
+        ...tutti,
+        { id, chi: `${cognome} ${nome}`, importo: s.totale, stato: 'attesa', creatoIl: new Date().toISOString(), corsoId: x.corso, corso: corso.nome, formula: x.formula, nome, cognome, email, circuito: metodo, chiave: x.chiave },
+      ])
+      return { stato: 'attesa', id, importo: s.totale, ...apri(id) }
     },
 
-    async statoSatispay(pagamentoId) {
-      const p = pagamentiSatispayProva().find((x) => x.id === pagamentoId)
+    async pagaCarta(pagamentoId) {
+      // Nessuna rete in prova: la banca «approva» subito, e una seconda volta non cambia niente.
+      const p = pagamentiSatispayProva().find((x) => x.id === pagamentoId && x.circuito === 'carta')
+      // Come la Edge Function: un pagamento che non c'è è una risposta che non torna.
+      if (!p) throw new Error(ERRORE_CARTA)
+      const ora = new Date()
+      const dopo30 = !siCattura(p.creatoIl, ora)
+      if (p.stato === 'attesa') salvaSatispay(pagamentiSatispayProva().map((x) => (x.id !== p.id ? x : dopo30 ? { ...x, stato: 'non-andato' } : { ...x, stato: 'pagato', pagatoIl: ora.toISOString() })))
+      const dopo = pagamentiSatispayProva().find((x) => x.id === pagamentoId)
+      return { stato: dopo?.stato ?? p.stato, importo: p.importo, pagatoIl: dopo?.pagatoIl }
+    },
+
+    async statoSatispay(pagamentoId, metodo) {
+      const p = pagamentiSatispayProva().find((x) => x.id === pagamentoId && x.circuito === metodo)
       return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagatoIl, collegato: !!p.presoIl } : null
     },
 

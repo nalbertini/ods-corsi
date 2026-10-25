@@ -140,6 +140,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 112. `112-sito-accessibilita-agid.sql` — la traccia della Dichiarazione di accessibilità (107) ha anche le parti del modello AgID che mancavano: la norma EN 301 549, la data di redazione, il tempo di risposta alle segnalazioni e come rivolgersi all'AgID se la risposta non basta. Riscrive la bozza solo se la pagina non è mai stata pubblicata e il testo è ancora la traccia di 107: una bozza che la segreteria ha cominciato a compilare, o una pagina già pubblicata, resta com'è. La versione sale di uno. Prova: `prova/sito.sql` (sezione 20). Si lancia dopo `107-sito-accessibilita.sql`; non chiede di rilanciare `06-iscrizioni.sql`; finché non lo lanci, la bozza resta con la traccia di prima.
 113. `113-genitore-non-iscritto.sql` — il genitore non iscritto, titolare del nucleo dei figli minorenni: la colonna `persone.genitore_non_iscritto` e `aggiungi_genitore(figlio, nome, cognome, codice_fiscale)` (solo la segreteria), che crea la persona col segno e il codice fiscale in `anagrafiche` e ci mette il figlio nel nucleo, con le regole di `nucleo_non_va`; senza un codice fiscale valido, o se è già di un'altra persona, non crea niente. Un trigger su `iscrizioni` toglie il segno a chi si iscrive a un corso. Prova: `prova/genitore-non-iscritto.sql`. Si lancia dopo `100-nucleo.sql`; non chiede di rilanciare `06-iscrizioni.sql`.
 114. `114-importazioni.sql` — I CONTI → IMPORTAZIONI: i pagamenti Satispay da decidere si decidono a gruppi (`satispay_decidi_gruppo`, tutte le scelte o nessuna, un movimento a mano per un pagamento solo), «Non è questo» scollega un pagamento dal movimento a mano (`satispay_scollega`, non nei giorni chiusi), e lo stato non propone più i movimenti già presi o annullati. I movimenti della banca abbinati da soli a uno scritto a mano restano in `banca_coperti` (`banca_segna_coperti`), e `banca_non_e_questo` li fa entrare come un import normale. Solo l'amministrazione. Prova: `prova/importazioni.sql`. Si lancia dopo `97` e `104`; non chiede di rilanciare `06-iscrizioni.sql`.
+115. `115-carta.sql` — la carta di credito o di debito (con Apple Pay e Google Pay) nel modulo di iscrizione, accanto a Satispay: incassa PayPal coi suoi campi carta ospitati, e nessun dato della carta passa dal database. In `pagamenti_satispay` le colonne `circuito` (`'satispay'` o `'carta'`) e `paypal_id` (l'ordine PayPal, unico); la cassa «Carta»; `carta_prepara_prima(dati)`, `carta_creato`, `carta_esito` e `carta_stato_pagamento`, solo `service_role` (le chiama la Edge Function `paypal`). Un pagamento con la carta in attesa da più di 30 minuti non si riprende: se ne fa uno nuovo. Rifà `satispay_prepara_prima` (ritrova solo i Satispay), `invia_iscrizione` (prende anche un pagamento con la carta, coi testi suoi), `emetti_ricevuta_satispay` (con la carta vuole il metodo «Carta») e `registra_pagamento_diretto` («Carta» a mano no, finché dal modulo ci sono soldi con la carta non in una ricevuta). Prova: `prova/carta.sql`. Si lancia dopo `112-sito-accessibilita-agid.sql`; non chiede di rilanciare `06-iscrizioni.sql`; rilanciando `83`, `86`, `88`, `100` o `111` va rilanciato anche questo. Finché non c'è, la Edge Function `paypal` dice che la carta è spenta e il modulo offre solo Satispay e bonifico.
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -205,6 +206,7 @@ Per la persona delle quote e dei corsi scritti a mano basta `98-quote-persona.sq
 Per l'importazione dal file della banca basta `104-importa-banca.sql` (dopo `59` e `63`): senza, si importa lo stesso e il tasto «Annulla tutta l'importazione» dice di lanciarlo.
 Per il genitore non iscritto, titolare del nucleo dei figli, basta `113-genitore-non-iscritto.sql` (dopo `100`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, l'elenco si legge senza il segno e «Aggiungi il genitore» dice di lanciarlo.
 Per IMPORTAZIONI basta `114-importazioni.sql` (dopo `97` e `104`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, la conferma di un gruppo, «Non è questo» e i movimenti della banca già scritti dicono di lanciarlo; l'import e le decisioni una per una funzionano come prima.
+Per la carta nel modulo di iscrizione basta `115-carta.sql` (dopo `114`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, la funzione `paypal` dice che la carta è spenta e il modulo mostra solo Satispay e bonifico.
 `15-presenze-istruttori.sql` (dopo `04-tablet.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, il tablet apre l'area
 istruttore come prima senza segnare niente, e PRESENZE ISTRUTTORI in
@@ -1266,6 +1268,32 @@ pagamenti da decidere o non è riuscito, la segreteria riceve un avviso (vedi
 «Gli avvisi alla segreteria»): la funzione `avvisi-segreteria` va ripubblicata
 con la `mail.ts` che conosce il tipo `satispay_scarico`.
 
+### La carta
+
+`115-carta.sql` e la funzione `paypal` aggiungono la carta di credito o di
+debito (con Apple Pay e Google Pay) in fondo al modulo, accanto a Satispay.
+Incassa PayPal (pagamenti avanzati con carta): i campi della carta sono di
+PayPal, e nessun dato della carta passa dall'app o dal database. Servono un
+conto PayPal Business con le carte avanzate attive, e dalla sua dashboard
+sviluppatori un'app REST: client id e segreto, prima in sandbox.
+
+```sh
+supabase secrets set --project-ref <id-del-progetto> \
+  PAYPAL_CLIENT_ID=<client id> PAYPAL_SECRET=<segreto> \
+  PAYPAL_HOST=api-m.sandbox.paypal.com
+supabase functions deploy paypal --no-verify-jwt --project-ref <id-del-progetto>
+```
+
+In produzione `PAYPAL_HOST=api-m.paypal.com`, con le chiavi di produzione,
+solo dopo che l'informativa sulla privacy nomina PayPal. Senza i segreti la
+carta non compare. Apple Pay chiede anche il file di verifica del dominio di
+PayPal in `/.well-known/` del sito che apre il modulo.
+
+I soldi arrivano sul conto PayPal: in CONTABILITÀ stanno nella cassa «Carta»,
+e passano al conto corrente con un giroconto. Un rimborso si fa dal conto
+PayPal e poi si segna in CONTABILITÀ.
+
+
 ## 14. La ricevuta per email
 
 Fatta la ricevuta, la famiglia la riceve in PDF all'**email di contatto** della
@@ -1392,6 +1420,7 @@ sui file (il documento, che si trovi da stampare; il certificato, che passi alla
 `109-privilegi-e-certificati.sql` prova che TRUNCATE, TRIGGER e REFERENCES non restino ad `anon` e `authenticated` (nemmeno sulle tabelle nuove) e che un iscritto tenga in attesa al più 3 file del certificato;
 `111-iscrizione-troppo-grande.sql` prova che `invia_iscrizione` rifiuti subito una richiesta da 5 MB, senza leggerla.
 `update-con-where.sql` prova che nessuna funzione di `public` faccia un UPDATE o un DELETE senza WHERE (su Supabase `safeupdate` lo rifiuta con 21000, e il Postgres delle prove no); un `on conflict … do update` va bene.
+`carta.sql` prova la carta nel modulo di iscrizione (`115-carta.sql`): l'importo dal listino, un solo pagamento vivo per scelta, persona e circuito (dopo 30 minuti uno nuovo), l'ordine PayPal scritto una volta, l'esito che non torna indietro, le funzioni solo per la Edge Function, `invia_iscrizione`, la ricevuta e il pagamento a mano col metodo «Carta», e che Satispay e carta non si scambino i soldi.
 `certificati.sql` prova che certificati, documento e pagamenti li veda e li
 cambi solo la segreteria, che il file del certificato stia in un contenitore
 privato (foto e PDF, 10 MB) che apre solo lei, che un file nuovo prenda il
