@@ -117,7 +117,7 @@ export interface SuggerimentoMovimento {
   voce: VoceSuggerita | null
   persona: PersonaSuggerita
   candidati: Array<PersonaPerNome & { come: Come; giaIscritto: boolean }>
-  /** Solo con un candidato solo, e non già iscritto: più di uno si sceglie. */
+  /** Dal database, solo il primo «sicuro»; dal solo nome, solo con un candidato solo. */
   preselezionato: string | null
 }
 
@@ -155,7 +155,7 @@ export function confermaDi(s: SuggerimentoMovimento, sceltaId: string | null): {
   return id && s.candidati.some((c) => c.id === id) ? { voceId: s.voce.voceId, personaId: id } : null
 }
 
-/** La riga sotto i candidati: perché sono questi. Il motivo è quello del primo, che ha vinto la regola: gli altri hanno lo stesso. */
+/** La riga sotto i candidati: perché sono questi. Il motivo è quello del primo, che ha più punti. */
 export function motivoCandidati(candidati: ReadonlyArray<{ come: Come; giaIscritto: boolean }>): string {
   const [primo] = candidati
   const base =
@@ -163,7 +163,8 @@ export function motivoCandidati(candidati: ReadonlyArray<{ come: Come; giaIscrit
     : primo?.come === 'nome intero' ? 'Nome e cognome sono nel testo, ma la scheda è più di una: scegli.'
     : primo?.come === 'genitore' ? 'Nei dati di registrazione il genitore ha il nome che c’è nel testo: di solito paga per i figli.'
     : primo?.come === 'codice fiscale' ? 'Il codice fiscale scritto nella causale è di questa persona o del suo genitore.'
+    : primo?.come === 'storico' ? 'Un bonifico con lo stesso testo è già stato collegato a questa persona.'
     : primo?.come === 'corso e cognome' ? 'L’importo è quello di un corso a cui è iscritta e il cognome è nel testo.'
     : 'Il nome nel testo potrebbe essere di chi paga, non di chi frequenta: controlla.'
-  return candidati.length > 1 && candidati.some((c) => c.giaIscritto) ? `${base} Chi ha già l’iscrizione in corso è in fondo.` : base
+  return candidati.length > 1 && candidati.some((c) => c.giaIscritto) ? `${base} A pari, chi ha già l’iscrizione in corso è dopo.` : base
 }

@@ -217,11 +217,15 @@ console.log('\n9. «Da decidere»: la persona giusta in cima, e preselezionata s
   ok('…se è l\'unico, preselezionato', g(['sofia']).preselezionato, 'sofia')
   ok('senza risposta del database (funzione assente o niente) l\'ordine resta quello per data', [g(null).ordine, g(null).preselezionato, g(null).come], [['gallo', 'sofia'], null, {}])
   ok('due figli dello stesso genitore: salgono tutti e due, a scegliere a mano', prova(() => { const x = decidi(vaccaro, [...fs, entrata('elia', 'Cliente BRUNO ELIA per QUOTA ASSOCIATIVA', '2026-10-04')], { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', vaccaro, 'ACCREDITO'))).movimenti[0].chiave]: ['sofia', 'elia'] }); return [x.ordine.slice(0, 2).sort(), x.preselezionato] }), [['elia', 'sofia'], null])
-  ok('il nome vince sul genitore: la regola 2 si prova solo se la 1 non trova nessuno', prova(() => {
+  ok('nome di uno e genitore di un altro: salgono tutti e due, il nome prima, nessuno preselezionato (troppo vicini)', prova(() => {
     const t = 'Da VACCARO ANDREA per Gallo Marta TRN 99'
     const x = decidi(t, fs, { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', t, 'ACCREDITO'))).movimenti[0].chiave]: ['sofia'] })
+    return [x.ordine, x.preselezionato, x.come]
+  }), [['gallo', 'sofia'], null, { gallo: 'nome intero', sofia: 'genitore' }])
+  ok('nome e genitore della stessa persona: lei sola, preselezionata, «nome intero»', prova(() => {
+    const x = decidi(prudente, cs, { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', prudente, 'ACCREDITO'))).movimenti[0].chiave]: ['manuel'] })
     return [x.ordine[0], x.preselezionato, x.come]
-  }), ['gallo', 'gallo', { gallo: 'nome intero' }])
+  }), ['manuel', 'manuel', { manuel: 'nome intero' }])
   ok('un movimento senza nomi né genitori non cambia: stesso ordine di oggi (per data), niente preselezionato', prova(() => { const x = decidi('Bonifico generico TRN 5', cs); return [x.ordine, x.preselezionato] }), [['rossi', 'luca', 'manuel'], null])
 }
 

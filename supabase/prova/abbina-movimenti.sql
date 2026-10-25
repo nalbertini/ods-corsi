@@ -1,13 +1,15 @@
 -- Chi ha pagato un movimento non identificato: il database propone la persona oltre che per nome anche per
 -- genitore e per codice fiscale, senza mostrare a chi amministra nessun dato delle persone.
 --   * `abbina_pagatori_movimento(movimento, corsi)`: le persone che il movimento «Da classificare» può essere (Contabilità,
---     riquadro «Suggerito»). Regole in ordine, ognuna solo se la precedente non trova nessuno: 1 nome e cognome interi
---     nel testo; 2 nome e cognome del genitore (anagrafiche) → i figli; 3 codice fiscale letto dalla causale
---     (`movimenti_codici_letti`, solo bancari nuovi) uguale a quello del genitore o della persona. 4 importo → `corsi` (i corsi del listino con quell'importo) → iscritti con cognome proprio o del genitore nel testo. Rende solo
---     id, nome, cognome, `come` e `gia_iscritto` (iscrizione che copre il giorno del movimento, non oggi): prima chi non
---     è iscritto, in fondo chi lo è. Al massimo 8, solo persone attive.
+--     riquadro «Suggerito»). Un punteggio somma i segnali: nome e cognome interi nel testo; nome e cognome del genitore
+--     (anagrafiche) → i figli; codice fiscale letto dalla causale (`movimenti_codici_letti`, solo bancari nuovi) del
+--     genitore o della persona; importo → `corsi` (i corsi del listino con quell'importo) a cui è iscritta, col cognome;
+--     lo storico (un altro movimento con le stesse parole, senza le cifre, già collegato a lei); il cognome proprio o del
+--     genitore. Rende solo id, nome, cognome, `come` (il segnale più forte), `gia_iscritto` (iscrizione che copre il
+--     giorno del movimento, non oggi) e `sicuro` (il primo, alto e staccato dal secondo): mai il punteggio. In ordine di
+--     punteggio, a pari prima chi non è iscritto. Al massimo 8, solo persone attive.
 --   * `abbina_testo_banca(testo, movimenti)`: per «Importa banca → Da decidere», quali dei movimenti già scritti
---     (causale «Cliente NOME per …», o persona collegata) sono di un figlio di chi è nel testo. Rende solo
+--     (causale «Cliente NOME per …», o persona collegata) sono di chi è nel testo, per nome o per genitore. Rende solo
 --     `movimento_id` e `come`.
 --   * il codice fiscale letto entra con `importa_prima_nota` (chiave `codice_fiscale_letto`, al massimo due codici validi),
 --     non si legge da nessuna parte e si cancella quando il movimento è classificato e collegato a una persona.
@@ -102,7 +104,15 @@ select importa_prima_nota(jsonb_build_array(
   riga('ennio', 'Da Ferri Ennio BONIFICO SEPA'),
   riga('pini', 'Da Rosa Pini BONIFICO SEPA'),
   riga('solo-cognome', 'Da PRUDENTE LUCIANO BONIFICO SEPA'),
-  riga('corso', 'Da FERRI TRN 20 BONIFICO SEPA')));
+  riga('corso', 'Da FERRI TRN 20 BONIFICO SEPA'),
+  riga('cf-con-nome', 'Da GALLO MARTA TRN 9 BONIFICO', array['VCCNDR75B02L219Z']),
+  riga('genitore-e-cf', 'Da VACCARO ANDREA TRN 10 BONIFICO', array['GLLMRT85C45L219P']),
+  riga('storico', 'Da CONTI MARIO TRN 30 BONIFICO SEPA'),
+  riga('storico-prima', 'Da CONTI MARIO TRN 31 BONIFICO SEPA'),
+  riga('storico-cognome', 'Da GALLO TRN 40 BONIFICO SEPA'),
+  riga('storico-cognome-prima', 'Da GALLO TRN 41 BONIFICO SEPA'),
+  riga('storico-annullato', 'Da NERI PIA TRN 50 BONIFICO SEPA'),
+  riga('storico-annullato-prima', 'Da NERI PIA TRN 51 BONIFICO SEPA')));
 reset role;
 
 \echo ''
@@ -121,7 +131,14 @@ select atteso('classificato e collegato a una persona, il codice si cancella',
 reset role;
 select atteso('…e non resta in nessuna riga di quel movimento',
   tenta($$select coalesce((select c.codici::text from movimenti_codici_letti c where c.movimento_id = id_mov('Da GALLO MARTA TRN 5 BONIFICO SEPA')), 'niente')$$), 'niente');
-select atteso('gli altri lo tengono', tenta($$select count(*)::text from movimenti_codici_letti$$), '3');
+select atteso('gli altri lo tengono', tenta($$select count(*)::text from movimenti_codici_letti$$), '5');
+-- Lo storico: tre movimenti di prima collegati a Marta (uno poi annullato).
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select cambia_voce_movimenti(array[id_mov(d)], (select id from voci_contabili where nome = 'Quota associativa' and tipo = 'entrata'), 'eeeeeeee-0000-0000-0000-000000000006')
+  from unnest(array['Da CONTI MARIO TRN 31 BONIFICO SEPA', 'Da GALLO TRN 41 BONIFICO SEPA', 'Da NERI PIA TRN 51 BONIFICO SEPA']) d;
+reset role;
+update movimenti set annullato_il = now() where descrizione = 'Da NERI PIA TRN 51 BONIFICO SEPA';
 
 \echo ''
 \echo '--- 2. Contabilità: abbina_pagatori_movimento ---'
@@ -132,18 +149,37 @@ begin
     into r from (select a.*, row_number() over () ord from abbina_pagatori_movimento(id_mov(d), corsi) a) x;
   return coalesce(r, 'nessuno');
 end $$;
-grant execute on function abbinati(text, uuid[]) to authenticated;
+-- Chi l'app preseleziona: le righe «sicuro» (al più una, la prima).
+create or replace function preselezionato(d text, corsi uuid[] default null) returns text language plpgsql as $$
+declare r text;
+begin
+  select string_agg(nome || case when ord > 1 then ' (non primo!)' else '' end, '; ' order by ord) into r
+    from (select a.*, row_number() over () ord from abbina_pagatori_movimento(id_mov(d), corsi) a) x where sicuro;
+  return coalesce(r, 'nessuno');
+end $$;
+grant execute on function abbinati(text, uuid[]), preselezionato(text, uuid[]) to authenticated;
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 select atteso('regola 1: nome e cognome interi nel testo; «Prudente Domenico» è il genitore, e un cognome solo non basta',
   tenta($$select abbinati('Da PRUDENTE DOMENICO,MANCA FEDERICA PAOLA, TRN 1 per Quota associativa 2026/2027 Prudente Manuel BONIFICO SEPA')$$), 'Manuel Prudente (nome intero)');
-select atteso('regola 2: il genitore nel testo, i suoi figli attivi (non Ines, spenta)',
+select atteso('…ed è «sicuro»: nome, genitore e cognome sommati, Luca (solo il cognome) molto sotto',
+  tenta($$select preselezionato('Da PRUDENTE DOMENICO,MANCA FEDERICA PAOLA, TRN 1 per Quota associativa 2026/2027 Prudente Manuel BONIFICO SEPA')$$), 'Manuel');
+select atteso('il genitore nel testo, i suoi figli attivi (non Ines, spenta)',
   tenta($$select abbinati('Da VACCARO ANDREA TRN 2 BONIFICO SEPA')$$), 'Elia Bruno (genitore); Sofia Bruno (genitore)');
-select atteso('regola 3: il codice del genitore, i suoi figli',
+select atteso('…nessuno «sicuro», perché sono due', tenta($$select preselezionato('Da VACCARO ANDREA TRN 2 BONIFICO SEPA')$$), 'nessuno');
+select atteso('il codice del genitore, i suoi figli',
   tenta($$select abbinati('Da ROSSI GINO TRN 3 BONIFICO SEPA')$$), 'Elia Bruno (codice fiscale); Sofia Bruno (codice fiscale)');
-select atteso('regola 3: se paga l''adulto per sé, il suo codice',
+select atteso('se paga l''adulto per sé, il suo codice',
   tenta($$select abbinati('Da ROSSI GINO TRN 4 BONIFICO SEPA')$$), 'Marta Gallo (codice fiscale)');
-select atteso('il nome vince sul codice: la regola dopo si prova solo se la prima non trova nessuno',
+select atteso('il codice da solo, di una persona sola: «sicuro»', tenta($$select preselezionato('Da ROSSI GINO TRN 4 BONIFICO SEPA')$$), 'Marta');
+select atteso('nome e codice di due persone diverse: tutte e due, il nome (col cognome) prima',
+  tenta($$select abbinati('Da GALLO MARTA TRN 9 BONIFICO')$$), 'Marta Gallo (nome intero); Elia Bruno (codice fiscale); Sofia Bruno (codice fiscale)');
+select atteso('…nessuno «sicuro»: il primo non è staccato abbastanza dal secondo', tenta($$select preselezionato('Da GALLO MARTA TRN 9 BONIFICO')$$), 'nessuno');
+select atteso('genitore per nome e codice di un''altra: a pari, cognome e nome',
+  tenta($$select abbinati('Da VACCARO ANDREA TRN 10 BONIFICO')$$), 'Elia Bruno (genitore); Sofia Bruno (genitore); Marta Gallo (codice fiscale)');
+select atteso('due codici nella causale: contano tutti e due',
+  tenta($$select abbinati('Da ROSSI GINO TRN 8 BONIFICO SEPA')$$), 'Elia Bruno (codice fiscale); Sofia Bruno (codice fiscale); Marta Gallo (codice fiscale)');
+select atteso('collegato a una persona, il codice non c''è più: resta il nome',
   tenta($$select abbinati('Da GALLO MARTA TRN 5 BONIFICO SEPA')$$), 'Marta Gallo (nome intero)');
 select atteso('un codice di nessuno non propone nessuno', tenta($$select abbinati('Da ROSSI GINO TRN 6 BONIFICO SEPA')$$), 'nessuno');
 select atteso('un movimento senza codice letto: solo regole 1 e 2', tenta($$select abbinati('Da ROSSI GINO TRN 7 BONIFICO SEPA')$$), 'nessuno');
@@ -152,19 +188,34 @@ select atteso('prima chi non è iscritto il giorno del movimento, in fondo chi l
   tenta($$select abbinati('Da Ferri Anna, Ferri Bruno, Ferri Carlo, Ferri Dora BONIFICO SEPA')$$),
   'Bruno Ferri (nome intero); Carlo Ferri (nome intero); Anna Ferri (nome intero, già iscritto); Dora Ferri (nome intero, già iscritto)');
 select atteso('un iscritto solo si propone lo stesso, col segno «già iscritto»', tenta($$select abbinati('Da Ferri Ennio BONIFICO SEPA')$$), 'Ennio Ferri (nome intero, già iscritto)');
--- Regola 4: l'app dice quali corsi costano l'importo del movimento (dal listino); il database guarda chi è iscritto
+select atteso('…ma non è mai «sicuro»', tenta($$select preselezionato('Da Ferri Ennio BONIFICO SEPA')$$), 'nessuno');
+-- L'importo: l'app dice quali corsi costano l'importo del movimento (dal listino); il database guarda chi è iscritto
 -- a quei corsi il giorno del movimento e ha nel testo il cognome suo o del genitore. Qui l'iscrizione è a favore.
-select atteso('regola 4: il solo cognome + iscritto al corso dell''importo (anche chi finisce il 15/10), non «già iscritto»; non Bruno (finita) né Carlo (da novembre)',
+select atteso('il solo cognome + iscritto al corso dell''importo (anche chi finisce il 15/10), non «già iscritto»; non Bruno (finita) né Carlo (da novembre)',
   tenta($$select abbinati('Da FERRI TRN 20 BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$),
   'Anna Ferri (corso e cognome); Dora Ferri (corso e cognome); Ennio Ferri (corso e cognome)');
+select atteso('…da soli non bastano a essere «sicuro»',
+  tenta($$select preselezionato('Da FERRI TRN 20 BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$), 'nessuno');
 select atteso('…senza il corso dell''importo, il solo cognome non basta', tenta($$select abbinati('Da FERRI TRN 20 BONIFICO SEPA')$$), 'nessuno');
 select atteso('…e un corso che nessuno frequenta non propone nessuno', tenta($$select abbinati('Da FERRI TRN 20 BONIFICO SEPA', array[gen_random_uuid()])$$), 'nessuno');
-select atteso('nome e cognome interi vincono sull''importo',
-  tenta($$select abbinati('Da Ferri Ennio BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$), 'Ennio Ferri (nome intero, già iscritto)');
+select atteso('nome intero e corso dell''importo si sommano: Ennio primo, l''iscrizione a quel corso è a favore; l''importo non sparisce',
+  tenta($$select abbinati('Da Ferri Ennio BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$), 'Ennio Ferri (nome intero); Anna Ferri (corso e cognome); Dora Ferri (corso e cognome)');
+select atteso('…e «sicuro»', tenta($$select preselezionato('Da Ferri Ennio BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$), 'Ennio');
+reset role;
+delete from ricerche_pagatori;  -- le prove sono tante: il tetto si prova nella sezione 4
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('lo storico: le stesse parole (le cifre non contano) già collegate a Marta',
+  tenta($$select abbinati('Da CONTI MARIO TRN 30 BONIFICO SEPA')$$), 'Marta Gallo (storico)');
+select atteso('…da solo non è «sicuro»', tenta($$select preselezionato('Da CONTI MARIO TRN 30 BONIFICO SEPA')$$), 'nessuno');
+select atteso('storico e cognome insieme: «sicuro»', tenta($$select abbinati('Da GALLO TRN 40 BONIFICO SEPA') || ' · ' || preselezionato('Da GALLO TRN 40 BONIFICO SEPA')$$), 'Marta Gallo (storico) · Marta');
+select atteso('un movimento collegato e poi annullato non fa storico', tenta($$select abbinati('Da NERI PIA TRN 50 BONIFICO SEPA')$$), 'nessuno');
+select atteso('il movimento collegato non è storico di sé stesso: resta il nome',
+  tenta($$select abbinati('Da GALLO MARTA TRN 5 BONIFICO SEPA')$$), 'Marta Gallo (nome intero)');
 select atteso('al massimo otto', tenta($$select count(*)::text from abbina_pagatori_movimento(id_mov('Da Rosa Pini BONIFICO SEPA'))$$), '8');
-select atteso('escono solo id, nome, cognome, come e già iscritto: mai codici, genitori, date o corsi',
+select atteso('escono solo id, nome, cognome, come, già iscritto e sicuro: mai codici, genitori, date, corsi o punteggi',
   (select string_agg(p.parameter_name, ',' order by p.ordinal_position) from information_schema.routines r join information_schema.parameters p on p.specific_name = r.specific_name
-    where r.routine_name = 'abbina_pagatori_movimento' and p.parameter_mode = 'OUT'), 'persona_id,nome,cognome,come,gia_iscritto');
+    where r.routine_name = 'abbina_pagatori_movimento' and p.parameter_mode = 'OUT'), 'persona_id,nome,cognome,come,gia_iscritto,sicuro');
 select atteso('un movimento che non c''è non propone nessuno', tenta($$select count(*)::text from abbina_pagatori_movimento(gen_random_uuid())$$), '0');
 reset role;
 select chi('11111111-1111-1111-1111-111111111111');
@@ -208,6 +259,11 @@ select atteso('il genitore nel testo (Andrea Vaccaro) indica il movimento del fi
 select atteso('anche in altro ordine e senza maiuscole', tenta($$select candidati_di('da andrea vaccaro', 'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA')$$), 'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA (genitore)');
 select atteso('Domenico Prudente è il genitore di Manuel: lo dice (a scegliere fra nome e genitore è l''app)',
   tenta($$select candidati_di('Da PRUDENTE DOMENICO,MANCA FEDERICA PAOLA, TRN 1', 'Cliente PRUDENTE MANUEL per QUOTA ASSOCIATIVA')$$), 'Cliente PRUDENTE MANUEL per QUOTA ASSOCIATIVA (genitore)');
+select atteso('nome di uno e genitore di un altro: tutti e due, col loro segno (a scegliere è l''app)',
+  tenta($$select candidati_di('Da VACCARO ANDREA per GALLO MARTA TRN 99', 'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA', 'Cliente GALLO MARTA per CORSO')$$),
+  'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA (genitore); Cliente GALLO MARTA per CORSO (nome intero)');
+select atteso('nome e genitore della stessa persona: un segno solo, «nome intero»',
+  tenta($$select candidati_di('Da PRUDENTE DOMENICO per PRUDENTE MANUEL', 'Cliente PRUDENTE MANUEL per QUOTA ASSOCIATIVA')$$), 'Cliente PRUDENTE MANUEL per QUOTA ASSOCIATIVA (nome intero)');
 select atteso('un nome solo del genitore non basta', tenta($$select candidati_di('Da VACCARO TRN 99', 'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA')$$), 'nessuno');
 select atteso('una persona non attiva non esce', tenta($$select candidati_di('Da VACCARO ANDREA TRN 99', 'Cliente BRUNO INES per QUOTA ASSOCIATIVA')$$), 'nessuno');
 select atteso('solo i candidati dati, non altri movimenti', tenta($$select candidati_di('Da VACCARO ANDREA TRN 99', 'Cliente GALLO MARTA per CORSO')$$), 'nessuno');

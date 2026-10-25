@@ -119,9 +119,9 @@ ok('chi cerca la persona: anche senza un nome nel testo («Da VACCARO ANDREA»)'
   m.parolaDelMovimento(riga({ descrizione: 'Da VACCARO ANDREA retta figlio' })),
   m.cercaPersonaDelMovimento(riga({ descrizione: 'Da VACCARO ANDREA', tipo: 'uscita' })),
 ]), [true, null, false])
-ok('la nota «in fondo» solo con più schede', [
-  m.motivoCandidati([{ come: 'nome intero', giaIscritto: true }]).includes('in fondo'),
-  m.motivoCandidati([{ come: 'genitore', giaIscritto: false }, { come: 'genitore', giaIscritto: true }]).includes('in fondo'),
+ok('la nota «a pari, dopo» solo con più schede', [
+  m.motivoCandidati([{ come: 'nome intero', giaIscritto: true }]).includes('è dopo'),
+  m.motivoCandidati([{ come: 'genitore', giaIscritto: false }, { come: 'genitore', giaIscritto: true }]).includes('è dopo'),
 ], [false, true])
 
 console.log('\n4b. la voce dall\'importo, quando la persona è proposta')

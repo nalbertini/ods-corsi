@@ -226,8 +226,9 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
 }
 
 /**
- * Tra i candidati, in cima chi ha nome e cognome interi nel testo della banca; se nessuno, i figli del genitore che
- * il database ha riconosciuto (`perGenitore`: id delle persone). Uno solo si preseleziona; gli altri restano per data.
+ * Tra i candidati, in cima chi ha nome e cognome interi nel testo della banca, poi i figli del genitore che il database
+ * ha riconosciuto (`figli`: id dei movimenti). Si preseleziona solo se è uno in tutto: un nome e un genitore di persone
+ * diverse sono troppo vicini per scegliere, come col punteggio di `abbinaMovimenti`. Gli altri restano per data.
  */
 function inCimaChiSembra(mv: MovimentoBanca, candidati: RigaMovimento[], figli: string[]): { candidati: RigaMovimento[]; preselezionato: string | null; come: Record<string, ComeAbbinato> } {
   const nelle = new Set(parolePiene(mv.descrizione))
@@ -235,13 +236,12 @@ function inCimaChiSembra(mv: MovimentoBanca, candidati: RigaMovimento[], figli: 
     const p = parolePiene(nomeDallaCausale(r.descrizione) ?? '')
     return p.length > 1 && p.every((w) => nelle.has(w))
   })
-  const perGenitore = perNome.length ? [] : candidati.filter((r) => figli.includes(r.id) || (!!r.personaId && figli.includes(r.personaId)))
-  const sale = perNome.length ? perNome : perGenitore
-  const come: ComeAbbinato = perNome.length ? 'nome intero' : 'genitore'
+  const perGenitore = candidati.filter((r) => !perNome.includes(r) && (figli.includes(r.id) || (!!r.personaId && figli.includes(r.personaId))))
+  const sale = [...perNome, ...perGenitore]
   return {
     candidati: [...sale, ...candidati.filter((r) => !sale.includes(r))],
     preselezionato: sale.length === 1 ? sale[0].id : null,
-    come: Object.fromEntries(sale.map((r) => [r.id, come])),
+    come: Object.fromEntries(sale.map((r) => [r.id, perNome.includes(r) ? 'nome intero' : 'genitore'])),
   }
 }
 
