@@ -454,5 +454,16 @@ titolo('coda del banco')
   ok('le cifre di OGGI sono le caselle della striscia', /caselleDaMostrare\(conti\.striscia\)/.test(oggiTsx), true)
   ok('le cifre aprono la voce e il filtro della casella', /onVai\(c\.voce, c\.filtro/.test(oggiTsx), true)
 }
+// Il titolo della scheda del browser dice la sezione: si riconosce fra le schede aperte, nella cronologia e nei segnalibri.
+{
+  const t = m.luoghi.titoloDellaVoce
+  ok('CONTABILITÀ ha il suo titolo', t('contabilita'), 'Contabilità · Segreteria · ODS Corsi')
+  ok('DA FARE si chiama come nel menu, OGGI', t('dafare'), 'Oggi · Segreteria · ODS Corsi')
+  ok('le segnalate sono una scheda di PRESENZE', t('segnalate'), 'Presenze · Segreteria · ODS Corsi')
+  ok('PALESTRA, che non è nella seconda riga', t('palestra'), 'Palestra · Segreteria · ODS Corsi')
+  ok('RICHIESTE ONLINE, due parole', t('richieste'), 'Richieste online · Segreteria · ODS Corsi')
+  ok('ogni voce ha un titolo suo', m.indirizzo.VOCI.filter((v) => !/^[A-Z][a-zà-ù ]+ · Segreteria · ODS Corsi$/.test(t(v))), [])
+  ok('un\'area col suo nome', m.luoghi.titolo('ISCRIZIONI'), 'Iscrizioni · ODS Corsi')
+}
 console.log(guai ? `\n${guai} prove non passano` : '\nTutto bene')
 process.exit(guai ? 1 : 0)
