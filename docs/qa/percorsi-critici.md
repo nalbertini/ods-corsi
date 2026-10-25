@@ -27,7 +27,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Ore degli istruttori | segreteria | compenso sbagliato | `prova:ore`, `prova:timer-istruttori`, `prova:colleghi`, `prova:segreteria`, `presenze-istruttori.sql`, `presenze-finestra.sql`, `istruttore-collega.sql` | no |
 | Compensi dei tecnici (tariffe, lettere, ricevute, pagamento) | segreteria, tecnici | compenso sbagliato, pagato due volte, IBAN visto da chi non deve | `prova:compensi`, `prova:tariffe`, `prova:segreteria`, `prova:iscritti`, `prova:lettere`, `prova:pericolo`, `prova:fogli-moduli`, `prova:compensi-pagati`, `prova:contabilita`, `prova:bilancio`, `prova:movimenti-persona`, `prova:mcp`, `prova:colleghi`, `ricevute-compensi.sql`, `tariffe-tecnici.sql`, `anagrafiche.sql`, `lettere-incarico.sql`, `compensi-pagati.sql`, `contabilita.sql`, `chiusura-cassa.sql`, `movimenti-persona.sql`, `manca-la-firma.sql`, `istruttore-collega.sql`, `presenze-istruttori.sql` | sì |
 | Ricevuta di compenso extra | segreteria, amministrazione, tecnici | ricevuta extra persa, cambiata dopo il pagamento | `prova:compensi-extra`, `scripts/prova-compensi-extra.mjs`, `compensi-extra.sql` | sì, da fare |
-| Certificati medici | segreteria, iscritto | certificato perso o visibile a chi non deve | `prova:certificati`, `prova:dafare`, `prova:schede-iscritto`, `prova:segreteria`, `prova:segreteria-comune`, `prova:mcp`, `certificati.sql` | sì |
+| Certificati medici | segreteria, iscritto | certificato perso o visibile a chi non deve | `prova:certificati`, `prova:dafare`, `prova:schede-iscritto`, `prova:segreteria`, `prova:segreteria-comune`, `prova:mcp`, `prova:gare`, `certificati.sql` | sì |
 | Certificato mandato dall'iscritto | iscritto, segreteria | certificato di un altro, file sanitario visibile | `prova:certificato-iscritto`, `prova:dafare`, `prova:iscritto-supabase`, `prova:segreteria`, `certificato-iscritto.sql`, `109-privilegi-e-certificati.sql`, `movimenti-persona.sql`, `110-tetto-certificato-messaggio.sql` | sì |
 | Striscia COSA MANCA | segreteria | un «a posto» falso | `prova:dafare`, `prova:cosa-manca`, `prova:certificati`, `prova:segreteria` | sì |
 | Storico dei pagamenti | segreteria | pagamento che non compare o conta due volte | `prova:schede-iscritto`, `prova:pagamenti`, `prova:segreteria`, `pagamenti-diretti.sql` | sì |
@@ -43,6 +43,9 @@ prova tiene stanno in «Scoperti», in fondo.
 | Scarico automatico Satispay in CONTABILITÀ | amministrazione, segreteria | incasso nella cassa sbagliata, doppio o perso | `prova:satispay-scarico`, `prova:importazioni`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:segreteria`, `satispay-scarico.sql`, `importazioni.sql`, `116-satispay-separato.sql`, `avvisi-scarico-satispay.sql`, `update-con-where.sql` | sì, da fare |
 | Tessere | segreteria | non tesserato che frequenta, tessera alla persona sbagliata | `prova:tessere`, `prova:cosa-manca`, `prova:indirizzi`, `prova:filtri-iscritti`, `prova:menu`, `tessere.sql` | sì |
 | Ordini di vestiario | genitore, segreteria | ordine perso, totale sbagliato | `prova:vestiario`, `vestiario.sql`, `rls.sql` | sì |
+| Gare: chi ci va, certificato | segreteria, istruttore, iscritto | certificato scaduto alla gara visto come valido; atleta sbagliato | `prova:gare`, `gare.sql` | sì, da fare |
+| Gare: quota a voci e incasso | segreteria, amministrazione | quota sbagliata, incasso due volte, pagato che cambia con le voci | `prova:gare`, `gare.sql` | sì, da fare |
+| Gare: chi le vede | segreteria, istruttore, iscritto, titolare del nucleo | gara o atleti visti da chi non deve, figlio di un altro nucleo | `prova:gare`, `gare.sql` | sì, da fare |
 | Firma e informativa | iscritto | consenso non valido | `prova:firma`, `prova:firma-tratti`, `prova:informativa`, `prova:moduli`, `prova:fogli-moduli`, `informativa-mesi.sql` | sì |
 | Importazione persone da CSV | segreteria | persona persa, duplicata o scritta male | `prova:importa` | no |
 | Anagrafiche, nuclei, doppioni | segreteria | persone duplicate o unite male | `prova:iscritti`, `prova:filtri-iscritti`, `prova:cerca-persone`, `prova:email-unica`, `prova:segreteria`, `prova:ricevute-email`, `prova:importa`, `anagrafiche.sql`, `non-doppioni.sql`, `unisci-doppioni.sql`, `cerca-persone.sql`, `email-unica.sql` | no |
@@ -56,7 +59,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Ricerca universale di segreteria | segreteria | persona non trovata, scheda sbagliata, «in regola» falso | `prova:ricerca`, `prova:indirizzi`, `prova:a11y-segreteria`, `prova:menu` | sì |
 | Accesso e ruoli (PIN, RLS) | tutti | dati visti da chi non deve | `prova:segreteria`, `prova:ruoli`, `prova:banco`, `rls.sql`, `109-privilegi-e-certificati.sql`, `segreteria.sql`, `elimina-istruttore.sql`, `email-unica.sql` | sì |
 | Ruolo «amministrazione» | amministrazione, segreteria | persone viste da chi tiene solo i conti | `prova:menu`, `prova:ruoli`, `prova:pagamenti`, `prova:segreteria`, `amministrazione.sql`, `rls.sql`, `elimina-istruttore.sql` | sì |
-| Contabilità (movimenti, chiusure, voci, prima nota) | amministrazione | residuo che non torna, giorno chiuso riscritto | `prova:contabilita`, `prova:indirizzi`, `prova:banco`, `prova:avvisi-segreteria`, `prova:segreteria`, `prova:chiusura-pdf`, `prova:importa-prima-nota`, `prova:pericolo`, `chiusura-cassa.sql`, `contabilita.sql`, `rls.sql`, `importa-prima-nota.sql`, `cambia-voce.sql` | sì |
+| Contabilità (movimenti, chiusure, voci, prima nota) | amministrazione | residuo che non torna, giorno chiuso riscritto | `prova:contabilita`, `prova:indirizzi`, `prova:banco`, `prova:avvisi-segreteria`, `prova:segreteria`, `prova:chiusura-pdf`, `prova:importa-prima-nota`, `prova:pericolo`, `chiusura-cassa.sql`, `contabilita.sql`, `rls.sql`, `importa-prima-nota.sql`, `cambia-voce.sql`, `prova:gare` | sì |
 | Importa dalla banca | amministrazione | movimento perso o scritto due volte | `prova:importa-banca`, `prova:importazioni`, `importa-banca.sql`, `importa-prima-nota.sql`, `importazioni.sql` | sì |
 | Importazioni: Satispay e banca sullo stesso movimento a mano | amministrazione | stesso incasso contato due volte, o perso | `prova:importazioni`, `prova:satispay-scarico`, `prova:importa-banca`, `importazioni.sql`, `satispay-scarico.sql`, `importa-banca.sql` | sì, da fare |
 | Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:segreteria`, `prova:contabilita`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
@@ -159,6 +162,28 @@ quando arriva la prova.
   segno MINORENNE sulla riga, stanno nel `.tsx`; nessuna prova.
 - Genitore non iscritto: «N persone attive» in testata all'elenco lo salta
   (`attiveOra`, nel `.tsx`); nessuna prova.
+- **GRAVE** — Gare: togliere un atleta che ha già pagato cancella la sua riga
+  col pagamento (`togli` in `gareDati.ts`, delete su `gare_atleti`).
+  L'incasso della gara scende, il pagamento resta in CONTABILITÀ.
+- Gare: togli, rimetti e incassa di nuovo conta due volte in CONTABILITÀ.
+  Nessuna prova: `gare.sql` toglie solo un atleta non pagato, `prova:gare`
+  non tocca `togli`.
+- Gare: la lista della segreteria con un id gara due volte (warning React di
+  chiave doppia): causa non trovata; nessuna prova.
+- Gare: il nome può arrivare a 200 caratteri, il database ne accetta 120: il
+  salvataggio cade con il testo grezzo del database.
+- Gare: voci, importi sopra 100.000 € e date fuori dal 2000–2100 non li ferma
+  l'app prima del database: nessuna prova.
+- Gare: «LE MIE GARE» passa a `leMieGare` solo la scheda dell'iscritto, non
+  quella dei figli del nucleo (CRITERI 19 e `iscritto_puo_vedere` dicono altro):
+  da verificare, nessuna prova.
+- Gare: l'elenco PDF (`elencoGaraPdf.ts`) non ha prova: né le colonne, né che
+  non esca nessun dato del genitore.
+- Gare: l'incasso dà una riga sola «Gare» col totale in ricevuta: nessuna prova
+  (`prova:gare` guarda solo la voce del pagamento).
+- Gare: «non ancora disponibile» finché `117-gare.sql` non è lanciato: nessuna
+  prova.
+- Gare: `gareDellaSettimana` è provata, il collegamento in `Settimana.tsx` no.
 
 ## Come si aggiorna
 

@@ -79,11 +79,11 @@ function pagineDelleAree(): Plugin {
  * Solo in compilazione: in sviluppo Vite scrive script in pagina per il suo
  * ricaricamento e la bloccherebbe. Il database è quello con cui si compila.
  */
-function cspNellePagine(urlSupabase: string | undefined): Plugin {
+function cspNellePagine(urlSupabase: string | undefined, places: boolean): Plugin {
   return {
     name: 'ods-csp',
     apply: 'build',
-    transformIndexHtml: () => [{ tag: 'meta', attrs: { 'http-equiv': 'Content-Security-Policy', content: politicaCsp(urlSupabase) }, injectTo: 'head-prepend' }],
+    transformIndexHtml: () => [{ tag: 'meta', attrs: { 'http-equiv': 'Content-Security-Policy', content: politicaCsp(urlSupabase, places) }, injectTo: 'head-prepend' }],
   }
 }
 
@@ -141,7 +141,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     pagineDelleAree(),
     senzaFontEsterni(),
-    cspNellePagine(loadEnv(mode, process.cwd(), 'VITE_').VITE_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL),
+    cspNellePagine(loadEnv(mode, process.cwd(), 'VITE_').VITE_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL, !!(loadEnv(mode, process.cwd(), 'VITE_').VITE_GOOGLE_PLACES_KEY ?? process.env.VITE_GOOGLE_PLACES_KEY)),
     VitePWA({
       registerType: 'autoUpdate',
       // La registrazione la facciamo a mano in main.tsx, per poterla fallire in pace.

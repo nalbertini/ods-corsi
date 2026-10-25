@@ -18,7 +18,7 @@ import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni,
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
 import type { Ricercata } from '../../lib/ricerca'
-import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, fratelliDaProporre, maggiorenneDal, propostaGenitore, SCONTO_FAMIGLIA } from '../../lib/nucleo'
+import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, fratelliDaProporre, maggiorenneDal, nucleoPerRicevuta, propostaGenitore, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { minorenne } from '../../lib/richieste'
 import { euro, voceQuota } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
@@ -877,8 +877,7 @@ function Scheda({
   const liberi = attivi.filter((c) => !correnti.some((i) => i.corsoId === c.id))
   const venuto = storico.dato?.filter((x) => x.stato === 'presente').length ?? 0
   // Gli altri del nucleo familiare, per lo sconto famiglia della ricevuta.
-  const titolare = p.nucleo ? tutti.find((x) => x.id === p.nucleo) : p
-  const nucleo = titolare ? [titolare, ...tutti.filter((x) => x.nucleo === titolare.id && x.attiva)].filter((x) => x.id !== p.id) : []
+  const nucleo = nucleoPerRicevuta(p, tutti)
   const parenti = stessoContatto(p, tutti)
   // A segnalazioni spente niente timbro TESSERA né segno sulla linguetta: la sezione resta.
   const tessereDi = tessere && SEGNALA_TESSERE ? tessere.filter((t) => t.personaId === p.id) : undefined

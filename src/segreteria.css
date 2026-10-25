@@ -885,6 +885,53 @@
 .sg-vestiario-sola-lettura { gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 15px; color: var(--sec); overflow-wrap: anywhere; }
 .sg-vestiario-arrivo { display: block; font-size: 12px; font-weight: 400; color: var(--dim); }
 .sg-vestiario-manca { display: block; font-size: 12px; font-weight: 600; color: var(--rosso-testo); }
+/* GARE: l'elenco delle gare e la tabella degli atleti. Senza quota la colonna QUOTA non c'è. */
+/* La riga GARE della SETTIMANA: sotto i giorni, una fila per gara, la tessera prende i giorni che dura. Bordo scuro, non la tinta di un corso. */
+.sg-gare-sett { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; row-gap: 4px; padding: 8px 0; border-top: 2px solid var(--line-soft); }
+.sg-gare-testa { grid-column: 1; display: flex; align-items: flex-start; gap: 4px; padding-top: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); }
+.sg-gara-sett {
+  display: flex; flex-direction: column; gap: 2px; width: 100%; min-height: 44px; padding: 6px 9px; margin: 0 3px;
+  background: var(--surface); border: 2px solid var(--text); text-align: left; min-width: 0;
+}
+.sg-giorno-lista + .sg-gara-sett, .sg-gara-sett + .sg-giorno-lista { margin-top: 8px; }
+.sg-gara-sett-quando { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sec); }
+.sg-gara-sett-dove { font-size: 13px; color: var(--sec); }
+.sg-gara-sett { overflow-wrap: anywhere; }
+.sg-gara-nota { min-height: 44px; display: flex; align-items: center; color: var(--sec); text-align: left; }
+.sg-gara-quota { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sg-gara-candidato { align-items: center; gap: 10px; }
+.sg-gara-candidato[data-spento] { color: var(--dim); }
+/* Una gara passata o annullata si legge ancora, come l'ordine annullato. */
+.sg-riga-gara.sg-iscritto[data-spento='true'] { opacity: 1; color: var(--dim); }
+/* Il tag del certificato va a capo; per attributo: .sg-tag si usa anche fuori dalla segreteria (prova:css-ingresso). */
+.sg-riga-atleta-gara [data-tipo] { white-space: normal; }
+.sg-riga-gara > *, .sg-riga-atleta-gara > * { min-width: 0; overflow-wrap: anywhere; }
+@media (min-width: 1001px) {
+  .sg-riga-gara { grid-template-columns: 120px minmax(0, 1.6fr) 70px minmax(190px, 1.4fr) minmax(190px, 1.4fr); }
+  .sg-riga-atleta-gara { grid-template-columns: minmax(0, 1.4fr) 48px minmax(0, 1fr) minmax(200px, 1.4fr) minmax(0, 1.2fr) minmax(0, 1.4fr) 80px; }
+  .sg-riga-atleta-gara[data-senza-quota] { grid-template-columns: minmax(0, 1.4fr) 48px minmax(0, 1fr) minmax(200px, 1.4fr) minmax(0, 1.6fr) 80px; }
+}
+/* Sul telefono la riga va a capo in due colonne: il nome prende tutta la larghezza, niente testata. */
+@media (max-width: 1000px) {
+  .sg-riga-gara, .sg-riga-atleta-gara, .sg-riga-atleta-gara[data-senza-quota] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); row-gap: 6px; }
+  .sg-riga-gara > :nth-child(2), .sg-riga-gara > :nth-child(3), .sg-riga-atleta-gara > :nth-child(2), .sg-riga-atleta-gara > :nth-child(3) { display: block; }
+  .sg-riga-gara > :nth-child(2), .sg-riga-atleta-gara > :first-child { grid-column: 1 / -1; }
+  .sg-lista-testa.sg-riga-gara, .sg-lista-testa.sg-riga-atleta-gara { display: none; }
+  /* Senza testata, ogni cella dice cos'è. */
+  .sg-riga-gara > :nth-child(4) { grid-column: 1 / -1; }
+  .sg-riga-gara:not(.sg-lista-testa) > :nth-child(n + 3)::before,
+  .sg-riga-atleta-gara:not(.sg-lista-testa) > :nth-child(n + 2):not(:last-child)::before {
+    display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--dim);
+  }
+  .sg-riga-gara > :nth-child(3)::before { content: 'ATLETI'; }
+  .sg-riga-gara > :nth-child(4)::before { content: 'CERTIFICATI'; }
+  .sg-riga-gara > :nth-child(5)::before { content: 'QUOTE'; }
+  .sg-riga-atleta-gara > :nth-child(2)::before { content: 'NATO'; }
+  .sg-riga-atleta-gara > :nth-child(3)::before { content: 'CORSO'; }
+  .sg-riga-atleta-gara > :nth-child(4)::before { content: 'CERTIFICATO'; }
+  .sg-riga-atleta-gara > :nth-child(5)::before { content: 'NOTA'; }
+  .sg-riga-atleta-gara:not([data-senza-quota]) > :nth-child(6)::before { content: 'QUOTA'; }
+}
 /* CATALOGO E CHIUSURA: la foto di un capo o la tabella di un tipo, con la miniatura da 96px. */
 .sg-carica-foto { display: flex; align-items: flex-start; gap: 14px; min-width: 0; }
 .sg-carica-foto-mini {

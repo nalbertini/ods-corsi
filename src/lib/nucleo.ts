@@ -303,3 +303,9 @@ export function maggiorenneDal(persone: InNucleo[], personaId: string, oggi: str
 /** La causale del bonifico per una persona: si ritrova in segreteria senza chiedere. */
 export const causale = (nome: string, cognome: string, corsi: string[]) =>
   `Iscrizione ${nome} ${cognome}${corsi.length ? ` · ${corsi.join(', ')}` : ''}`.trim()
+
+/** Gli altri del nucleo familiare di `p`, per lo sconto famiglia della ricevuta: il titolare e i figli ancora attivi. */
+export function nucleoPerRicevuta<P extends { id: string; nucleo?: string; attiva: boolean }>(p: P, tutti: P[]): P[] {
+  const titolare = p.nucleo ? tutti.find((x) => x.id === p.nucleo) : p
+  return titolare ? [titolare, ...tutti.filter((x) => x.nucleo === titolare.id && x.attiva)].filter((x) => x.id !== p.id) : []
+}

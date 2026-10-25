@@ -56,6 +56,7 @@ console.log('\nSabato e domenica senza lezioni')
   ok('una lezione di domenica: domenica resta larga', m.giorniStretti(sett, [alle(18, 23)]), [false, false, false, false, false, true, false])
   ok('un giorno feriale vuoto non si stringe mai', m.giorniStretti(sett, [alle(17)])[2], false)
   ok('settimana ancora da leggere: niente si stringe', m.giorniStretti(sett, null), [false, false, false, false, false, false, false])
+  ok('una gara di sabato: sabato resta largo, per la sua tessera', m.giorniStretti(sett, [alle(12)], ['2026-10-17']), [false, false, false, false, false, false, true])
 }
 
 console.log('\nI giorni della settimana')

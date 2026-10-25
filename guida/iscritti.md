@@ -74,6 +74,15 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   **SOSTITUTO** quando la fa un altro istruttore, **IN** e il nome della sala
   quando la lezione è stata spostata, **IN PIÙ** per una lezione fuori
   dall'orario (uno stage).
+- **Le mie gare**: sotto le lezioni, solo se la segreteria ti ha messo in una
+  gara. Per ognuna le date e quanti giorni mancano, il luogo e chi la
+  organizza (l'indirizzo apre la mappa), il corso, la nota della segreteria
+  (la categoria, il peso) e il **certificato alla data della gara**: se scade
+  prima, manca o è stato mandato e la segreteria non l'ha ancora confermato,
+  un riquadro rosso dice cosa fare. Per gareggiare serve il certificato
+  **agonistico**. Poi la **QUOTA**, voce per voce, con **Da pagare** o
+  **Pagata**: si paga in segreteria. Gli altri atleti non si vedono. Le gare
+  passate e annullate restano sotto, in una riga.
 - **Segnalare una presenza**: nell'elenco completo, dove non risulta presente (non segnato, o assente) c'è
   solo il tasto **SEGNALA**: chi c'era lo dice, con una nota se vuole, e **ERO PRESENTE**.
   La presenza la conferma l'istruttore della lezione o la segreteria; fino

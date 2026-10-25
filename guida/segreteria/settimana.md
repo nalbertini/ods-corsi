@@ -22,6 +22,11 @@ orario (es. 17:00–18:00), il colore della disciplina, la sala e l'istruttore. 
 | **✎ CAMBIATA A MANO** | l'attività di quella lezione è diversa da quella del giorno: non lo segue più |
 | **Straordinaria** | una lezione in più, fuori dall'orario |
 
+Una **gara** sta in una riga sua, **GARE**, sotto i giorni: prende i giorni che
+dura, col luogo e quanti atleti. Toccandola si apre in [GARE](gare.md). Le
+lezioni di quei giorni restano: se una va annullata per la gara, si annulla
+come sempre. Sul telefono la gara sta in cima al suo giorno.
+
 Sabato e domenica, se quella settimana non hanno lezioni, si stringono a una
 colonna sottile con solo il giorno: la griglia lascia il posto agli altri.
 Se una lezione c'è (anche annullata), il giorno resta largo.
