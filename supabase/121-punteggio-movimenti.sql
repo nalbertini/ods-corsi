@@ -15,6 +15,9 @@
 --     serve per scegliere.
 --     I corsi dell'importo li ricava il database dal listino, e `corsi` non si usa più (resta per non cambiare la
 --     firma): scelti da chi chiama, cambiando l'elenco si vedeva a quali corsi è iscritto chi viene proposto.
+--     Resta un limite, più stretto di prima: il listino lo cambia anche l'amministrazione (55), che riscrivendolo e
+--     rimettendolo com'era può ancora provarlo; e «nome e corso» (dal 120) dice se il nome va con un corso. Chiuderli
+--     vuol dire togliere quei segnali o leggerli da qualcosa che solo la segreteria scrive.
 --   * `abbina_testo_banca(testo, movimenti)`: niente più cascata, per ogni movimento il segno più forte (nome intero,
 --     se no genitore); a scegliere è l'app.
 --   * `parole_pagatori`: l'apostrofo dopo una vocale a fine parola («NICOLO'») si toglie, come fa normalizzaNome.
