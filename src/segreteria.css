@@ -57,6 +57,15 @@
   .sg-mancano-nota { display: none; }
 }
 @media (max-width: 767px) {
+  /* Telefono: data, origine e importo in alto, la descrizione sotto, il tasto largo come un bersaglio. */
+  .sg-lista-testa.sg-riga-da-classificare { display: none; }
+  .sg-riga-da-classificare { grid-template-columns: auto 1fr auto; grid-template-areas: 'data fonte importo' 'desc desc desc' 'tasto tasto tasto'; gap: 6px 12px; }
+  .sg-riga-da-classificare > :nth-child(1) { grid-area: data; }
+  .sg-riga-da-classificare > :nth-child(2) { grid-area: fonte; }
+  .sg-riga-da-classificare > :nth-child(3) { grid-area: desc; }
+  .sg-riga-da-classificare > :nth-child(4) { grid-area: importo; }
+  .sg-riga-da-classificare > :nth-child(5) { grid-area: tasto; }
+  .sg-da-tasto button { width: 100%; min-height: 44px; }
   .sg-mancano-casella { flex-direction: column; gap: 4px; padding: 12px 14px; min-height: 0; }
   .sg-mancano-n { font-size: 40px; }
   .sg-mancano-titolo { font-size: 15px; letter-spacing: 0.08em; }
@@ -329,6 +338,12 @@
 .sg-togli:hover { color: var(--rosso-testo); }
 .sg-nuova-ricorrenza { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; padding: 12px; border: 2px solid var(--text); }
 
+.sg-riga-da-classificare { display: grid; grid-template-columns: 100px 100px 1fr 120px 130px; gap: 12px; align-items: center; padding: 10px 14px; }
+.sg-lista-testa.sg-riga-da-classificare { padding-block: 0 6px; }
+.sg-da-data { font-size: 13px; color: var(--sec); }
+.sg-da-descrizione { font-size: 15px; font-weight: 600; min-width: 0; }
+.sg-da-importo { font-size: 16px; font-weight: 700; text-align: right; white-space: nowrap; }
+.sg-da-tasto { text-align: right; }
 .sg-tabella { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
 .sg-riga-iscritto { display: grid; grid-template-columns: 1.2fr 1.4fr 1.3fr 150px 80px; gap: 14px; align-items: center; }
 /* Coi filtri del sollecito, la colonna WHATSAPP in fondo: il tasto a linea (sono tanti, il giallo resta uno per schermata) e sotto l'ultimo sollecito. */

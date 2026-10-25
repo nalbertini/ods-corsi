@@ -62,6 +62,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Contabilità (movimenti, chiusure, voci, prima nota) | amministrazione | residuo che non torna, giorno chiuso riscritto | `prova:contabilita`, `prova:indirizzi`, `prova:banco`, `prova:avvisi-segreteria`, `prova:segreteria`, `prova:chiusura-pdf`, `prova:importa-prima-nota`, `prova:pericolo`, `chiusura-cassa.sql`, `contabilita.sql`, `rls.sql`, `importa-prima-nota.sql`, `cambia-voce.sql`, `prova:gare` | sì |
 | Importa dalla banca | amministrazione | movimento perso o scritto due volte | `prova:importa-banca`, `prova:importazioni`, `importa-banca.sql`, `importa-prima-nota.sql`, `importazioni.sql` | sì |
 | Importazioni: Satispay e banca sullo stesso movimento a mano | amministrazione | stesso incasso contato due volte, o perso | `prova:importazioni`, `prova:satispay-scarico`, `prova:importa-banca`, `importazioni.sql`, `satispay-scarico.sql`, `importa-banca.sql` | sì, da fare |
+| Voci da classificare in IMPORTAZIONI | amministrazione | voce persa dalla lista, totale sbagliato | `prova:importazioni` | sì, da fare |
 | Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:segreteria`, `prova:contabilita`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
 | Quote e corsi scritti a mano hanno la persona | amministrazione (scrive), segreteria (vede la scheda) | quota che non si ritrova nella scheda | `prova:contabilita`, `prova:movimenti-persona`, `prova:segreteria`, `quote-persona.sql`, `cambia-voce.sql`, `movimenti-persona.sql` | sì, da fare |
 | Filtro «Pagato nel vecchio programma» | segreteria | segnato pagato per un incasso non suo | `prova:pagato-prima`, `prova:filtri-iscritti`, `pagato-vecchio-programma.sql` | sì |
@@ -160,6 +161,8 @@ quando arriva la prova.
 - Striscia: `useDaFare` e la regola degli appelli («cominciata» o «finita»).
 - Elenco ISCRITTI: la frase col conto dei minorenni e dei senza data, e il
   segno MINORENNE sulla riga, stanno nel `.tsx`; nessuna prova.
+- Da classificare: BILANCIO conta anche le voci senza voce (`voce` null) e
+  IMPORTAZIONI no; nessuna prova dice quale conteggio è giusto (DA FARE).
 - Genitore non iscritto: «N persone attive» in testata all'elenco lo salta
   (`attiveOra`, nel `.tsx`); nessuna prova.
 - **GRAVE** — Gare: togliere un atleta che ha già pagato cancella la sua riga
