@@ -42,7 +42,7 @@ import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
-import { abbinaMovimento, type PersonaDaAbbinare } from './abbinaMovimenti'
+import { abbinaMovimento, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
@@ -1590,7 +1590,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
           iscrizioni: a().iscrizioni.filter((i) => i.personaId === p.id).map((i) => ({ corsoId: i.corsoId, corso: a().corsi.find((c) => c.id === i.corsoId)?.nome, dal: i.dal, al: i.al ?? null })),
         }
       })
-      return abbinaMovimento({ testo: m.descrizione, data: m.data, codiciFiscali: m.codiciLetti ?? [], corsiImporto: corsi }, persone).candidati
+      const precedenti = contabilita().movimenti.flatMap((x) => (x.personaId && !x.annullatoIl && x.id !== m.id ? [{ testo: x.descrizione, personaId: x.personaId }] : []))
+      return abbinaMovimento({ testo: m.descrizione, data: m.data, codiciFiscali: m.codiciLetti ?? [], corsiImporto: corsi, precedenti }, persone).candidati
     },
 
     async abbinaTestoBanca(testo, movimentoIds) {
@@ -1598,12 +1599,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
         const dati = anagraficaDi(p.id)?.dati
         return { id: p.id, nome: p.nome, cognome: p.cognome, attiva: p.attiva, codiceFiscale: null, genitoreNome: dati?.genitoreNome ?? null, genitoreCognome: dati?.genitoreCognome ?? null, genitoreCodiceFiscale: null, iscrizioni: [] }
       })
-      // Solo nome intero o genitore, come `abbina_testo_banca`: niente CF né importo, il testo della banca non li dà.
-      const trovati = abbinaMovimento({ testo, data: '9999-12-31', codiciFiscali: [], corsiImporto: [] }, persone).candidati
-      if (!trovati.length) return []
-      const come = trovati[0].come === 'genitore' ? 'genitore' : 'nome intero'
-      const ids = new Set(trovati.map((t) => t.id))
-      return contabilita().movimenti.filter((x) => movimentoIds.includes(x.id) && x.personaId && ids.has(x.personaId)).map((x) => ({ movimentoId: x.id, come }))
+      // Solo nome intero o genitore, come `abbina_testo_banca`: per ogni movimento il segno più forte, a scegliere è l'app.
+      const perId = new Map(persone.filter((p) => p.attiva).map((p) => [p.id, p]))
+      return contabilita().movimenti.flatMap((x) => {
+        const p = movimentoIds.includes(x.id) && !x.annullatoIl && x.personaId ? perId.get(x.personaId) : undefined
+        const come = p ? nomeOGenitore(p, testo) : null
+        return come ? [{ movimentoId: x.id, come }] : []
+      })
     },
 
     async casse() {

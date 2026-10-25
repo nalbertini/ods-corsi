@@ -1985,10 +1985,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async abbinaPagatori(movimento, corsi) {
       const r = await db.rpc('abbina_pagatori_movimento', { movimento, corsi: corsi?.length ? corsi : null })
-      // Senza 119-abbina-movimenti.sql la funzione non c'è: si propone solo per nome, come prima.
+      // Senza 119-abbina-movimenti.sql la funzione non c'è (senza il 121 manca `sicuro`: nessuno si preseleziona): si propone solo per nome, come prima.
       if (r.error && funzioneAssente(r.error)) return []
-      const righe = ok(r) as Array<{ persona_id: string; nome: string; cognome: string; come: Abbinato['come']; gia_iscritto: boolean }>
-      return righe.map((x) => ({ id: x.persona_id, nome: x.nome, cognome: x.cognome, come: x.come, giaIscritto: x.gia_iscritto }))
+      const righe = ok(r) as Array<{ persona_id: string; nome: string; cognome: string; come: Abbinato['come']; gia_iscritto: boolean; sicuro?: boolean }>
+      return righe.map((x) => ({ id: x.persona_id, nome: x.nome, cognome: x.cognome, come: x.come, giaIscritto: x.gia_iscritto, sicuro: x.sicuro === true }))
     },
 
     async abbinaTestoBanca(testo, movimenti) {

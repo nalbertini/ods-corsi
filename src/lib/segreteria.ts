@@ -822,7 +822,7 @@ export interface DatiSegreteria {
   /** Chi ha pagato, cercato per nome: almeno tre lettere, al massimo otto, solo nome e cognome (`cerca_pagatori`). */
   cercaPagatori(scritto: string): Promise<Array<{ id: string; nome: string; cognome: string }>>
   /**
-   * Chi può aver pagato un movimento non identificato: nome, genitore, codice fiscale letto, importo e corso (`119-abbina-movimenti.sql`).
+   * Chi può aver pagato un movimento non identificato: un punteggio su nome, genitore, codice fiscale letto, storico, importo e corso (`121-punteggio-movimenti.sql`); `sicuro` solo sul primo che si preseleziona.
    * `corsi`: i corsi che costano quell'importo (`corsiConImporto`). Senza il file, ricade sul solo nome: lista vuota.
    */
   abbinaPagatori(movimentoId: string, corsi?: string[]): Promise<Abbinato[]>
