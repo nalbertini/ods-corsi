@@ -1,11 +1,11 @@
--- La carta di credito/debito nel modulo di iscrizione (113-carta.sql): paga PayPal, solo con i campi
+-- La carta di credito/debito nel modulo di iscrizione (115-carta.sql): paga PayPal, solo con i campi
 -- carta ospitati e Apple Pay / Google Pay. Il pagamento sta in `pagamenti_satispay` (il nome non
 -- cambia) con `circuito = 'carta'`; l'importo lo calcola il database dal listino, mai il telefono.
 -- Stato e ordine li scrive solo la Edge Function (service_role); nessun dato della carta si salva.
 -- La metà di prova: scripts/prova-pagamento-carta.mjs, stessi casi e stessi messaggi.
--- Si lancia dopo finto-supabase.sql e i file dello schema (il 113 compreso).
+-- Si lancia dopo finto-supabase.sql e i file dello schema (il 115 compreso).
 --
--- Cosa si assume del 113 (lo decide il file SQL, queste prove lo fissano):
+-- Cosa si assume del 115 (lo decide il file SQL, queste prove lo fissano):
 --   · `pagamenti_satispay.circuito text not null default 'satispay'` ammette 'satispay' e 'carta';
 --     `paypal_id text unique`; nessuna colonna per i dati della carta;
 --   · `carta_prepara_prima(dati jsonb)` con dati = {corso, formula, nome, cognome, email, chiave} risponde

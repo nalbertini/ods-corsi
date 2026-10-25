@@ -39,6 +39,12 @@ un minore), email, telefono e l'eventuale telefono 2, corsi (con «fuori età: n
 accanto a un corso che non è per la sua età, secondo
 **NATI DAL / AL** del [listino](listino.md) coi sei mesi di tolleranza), come paga (trimestre o annuale), note.
 
+Per un minore, se un iscritto ha lo stesso codice fiscale del genitore ed è
+in un nucleo, sotto il genitore compare **Stesso genitore di …**: dopo
+l'accoglienza, **Mettilo nella famiglia** lo mette nello stesso nucleo. Si
+può fare anche dopo, dalla scheda dell'iscritto
+([il nucleo familiare](iscritti.md#il-nucleo-familiare)).
+
 In fondo ai dati, due righe che vede solo la segreteria:
 
 - **ARRIVATA DA** — da quale link è arrivata: **Home del sito**, il titolo

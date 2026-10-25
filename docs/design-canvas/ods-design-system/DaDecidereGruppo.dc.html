@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+<section aria-label="{{aria}}" style="display: flex; flex-direction: column; gap: 14px; width: 100%; min-width: 0; padding: 18px 20px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}; font-family: {{c.body}}">
+  <div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px">
+    <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: {{c.giallo}}">{{etichetta}}</span>
+    <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: {{c.dim}}">{{fonte}}</span>
+  </div>
+  <b style="font-size: 18px">{{titolo}}</b>
+  <span style="font-size: 14px">{{testo}}</span>
+  <sc-if value="{{doppio}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; background: {{c.surface2}}">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: {{c.dim}}">{{titoloMovimenti}}</span>
+      <sc-for list="{{movimenti}}" as="m" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 150px 100px; gap: 12px; font-size: 14px">
+          <span><b>{{m.descrizione}}</b>{{m.voce}}</span>
+          <span>{{m.cassa}}</span>
+          <span style="text-align: right; font-variant-numeric: tabular-nums">{{importoPiu}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; flex-direction: column; border-top: 1px solid {{c.line}}">
+      <sc-for list="{{pagamenti}}" as="g" hint-placeholder-count="3">
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-bottom: 1px solid {{c.line}}; font-size: 14px">
+          <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px">
+            <span style="display: flex; align-items: center; gap: 8px; flex: 1 1 200px; min-width: 0"><b>Satispay · {{g.chi}}</b>
+              <sc-if value="{{g.haSimile}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tema="sito" tipo="tag" tono="neutro" label="{{g.tagSimile}}" hint-size="220px,22px"></dc-import></sc-if>
+            </span>
+            <span style="text-align: right; font-variant-numeric: tabular-nums">{{importoPiu}}</span>
+          </div>
+          <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px">
+            <span style="font-size: 13px; color: {{c.dim}}">È già scritto per</span>
+            <sc-for list="{{g.scelte}}" as="s" hint-placeholder-count="3">
+              <dc-import name="Chip" tema="sito" label="{{s.label}}" acceso="{{s.acceso}}" disabled="{{s.spento}}" hint-size="180px,44px"></dc-import>
+            </sc-for>
+            <span style="font-size: 13px; color: {{c.dim}}">oppure</span>
+            <dc-import name="Chip" tema="sito" label="Incasso nuovo" acceso="{{g.nuovo}}" hint-size="150px,44px"></dc-import>
+          </div>
+          <sc-if value="{{g.altrui}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: {{c.dim}}">{{g.altrui}}</span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <span style="font-size: 14px; color: {{coloreRiepilogo}}">{{riepilogo}}</span>
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="{{tastoConferma}}" disabled="{{spento}}" hint-size="300px,48px"></dc-import>
+    </div>
+  </sc-if>
+  <sc-if value="{{chiuso}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; border-top: 1px solid {{c.line}}">
+      <sc-for list="{{pagamenti}}" as="g" hint-placeholder-count="2">
+        <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid {{c.line}}; font-size: 14px">
+          <b>Satispay · {{g.chi}}</b><span style="font-variant-numeric: tabular-nums">{{importoPiu}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="{{tastoOggi}}" hint-size="240px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="{{tastoFuori}}" hint-size="160px,48px"></dc-import>
+    </div>
+  </sc-if>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"motivo":{"editor":"enum","options":["doppione","chiuso"],"default":"doppione"},"fonte":{"editor":"text","default":"SATISPAY"},"data":{"editor":"text","default":"lunedì 01/09/2025"},"importo":{"editor":"text","default":"50,00"},"oggi":{"editor":"text","default":"25/10"},"pagamenti":{"editor":"text","default":"Rinaldo M.|;Maria S.|3|3;Samuele M.|1|1"},"movimenti":{"editor":"text","default":"Cliente MARCHI SAMUELE|Quota associativa|Cassa Contanti;Cliente FEMIA NICOLO'|Quota associativa|Cassa Contanti;Cliente CIROLLI MARIA STELLA|Quota associativa|Cassa Contanti"},"tema":{"editor":"enum","options":["sito"],"default":"sito","section":"Tema"},"$preview":{"width":880,"height":560}}'>
+// COSTRUITA (`Gruppo` in `Importazioni.tsx`; ../importazioni/): un gruppo della lista «Da decidere» della sezione IMPORTAZIONI, al posto di una scheda per pagamento
+// (`DaDecidereSatispay`). Si raggruppa per fonte, giorno e importo: i movimenti a mano si leggono una volta sola.
+// Un `.sg-riquadro` (padding 18px 20px, gap 14px, bordo 2px `line`), `.sg-etichetta` in `giallo-testo` e la fonte in `dim` a destra.
+// doppione: i movimenti a mano di quel giorno su fondo `surface-2`, poi una riga per pagamento. Quale movimento va con quale pagamento
+// conta (persona e ricevuta): per ogni pagamento si sceglie il movimento a mano di quella persona, un chip per movimento, o «Incasso
+// nuovo». Un movimento preso da un altro pagamento è spento, e sotto i chip lo si dice. Il movimento col nome simile sta primo e la riga ha il tag «NOME SIMILE: …»,
+// ma niente si sceglie da solo: chi paga spesso è il genitore. Sotto, il riepilogo (chi va con chi, quanti euro in più) e un solo
+// tasto di conferma, spento finché ogni pagamento non ha la sua scelta. chiuso: la cassa di quel giorno è già chiusa; i pagamenti in
+// fila e due tasti per tutti.
+// pagamenti: «chi|scelta|simile» separati da «;»: scelta è il numero del movimento (da 1), n (incasso nuovo) o vuota; simile è il
+// numero del movimento col nome simile, o vuoto. movimenti: «descrizione|voce|cassa».
+const T = {
+  sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', giallo: '#8f6a00', rosso: '#b81d1d', body: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+};
+const euro = (n) => n.toFixed(2).replace('.', ',') + ' €';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T.sito;
+    const chiuso = p.motivo === 'chiuso';
+    const imp = p.importo ?? '50,00';
+    const valore = Number(imp.replace('.', '').replace(',', '.')) || 0;
+    const movimenti = String(p.movimenti ?? '').split(';').filter(Boolean).map((r) => {
+      const [descrizione, voce, cassa] = r.split('|');
+      return { descrizione, nome: descrizione.replace(/^Cliente /, ''), voce: voce ? ' · ' + voce : '', cassa: cassa ?? '' };
+    });
+    const righe = String(p.pagamenti ?? '').split(';').filter(Boolean).map((r) => {
+      const [chi, scelta = '', simile = ''] = r.split('|');
+      return { chi, scelta, simile: Number(simile) || 0 };
+    });
+    const presi = new Set(righe.map((g) => Number(g.scelta)).filter(Boolean));
+    const pagamenti = righe.map((g) => {
+      const mio = Number(g.scelta) || 0;
+      const ordine = movimenti.map((m, i) => i + 1).sort((a, b) => Number(b === g.simile) - Number(a === g.simile));
+      return {
+        chi: g.chi, haSimile: g.simile > 0, nuovo: g.scelta === 'n',
+        tagSimile: g.simile > 0 ? 'NOME SIMILE: ' + movimenti[g.simile - 1].descrizione : '',
+        altrui: (() => { const a = movimenti.filter((m, i) => i + 1 !== mio && presi.has(i + 1)).map((m) => m.nome); return a.length ? a.join(', ') + (a.length === 1 ? ' è' : ' sono') + ' già di un altro pagamento.' : ''; })(),
+        scelte: ordine.map((i) => ({ label: movimenti[i - 1].nome, acceso: i === mio, spento: i !== mio && presi.has(i) })),
+      };
+    });
+    const nP = righe.length, nM = movimenti.length;
+    const collegati = righe.filter((g) => Number(g.scelta) > 0);
+    const nuovi = righe.filter((g) => g.scelta === 'n').length;
+    const mancano = nP - collegati.length - nuovi;
+    const errore = false;
+    const diversi = collegati.filter((g) => Number(g.scelta) !== g.simile).map((g) => g.chi);
+    let riepilogo;
+    if (mancano > 0) riepilogo = 'Scegli per ogni pagamento: ne mancano ' + mancano + '.';
+    else riepilogo = [
+      collegati.length ? 'Collego ' + collegati.map((g) => g.chi + ' a ' + movimenti[Number(g.scelta) - 1].nome).join(', ') + ': restano i movimenti a mano, con la loro persona e la loro voce.' : '',
+      diversi.length ? 'Controlla ' + diversi.join(', ') + ': il nome non somiglia.' : '',
+      nuovi ? 'Registro ' + nuovi + (nuovi === 1 ? ' incasso nuovo' : ' incassi nuovi') + ': ' + euro(nuovi * valore) + ' in più in contabilità.' : '',
+    ].filter(Boolean).join(' ');
+    const fatti = collegati.length + (collegati.length === 1 ? ' collegato, ' : ' collegati, ') + nuovi + (nuovi === 1 ? ' nuovo' : ' nuovi');
+    return {
+      c, chiuso, doppio: !chiuso, pagamenti, movimenti,
+      fonte: p.fonte ?? 'SATISPAY',
+      aria: chiuso ? 'Cassa già chiusa' : 'Forse già scritti a mano',
+      etichetta: chiuso ? 'CASSA GIÀ CHIUSA QUEL GIORNO' : 'FORSE GIÀ SCRITTI A MANO',
+      titolo: chiuso
+        ? nP + (nP === 1 ? ' pagamento Satispay' : ' pagamenti Satispay') + ' di ' + p.data
+        : nP + (nP === 1 ? ' pagamento Satispay' : ' pagamenti Satispay') + ' da ' + imp + ' € · ' + nM + (nM === 1 ? ' movimento a mano' : ' movimenti a mano') + ' da ' + imp + ' €',
+      testo: chiuso
+        ? 'La cassa di quel giorno è già chiusa: scriverli lì cambierebbe una chiusura fatta. Puoi registrarli oggi, o lasciarli fuori.'
+        : 'Pagati ' + p.data + '. Per ognuno dimmi se è già scritto a mano o se è un incasso nuovo.',
+      titoloMovimenti: 'GIÀ SCRITTI A MANO QUEL GIORNO',
+      importoPiu: '+' + imp + ' €',
+      riepilogo, coloreRiepilogo: errore ? c.rosso : c.text,
+      spento: errore || mancano > 0,
+      tastoConferma: 'Conferma: ' + fatti,
+      tastoOggi: (nP === 1 ? 'Registralo oggi, ' : 'Registrali oggi, ') + (p.oggi ?? '25/10'),
+      tastoFuori: nP === 1 ? 'Lascialo fuori' : 'Lasciali fuori',
+    };
+  }
+}
+</script>
+</body>
+</html>

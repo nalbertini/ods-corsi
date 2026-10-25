@@ -277,6 +277,9 @@ console.log('\nI cinque conti, da dati finti')
   ok('un certificato che scade domani è ancora valido', m.certificatiDaSistemare([persona({ certificato: { scade: '2026-10-17', conFile: false } })], oggi), 0)
   ok('un certificato scaduto ieri conta', m.certificatiDaSistemare([persona({ certificato: { scade: '2026-10-15', conFile: false } })], oggi), 1)
   ok('non muta l\'ingresso', persone, copiaPersone)
+  // Il genitore non iscritto c'è per i figli: come nei chip di ISCRITTI, niente certificato né quota da chiedergli.
+  const genitore = persona({ genitoreNonIscritto: true, certificato: manca, pagamento: daPagare })
+  ok('il genitore non iscritto non conta fra i certificati né fra i pagamenti', [m.certificatiDaSistemare([genitore], oggi), m.pagamentiNonInRegola([genitore], oggi)], [0, 0])
 
   const lezione = (id, inizio, fine, extra = {}) => ({
     id, corsoId: 'c', corso: 'C', istruttori: 'I', inizio, fine, stato: 'programmata', straordinaria: false, iscritti: 10, presenti: 0, segnati: 0, ...extra,

@@ -602,6 +602,40 @@ con altri nel nucleo non si archivia: prima si cambia il titolare. Le schede
 archiviate non entrano in un nucleo. Le richieste aggiunte da un titolare dalla sua
 area entrano nel suo nucleo da sole, quando si accolgono.
 
+Un nucleo può essere anche di soli adulti, come due sorelle o una coppia: uno
+dei due è titolare e vede l'altro nella sua pagina.
+
 Sotto, lo **sconto famiglia**: dalle ricevute del nucleo della stagione in corso, il 20% sull'annuale
 che costa meno, di chi e quanto, o chi l'ha già avuto. Sulla ricevuta lo mette
 l'app ([Un pagamento e la sua ricevuta](#un-pagamento-e-la-sua-ricevuta)).
+
+### Fratelli senza un genitore iscritto
+
+Il titolare è maggiorenne, e due fratelli minorenni senza un genitore iscritto
+non hanno chi faccia da titolare. Nella scheda di un minore che non è in un
+nucleo, sotto **NUCLEO FAMILIARE**, l'app guarda il blocco **GENITORE**:
+
+- **Il genitore non è iscritto: aggiungilo** → **Aggiungi il genitore** crea la
+  scheda del genitore, col codice fiscale del blocco GENITORE, e ci mette il
+  figlio nel nucleo. Il genitore è **titolare**, col tag **Genitore non
+  iscritto**: niente corsi, quota né certificato, e non conta fra gli iscritti.
+- **Il genitore è iscritto** → **Metti nel suo nucleo**: stesso codice fiscale
+  di un iscritto, il figlio entra nel suo nucleo.
+- **C'è già … con questo codice fiscale: è lui?** → **Usa …**: il genitore è
+  già in elenco, per un altro figlio. Niente seconda scheda.
+- **Per aggiungere il genitore serve il suo codice fiscale**: il tasto è
+  spento finché non c'è nel blocco GENITORE. Serve per le ricevute e per
+  riconoscere i fratelli.
+
+Quando un fratello col codice fiscale dello stesso genitore è già in un
+nucleo, compare **Stesso genitore di …** con **Mettilo nella famiglia**: lo
+sconto famiglia va sull'annuale che costa meno.
+
+La scheda del genitore non iscritto ha solo **PERSONA**. In fondo, **SE SI
+ISCRIVE** → **Iscrivilo a un corso**: diventa un iscritto come gli altri,
+resta titolare e i figli restano nel suo nucleo.
+
+Quando un figlio nel nucleo di un genitore non iscritto compie 18 anni, la sua
+scheda lo dice col tag **18 anni**: può avere un nucleo suo o restare lì.
+L'app non sposta niente da sola; per le ricevute nuove, chiedi a chi
+intestarle.

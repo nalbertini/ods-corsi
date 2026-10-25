@@ -15,6 +15,7 @@ import { Palestra } from './banco/Palestra'
 const Statistiche = lazy(() => import('./Statistiche').then((m) => ({ default: m.Statistiche })))
 const Listino = lazy(() => import('./Listino').then((m) => ({ default: m.Listino })))
 const Contabilita = lazy(() => import('./Contabilita').then((m) => ({ default: m.Contabilita })))
+const Importazioni = lazy(() => import('./Importazioni').then((m) => ({ default: m.Importazioni })))
 const Regole = lazy(() => import('./Regole').then((m) => ({ default: m.Regole })))
 const Richieste = lazy(() => import('./Richieste').then((m) => ({ default: m.Richieste })))
 const PresenzeIstruttori = lazy(() => import('./PresenzeIstruttori').then((m) => ({ default: m.PresenzeIstruttori })))
@@ -325,9 +326,22 @@ export function Segreteria({
       vivo = false
     }
   }, [d, voce, giroConte])
+  // I pagamenti Satispay da decidere: senza il 96 lo stato non c'è, e il segno resta a zero.
+  const [daDecidere, setDaDecidere] = useState(0)
+  useEffect(() => {
+    if (!d || !puo(chi, 'contabilita')) return
+    let vivo = true
+    d.statoScaricoSatispay().then(
+      (s) => vivo && setDaDecidere(s?.daDecidere.length ?? 0),
+      () => vivo && setDaDecidere(0),
+    )
+    return () => {
+      vivo = false
+    }
+  }, [d, voce, giroConte])
   // Il numero sul tasto MENU del telefono: la somma dei segni del menu. Giallo,
   // come in DA FARE: sono cose che aspettano una risposta, non guai.
-  const daFare = richiesteNuove + daConfermare + daRispondere + (conSegnalate ? segnalateDaVedere : 0)
+  const daFare = richiesteNuove + daConfermare + daRispondere + daDecidere + (conSegnalate ? segnalateDaVedere : 0)
 
   const puoCercare = !!d && conSegreteria
   // Alla chiusura il fuoco torna all'elemento che l'aveva prima di ⌘K.
@@ -445,6 +459,7 @@ export function Segreteria({
             presenze: { n: conSegnalate ? segnalateDaVedere : 0, detto: 'segnalate da vedere' },
             segnalazioni: { n: daRispondere, detto: 'da rispondere' },
             vestiario: { n: daSaldare, detto: 'ordini da saldare' },
+            importazioni: { n: daDecidere, detto: 'pagamenti da decidere' },
           }}
           cerca={d && conSegreteria && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
           link={
@@ -519,6 +534,7 @@ export function Segreteria({
                       {id === 'istruttori' && segno(daConfermare, 'da confermare')}
                       {id === 'segnalazioni' && segno(daRispondere, 'da rispondere')}
                       {id === 'vestiario' && segno(daSaldare, 'ordini da saldare')}
+                      {id === 'importazioni' && segno(daDecidere, 'pagamenti da decidere')}
                     </button>
                   )
                 })}
@@ -659,7 +675,8 @@ export function Segreteria({
         )}
         {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? posto.richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta ?? posto.richiesta} onTogliRicerca={() => setRicerca(undefined)} onConti={contiCambiati} />}
         {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} schede={schedePresenze} />}
-        {d && voce === 'contabilita' && <Contabilita key={movimento ?? ''} d={d} movimento={movimento} onPersona={conSegreteria ? (id) => void vai('iscritti', { persona: id }) : undefined} />}
+        {d && voce === 'contabilita' && <Contabilita key={movimento ?? ''} d={d} movimento={movimento} onPersona={conSegreteria ? (id) => void vai('iscritti', { persona: id }) : undefined} onImportazioni={() => void vai('importazioni')} />}
+        {d && voce === 'importazioni' && <Importazioni d={d} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} schede={schedePresenze} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}

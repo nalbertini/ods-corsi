@@ -89,7 +89,7 @@ export function menuDi(chi: Chi): GruppoMenu[] {
   const amministrazione = spunte.includes('amministrazione')
   if (segreteria) {
     if (!amministrazione) return GRUPPI_MENU
-    const conti: GruppoMenu = { titolo: TITOLO_CONTI, voci: [['contabilita', 'Contabilità']] }
+    const conti: GruppoMenu = { titolo: TITOLO_CONTI, voci: [['contabilita', 'Contabilità'], ['importazioni', 'Importazioni']] }
     return GRUPPI_MENU.flatMap((g) => (g.titolo === 'Iscritti e soldi' ? [g, conti] : [g]))
   }
   if (amministrazione)
@@ -98,6 +98,7 @@ export function menuDi(chi: Chi): GruppoMenu[] {
         titolo: TITOLO_CONTI,
         voci: [
           ['contabilita', 'Contabilità'],
+          ['importazioni', 'Importazioni'],
           ['listino', 'Listino'],
         ],
       },
@@ -167,10 +168,11 @@ export function nomeDellArea(area: AreaDiAccount, chi: Chi): string {
 /** La pagina della guida di ogni voce: il tasto «?» apre quella della voce aperta. */
 export function guidaDellaVoce(voce: Voce): string {
   if (voce === 'contabilita') return 'amministrazione/contabilita'
+  if (voce === 'importazioni') return 'amministrazione/importazioni'
   return GUIDE[voce]
 }
 
-const GUIDE: Record<Exclude<Voce, 'contabilita'>, string> = {
+const GUIDE: Record<Exclude<Voce, 'contabilita' | 'importazioni'>, string> = {
   dafare: 'segreteria/da-fare',
   settimana: 'segreteria/settimana',
   corsi: 'segreteria/corsi',

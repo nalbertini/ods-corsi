@@ -494,6 +494,7 @@
 /* Passando sopra o scegliendo una riga non si cambia il fondo: sotto un testo giallo scuro o verde il celeste non arriva a 4,5:1. */
 :root[data-look='sito'] .sg-mancano-casella:hover { background: var(--surface); box-shadow: inset 0 0 0 2px var(--blu); }
 :root[data-look='sito'] .sg-iscritto[data-scelto='true'] { background: var(--surface); outline: 2px solid var(--blu); outline-offset: -2px; }
+:root[data-look='sito'] .sg-riga-movimento[data-da-sistemare='true'] { background: color-mix(in srgb, var(--giallo-testo) 10%, var(--surface)); }
 :root[data-look='sito'] .sg-riga-movimento[data-scelta='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 :root[data-look='sito'] .sg-barra-scelta { border-color: var(--giallo-testo); }
 /* Il fuoco da tastiera: contorno blu sulla pagina, bianco nel menu scuro. */

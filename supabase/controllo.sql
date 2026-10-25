@@ -487,6 +487,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.satispay_negozio') is not null and to_regprocedure('public.satispay_negozio_applica(boolean)') is not null
     and exists (select 1 from casse where nome = 'Satispay')
     and to_regprocedure('public.satispay_scarico_avvisa(jsonb,text)') is not null),
+  ('97-satispay-scarico.sql', 'lo scarico Satispay scrive anche con safeupdate',
+    exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%primo_fatto = true where id%')
+    and exists (select 1 from dentro where nome = 'satispay_scarico_segna' and corpo like '%where id%')
+    and exists (select 1 from dentro where nome = 'satispay_scarico_ripresa' and corpo like '%where id%')),
   ('98-quote-persona.sql', 'le quote e i corsi scritti a mano hanno la persona',
     to_regprocedure('public.cambia_voce_movimenti(uuid[],uuid,uuid)') is not null
     and to_regprocedure('public.voce_vuole_persona(text,uuid)') is not null
@@ -542,7 +546,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('107-sito-accessibilita.sql', 'la Dichiarazione di accessibilità del sito, con la voce nel footer',
     exists (select 1 from sito_pagine where slug = 'dichiarazione-accessibilita' and di_legge)
     and exists (select 1 from sito_menu m join sito_pagine p on p.id = m.pagina_id where p.slug = 'dichiarazione-accessibilita' and m.dove = 'footer')
-    and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%'),
+    and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%')),
+  ('114-importazioni.sql', 'IMPORTAZIONI: gruppi Satispay, «Non è questo», movimenti della banca già scritti',
+    to_regclass('public.banca_coperti') is not null
+    and exists (select 1 from dentro where nome = 'banca_non_e_questo')
+    and exists (select 1 from dentro where nome = 'satispay_scarico_stato' and corpo like '%m.banca_chiave is null%')
+    and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%m.banca_chiave is null%')),
   ('112-sito-accessibilita-agid.sql', 'la traccia della Dichiarazione di accessibilità ha le parti AgID (norma, data di redazione, tempo di risposta, segnalazione)',
     not exists (select 1 from sito_pagine
                  where slug = 'dichiarazione-accessibilita' and pubblicato is null
@@ -555,7 +564,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'limita_file_certificato' and corpo like '%54000%' and corpo like '%iscritto_puo_mandare%')),
   ('111-iscrizione-troppo-grande.sql', 'una richiesta d''iscrizione enorme si rifiuta all''ingresso',
     exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pg_column_size(dati)%')),
-  ('113-carta.sql', 'si paga anche con la carta nel modulo di iscrizione (PayPal)',
+  ('113-genitore-non-iscritto.sql', 'la segreteria aggiunge il genitore non iscritto come titolare del nucleo dei figli',
+    exists (select 1 from dentro where nome = 'aggiungi_genitore' and corpo like '%genitore_non_iscritto%')
+    and exists (select 1 from pg_trigger where tgname = 'iscrizioni_togli_genitore_non_iscritto' and not tgisinternal)),
+  ('115-carta.sql', 'si paga anche con la carta nel modulo di iscrizione (PayPal)',
     to_regprocedure('public.carta_esito(text, text)') is not null
     and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%con la carta%')
     and to_regprocedure('public.pagamento_prima(text, uuid, text, text, text, text, uuid)') is not null)

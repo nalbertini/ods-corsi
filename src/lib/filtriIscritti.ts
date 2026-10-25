@@ -96,6 +96,8 @@ export const daPagare = (p: PersonaSeg, oggi: string) => p.attiva && comePaga(p,
 
 /** Se una persona passa un chip: la stessa regola per il filtro e per il suo conto. */
 export function passaChip(id: ChipConto, p: PersonaSeg, c: ContestoFiltri): boolean {
+  // Il genitore non iscritto c'è per i figli: niente certificato, quota né corsi da chiedergli.
+  if (p.genitoreNonIscritto) return false
   if (id === 'certificato') return senzaCertificatoValido(p, c.oggi)
   if (id === 'pagare') return daPagare(p, c.oggi) && !titolareSenzaCorsi(p, c)
   if (id === 'corsi-scaduti') return c.scopertiDi(p).length > 0

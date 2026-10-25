@@ -273,7 +273,7 @@ console.log('\n7b. la segreteria distingue la carta da Satispay')
   ok('Ricevute.tsx: il pagamento a mano separa la carta da Satispay', /cosaNonVaSatispayAMano\(metodo, \(p\.satispay \?\? 0\) - \(p\.carta \?\? 0\), p\.carta\)/.test(ric), true)
   const sup = readFileSync('src/lib/segreteriaSupabase.ts', 'utf8')
   const leggi = sup.slice(sup.indexOf('const leggiSatispay'), sup.indexOf('return {', sup.indexOf('const leggiSatispay')))
-  ok('segreteriaSupabase: leggiSatispay legge il circuito, e senza 113 legge come prima', [/saldo_di, voce, circuito/.test(leggi), /42703.*circuito/.test(leggi), /circuito: x\.circuito/.test(leggi)], [true, true, true])
+  ok('segreteriaSupabase: leggiSatispay legge il circuito, e senza 115 legge come prima', [/saldo_di, voce, circuito/.test(leggi), /42703.*circuito/.test(leggi), /circuito: x\.circuito/.test(leggi)], [true, true, true])
   const sp = readFileSync('src/lib/segreteriaProva.ts', 'utf8')
   ok('segreteriaProva: il pagamento a mano separa la carta da Satispay, come il database', /cosaNonVaSatispayAMano\(dati\.metodo, [^\n]*cartaPerPersona/.test(sp), true)
 }
@@ -461,7 +461,7 @@ console.log('\n11. senza rete e senza il file SQL (la parte che parla col server
   ok('senza rete: Satispay e bonifico non cambiano (satispayAttivo non lancia)', await aspetta(() => r.satispayAttivo()), false)
   ok('senza rete: prepara dice SERVE_RETE', await aspetta(() => r.prepara(scelta, 'carta')), `ERRORE: ${s.SERVE_RETE}`)
   ok('senza rete: pagaCarta dice SERVE_RETE', await aspetta(() => r.pagaCarta('cp1')), `ERRORE: ${s.SERVE_RETE}`)
-  // Senza 113-carta.sql la funzione risponde 404 / PGRST202: la carta non c'è, il resto va.
+  // Senza 115-carta.sql la funzione risponde 404 / PGRST202: la carta non c'è, il resto va.
   const non404 = () => new sb.FunctionsHttpError(new Response('{}', { status: 404 }))
   const senzaSql = { functions: { invoke: async () => ({ data: null, error: non404() }) }, rpc: async () => ({ data: null, error: { code: 'PGRST202', message: 'Could not find the function' } }) }
   const r2 = prova(() => sb.creaRichiesteSupabase(senzaSql))

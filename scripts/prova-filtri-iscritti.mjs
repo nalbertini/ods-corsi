@@ -115,6 +115,19 @@ console.log('\nMinorenni e famiglie')
   ok('senzaNascita: tutti con la data, zero', sn([P('y', { natoIl: '2000-01-01' })]), 0)
   ok('senzaNascita: elenco vuoto, zero', sn([]), 0)
 
+  // Il genitore non iscritto c'è per i figli: nessun chip lo conta (niente certificato, quota o corsi da lui).
+  const padre = P('padre', { genitoreNonIscritto: true, natoIl: '1975-01-01' })
+  const figlio = P('figlio', { nucleo: 'padre', natoIl: '2015-01-01' })
+  const cx = { oggi, scopertiDi: () => [1], tesseraDi: () => [] }
+  ok('il genitore non iscritto non passa nessun chip', ['certificato', 'pagare', 'corsi-scaduti', 'fuori', 'minorenni'].filter((id) => passa(id, padre, cx) !== false), [])
+  ok('lo stesso senza il segno passa: il segno è la differenza', ['certificato', 'pagare', 'corsi-scaduti', 'fuori'].filter((id) => passa(id, { ...padre, genitoreNonIscritto: undefined }, cx) === true), ['certificato', 'pagare', 'corsi-scaduti', 'fuori'])
+  const dueConti = typeof m.contiChip === 'function' ? m.contiChip([padre, figlio], (p) => p.id === 'padre', cx) : 'manca contiChip'
+  ok('contiChip non lo conta', dueConti, { certificato: 0, pagare: 0, 'corsi-scaduti': 0, fuori: 0, minorenni: 0 })
+  const titolariGenitore = typeof m.titolariDi === 'function' ? m.titolariDi([padre, figlio]) : new Set()
+  const perIdGenitore = new Map([padre, figlio].map((p) => [p.id, p]))
+  ok('è ancora il titolare del nucleo, e il filtro FAMIGLIE lo lascia passare', [typeof m.famigliaDi === 'function' ? m.famigliaDi(padre, perIdGenitore, titolariGenitore) : 'manca famigliaDi', typeof m.inFamiglia === 'function' ? m.inFamiglia(padre, titolariGenitore) : 'manca inFamiglia'], [{ tipo: 'titolare' }, true])
+  ok('il figlio ha lui come titolare', typeof m.famigliaDi === 'function' ? m.famigliaDi(figlio, perIdGenitore, titolariGenitore) : 'manca famigliaDi', { tipo: 'membro', titolare: padre })
+
   const frase = (n, senza) => (typeof m.fraseMinorenni === 'function' ? m.fraseMinorenni(n, senza) : 'manca fraseMinorenni')
   ok('sottotitolo: nessun minorenne, tutti con la data', frase(0, 0), '0 minorenni.')
   ok('sottotitolo: uno, al singolare', frase(1, 0), 'Un minorenne.')

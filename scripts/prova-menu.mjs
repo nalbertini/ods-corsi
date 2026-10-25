@@ -59,8 +59,8 @@ console.log('\nUn\'icona per ogni voce')
 const ic = await impacchetta("export { ICONE_MENU, ICONE_RISULTATO } from './src/components/Icons'").catch(() => ({}))
 const ICONE = ic.ICONE_MENU ?? {}
 const chiavi = Object.keys(ICONE).sort()
-const attese = [...ID16, 'contabilita', 'areaIstruttori', 'link'].sort()
-ok('ICONE_MENU ha una chiave per ogni voce, per la contabilità, il passaggio agli istruttori e i link', chiavi, attese)
+const attese = [...ID16, 'contabilita', 'importazioni', 'areaIstruttori', 'link'].sort()
+ok('ICONE_MENU ha una chiave per ogni voce, per la contabilità e le importazioni, il passaggio agli istruttori e i link', chiavi, attese)
 ok('ognuna è un componente che disegna', Object.values(ICONE).filter((f) => typeof f !== 'function').length, 0)
 ok('Segreteria.tsx disegna l\'icona di ogni voce', /ICONE_MENU\[id\]/.test(sg0()), true)
 ok('«Istruttori →» e i link hanno la loro icona', [/ICONE_MENU\.areaIstruttori/.test(sg0()), /ICONE_MENU\.link/.test(sg0())], [true, true])
@@ -72,7 +72,8 @@ const chi = (ruolo, ancheAmministrazione = false) => ({ ruolo, ancheIstruttore: 
 const gruppi = (c) => (m.menuDi ? m.menuDi(c).map((g) => [g.titolo, g.voci]) : mancante)
 ok('solo segreteria: i cinque gruppi, e basta', gruppi(chi('staff')), Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.titolo, g.voci]) : GRUPPI)
 ok('segreteria e amministrazione: «I conti» con Contabilità dopo «Iscritti e soldi»', Array.isArray(gruppi(chi('staff', true))) ? gruppi(chi('staff', true)).map(([t]) => t) : gruppi(chi('staff', true)), ['Ogni giorno', 'Iscritti e soldi', 'I conti', 'Corsi e orari', 'Istruttori', 'Il resto'])
-ok('solo amministrazione: «I conti» e basta, con Contabilità e Listino', gruppi(chi('amministrazione')), [['I conti', [['contabilita', 'Contabilità'], ['listino', 'Listino']]]])
+ok('segreteria e amministrazione: «I conti» con Contabilità e poi Importazioni', Array.isArray(gruppi(chi('staff', true))) ? gruppi(chi('staff', true)).find(([t]) => t === 'I conti') : gruppi(chi('staff', true)), ['I conti', [['contabilita', 'Contabilità'], ['importazioni', 'Importazioni']]])
+ok('solo amministrazione: «I conti» e basta, con Contabilità, Importazioni e Listino', gruppi(chi('amministrazione')), [['I conti', [['contabilita', 'Contabilità'], ['importazioni', 'Importazioni'], ['listino', 'Listino']]]])
 
 console.log('\nIl piè del menu')
 const sg = readFileSync('src/components/segreteria/Segreteria.tsx', 'utf8')
@@ -116,7 +117,7 @@ ok('LUOGHI: i cinque luoghi con le loro voci', (luoghi.LUOGHI ?? []).map((l) => 
   ['oggi', ['dafare', 'settimana', 'presenze']],
   ['persone', ['iscritti', 'richieste', 'istruttori', 'compensi', 'personale']],
   ['corsi', ['corsi']],
-  ['soldi', ['contabilita', 'listino', 'vestiario']],
+  ['soldi', ['contabilita', 'importazioni', 'listino', 'vestiario']],
   ['palestra', ['statistiche', 'segnalazioni', 'sito', 'regole']],
 ])
 

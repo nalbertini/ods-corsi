@@ -1,5 +1,5 @@
 -- ---------------------------------------------------------------------------
--- 113 · La carta di credito o di debito nel modulo di iscrizione
+-- 115 · La carta di credito o di debito nel modulo di iscrizione
 --
 -- Accanto a Satispay, in fondo al modulo si paga anche con la carta (o Apple
 -- Pay / Google Pay). Incassa PayPal, con i suoi campi carta ospitati: nessun
@@ -29,7 +29,7 @@
 --     arrivati soldi con la carta non ancora in una ricevuta.
 -- Aggiunge la cassa «Carta».
 --
--- Si lancia dopo `112-sito-accessibilita-agid.sql`. Non chiede di rilanciare
+-- Si lancia dopo `114-importazioni.sql`. Non chiede di rilanciare
 -- `06-iscrizioni.sql`. Finché non c'è, la Edge Function `paypal` risponde che
 -- la carta è spenta e il modulo mostra solo Satispay e bonifico.
 -- Rilanciando `73`, `83`, `86`, `88`, `100` o `111` va rilanciato anche questo.
@@ -194,7 +194,7 @@ declare
   -- Il pagamento Satispay fatto prima, in fondo al modulo (83-satispay-prima.sql): la richiesta lo prende con sé.
   pagato uuid;
   p pagamenti_satispay;
-  -- «Satispay» o «con la carta» nei testi, dal circuito del pagamento (113-carta.sql). Un id che non c'è resta Satispay.
+  -- «Satispay» o «con la carta» nei testi, dal circuito del pagamento (115-carta.sql). Un id che non c'è resta Satispay.
   via text;
   -- Le richieste mandate insieme dallo stesso modulo (una famiglia): un avviso solo alla segreteria.
   inv uuid;

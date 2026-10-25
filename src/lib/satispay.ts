@@ -48,7 +48,7 @@ export interface PagamentoSatispay {
   saldoDi?: string
   /** La quota intera (`105-paga-quota-satispay.sql`) o un corso (`106-paga-corso-satispay.sql`) pagati dall'area iscritti: non sono l'iscrizione. */
   voce?: 'quota' | 'corso'
-  /** Pagato con la carta (`113-carta.sql`): assente, è Satispay. */
+  /** Pagato con la carta (`115-carta.sql`): assente, è Satispay. */
   circuito?: 'carta'
   /** Con la carta, la chiave del browser che l'ha preparato (`chiaveDelBrowser`). */
   chiave?: string
@@ -61,7 +61,7 @@ const CHIAVE_DEL_BROWSER = 'ods-chiave-pagamento'
 let chiaveInMemoria: string | undefined
 
 /**
- * La chiave di questo browser per i pagamenti con la carta (`113-carta.sql`):
+ * La chiave di questo browser per i pagamenti con la carta (`115-carta.sql`):
  * solo chi l'ha fatto ritrova un pagamento, non chi conosce nome, email e
  * scelta. Resta in localStorage per ritrovarlo dopo aver ricaricato la pagina;
  * senza (navigazione privata) vale finché resta aperta la pagina.
@@ -99,7 +99,7 @@ export const SATISPAY_SPENTO = 'Satispay per ora non è attivo: scegli il bonifi
 /** Pagato con Satispay e poi scelto il bonifico: si pagherebbe due volte. */
 export const GIA_PAGATO_SATISPAY = 'Hai già pagato con Satispay: rimetti Satispay in «Paghi con» per mandare la richiesta, o chiama la segreteria'
 
-/** Gli stessi testi per la carta (`113-carta.sql`): chi paga non legge mai il nome del circuito. */
+/** Gli stessi testi per la carta (`115-carta.sql`): chi paga non legge mai il nome del circuito. */
 export const ERRORE_CARTA = 'Il pagamento con la carta non risponde: riprova fra qualche minuto'
 export const CARTA_SPENTA = 'Carta per ora non è attiva: scegli il bonifico'
 /** Il rifiuto della banca: mai il suo testo. */

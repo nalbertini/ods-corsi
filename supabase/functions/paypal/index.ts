@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Il pagamento con la carta dal modulo di iscrizione (113-carta.sql).
+// Il pagamento con la carta dal modulo di iscrizione (115-carta.sql).
 //
 // Incassa PayPal, coi suoi campi carta ospitati (e Apple Pay / Google Pay):
 // i dati della carta vanno dal browser a PayPal, mai di qui. Questa funzione
@@ -18,7 +18,7 @@
 //   · POST { azione: 'stato_pagamento', pagamento }: com'è andato, chiedendolo
 //     a PayPal se è ancora in attesa.
 //
-// Senza i segreti (PAYPAL_CLIENT_ID, PAYPAL_SECRET) o senza 113-carta.sql
+// Senza i segreti (PAYPAL_CLIENT_ID, PAYPAL_SECRET) o senza 115-carta.sql
 // risponde { attivo: false }: il modulo offre solo Satispay e bonifico.
 //
 // Si pubblica con `supabase functions deploy paypal --no-verify-jwt` (il
@@ -120,7 +120,7 @@ async function scrivi(paypalId: string, stato: string) {
     console.error('carta_esito', paypalId, stato, error)
     return null
   }
-  // Quel che torna carta_esito (113-carta.sql).
+  // Quel che torna carta_esito (115-carta.sql).
   return data as { stato: string; importo: number; pagato_il?: string | null }
 }
 
@@ -142,7 +142,7 @@ type Nostro = { stato: string; importo: number; pagato_il?: string | null; colle
 const perIlBrowser = ({ paypal_id: _ordine, creato_il: _creato, ...p }: Nostro) => p
 
 const detto = (e: { message?: string; code?: string }) =>
-  // I messaggi del database con errcode 22023 sono già scritti per chi paga (113-carta.sql).
+  // I messaggi del database con errcode 22023 sono già scritti per chi paga (115-carta.sql).
   e.code === '22023' && e.message ? e.message : NON_RISPONDE
 
 Deno.serve(async (req) => {
@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
   }
 
   if (corpo.azione === 'attivo') {
-    // La carta c'è se c'è anche 113-carta.sql: PGRST202 vuol dire che non è stato lanciato.
+    // La carta c'è se c'è anche 115-carta.sql: PGRST202 vuol dire che non è stato lanciato.
     const { error } = await admin.rpc('carta_stato_pagamento', { pagamento: '00000000-0000-0000-0000-000000000000' })
     return error?.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ attivo: true, clientId, sandbox: host.includes('sandbox') })
   }
@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
     const prepara = () => admin.rpc('carta_prepara_prima', { dati })
     let { data, error } = await prepara()
     if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: detto(error) }, 409)
-    // Quel che torna carta_prepara_prima (113-carta.sql).
+    // Quel che torna carta_prepara_prima (115-carta.sql).
     let p = data as { stato: string; id: string; importo: number; paypal_id?: string | null; pagato_il?: string | null; creato_il: string }
     if (p.stato === 'attesa' && p.paypal_id) {
       // L'ordine c'è già: forse è stato pagato e la risposta si è persa, o non vale più. Si rilegge prima di ridarlo.
@@ -222,7 +222,7 @@ Deno.serve(async (req) => {
 
   const { data, error } = await admin.rpc('carta_stato_pagamento', { pagamento })
   if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: NON_RISPONDE }, 502)
-  // Quel che torna carta_stato_pagamento (113-carta.sql).
+  // Quel che torna carta_stato_pagamento (115-carta.sql).
   const s = data as Nostro | null
   if (!s || s.stato !== 'attesa' || !s.paypal_id) return risposta({ pagamento: s && perIlBrowser(s) })
   const ordine = s.paypal_id

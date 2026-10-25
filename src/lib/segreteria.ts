@@ -1,7 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
-import type { DatoImportBanca } from './importaBanca'
+import type { CopertoBanca, DatoImportBanca } from './importaBanca'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
 import type { IncassoPrima } from './pagatoPrima'
@@ -17,7 +17,7 @@ import { euro, mancanoDatiSocio } from './ricevute'
 import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
 import type { PagamentoSatispay } from './satispay'
-import type { ContiScarico, SceltaSatispay, StatoScarico } from './satispayScarico'
+import type { ContiScarico, PagamentoNegozio, SceltaGruppo, SceltaSatispay, StatoScarico } from './satispayScarico'
 import type { VoceCorso } from './corsiDaPagare'
 import { STAGIONE, stagioneDi } from './costi'
 import { ESTENSIONI, MASSIMO_FILE, anniScritti, minorenne } from './richieste'
@@ -160,7 +160,7 @@ export interface PersonaSeg {
   vociCorsi?: VoceCorso[]
   /** Centesimi pagati con Satispay dal modulo e non ancora in una ricevuta (`73-satispay.sql`). */
   satispay?: number
-  /** Quanto di `satispay` è arrivato con la carta (`113-carta.sql`). */
+  /** Quanto di `satispay` è arrivato con la carta (`115-carta.sql`). */
   carta?: number
   /** Centesimi del saldo della quota arrivati con Satispay e non ancora in una ricevuta (`102-saldo-satispay.sql`). */
   saldo?: number
@@ -170,6 +170,8 @@ export interface PersonaSeg {
   satispayCorsi?: string[]
   /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`); col database lo dà `100-nucleo.sql`. */
   nucleo?: string
+  /** Il genitore aggiunto per fare da titolare ai figli, che non frequenta: niente corsi, quota né certificato (`113-genitore-non-iscritto.sql`). */
+  genitoreNonIscritto?: boolean
   /** `AAAA-MM-GG`, dall'anagrafica; senza, l'età non si sa e il certificato serve (vedi `serveCertificato`). */
   natoIl?: string
   /** Le sue tessere: non le dà `persone()`, le attacca `conTessere` (vedi `tessere.ts`). */
@@ -713,6 +715,13 @@ export interface DatiSegreteria {
    */
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>
+  /**
+   * Il genitore che non frequenta, titolare del nucleo di un figlio
+   * minorenne: una persona nuova col segno `genitoreNonIscritto` e il codice
+   * fiscale, e il figlio nel suo nucleo. Torna l'id. Col database è
+   * `aggiungi_genitore` di `113-genitore-non-iscritto.sql`.
+   */
+  aggiungiGenitore(figlioId: string, genitore: { nome: string; cognome: string; codiceFiscale: string }): Promise<string>
   rendiTitolare(personaId: string): Promise<void>
 
   /** Le ricevute di una persona, o tutte, dalla più recente; anche le annullate. */
@@ -795,7 +804,7 @@ export interface DatiSegreteria {
   /** «Annulla»: toglie l'ultimo sollecito se l'ha segnato chi è collegato da meno di 15 minuti; falso se non l'ha tolto o senza il file. */
   togliSollecito(personaId: string): Promise<boolean>
   /** Il genitore di ognuno, in un colpo, con la regola di `anagraficaDi`: per il sollecito ai minorenni nell'elenco. */
-  genitori(): Promise<Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>>>
+  genitori(): Promise<Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome' | 'genitoreCodiceFiscale' | 'codiceFiscale'>>>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
   pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
   /** Nome e cognome di chi ha pagato, e nient'altro: per chi segue i pagamenti senza vedere le persone (`55-amministrazione.sql`). */
@@ -826,6 +835,18 @@ export interface DatiSegreteria {
   scaricaSatispay(anteprima: boolean): Promise<ContiScarico>
   /** Cosa fare di un pagamento da decidere: scriverlo oggi o il suo giorno, lasciarlo fuori, o riconoscerlo in un movimento a mano. */
   decidiSatispay(satispayId: string, scelta: SceltaSatispay, movimentoId?: string): Promise<void>
+  /** Le scelte di un gruppo di IMPORTAZIONI, tutte o nessuna (`114-importazioni.sql`). */
+  decidiGruppoSatispay(scelte: SceltaGruppo[]): Promise<void>
+  /** «Non è questo»: il pagamento lascia il movimento a mano e torna da decidere. Non nei giorni chiusi. */
+  scollegaSatispay(satispayId: string): Promise<void>
+  /** I pagamenti del negozio Satispay di un mese (`AAAA-MM`), con l'esito dello scarico; vuoto senza il 97. */
+  negozioSatispay(mese: string): Promise<PagamentoNegozio[]>
+  /** I movimenti della banca abbinati da soli a uno già scritto; null senza `114-importazioni.sql`. */
+  bancaCoperti(): Promise<CopertoBanca[] | null>
+  /** Dopo l'import: salva i movimenti della banca abbinati da soli, per ricontrollarli. Senza il 114 non fa niente. */
+  segnaCopertiBanca(righe: CopertoBanca[]): Promise<void>
+  /** «Non è questo» per la banca: il movimento entra come un import normale (Conto Corrente, «Da classificare»). */
+  nonEQuestoBanca(chiave: string): Promise<void>
   /** Solo la descrizione e la nota si correggono sul posto. */
   correggiTestoMovimento(id: string, descrizione: string, nota?: string): Promise<void>
   /**

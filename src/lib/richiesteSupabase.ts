@@ -212,7 +212,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       const carta = metodo === 'carta'
       const errore = carta ? ERRORE_CARTA : ERRORE_SATISPAY
       const r = await (carta ? paypal : satispay)({ azione: 'prepara', corso: x.corso, formula: x.formula, nome: x.nome, cognome: x.cognome, email: x.email, ...(carta ? { chiave: x.chiave } : {}) })
-      // Senza il file SQL (83-satispay-prima, 113-carta) la funzione dice che il servizio non c'è: si paga col bonifico.
+      // Senza il file SQL (83-satispay-prima, 115-carta) la funzione dice che il servizio non c'è: si paga col bonifico.
       if (r.attivo === false) throw new Error(carta ? CARTA_SPENTA : SATISPAY_SPENTO)
       if (typeof r.id !== 'string' || typeof r.importo !== 'number') throw new Error(errore)
       if (r.stato === 'pagato') return { stato: 'pagato', id: r.id, importo: r.importo, pagatoIl: typeof r.pagato_il === 'string' ? r.pagato_il : undefined }
@@ -236,7 +236,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
     async pagaCarta(pagamentoId) {
       const r = await paypal({ azione: 'cattura', pagamento: pagamentoId })
       if (r.attivo === false) throw new Error(CARTA_SPENTA)
-      // `as`: la forma è quella di `carta_stato_pagamento` (113-carta.sql), riletta dalla funzione dopo la cattura.
+      // `as`: la forma è quella di `carta_stato_pagamento` (115-carta.sql), riletta dalla funzione dopo la cattura.
       const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null } | null | undefined
       if (!p) throw new Error(ERRORE_CARTA)
       return { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined }

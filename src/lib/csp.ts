@@ -5,7 +5,7 @@
  *
  * Gli script sono solo i nostri (`'self'`) più il lettore di YouTube del timer
  * e i campi della carta del modulo di iscrizione: PayPal li disegna in iframe
- * suoi, con Apple Pay e Google Pay (113-carta.sql).
+ * suoi, con Apple Pay e Google Pay (115-carta.sql).
  * Gli stili in pagina restano ammessi: React e Puck li scrivono, e l'anteprima
  * del sito (iframe `srcdoc`) ha il suo `<style>`. Le immagini e l'audio
  * possono venire da https: le foto del sito e le radio le sceglie la segreteria.

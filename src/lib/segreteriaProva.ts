@@ -6,7 +6,7 @@ import { cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagam
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
-import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
+import { codicePulito, cosaNonVaNucleo, GENITORE_GIA_IN_ELENCO, GENITORE_SENZA_CF, GENITORE_SENZA_NOME, nuovoTitolare, type DatiGenitore } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
 import { numeriDiProva } from './sitoStatistiche'
@@ -21,14 +21,14 @@ import { QUOTA_ASSOCIATIVA, stagioneDi } from './costi'
 import { NOTA_DI_DEFAULT, type IncassoPrima } from './pagatoPrima'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
-import { MASSIMO_PER_IMPORTAZIONE, PREFISSO_CHIAVE_BANCA } from './importaBanca'
+import { MASSIMO_PER_IMPORTAZIONE, nonEQuestoBanca, PREFISSO_CHIAVE_BANCA, segnaCoperti } from './importaBanca'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
 const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
 import { cartaPerPersona, cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
-import { applicaScarico, CAMBIO_CASSA_SATISPAY, daDecidere, decidiScarico, NOME_CASSA_SATISPAY, type PagamentoNegozio } from './satispayScarico'
+import { applicaScarico, CAMBIO_CASSA_SATISPAY, daDecidere, decidiGruppo, decidiScarico, NOME_CASSA_SATISPAY, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
@@ -733,6 +733,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             satispayCorsi: corsiSatispay.get(p.id),
             nucleo: p.nucleo,
             natoIl: anagraficaDi(p.id)?.dati.natoIl,
+            ...(p.genitoreNonIscritto && { genitoreNonIscritto: true }),
           }),
         )
     },
@@ -1075,6 +1076,29 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (no) throw new Error(no)
       a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, nucleo: titolareId } : p))
       salva()
+    },
+
+    // Come `aggiungi_genitore` in 113-genitore-non-iscritto.sql: prima le prove, poi la persona nuova.
+    async aggiungiGenitore(figlioId, g) {
+      if (!g.nome.trim() || !g.cognome.trim()) throw new Error(GENITORE_SENZA_NOME)
+      const cf = codicePulito(g.codiceFiscale)
+      if (!cf) throw new Error(GENITORE_SENZA_CF)
+      // Come il database: la scheda e ogni modulo accolto, anche del figlio, che non è mai il suo genitore.
+      const codici = (id: string) => [a().anagrafiche?.[id]?.codiceFiscale, ...richiesteDi(id).filter((r) => r.stato === 'accolta').map((r) => r.codiceFiscale)]
+      if (a().persone.some((p) => codici(p.id).some((c) => codicePulito(c) === cf))) throw new Error(GENITORE_GIA_IN_ELENCO)
+      const id = crypto.randomUUID()
+      const iscritti = [...a().persone, { id, attiva: true, ruolo: 'iscritto' }]
+        .filter((p) => p.ruolo === 'iscritto')
+        .map((p) => ({ ...p, natoIl: anagraficaDi(p.id)?.dati.natoIl }))
+      const no = cosaNonVaNucleo(iscritti, figlioId, id)
+      if (no) throw new Error(no)
+      a().persone = [
+        ...a().persone.map((p) => (p.id === figlioId ? { ...p, nucleo: id } : p)),
+        { id, nome: g.nome.trim(), cognome: g.cognome.trim(), ruolo: 'iscritto', attiva: true, creataIl: oggi(), genitoreNonIscritto: true },
+      ]
+      a().anagrafiche = { ...a().anagrafiche, [id]: { codiceFiscale: cf, cambiataIl: new Date().toISOString() } }
+      salva()
+      return id
     },
 
     async togliDalNucleo(personaId) {
@@ -1433,10 +1457,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async genitori() {
-      const tutti = new Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>>()
+      const tutti = new Map<string, DatiGenitore>()
       for (const p of a().persone) {
         const an = anagraficaDi(p.id)
-        if (an) tutti.set(p.id, Object.fromEntries(Object.entries({ genitoreNome: an.dati.genitoreNome, genitoreCognome: an.dati.genitoreCognome }).filter(([, v]) => v)))
+        const { genitoreNome, genitoreCognome, genitoreCodiceFiscale, codiceFiscale } = an?.dati ?? {}
+        if (an) tutti.set(p.id, Object.fromEntries(Object.entries({ genitoreNome, genitoreCognome, genitoreCodiceFiscale, codiceFiscale }).filter(([, v]) => v)))
       }
       return tutti
     },
@@ -1858,6 +1883,55 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async decidiGruppoSatispay(scelte) {
+      const { movimenti, voci, casse, chiusure } = contabilita()
+      const r = decidiGruppo({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, scelte)
+      a().satispayNegozio = r.negozio
+      a().movimenti = r.movimenti
+      salva()
+    },
+
+    async scollegaSatispay(satispayId) {
+      const { movimenti, voci, casse, chiusure } = contabilita()
+      const r = scollegaScarico({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, satispayId)
+      a().satispayNegozio = r.negozio
+      a().movimenti = r.movimenti
+      salva()
+    },
+
+    async negozioSatispay() {
+      // Pochi pagamenti d'esempio: il mese lo sceglie `righeEntrato`.
+      return a().satispayNegozio ?? []
+    },
+
+    async bancaCoperti() {
+      return a().bancaCoperti ?? []
+    },
+
+    async segnaCopertiBanca(righe) {
+      const conto = contabilita().casse.find((c) => c.nome === NOME_CASSA_CONTO)
+      if (!conto) throw new Error('Manca la cassa Conto Corrente')
+      // Come `banca_segna_coperti`: le righe il cui abbinamento non regge entrano come un import normale.
+      const r = segnaCoperti(contabilita().movimenti, a().bancaCoperti ?? [], righe, conto.id)
+      // Le righe nuove si scrivono prima: se una non va, i segni sui movimenti a mano non restano a metà.
+      if (r.daScrivere.length) await this.importaMovimentiBanca(r.daScrivere)
+      const segni = new Map(r.movimenti.filter((m) => m.bancaChiave).map((m) => [m.id, m.bancaChiave]))
+      a().movimenti = contabilita().movimenti.map((m) => (segni.has(m.id) ? { ...m, bancaChiave: segni.get(m.id) } : m))
+      a().bancaCoperti = r.coperti
+      salva()
+    },
+
+    async nonEQuestoBanca(chiave) {
+      const conto = contabilita().casse.find((c) => c.nome === NOME_CASSA_CONTO)
+      if (!conto) throw new Error('Manca la cassa Conto Corrente')
+      const r = nonEQuestoBanca(a().bancaCoperti ?? [], chiave, contabilita().chiusure, conto.id)
+      await this.importaMovimentiBanca([r.scrivi])
+      // Il movimento a mano non è più coperto: torna libero, anche per Satispay.
+      a().movimenti = contabilita().movimenti.map((m) => (m.bancaChiave === chiave ? { ...m, bancaChiave: undefined } : m))
+      a().bancaCoperti = r.coperti
+      salva()
+    },
+
     async correggiTestoMovimento(id, descrizione, nota) {
       const m = contabilita().movimenti.find((x) => x.id === id)
       if (!m) throw new Error('Il movimento non c’è')
@@ -1883,7 +1957,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const gia = chiave ? (a().ricevute ?? []).find((x) => x.chiave === chiave && x.personaId === dati.personaId && !x.annullataIl) : undefined
       if (gia) throw new Error(`Questo pagamento è già nella ricevuta n. ${gia.numero}/${gia.anno}: non va registrato di nuovo`)
       const tutti = pagamentiSatispayProva()
-      // Come registra_pagamento_diretto (113-carta.sql): Satispay e la carta si controllano ognuno coi suoi soldi.
+      // Come registra_pagamento_diretto (115-carta.sql): Satispay e la carta si controllano ognuno coi suoi soldi.
       const sp = cosaNonVaSatispayAMano(dati.metodo, satispayPerPersona(tutti.filter((x) => x.circuito !== 'carta')).get(dati.personaId), cartaPerPersona(tutti).get(dati.personaId))
       if (sp) throw new Error(sp)
       const { chiaveRicevuta: _chiave, ...senzaChiave } = dati
@@ -1950,6 +2024,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       }
       // Una sola iscrizione per corso, come nel database: chi torna riparte da oggi.
       a().iscrizioni = [...a().iscrizioni.filter((i) => i !== c), { corsoId, personaId, dal: dal ?? g }]
+      // Come il trigger di 113-genitore-non-iscritto.sql: iscritto a un corso, è un iscritto come gli altri.
+      a().persone = a().persone.map((p) => (p.id === personaId && p.genitoreNonIscritto ? { ...p, genitoreNonIscritto: undefined } : p))
       salva()
     },
 
