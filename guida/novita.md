@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.216.3 — 25 ottobre 2026
+
+### Modificato
+
+- Lo scarico Satispay tiene anche la descrizione del pagamento
+
 ## 0.216.2 — 25 ottobre 2026
 
 ### Risolto
