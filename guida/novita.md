@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.212.0 — 25 ottobre 2026
+
+### Novità
+
+- In IMPORTAZIONI l'elenco delle voci da classificare
+
+### Modificato
+
+- La gara si modifica in una finestra al centro, più larga
+
 ## 0.211.0 — 25 ottobre 2026
 
 ### Novità

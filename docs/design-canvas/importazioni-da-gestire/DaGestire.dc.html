@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Importazioni</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Proposta: in IMPORTAZIONI, sotto DA DECIDERE, un elenco DA GESTIRE con tutte le voci importate (Satispay, banca) o scritte a mano che sono ancora sulla voce Da classificare, di qualsiasi data. Esce dalla lista quando la classifichi su una voce vera. Non duplica DA DECIDERE. Classifica porta al movimento in MOVIMENTI. -->
+<div style="display: flex; width: 1440px; min-height: 1300px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="IMPORTAZIONI" numeri="IMPORTAZIONI:11" importazioni="true" nome="Nicola Albertini" ruolo="Amministrazione" autorizzazioni="segreteria e amministrazione" altezza="1300px" hint-size="240px,1300px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">IMPORTAZIONI</h1>
+      <span style="font-size: 14px; color: #46606f">Quello che arriva da Satispay e dalla banca: da dove, quando, e cosa resta da fare.</span>
+    </div>
+    <section aria-label="SATISPAY" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 14px 18px; background: #ffffff; border: 2px solid #cfe6f4">
+      <div style="display: flex; flex-direction: column; gap: 2px; flex: 999 1 420px; min-width: 0">
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">SATISPAY</span>
+        <span style="font-size: 15px">Scaricato stanotte alle 6:08: <b>2 incassi</b> entrati da soli. Niente da decidere.</span>
+      </div>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Cosa è entrato" hint-size="160px,44px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Scarica ora" hint-size="140px,44px"></dc-import>
+    </section>
+    <section aria-label="BANCA · BANCOPOSTA" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 14px 18px; background: #ffffff; border: 2px solid #cfe6f4">
+      <div style="display: flex; flex-direction: column; gap: 2px; flex: 999 1 420px; min-width: 0">
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">BANCA · BANCOPOSTA</span>
+        <span style="font-size: 15px">Ultimo file importato il 16/10/2026: <b>42 movimenti</b> di settembre.</span>
+      </div>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Cosa è entrato" hint-size="160px,44px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Importa un file" hint-size="170px,44px"></dc-import>
+    </section>
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; padding-top: 6px">
+      <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.04em">DA DECIDERE · NIENTE</span>
+      <span style="font-size: 14px; color: #46606f">Quel che è arrivato è entrato.</span>
+    </div>
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; padding-top: 6px">
+      <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.04em">DA CLASSIFICARE · 6 VOCI · +152,80 €</span>
+      <span style="font-size: 14px; color: #46606f">Sono già in contabilità ma senza una voce vera. Le più vecchie in alto; escono da qui quando le classifichi.</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <dc-import name="Chip" tema="sito" label="Tutte · 6" acceso="true" hint-size="110px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="Satispay · 3" hint-size="130px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="Banca · 2" hint-size="110px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="A mano · 1" hint-size="110px,44px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; background: #ffffff; border: 2px solid #cfe6f4">
+      <dc-import name="TestataTabella" tema="sito" colonne="DATA|ORIGINE|MOVIMENTO|VOCE|IMPORTO|" griglia="100px 110px minmax(0, 1.6fr) minmax(0, 1fr) 110px 120px" ordinata="DATA" verso="su" hint-size="100%,40px"></dc-import>
+      <div style="display: grid; grid-template-columns: 100px 110px minmax(0, 1.6fr) minmax(0, 1fr) 110px 120px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>12/10/2026</span><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #46606f">A MANO</span><span style="font-weight: 600">Rimborso materiale tatami</span><span>Da classificare</span><span style="text-align: right; font-weight: 600; color: #b81d1d;">−35,00 €</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Classifica" hint-size="110px,40px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px 110px minmax(0, 1.6fr) minmax(0, 1fr) 110px 120px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>15/10/2026</span><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #46606f">BANCA</span><span style="font-weight: 600">Bonifico CIROLLI MARIA STELLA</span><span>Da classificare</span><span style="text-align: right; font-weight: 600;">+120,00 €</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Classifica" hint-size="110px,40px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px 110px minmax(0, 1.6fr) minmax(0, 1fr) 110px 120px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>15/10/2026</span><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #46606f">BANCA</span><span style="font-weight: 600">Commissioni conto</span><span>Da classificare</span><span style="text-align: right; font-weight: 600; color: #b81d1d;">−4,20 €</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Classifica" hint-size="110px,40px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px 110px minmax(0, 1.6fr) minmax(0, 1fr) 110px 120px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>21/10/2026</span><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #46606f">SATISPAY</span><span style="font-weight: 600">Rimborso Satispay · Paolo T.</span><span>Da classificare</span><span style="text-align: right; font-weight: 600; color: #b81d1d;">−8,00 €</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Classifica" hint-size="110px,40px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px 110px minmax(0, 1.6fr) minmax(0, 1fr) 110px 120px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>22/10/2026</span><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #46606f">SATISPAY</span><span style="font-weight: 600">Satispay · Zeynep A.</span><span>Da classificare</span><span style="text-align: right; font-weight: 600;">+40,00 €</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Classifica" hint-size="110px,40px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px 110px minmax(0, 1.6fr) minmax(0, 1fr) 110px 120px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>22/10/2026</span><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #46606f">SATISPAY</span><span style="font-weight: 600">Satispay · Clelia D.</span><span>Da classificare</span><span style="text-align: right; font-weight: 600;">+40,00 €</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Classifica" hint-size="110px,40px"></dc-import>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 14px; font-size: 14px; background: #cfe6f4">
+        <b>6 voci: entrate +200,00 €, uscite −47,20 €</b><span>coincide con MOVIMENTI → Da classificare</span>
+      </div>
+    </div>
+    <span style="font-size: 14px; color: #46606f; max-width: 880px">«Classifica» apre il movimento in MOVIMENTI, dove si sceglie la voce (e la persona, per le quote). Con nessuna voce da classificare la sezione dice «Niente da classificare.»</span>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

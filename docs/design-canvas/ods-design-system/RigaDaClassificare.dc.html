@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: {{griglia}}; grid-template-areas: {{aree}}; gap: {{distanza}}; align-items: center; width: {{larghezza}}; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; color: #0d2a3d">
+  <span style="grid-area: data; font-size: 13px; color: #3d3d3a">{{data}}</span>
+  <span style="grid-area: fonte; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #46606f">{{fonte}}</span>
+  <span style="grid-area: desc; font-size: 15px; font-weight: 600; min-width: 0">{{descrizione}}</span>
+  <span style="grid-area: importo; font-size: 16px; font-weight: 700; text-align: right; white-space: nowrap; color: {{coloreImporto}}">{{importo}}</span>
+  <div style="grid-area: tasto; text-align: right"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Classifica" hint-size="110px,40px"></dc-import></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"data":{"editor":"text","default":"12/10/2026"},"fonte":{"editor":"text","default":"A MANO"},"descrizione":{"editor":"text","default":"Rimborso materiale tatami"},"importo":{"editor":"text","default":"−35,00 €"},"uscita":{"editor":"enum","options":["true","false"],"default":"true"},"telefono":{"editor":"enum","options":["false","true"],"default":"false"},"$preview":{"width":1000,"height":60}}'>
+// Riproduzione 1:1 della riga di «Da classificare» in IMPORTAZIONI (Importazioni.tsx, .sg-riga-da-classificare in src/segreteria.css):
+// DATA | ORIGINE (A MANO, BANCA, SATISPAY, STORICO) | MOVIMENTO | IMPORTO | tasto «Classifica» (linea), che apre il movimento in MOVIMENTI.
+// Niente colonna VOCE: la voce e' sempre «Da classificare». L'importo ha il segno e, per le uscite, --rosso-testo; le entrate restano nel colore del testo.
+// Sopra la tabella: la testata con TestataTabella (colonne DATA|ORIGINE|MOVIMENTO|IMPORTO, griglia 100px 100px 1fr 120px 130px, ultima colonna non a destra), il titolo
+// «DA CLASSIFICARE · N VOCI» e le chip per origine; sotto: «Mostra altre N» e il riepilogo (entrate, uscite) fuori dalla tabella.
+// Telefono (sotto i 768px): testata nascosta; griglia auto 1fr auto, righe «data origine importo» / «movimento» / «tasto», col tasto largo e alto 44px (qui il tasto resta quello del Bottone).
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tel = truthy(p.telefono);
+    return {
+      griglia: tel ? 'auto 1fr auto' : '100px 100px 1fr 120px 130px',
+      aree: tel ? "'data fonte importo' 'desc desc desc' 'tasto tasto tasto'" : "'data fonte desc importo tasto'",
+      distanza: tel ? '6px 12px' : '12px',
+      larghezza: tel ? '375px' : '1000px',
+      coloreImporto: truthy(p.uscita ?? true) ? '#b81d1d' : '#0d2a3d',
+    };
+  }
+}
+</script>
+</body>
+</html>
