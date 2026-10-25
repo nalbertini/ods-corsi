@@ -28,7 +28,7 @@ import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sito
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
 import { cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
-import { applicaScarico, CAMBIO_CASSA_SATISPAY, daDecidere, decidiGruppo, decidiScarico, NOME_CASSA_SATISPAY, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
+import { applicaScarico, daDecidere, decidiGruppo, decidiScarico, NOME_CASSA_SATISPAY, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
@@ -173,8 +173,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       { id: 'cassa-contanti', nome: NOME_CASSA_CONTANTI, saldoIniziale: 0 },
       { id: 'cassa-conto', nome: NOME_CASSA_CONTO, saldoIniziale: 0 },
     ]
-    // Come 97-satispay-scarico.sql: la cassa Satispay c'è anche in un archivio fatto prima.
-    return casse.some((c) => c.nome === NOME_CASSA_SATISPAY) ? casse : [...casse, { id: 'cassa-satispay', nome: NOME_CASSA_SATISPAY, saldoIniziale: 0, dal: CAMBIO_CASSA_SATISPAY }]
+    // Come 97-satispay-scarico.sql e 115: la cassa Satispay c'è anche in un archivio fatto prima, dal 2025,
+    // anche in uno salvato quando partiva dal 1° ottobre 2026.
+    return casse.some((c) => c.nome === NOME_CASSA_SATISPAY)
+      ? casse.map((c) => (c.nome === NOME_CASSA_SATISPAY && c.dal === '2026-10-01' ? { ...c, dal: '2025-01-01' } : c))
+      : [...casse, { id: 'cassa-satispay', nome: NOME_CASSA_SATISPAY, saldoIniziale: 0, dal: '2025-01-01' }]
   }
   const contabilita = () => ({
     casse: cassePartenza(),

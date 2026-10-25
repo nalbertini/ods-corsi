@@ -65,16 +65,16 @@ console.log('1. lo scarico gira solo col negozio vero (R12)')
   ok('l\'host che è scritto in una costante', prova(() => s.HOST_VERO), 'authservices.satispay.com')
 }
 
-console.log('\n2. la cassa: Satispay dal 1 ottobre, prima il Conto Corrente')
+console.log('\n2. la cassa: ogni pagamento Satispay entra nella cassa Satispay, di qualunque data')
 const casse = [
   { id: 'co', nome: 'Cassa Contanti', saldoIniziale: 0 },
   { id: 'cc', nome: 'Conto Corrente', saldoIniziale: 0, dal: '2026-09-01' },
-  { id: 'sa', nome: 'Satispay', saldoIniziale: 0, dal: '2026-10-01' },
+  { id: 'sa', nome: 'Satispay', saldoIniziale: 0, dal: '2025-01-01' },
 ]
 {
-  ok('il 30 settembre: Conto Corrente', prova(() => s.cassaSatispay('2026-09-30', casse)?.id), 'cc')
-  ok('l\'1 ottobre: Satispay', prova(() => s.cassaSatispay('2026-10-01', casse)?.id), 'sa')
-  ok('il giorno del cambio è una costante', prova(() => s.CAMBIO_CASSA_SATISPAY), '2026-10-01')
+  ok('la cassa dello scarico è Satispay, senza guardare la data', prova(() => s.cassaSatispay(casse)?.id), 'sa')
+  ok('senza una cassa Satispay: nessuna (non ripiega sul Conto Corrente)', prova(() => s.cassaSatispay(casse.filter((c) => c.id !== 'sa'))), undefined)
+  ok('il cambio del 1° ottobre resta una costante (la usa il metodo Satispay di PAGAMENTI)', prova(() => s.CAMBIO_CASSA_SATISPAY), '2026-10-01')
 }
 
 console.log('\n3. leggere le pagine di Satispay (R8, R9)')
@@ -192,12 +192,14 @@ const ripassa = (r, extra = {}) => ({ negozio: r.negozio, modulo: [], pagamenti:
   ok('applica di fila: niente', conti(r2), '0/0/0/0/0/0')
   ok('…un movimento solo', di(r2, (x) => x.movimenti?.filter((m) => m.satispayId === 'P1').length), 1)
   ok('senza nome: solo «Satispay»', di(applica(dati([inc('P2', 300, '2026-10-15T09:00:00Z', null)])), (x) => movDi(x, 'P2')), 'entrata|2026-10-15|300|Satispay|Da classificare|Satispay')
-  ok('il 20 settembre entra in Conto Corrente', di(applica(dati([inc('P3', 2000, '2026-09-20T10:00:00Z', 'Sara')])), (x) => movDi(x, 'P3')), 'entrata|2026-09-20|2000|Conto Corrente|Da classificare|Satispay · Sara')
+  ok('il 20 settembre entra in Satispay, non nel Conto Corrente', di(applica(dati([inc('P3', 2000, '2026-09-20T10:00:00Z', 'Sara')])), (x) => movDi(x, 'P3')), 'entrata|2026-09-20|2000|Satispay|Da classificare|Satispay · Sara')
+  ok('il 15 settembre, senza altri movimenti: Satispay', di(applica(dati([inc('P4', 700, '2026-09-15T10:00:00Z', 'Lia')])), (x) => movDi(x, 'P4')), 'entrata|2026-09-15|700|Satispay|Da classificare|Satispay · Lia')
+  ok('il 15 novembre: Satispay', di(applica(dati([inc('P5', 700, '2026-11-15T10:00:00Z', 'Lia')], { oggi: '2026-11-20' })), (x) => movDi(x, 'P5')), 'entrata|2026-11-15|700|Satispay|Da classificare|Satispay · Lia')
 
   console.log('  — il giorno è quello di Roma')
   ok('14 ottobre 22:30Z è il 15', di(applica(dati([inc('T1', 1234, '2026-10-14T22:30:00Z', 'Notte')])), (x) => movDi(x, 'T1')), 'entrata|2026-10-15|1234|Satispay|Da classificare|Satispay · Notte')
   ok('30 settembre 22:30Z è l\'1 ottobre: Satispay', di(applica(dati([inc('T2', 100, '2026-09-30T22:30:00Z', 'Cambio')])), (x) => movDi(x, 'T2')), 'entrata|2026-10-01|100|Satispay|Da classificare|Satispay · Cambio')
-  ok('30 settembre 19:30Z è ancora settembre: Conto Corrente', di(applica(dati([inc('T3', 100, '2026-09-30T19:30:00Z', 'Sera')])), (x) => movDi(x, 'T3')), 'entrata|2026-09-30|100|Conto Corrente|Da classificare|Satispay · Sera')
+  ok('30 settembre 19:30Z è ancora settembre: Satispay lo stesso', di(applica(dati([inc('T3', 100, '2026-09-30T19:30:00Z', 'Sera')])), (x) => movDi(x, 'T3')), 'entrata|2026-09-30|100|Satispay|Da classificare|Satispay · Sera')
 
   console.log('  — PENDING aspetta, CANCELED non entra mai (R2)')
   const w = applica(dati([inc('W1', 1000, '2026-10-14T10:00:00Z', 'Attesa', 'PENDING')]))
@@ -227,18 +229,30 @@ const ripassa = (r, extra = {}) => ({ negozio: r.negozio, modulo: [], pagamenti:
   ok('niente di nuovo', conti(an) + ' ' + di(an, (x) => x.movimenti.length), '0/0/0/0/0/0 1')
 
   console.log('  — doppione certo e dubbio')
-  const d1 = applica(dati([inc('D1', 1250, '2026-10-14T10:00:00Z')], { movimenti: [man('m1', '2026-10-14', 1250, 'cc')] }))
+  const d1 = applica(dati([inc('D1', 1250, '2026-10-14T10:00:00Z')], { movimenti: [man('m1', '2026-10-14', 1250, 'sa')] }))
   ok('certo: a_mano, nessun movimento nuovo', conti(d1) + ' ' + di(d1, (x) => esitoDi(x, 'D1') + ' ' + x.movimenti.length), '0/0/0/1/0/0 a_mano/- 1')
   ok('…il movimento a mano prende il segno', di(d1, (x) => x.movimenti[0].satispayId), 'D1')
-  const d2 = applica(dati([inc('D2', 1250, '2026-10-14T10:00:00Z')], { movimenti: [man('m1', '2026-10-14', 1250, 'cc'), man('m2', '2026-10-14', 1250, 'sa')] }))
+  const d2 = applica(dati([inc('D2', 1250, '2026-10-14T10:00:00Z')], { movimenti: [man('m1', '2026-10-14', 1250, 'sa'), man('m2', '2026-10-14', 1250, 'sa')] }))
   ok('dubbio: da decidere, forse doppione', conti(d2) + ' ' + di(d2, (x) => esitoDi(x, 'D2') + ' ' + x.movimenti.length), '0/0/0/0/1/0 da_decidere/forse_doppione 2')
   ok('…i candidati sono i due', di(d2, (x) => [...(riga(x, 'D2').candidati ?? [])].sort()), ['m1', 'm2'])
   ok('…nessuno ha il segno', di(d2, (x) => x.movimenti.filter((m) => m.satispayId).length), 0)
+  // Il caso reale: 4 entrate a mano uguali nel Conto Corrente non sono candidate, il pagamento va in Satispay.
+  const cc4 = ['c1', 'c2', 'c3', 'c4'].map((id) => man(id, '2026-08-31', 5000, 'cc'))
+  const d6 = applica(dati([inc('K1', 5000, '2026-08-31T10:00:00Z', 'Reale')], { movimenti: cc4 }))
+  ok('31/08, 4 entrate a mano uguali in Conto Corrente: scritto in Satispay, non da decidere', conti(d6) + ' ' + di(d6, (x) => esitoDi(x, 'K1') + ' ' + movDi(x, 'K1')), '1/0/0/0/0/1 scritto/- entrata|2026-08-31|5000|Satispay|Da classificare|Satispay · Reale')
+  ok('…le 4 entrate restano senza segno', di(d6, (x) => x.movimenti.filter((m) => m.satispayId !== 'K1').map((m) => m.satispayId ?? '-')), ['-', '-', '-', '-'])
+  const d7 = applica(dati([inc('K2', 5000, '2026-08-31T10:00:00Z', 'Reale')], { movimenti: [cc4[0]] }))
+  ok('stesso giorno e importo, una sola entrata in Conto Corrente: scritto, non a_mano', conti(d7) + ' ' + di(d7, (x) => esitoDi(x, 'K2') + ' ' + x.movimenti.length + ' ' + (x.movimenti.find((m) => m.id === 'c1').satispayId ?? '-')), '1/0/0/0/0/1 scritto/- 2 -')
+  const d8 = applica(dati([inc('K3', 5000, '2026-08-31T10:00:00Z', 'Reale')], { movimenti: [man('s1', '2026-08-31', 5000, 'sa'), man('s2', '2026-08-31', 5000, 'sa', { creatoIl: '2026-10-01T11:00:00Z' }), cc4[0]] }))
+  ok('2 entrate a mano in Satispay e una in Conto Corrente: da decidere, forse doppione', conti(d8) + ' ' + di(d8, (x) => esitoDi(x, 'K3')), '0/0/0/0/1/0 da_decidere/forse_doppione')
+  ok('…i candidati sono solo i due di Satispay', di(d8, (x) => [...(riga(x, 'K3').candidati ?? [])].sort()), ['s1', 's2'])
+  const d9 = applica(dati([inc('K4', 5000, '2026-08-31T10:00:00Z', 'Reale')], { movimenti: [man('s1', '2026-08-31', 5000, 'sa'), cc4[0]] }))
+  ok('una in Satispay e una in Conto Corrente: a_mano con quella di Satispay', di(d9, (x) => esitoDi(x, 'K4') + ' ' + x.movimenti.find((m) => m.id === 's1').satispayId + ' ' + (x.movimenti.find((m) => m.id === 'c1').satispayId ?? '-')), 'a_mano/- K4 -')
   const d3 = applica(dati([inc('D3', 1250, '2026-10-14T10:00:00Z')], { movimenti: [man('m1', '2026-10-14', 1250, 'co')] }))
   ok('Cassa Contanti non è candidata: movimento nuovo', conti(d3) + ' ' + di(d3, (x) => x.movimenti.length), '1/0/0/0/0/1 2')
-  const d4 = applica(dati([inc('D4', 1250, '2026-10-14T10:00:00Z')], { movimenti: [man('m1', '2026-10-14', 1250, 'cc', { annullatoIl: '2026-10-15T10:00:00Z' })] }))
+  const d4 = applica(dati([inc('D4', 1250, '2026-10-14T10:00:00Z')], { movimenti: [man('m1', '2026-10-14', 1250, 'sa', { annullatoIl: '2026-10-15T10:00:00Z' })] }))
   ok('un\'entrata annullata non è candidata', conti(d4), '1/0/0/0/0/1')
-  const d5 = applica(dati([inc('E1', 1250, '2026-10-14T09:00:00Z', 'Primo'), inc('E2', 1250, '2026-10-14T11:00:00Z', 'Secondo')], { movimenti: [man('m1', '2026-10-14', 1250, 'cc')] }))
+  const d5 = applica(dati([inc('E1', 1250, '2026-10-14T09:00:00Z', 'Primo'), inc('E2', 1250, '2026-10-14T11:00:00Z', 'Secondo')], { movimenti: [man('m1', '2026-10-14', 1250, 'sa')] }))
   ok('due pagamenti uguali, un movimento a mano: il primo lo prende, il secondo entra nuovo', conti(d5) + ' ' + di(d5, (x) => esitoDi(x, 'E1') + ' ' + esitoDi(x, 'E2') + ' ' + x.movimenti.length), '1/0/0/1/0/1 a_mano/- scritto/- 2')
   ok('…il segno del movimento a mano è del primo', di(d5, (x) => x.movimenti.find((m) => m.id === 'm1').satispayId), 'E1')
 
@@ -249,10 +263,11 @@ const ripassa = (r, extra = {}) => ({ negozio: r.negozio, modulo: [], pagamenti:
   ok('un giorno dopo la chiusura entra', conti(applica(dati([inc('G2', 100, '2026-10-16T10:00:00Z')], { chiusure: ch }))), '1/0/0/0/0/1')
   const g3 = applica(dati([neg('G3', 'REFUND_TO_BUSINESS', 'ACCEPTED', 100, '2026-10-15T10:00:00Z', 'Via')], { chiusure: ch }))
   ok('anche un rimborso in un giorno chiuso aspetta', conti(g3), '0/0/0/0/1/0')
-  const g4 = applica(dati([inc('G4', 4200, '2026-10-12T10:00:00Z')], { chiusure: ch, movimenti: [man('m1', '2026-10-12', 4200, 'cc')] }))
+  ok('chiusa solo la cassa Conto Corrente: il pagamento entra in Satispay', conti(applica(dati([inc('G5', 1250, '2026-10-14T10:00:00Z')], { chiusure: [chiusura('cc', '2026-10-15')] }))), '1/0/0/0/0/1')
+  const g4 = applica(dati([inc('G4', 4200, '2026-10-12T10:00:00Z')], { chiusure: ch, movimenti: [man('m1', '2026-10-12', 4200, 'sa')] }))
   ok('un doppione certo in un giorno chiuso è a_mano', conti(g4) + ' ' + di(g4, (x) => esitoDi(x, 'G4')), '0/0/0/1/0/0 a_mano/-')
-  const b1 = applica(dati([inc('B1', 900, '2026-08-20T10:00:00Z', 'Vecchio')]))
-  ok('prima dell\'inizio del Conto Corrente: fuori, nessun movimento', conti(b1) + ' ' + di(b1, (x) => esitoDi(x, 'B1') + ' ' + x.movimenti.length), '0/0/0/0/0/0 fuori/prima_della_cassa 0')
+  const b1 = applica(dati([inc('B1', 900, '2024-12-20T10:00:00Z', 'Vecchio')]))
+  ok('prima dell\'inizio della cassa Satispay (1° gennaio 2025): fuori, nessun movimento', conti(b1) + ' ' + di(b1, (x) => esitoDi(x, 'B1') + ' ' + x.movimenti.length), '0/0/0/0/0/0 fuori/prima_della_cassa 0')
   ok('…e nei conti conta «prima»', di(b1, (x) => x.conti.prima), 1)
 
   console.log('  — già scritto in PAGAMENTI col metodo Satispay (fatto in palestra col QR)')
@@ -268,7 +283,7 @@ const ripassa = (r, extra = {}) => ({ negozio: r.negozio, modulo: [], pagamenti:
   ok('due pagamenti uguali, uno in PAGAMENTI: il primo è già scritto, il secondo entra', di(q7, (x) => esitoDi(x, 'Q7') + ' ' + esitoDi(x, 'Q8') + ' ' + x.movimenti.length), 'pagamenti/- scritto/- 1')
   const q9 = di(q7, (x) => applica(ripassa(x, { negozio: [...x.negozio, inc('Q9', 1250, '2026-10-14T12:00:00Z', 'Terzo')], pagamenti: [pg('2026-10-14', 1250)] })))
   ok('…al giro dopo la riga di PAGAMENTI è già presa: il terzo entra', di(q9, (x) => esitoDi(x, 'Q9')), 'scritto/-')
-  const q10 = applica(dati([inc('Q10', 1250, '2026-10-14T10:00:00Z')], { pagamenti: [pg('2026-10-14', 1250)], movimenti: [man('m1', '2026-10-14', 1250, 'cc')] }))
+  const q10 = applica(dati([inc('Q10', 1250, '2026-10-14T10:00:00Z')], { pagamenti: [pg('2026-10-14', 1250)], movimenti: [man('m1', '2026-10-14', 1250, 'sa')] }))
   ok('PAGAMENTI viene prima di un movimento a mano uguale: quello resta senza segno', di(q10, (x) => esitoDi(x, 'Q10') + ' ' + (x.movimenti[0].satispayId ?? '-')), 'pagamenti/- -')
   const rq = applica(dati([neg('Q11', 'REFUND_TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Via')], { pagamenti: [pg('2026-10-14', 1250)] }))
   ok('un rimborso non guarda PAGAMENTI: è un\'uscita', di(rq, (x) => esitoDi(x, 'Q11')), 'scritto/-')
@@ -286,7 +301,7 @@ const ripassa = (r, extra = {}) => ({ negozio: r.negozio, modulo: [], pagamenti:
       inc('N4', 3000, '2026-10-10T10:00:00Z', 'Chiuso'), neg('N5', 'REFUND_TO_BUSINESS', 'ACCEPTED', 200, '2026-10-17T10:00:00Z', 'Rimborso'),
       inc('N6', 400, '2026-10-17T10:00:00Z', 'Attesa', 'PENDING'),
     ],
-    { modulo: ['AM'], chiusure: [chiusura('sa', '2026-10-12')], movimenti: [man('m1', '2026-10-14', 1250, 'cc')] },
+    { modulo: ['AM'], chiusure: [chiusura('sa', '2026-10-12')], movimenti: [man('m1', '2026-10-14', 1250, 'sa')] },
   )
   const prima = JSON.stringify(base)
   const ante = applica(base, false)

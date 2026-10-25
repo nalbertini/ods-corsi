@@ -166,7 +166,7 @@ console.log('\n4. decidiGruppo: tutte le scelte o nessuna')
 
 console.log('\n5. «Non è questo»: scollegaScarico')
 {
-  const movimenti = [mv('m1', '2026-10-14', 1250, 'cc', { satispayId: 'P1' }), mv('m2', '2026-10-14', 1250, 'cc')]
+  const movimenti = [mv('m1', '2026-10-14', 1250, 'sa', { satispayId: 'P1' }), mv('m2', '2026-10-14', 1250, 'sa')]
   const negozio = [pn('P1', 1250, '2026-10-14T10:00:00Z', { esito: 'a_mano', movimentoId: 'm1' })]
   const d = dati(negozio, movimenti)
   const prima = copia(d)
@@ -177,9 +177,14 @@ console.log('\n5. «Non è questo»: scollegaScarico')
   ok('…e in daDecidere si vedono con i loro dati', prova(() => s.daDecidere({ ...d, ...r })[0].candidati.map((c) => c.id)), ['m1', 'm2'])
   ok('con un solo movimento possibile resta da decidere: lo sceglie chi legge', prova(() => { const x = s.scollegaScarico(dati(negozio, [movimenti[0]]), 'P1'); return [x.negozio[0].esito, x.negozio[0].candidati] }), ['da_decidere', ['m1']])
   ok('i dati di partenza non cambiano', d, prima)
+  // Conto Corrente non è mai candidato: né un'entrata a mano uguale lì, né il movimento che si scollega se sta lì.
+  const misti = [mv('m1', '2026-10-14', 1250, 'sa', { satispayId: 'P1' }), mv('m2', '2026-10-14', 1250, 'sa'), mv('m3', '2026-10-14', 1250, 'cc'), mv('m4', '2026-10-14', 1250, 'cc')]
+  ok('i candidati ricalcolati sono solo della cassa Satispay', prova(() => s.scollegaScarico(dati(negozio, misti), 'P1').negozio[0].candidati), ['m1', 'm2'])
+  const inBanca = [mv('m1', '2026-10-14', 1250, 'cc', { satispayId: 'P1' }), mv('m2', '2026-10-14', 1250, 'sa')]
+  ok('…anche se il movimento scollegato stava nel Conto Corrente: non torna candidato', prova(() => s.scollegaScarico(dati(negozio, inBanca), 'P1').negozio[0].candidati), ['m2'])
 
-  ok('la cassa di quel giorno è chiusa: il collegamento resta', prova(() => s.scollegaScarico(dati(negozio, movimenti, [chiusa('cc', '2026-10-14')]), 'P1')), 'ERRORE: Quel giorno la cassa è chiusa: il collegamento resta')
-  ok('una chiusura di un\'altra cassa non conta', prova(() => s.scollegaScarico(dati(negozio, movimenti, [chiusa('sa', '2026-10-31')]), 'P1').negozio[0].esito), 'da_decidere')
+  ok('la cassa di quel giorno è chiusa: il collegamento resta', prova(() => s.scollegaScarico(dati(negozio, movimenti, [chiusa('sa', '2026-10-14')]), 'P1')), 'ERRORE: Quel giorno la cassa è chiusa: il collegamento resta')
+  ok('una chiusura di un\'altra cassa non conta', prova(() => s.scollegaScarico(dati(negozio, movimenti, [chiusa('cc', '2026-10-31')]), 'P1').negozio[0].esito), 'da_decidere')
   ok('un pagamento scritto da noi non si scollega', prova(() => s.scollegaScarico(dati([pn('P1', 1250, '2026-10-14T10:00:00Z', { esito: 'scritto', movimentoId: 'm1' })], movimenti), 'P1')), 'ERRORE: Questo pagamento non è collegato a un movimento a mano')
   ok('un pagamento ancora da decidere nemmeno', prova(() => s.scollegaScarico(dati([dd('P1', 1250, '2026-10-14T10:00:00Z', ['m2'])], movimenti), 'P1')), 'ERRORE: Questo pagamento non è collegato a un movimento a mano')
   ok('un pagamento che non c\'è', prova(() => s.scollegaScarico(d, 'XX')), 'ERRORE: Il pagamento non c’è')
@@ -308,8 +313,11 @@ console.log('\n11. un movimento a mano è di Satispay o della banca, mai di tutt
   ok('sceglierlo lo stesso (pagina vecchia): errore, e niente cambia',
     prova(() => s.decidiGruppo(dati([dd('P1', 1250, '2026-10-14T10:00:00Z', ['m1', 'm2'])], [coperto, libero]), [{ satispayId: 'P1', scelta: 'a_mano', movimentoId: 'm1' }])),
     'ERRORE: Quel movimento è già coperto da un movimento della banca: ricarica la pagina')
-  ok('«Non è questo» ricalcola i candidati senza i movimenti coperti dalla banca',
-    prova(() => s.scollegaScarico(dati([pn('P1', 1250, '2026-10-14T10:00:00Z', { esito: 'a_mano', movimentoId: 'm2' })], [coperto, { ...libero, satispayId: 'P1' }]), 'P1').negozio[0].candidati), ['m2'])
+  // Dal 115 i candidati sono solo della cassa Satispay: un movimento del Conto Corrente scollegato non torna fra loro.
+  ok('«Non è questo» su un movimento del Conto Corrente: fra i candidati non torna',
+    prova(() => s.scollegaScarico(dati([pn('P1', 1250, '2026-10-14T10:00:00Z', { esito: 'a_mano', movimentoId: 'm2' })], [coperto, { ...libero, satispayId: 'P1' }]), 'P1').negozio[0].candidati), [])
+  ok('«Non è questo» ricalcola i candidati della cassa Satispay senza i movimenti coperti dalla banca',
+    prova(() => s.scollegaScarico(dati([pn('P1', 1250, '2026-10-14T10:00:00Z', { esito: 'a_mano', movimentoId: 'm2' })], [{ ...coperto, cassaId: 'sa' }, { ...libero, cassaId: 'sa', satispayId: 'P1' }]), 'P1').negozio[0].candidati), ['m2'])
 
   const lettura = prova(() => b.leggiBanca(file(riga('03/10/2026', '', '120,00', 'Da Luca Verdi saldo corso'))))
   const chiave = prova(() => lettura.movimenti[0].chiave)
