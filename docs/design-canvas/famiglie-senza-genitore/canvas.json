@@ -1,0 +1,26 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Famiglie senza genitore iscritto"
+    }
+  ],
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Oggi · due fratelli minori non si legano", "x": 0, "y": 300, "page": "page-1" },
+    { "file": "Minore.dc.html", "title": "Proposta A · scheda del figlio: aggiungi il genitore", "x": 940, "y": 300, "page": "page-1" },
+    { "file": "Genitore.dc.html", "title": "Proposta B · scheda del genitore non iscritto", "x": 1880, "y": 300, "page": "page-1" },
+    { "file": "Richieste.dc.html", "title": "Proposta C · richiesta online: stesso genitore", "x": 2820, "y": 300, "page": "page-1" },
+    { "file": "Casi.dc.html", "title": "Proposta D · i casi che non vanno lisci", "x": 0, "y": 1420, "page": "page-1" },
+    { "file": "Sorelle.dc.html", "title": "Due sorelle adulte · come oggi, testi corretti", "x": 940, "y": 1420, "page": "page-1" }
+  ],
+  "annotations": [
+    {
+      "id": "titolo",
+      "page": "page-1",
+      "x": 0,
+      "y": 0,
+      "kind": "title1",
+      "text": "Famiglie senza genitore iscritto: soli fratelli minori, sole sorelle adulte"
+    }
+  ]
+}

@@ -396,6 +396,20 @@ export function Stato({ nome, sotto, tono, finita, children }: { nome: string; s
   )
 }
 
+/** Una proposta del nucleo (il genitore, un fratello): cosa, perché, e il gesto che la fa. */
+export function Proposta({ titolo, dettaglio, bordo, children }: { titolo: string; dettaglio: string; bordo: string; children?: ReactNode }) {
+  return (
+    <div className="row" style={{ gap: 12, padding: '12px 14px', border: bordo, borderRadius: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+      {/* Sul telefono il tasto va sotto, invece di schiacciare il testo. */}
+      <span className="stack grow" style={{ gap: 2, minWidth: 200 }}>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>{titolo}</span>
+        <span style={{ fontSize: 13, color: 'var(--sec)' }}>{dettaglio}</span>
+      </span>
+      {children}
+    </div>
+  )
+}
+
 export function Riga({ titolo, children }: { titolo: string; children?: ReactNode }) {
   return (
     <div className="sg-riga-titolo">

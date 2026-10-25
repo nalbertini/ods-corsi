@@ -6,6 +6,7 @@ import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato, siElimina } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
+import { cosaNonVaNucleo, fratelliPerGenitore } from '../../lib/nucleo'
 import { attesoRicevuta, RICEVUTA_NON_PAGA } from '../../lib/passiIscrizione'
 import { PAGAMENTO } from '../../lib/iscrizione'
 import { euroBreve } from '../../lib/ricevute'
@@ -15,7 +16,7 @@ import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { posizione, vicina } from '../../lib/schedaFinestra'
-import { chiedi, Campo, dataLunga, Guaio, lasciare, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, lasciare, Proposta, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 const STATI: Record<StatoRichiesta, string> = { nuova: 'Nuova', accolta: 'Accolta', rifiutata: 'Rifiutata' }
@@ -136,10 +137,12 @@ export function Richieste({
       nomi={nomi}
       titoli={titoli.dato ?? {}}
       titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
+      persone={persone.dato ?? []}
       omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
       fai={fai}
       onCambiato={() => {
         void elenco.ricarica()
+        void persone.ricarica()
         onConti?.()
       }}
       onStampato={() => void conDocumento.ricarica()}
@@ -267,6 +270,7 @@ function Scheda({
   nomi,
   titoli,
   titolare,
+  persone,
   omonimi,
   fai,
   onCambiato,
@@ -287,6 +291,8 @@ function Scheda({
   titoli: Record<string, string>
   /** Il titolare del nucleo da cui arriva, se arriva dall'area degli iscritti. */
   titolare?: string
+  /** Tutti in elenco: per i fratelli già in un nucleo. */
+  persone: PersonaSeg[]
   /** Chi in elenco ha già lo stesso nome e cognome. */
   omonimi: PersonaSeg[]
   fai: Fai
@@ -304,6 +310,17 @@ function Scheda({
   const letto = useListino()
   const voci = letto?.listino.corsi
   const minore = minorenne(x.natoIl)
+  // Un fratello già in un nucleo, dal codice del genitore. Chi arriva dall'area di un titolare entra già lì.
+  const genitori = useCarica(async () => (minore && !x.nucleoDi && x.stato !== 'rifiutata' ? d.genitori() : null), [d, minore, x.nucleoDi, x.stato])
+  const accolto = x.stato === 'accolta' ? persone.find((p) => p.id === x.personaId) : undefined
+  const fratello = genitori.dato ? fratelliPerGenitore(persone, x.genitoreCodiceFiscale, genitori.dato, accolto)[0] : undefined
+  const nomeDi = (id: string) => {
+    const p = persone.find((y) => y.id === id)
+    return p ? `${p.cognome} ${p.nome}` : 'un iscritto'
+  }
+  const titolareFratello = fratello && persone.find((p) => p.id === fratello.titolare)
+  // Accolto, si mette nella famiglia da qui; prima, si dice soltanto: sono due gesti separati.
+  const siMette = !!fratello && !!accolto && !cosaNonVaNucleo(persone, accolto.id, fratello.titolare)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
   // Il documento, stampato, si cancella: non manca, è su carta.
   const mancanti = FILE.filter((f) => f.obbligatorio && !DA_STAMPARE.includes(f.tipo) && !arrivati.has(f.tipo))
@@ -400,6 +417,24 @@ function Scheda({
             <Dato etichetta="GENITORE">{x.genitoreNome} {x.genitoreCognome}</Dato>
             <Dato etichetta="CF DEL GENITORE" num>{x.genitoreCodiceFiscale}</Dato>
           </>
+        )}
+        {fratello && (!accolto || siMette) && (
+          <div className="stack" style={{ gap: 6, gridColumn: '1 / -1' }}>
+            <Proposta
+              titolo={`Stesso genitore di ${nomeDi(fratello.personaId)}`}
+              dettaglio={`${persone.find((p) => p.id === fratello.personaId)?.nome ?? 'Il fratello'} è nel nucleo di ${nomeDi(fratello.titolare)}${titolareFratello?.genitoreNonIscritto ? ', genitore non iscritto' : ''}. ${
+                accolto ? `${x.nome} può entrare lì` : `Dopo l’accoglienza, ${x.nome} può entrare lì`
+              }: sconto famiglia sull’annuale che costa meno.`}
+              bordo="2px dashed var(--line)"
+            >
+              {siMette && accolto && (
+                <button type="button" className="num sg-chip" onClick={() => void fai(() => d.mettiNelNucleo(accolto.id, fratello.titolare), 'Messo nella famiglia', onCambiato)}>
+                  Mettilo nella famiglia
+                </button>
+              )}
+            </Proposta>
+            {siMette && <span className="sg-sotto" style={{ fontSize: 12 }}>Si può fare anche dopo, dalla scheda di {x.nome}.</span>}
+          </div>
         )}
         <Dato etichetta={minore ? 'EMAIL DEL GENITORE' : 'EMAIL'}>
           <a href={`mailto:${x.email}`} style={{ color: 'var(--sec)' }}>{x.email}</a>

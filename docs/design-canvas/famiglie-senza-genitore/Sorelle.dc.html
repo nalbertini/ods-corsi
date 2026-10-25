@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Due sorelle adulte</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .riga { display: flex; align-items: baseline; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; align-self: center; }
+    .sotto { font-size: 14px; color: #46606f; margin: 0; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .persona { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 2px solid #cfe6f4; border-radius: 6px; }
+    .cambio { border-left: 4px solid #8f6a00; padding-left: 10px; }
+  </style>
+</helmet>
+<!-- 6 · DUE SORELLE ADULTE. Il nucleo fra adulti va già: Anna titolare, Chiara nel nucleo. Cambiano solo i testi che oggi parlano di «figli» o danno per scontato un genitore. Le righe col bordo giallo sono quelle cambiate. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #8f6a00">DUE SORELLE ADULTE · COME OGGI, CON I TESTI GIUSTI</span>
+  <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">BIANCHI ANNA</h2>
+      <span style="font-size: 13px; color: #46606f">34 anni · Pilates · in elenco dal 5 settembre 2026</span>
+    </div>
+    <dc-import name="SchedeIscritto" tema="sito" acceso="PERSONA" chiare="{{ true }}" hint-size="100%,44px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="riga"><span class="et">NUCLEO FAMILIARE</span><span class="filo"></span></div>
+      <div class="persona">
+        <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Anna Bianchi</span>
+          <span style="font-size: 12px; color: #46606f">Titolare · questa scheda</span>
+        </span>
+      </div>
+      <div class="persona">
+        <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0">
+          <a href="#" style="font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: none">Chiara Bianchi</a>
+          <span style="font-size: 12px; color: #46606f">Nel nucleo · 29 anni · Yoga</span>
+        </span>
+        <dc-import name="Chip" tema="sito" label="Titolare" hint-size="100px,40px"></dc-import>
+        <dc-import name="Chip" tema="sito" label="Togli" hint-size="80px,40px"></dc-import>
+      </div>
+      <span class="sotto cambio" style="font-size: 12px">Fra adulti ognuno vede nella sua pagina anche le persone del nucleo, e il titolare paga per tutti. Nessuno firma per l’altro: firma ognuno per sé.</span>
+      <span style="font-size: 12px; color: #46606f">Sconto famiglia: il 20% sull’annuale che costa meno, Yoga di Chiara Bianchi.</span>
+    </div>
+  </div>
+  <!-- I testi di oggi e quelli nuovi, per chi decide. -->
+  <div style="display: flex; flex-direction: column; gap: 10px; background: #ffffff; border-radius: 6px; padding: 18px 22px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">I TESTI CHE CAMBIANO</span>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; font-size: 13px">
+      <span style="font-weight: 700; color: #46606f">OGGI</span><span style="font-weight: 700; color: #46606f">DOPO</span>
+      <span>Pagina iscritto: «Per un minore il genitore sei tu.» anche a chi ha solo una sorella nel nucleo</span>
+      <span>Solo se nel nucleo c’è un minore. Fra adulti: «Vedi anche le persone del tuo nucleo.»</span>
+      <span>«I tuoi figli» nel riepilogo del titolare</span>
+      <span>«Il tuo nucleo»: vale per figli, sorelle, coppie</span>
+      <span>«Non è in un nucleo. Aggiungi qualcuno qui sotto, e ne diventa titolare…»</span>
+      <span>Uguale per un adulto. Per un minore il testo di Proposta A.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":860,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

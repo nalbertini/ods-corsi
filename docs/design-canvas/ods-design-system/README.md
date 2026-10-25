@@ -129,6 +129,7 @@ Google, e vale solo per i mockup.
 | `RiquadroPaga` | COSTRUITO (`satispay-prima`): la sezione PAGA in fondo al modulo pubblico con Satispay, da `statoRiquadroPaga`: riquadro col bordo che dice com'è andata (blu, verde, giallo-testo, rosso-testo), cifra coi centesimi, «Quota associativa e …», la frase e il tasto giallo (PAGA … CON SATISPAY link già pronto, MANDA LA RICHIESTA, RIPROVA CON SATISPAY, CHIAMA LA SEGRETERIA); `stato` = manca, prepara, paga, pagato, non-andato, non-vale |
 | `TitoloEsito` | `TitoloEsito` di `ds.tsx` con le frasi `.esito-testo`: RICHIESTA ARRIVATA e MANCA QUALCHE FILE |
 | `MembroNucleo` | Una persona del nucleo (`.mio-membro`): IN REGOLA, DA SISTEMARE, in attesa o rifiutata |
+| `Proposta` | Un suggerimento del NUCLEO FAMILIARE nella scheda iscritto (`Proposta` di `comune.tsx`): titolo, perché, e il tasto per farlo; bordo blu, giallo, linea o tratteggio; il tasto va a capo sul telefono |
 | `RigaNucleoPagamento` | Una riga di PAGAMENTI DEL NUCLEO, con la variante «Tutto il nucleo» |
 | `NastroProva` | Il nastro giallo di prova (`.nastro-prova`, `NastroProva` di `ds.tsx`): area iscritti, sala e pagina Iscrizioni; `esci` aggiunge ESCI DALLA PROVA; `tema="sito"` è il nastro nel look del sito (13px, 800, 0.08em) |
 | `MiaChip` | `.mia-chip` (corso col colore) e `.mia-chip-tasto` (TU, nome di chi è nel nucleo) |
