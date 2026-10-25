@@ -110,6 +110,8 @@ export const NOME_CASSA_CONTO = 'Conto Corrente'
 export const NOME_CASSA_SATISPAY = 'Satispay'
 /** Dal 1° ottobre 2026 Satispay è una cassa a sé (97-satispay-scarico.sql); prima si scriveva nel Conto Corrente. */
 export const CAMBIO_CASSA_SATISPAY = '2026-10-01'
+/** La carta dal modulo di iscrizione (115-carta.sql): una cassa sua da subito. Al banco la carta resta «POS», sul conto. */
+export const NOME_CASSA_CARTA = 'Carta'
 export const VOCE_QUOTA = 'Quota associativa'
 export const VOCE_CORSI = 'Corsi e altri pagamenti'
 /** Un'entrata su una quota o un corso, scritta a mano, ha la persona che ha pagato (`98-quote-persona.sql`). */
@@ -129,12 +131,12 @@ export const VOCE_VARIE = 'Varie'
 /** Sopra questa differenza (in centesimi) la schermata chiede una conferma in più. */
 export const SOGLIA_DIFFERENZA = 2000
 
-/** Contanti in Cassa Contanti, Satispay dal cambio nella cassa Satispay, tutto il resto (bonifico, POS, assegno) in Conto Corrente. */
-export const cassaDelMetodo = (metodo: string, data: string): 'contanti' | 'conto' | 'satispay' => {
+/** Contanti in Cassa Contanti, Satispay dal cambio nella cassa Satispay, Carta nella cassa Carta, tutto il resto (bonifico, POS, assegno) in Conto Corrente. */
+export const cassaDelMetodo = (metodo: string, data: string): 'contanti' | 'conto' | 'satispay' | 'carta' => {
   const m = metodo.trim().toLowerCase()
-  return m === 'contanti' ? 'contanti' : m === 'satispay' && data >= CAMBIO_CASSA_SATISPAY ? 'satispay' : 'conto'
+  return m === 'contanti' ? 'contanti' : m === 'carta' ? 'carta' : m === 'satispay' && data >= CAMBIO_CASSA_SATISPAY ? 'satispay' : 'conto'
 }
-const NOME_CASSA = { contanti: NOME_CASSA_CONTANTI, conto: NOME_CASSA_CONTO, satispay: NOME_CASSA_SATISPAY }
+const NOME_CASSA = { contanti: NOME_CASSA_CONTANTI, conto: NOME_CASSA_CONTO, satispay: NOME_CASSA_SATISPAY, carta: NOME_CASSA_CARTA }
 
 /** La voce di sistema di un incasso: la quota associativa, o tutto il resto. */
 export const voceDiSistema = (voce: string) => (voce.trim().toLowerCase() === 'quota associativa' ? VOCE_QUOTA : VOCE_CORSI)
@@ -591,7 +593,7 @@ export const togliFiltro = (f: FiltriElenco, chiave: keyof FiltriElenco): Filtri
 export type IconaConti = 'banconota' | 'banca' | 'telefono' | 'tessera' | 'persone' | 'lampadina' | 'manubrio' | 'casa'
 
 /** L'icona accanto al nome della cassa, per le tre casse della palestra; le altre restano senza. */
-const ICONE_CASSE: Record<string, IconaConti> = { [NOME_CASSA_CONTANTI]: 'banconota', [NOME_CASSA_CONTO]: 'banca', [NOME_CASSA_SATISPAY]: 'telefono' }
+const ICONE_CASSE: Record<string, IconaConti> = { [NOME_CASSA_CONTANTI]: 'banconota', [NOME_CASSA_CONTO]: 'banca', [NOME_CASSA_SATISPAY]: 'telefono', [NOME_CASSA_CARTA]: 'tessera' }
 export const iconaCassa = (nome: string): IconaConti | null => ICONE_CASSE[nome] ?? null
 
 /** Il tipo di un movimento, per la colonna TIPO dell'elenco: il nome e l'icona (quelle di `ICONE_CONTI`). */

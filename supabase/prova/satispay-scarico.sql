@@ -152,7 +152,7 @@ grant execute on function atteso(text, text, text), chi(text), tenta(text), esit
 
 \echo ''
 \echo '--- 1. la cassa Satispay e le voci ---'
-select atteso('la cassa Satispay parte dal 1 gennaio 2025 con saldo 0 (115-satispay-separato.sql)', (select dal || ' ' || saldo_iniziale from casse where nome = 'Satispay'), '2025-01-01 0');
+select atteso('la cassa Satispay parte dal 1 gennaio 2025 con saldo 0 (116-satispay-separato.sql)', (select dal || ' ' || saldo_iniziale from casse where nome = 'Satispay'), '2025-01-01 0');
 select atteso('«Da classificare» entrata e uscita',
   (select string_agg(tipo::text, ',' order by tipo) from voci_contabili where nome = 'Da classificare'), 'entrata,uscita');
 select atteso('«Commissioni bancarie» è una voce di uscita', (select count(*)::text from voci_contabili where nome = 'Commissioni bancarie' and tipo = 'uscita'), '1');

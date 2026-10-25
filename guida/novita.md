@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.210.0 — 25 ottobre 2026
+
+### Novità
+
+- La scheda del browser dice in che sezione sei
+
+## 0.209.0 — 25 ottobre 2026
+
+### Novità
+
+- Si può pagare anche con la carta di credito o di debito, oltre che con Satispay
+
 ## 0.208.0 — 25 ottobre 2026
 
 ### Novità

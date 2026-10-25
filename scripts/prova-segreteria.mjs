@@ -3408,7 +3408,7 @@ const sembra = (v) => ({ nome: v?.nome, tipo: v?.tipo, diSistema: v?.diSistema, 
 
 await sezione('la contabilità di prova: le tre casse e le due voci di sistema', async () => {
   const casse = await s.casse()
-  // La cassa Satispay parte il 1° gennaio 2025 (115-satispay-separato.sql), come i conti.
+  // La cassa Satispay parte il 1° gennaio 2025 (116-satispay-separato.sql), come i conti.
   ok('le tre casse, a zero; solo Satispay con la data', casse.map((c) => [c.nome, c.saldoIniziale, c.dal ?? null]).sort(), [['Cassa Contanti', 0, null], ['Conto Corrente', 0, null], ['Satispay', 0, '2025-01-01']])
   cx.contanti = casse.find((c) => c.nome === 'Cassa Contanti').id
   cx.conto = casse.find((c) => c.nome === 'Conto Corrente').id

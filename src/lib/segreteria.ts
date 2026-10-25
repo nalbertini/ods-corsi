@@ -160,6 +160,8 @@ export interface PersonaSeg {
   vociCorsi?: VoceCorso[]
   /** Centesimi pagati con Satispay dal modulo e non ancora in una ricevuta (`73-satispay.sql`). */
   satispay?: number
+  /** Quanto di `satispay` è arrivato con la carta (`115-carta.sql`). */
+  carta?: number
   /** Centesimi del saldo della quota arrivati con Satispay e non ancora in una ricevuta (`102-saldo-satispay.sql`). */
   saldo?: number
   /** Quanto di `satispay` è la quota intera pagata dall'area iscritti (`105-paga-quota-satispay.sql`): non copre i corsi. */

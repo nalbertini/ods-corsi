@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo sono file locali OFL; un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA 7. Area iscritti, la quota che manca: accanto a PAGA CON SATISPAY il tasto della carta, stesso importo. Il tocco apre gli stessi campi della proposta 3. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 820px; background: #eef5fa; color: #0d2a3d">
+<dc-import name="Testata" luogo="LA TUA PAGINA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,60px"></dc-import><dc-import name="Titoletto" label="CERTIFICATO E QUOTA" conto="" tema="sito" hint-size="100%,60px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="Riquadro" tema="sito" etichetta="QUOTA ASSOCIATIVA · MANUELA BIANCHI" cifra="MANCANO 30 €" testo="Hai pagato 50 € su 80 €. Il resto lo paghi qui, con Satispay o con la carta." tonoTesto="avviso" hint-size="100%,120px"></dc-import><dc-import name="Bottone" label="PAGA 30 € CON SATISPAY" variante="principale" tema="sito" hint-size="100%,56px"></dc-import><dc-import name="Bottone" label="PAGA 30 € CON LA CARTA" variante="principale" tema="sito" hint-size="100%,56px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="" stretto="{{ true }}" testo="Rinnovi e quote intere, per ora, si pagano in palestra." tonoTesto="dim" hint-size="100%,60px"></dc-import></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":820}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

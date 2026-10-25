@@ -313,7 +313,7 @@ console.log('\n11. un movimento a mano è di Satispay o della banca, mai di tutt
   ok('sceglierlo lo stesso (pagina vecchia): errore, e niente cambia',
     prova(() => s.decidiGruppo(dati([dd('P1', 1250, '2026-10-14T10:00:00Z', ['m1', 'm2'])], [coperto, libero]), [{ satispayId: 'P1', scelta: 'a_mano', movimentoId: 'm1' }])),
     'ERRORE: Quel movimento è già coperto da un movimento della banca: ricarica la pagina')
-  // Dal 115 i candidati sono solo della cassa Satispay: un movimento del Conto Corrente scollegato non torna fra loro.
+  // Dal 116 i candidati sono solo della cassa Satispay: un movimento del Conto Corrente scollegato non torna fra loro.
   ok('«Non è questo» su un movimento del Conto Corrente: fra i candidati non torna',
     prova(() => s.scollegaScarico(dati([pn('P1', 1250, '2026-10-14T10:00:00Z', { esito: 'a_mano', movimentoId: 'm2' })], [coperto, { ...libero, satispayId: 'P1' }]), 'P1').negozio[0].candidati), [])
   ok('«Non è questo» ricalcola i candidati della cassa Satispay senza i movimenti coperti dalla banca',

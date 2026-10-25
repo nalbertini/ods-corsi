@@ -27,8 +27,26 @@ ok('default-src è la pagina', direttiva(p, 'default-src'), ["'self'"])
 ok('il database è raggiungibile, anche in tempo reale', direttiva(p, 'connect-src')?.filter((s) => s.includes('supabase')), ['https://abc.supabase.co', 'wss://abc.supabase.co'])
 ok('un database con dominio suo si legge dall’indirizzo', direttiva(politicaCsp('https://db.palestra.it/rest/v1'), 'connect-src')?.includes('https://db.palestra.it'), true)
 ok('senza database (modalità prova) non resta un indirizzo mezzo scritto', direttiva(politicaCsp(undefined), 'connect-src')?.some((s) => s.includes('undefined')), false)
-ok('un indirizzo che non è un indirizzo non apre niente', direttiva(politicaCsp('boh'), 'connect-src')?.filter((s) => s !== "'self'" && !s.includes('spotify')), [])
+const PAYPAL = ['https://www.paypal.com', 'https://*.paypal.com', 'https://*.paypalobjects.com']
+ok('un indirizzo che non è un indirizzo non apre niente', direttiva(politicaCsp('boh'), 'connect-src')?.filter((s) => s !== "'self'" && !s.includes('spotify') && !PAYPAL.includes(s) && s !== 'https://pay.google.com'), [])
 ok('nessuna direttiva che una <meta> ignora', /frame-ancestors|report-uri|sandbox/.test(p), false)
+
+// La carta nel modulo di iscrizione (PayPal: campi carta ospitati, Apple Pay, Google Pay): solo questi domini.
+const ospiti = (nome) => direttiva(p, nome) ?? []
+for (const dir of ['script-src', 'connect-src', 'frame-src'])
+  ok(`${dir}: PayPal e i suoi file`, ['https://www.paypal.com', 'https://*.paypal.com', 'https://*.paypalobjects.com'].map((h) => ospiti(dir).includes(h)), [true, true, true])
+ok('Google Pay: gli script e il riquadro', [ospiti('script-src').includes('https://pay.google.com'), ospiti('frame-src').includes('https://pay.google.com')], [true, true])
+ok('Google Pay: le chiamate', ospiti('connect-src').some((h) => h === 'https://pay.google.com' || h === 'https://*.google.com'), true)
+ok('Apple Pay', ospiti('script-src').includes('https://applepay.cdn-apple.com') || ospiti('connect-src').includes('https://applepay.cdn-apple.com'), true)
+// Host scritti per intero: un'espressione su «google» lascerebbe passare anche «google.evil.it».
+ok('la carta non apre altro: script-src', ospiti('script-src'),
+  ["'self'", 'https://www.youtube.com', 'https://s.ytimg.com', ...PAYPAL, 'https://pay.google.com', 'https://applepay.cdn-apple.com'])
+ok('la carta non apre altro: frame-src', ospiti('frame-src'),
+  ['https://www.youtube-nocookie.com', 'https://www.youtube.com', ...PAYPAL, 'https://pay.google.com'])
+ok('la carta non apre altro: connect-src', ospiti('connect-src'),
+  ["'self'", 'https://accounts.spotify.com', 'https://api.spotify.com', ...PAYPAL, 'https://pay.google.com', 'https://abc.supabase.co', 'wss://abc.supabase.co'])
+ok('niente codice dentro la pagina anche con la carta', ospiti('script-src').some((x) => /unsafe/.test(x)), false)
+ok('object-src e base-uri restano chiusi con la carta', [direttiva(p, 'object-src'), direttiva(p, 'base-uri')], [["'none'"], ["'self'"]])
 
 ok('un @import di un altro sito si toglie', senzaImportEsterni('@import "https://rsms.me/inter/inter.css";:root{--a:1}'), ':root{--a:1}')
 ok('anche scritto con url() e senza spazi', senzaImportEsterni('@import url("https://x.it/a.css");a{b:c}'), 'a{b:c}')

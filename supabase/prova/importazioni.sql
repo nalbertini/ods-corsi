@@ -395,7 +395,7 @@ select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Primo') as m1 \gset
 select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Secondo') as m2 \gset
 select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Terzo') as m3 \gset
 select sal(pag('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) as _;
--- Dal 115 lo scarico non propone più movimenti del Conto Corrente: qui il «da decidere» è uno rimasto da prima,
+-- Dal 116 lo scarico non propone più movimenti del Conto Corrente: qui il «da decidere» è uno rimasto da prima,
 -- e le guardie contro la banca restano.
 update satispay_negozio set esito = 'da_decidere', motivo = 'forse_doppione', candidati = array[:'m1', :'m2', :'m3']::uuid[] where satispay_id = 'P1';
 select copre('banca:k1', :'m1') as _;

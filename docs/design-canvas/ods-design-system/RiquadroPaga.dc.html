@@ -28,13 +28,15 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"stato":{"editor":"enum","options":["manca","prepara","paga","pagato","non-andato","non-vale"],"default":"paga"},"cifra":{"editor":"text","default":"180,00 €"},"corso":{"editor":"text","default":"trimestre MGA metodo globale autodifesa"},"$preview":{"width":350,"height":300}}'>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["manca","prepara","paga","pagato","non-andato","non-vale"],"default":"paga"},"metodo":{"editor":"enum","options":["satispay","carta"],"default":"satispay"},"cifra":{"editor":"text","default":"180,00 €"},"corso":{"editor":"text","default":"trimestre MGA metodo globale autodifesa"},"$preview":{"width":350,"height":300}}'>
 // COSTRUITO (2026-10-21, satispay-prima): la sezione PAGA in fondo al modulo pubblico di src/components/ModuloIscrizione.tsx, con Satispay.
 // Testi e scelte da `statoRiquadroPaga` di src/lib/satispay.ts; stili da src/styles.css (.paga-riquadro, .paga-cifra, .passo-dettaglio 15px):
 // bordo 2px `blu` #14709f, `verde-testo` #0b7a33 da pagato, `giallo-testo` #8f6a00 se non è andato, `rosso-testo` #b81d1d se non vale più;
 // cifra Big Shoulders 34px 800 `testo` (verde solo da pagato). Il tasto principale del modulo (tema sito: giallo #f4c31b, testo #0d2a3d,
 // Big Shoulders 22px 0.06em, alto 56px, raggio 6px) è un link già pronto: PAGA, CHIAMA LA SEGRETERIA (tel:); spento mentre si prepara.
 // Con `manca` il tasto non c'è e sotto la riga dice cosa manca.
+// COSTRUITO (`../pagamento-carta/`): metodo=carta, gli stessi stati con la carta (PayPal, solo i campi carta): PAGA … CON LA CARTA apre i campi
+// della carta sotto il riquadro, RIPROVA CON LA CARTA; la parola PayPal non compare.
 const COND = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const STATI = {
   manca: { bordo: '#14709f', testo: 'Paghi adesso con Satispay; la richiesta parte solo quando Satispay conferma.', tono: '#0d2a3d', tasto: '', sotto: 'Prima di pagare: manca la firma sul modulo' },
@@ -44,10 +46,17 @@ const STATI = {
   'non-andato': { bordo: '#8f6a00', testo: '! Il pagamento non è andato: in Satispay è stato annullato o non è stato confermato. La richiesta non è partita.', tono: '#8f6a00', tasto: 'RIPROVA CON SATISPAY', sotto: 'Oppure torna a «Paghi con» e scegli il bonifico.' },
   'non-vale': { bordo: '#b81d1d', testo: 'Hai pagato per un altro corso, un’altra formula o a un altro nome: rimetti quelli di prima per mandare la richiesta, o chiama la segreteria.', tono: '#b81d1d', tasto: 'CHIAMA LA SEGRETERIA', sotto: '' },
 };
+const CARTA = {
+  manca: { testo: 'Paghi adesso con la carta; la richiesta parte solo quando il pagamento è confermato.' },
+  prepara: { testo: 'Paghi adesso con la carta; la richiesta parte solo quando il pagamento è confermato.' },
+  paga: { testo: 'Paghi adesso con la carta; la richiesta parte solo quando il pagamento è confermato.', tasto: 'PAGA {cifra} CON LA CARTA', sotto: 'Non serve nessun conto. I dati della carta non arrivano alla palestra.' },
+  pagato: { testo: '✓ Pagati con la carta alle 15.12. Ora manda la richiesta.' },
+  'non-andato': { testo: '! La carta non è passata, o hai chiuso prima di confermare. Non ti è stato addebitato niente e la richiesta non è partita.', tasto: 'RIPROVA CON LA CARTA', sotto: 'Puoi usare un’altra carta, o tornare a «Paghi con» e scegliere Satispay o il bonifico.' },
+};
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const st = STATI[p.stato] || STATI.paga;
+    const st = { ...(STATI[p.stato] || STATI.paga), ...(p.metodo === 'carta' ? CARTA[p.stato] || {} : {}) };
     const cifra = p.cifra ?? '180,00 €';
     return {
       cond: COND, cifra, bordo: st.bordo, coloreCifra: st.cifra || '#0d2a3d', coloreTesto: st.tono,

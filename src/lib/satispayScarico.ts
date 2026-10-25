@@ -64,7 +64,7 @@ export async function scorriPagine(
 }
 // </pagine>
 
-/** La cassa dello scarico: Satispay, di qualunque giorno. È `satispay_cassa` nel 115. */
+/** La cassa dello scarico: Satispay, di qualunque giorno. È `satispay_cassa` nel 116. */
 export const cassaSatispay = (casse: Cassa[]): Cassa | undefined => casse.find((c) => c.nome === NOME_CASSA_SATISPAY)
 /** Il confronto di `order by` sugli id: per byte, uguale a ogni giro. */
 const perByte = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0)
@@ -131,7 +131,7 @@ export function applicaScarico(dati: DatiScarico, scrivi: boolean): { conti: Con
   const movimenti = dati.movimenti.map((m) => ({ ...m }))
   const negozio = dati.negozio.map((n) => ({ ...n }))
   const conti: ContiScarico = { incassi: 0, rimborsi: 0, modulo: 0, pagamenti: 0, a_mano: 0, da_decidere: 0, prima: 0, scritti: 0, dal: null }
-  // Un incasso Satispay non è un incasso della banca: i candidati sono solo le entrate della cassa Satispay (115).
+  // Un incasso Satispay non è un incasso della banca: i candidati sono solo le entrate della cassa Satispay (116).
   const candidate = dati.casse.filter((c) => c.nome === NOME_CASSA_SATISPAY).map((c) => c.id)
   // Fino a ieri: oggi la palestra può ancora scriverlo in PAGAMENTI.
   const daFare = negozio

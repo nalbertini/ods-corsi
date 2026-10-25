@@ -39,7 +39,8 @@ prova tiene stanno in «Scoperti», in fondo.
 | Documenti sulla carta intestata | segreteria, amministrazione, genitore | cifra coperta, voci perse fra le pagine | `prova:carta`, `prova:ricevuta`, `prova:compensi`, `prova:bilancio`, `prova:chiusura-pdf`, `prova:ore` | sì |
 | Satispay dal modulo di iscrizione | genitore, segreteria, amministrazione | importo diverso dal listino, pagato perso o doppio | `prova:satispay`, `satispay.sql` | sì |
 | Satispay: prima paghi, poi mandi | genitore, segreteria, amministrazione | soldi presi e richiesta che non arriva | `prova:satispay`, `satispay.sql` | sì |
-| Scarico automatico Satispay in CONTABILITÀ | amministrazione, segreteria | incasso nella cassa sbagliata, doppio o perso | `prova:satispay-scarico`, `prova:importazioni`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:segreteria`, `satispay-scarico.sql`, `importazioni.sql`, `115-satispay-separato.sql`, `avvisi-scarico-satispay.sql`, `update-con-where.sql` | sì, da fare |
+| Carta dal modulo di iscrizione (PayPal) | genitore, segreteria, amministrazione | soldi senza richiesta, pagato due volte, importo sbagliato, dati della carta | `prova:pagamento-carta`, `prova:satispay`, `prova:csp`, `prova:contabilita`, `carta.sql`, `satispay.sql`, `contabilita.sql` | sì, da fare |
+| Scarico automatico Satispay in CONTABILITÀ | amministrazione, segreteria | incasso nella cassa sbagliata, doppio o perso | `prova:satispay-scarico`, `prova:importazioni`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:segreteria`, `satispay-scarico.sql`, `importazioni.sql`, `116-satispay-separato.sql`, `avvisi-scarico-satispay.sql`, `update-con-where.sql` | sì, da fare |
 | Tessere | segreteria | non tesserato che frequenta, tessera alla persona sbagliata | `prova:tessere`, `prova:cosa-manca`, `prova:indirizzi`, `prova:filtri-iscritti`, `prova:menu`, `tessere.sql` | sì |
 | Ordini di vestiario | genitore, segreteria | ordine perso, totale sbagliato | `prova:vestiario`, `vestiario.sql`, `rls.sql` | sì |
 | Firma e informativa | iscritto | consenso non valido | `prova:firma`, `prova:firma-tratti`, `prova:informativa`, `prova:moduli`, `prova:fogli-moduli`, `informativa-mesi.sql` | sì |
@@ -110,6 +111,16 @@ quando arriva la prova.
   della banca: nessuna prova lo impedisce, né in app né nel database.
 - **GRAVE** — Ricevuta da un pagamento a mano: un `pagamentoId` perso per
   strada non fa cadere niente, e lo stesso incasso conta due volte.
+- **GRAVE** — Edge Function `paypal` (`index.ts`): il blocco della cattura
+  oltre 30 minuti e il ramo del rifiuto non hanno prova; si tolgono senza che
+  cada niente, e si incassano soldi che il modulo ha dato per non andati.
+- Edge Function `paypal`: nessuna prova del flusso (prepara, crea l'ordine,
+  cattura, rilettura dello stato).
+- Carta: la richiesta del browser non contiene campi della carta
+  (`CampiCarta.tsx`, `ModuloIscrizione.tsx`): nessuna prova. Il database non ha
+  colonne per la carta, ma è l'unica metà coperta.
+- `prova-csp.mjs`: il filtro «paypal|google|apple» è largo, un host che lo
+  contiene passa. Va stretto agli host esatti.
 - `update-con-where.sql`: il controllo cerca un WHERE dopo l'UPDATE, nello
   stesso `;`. Un UPDATE senza WHERE con una sottoquery che ha il suo WHERE
   (`set x = (select … where …)`) passa (DA FARE).

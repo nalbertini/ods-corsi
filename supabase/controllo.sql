@@ -547,7 +547,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from sito_pagine where slug = 'dichiarazione-accessibilita' and di_legge)
     and exists (select 1 from sito_menu m join sito_pagine p on p.id = m.pagina_id where p.slug = 'dichiarazione-accessibilita' and m.dove = 'footer')
     and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%')),
-  ('115-satispay-separato.sql', 'Satispay separato dal Conto Corrente: cassa dal 2025, candidati solo in Satispay',
+  ('116-satispay-separato.sql', 'Satispay separato dal Conto Corrente: cassa dal 2025, candidati solo in Satispay',
     exists (select 1 from casse where nome = 'Satispay' and dal <= date '2025-01-01')
     and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%from casse where nome = ''Satispay''%')
     and exists (select 1 from dentro where nome = 'satispay_scollega' and corpo like '%c.nome = ''Satispay''%')),
@@ -570,6 +570,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pg_column_size(dati)%')),
   ('113-genitore-non-iscritto.sql', 'la segreteria aggiunge il genitore non iscritto come titolare del nucleo dei figli',
     exists (select 1 from dentro where nome = 'aggiungi_genitore' and corpo like '%genitore_non_iscritto%')
-    and exists (select 1 from pg_trigger where tgname = 'iscrizioni_togli_genitore_non_iscritto' and not tgisinternal))
+    and exists (select 1 from pg_trigger where tgname = 'iscrizioni_togli_genitore_non_iscritto' and not tgisinternal)),
+  ('115-carta.sql', 'si paga anche con la carta nel modulo di iscrizione (PayPal)',
+    to_regprocedure('public.carta_esito(text, text)') is not null
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%con la carta%')
+    and to_regprocedure('public.pagamento_prima(text, uuid, text, text, text, text, uuid)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;
