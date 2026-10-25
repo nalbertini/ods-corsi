@@ -742,7 +742,6 @@
 .sg-solo-stretto { display: none; }
 @media (max-width: 1000px) { .sg-solo-stretto { display: inline; } }
 /* Il listino: un corso aperto, i prezzi in fila, e la barra per salvare che resta in vista. */
-.sg-listino { max-width: 980px; }
 .sg-listino-corso { gap: 12px; padding: 14px; background: var(--bg); border: 2px solid var(--text); }
 .sg-listino-prezzi { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .sg-listino-prezzi[data-etichette='true'] { grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr)) auto; }

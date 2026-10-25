@@ -784,7 +784,7 @@ function NuovoOrdine({
     </Campo>
   )
   return (
-    <div className="stack" style={{ gap: 18, maxWidth: 980 }}>
+    <div className="stack" style={{ gap: 18 }}>
       <Testa titolo="NUOVO ORDINE" sotto="Dal banco, per chi non usa il link. Si può scrivere anche a raccolta chiusa." />
       <section aria-label="Chi ordina" className="sg-riquadro">
         <span className="ob sg-riquadro-titolo">CHI ORDINA</span>

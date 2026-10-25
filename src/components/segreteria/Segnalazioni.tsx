@@ -317,7 +317,7 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
       {nuova && (
         <form
           className="card stack"
-          style={{ padding: 16, gap: 12, maxWidth: 1100 }}
+          style={{ padding: 16, gap: 12 }}
           onSubmit={(e) => {
             e.preventDefault()
             if (pronto) apri()
@@ -386,7 +386,7 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
         <p className="sg-sotto">{chiuse || !tutte.length ? 'Nessuna segnalazione.' : 'Nessuna aperta. Le altre si vedono con ANCHE LE CHIUSE.'}</p>
       )}
 
-      <div className="stack" style={{ gap: 10, maxWidth: 1100 }}>
+      <div className="stack" style={{ gap: 10 }}>
         {lista.map((s) => (
           <Filo
             key={s.id}

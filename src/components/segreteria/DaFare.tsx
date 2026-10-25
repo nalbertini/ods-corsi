@@ -362,7 +362,7 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
   const tuttoContato = nonSo.length === 0
 
   return (
-    <div className="stack" style={{ gap: 18, maxWidth: 1080 }}>
+    <div className="stack" style={{ gap: 18 }}>
       <Testa
         titolo="DA FARE"
         sotto={`${giornoPerEsteso(chiaveGiorno(new Date()))} ${new Date().getFullYear()}. Quello che aspetta la segreteria: si riconta ogni volta che torni qui.`}
