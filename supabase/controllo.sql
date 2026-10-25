@@ -547,6 +547,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from sito_pagine where slug = 'dichiarazione-accessibilita' and di_legge)
     and exists (select 1 from sito_menu m join sito_pagine p on p.id = m.pagina_id where p.slug = 'dichiarazione-accessibilita' and m.dove = 'footer')
     and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%')),
+  ('113-importazioni.sql', 'IMPORTAZIONI: gruppi Satispay, «Non è questo», movimenti della banca già scritti',
+    to_regclass('public.banca_coperti') is not null
+    and exists (select 1 from dentro where nome = 'banca_non_e_questo')
+    and exists (select 1 from dentro where nome = 'satispay_scarico_stato' and corpo like '%m.banca_chiave is null%')
+    and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%m.banca_chiave is null%')),
   ('112-sito-accessibilita-agid.sql', 'la traccia della Dichiarazione di accessibilità ha le parti AgID (norma, data di redazione, tempo di risposta, segnalazione)',
     not exists (select 1 from sito_pagine
                  where slug = 'dichiarazione-accessibilita' and pubblicato is null

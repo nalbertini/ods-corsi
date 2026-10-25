@@ -21,14 +21,14 @@ import { QUOTA_ASSOCIATIVA, stagioneDi } from './costi'
 import { NOTA_DI_DEFAULT, type IncassoPrima } from './pagatoPrima'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
-import { MASSIMO_PER_IMPORTAZIONE, PREFISSO_CHIAVE_BANCA } from './importaBanca'
+import { MASSIMO_PER_IMPORTAZIONE, nonEQuestoBanca, PREFISSO_CHIAVE_BANCA, segnaCoperti } from './importaBanca'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
 const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
 import { cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
-import { applicaScarico, CAMBIO_CASSA_SATISPAY, daDecidere, decidiScarico, NOME_CASSA_SATISPAY, type PagamentoNegozio } from './satispayScarico'
+import { applicaScarico, CAMBIO_CASSA_SATISPAY, daDecidere, decidiGruppo, decidiScarico, NOME_CASSA_SATISPAY, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
@@ -1853,6 +1853,55 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const r = decidiScarico({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, satispayId, scelta, movimentoId)
       a().satispayNegozio = r.negozio
       a().movimenti = r.movimenti
+      salva()
+    },
+
+    async decidiGruppoSatispay(scelte) {
+      const { movimenti, voci, casse, chiusure } = contabilita()
+      const r = decidiGruppo({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, scelte)
+      a().satispayNegozio = r.negozio
+      a().movimenti = r.movimenti
+      salva()
+    },
+
+    async scollegaSatispay(satispayId) {
+      const { movimenti, voci, casse, chiusure } = contabilita()
+      const r = scollegaScarico({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, satispayId)
+      a().satispayNegozio = r.negozio
+      a().movimenti = r.movimenti
+      salva()
+    },
+
+    async negozioSatispay() {
+      // Pochi pagamenti d'esempio: il mese lo sceglie `righeEntrato`.
+      return a().satispayNegozio ?? []
+    },
+
+    async bancaCoperti() {
+      return a().bancaCoperti ?? []
+    },
+
+    async segnaCopertiBanca(righe) {
+      const conto = contabilita().casse.find((c) => c.nome === NOME_CASSA_CONTO)
+      if (!conto) throw new Error('Manca la cassa Conto Corrente')
+      // Come `banca_segna_coperti`: le righe il cui abbinamento non regge entrano come un import normale.
+      const r = segnaCoperti(contabilita().movimenti, a().bancaCoperti ?? [], righe, conto.id)
+      // Le righe nuove si scrivono prima: se una non va, i segni sui movimenti a mano non restano a metà.
+      if (r.daScrivere.length) await this.importaMovimentiBanca(r.daScrivere)
+      const segni = new Map(r.movimenti.filter((m) => m.bancaChiave).map((m) => [m.id, m.bancaChiave]))
+      a().movimenti = contabilita().movimenti.map((m) => (segni.has(m.id) ? { ...m, bancaChiave: segni.get(m.id) } : m))
+      a().bancaCoperti = r.coperti
+      salva()
+    },
+
+    async nonEQuestoBanca(chiave) {
+      const conto = contabilita().casse.find((c) => c.nome === NOME_CASSA_CONTO)
+      if (!conto) throw new Error('Manca la cassa Conto Corrente')
+      const r = nonEQuestoBanca(a().bancaCoperti ?? [], chiave, contabilita().chiusure, conto.id)
+      await this.importaMovimentiBanca([r.scrivi])
+      // Il movimento a mano non è più coperto: torna libero, anche per Satispay.
+      a().movimenti = contabilita().movimenti.map((m) => (m.bancaChiave === chiave ? { ...m, bancaChiave: undefined } : m))
+      a().bancaCoperti = r.coperti
       salva()
     },
 

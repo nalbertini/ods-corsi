@@ -160,7 +160,7 @@ export function applicaScarico(dati: DatiScarico, scrivi: boolean): { conti: Con
       const cand =
         p.tipo === 'TO_BUSINESS'
           ? movimenti
-              .filter((m) => m.tipo === 'entrata' && !m.annullatoIl && !m.satispayId && m.data === data && m.importo === p.importo && candidate.includes(m.cassaId))
+              .filter((m) => m.tipo === 'entrata' && !m.annullatoIl && !m.satispayId && !m.bancaChiave && m.data === data && m.importo === p.importo && candidate.includes(m.cassaId))
               .sort((a, b) => a.creatoIl.localeCompare(b.creatoIl))
           : []
       if (cand.length === 1) {
@@ -224,8 +224,9 @@ export function daDecidere(dati: Pick<DatiScarico, 'negozio' | 'movimenti' | 'vo
       // `as`: un pagamento da decidere ha sempre uno di questi due motivi (`satispay_negozio_applica`).
       motivo: n.motivo as DaDecidere['motivo'],
       data: giornoRoma(n.quando),
+      // Un movimento preso nel frattempo da un altro pagamento, o annullato, non è più una scelta possibile.
       candidati: dati.movimenti
-        .filter((m) => n.candidati?.includes(m.id))
+        .filter((m) => n.candidati?.includes(m.id) && !m.satispayId && !m.bancaChiave && !m.annullatoIl)
         .sort((a, b) => a.creatoIl.localeCompare(b.creatoIl))
         .map((m) => ({
           id: m.id,
@@ -248,6 +249,8 @@ export function decidiScarico(dati: DatiScarico, satispayId: string, scelta: Sce
     p.esito = 'fuori'
   } else if (scelta === 'a_mano') {
     if (!movimentoId || !p.candidati?.includes(movimentoId)) throw new Error('Scegli uno dei movimenti proposti')
+    // Un movimento a mano copre un soldo arrivato solo: se lo copre già la banca, non è anche di Satispay.
+    if (movimenti.some((x) => x.id === movimentoId && x.bancaChiave)) throw new Error('Quel movimento è già coperto da un movimento della banca: ricarica la pagina')
     const m = movimenti.find((x) => x.id === movimentoId && !x.satispayId && !x.annullatoIl)
     if (!m) throw new Error('Quel movimento non c’è più o è già di un altro pagamento: ricarica la pagina')
     m.satispayId = p.satispayId
@@ -266,6 +269,176 @@ export function decidiScarico(dati: DatiScarico, satispayId: string, scelta: Sce
     throw new Error('Scegli cosa fare del pagamento')
   }
   return { movimenti, negozio }
+}
+
+/** I pagamenti da decidere che si decidono insieme: stesso tipo, motivo, giorno e importo, coi candidati di tutti. */
+export interface GruppoDaDecidere {
+  tipo: DaDecidere['tipo']
+  motivo: DaDecidere['motivo']
+  data: string
+  importo: number
+  pagamenti: DaDecidere[]
+  candidati: DaDecidere['candidati']
+}
+
+/** I casi da decidere a gruppi, per giorno e poi importo: lo stesso movimento si vede una volta, non per ogni pagamento. */
+export function gruppiDaDecidere(casi: DaDecidere[]): GruppoDaDecidere[] {
+  const gruppi = new Map<string, GruppoDaDecidere>()
+  for (const c of casi) {
+    const chiave = [c.tipo, c.motivo, c.data, c.importo].join('|')
+    const g = gruppi.get(chiave) ?? { tipo: c.tipo, motivo: c.motivo, data: c.data, importo: c.importo, pagamenti: [], candidati: [] }
+    g.pagamenti.push(c)
+    for (const m of c.candidati) if (!g.candidati.some((x) => x.id === m.id)) g.candidati.push(m)
+    gruppi.set(chiave, g)
+  }
+  return [...gruppi.values()].sort((a, b) => perByte(a.data, b.data) || a.importo - b.importo)
+}
+
+const parole = (testo: string) =>
+  testo
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .split(/[^a-z]+/)
+    .filter((p) => p && p !== 'cliente')
+
+/** Il nome di chi ha pagato su Satispay sta tutto nella descrizione del movimento: un indizio, non una scelta. */
+export function nomeSimile(chi: string, descrizione: string): boolean {
+  const nome = parole(chi)
+  const dove = new Set(parole(descrizione))
+  return nome.length > 0 && nome.every((p) => dove.has(p))
+}
+
+/** I candidati per un pagamento: quelli col nome simile prima, gli altri nell'ordine di scrittura. */
+export const candidatiInOrdine = <C extends { descrizione: string }>(chi: string | null | undefined, candidati: C[]): C[] =>
+  [...candidati].sort((a, b) => Number(nomeSimile(chi ?? '', b.descrizione)) - Number(nomeSimile(chi ?? '', a.descrizione)))
+
+export interface SceltaGruppo {
+  satispayId: string
+  scelta: SceltaSatispay
+  movimentoId?: string
+}
+
+/** `satispay_decidi_gruppo`: tutte le scelte o nessuna, e un movimento vale per un pagamento solo. */
+export function decidiGruppo(dati: DatiScarico, scelte: SceltaGruppo[]): { movimenti: MovimentoManuale[]; negozio: PagamentoNegozio[] } {
+  const presi = scelte.filter((s) => s.scelta === 'a_mano').map((s) => s.movimentoId)
+  if (new Set(presi).size < presi.length) throw new Error('Lo stesso movimento è scelto per due pagamenti')
+  // `decidiScarico` non tocca i dati che riceve: se una scelta lancia, quelli di partenza restano come sono.
+  return scelte.reduce((d, s) => ({ ...d, ...decidiScarico(d, s.satispayId, s.scelta, s.movimentoId) }), dati)
+}
+
+/** Le scelte di un gruppo mentre si fanno, per pagamento. */
+export type ScelteInCorso = Record<string, { scelta: SceltaSatispay; movimentoId?: string }>
+
+/** Come si dice un pagamento scritto nuovo: un rimborso esce, non entra. */
+export function dettoNuovo(tipo: PagamentoNegozio['tipo'], n: number) {
+  const rimborso = tipo === 'REFUND_TO_BUSINESS'
+  return {
+    scelta: rimborso ? 'Rimborso nuovo' : 'Incasso nuovo',
+    conto: rimborso ? `${n} ${n === 1 ? 'rimborso nuovo' : 'rimborsi nuovi'}` : `${n} ${n === 1 ? 'incasso nuovo' : 'incassi nuovi'}`,
+    verso: rimborso ? 'in meno' : 'in più',
+  }
+}
+
+/**
+ * Il riepilogo sotto un gruppo, prima della conferma: quante scelte mancano, chi si collega a cosa (col nome che
+ * somiglia o no), gli incassi nuovi, i movimenti già presi. `scelte` è null finché non si può confermare.
+ */
+export function riepilogoGruppo(gruppo: GruppoDaDecidere, inCorso: ScelteInCorso) {
+  const presi: Record<string, string> = {}
+  const collegati: Array<{ chi: string; descrizione: string; simile: boolean }> = []
+  const nuovi = { conteggio: 0, importo: 0 }
+  const scelte: SceltaGruppo[] = []
+  for (const p of gruppo.pagamenti) {
+    const s = inCorso[p.satispayId]
+    if (!s || (s.scelta === 'a_mano' && !s.movimentoId)) continue
+    scelte.push({ satispayId: p.satispayId, ...s })
+    if (s.scelta === 'scrivi' || s.scelta === 'oggi') {
+      nuovi.conteggio++
+      nuovi.importo += p.importo
+    }
+    const m = s.scelta === 'a_mano' ? gruppo.candidati.find((c) => c.id === s.movimentoId) : undefined
+    if (!m) continue
+    if (presi[m.id]) return { mancano: gruppo.pagamenti.length - scelte.length, collegati, nuovi, presi, scelte: null }
+    presi[m.id] = p.satispayId
+    collegati.push({ chi: p.chi ?? '', descrizione: m.descrizione, simile: nomeSimile(p.chi ?? '', m.descrizione) })
+  }
+  const mancano = gruppo.pagamenti.length - scelte.length
+  return { mancano, collegati, nuovi, presi, scelte: mancano ? null : scelte }
+}
+
+/**
+ * `satispay_scollega`, «Non è questo»: il movimento a mano perde il segno e il pagamento torna da decidere, coi
+ * candidati di `applicaScarico`. Nei giorni chiusi no: il collegamento è già nei conti di quella chiusura.
+ */
+export function scollegaScarico(dati: DatiScarico, satispayId: string): { movimenti: MovimentoManuale[]; negozio: PagamentoNegozio[] } {
+  const movimenti = dati.movimenti.map((m) => ({ ...m }))
+  const negozio = dati.negozio.map((n) => ({ ...n }))
+  const p = negozio.find((n) => n.satispayId === satispayId)
+  if (!p) throw new Error('Il pagamento non c’è')
+  const m = movimenti.find((x) => x.id === p.movimentoId)
+  if (p.esito !== 'a_mano' || !m) throw new Error('Questo pagamento non è collegato a un movimento a mano')
+  if (giornoChiuso(dati.chiusure, [m.cassaId], m.data)) throw new Error('Quel giorno la cassa è chiusa: il collegamento resta')
+  delete m.satispayId
+  const data = giornoRoma(p.quando)
+  const candidate = dati.casse.filter((c) => [NOME_CASSA_CONTO, NOME_CASSA_SATISPAY].includes(c.nome)).map((c) => c.id)
+  p.esito = 'da_decidere'
+  p.motivo = 'forse_doppione'
+  delete p.movimentoId
+  p.candidati = movimenti
+    .filter((x) => x.tipo === 'entrata' && !x.annullatoIl && !x.satispayId && !x.bancaChiave && x.data === data && x.importo === p.importo && candidate.includes(x.cassaId))
+    .sort((a, b) => a.creatoIl.localeCompare(b.creatoIl))
+    .map((x) => x.id)
+  return { movimenti, negozio }
+}
+
+/** Gli esiti di un pagamento che è in contabilità: scritto dallo scarico, già a mano, dal modulo, in PAGAMENTI. */
+const ENTRATI: NonNullable<PagamentoNegozio['esito']>[] = ['scritto', 'a_mano', 'modulo', 'pagamenti']
+const delMese = (p: PagamentoNegozio, mese: string) => giornoRoma(p.quando).slice(0, 7) === mese
+const conSegno = (p: PagamentoNegozio) => (p.tipo === 'TO_BUSINESS' ? p.importo : -p.importo)
+
+export interface RigaEntrato {
+  satispayId: string
+  tipo: PagamentoNegozio['tipo']
+  importo: number
+  data: string
+  chi: string | null
+  esito: NonNullable<PagamentoNegozio['esito']>
+  voce: string | null
+  movimento: { id: string; descrizione: string; cassa: string } | null
+}
+
+/** «Cosa è entrato» da Satispay in un mese (`AAAA-MM`, giorno di Roma): ogni pagamento in contabilità e dove è finito. */
+export function righeEntrato(dati: Pick<DatiScarico, 'negozio' | 'movimenti' | 'voci' | 'casse'>, mese: string): RigaEntrato[] {
+  return dati.negozio
+    .filter((p) => p.esito && ENTRATI.includes(p.esito) && delMese(p, mese))
+    .map((p) => {
+      const m = p.movimentoId ? dati.movimenti.find((x) => x.id === p.movimentoId) : undefined
+      return {
+        satispayId: p.satispayId,
+        tipo: p.tipo,
+        importo: p.importo,
+        data: giornoRoma(p.quando),
+        chi: p.chi ?? null,
+        // `as`: il filtro qui sopra tiene solo i pagamenti con un esito.
+        esito: p.esito as RigaEntrato['esito'],
+        voce: dati.voci.find((v) => v.id === m?.voceId)?.nome ?? null,
+        movimento: m ? { id: m.id, descrizione: m.descrizione, cassa: dati.casse.find((c) => c.id === m.cassaId)?.nome ?? '' } : null,
+      }
+    })
+    .sort((a, b) => perByte(a.data, b.data) || perByte(a.satispayId, b.satispayId))
+}
+
+/** I conti del mese: quel che è in contabilità contro quel che dice Satispay; a mese deciso tornano. */
+export function riepilogoEntrato(dati: Pick<DatiScarico, 'negozio'>, mese: string) {
+  const delMeseAccettati = dati.negozio.filter((p) => p.stato === 'ACCEPTED' && delMese(p, mese))
+  const entrati = delMeseAccettati.filter((p) => p.esito && ENTRATI.includes(p.esito))
+  const aMano = entrati.filter((p) => p.esito === 'a_mano')
+  return {
+    entrato: entrati.reduce((s, p) => s + conSegno(p), 0),
+    secondoSatispay: delMeseAccettati.reduce((s, p) => s + conSegno(p), 0),
+    aMano: { conteggio: aMano.length, importo: aMano.reduce((s, p) => s + p.importo, 0) },
+  }
 }
 
 /**

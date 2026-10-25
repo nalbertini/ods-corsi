@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Cosa è entrato</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Proposta: rivedere cosa e' entrato da una fonte in un mese, con il totale da confrontare con quello di Satispay (o con l'estratto della banca), e disfare un collegamento sbagliato. -->
+<div style="display: flex; width: 1440px; min-height: 1000px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="IMPORTAZIONI" numeri="IMPORTAZIONI:5" importazioni="true" nome="Nicola Albertini" ruolo="Amministrazione" autorizzazioni="segreteria e amministrazione" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">COSA È ENTRATO</h1>
+      <span style="font-size: 14px; color: #46606f">Da Satispay, settembre 2025: ogni pagamento scaricato e dove è finito.</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <dc-import name="Chip" tema="sito" label="Satispay" acceso="true" hint-size="120px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="Banca" hint-size="100px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="Settembre 2025" acceso="true" hint-size="160px,44px"></dc-import>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+      <dc-import name="Numero" tema="sito" titolo="ENTRATO DA SATISPAY" valore="+1.385,00 €" sotto="31 incassi · 2 rimborsi" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="SECONDO SATISPAY" valore="+1.385,00 €" sotto="il totale del mese nel negozio: torna" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="DI CUI GIÀ A MANO" valore="+450,00 €" sotto="9 collegati a un movimento già scritto" hint-size="100%,120px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; background: #ffffff; border: 2px solid #cfe6f4">
+      <dc-import name="TestataTabella" tema="sito" colonne="DATA|MOVIMENTO|COME È ENTRATO|VOCE|IMPORTO|" griglia="100px minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(0, 1fr) 110px 150px" ordinata="DATA" verso="su" hint-size="100%,40px"></dc-import>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(0, 1fr) 110px 150px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>01/09/2025</span><span style="font-weight: 600">Satispay · Rinaldo M.</span><span>Incasso nuovo</span><span>Da classificare</span><span style="text-align: right; font-weight: 600;">+50,00 €</span><span></span>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(0, 1fr) 110px 150px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>01/09/2025</span><span style="font-weight: 600">Cliente CIROLLI MARIA STELLA</span><span>Collegato a Satispay · Maria S.</span><span>Quota associativa</span><span style="text-align: right; font-weight: 600;">+50,00 €</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Non è questo" hint-size="140px,40px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(0, 1fr) 110px 150px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>01/09/2025</span><span style="font-weight: 600">Cliente MARCHI SAMUELE</span><span>Collegato a Satispay · Samuele M.</span><span>Quota associativa</span><span style="text-align: right; font-weight: 600;">+50,00 €</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Non è questo" hint-size="140px,40px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(0, 1fr) 110px 150px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>02/09/2025</span><span style="font-weight: 600">Satispay · Paolo T.</span><span>Incasso nuovo</span><span>Da classificare</span><span style="text-align: right; font-weight: 600;">+35,00 €</span><span></span>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(0, 1fr) 110px 150px; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>02/09/2025</span><span style="font-weight: 600">Rimborso Satispay · Paolo T.</span><span>Rimborso nuovo</span><span>Da classificare</span><span style="text-align: right; font-weight: 600; color: #b81d1d;">−8,00 €</span><span></span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 14px; font-size: 14px; background: #cfe6f4">
+        <b>Lunedì 01/09/2025: +100,00 € nuovi, +100,00 € già a mano</b><span>ne vedi 5 su 33</span>
+      </div>
+    </div>
+    <span style="font-size: 14px; color: #46606f; max-width: 880px">«Non è questo» toglie il collegamento: il movimento a mano torna normale, non più legato a Satispay, e il pagamento torna in Da decidere. Non si può nei giorni con la cassa già chiusa. Un incasso nuovo sbagliato si annulla come ogni altro movimento, da MOVIMENTI.</span>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

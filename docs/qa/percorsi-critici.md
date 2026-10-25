@@ -55,7 +55,8 @@ prova tiene stanno in «Scoperti», in fondo.
 | Accesso e ruoli (PIN, RLS) | tutti | dati visti da chi non deve | `prova:segreteria`, `prova:ruoli`, `prova:banco`, `rls.sql`, `109-privilegi-e-certificati.sql`, `segreteria.sql`, `elimina-istruttore.sql`, `email-unica.sql` | sì |
 | Ruolo «amministrazione» | amministrazione, segreteria | persone viste da chi tiene solo i conti | `prova:menu`, `prova:ruoli`, `prova:pagamenti`, `prova:segreteria`, `amministrazione.sql`, `rls.sql`, `elimina-istruttore.sql` | sì |
 | Contabilità (movimenti, chiusure, voci, prima nota) | amministrazione | residuo che non torna, giorno chiuso riscritto | `prova:contabilita`, `prova:indirizzi`, `prova:banco`, `prova:avvisi-segreteria`, `prova:segreteria`, `prova:chiusura-pdf`, `prova:importa-prima-nota`, `prova:pericolo`, `chiusura-cassa.sql`, `contabilita.sql`, `rls.sql`, `importa-prima-nota.sql`, `cambia-voce.sql` | sì |
-| Importa dalla banca | amministrazione | movimento perso o scritto due volte | `prova:importa-banca`, `importa-banca.sql`, `importa-prima-nota.sql` | sì |
+| Importa dalla banca | amministrazione | movimento perso o scritto due volte | `prova:importa-banca`, `prova:importazioni`, `importa-banca.sql`, `importa-prima-nota.sql`, `importazioni.sql` | sì |
+| Importazioni: Satispay e banca sullo stesso movimento a mano | amministrazione | stesso incasso contato due volte, o perso | `prova:importazioni`, `prova:satispay-scarico`, `prova:importa-banca`, `importazioni.sql`, `satispay-scarico.sql`, `importa-banca.sql` | sì, da fare |
 | Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:segreteria`, `prova:contabilita`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
 | Quote e corsi scritti a mano hanno la persona | amministrazione (scrive), segreteria (vede la scheda) | quota che non si ritrova nella scheda | `prova:contabilita`, `prova:movimenti-persona`, `prova:segreteria`, `quote-persona.sql`, `cambia-voce.sql`, `movimenti-persona.sql` | sì, da fare |
 | Filtro «Pagato nel vecchio programma» | segreteria | segnato pagato per un incasso non suo | `prova:pagato-prima`, `prova:filtri-iscritti`, `pagato-vecchio-programma.sql` | sì |
@@ -104,6 +105,8 @@ quando arriva la prova.
 
 - **GRAVE** — `99-email-unica.sql` perde l'email di accesso, ed
   `email-unica.sql` §4 tiene la perdita come attesa.
+- **GRAVE** — Stesso movimento a mano per un pagamento Satispay e per una riga
+  della banca: nessuna prova lo impedisce, né in app né nel database.
 - **GRAVE** — Ricevuta da un pagamento a mano: un `pagamentoId` perso per
   strada non fa cadere niente, e lo stesso incasso conta due volte.
 - `update-con-where.sql`: il controllo cerca un WHERE dopo l'UPDATE, nello
@@ -135,6 +138,8 @@ quando arriva la prova.
   risultati.
 - Vestiario: la metà Supabase (`vestiarioDati.ts`).
 - Scarico Satispay: i casi DA DECIDERE e `statoScarico`.
+- `banca_segna_coperti`: la stessa chiave con un altro `conId` non si
+  aggiorna (`on conflict do nothing`), e nessuna prova lo tiene.
 - Listino: `saldoEntro`, e `some` al posto di `every` sull'annuale.
 - Avvisi: 50 richieste finte spengono gli avvisi (scelta dell'utente).
 - Striscia: `useDaFare` e la regola degli appelli («cominciata» o «finita»).

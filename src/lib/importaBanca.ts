@@ -1,4 +1,4 @@
-import type { RigaMovimento } from './contabilita'
+import { giornoChiuso, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento } from './contabilita'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 
 /**
@@ -143,8 +143,10 @@ const giorniTra = (a: string, b: string) => Math.abs(Date.parse(a) - Date.parse(
  */
 export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], contoId: string, oggi: string, scelte: Record<string, string> = {}): AnteprimaBanca {
   const scartate = [...lettura.scartate]
-  const giaImportate = new Set(righe.map((r) => r.origineImport).filter((k): k is string => !!k))
-  const liberi = righe.filter((r) => r.cassaId === contoId && !r.annullato && !r.origineImport?.startsWith(PREFISSO_CHIAVE_BANCA))
+  // Una riga già coperta da un movimento a mano è importata quanto una scritta nuova.
+  const giaImportate = new Set(righe.flatMap((r) => [r.origineImport, r.bancaChiave]).filter((k): k is string => !!k))
+  // Un movimento a mano copre un soldo arrivato solo: se è già di Satispay o di un'altra riga della banca, non è libero.
+  const liberi = righe.filter((r) => r.cassaId === contoId && !r.annullato && !r.satispayId && !r.bancaChiave && !r.origineImport?.startsWith(PREFISSO_CHIAVE_BANCA))
   const usati = new Set<string>()
 
   const validi = lettura.movimenti.filter((x) => x.data <= oggi)
@@ -228,4 +230,86 @@ export function ultimaImportazione(righe: RigaMovimento[]): { creatoIl: string; 
   const lotto = sue.filter((r) => r.creatoIl === creatoIl)
   const date = lotto.map((r) => r.data).sort()
   return { creatoIl, conteggio: lotto.length, dal: date[0], al: date[date.length - 1] }
+}
+
+/** Un movimento della banca abbinato da solo a uno già scritto a mano: si salva per poterlo ricontrollare. */
+export interface CopertoBanca {
+  chiave: string
+  data: string
+  tipo: 'entrata' | 'uscita'
+  importo: number
+  descrizione: string
+  conId: string
+  conDescrizione: string
+}
+
+/** Le righe per `banca_segna_coperti` (113-importazioni.sql). */
+export function copertiDaSalvare(a: AnteprimaBanca): CopertoBanca[] {
+  return a.coperti.map(({ movimento: m, con }) => ({ chiave: m.chiave, data: m.data, tipo: m.tipo, importo: m.importo, descrizione: m.descrizione, conId: con.id, conDescrizione: con.descrizione }))
+}
+
+/**
+ * `banca_segna_coperti` per la modalità prova: ogni riga coperta dà il segno della banca al suo movimento a mano.
+ * L'abbinamento si ricontrolla: se il movimento non c'è più, è già di Satispay o di un'altra riga, o non torna,
+ * la riga va in `daScrivere` e entra come un import normale. Una riga già vista non cambia niente.
+ */
+export function segnaCoperti(movimenti: MovimentoManuale[], coperti: CopertoBanca[], righe: CopertoBanca[], contoId: string): { movimenti: MovimentoManuale[]; coperti: CopertoBanca[]; daScrivere: DatoImportBanca[] } {
+  const mov = [...movimenti]
+  const cop = [...coperti]
+  const daScrivere: DatoImportBanca[] = []
+  for (const r of righe) {
+    if (!r.chiave?.startsWith(PREFISSO_CHIAVE_BANCA)) throw new Error('Un movimento già scritto non ha la chiave della banca')
+    if (cop.some((c) => c.chiave === r.chiave) || mov.some((m) => m.origineImport === r.chiave || m.bancaChiave === r.chiave)) continue
+    const i = mov.findIndex((m) => m.id === r.conId && m.tipo === r.tipo && m.importo === r.importo && m.cassaId === contoId && !m.annullatoIl && !m.satispayId && !m.bancaChiave)
+    if (i < 0) {
+      daScrivere.push({ chiave: r.chiave, data: r.data, cassa: 'conto', tipo: r.tipo, importo: r.importo, descrizione: r.descrizione, voce: VOCE_DA_CLASSIFICARE })
+      continue
+    }
+    mov[i] = { ...mov[i], bancaChiave: r.chiave }
+    cop.push(r)
+  }
+  return { movimenti: mov, coperti: cop, daScrivere }
+}
+
+/**
+ * `banca_non_e_questo` per la modalità prova: il movimento della banca entra come un import normale e lascia i
+ * coperti. Nei giorni chiusi del Conto Corrente no: cambierebbe i conti di una chiusura già fatta.
+ */
+export function nonEQuestoBanca(coperti: CopertoBanca[], chiave: string, chiusure: ChiusuraCassa[], contoId: string): { scrivi: DatoImportBanca; coperti: CopertoBanca[] } {
+  const c = coperti.find((x) => x.chiave === chiave)
+  if (!c) throw new Error('Questo movimento non è fra quelli già scritti')
+  if (giornoChiuso(chiusure, [contoId], c.data)) throw new Error('Quel giorno la cassa è chiusa: il collegamento resta')
+  return {
+    scrivi: { chiave: c.chiave, data: c.data, cassa: 'conto', tipo: c.tipo, importo: c.importo, descrizione: c.descrizione, voce: VOCE_DA_CLASSIFICARE },
+    coperti: coperti.filter((x) => x !== c),
+  }
+}
+
+/** Una riga di «Cosa è entrato» dalla banca: importata come movimento nuovo, o coperta da uno scritto a mano. */
+export interface RigaEntratoBanca {
+  chiave: string
+  data: string
+  tipo: 'entrata' | 'uscita'
+  importo: number
+  descrizione: string
+  come: 'nuovo' | 'coperto'
+  voce: string | null
+  con: { id: string; descrizione: string } | null
+}
+
+/** «Cosa è entrato» dalla banca in un mese (`AAAA-MM`): le righe importate ancora in piedi e quelle coperte. */
+export function entratoBanca(righe: RigaMovimento[], coperti: CopertoBanca[], mese: string) {
+  const importate: RigaEntratoBanca[] = righe
+    .filter((r) => r.origineImport?.startsWith(PREFISSO_CHIAVE_BANCA) && !r.annullato && r.data.slice(0, 7) === mese)
+    // `as`: le righe `banca:` vengono da `datiImportBanca`, che scrive solo entrate e uscite.
+    .map((r) => ({ chiave: r.origineImport as string, data: r.data, tipo: r.tipo as RigaEntratoBanca['tipo'], importo: r.importo, descrizione: r.descrizione, come: 'nuovo', voce: r.voce, con: null }))
+  const coperte: RigaEntratoBanca[] = coperti
+    .filter((c) => c.data.slice(0, 7) === mese)
+    .map((c) => ({ chiave: c.chiave, data: c.data, tipo: c.tipo, importo: c.importo, descrizione: c.descrizione, come: 'coperto', voce: null, con: { id: c.conId, descrizione: c.conDescrizione } }))
+  const conto = (xs: RigaEntratoBanca[]) => ({ conteggio: xs.length, importo: xs.reduce((s, x) => s + (x.tipo === 'entrata' ? x.importo : -x.importo), 0) })
+  return {
+    righe: [...importate, ...coperte].sort((a, b) => a.data.localeCompare(b.data) || a.chiave.localeCompare(b.chiave)),
+    nuovi: conto(importate),
+    coperti: conto(coperte),
+  }
 }

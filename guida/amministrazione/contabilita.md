@@ -181,7 +181,9 @@ giroconto va e la commissione no, l'app lo dice: la commissione si scrive da
 
 I pagamenti del negozio Satispay entrano da soli, ogni notte, fino al giorno prima.
 In MOVIMENTI, nel menu **Altre azioni**, **Scarica ora i pagamenti Satispay** lo fa subito
-(la prima volta c'è invece **Guarda il primo scarico Satispay**). Se l'ultimo scarico non è riuscito, o ci sono casi da decidere, un avviso lo dice sopra l'elenco.
+(la prima volta c'è invece **Guarda il primo scarico Satispay**); lo stesso fa **Scarica ora** in
+[IMPORTAZIONI](importazioni.md). Se l'ultimo scarico non è riuscito, o ci sono casi da decidere, un
+avviso breve lo dice sopra l'elenco, con il link a IMPORTAZIONI.
 
 **La prima volta** c'è l'anteprima: l'app legge tutto Satispay e dice cosa
 scriverebbe, senza scrivere niente finché non dici sì. Ogni pagamento entra una volta
@@ -197,10 +199,8 @@ scegli dopo, con **Cambia voce**. Un rimborso entra come uscita. Non entrano:
 - quelli di prima dell'inizio dei conti.
 
 **Da decidere**: se il giorno è già chiuso, o se quel giorno ci sono più movimenti
-a mano con lo stesso importo, il pagamento non entra e compare l'avviso giallo.
-Lì scegli: per un giorno chiuso **Scrivilo oggi** (con la data di oggi) o **Lascialo
-fuori**; per un possibile doppione, quale dei movimenti a mano è quel pagamento
-(prende il segno DA SATISPAY), oppure lo scrivi come pagamento nuovo.
+a mano con lo stesso importo, il pagamento non entra: si decide in
+[IMPORTAZIONI](importazioni.md#da-decidere), a gruppi, con una conferma per gruppo.
 
 Dal 1° ottobre 2026 i pagamenti Satispay entrano nella cassa **Satispay**; quelli di
 prima nel Conto Corrente, come si faceva finora, così i saldi passati non cambiano.
@@ -212,7 +212,7 @@ vedi [Le regole](../segreteria/regole.md#gli-avvisi)). L'anteprima non manda nie
 
 ### Importare dalla banca
 
-**Importa dalla banca**, in MOVIMENTI, legge il file della banca e scrive nel **Conto
+**Importa dalla banca**, in MOVIMENTI (o **Importa un file** in [IMPORTAZIONI](importazioni.md)), legge il file della banca e scrive nel **Conto
 Corrente** i movimenti che mancano. Dall'home banking di BancoPosta scarica la
 **Lista movimenti** in formato CSV, poi scegli il file. Il file resta sul tuo computer:
 l'app ne legge solo i movimenti, e toglie dalla descrizione IBAN e codici fiscali.
@@ -223,7 +223,7 @@ quanti movimenti ci sono, quanti entrano e per quanto, e poi:
 - **Da decidere**: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo) e più di un possibile pagamento. Scegli quello giusto, oppure **Nessuno: scrivilo**. Finché non scegli, non entra.
 - **Avvisi**: i **versamenti da Satispay** entrano, ma i soldi sono già negli incassi Satispay: dopo, in MOVIMENTI, controllali uno per uno: se sono già negli incassi Satispay, annullali, o spostali con **Cambia voce** su un giroconto da Satispay, per non contarli due volte. Controlla anche i versamenti di contanti.
 - **Scartati**: righe con la data o l'importo illeggibili, o con la data nel futuro. Correggili nel file e riprova.
-- **Già coperti**: movimenti già scritti a mano, o già importati. Non si scrivono di nuovo; se l'abbinamento è sbagliato, **Non è questo**.
+- **Già coperti**: movimenti già scritti a mano, o già importati. Non si scrivono di nuovo; se l'abbinamento è sbagliato, **Non è questo**. Dopo l'importazione si ricontrollano in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
 
 I movimenti entrano nella voce **Da classificare**, col segno **DALLA BANCA**: la voce
 giusta la scegli dopo, con **Cambia voce**. Rileggere lo stesso file non duplica niente,

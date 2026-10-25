@@ -1,7 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
-import type { DatoImportBanca } from './importaBanca'
+import type { CopertoBanca, DatoImportBanca } from './importaBanca'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
 import type { IncassoPrima } from './pagatoPrima'
@@ -17,7 +17,7 @@ import { euro, mancanoDatiSocio } from './ricevute'
 import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
 import type { PagamentoSatispay } from './satispay'
-import type { ContiScarico, SceltaSatispay, StatoScarico } from './satispayScarico'
+import type { ContiScarico, PagamentoNegozio, SceltaGruppo, SceltaSatispay, StatoScarico } from './satispayScarico'
 import type { VoceCorso } from './corsiDaPagare'
 import { STAGIONE, stagioneDi } from './costi'
 import { ESTENSIONI, MASSIMO_FILE, anniScritti, minorenne } from './richieste'
@@ -824,6 +824,18 @@ export interface DatiSegreteria {
   scaricaSatispay(anteprima: boolean): Promise<ContiScarico>
   /** Cosa fare di un pagamento da decidere: scriverlo oggi o il suo giorno, lasciarlo fuori, o riconoscerlo in un movimento a mano. */
   decidiSatispay(satispayId: string, scelta: SceltaSatispay, movimentoId?: string): Promise<void>
+  /** Le scelte di un gruppo di IMPORTAZIONI, tutte o nessuna (`113-importazioni.sql`). */
+  decidiGruppoSatispay(scelte: SceltaGruppo[]): Promise<void>
+  /** «Non è questo»: il pagamento lascia il movimento a mano e torna da decidere. Non nei giorni chiusi. */
+  scollegaSatispay(satispayId: string): Promise<void>
+  /** I pagamenti del negozio Satispay di un mese (`AAAA-MM`), con l'esito dello scarico; vuoto senza il 97. */
+  negozioSatispay(mese: string): Promise<PagamentoNegozio[]>
+  /** I movimenti della banca abbinati da soli a uno già scritto; null senza `113-importazioni.sql`. */
+  bancaCoperti(): Promise<CopertoBanca[] | null>
+  /** Dopo l'import: salva i movimenti della banca abbinati da soli, per ricontrollarli. Senza il 113 non fa niente. */
+  segnaCopertiBanca(righe: CopertoBanca[]): Promise<void>
+  /** «Non è questo» per la banca: il movimento entra come un import normale (Conto Corrente, «Da classificare»). */
+  nonEQuestoBanca(chiave: string): Promise<void>
   /** Solo la descrizione e la nota si correggono sul posto. */
   correggiTestoMovimento(id: string, descrizione: string, nota?: string): Promise<void>
   /**
