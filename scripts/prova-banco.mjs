@@ -457,13 +457,13 @@ titolo('coda del banco')
 // Il titolo della scheda del browser dice la sezione: si riconosce fra le schede aperte, nella cronologia e nei segnalibri.
 {
   const t = m.luoghi.titoloDellaVoce
-  ok('CONTABILITÀ ha il suo titolo', t('contabilita'), 'Contabilità · Segreteria · ODS Corsi')
-  ok('DA FARE si chiama come nel menu, OGGI', t('dafare'), 'Oggi · Segreteria · ODS Corsi')
-  ok('le segnalate sono una scheda di PRESENZE', t('segnalate'), 'Presenze · Segreteria · ODS Corsi')
-  ok('PALESTRA, che non è nella seconda riga', t('palestra'), 'Palestra · Segreteria · ODS Corsi')
-  ok('RICHIESTE ONLINE, due parole', t('richieste'), 'Richieste online · Segreteria · ODS Corsi')
-  ok('ogni voce ha un titolo suo', m.indirizzo.VOCI.filter((v) => !/^[A-Z][a-zà-ù ]+ · Segreteria · ODS Corsi$/.test(t(v))), [])
-  ok('un\'area col suo nome', m.luoghi.titolo('ISCRIZIONI'), 'Iscrizioni · ODS Corsi')
+  ok('CONTABILITÀ ha il suo titolo', t('contabilita'), 'Contabilità - Segreteria - Centro Judo')
+  ok('DA FARE si chiama come nel menu, OGGI', t('dafare'), 'Oggi - Segreteria - Centro Judo')
+  ok('le segnalate sono una scheda di PRESENZE', t('segnalate'), 'Presenze - Segreteria - Centro Judo')
+  ok('PALESTRA, che non è nella seconda riga', t('palestra'), 'Palestra - Segreteria - Centro Judo')
+  ok('RICHIESTE ONLINE, due parole', t('richieste'), 'Richieste online - Segreteria - Centro Judo')
+  ok('ogni voce ha un titolo suo', m.indirizzo.VOCI.filter((v) => !/^[A-Z][a-zà-ù ]+ - Segreteria - Centro Judo$/.test(t(v))), [])
+  ok('un\'area col suo nome', m.luoghi.titolo('ISCRIZIONI'), 'Iscrizioni - Centro Judo')
 }
 console.log(guai ? `\n${guai} prove non passano` : '\nTutto bene')
 process.exit(guai ? 1 : 0)

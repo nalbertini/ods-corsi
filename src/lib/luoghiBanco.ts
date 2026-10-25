@@ -105,7 +105,7 @@ export function tesserePalestra(daRispondere: number): Array<{ voce: Voce; titol
  * cronologia il maiuscolo pesa.
  */
 export const titolo = (...parti: string[]): string =>
-  [...parti.map((p) => p.charAt(0) + p.slice(1).toLowerCase()), 'ODS Corsi'].join(' · ')
+  [...parti.map((p) => p.charAt(0) + p.slice(1).toLowerCase()), 'Centro Judo'].join(' - ')
 
 /** Il titolo di una voce della segreteria, col nome del menu (PALESTRA non è nella seconda riga). */
 export function titoloDellaVoce(voce: Voce): string {
