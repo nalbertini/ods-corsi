@@ -14,6 +14,7 @@ import {
   linkMappa,
   ordinaGare,
   pagamentoPerRicevuta,
+  riepilogoCertificati,
   righeGara,
   scrittaCertificato,
   suggerimenti,
@@ -312,67 +313,79 @@ function SchedaGara({
   )
   const conti = contiGara(g, atleti)
   const certificati = avvisoCertificati(righe)
+  const riepilogo = riepilogoCertificati(righe)
   const mappa = linkMappa(g.indirizzo)
   const [nota, setNota] = useState<{ id: string; testo: string } | null>(null)
   const pagamento = (id: string) => atleti.find((a) => a.garaId === g.id && a.personaId === id)?.pagamento
 
-  const stampa = () => fai(() => suCarta(fai, (c) => import('../../lib/elencoGaraPdf').then((m) => m.scaricaElencoGara(g, righe, c))), 'Elenco scaricato')
+  // Quando un'azione smonta o disabilita quel che teneva il focus, la tastiera ripartirebbe dall'inizio della pagina.
+  const portaFocus = (id: string) => setTimeout(() => document.getElementById(id)?.focus(), 0)
+
+  const stampa = async () => {
+    await fai(() => suCarta(fai, (c) => import('../../lib/elencoGaraPdf').then((m) => m.scaricaElencoGara(g, righe, c))), 'Elenco scaricato')
+    portaFocus('ga-stampa')
+  }
 
   const togli = async (r: RigaAtletaGara) => {
     if (!(await chiedi(`Togliere ${r.nome} ${r.cognome} da ${g.nome}? Resta iscritto in palestra: esce solo da questa gara.`, 'Togli dalla gara', { pericolo: true }))) return
     await fai(async () => (await datiGare()).togli(g.id, r.personaId), `${r.nome} ${r.cognome} tolto dalla gara`, onCambiato)
+    portaFocus('ga-titolo')
   }
 
   const salvaNota = async () => {
     if (!nota) return
     const { id, testo } = nota
-    if (await fai(async () => (await datiGare()).scriviNota(g.id, id, testo), 'Nota salvata', onCambiato)) setNota(null)
+    if (await fai(async () => (await datiGare()).scriviNota(g.id, id, testo), 'Nota salvata', onCambiato)) {
+      setNota(null)
+      portaFocus(`ga-nota-apri-${id}`)
+    }
   }
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <div className="sg-testa">
-        <div className="stack grow" style={{ gap: 6, minWidth: 0 }}>
-          <h1 className="ob sg-titolo" tabIndex={-1} style={{ textDecoration: g.annullata ? 'line-through' : undefined }}>
-            {g.nome.toUpperCase()}
-          </h1>
-          <span className="num" style={{ fontSize: 15, fontWeight: 700 }}>
-            {dateGara(g)} · {g.annullata ? 'Annullata' : quando(g, oggi)}
+      <div className="stack" style={{ gap: 6, minWidth: 0 }}>
+        <h1 id="ga-titolo" className="ob sg-titolo" tabIndex={-1} style={{ textDecoration: g.annullata ? 'line-through' : undefined }}>
+          {g.nome.toUpperCase()}
+        </h1>
+        <span className="num" style={{ fontSize: 15, fontWeight: 700 }}>
+          {dateGara(g)} · {g.annullata ? 'Annullata' : quando(g, oggi)}
+        </span>
+        {(g.luogo || g.organizzatore || g.note || mappa) && (
+          <span className="sg-sotto">
+            {[g.luogo, g.organizzatore && `organizza ${g.organizzatore}`, g.note].filter(Boolean).join(' · ')}
+            {mappa && (
+              <>
+                {' · '}
+                <a href={mappa} target="_blank" rel="noopener" className="link-alto">
+                  {g.indirizzo} ↗
+                </a>
+              </>
+            )}
           </span>
-          {(g.luogo || g.organizzatore || g.note || mappa) && (
-            <span className="sg-sotto">
-              {[g.luogo, g.organizzatore && `organizza ${g.organizzatore}`, g.note].filter(Boolean).join(' · ')}
-              {mappa && (
-                <>
-                  {' · '}
-                  <a href={mappa} target="_blank" rel="noopener" className="link-alto">
-                    {g.indirizzo} ↗
-                  </a>
-                </>
-              )}
-            </span>
-          )}
-          {conti.totale > 0 && (
-            <span className="sg-sotto">
-              Quota {euroBreve(conti.totale)} a atleta ({g.voci.map((v) => `${v.voce} ${euroBreve(v.importo)}`).join(', ')}) · incassati {euroBreve(conti.incassato)} su{' '}
-              {euroBreve(conti.incassato + conti.daPagare)}
-              {conti.nonPagati > 0 && !g.annullata && ` · ${conti.nonPagati} da pagare`}
-            </span>
-          )}
-        </div>
-        <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => onCassetto({ a: 'modifica', id: g.id })}>
-            Modifica
-          </button>
-          <button type="button" className="sg-btn sg-btn-linea" disabled={!righe.length || lavora} onClick={() => void stampa()}>
-            Stampa l’elenco
-          </button>
-          {!g.annullata && (
-            <button type="button" className="sg-btn sg-btn-pieno" onClick={() => onCassetto({ a: 'aggiungi', id: g.id })}>
-              Aggiungi atleti
-            </button>
-          )}
-        </div>
+        )}
+        {conti.totale > 0 && (
+          <span className="sg-sotto">
+            {g.voci.map((v) => `${v.voce} ${euroBreve(v.importo)}`).join(', ')}
+          </span>
+        )}
+      </div>
+
+      <div className="sg-gara-numeri">
+        <NumeroGara etichetta="ATLETI">{riepilogo.atleti}</NumeroGara>
+        <NumeroGara etichetta="CERTIFICATO A POSTO">
+          {riepilogo.aPosto} <span className="sg-sotto">su {riepilogo.atleti}</span>
+        </NumeroGara>
+        {/* Una gara annullata non ha più niente da incassare, ma quanto è già entrato resta vero. */}
+        {conti.totale > 0 && !g.annullata && (
+          <NumeroGara etichetta={`DA INCASSARE (${euroBreve(conti.totale)} A TESTA)`} tono={conti.daPagare > 0 ? 'manca' : undefined}>
+            {euroBreve(conti.daPagare)}
+          </NumeroGara>
+        )}
+        {conti.totale > 0 && (
+          <NumeroGara etichetta="INCASSATO" tono="fatto">
+            {euroBreve(conti.incassato)}
+          </NumeroGara>
+        )}
       </div>
 
       {certificati && (
@@ -380,45 +393,33 @@ function SchedaGara({
           <span style={{ fontSize: 15, fontWeight: 700 }}>
             {certificati} al {dataLunga(ultimoGiorno(g))}.
           </span>
+          <span className="sg-sotto">{riepilogo.senza.map((r) => `${r.cognome} ${r.nome}`).join(', ')}.</span>
           <span className="sg-sotto">L’app avvisa ma non blocca. Per una gara serve il certificato agonistico: controlla che lo sia.</span>
         </Riquadro>
       )}
 
       <Titolo titolo={`ATLETI (${righe.length})`} />
-      <div role="table" aria-label="Atleti della gara" className="sg-tabella">
-        <div role="row" className="sg-lista-testa sg-riga-iscritto sg-riga-atleta-gara" data-senza-quota={!conti.totale || undefined}>
-          {['ATLETA', 'NATO', 'CORSO', `CERTIFICATO AL ${dataLunga(ultimoGiorno(g)).toUpperCase()}`, 'NOTA', ...(conti.totale ? ['QUOTA'] : []), ''].map((t, i) => (
-            <span key={i} role="columnheader" className="sg-etichetta">
-              {t}
-            </span>
-          ))}
-        </div>
-        <div className="sg-tabella-corpo">
-          {!righe.length && (
-            <p className="sg-sotto" style={{ padding: '12px 14px' }}>
-              Nessun atleta ancora: aggiungili da Aggiungi atleti, partendo da un corso o dal nome.
-            </p>
-          )}
-          {righe.map((r) => {
-            const c = scrittaCertificato(r)
-            const pag = pagamento(r.personaId)
-            return (
-              <div key={r.personaId} role="row" className="sg-riga-iscritto sg-riga-atleta-gara" data-senza-quota={!conti.totale || undefined}>
-                <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>
+      {righe.length > 0 && <p className="sg-sotto" style={{ margin: 0 }}>Togli (✕) toglie dalla gara, non dalla palestra.</p>}
+      <div role="list" aria-label="Atleti della gara" className="sg-tabella">
+        {!righe.length && (
+          <p className="sg-sotto" style={{ padding: '12px 14px' }}>
+            {g.annullata ? 'Nessun atleta in questa gara.' : 'Nessun atleta ancora: aggiungili da Aggiungi atleti, partendo da un corso o dal nome.'}
+          </p>
+        )}
+        {righe.map((r) => {
+          const c = scrittaCertificato(r)
+          const pag = pagamento(r.personaId)
+          return (
+            <div key={r.personaId} role="listitem" className="sg-gara-atleta">
+              <div className="sg-gara-atleta-chi">
+                <span style={{ fontSize: 15, fontWeight: 600 }}>
                   {r.cognome} {r.nome}
                 </span>
-                <span role="cell" className="num" style={{ fontSize: 14 }}>
-                  {r.annoNascita ?? '—'}
-                </span>
-                <span role="cell" style={{ fontSize: 13 }}>
-                  {r.corso || '—'}
-                </span>
-                <span role="cell">
+                <span className="sg-sotto num">{[r.annoNascita, r.corso].filter(Boolean).join(' · ') || '—'}</span>
+                <span className="sg-gara-atleta-stato">
                   <span className="num sg-tag" data-tipo={c.tipo}>
                     {c.testo}
                   </span>
-                </span>
-                <span role="cell" style={{ fontSize: 13, minWidth: 0 }}>
                   {nota?.id === r.personaId ? (
                     <span className="row" style={{ gap: 6 }}>
                       <label htmlFor={`ga-nota-${r.personaId}`} className="vh">
@@ -436,6 +437,7 @@ function SchedaGara({
                           if (e.key === 'Escape') {
                             e.stopPropagation()
                             setNota(null)
+                            portaFocus(`ga-nota-apri-${r.personaId}`)
                           }
                         }}
                       />
@@ -444,13 +446,15 @@ function SchedaGara({
                       </button>
                     </span>
                   ) : (
-                    <button type="button" className="sg-riga-apri sg-gara-nota" onClick={() => setNota({ id: r.personaId, testo: r.nota ?? '' })}>
+                    <button type="button" id={`ga-nota-apri-${r.personaId}`} className="sg-riga-apri sg-gara-nota" onClick={() => setNota({ id: r.personaId, testo: r.nota ?? '' })}>
                       {r.nota || 'aggiungi nota'}
                     </button>
                   )}
                 </span>
+              </div>
+              <div className="sg-gara-azioni">
                 {conti.totale > 0 && (
-                  <span role="cell" className="sg-gara-quota">
+                  <span className="sg-gara-quota">
                     {pag ? (
                       <span style={{ fontSize: 13 }}>
                         <span className="num sg-tag" data-tipo="fatto">
@@ -462,51 +466,51 @@ function SchedaGara({
                       <span className="sg-sotto">Non pagata</span>
                     ) : (
                       <>
-                        <span
-                          className="num"
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 700,
-                            color: 'var(--rosso-testo)',
-                          }}
-                        >
+                        <span className="num" style={{ fontSize: 13, fontWeight: 700, color: 'var(--rosso-testo)' }}>
                           Da pagare · {euroBreve(conti.totale)}
                         </span>
-                        <button
-                          type="button"
-                          className="sg-btn sg-btn-linea"
-                          disabled={lavora}
-                          onClick={() =>
-                            onCassetto({
-                              a: 'incassa',
-                              id: g.id,
-                              personaId: r.personaId,
-                            })
-                          }
-                        >
+                        <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => onCassetto({ a: 'incassa', id: g.id, personaId: r.personaId })}>
                           Incassa
                         </button>
                       </>
                     )}
                   </span>
                 )}
-                <span role="cell" style={{ textAlign: 'right' }}>
-                  {/* Chi ha pagato resta nella gara (117-gare.sql): se non ci va, lo dice la nota. */}
-                  {!r.pagata && (
-                    <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={lavora} aria-label={`Togli ${r.nome} ${r.cognome} dalla gara`} onClick={() => void togli(r)}>
-                      Togli
-                    </button>
-                  )}
-                </span>
+                {/* Chi ha pagato resta nella gara (117-gare.sql): se non ci va, lo dice la nota. */}
+                {!r.pagata && (
+                  <button type="button" className="sg-btn sg-btn-linea sg-pericolo sg-gara-togli" disabled={lavora} aria-label={`Togli ${r.nome} ${r.cognome} dalla gara`} onClick={() => void togli(r)}>
+                    ✕
+                  </button>
+                )}
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })}
       </div>
-      <p className="sg-sotto" style={{ margin: 0 }}>
-        Togli toglie l’atleta da questa gara, non dalla palestra; chi ha già pagato resta, con una nota se non ci va. Due omonimi si distinguono dall’anno e dal corso.
-        {conti.totale > 0 && ' Incassa apre la conferma di REGISTRA IL PAGAMENTO, già compilata: il pagamento finisce nello storico della persona e in CONTABILITÀ.'}
-      </p>
+
+      <div className="sg-gara-piede">
+        <button type="button" className="sg-btn sg-btn-linea" onClick={() => onCassetto({ a: 'modifica', id: g.id })}>
+          Modifica la gara
+        </button>
+        <button type="button" id="ga-stampa" className="sg-btn sg-btn-linea" disabled={!righe.length || lavora} onClick={() => void stampa()}>
+          Stampa l’elenco
+        </button>
+        {!g.annullata && (
+          <button type="button" className="sg-btn sg-btn-pieno sg-gara-piede-pieno" onClick={() => onCassetto({ a: 'aggiungi', id: g.id })}>
+            Aggiungi atleti
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Un numero della striscia in testa: l'etichetta piccola sopra, il valore sotto; il tono lo colora come i tag. */
+function NumeroGara({ etichetta, tono, children }: { etichetta: string; tono?: 'manca' | 'fatto'; children: React.ReactNode }) {
+  return (
+    <div className="sg-gara-numero" data-tono={tono}>
+      <span className="sg-etichetta">{etichetta}</span>
+      <span className="num sg-gara-numero-valore">{children}</span>
     </div>
   )
 }

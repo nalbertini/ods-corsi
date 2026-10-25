@@ -428,6 +428,7 @@
 :root[data-look='sito'] .sg-riquadro[data-fatto='true'] { box-shadow: inset 4px 0 0 var(--verde); }
 :root[data-look='sito'] .sg-riquadro[data-avviso='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 /* Il tasto principale è il giallo del marchio (uno per schermata); il tasto a linea e i filtri hanno il blu dei campi. */
+:root[data-look='sito'] .riquadro[data-tono='guaio'] { box-shadow: inset 4px 0 0 var(--rosso); }
 :root[data-look='sito'] .sg-btn-pieno { background: var(--giallo); color: var(--su-colore); }
 /* Un tasto spento resta un blocco grigio anche nel look del sito: se no sembra acceso e non risponde. */
 :root[data-look='sito'] .sg-btn:disabled { background: var(--surface-2); color: var(--dim); }

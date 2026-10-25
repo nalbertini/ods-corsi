@@ -204,6 +204,12 @@ export function avvisoCertificati(righe: Pick<RigaAtletaGara, 'senzaCertificatoV
   return n ? `${n} ${n === 1 ? 'atleta' : 'atleti'} senza certificato valido` : null
 }
 
+/** La striscia in testa alla scheda: quanti atleti, quanti a posto col certificato e chi no (per nome nell'avviso). */
+export function riepilogoCertificati<R extends Pick<RigaAtletaGara, 'senzaCertificatoValido'>>(righe: R[]): { atleti: number; aPosto: number; senza: R[] } {
+  const senza = righe.filter((r) => r.senzaCertificatoValido)
+  return { atleti: righe.length, aPosto: righe.length - senza.length, senza }
+}
+
 /**
  * Il certificato nella gara dell'iscritto (LE MIE GARE): cosa fare e per quando, guardato all'ultimo giorno.
  * Uno mandato e non confermato non vale ancora, come per la segreteria. `null` se non serve.

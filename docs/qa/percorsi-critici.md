@@ -188,6 +188,9 @@ quando arriva la prova.
   non esca nessun dato del genitore.
 - Gare: l'incasso dà una riga sola «Gare» col totale in ricevuta: nessuna prova
   (`prova:gare` guarda solo la voce del pagamento).
+- Gare: la striscia della scheda (DA INCASSARE nascosto se annullata o senza
+  quota) sta nel `.tsx`; `contiGara` per una annullata conta lo stesso i
+  «da pagare». Nessuna prova.
 - Gare: «non ancora disponibile» finché `117-gare.sql` non è lanciato: nessuna
   prova.
 - Gare: `gareDellaSettimana` è provata, il collegamento in `Settimana.tsx` no.
