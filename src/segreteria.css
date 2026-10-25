@@ -363,7 +363,7 @@
 .sg-cella-piu { margin-left: 6px; color: var(--dim); }
 .sg-cella-contatto { font-size: 13px; color: var(--sec); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sg-cella-contatto[data-manca] { color: var(--rosso-testo); }
-.sg-icona-contatto { margin-right: 6px; vertical-align: -2px; color: var(--dim); }
+.sg-icona-contatto { display: inline-flex; margin-right: 6px; vertical-align: -2px; color: var(--dim); }
 .sg-testa-stretta { display: none; }
 .sg-cella-frequenza { font-size: 16px; font-weight: 700; text-align: right; color: var(--text); }
 .sg-cella-frequenza[data-poco] { color: var(--giallo-testo); }

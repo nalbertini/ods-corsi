@@ -13,7 +13,7 @@ import { annuncio, chiSegnaTuttiPresenti, segnaNonSegnati, contiListe, dividiEle
 import { finestraDelMese, giorniDellaSettimana, giorniStretti, meseDellaSettimana, nomeTitoloSettimana, postoDopoIlGiorno, titoloSettimana, type MeseDelCalendario } from '../../lib/calendarioSettimana'
 import { etichetteLezione } from '../../lib/etichetteLezione'
 import { CalendarioSettimana } from './CalendarioSettimana'
-import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
 
@@ -964,9 +964,9 @@ function Straordinaria({
           <button type="button" className="sg-btn sg-btn-linea grow" onClick={onChiudi}>
             Lascia stare
           </button>
-          <button type="submit" className="sg-btn sg-btn-pieno grow" disabled={!scelto}>
+          <Tasto type="submit" tono="pieno" className="grow" disabled={!scelto}>
             Aggiungi
-          </button>
+          </Tasto>
         </div>
       </form>
     </>

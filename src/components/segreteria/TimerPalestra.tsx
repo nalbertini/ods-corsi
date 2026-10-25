@@ -21,7 +21,7 @@ import {
   nomeDisciplinaValido,
   nuovaDisciplina,
 } from '../../../timer/src/lib/discipline'
-import { chiedi, ComeFunziona, Guaio, useAvviso, useBozza, useCarica } from './comune'
+import { chiedi, ComeFunziona, Guaio, useAvviso, useBozza, useCarica, Tasto } from './comune'
 
 type Fai = (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => Promise<unknown>
 
@@ -231,9 +231,9 @@ function VoceIncisa({
       {!formato && <Guaio testo="Questo browser non permette di registrare audio: si incide da un altro." />}
       {problema && <Guaio testo={problema} />}
 
-      <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} disabled={!chiavi} onClick={() => setAperte((a) => !a)}>
+      <Tasto style={{ alignSelf: 'flex-start' }} disabled={!chiavi} onClick={() => setAperte((a) => !a)}>
         {aperte ? 'Chiudi le frasi' : 'Apri le frasi da incidere'}
-      </button>
+      </Tasto>
 
       {aperte && gruppi.map(([titolo, frasi]) => (
         <div key={titolo} className="stack" style={{ gap: 6 }}>

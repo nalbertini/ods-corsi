@@ -800,7 +800,7 @@ function Arrivato({ o, chiude, onAltro }: { o: Ordine; chiude: string; onAltro: 
           </Dettaglio>
           <Tasti>
             {/* Senza spazi: è così che lo vogliono i campi delle app della banca. */}
-            <Tasto onClick={() => copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+            <Tasto icona="copia" onClick={() => copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
             <Tasto onClick={() => copia('causale', causale)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>
             {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
           </Tasti>

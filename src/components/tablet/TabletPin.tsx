@@ -2,6 +2,8 @@ import { useState } from 'react'
 import type { DatiTablet, EntratoConPin } from '../../lib/tablet'
 import { REGOLE } from '../../lib/tablet'
 import { messaggio } from './comune'
+import { Icona } from '../Icons'
+import { TRATTO_TABLET } from '../../lib/icone'
 
 const TASTI = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'canc', '0', '']
 
@@ -91,6 +93,7 @@ export function TabletPin({
           </span>
         )}
         <button type="button" className="tb-btn tb-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={onAnnulla}>
+          <Icona nome="annulla" misura={22} tratto={TRATTO_TABLET} />
           ANNULLA
         </button>
       </div>
@@ -105,7 +108,14 @@ export function TabletPin({
               onClick={() => void premi(c)}
               aria-label={c === 'canc' ? 'Cancella' : c}
             >
-              {c === 'canc' ? 'CANCELLA' : c}
+              {c === 'canc' ? (
+                <>
+                  <Icona nome="cancella cifra" misura={22} tratto={TRATTO_TABLET} />
+                  CANCELLA
+                </>
+              ) : (
+                c
+              )}
             </button>
           ) : (
             <span key={i} />

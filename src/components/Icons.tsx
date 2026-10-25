@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { ICONE, TRATTO, TRATTO_TABLET, type NomeIcona } from '../lib/icone'
 
 type P = { size?: number }
 const base = (size: number) => ({
@@ -7,13 +8,37 @@ const base = (size: number) => ({
   viewBox: '0 0 24 24',
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 2,
+  strokeWidth: TRATTO,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
 })
 
+/**
+ * Un'icona dell'elenco unico (lib/icone, come Icona.dc.html della libreria). Accanto a una parola è
+ * aria-hidden; da sola dice cosa fa con `etichetta`.
+ */
+export function Icona({ nome, misura = 18, tratto = TRATTO, etichetta }: { nome: NomeIcona; misura?: number; tratto?: number; etichetta?: string }) {
+  return (
+    <svg {...base(misura)} strokeWidth={tratto} style={{ flex: 'none' }} {...(etichetta ? { role: 'img', 'aria-label': etichetta } : { 'aria-hidden': true })}>
+      {ICONE[nome].map((d) => <path key={d} d={d} />)}
+    </svg>
+  )
+}
+
+/**
+ * I tracciati di un segno che l'elenco unico non ha (i loghi dei social, gli stati di una lezione),
+ * disegnati come le altre icone: chi li usa tiene solo i dati, non un altro disegno a mano.
+ */
+export function Tracciati({ d, misura = 18, tratto = TRATTO, className }: { d: readonly string[]; misura?: number; tratto?: number; className?: string }) {
+  return (
+    <svg {...base(misura)} strokeWidth={tratto} className={className} style={{ flex: 'none' }} aria-hidden="true">
+      {d.map((x) => <path key={x} d={x} />)}
+    </svg>
+  )
+}
+
 export const Back = ({ size = 18 }: P) => (
-  <svg {...base(size)} strokeWidth={2.5} aria-hidden="true">
+  <svg {...base(size)} aria-hidden="true">
     <polyline points="15 18 9 12 15 6" />
   </svg>
 )
@@ -67,14 +92,13 @@ export const Persone = ({ size = 20 }: P) => (
   </svg>
 )
 
-export const Spunta = ({ size = 24 }: P) => (
-  <svg {...base(size)} strokeWidth={3} aria-hidden="true">
-    <polyline points="4 12 10 18 20 6" />
-  </svg>
-)
+// Spunta e croce grandi sono i segni del tablet, letti da un metro: lì il tratto di 1,75 sparisce.
+const trattoSegno = (size: number) => (size >= 20 ? TRATTO_TABLET : TRATTO)
+
+export const Spunta = ({ size = 24 }: P) => <Icona nome="conferma" misura={size} tratto={trattoSegno(size)} />
 
 export const Torta = ({ size = 20 }: P) => (
-  <svg {...base(size)} strokeWidth={2.2} aria-hidden="true">
+  <svg {...base(size)} aria-hidden="true">
     <path d="M4 21h16" />
     <path d="M5 21v-7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v7" />
     <path d="M5 17c2.3 1.6 3.7 1.6 5.5 0s3.7-1.6 5.5 0c1 .9 2 1.2 3 .8" />
@@ -83,12 +107,7 @@ export const Torta = ({ size = 20 }: P) => (
   </svg>
 )
 
-export const Croce = ({ size = 20 }: P) => (
-  <svg {...base(size)} strokeWidth={3} aria-hidden="true">
-    <line x1="5" y1="5" x2="19" y2="19" />
-    <line x1="19" y1="5" x2="5" y2="19" />
-  </svg>
-)
+export const Croce = ({ size = 20 }: P) => <Icona nome="chiudi" misura={size} tratto={trattoSegno(size)} />
 
 export const Sole = ({ size = 20 }: P) => (
   <svg {...base(size)} aria-hidden="true">
@@ -120,11 +139,11 @@ export const Cursori = ({ size = 20 }: P) => (
   </svg>
 )
 
-/** Un'icona del menu: tratto più sottile delle altre (1,75), perché accanto al testo non deve pesare. */
+/** Un'icona del menu, scritta qui perché la usano già i suoi posti; le nuove passano da `Icona`. */
 const voce = (corpo: ReactNode) =>
   function IconaVoce({ size = 20 }: P) {
     return (
-      <svg {...base(size)} strokeWidth={1.75} aria-hidden="true" style={{ flex: 'none' }}>
+      <svg {...base(size)} aria-hidden="true" style={{ flex: 'none' }}>
         {corpo}
       </svg>
     )

@@ -5,7 +5,7 @@ import { candidatiInOrdine, dettoNuovo, gruppiDaDecidere, nomeSimile, riepilogoE
 import { entratoBanca, ultimaImportazione } from '../../lib/importaBanca'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { Chip } from '../ds'
-import { Campo, chiedi, Guaio, SchedaPiena, Testa, useAvviso, useCarica } from './comune'
+import { Campo, chiedi, Guaio, SchedaPiena, Testa, useAvviso, useCarica, Tasto } from './comune'
 import { ImportaBanca } from './ImportaBanca'
 import { Numero } from './Presenze'
 import { PrimoScarico } from './ScaricoSatispay'
@@ -96,7 +96,7 @@ export function Importazioni({ d }: { d: DatiSegreteria }) {
           <>
             <button type="button" className="sg-btn sg-btn-linea" disabled={!pronto} onClick={() => setVista('satispay')}>Cosa è entrato</button>
             {s.primoFatto ? (
-              <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => d.scaricaSatispay(false), 'Scarico Satispay fatto', rileggi)}>Scarica ora</button>
+              <Tasto onClick={() => void fai(() => d.scaricaSatispay(false), 'Scarico Satispay fatto', rileggi)}>Scarica ora</Tasto>
             ) : (
               <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setVista('primo')}>Guarda il primo scarico</button>
             )}
@@ -113,7 +113,7 @@ export function Importazioni({ d }: { d: DatiSegreteria }) {
           </span>
         </div>
         <button type="button" className="sg-btn sg-btn-linea" disabled={!pronto} onClick={() => setVista('banca')}>Cosa è entrato</button>
-        <button type="button" className="sg-btn sg-btn-pieno" disabled={!pronto} onClick={() => setVista('importa')}>Importa un file</button>
+        <Tasto tono="pieno" disabled={!pronto} onClick={() => setVista('importa')}>Importa un file</Tasto>
       </section>
 
       {s && (

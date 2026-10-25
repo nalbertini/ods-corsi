@@ -38,7 +38,7 @@ import { avvisoSaldato, doveSpostare, raccoltaAperta, tagliaDopo, type CosaManca
 import { datiVestiario, fotoAttive, FOTO_VESTIARIO } from '../../lib/vestiarioDati'
 import { NON_SI_APRE, riduciFoto, TROPPO_GRANDE } from '../../lib/foto'
 import { Numero } from './Presenze'
-import { chiedi, Campo, lasciare, Guaio, Riga as Titolo, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, lasciare, Guaio, Riga as Titolo, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, Tasto } from './comune'
 
 /**
  * VESTIARIO: gli ordini di judogi, costumini e felpe di una raccolta, il
@@ -621,9 +621,9 @@ function SchedaOrdine({
               <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
                 Butta i cambi
               </button>
-              <button type="button" className="sg-btn sg-btn-pieno" disabled={!!guaio || lavora} onClick={() => void salva()}>
+              <Tasto tono="pieno" disabled={!!guaio || lavora} onClick={() => void salva()}>
                 Salva
-              </button>
+              </Tasto>
             </div>
           )}
         </section>
@@ -711,9 +711,9 @@ function SchedaOrdine({
               <span className="sg-sotto">Non ci sono altre raccolte a cui spostarlo.</span>
             )}
             {!o.annullato && (
-              <button type="button" className="sg-btn sg-btn-linea sg-pericolo" style={{ alignSelf: 'flex-start' }} disabled={lavora} onClick={() => void annulla()}>
+              <Tasto className="sg-pericolo" style={{ alignSelf: 'flex-start' }} disabled={lavora} onClick={() => void annulla()}>
                 Annulla l’ordine
-              </button>
+              </Tasto>
             )}
           </section>
         </div>
@@ -813,13 +813,13 @@ function NuovoOrdine({
       </section>
       {guaio && <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-        <button type="button" className="sg-btn sg-btn-pieno" disabled={!!guaio || lavora} onClick={() => void salva(null)}>
+        <Tasto tono="pieno" disabled={!!guaio || lavora} onClick={() => void salva(null)}>
           Salva l’ordine
-        </button>
+        </Tasto>
         <span className="row" style={{ gap: 6 }}>
-          <button type="button" className="sg-btn sg-btn-verde" disabled={!!guaio || lavora} onClick={() => void salva(come)}>
+          <Tasto tono="verde" disabled={!!guaio || lavora} onClick={() => void salva(come)}>
             Salva, già saldato
-          </button>
+          </Tasto>
           <label htmlFor="ve-come" className="vh">
             Come ha pagato
           </label>
@@ -1184,9 +1184,9 @@ function CatalogoChiusura({
                     Togli dal catalogo
                   </button>
                   <span className="grow" />
-                  <button type="button" className="sg-btn sg-btn-linea" onClick={() => setAperto(null)}>
+                  <Tasto onClick={() => setAperto(null)}>
                     Chiudi
-                  </button>
+                  </Tasto>
                 </div>
               </div>
             ) : (
@@ -1280,9 +1280,9 @@ function CatalogoChiusura({
             <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
               Butta i cambi
             </button>
-            <button type="button" className="sg-btn sg-btn-pieno" disabled={!!guaio || lavora} onClick={() => void salva()}>
+            <Tasto tono="pieno" disabled={!!guaio || lavora} onClick={() => void salva()}>
               Salva
-            </button>
+            </Tasto>
           </div>
         )}
       </div>

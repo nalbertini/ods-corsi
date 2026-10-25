@@ -1,11 +1,56 @@
-import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type AnchorHTMLAttributes, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { NotaCampo, type Nota } from '../ds'
+import { Icona } from '../Icons'
+import { iconaAzione, iconaVerso, type NomeIcona } from '../../lib/icone'
 import { GuaioConAzione } from '../../lib/cartaPdf'
 import { clicFuoriChiude } from '../../lib/schedaFinestra'
 import { dataLunga } from '../../lib/sala'
 import type { Tono } from '../../lib/segreteria'
 
 type Valore = string | number | null | undefined
+
+type ConIcona = { tono?: 'pieno' | 'linea' | 'rosso' | 'verde'; icona?: NomeIcona | null; children: ReactNode }
+/** L'icona di un tasto: quella data, o quella dell'azione che dice la sua parola (Salva, Annulla…); `null` nessuna. */
+const iconaDi = ({ icona, children }: ConIcona) => (icona !== undefined ? icona : typeof children === 'string' ? iconaAzione(children) : null)
+
+/**
+ * Il tasto della segreteria. Le azioni che tornano in ogni pagina (Salva,
+ * Annulla, Aggiungi…) portano la loro icona, la stessa ovunque: si riconoscono
+ * prima di leggerle. Le altre restano solo parola.
+ */
+export function Tasto({ tono = 'linea', icona, className, children, type = 'button', ...resto }: ConIcona & ButtonHTMLAttributes<HTMLButtonElement>) {
+  const nome = iconaDi({ icona, children })
+  return (
+    <button type={type} className={`sg-btn sg-btn-${tono}${className ? ` ${className}` : ''}`} {...resto}>
+      {nome && <Icona nome={nome} />}
+      {children}
+    </button>
+  )
+}
+
+/** Come `Tasto`, ma un collegamento: «Scarica» un file, «Stampa» una pagina. */
+export function TastoLink({ tono = 'linea', icona, className, children, ...resto }: ConIcona & AnchorHTMLAttributes<HTMLAnchorElement>) {
+  const nome = iconaDi({ icona, children })
+  return (
+    <a className={`sg-btn sg-btn-${tono}${className ? ` ${className}` : ''}`} {...resto}>
+      {nome && <Icona nome={nome} />}
+      {children}
+    </a>
+  )
+}
+
+/**
+ * Il segno di uno stato (DA PAGARE, PUBBLICATA…). Con l'icona, nel look sito,
+ * diventa una pastiglia tinta: l'icona prende il posto di ✕ … ✓.
+ */
+export function Tag({ tipo, icona, className, children }: { tipo?: 'manca' | 'aspetta' | 'sostituto' | 'presto' | 'fatto'; icona?: NomeIcona; className?: string; children: ReactNode }) {
+  return (
+    <span className={`num sg-tag${className ? ` ${className}` : ''}`} data-tipo={tipo} data-icona={icona ? '' : undefined}>
+      {icona && <Icona nome={icona} misura={14} />}
+      {children}
+    </span>
+  )
+}
 
 /**
  * Un cassetto o un dialogo sopra la pagina: aperto, il fuoco ci entra e non
@@ -309,9 +354,7 @@ export function useAvviso() {
           </button>
           {/* Accanto a RIAPRI una parola come CHIUDI si confonde: qui basta il segno. */}
           <button type="button" className="sg-avviso-x" aria-label="Chiudi l’avviso" onClick={() => setTesto(null)}>
-            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-              <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" />
-            </svg>
+            <Icona nome="chiudi" />
           </button>
         </>
       ) : (
@@ -611,6 +654,23 @@ export function SchedaPiena({
   )
 }
 
+/** L'icona davanti al nome di una colonna, nelle tabelle lunghe: sul telefono si toglie, le colonne sono strette. */
+const IconaTesta = ({ nome }: { nome: NomeIcona }) => (
+  <span className="sg-testa-icona">
+    <Icona nome={nome} misura={14} />
+  </span>
+)
+
+/** L'intestazione di una colonna che non ordina, con la sua icona. */
+export function TestaColonna({ icona, destra, children }: { icona: NomeIcona; destra?: boolean; children: ReactNode }) {
+  return (
+    <span role="columnheader" className="sg-etichetta sg-testa-colonna" style={destra ? { justifyContent: 'flex-end' } : undefined}>
+      <IconaTesta nome={icona} />
+      {children}
+    </span>
+  )
+}
+
 type Ordine<K extends string> = { per: K; verso: 1 | -1 }
 /** Dove una tabella tiene il suo ordine fra una visita e l'altra. */
 export type MemoriaOrdine<K extends string> = { ordine: Ordine<K> | null }
@@ -658,19 +718,21 @@ export function useOrdina<T, K extends string>(colonne: Record<K, (x: T) => Valo
    * componente: rimontato a ogni giro, il tasto perderebbe il fuoco).
    * `numeri` la fa partire dal più grande; `th` la fa cella di una `<table>`;
    * `destra` l'allinea a destra, come i numeri sotto; `riga` ne fa
-   * l'intestazione di una riga, che ordina le colonne di una griglia.
+   * l'intestazione di una riga, che ordina le colonne di una griglia;
+   * `icona` la mette davanti alla parola, nelle tabelle lunghe.
    */
   const colonna = (
     per: K,
     etichetta: ReactNode,
-    { numeri, th, destra, riga, className = 'sg-etichetta' }: { numeri?: boolean; th?: boolean; destra?: boolean; riga?: boolean; className?: string } = {},
+    { numeri, th, destra, riga, icona, className = 'sg-etichetta' }: { numeri?: boolean; th?: boolean; destra?: boolean; riga?: boolean; icona?: NomeIcona; className?: string } = {},
   ) => {
     const verso = ordine?.per === per ? ordine.verso : 0
     const tasto = (
       <button type="button" className="sg-ordina" data-verso={verso || undefined} onClick={() => tocca(per, numeri ? -1 : 1)}>
+        {icona && <IconaTesta nome={icona} />}
         {etichetta}
-        <span className="sg-ordina-segno" aria-hidden="true">
-          {verso === 1 ? '▲' : verso === -1 ? '▼' : '↕'}
+        <span className="sg-ordina-segno">
+          <Icona nome={iconaVerso(verso)} misura={14} />
         </span>
       </button>
     )

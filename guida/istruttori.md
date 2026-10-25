@@ -161,7 +161,7 @@ Non c'è niente da salvare: ogni tocco parte subito.
 
 In fondo all'elenco c'è il tasto giallo per chiudere. Dice:
 
-- **CHIUDI L'APPELLO ✓** quando tutti hanno un segno;
+- **CHIUDI L'APPELLO**, con la spunta, quando tutti hanno un segno;
 - **CHIUDI · 3 ASSENTI** quando qualcuno è ancora da segnare:
   chiudendo, chi non ha un segno risulta **assente** (se è uno in prova, il
   tasto aggiunge **+1 PROVA**).
@@ -230,7 +230,7 @@ arriva prima.
 
 Chi non è iscritto a questa lezione e viene a provarla (o a fare la settimana
 di prova) lo aggiungete voi, senza aspettare la segreteria: in fondo
-all'elenco c'è **+ AGGIUNGI CHI PROVA**. Apre una pagina a parte, con la
+all'elenco c'è **AGGIUNGI CHI PROVA**. Apre una pagina a parte, con la
 tastiera già pronta.
 
 1. Scrivete il **nome o il cognome**, in qualunque ordine. Dalla terza lettera

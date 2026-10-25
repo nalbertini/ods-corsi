@@ -5,7 +5,7 @@ import { personaCambiata } from '../../lib/segreteria'
 import { lette } from '../../lib/letture'
 import { daSpunte, insegna, nomeDelRuolo, puo, siElimina, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, suCarta, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, suCarta, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina, Tasto } from './comune'
 import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
@@ -351,9 +351,9 @@ function Aggiungi({
         <button type="button" className="sg-btn sg-btn-linea" onClick={onLasciaStare}>
           Lascia stare
         </button>
-        <button type="submit" className="sg-btn sg-btn-pieno">
+        <Tasto type="submit" tono="pieno">
           Aggiungi
-        </button>
+        </Tasto>
       </div>
     </form>
   )
@@ -458,9 +458,8 @@ function Scheda({
                 <button type="button" className="sg-btn sg-btn-linea" onClick={() => setModifica(null)}>
                   Lascia stare
                 </button>
-                <button
-                  type="button"
-                  className="sg-btn sg-btn-pieno"
+                <Tasto
+                  tono="pieno"
                   disabled={!modifica.nome.trim()}
                   onClick={() =>
                     void fai(() => d.salvaPersonale({ ...dati, ...modifica, email: p.collegato ? p.email : modifica.email }), 'Scheda salvata', async () => {
@@ -470,7 +469,7 @@ function Scheda({
                   }
                 >
                   Salva
-                </button>
+                </Tasto>
               </div>
             </div>
           ) : (
@@ -595,14 +594,13 @@ function Scheda({
         </button>
         {/* Chi insegna e la segreteria: a chi è solo di amministrazione si toglie l'accesso. Se ha corsi, lezioni, presenze o righe nei registri il database dice di no, e perché. */}
         {siElimina(p) && (
-          <button
-            type="button"
-            className="sg-btn sg-btn-linea sg-pericolo"
+          <Tasto
+            className="sg-pericolo"
             title="Solo per chi non ha storia: senza corsi, lezioni, presenze o registri a suo nome"
             onClick={() => void elimina()}
           >
             Elimina
-          </button>
+          </Tasto>
         )}
       </div>
     </>

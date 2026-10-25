@@ -378,7 +378,7 @@ ok("il tasto «tocca di nuovo per eliminare» (.btn-primary[data-sicuro='true'])
 // Il bordo di .btn-ghost è var(--blu) (regola dell'appello, che vince sull'ordine): nel look vale quanto --riga-campo.
 for (const [c, bordo] of [['.btn-ghost', /border(-color)?:[^;]*var\(--blu\)/], ['.btn-dashed', /border(-color)?:[^;]*dashed[^;]*var\(--riga-campo\)/]])
   ok(`${c}: bordo ${c === '.btn-dashed' ? 'tratteggiato var(--riga-campo)' : 'var(--blu)'}, testo var(--text)`, ha(c, bordo) && ha(c, /(?<![-\w])color:\s*var\(--text\)/), true)
-// CHIUDI L'APPELLO ✓ (tutto segnato) è .btn-go: giallo come CHIUDI · N ASSENTI, approvato dall'utente.
+// CHIUDI L'APPELLO (tutto segnato) è .btn-go: giallo come CHIUDI · N ASSENTI, approvato dall'utente.
 ok(".appello-fine .btn-go: fondo var(--giallo), testo var(--su-colore)", ha('.appello-fine .btn-go', /background(-color)?:\s*var\(--giallo\)/) && ha('.appello-fine .btn-go', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // TUTTI PRESENTI spento: grigio come ogni tasto spento, non azzurro.
 ok('.appello-testa .btn-go:disabled: fondo var(--surface-2)', ha('.appello-testa .btn-go:disabled', /background(-color)?:\s*var\(--surface-2\)/) && !ha('.appello-testa .btn-go:disabled', /var\(--line\)/), true)
