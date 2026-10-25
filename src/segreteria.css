@@ -655,7 +655,7 @@
 .sg-da-dove tfoot th, .sg-da-dove tfoot td { border-top: 2px solid var(--line); border-bottom: 0; font-weight: 700; }
 .sg-da-dove .num-col { padding-inline: 6px; }
 @media (max-width: 1200px) { .sg-da-dove-due { grid-template-columns: minmax(0, 1fr); } }
-.sg-stat-corso { padding: 2px 0 2px 10px; border-left: 4px solid var(--tinta); font-size: 15px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); text-align: left; }
+.sg-stat-corso { display: inline-flex; align-items: center; min-height: 24px; padding: 2px 0 2px 10px; border-left: 4px solid var(--tinta); font-size: 15px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); text-align: left; }
 .sg-stat-corso[aria-pressed='true'] { text-decoration: underline; text-underline-offset: 4px; }
 .sg-barretta { display: grid; grid-template-columns: minmax(70px, 1fr) 40px; gap: 8px; align-items: center; min-width: 120px; }
 .sg-barretta .sg-barra-binario { height: 10px; }

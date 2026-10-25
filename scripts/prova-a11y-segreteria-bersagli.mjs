@@ -21,4 +21,9 @@ const regola = css.match(/^\.sg-riga-apri \{([^}]*)\}/m)?.[1] ?? ''
 const alto = Number(regola.match(/min-height:\s*(\d+)px/)?.[1] ?? 0)
 ok('il nome nella riga è alto almeno 24px', alto >= 24, true)
 
+// Il corso nelle tabelle di STATISTICHE (filtro) era 22px: padding 2px e riga di testo.
+const regolaStat = css.match(/^\.sg-stat-corso \{([^}]*)\}/m)?.[1] ?? ''
+const altoStat = Number(regolaStat.match(/min-height:\s*(\d+)px/)?.[1] ?? 0)
+ok('il corso nelle statistiche è alto almeno 24px', altoStat >= 24, true)
+
 process.exit(fallite ? 1 : 0)
