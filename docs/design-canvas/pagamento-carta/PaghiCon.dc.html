@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo sono file locali OFL; un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA 1. PAGHI CON ha tre scelte, nessuna accesa finché non tocchi. La carta c'è negli stessi casi di Satispay: senza Satispay sparisce anche lei e resta il bonifico, con la frase che dice perché. -->
+<div style="display: flex; flex-direction: column; width: 375px; min-height: 620px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 20px">
+<div style="display: flex; align-items: center; gap: 12px; margin-top: 8px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; color: #46606f">IL PAGAMENTO</span><span style="flex-grow: 1; height: 2px; background: #cfe6f4"></span></div><dc-import name="IlPagamento" righe="Quota associativa:30 €|Trimestre MGA metodo globale autodifesa:150 €" totale="180,00 €" modo="carta" satispay="{{ true }}" carta="{{ true }}" hint-size="100%,500px"></dc-import>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":375,"height":620}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

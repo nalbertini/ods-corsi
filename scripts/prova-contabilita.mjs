@@ -67,7 +67,10 @@ console.log('\n2. la cassa e la voce di un incasso')
   ok('Contanti va in Cassa Contanti', prova(() => m.cassaDelMetodo('Contanti', '2026-09-30')), 'contanti')
   ok('…senza badare a maiuscole e spazi', prova(() => [m.cassaDelMetodo('contanti ', '2026-09-30'), m.cassaDelMetodo(' CONTANTI', '2026-10-05')]), ['contanti', 'contanti'])
   ok('l\'Assegno va sul conto', prova(() => m.cassaDelMetodo('Assegno', '2026-10-05')), 'conto')
-  ok('tutto il resto sul conto', prova(() => ['Bonifico', 'POS', 'Satispay', 'Carta', ''].map((x) => m.cassaDelMetodo(x, '2026-09-30'))), ['conto', 'conto', 'conto', 'conto', 'conto'])
+  ok('tutto il resto sul conto', prova(() => ['Bonifico', 'POS', 'Satispay', ''].map((x) => m.cassaDelMetodo(x, '2026-09-30'))), ['conto', 'conto', 'conto', 'conto'])
+  // Con la carta dal modulo di iscrizione (113-carta.sql) la cassa è sua: era sul conto solo finché non c'era.
+  ok('Carta: cassa Carta, senza badare a maiuscole e spazi', prova(() => [m.cassaDelMetodo('Carta', '2026-10-20'), m.cassaDelMetodo(' carta ', '2026-10-20'), m.cassaDelMetodo('Carta', '2026-09-30')]), ['carta', 'carta', 'carta'])
+  ok('la cassa Carta si chiama Carta', prova(() => m.NOME_CASSA_CARTA), 'Carta')
   // Dal 1° ottobre 2026 Satispay è una cassa a sé (97-satispay-scarico.sql): ci vanno anche i pagamenti di PAGAMENTI.
   ok('Satispay dal 1° ottobre 2026: cassa Satispay', prova(() => [m.cassaDelMetodo('Satispay', '2026-10-01'), m.cassaDelMetodo(' SATISPAY ', '2026-11-15')]), ['satispay', 'satispay'])
   ok('…gli altri metodi non cambiano', prova(() => ['Contanti', 'POS', 'Bonifico'].map((x) => m.cassaDelMetodo(x, '2026-10-05'))), ['contanti', 'conto', 'conto'])

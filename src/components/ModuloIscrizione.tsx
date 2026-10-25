@@ -15,9 +15,10 @@ import { useListino } from './Costi'
 import type { SceltaModulo } from '../lib/firma'
 import { haUnServer } from '../lib/dati'
 import { contaIscrizione, EVENTI_ISCRIZIONE } from '../lib/contaIscrizione'
+import { CampiCarta } from './CampiCarta'
 import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
-import { chiavePreparo, chiedeRicevuta, comePuoiPagare, cosaNonVaModo, ERRORE_SATISPAY, esitoPagamento, modoPagamento, nonSemplice, pagamentoDaMandare, senzaVoceDelCorso, soldi, statoRiquadroPaga, type PagamentoPrima, type Pago } from '../lib/satispay'
+import { chiaveDelBrowser, chiavePreparo, chiedeRicevuta, comePuoiPagare, cosaNonVaModo, ERRORE_CARTA, ERRORE_SATISPAY, esitoPagamento, modoPagamento, nonSemplice, pagamentoDaMandare, senzaVoceDelCorso, soldi, statoRiquadroPaga, type PagamentoPrima, type Pago } from '../lib/satispay'
 
 /**
  * Il modulo di iscrizione: le domande che prima stavano su Google Form, e i
@@ -139,6 +140,10 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const [aperto, setAperto] = useState(false)
   const [preparo, setPreparo] = useState(false)
   const [guaioSp, setGuaioSp] = useState<string | null>(null)
+  // La carta: acceso solo col servizio PayPal, e se i suoi campi sono aperti sotto il riquadro.
+  const [carta, setCarta] = useState<{ clientId: string; sandbox: boolean } | null>(null)
+  const [campiCarta, setCampiCarta] = useState(false)
+  const apriCarta = useRef<HTMLSpanElement>(null)
   // Quanti controlli dello stato di fila non hanno risposto: dopo qualche giro lo si dice.
   const erroriStato = useRef(0)
 
@@ -159,6 +164,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         setD(x)
         // Dal nucleo di un iscritto si paga come prima: Satispay è del modulo pubblico.
         if (!nucleo) void x.satispayAttivo().then((a) => vivo && setSatispayAttivo(a))
+        if (!nucleo) void x.cartaAttiva().then((c) => vivo && setCarta(c))
         return x.corsiAperti().then((c) => vivo && setCorsi(c))
       })
       .catch((e) => vivo && setGuaioCorsi(e instanceof Error ? e.message : 'Il server non risponde'))
@@ -233,15 +239,18 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const attivo = satispayAttivo && !!stima && !!letto?.cambiato
   const complicato = attivo && listino && !senzaPrezzo.length ? nonSemplice(scelti, listino, fuoriEta) : null
   const puoi = complicato ? ({ satispay: false, perche: complicato } as const) : comePuoiPagare(senzaPrezzo, attivo)
-  const modo = modoPagamento(pago, puoi, !!nucleo)
+  // La carta negli stessi casi di Satispay, e solo col suo servizio acceso.
+  const cartaPuoi = puoi.satispay && !!carta
+  const modo = modoPagamento(pago, { ...puoi, carta: cartaPuoi }, !!nucleo)
   const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || chiedeRicevuta(modo, !!nucleo)))
   // I file di I FILE: il modulo ha la sua sezione, e la ricevuta del bonifico sta in IL PAGAMENTO (dal nucleo, qui come prima).
   const fileQui = daChiedere.filter((f) => f.tipo !== 'modulo' && (f.tipo !== 'ricevuta' || !!nucleo))
   // Col bonifico la ricevuta è obbligatoria (con Satispay non si chiede): come vuole anche `fileObbligatori` per la pagina pubblica.
   const obbligatori = fileObbligatori(daChiedere, modo === 'bonifico')
 
-  // La scelta per cui si paga e chi paga: con Satispay sempre un corso solo (`nonSemplice`).
-  const scelta = modo === 'satispay' && scelti.length === 1 ? { corso: scelti[0].id, formula: b.formula, nome: b.nome, cognome: b.cognome, email: b.email } : null
+  // La scelta per cui si paga e chi paga: con Satispay o la carta sempre un corso solo (`nonSemplice`).
+  const metodo: 'carta' | undefined = modo === 'carta' ? 'carta' : undefined
+  const scelta = (modo === 'satispay' || modo === 'carta') && scelti.length === 1 ? { corso: scelti[0].id, formula: b.formula, nome: b.nome, cognome: b.cognome, email: b.email, chiave: metodo && chiaveDelBrowser() } : null
 
   const errori = problemi(pronta)
 
@@ -251,11 +260,12 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     setPreparo(true)
     setGuaioSp(null)
     try {
-      const p = await d.prepara(scelta)
-      setSp({ ...p, corsoId: scelta.corso, formula: scelta.formula, nome: scelta.nome, cognome: scelta.cognome, email: scelta.email })
+      const p = await d.prepara(scelta, metodo)
+      setSp({ ...p, corsoId: scelta.corso, formula: scelta.formula, nome: scelta.nome, cognome: scelta.cognome, email: scelta.email, circuito: metodo })
       setAperto(false)
+      setCampiCarta(false)
     } catch (e) {
-      setGuaioSp(e instanceof Error ? e.message : ERRORE_SATISPAY)
+      setGuaioSp(e instanceof Error ? e.message : metodo ? ERRORE_CARTA : ERRORE_SATISPAY)
     }
     setPreparo(false)
   }
@@ -287,6 +297,18 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const nota = (k: CampoModulo): Nota | undefined => {
     const e = errori[k]
     if (e && (provato || (visti.has(k) && e !== 'Manca'))) return { testo: e, guaio: true }
+  }
+  /** Dopo la conferma nei campi carta: il server incassa, e il riquadro dice com'è andata. */
+  // Chiusi i campi, il fuoco torna sul tasto che li apre (ricompare al giro dopo).
+  const annullaCarta = () => {
+    setCampiCarta(false)
+    requestAnimationFrame(() => apriCarta.current?.querySelector('button')?.focus())
+  }
+  const pagaCarta = async () => {
+    if (!d || !sp) return
+    const r = await d.pagaCarta(sp.id)
+    setSp((p) => (p && p.id === sp.id ? { ...p, ...r } : p))
+    if (r.stato !== 'attesa') setCampiCarta(false)
   }
   /** Le proprietà che legano un campo alla sua nota. */
   const segna = (k: CampoModulo) => {
@@ -325,15 +347,17 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     file,
     obbligatori,
   })
-  const riquadroPaga = scelta && stima ? statoRiquadroPaga(scelta, sp, { stima: stima.totale, corso: scelti[0].nome, manca: mancaModulo, preparo, guaio: guaioSp }) : null
+  const riquadroPaga = scelta && stima ? statoRiquadroPaga(scelta, sp, { stima: stima.totale, corso: scelti[0].nome, manca: mancaModulo, preparo, guaio: guaioSp, metodo }) : null
   /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
   const blocco =
     mancaModulo ??
-    (stima && scelti.length ? cosaNonVaModo(modo, !!nucleo, !!file.ricevuta, { pronto: riquadroPaga?.cosa === 'pagato', giaPagato: sp?.stato === 'pagato' }) : null)
+    (stima && scelti.length ? cosaNonVaModo(modo, !!nucleo, !!file.ricevuta, { pronto: riquadroPaga?.cosa === 'pagato', giaPagato: sp?.stato === 'pagato', circuito: sp?.circuito }, cartaPuoi) : null)
 
   // Si prepara da solo col modulo a posto, dopo un attimo senza modifiche (l'email non a metà), e di nuovo se cambiano
   // la scelta o chi paga. Dopo un errore si riprova col tasto, non a ogni lettera.
-  const chiave = chiavePreparo(scelta, mancaModulo)
+  // Col modo nella chiave: passare da Satispay alla carta prepara un pagamento dell'altro circuito.
+  const k = chiavePreparo(scelta, mancaModulo)
+  const chiave = k && `${modo}|${k}`
   const preparato = useRef('')
   useEffect(() => {
     if (!chiave || riquadroPaga?.cosa !== 'prepara' || preparato.current === chiave) return
@@ -456,7 +480,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
 
   if (fase.tipo === 'fatto') {
     // Pagata con Satispay prima di mandare: lo dice la pagina finale.
-    const pagata = modo === 'satispay' && sp?.stato === 'pagato' ? esitoPagamento(sp) : null
+    const pagata = (modo === 'satispay' || modo === 'carta') && sp?.stato === 'pagato' ? esitoPagamento(sp) : null
     return (
       <div className="pad stack esito">
         <TitoloEsito tono="fatto">{pagata?.titolo ?? 'RICHIESTA ARRIVATA'}</TitoloEsito>
@@ -702,6 +726,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             stima={stima}
             modo={modo}
             puoi={puoi}
+            carta={cartaPuoi}
             onModo={setPago}
             causale={causale(b.nome.trim(), b.cognome.trim(), scelti.map((c) => c.nome))}
             ricevuta={
@@ -916,6 +941,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
               {guaioSp && guaioSp !== riquadroPaga.testo && <Dettaglio tono="guaio">{guaioSp}</Dettaglio>}
             </Riquadro>
           </div>
+          {campiCarta && carta && riquadroPaga.azione === 'carta' && sp?.ordine && (
+            <CampiCarta clientId={carta.clientId} sandbox={carta.sandbox} ordine={sp.ordine} importo={sp.importo} onPaga={pagaCarta} onAnnulla={annullaCarta} />
+          )}
         </Sezione>
       )}
 
@@ -930,6 +958,15 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           <Tasto variante="principale" href={riquadroPaga.link} qui={riquadroPaga.azione === 'chiama'} onClick={riquadroPaga.azione === 'link' ? () => setAperto(true) : undefined}>
             {riquadroPaga.tasto}
           </Tasto>
+        ) : riquadroPaga?.azione === 'carta' ? (
+          // A campi aperti il tasto per pagare è il loro.
+          !campiCarta && (
+            <span ref={apriCarta} style={{ display: 'contents' }}>
+              <Tasto variante="principale" onClick={() => setCampiCarta(true)}>
+                {riquadroPaga.tasto}
+              </Tasto>
+            </span>
+          )
         ) : riquadroPaga && riquadroPaga.azione !== 'manda' ? (
           riquadroPaga.tasto && (
             <Tasto variante="principale" disabled={riquadroPaga.spento || riquadroPaga.azione !== 'prepara'} onClick={() => void prepara()}>
@@ -941,7 +978,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             {inVolo ? fase.passo.toUpperCase() : 'MANDA LA RICHIESTA'}
           </Tasto>
         )}
-        {riquadroPaga?.sotto && <Dettaglio>{riquadroPaga.sotto}</Dettaglio>}
+        {riquadroPaga?.sotto && !(campiCarta && riquadroPaga.azione === 'carta') && <Dettaglio>{riquadroPaga.sotto}</Dettaglio>}
       </div>
     </form>
   )
@@ -1122,6 +1159,7 @@ function Bonifico({ causale: testo, satispay }: { causale: string | null; satisp
 
 const MODI: Array<{ id: Pago; testo: string; riga: string }> = [
   { id: 'satispay', testo: 'Satispay', riga: 'Paghi subito, dall’app: l’importo è già scritto' },
+  { id: 'carta', testo: 'Carta di credito o di debito', riga: 'Paghi subito qui, senza app e senza aprire conti' },
   { id: 'bonifico', testo: 'Bonifico', riga: 'Carichi la ricevuta del bonifico' },
 ]
 
@@ -1130,7 +1168,7 @@ const MODI: Array<{ id: Pago; testo: string; riga: string }> = [
  * che calcola il database, e si paga in fondo al modulo prima di mandare; col
  * bonifico IBAN, causale e la sua ricevuta stanno qui insieme.
  */
-function IlPagamento({ stima, modo, puoi, onModo, causale: testo, ricevuta }: { stima: Stima; modo: Pago | null; puoi: ReturnType<typeof comePuoiPagare>; onModo: (m: Pago) => void; causale: string; ricevuta: ReactNode }) {
+function IlPagamento({ stima, modo, puoi, carta, onModo, causale: testo, ricevuta }: { stima: Stima; modo: Pago | null; puoi: ReturnType<typeof comePuoiPagare>; carta: boolean; onModo: (m: Pago) => void; causale: string; ricevuta: ReactNode }) {
   return (
     <>
       <div className="modulo-campo modulo-largo">
@@ -1147,14 +1185,18 @@ function IlPagamento({ stima, modo, puoi, onModo, causale: testo, ricevuta }: { 
             id="m-pago"
             etichetta="Paghi con"
             una
-            voci={MODI.filter((m) => m.id !== 'satispay' || puoi.satispay)}
+            voci={MODI.filter((m) => (m.id === 'satispay' ? puoi.satispay : m.id === 'carta' ? carta : true))}
             scelti={modo ? [modo] : []}
             // `as`: SceltaCorsi rende l'id di una delle voci date, cioè un modo di MODI.
             onScegli={(m) => onModo(m as Pago)}
           />
         </div>
         {!puoi.satispay && puoi.perche && <Dettaglio>{puoi.perche}.</Dettaglio>}
-        {modo === 'satispay' && <Dettaglio>Paghi in fondo al modulo, prima di mandare la richiesta: {soldi(stima.totale)} con Satispay.</Dettaglio>}
+        {(modo === 'satispay' || modo === 'carta') && (
+          <Dettaglio>
+            Paghi in fondo al modulo, prima di mandare la richiesta: {soldi(stima.totale)} {modo === 'carta' ? 'con la carta' : 'con Satispay'}.
+          </Dettaglio>
+        )}
       </div>
       {modo === 'bonifico' && (
         <>

@@ -190,7 +190,7 @@ select atteso('controlla_richiesta, da_claude e porta_di_claude: le chiamano tut
    and has_function_privilege('anon', 'da_claude()', 'execute') and has_function_privilege('authenticated', 'da_claude()', 'execute')
    and has_function_privilege('anon', 'porta_di_claude()', 'execute'))::text, 'true');
 select atteso('le letture senza persone: Sandro le legge',
-  da(:'sandro', :'claude', 'select ((select count(*) from chat_voci()) > 0 and (select count(*) from chat_casse()) = 3)::text'), 'true');
+  da(:'sandro', :'claude', 'select ((select count(*) from chat_voci()) > 0 and (select count(*) from chat_casse()) = 4)::text'), 'true');
 select atteso('…anon no',
   (select string_agg(f, ',') from unnest(array['chat_voci()', 'chat_casse()', 'chat_chiusure()', 'chat_corsi()', 'chat_registra(jsonb)']) f
     where has_function_privilege('anon', f, 'execute')), null);

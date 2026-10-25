@@ -540,7 +540,7 @@ console.log('\n22. REGISTRA IL PAGAMENTO manda la chiave anche registrando senza
   ok('segreteriaSupabase.ts: l\'rpc registra_pagamento_diretto ha `chiave: d.chiaveRicevuta` nei dati', /\bchiave: d\.chiaveRicevuta\b/.test(corpo), true)
   // Dalla scheda il Satispay libero si dice sotto il modulo, prima di premere: non solo col rifiuto del database.
   const guaio = tsx.slice(tsx.indexOf('const guaio = importo'), tsx.indexOf('const manca = cent'))
-  ok('Ricevute.tsx: il guaio del modulo dice anche cosaNonVaSatispayAMano(metodo, p.satispay)', /cosaNonVaSatispayAMano\(metodo, p\.satispay\)/.test(guaio), true)
+  ok('Ricevute.tsx: il guaio del modulo dice anche cosaNonVaSatispayAMano, Satispay e carta a parte', /cosaNonVaSatispayAMano\(metodo, \(p\.satispay \?\? 0\) - \(p\.carta \?\? 0\), p\.carta\)/.test(guaio), true)
 }
 
 // Il pagamento a mano diventa ricevuta (supabase/prova/pagamento-diventa-ricevuta.sql): gli stessi casi e gli stessi testi.
@@ -671,7 +671,7 @@ console.log('\n28. FANNE LA RICEVUTA porta il pagamento a mano fino al database'
   ok('datiDaPagamento: il pagamento e la chiave', [d.pagamentoId, d.chiaveRicevuta, d.importo, d.data, d.metodo], ['pd-28', 'k-28', 28000, '2026-10-10', 'Contanti'])
   const tsx = readFileSync('src/components/segreteria/Ricevute.tsx', 'utf8')
   ok('Ricevute.tsx: emettiRicevuta riceve il pagamento a mano', /d\.emettiRicevuta\(dati, conSatispay\?\.id, daPagamento\?\.pagamentoId\)/.test(tsx), true)
-  ok('Ricevute.tsx: dal pagamento a mano niente Satispay nella stessa ricevuta', /const conSatispay = metodo === 'Satispay' && !daPagamento\?\.pagamentoId \? sp : undefined/.test(tsx), true)
+  ok('Ricevute.tsx: dal pagamento a mano niente Satispay (né carta) nella stessa ricevuta', /const conSatispay = sp && metodo === metodoDi\(sp\) && !daPagamento\?\.pagamentoId \? sp : undefined/.test(tsx), true)
   ok('Ricevute.tsx: il guaio del modulo dice cosaNonVaDaPagamento', /cosaNonVaDaPagamento\(dati\.voci, dati\.data, daPagamento\)/.test(tsx), true)
   const sb = readFileSync('src/lib/segreteriaSupabase.ts', 'utf8')
   const corpo = sb.slice(sb.indexOf('async emettiRicevuta('), sb.indexOf('async annullaRicevuta('))

@@ -24,7 +24,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
-import { satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
+import { cartaPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
 import type { ContiScarico, DaDecidere } from './satispayScarico'
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
@@ -701,14 +701,15 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           .order('id')
           .range(prima, ultima),
       )
-    // `voce`: 105-paga-quota-satispay.sql, con lo stesso ripiego.
-    let r = await leggi(`${colonne}, saldo_di, voce`)
+    // `voce`: 105-paga-quota-satispay.sql, `circuito`: 113-carta.sql, con lo stesso ripiego.
+    let r = await leggi(`${colonne}, saldo_di, voce, circuito`)
+    if (r.error?.code === '42703' && /circuito/.test(r.error.message ?? '')) r = await leggi(`${colonne}, saldo_di, voce`)
     if (r.error?.code === '42703' && /voce/.test(r.error.message ?? '')) r = await leggi(`${colonne}, saldo_di`)
     if (r.error?.code === '42703' && /saldo_di/.test(r.error.message ?? '')) r = await leggi(colonne)
     // Prima di 73-satispay.sql non c'è niente da mostrare.
     if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205' || r.error.code === 'PGRST200')) return []
     // `as`: Supabase tipa la riga a modo suo, la forma è quella della select.
-    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; email: string | null; corso_id: string | null; formula: 'annuale' | 'trimestre' | null; ricevuta: { annullata_il: string | null } | null; corso: { nome: string } | null; saldo_di?: string | null; voce?: 'quota' | 'corso' | null }>).map(
+    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; email: string | null; corso_id: string | null; formula: 'annuale' | 'trimestre' | null; ricevuta: { annullata_il: string | null } | null; corso: { nome: string } | null; saldo_di?: string | null; voce?: 'quota' | 'corso' | null; circuito?: 'satispay' | 'carta' | null }>).map(
       (x): PagamentoSatispay => ({
         id: x.id,
         richiestaId: x.richiesta_id ?? undefined,
@@ -726,6 +727,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         formula: x.formula ?? undefined,
         saldoDi: x.saldo_di ?? undefined,
         voce: x.voce ?? undefined,
+        circuito: x.circuito === 'carta' ? 'carta' : undefined,
       }),
     )
   }
@@ -1110,6 +1112,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const natiIl = await nati
       const arrivati = await leggiSatispay().catch(() => [])
       const conSatispay = satispayPerPersona(arrivati)
+      const conCarta = cartaPerPersona(arrivati)
       const conSaldo = saldoPerPersona(arrivati)
       const corsiSatispay = satispayCorsiPerPersona(arrivati)
       const quotaSatispay = satispayQuotaPerPersona(arrivati)
@@ -1140,6 +1143,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           // Senza le ricevute lette i corsi non si giudicano: nessuno «da pagare» per sbaglio.
           vociCorsi: ricevute ? vociCorsiDi(perPersona.get(r.id) ?? []) : undefined,
           satispay: conSatispay.get(r.id),
+          carta: conCarta.get(r.id),
           saldo: conSaldo.get(r.id),
           satispayQuota: quotaSatispay.get(r.id),
           satispayCorsi: corsiSatispay.get(r.id),

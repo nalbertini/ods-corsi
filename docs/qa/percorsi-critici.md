@@ -39,6 +39,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Documenti sulla carta intestata | segreteria, amministrazione, genitore | cifra coperta, voci perse fra le pagine | `prova:carta`, `prova:ricevuta`, `prova:compensi`, `prova:bilancio`, `prova:chiusura-pdf`, `prova:ore` | sì |
 | Satispay dal modulo di iscrizione | genitore, segreteria, amministrazione | importo diverso dal listino, pagato perso o doppio | `prova:satispay`, `satispay.sql` | sì |
 | Satispay: prima paghi, poi mandi | genitore, segreteria, amministrazione | soldi presi e richiesta che non arriva | `prova:satispay`, `satispay.sql` | sì |
+| Carta dal modulo di iscrizione (PayPal) | genitore, segreteria, amministrazione | soldi senza richiesta, pagato due volte, importo sbagliato, dati della carta | `prova:pagamento-carta`, `prova:satispay`, `prova:csp`, `prova:contabilita`, `carta.sql`, `satispay.sql`, `contabilita.sql` | sì, da fare |
 | Scarico automatico Satispay in CONTABILITÀ | amministrazione, segreteria | incasso nella cassa sbagliata o doppio | `prova:satispay-scarico`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:segreteria`, `satispay-scarico.sql`, `avvisi-scarico-satispay.sql` | sì, da fare |
 | Tessere | segreteria | non tesserato che frequenta, tessera alla persona sbagliata | `prova:tessere`, `prova:cosa-manca`, `prova:indirizzi`, `prova:filtri-iscritti`, `prova:menu`, `tessere.sql` | sì |
 | Ordini di vestiario | genitore, segreteria | ordine perso, totale sbagliato | `prova:vestiario`, `vestiario.sql`, `rls.sql` | sì |
@@ -106,6 +107,16 @@ quando arriva la prova.
   `email-unica.sql` §4 tiene la perdita come attesa.
 - **GRAVE** — Ricevuta da un pagamento a mano: un `pagamentoId` perso per
   strada non fa cadere niente, e lo stesso incasso conta due volte.
+- **GRAVE** — Edge Function `paypal` (`index.ts`): il blocco della cattura
+  oltre 30 minuti e il ramo del rifiuto non hanno prova; si tolgono senza che
+  cada niente, e si incassano soldi che il modulo ha dato per non andati.
+- Edge Function `paypal`: nessuna prova del flusso (prepara, crea l'ordine,
+  cattura, rilettura dello stato).
+- Carta: la richiesta del browser non contiene campi della carta
+  (`CampiCarta.tsx`, `ModuloIscrizione.tsx`): nessuna prova. Il database non ha
+  colonne per la carta, ma è l'unica metà coperta.
+- `prova-csp.mjs`: il filtro «paypal|google|apple» è largo, un host che lo
+  contiene passa. Va stretto agli host esatti.
 - Edge Function `satispay` (quota, corso, saldo) e quella delle ricevute per
   email: nessuna prova.
 - Saldo Satispay: `least`/`greatest`, `ricevuta_id is null`, `utente_id`, le

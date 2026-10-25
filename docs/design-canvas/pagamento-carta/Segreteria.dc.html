@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo sono file locali OFL; un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA 8. Segreteria, PAGAMENTI: metodo «Carta», cassa sua, il numero d'ordine PayPal sulla riga per ritrovarlo nell'estratto. La commissione è una voce a parte. Gli stati da seguire hanno il loro tag e il tasto per chiuderli. -->
+<div style="display: flex; flex-direction: column; width: 760px; min-height: 420px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 20px">
+<div style="display: flex; align-items: center; gap: 12px; margin-top: 8px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; color: #46606f">PAGAMENTI</span><span style="flex-grow: 1; height: 2px; background: #cfe6f4"></span></div><dc-import name="RigaPagamento" tipo="pagamento" tema="sito" titolo="25 ottobre 2026 · Carta" sotto="QUOTA ASSOCIATIVA, TRIMESTRE MGA · ordine PayPal 8MC58204KX" importo="180,00 €" tag="Commissione 2,51 €" tagTono="neutro" tasti="" hint-size="100%,96px"></dc-import><dc-import name="RigaPagamento" tipo="pagamento" tema="sito" titolo="25 ottobre 2026 · Carta" sotto="GIULIA BIANCHI · ordine PayPal 3TR11977LA" importo="55,00 €" tag="Carta senza richiesta" tagTono="giallo" tasti="COLLEGA A UNA RICHIESTA" hint-size="100%,96px"></dc-import><dc-import name="RigaPagamento" tipo="pagamento" tema="sito" titolo="24 ottobre 2026 · Carta" sotto="RICHIESTA RIFIUTATA · ordine PayPal 9QW40311ZB" importo="80,00 €" tag="Da restituire dal conto PayPal" tagTono="rosso" tasti="SEGNA RESTITUITO" hint-size="100%,96px"></dc-import>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":760,"height":420}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

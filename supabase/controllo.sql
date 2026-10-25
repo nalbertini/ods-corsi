@@ -554,6 +554,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('110-tetto-certificato-messaggio.sql', 'il tetto ai file del certificato scatta con un codice suo (Storage lascia passare il testo) e solo per chi può caricare',
     exists (select 1 from dentro where nome = 'limita_file_certificato' and corpo like '%54000%' and corpo like '%iscritto_puo_mandare%')),
   ('111-iscrizione-troppo-grande.sql', 'una richiesta d''iscrizione enorme si rifiuta all''ingresso',
-    exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pg_column_size(dati)%'))
+    exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pg_column_size(dati)%')),
+  ('113-carta.sql', 'si paga anche con la carta nel modulo di iscrizione (PayPal)',
+    to_regprocedure('public.carta_esito(text, text)') is not null
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%con la carta%')
+    and to_regprocedure('public.pagamento_prima(text, uuid, text, text, text, text, uuid)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -161,6 +161,7 @@
     "prova:tariffe": "node scripts/prova-tariffe.mjs",
     "prova:lettere": "node scripts/prova-lettere.mjs",
     "prova:carta": "node scripts/prova-carta.mjs",
+    "prova:pagamento-carta": "node scripts/prova-pagamento-carta.mjs",
     "prova:compensi": "node scripts/prova-compensi.mjs",
     "prova:compensi-pagati": "node scripts/prova-compensi-pagati.mjs",
     "prova:compensi-extra": "node scripts/prova-compensi-extra.mjs",

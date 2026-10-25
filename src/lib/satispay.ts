@@ -2,6 +2,7 @@ import type { RigaPagamento } from './pagamenti'
 import { dataLunga } from './sala'
 import { inEuro } from './vestiario'
 import type { CorsoRef, Listino } from './listino'
+import { METODI } from './ricevute'
 import { chiama } from './sito'
 
 /**
@@ -47,6 +48,38 @@ export interface PagamentoSatispay {
   saldoDi?: string
   /** La quota intera (`105-paga-quota-satispay.sql`) o un corso (`106-paga-corso-satispay.sql`) pagati dall'area iscritti: non sono l'iscrizione. */
   voce?: 'quota' | 'corso'
+  /** Pagato con la carta (`113-carta.sql`): assente, è Satispay. */
+  circuito?: 'carta'
+  /** Con la carta, la chiave del browser che l'ha preparato (`chiaveDelBrowser`). */
+  chiave?: string
+}
+
+/** Lo stato di un ordine con la carta: sta con la Edge Function `paypal`, che lo usa. */
+export { siCattura, statoCarta, statoDopoCattura } from '../../supabase/functions/paypal/stato.ts'
+
+const CHIAVE_DEL_BROWSER = 'ods-chiave-pagamento'
+let chiaveInMemoria: string | undefined
+
+/**
+ * La chiave di questo browser per i pagamenti con la carta (`113-carta.sql`):
+ * solo chi l'ha fatto ritrova un pagamento, non chi conosce nome, email e
+ * scelta. Resta in localStorage per ritrovarlo dopo aver ricaricato la pagina;
+ * senza (navigazione privata) vale finché resta aperta la pagina.
+ */
+export function chiaveDelBrowser() {
+  try {
+    const c = localStorage.getItem(CHIAVE_DEL_BROWSER)
+    if (c) return c
+  } catch {
+    // Senza localStorage: quella in memoria.
+  }
+  chiaveInMemoria ??= crypto.randomUUID()
+  try {
+    localStorage.setItem(CHIAVE_DEL_BROWSER, chiaveInMemoria)
+  } catch {
+    // Resta in memoria.
+  }
+  return chiaveInMemoria
 }
 
 /** Lo stato come lo dice Satispay. Quello che non si conosce è ancora in attesa: mai pagato per sbaglio. */
@@ -65,6 +98,39 @@ export const NOME_TROPPO_LUNGO = 'Un campo non va: nome e cognome hanno al massi
 export const SATISPAY_SPENTO = 'Satispay per ora non è attivo: scegli il bonifico'
 /** Pagato con Satispay e poi scelto il bonifico: si pagherebbe due volte. */
 export const GIA_PAGATO_SATISPAY = 'Hai già pagato con Satispay: rimetti Satispay in «Paghi con» per mandare la richiesta, o chiama la segreteria'
+
+/** Gli stessi testi per la carta (`113-carta.sql`): chi paga non legge mai il nome del circuito. */
+export const ERRORE_CARTA = 'Il pagamento con la carta non risponde: riprova fra qualche minuto'
+export const CARTA_SPENTA = 'Carta per ora non è attiva: scegli il bonifico'
+/** Il rifiuto della banca: mai il suo testo. */
+export const CARTA_RIFIUTATA = 'La carta non è passata: controlla i dati o usa un’altra carta. Non ti è stato addebitato niente.'
+export const DATI_CARTA = 'Controlla i dati della carta: numero, scadenza, codice di sicurezza e nome'
+/**
+ * Dopo un PAGA che non è andato: i dati scritti male si dicono; con i dati giusti
+ * resta il no della banca se è arrivato (`gia`), se no il circuito non risponde.
+ * `validi` null: i campi non hanno detto com'erano.
+ */
+export const guaioInvio = (validi: boolean | null, gia: string | null): string =>
+  validi === false ? DATI_CARTA : (gia ?? ERRORE_CARTA)
+/**
+ * Google Pay: chiuderlo senza pagare non è un guaio. Un errore suo (con `statusCode`)
+ * è il circuito che non risponde; uno senza viene dalla conferma, cioè la carta rifiutata.
+ */
+export function guaioGoogle(e: unknown): string | null {
+  if (typeof e === 'object' && e !== null && 'statusCode' in e) return e.statusCode === 'CANCELED' ? null : ERRORE_CARTA
+  return CARTA_RIFIUTATA
+}
+export const GIA_PAGATO_CARTA = 'Hai già pagato con la carta: rimetti Carta in «Paghi con» per mandare la richiesta, o chiama la segreteria'
+export const PAGAMENTO_CARTA_NON_ARRIVATO = 'Il pagamento con la carta non è ancora arrivato: aspetta la conferma e riprova'
+export const PAGAMENTO_CARTA_ALTRA_SCELTA = 'Il pagamento con la carta era per un altro corso o un’altra formula: rimetti la scelta di prima, o chiama la segreteria'
+export const PAGAMENTO_CARTA_NON_VALE = 'Questo pagamento con la carta non vale più: paga di nuovo in fondo al modulo'
+export const PAGAMENTO_CARTA_ALTRA_PERSONA = 'Il pagamento con la carta è a un altro nome o un’altra email: rimetti quelli di prima, o chiama la segreteria'
+
+/** Il metodo di PAGAMENTI e delle ricevute, e come lo si dice: «Carta», «con la carta». */
+/** Il PAGATO CON di un pagamento dal modulo, nella ricevuta e in CONTABILITÀ. */
+export const metodoDi = (p: { circuito?: 'carta' }) => (p.circuito === 'carta' ? 'Carta' : 'Satispay')
+const conIl = (p: { circuito?: 'carta' }) => (p.circuito === 'carta' ? 'con la carta' : 'con Satispay')
+const Con = (p: { circuito?: 'carta' }) => (p.circuito === 'carta' ? 'Con la carta' : 'Con Satispay')
 
 /** «Judo 3», «Judo 3 e Lotta 3», «Judo 3, Lotta 3 e Zumba». */
 const elenco = (x: string[]) => (x.length < 2 ? x.join('') : `${x.slice(0, -1).join(', ')} e ${x[x.length - 1]}`)
@@ -94,7 +160,7 @@ export const soldi = (cent: number) => inEuro(cent / 100).replace(' €', '\u00a
 export const giornoARoma = (iso: string) => new Date(iso).toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' })
 
 /** Cosa legge chi ha mandato la richiesta, dopo l'invio e al ritorno da Satispay. */
-export function esitoPagamento(p: { stato: StatoSatispay; importo: number; pagatoIl?: string; chi?: string }): {
+export function esitoPagamento(p: { stato: StatoSatispay; importo: number; pagatoIl?: string; chi?: string; circuito?: 'carta' }): {
   titolo: string
   tono: 'fatto' | 'avviso'
   testi: string[]
@@ -104,7 +170,7 @@ export function esitoPagamento(p: { stato: StatoSatispay; importo: number; pagat
     return {
       titolo: 'RICHIESTA ARRIVATA · PAGATO',
       tono: 'fatto',
-      testi: [`Hai pagato ${quanto} con Satispay${p.pagatoIl ? ` il ${dataLunga(giornoARoma(p.pagatoIl), false)}` : ''}${p.chi ? `, per ${p.chi}` : ''}.`],
+      testi: [`Hai pagato ${quanto} ${conIl(p)}${p.pagatoIl ? ` il ${dataLunga(giornoARoma(p.pagatoIl), false)}` : ''}${p.chi ? `, per ${p.chi}` : ''}.`],
     }
   if (p.stato === 'non-andato')
     return {
@@ -136,10 +202,10 @@ export const righeSatispay = (pagamenti: PagamentoSatispay[], nomeDi: (personaId
       ? []
       : [
           {
-            id: `satispay:${p.id}`,
+            id: `${p.circuito ?? 'satispay'}:${p.id}`,
             data: giornoARoma(p.pagatoIl),
             importo: p.importo,
-            metodo: 'Satispay',
+            metodo: metodoDi(p),
             voce: p.saldoDi ? 'QUOTA ASSOCIATIVA (saldo)' : p.voce === 'quota' ? 'QUOTA ASSOCIATIVA' : p.voce === 'corso' ? `${p.formula ?? ''} ${p.corso ?? ''}`.trim().toUpperCase() : 'ISCRIZIONE',
             personaId: p.personaId,
             chi: p.personaId ? nomeDi(p.personaId) : p.chi,
@@ -147,7 +213,7 @@ export const righeSatispay = (pagamenti: PagamentoSatispay[], nomeDi: (personaId
             ...(!p.richiestaId &&
               !p.personaId &&
               !p.saldoDi && {
-                nota: ['Satispay senza richiesta', p.email, p.corso && `${p.formula ?? ''} ${p.corso}`.trim()].filter(Boolean).join(' · '),
+                nota: [`${metodoDi(p)} senza richiesta`, p.email, p.corso && `${p.formula ?? ''} ${p.corso}`.trim()].filter(Boolean).join(' · '),
                 senzaRichiesta: true,
               }),
             annullato: false,
@@ -167,11 +233,11 @@ export function segnoRichiesta(
   if (!p || p.stato === 'non-andato') return null
   if (p.stato === 'attesa')
     return {
-      tag: 'Satispay in attesa',
-      testo: `Pagamento Satispay di ${soldi(p.importo)} in attesa: chi si iscrive non l’ha ancora confermato.`,
+      tag: `${metodoDi(p)} in attesa`,
+      testo: `Pagamento ${p.circuito === 'carta' ? 'con la carta' : 'Satispay'} di ${soldi(p.importo)} in attesa: chi si iscrive non l’ha ancora confermato.`,
       tono: 'aspetta',
     }
-  const quando = `Pagata con Satispay${p.pagatoIl ? ` il ${dataLunga(giornoARoma(p.pagatoIl), false)}` : ''}: ${soldi(p.importo)}`
+  const quando = `Pagata ${conIl(p)}${p.pagatoIl ? ` il ${dataLunga(giornoARoma(p.pagatoIl), false)}` : ''}: ${soldi(p.importo)}`
   if (p.ricevutaId)
     return {
       tag: 'Pagata',
@@ -181,7 +247,7 @@ export function segnoRichiesta(
   if (stato === 'rifiutata')
     return {
       tag: 'Da restituire',
-      testo: `${quando} da restituire dall’app Satispay Business, e poi da registrare in CONTABILITÀ.`,
+      testo: `${quando} da restituire ${p.circuito === 'carta' ? 'dal conto PayPal' : 'dall’app Satispay Business'}, e poi da registrare in CONTABILITÀ.`,
       tono: 'guaio',
     }
   return {
@@ -192,6 +258,20 @@ export function segnoRichiesta(
 }
 
 /** Il pagamento Satispay da mettere nella ricevuta di una persona: arrivato e non ancora in una ricevuta. */
+/** PAGATO CON nella ricevuta: i soliti, più quello del pagamento arrivato dal modulo o del pagamento a mano con Satispay. */
+export const metodiRicevuta = (sp: { circuito?: 'carta' } | undefined, metodoDaPagamento: string | undefined): string[] =>
+  sp ? [...METODI, metodoDi(sp)] : metodoDaPagamento?.trim() === 'Satispay' ? [...METODI, 'Satispay'] : [...METODI]
+
+/** La frase della scheda senza ricevute, per i soldi arrivati dal modulo (`satispay`, tutti, e `carta`, quanti con la carta). */
+export function fraseDalModulo(satispay: number | undefined, carta: number | undefined): string | null {
+  const conCarta = carta ?? 0
+  const conSatispay = (satispay ?? 0) - conCarta
+  if (conSatispay && conCarta) return `Ha pagato ${soldi(conSatispay)} con Satispay e ${soldi(conCarta)} con la carta dal modulo: fai una ricevuta per ciascuno.`
+  if (conCarta) return `Ha pagato ${soldi(conCarta)} con la carta dal modulo: fai la ricevuta, con PAGATO CON «Carta».`
+  if (conSatispay) return `Ha pagato ${soldi(conSatispay)} con Satispay dal modulo: fai la ricevuta, con PAGATO CON «Satispay».`
+  return null
+}
+
 export const satispayDaUsare = (pagamenti: PagamentoSatispay[], personaId: string) =>
   pagamenti.find((p) => p.stato === 'pagato' && !p.ricevutaId && !p.saldoDi && p.personaId === personaId)
 
@@ -199,21 +279,26 @@ export const satispayDaUsare = (pagamenti: PagamentoSatispay[], personaId: strin
 export function cosaNonVaSatispay(voci: Array<{ pagamenti: Array<{ importo: number; metodo: string }> }>, p: PagamentoSatispay): string | null {
   const qui = voci
     .flatMap((v) => v.pagamenti)
-    .filter((x) => x.metodo === 'Satispay')
+    .filter((x) => x.metodo === metodoDi(p))
     .reduce((s, x) => s + x.importo, 0)
-  return qui === p.importo ? null : `Con Satispay sono arrivati ${soldi(p.importo)}: nel pagato di questa ricevuta ce ne sono ${soldi(qui)}`
+  return qui === p.importo ? null : `${Con(p)} sono arrivati ${soldi(p.importo)}: nel pagato di questa ricevuta ce ne sono ${soldi(qui)}`
 }
 
-/** Come si paga dal modulo pubblico: con Satispay subito, o col bonifico e la sua ricevuta (decisione del 2026-10-20). */
-export type Pago = 'satispay' | 'bonifico'
+/** Come si paga dal modulo pubblico: con Satispay o la carta subito, o col bonifico e la sua ricevuta (decisioni del 2026-10-20 e del 2026-10-25). */
+export type Pago = 'satispay' | 'carta' | 'bonifico'
 
 /**
  * Il modo che vale davvero. Satispay scelto ma non possibile (un corso senza
- * prezzo, il servizio spento) è il bonifico. Dal nucleo di un iscritto non
+ * prezzo, il servizio spento) è il bonifico; la carta vale negli stessi casi
+ * di Satispay, e solo col suo servizio acceso. Dal nucleo di un iscritto non
  * si sceglie: si paga come prima (`null`); `null` anche finché non si sceglie.
  */
-export const modoPagamento = (scelto: Pago | null, puoi: { satispay: boolean }, nucleo: boolean): Pago | null =>
-  nucleo || !scelto ? null : scelto === 'satispay' && !puoi.satispay ? 'bonifico' : scelto
+export const modoPagamento = (scelto: Pago | null, puoi: { satispay: boolean; carta?: boolean }, nucleo: boolean): Pago | null =>
+  nucleo || !scelto
+    ? null
+    : (scelto === 'satispay' && !puoi.satispay) || (scelto === 'carta' && !(puoi.satispay && puoi.carta))
+      ? 'bonifico'
+      : scelto
 
 /**
  * La ricevuta del bonifico si chiede solo a chi paga col bonifico; dal nucleo
@@ -236,19 +321,25 @@ export const senzaVoceDelCorso = (corsi: CorsoRef[], listino: Listino): string[]
  * quei soldi si conterebbero due volte, nella ricevuta e fra i pagamenti.
  */
 export const cosaNonVaMetodo = (metodo: string, p: PagamentoSatispay | undefined): string | null =>
-  p && metodo !== 'Satispay' ? `Con Satispay sono già arrivati ${soldi(p.importo)}: scegli PAGATO CON «Satispay», se no si contano due volte` : null
+  p && metodo !== metodoDi(p) ? `${Con(p)} sono già arrivati ${soldi(p.importo)}: scegli PAGATO CON «${metodoDi(p)}», se no si contano due volte` : null
 
 /**
  * Un pagamento a mano con Satispay quando dal modulo ne è arrivato uno non ancora in una ricevuta (`libero`, in
  * centesimi, da `satispayPerPersona`): quei soldi vanno nella ricevuta, se no si contano due volte. Lo stesso testo di
  * `registra_pagamento_diretto` (88-pagamento-una-volta.sql). Senza Satispay libero, Satispay al banco va bene.
  */
-export const cosaNonVaSatispayAMano = (metodo: string, libero: number | undefined): string | null =>
-  libero && metodo.trim().toLowerCase() === 'satispay' ? `Con Satispay sono già arrivati ${soldi(libero)} dal modulo: fai la ricevuta con quelli` : null
+export function cosaNonVaSatispayAMano(metodo: string, libero: number | undefined, liberoCarta?: number): string | null {
+  const m = metodo.trim().toLowerCase()
+  if (libero && m === 'satispay') return `Con Satispay sono già arrivati ${soldi(libero)} dal modulo: fai la ricevuta con quelli`
+  if (liberoCarta && m === 'carta') return `Con la carta sono già arrivati ${soldi(liberoCarta)} dal modulo: fai la ricevuta con quelli`
+  return null
+}
 
 /** Cosa dire prima di rifiutare o eliminare una richiesta pagata: i soldi restano, e vanno restituiti. */
 export const daRestituire = (p: PagamentoSatispay | undefined): string | null =>
-  p?.stato === 'pagato' && !p.ricevutaId ? `I ${soldi(p.importo)} pagati con Satispay restano in PAGAMENTI: vanno restituiti dall’app Satispay Business.` : null
+  p?.stato === 'pagato' && !p.ricevutaId
+    ? `I ${soldi(p.importo)} pagati ${conIl(p)} restano in PAGAMENTI: vanno restituiti ${p.circuito === 'carta' ? 'dal conto PayPal' : 'dall’app Satispay Business'}.`
+    : null
 
 /**
  * Perché Satispay non c'è anche se ogni corso ha il prezzo: solo i casi
@@ -270,6 +361,9 @@ export function satispayPerPersona(pagamenti: PagamentoSatispay[]): Map<string, 
   for (const p of pagamenti) if (p.stato === 'pagato' && !p.ricevutaId && !p.saldoDi && p.voce !== 'corso' && p.personaId) m.set(p.personaId, (m.get(p.personaId) ?? 0) + p.importo)
   return m
 }
+
+/** Quanto di `satispayPerPersona` è arrivato con la carta: a mano si controllano a parte (`cosaNonVaSatispayAMano`). */
+export const cartaPerPersona = (pagamenti: PagamentoSatispay[]) => satispayPerPersona(pagamenti.filter((p) => p.circuito === 'carta'))
 
 /** Per ogni scheda, i centesimi della quota intera pagati con Satispay (105) e non ancora in una ricevuta: sono dentro `satispayPerPersona`, ma non coprono i corsi. */
 export function satispayQuotaPerPersona(pagamenti: PagamentoSatispay[]): Map<string, number> {
@@ -302,15 +396,22 @@ export function cosaNonVaModo(
   modo: Pago | null,
   nucleo: boolean,
   conRicevuta: boolean,
-  satispay: { /** pagato per la scelta di adesso */ pronto: boolean; /** un pagamento Satispay arrivato, per qualunque scelta */ giaPagato: boolean },
+  satispay: {
+    /** pagato per la scelta di adesso */ pronto: boolean
+    /** un pagamento arrivato, per qualunque scelta */ giaPagato: boolean
+    /** di quale circuito è il pagamento arrivato: assente, Satispay */ circuito?: 'carta'
+  },
+  /** se il modulo offre la carta */
+  carta = false,
 ): string | null {
   if (nucleo) return null
-  if (!modo) return 'Manca come paghi: Satispay o bonifico'
-  // Pagato con Satispay e poi cambiato in bonifico: i soldi ci sono già, col bonifico si pagherebbe due volte.
-  if (modo === 'bonifico' && satispay.giaPagato) return GIA_PAGATO_SATISPAY
+  if (!modo) return carta ? 'Manca come paghi: Satispay, carta o bonifico' : 'Manca come paghi: Satispay o bonifico'
+  // Pagato e poi cambiato modo: i soldi ci sono già, in un altro modo si pagherebbe due volte.
+  const pagatoCon = satispay.circuito ?? 'satispay'
+  if (satispay.giaPagato && modo !== pagatoCon) return pagatoCon === 'carta' ? GIA_PAGATO_CARTA : GIA_PAGATO_SATISPAY
   if (modo === 'bonifico' && !conRicevuta) return 'Manca la ricevuta del bonifico: una foto, lo screenshot o il PDF'
-  // Con Satispay si paga prima, in fondo al modulo: la richiesta parte solo pagata (83-satispay-prima.sql).
-  if (modo === 'satispay' && !satispay.pronto) return 'Prima paga con Satispay, in fondo al modulo: la richiesta parte dopo'
+  // Con Satispay o la carta si paga prima, in fondo al modulo: la richiesta parte solo pagata (83-satispay-prima.sql).
+  if (modo !== 'bonifico' && !satispay.pronto) return `Prima paga ${modo === 'carta' ? 'con la carta' : 'con Satispay'}, in fondo al modulo: la richiesta parte dopo`
   return null
 }
 
@@ -318,10 +419,28 @@ export function cosaNonVaModo(
 const oraARoma = (iso: string) => new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' }).replace(':', '.')
 
 /** Per chi si paga e cosa: un corso con la formula, e chi paga (come lo ripulisce `satispay_prepara_prima`). */
-export type SceltaPaga = { corso: string; formula: 'annuale' | 'trimestre'; nome: string; cognome: string; email: string }
+export type SceltaPaga = {
+  corso: string
+  formula: 'annuale' | 'trimestre'
+  nome: string
+  cognome: string
+  email: string
+  /** Con la carta, la chiave del browser (`chiaveDelBrowser`). */
+  chiave?: string
+}
 
 /** Il pagamento preparato in fondo al modulo, per la scelta e la persona di allora. */
-export type PagamentoPrima = Omit<SceltaPaga, 'corso'> & { id: string; corsoId: string; stato: StatoSatispay; importo: number; link?: string; pagatoIl?: string }
+export type PagamentoPrima = Omit<SceltaPaga, 'corso'> & {
+  id: string
+  corsoId: string
+  stato: StatoSatispay
+  importo: number
+  link?: string
+  pagatoIl?: string
+  /** L'ordine della carta, per aprirne i campi: il link di Satispay non serve. */
+  ordine?: string
+  circuito?: 'carta'
+}
 
 /** Nome e cognome senza spazi ai lati né maiuscole, l'email in minuscolo: lo stesso per il database. */
 const ripulita = (x: SceltaPaga) => [x.corso, x.formula, x.nome.trim().toLowerCase(), x.cognome.trim().toLowerCase(), x.email.trim().toLowerCase()].join('|')
@@ -335,9 +454,9 @@ const dellaScelta = (p: PagamentoPrima): SceltaPaga => ({ corso: p.corsoId, form
  */
 export const chiavePreparo = (scelta: SceltaPaga | null, manca: string | null) => (scelta && !manca ? ripulita(scelta) : '')
 
-/** L'id del pagamento da mandare con la richiesta: solo pagando con Satispay, ed è arrivato. */
-export const pagamentoDaMandare = (modo: Pago | null, sp: { id: string; stato: StatoSatispay } | null) =>
-  modo === 'satispay' && sp?.stato === 'pagato' ? sp.id : undefined
+/** L'id del pagamento da mandare con la richiesta: solo pagando con Satispay o la carta, arrivato e dello stesso circuito. */
+export const pagamentoDaMandare = (modo: Pago | null, sp: { id: string; stato: StatoSatispay; circuito?: 'carta' } | null) =>
+  modo && modo !== 'bonifico' && sp?.stato === 'pagato' && (sp.circuito ?? 'satispay') === modo ? sp.id : undefined
 
 /** Il riquadro PAGA, tutto quello che si vede: il .tsx lo mostra soltanto. */
 export interface RiquadroPaga {
@@ -351,7 +470,8 @@ export interface RiquadroPaga {
   tonoTesto: 'testo' | 'fatto' | 'avviso' | 'guaio'
   /** Il tasto giallo in fondo: `null` se non c'è. */
   tasto: string | null
-  azione: 'link' | 'prepara' | 'manda' | 'chiama' | null
+  /** `carta`: apre i campi della carta sotto il riquadro. */
+  azione: 'link' | 'carta' | 'prepara' | 'manda' | 'chiama' | null
   link?: string
   spento: boolean
   /** La riga sotto il tasto. */
@@ -369,9 +489,19 @@ export interface RiquadroPaga {
 export function statoRiquadroPaga(
   scelta: SceltaPaga,
   p: PagamentoPrima | null,
-  altro: { /** la stima di adesso, in centesimi */ stima: number; /** il nome del corso */ corso: string; manca: string | null; preparo: boolean; guaio: string | null },
+  altro: {
+    /** la stima di adesso, in centesimi */ stima: number
+    /** il nome del corso */ corso: string
+    manca: string | null
+    preparo: boolean
+    guaio: string | null
+    /** con cosa si paga: assente, Satispay */ metodo?: 'carta'
+  },
 ): RiquadroPaga {
-  const sua = !!p && ripulita(dellaScelta(p)) === ripulita(scelta)
+  const carta = altro.metodo === 'carta'
+  // Un pagamento dell'altro circuito non è mai il suo: in attesa se ne prepara un altro, pagato non vale.
+  const stessoCircuito = !!p && (p.circuito ?? 'satispay') === (altro.metodo ?? 'satispay')
+  const sua = !!p && stessoCircuito && ripulita(dellaScelta(p)) === ripulita(scelta)
   const base = {
     importo: sua ? p.importo : altro.stima,
     riga: `Quota associativa e ${scelta.formula} ${altro.corso}.`,
@@ -379,14 +509,16 @@ export function statoRiquadroPaga(
     spento: false,
     sotto: null as string | null,
   }
-  const riprova = { tasto: 'RIPROVA CON SATISPAY', azione: 'prepara' as const, spento: altro.preparo, sotto: 'Oppure torna a «Paghi con» e scegli il bonifico.' }
+  const riprova = carta
+    ? { tasto: 'RIPROVA CON LA CARTA', azione: 'prepara' as const, spento: altro.preparo, sotto: 'Puoi usare un’altra carta, o tornare a «Paghi con» e scegliere Satispay o il bonifico.' }
+    : { tasto: 'RIPROVA CON SATISPAY', azione: 'prepara' as const, spento: altro.preparo, sotto: 'Oppure torna a «Paghi con» e scegli il bonifico.' }
   if (p?.stato === 'pagato') {
     if (sua)
       return {
         ...base,
         cosa: 'pagato',
         bordo: 'fatto',
-        testo: `✓ Pagati con Satispay${p.pagatoIl ? ` alle ${oraARoma(p.pagatoIl)}` : ''}. Ora manda la richiesta.`,
+        testo: `✓ Pagati ${carta ? 'con la carta' : 'con Satispay'}${p.pagatoIl ? ` alle ${oraARoma(p.pagatoIl)}` : ''}. Ora manda la richiesta.`,
         tonoTesto: 'fatto',
         tasto: 'MANDA LA RICHIESTA',
         azione: 'manda',
@@ -396,14 +528,22 @@ export function statoRiquadroPaga(
       cosa: 'non-vale',
       importo: p.importo,
       bordo: 'guaio',
-      testo: 'Hai pagato per un altro corso, un’altra formula o a un altro nome: rimetti quelli di prima per mandare la richiesta, o chiama la segreteria.',
+      testo: !stessoCircuito
+        ? p.circuito === 'carta'
+          ? GIA_PAGATO_CARTA
+          : GIA_PAGATO_SATISPAY
+        : 'Hai pagato per un altro corso, un’altra formula o a un altro nome: rimetti quelli di prima per mandare la richiesta, o chiama la segreteria.',
       tonoTesto: 'guaio',
       tasto: 'CHIAMA LA SEGRETERIA',
       azione: 'chiama',
       link: chiama,
     }
   }
-  const avvisa = { bordo: 'blu' as const, testo: 'Paghi adesso con Satispay; la richiesta parte solo quando Satispay conferma.', tonoTesto: 'testo' as const }
+  const avvisa = {
+    bordo: 'blu' as const,
+    testo: carta ? 'Paghi adesso con la carta; la richiesta parte solo quando il pagamento è confermato.' : 'Paghi adesso con Satispay; la richiesta parte solo quando Satispay conferma.',
+    tonoTesto: 'testo' as const,
+  }
   if (altro.manca)
     return { ...base, ...avvisa, cosa: 'manca', tasto: null, azione: null, sotto: `Prima di pagare: ${altro.manca.charAt(0).toLowerCase()}${altro.manca.slice(1)}` }
   if (sua && p.stato === 'non-andato')
@@ -412,10 +552,21 @@ export function statoRiquadroPaga(
       ...riprova,
       cosa: 'non-andato',
       bordo: 'avviso',
-      testo: '! Il pagamento non è andato: in Satispay è stato annullato o non è stato confermato. La richiesta non è partita.',
+      testo: carta
+        ? '! La carta non è passata, o hai chiuso prima di confermare. Non ti è stato addebitato niente e la richiesta non è partita.'
+        : '! Il pagamento non è andato: in Satispay è stato annullato o non è stato confermato. La richiesta non è partita.',
       tonoTesto: 'avviso',
     }
-  if (sua && p.link)
+  if (sua && carta && p.ordine)
+    return {
+      ...base,
+      ...avvisa,
+      cosa: 'paga',
+      tasto: `PAGA ${soldi(p.importo)} CON LA CARTA`,
+      azione: 'carta',
+      sotto: 'Non serve nessun conto. I dati della carta non arrivano alla palestra.',
+    }
+  if (sua && !carta && p.link)
     return {
       ...base,
       ...avvisa,
