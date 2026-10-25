@@ -44,14 +44,14 @@ Si cresce sul tatami.
 
 ## Descrizione
 
-Arti marziali e preparazione atletica a Collegno, dai 3 anni in su. Prova una settimana a 5 €.
+Arti marziali e preparazione atletica a Collegno, dai 3 anni in su. Prova una settimana a 10 €.
 
 ## Come è scritto il testo (per chi lo modifica)
 
 Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordine.
 
 - **Pulsanti** (prima del primo titolo grande): un paragrafo con due pulsanti,
-  «Prova una settimana a 5 €» → `https://app.officinedellosport.it/iscrizioni/`
+  «Prova una settimana a 10 €» → `https://app.officinedellosport.it/iscrizioni/`
   e «Scrivici» → `/contatti/`. Il pulsante del modulo online è quello che fa
   riconoscere la Home nuova (anche scritto con `http` o senza «/» finale): se lo
   togli, la Home torna come prima. Il primo è sempre il giallo. «Scrivici» solo
@@ -86,7 +86,7 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
 
 ## Cosa cambia rispetto a oggi
 
-- Titolo da 156 px su tre righe, due pulsanti, foto di gruppo orizzontale; quattro numeri uguali; «Prova una settimana a 5 €» non è più un numero ma un pulsante.
+- Titolo da 156 px su tre righe, due pulsanti, foto di gruppo orizzontale; quattro numeri uguali; «Prova una settimana a 10 €» non è più un numero ma un pulsante.
 - Nove schede con foto (Judo, Lotta, Aikido, Preparazione atletica, Giocomotricità) o con l'iniziale, con testi di 12-14 parole.
 - «Perché unirti a noi?» e «Lo sport secondo chi lo studia» non stanno più nella Home: i fatti sono nei quattro numeri sotto il titolo, le citazioni sono in Chi siamo (prima della chiamata finale).
 - «Lo sport secondo chi lo studia» al posto di «Cosa dicono gli esperti»; «Cosa dicono di noi» al posto di «Cosa dicono i nostri clienti» (recensioni uguali a prima, refusi compresi).

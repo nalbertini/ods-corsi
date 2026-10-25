@@ -69,7 +69,7 @@ const img = (n, alt) => `<img src="${P}${n}.jpg" alt="${alt}" />`
 const A = img('foto-a', 'Una lezione di judo')
 const B = img('foto-b', 'Gli allievi sul tatami')
 const C = img('foto-c', 'Gli istruttori in posa')
-const PUL = `<p><a class="pulsante" href="/contatti/">Scrivici</a> <a class="pulsante" href="${ISC}">Prova una settimana a 5 €</a></p>`
+const PUL = `<p><a class="pulsante" href="/contatti/">Scrivici</a> <a class="pulsante" href="${ISC}">Prova una settimana a 10 €</a></p>`
 const voci = (n) => `<ul>${Array.from({ length: n }, (_, i) => `<li><strong>Etichetta ${i + 1}</strong> Valore numero ${i + 1}</li>`).join('')}</ul>`
 const gruppi = (n, pref) => Array.from({ length: n }, (_, i) => `<h3>${pref} ${i + 1}</h3><p>Testo di ${pref} numero ${i + 1}.</p>`).join('')
 const orario = (n) => `<h2>Orario delle lezioni</h2>${Array.from({ length: n }, (_, i) => `<h3>Gruppo ${i + 1}</h3><p><strong>1${i}:00 – 1${i + 1}:00</strong></p><p>giorni del gruppo ${i + 1}</p>${i % 2 ? '' : `<p>età del gruppo ${i + 1}</p>`}`).join('')}`
@@ -77,7 +77,7 @@ const cosa = (conB) => `<h2></h2><h3>Cosa si fa</h3><p>Si lavora su cadute e pre
 const cosaN = (n) => T({ cosa: false, storia: false }).replace(ASP(4), `<h2></h2>${gruppi(n, 'Passo')}` + ASP(4))
 const STORIA = `<h2>La storia del judo</h2>${gruppi(4, 'Tappa')}`
 const ASP = (n) => `<h2>Cosa aspettarsi</h2>${gruppi(n, 'Aspetto')}`
-const CHIUSURA = (conC) => `<h2>Una settimana per scegliere.</h2><p>5 € e provi il corso.</p><p>Vieni in Via Vittorio Sassi 26, Collegno.</p><p><a class="pulsante" href="${ISC}">Prova una settimana a 5 €</a> <a class="pulsante" href="/contatti/">Scrivici</a></p>${conC ? C : ''}`
+const CHIUSURA = (conC) => `<h2>Una settimana per scegliere.</h2><p>10 € e provi il corso.</p><p>Vieni in Via Vittorio Sassi 26, Collegno.</p><p><a class="pulsante" href="${ISC}">Prova una settimana a 10 €</a> <a class="pulsante" href="/contatti/">Scrivici</a></p>${conC ? C : ''}`
 const JUDO = { pul: PUL, a: A, voci: 4, orari: 5, cosa: true, b: true, storia: true, asp: 4, chiusura: true, c: true }
 const T = (o = {}) => {
   const x = { ...JUDO, ...o }
@@ -86,7 +86,7 @@ const T = (o = {}) => {
 const H = pagina(T())
 const M = main(H)
 const frasi = (t) => [...t.matchAll(/>([^<]+)</g)].map((m) => m[1].trim()).filter(Boolean)
-const perse = (t, h) => { const tt = testo(main(h)); return frasi(t.replace(PUL, '').replace(/Prova una settimana a 5 €/g, '').replace(/<a class="pulsante" href="\/contatti\/">Scrivici<\/a>/g, '')).filter((f) => !tt.includes(f.replace(/\s+/g, ' '))) }
+const perse = (t, h) => { const tt = testo(main(h)); return frasi(t.replace(PUL, '').replace(/Prova una settimana a 10 €/g, '').replace(/<a class="pulsante" href="\/contatti\/">Scrivici<\/a>/g, '')).filter((f) => !tt.includes(f.replace(/\s+/g, ' '))) }
 const rotto = (h) => /corso-nuovo|corso-apertura|corso-fascia|cosa-si-fa|class="[^"]*\borari\b|class="[^"]*\bperche\b|class="[^"]*\bcta\b/.test(main(h)) || nuova(h)
 
 console.log('\n1. Quando una pagina è «corso nuovo»')
@@ -108,7 +108,7 @@ console.log('\n1. Quando una pagina è «corso nuovo»')
 console.log('\n2. Il testo di prima resta com’era')
 {
   const senza = pagina(T({ pul: '' }))
-  ok('lo stesso testo senza il pulsante: <main> identico a oggi (sha)', sha(main(senza)), '6ac18064824bf3335bce6a1204525a5e00787e5f77b314d7fcf11d3bd26d727e')
+  ok('lo stesso testo senza il pulsante: <main> identico a oggi (sha)', sha(main(senza)), '887642ad80a0454b056b12d2aa9ffe1e98c1257329002bf3edffc01eb971843b')
   ok('non porta nessuna classe del corso nuovo', rotto(senza), false)
 }
 

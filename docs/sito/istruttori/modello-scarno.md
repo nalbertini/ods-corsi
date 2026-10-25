@@ -1,6 +1,6 @@
 # La scheda scarna di un istruttore
 
-Per chi ha solo nome, corsi e (forse) una foto. Il sito mostra: nome grande, foto o fascia azzurra con l'iniziale, i corsi, due pulsanti («Prova una settimana a 5 €» e «Scrivici»), l'invito in fondo. **Niente tessere vuote.** Quando arrivano ruolo, storia e frase, si passa alla scheda completa (`modello.md`, esempio `maurizio-innella.md`).
+Per chi ha solo nome, corsi e (forse) una foto. Il sito mostra: nome grande, foto o fascia azzurra con l'iniziale, i corsi, due pulsanti («Prova una settimana a 10 €» e «Scrivici»), l'invito in fondo. **Niente tessere vuote.** Quando arrivano ruolo, storia e frase, si passa alla scheda completa (`modello.md`, esempio `maurizio-innella.md`).
 
 Esempio: Fabio Berta. Per un altro istruttore, cambia titolo, indirizzo e corsi (i corsi sono nell'elenco di `../istruttori.html`).
 

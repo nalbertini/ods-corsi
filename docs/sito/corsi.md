@@ -49,7 +49,7 @@ Judo, lotta, aikido, pre pugilistica, autodifesa, preparazione atletica, pesi e 
   esattamente la forma della Home. Le foto messe dopo l'ultimo corso non si usano.
 - **La chiamata finale**: un titolo grande (qui «Una settimana per scegliere.»),
   il paragrafo con l'indirizzo e «vicino alla metro Fermi», i due pulsanti
-  («Prova una settimana a 5 €» verso `https://app.officinedellosport.it/iscrizioni/`,
+  («Prova una settimana a 10 €» verso `https://app.officinedellosport.it/iscrizioni/`,
   il giallo, sempre primo; «Scrivici» verso `/contatti/`) e la foto degli
   istruttori. Senza, il sito mette l'invito giallo di sempre.
 

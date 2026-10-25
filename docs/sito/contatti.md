@@ -49,7 +49,7 @@ Chiamaci, scrivici o passa in sede. Ti aiutiamo a scegliere il corso più adatto
 
 Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordine.
 
-- **Pulsanti** (prima dei recapiti): un paragrafo con «Prova una settimana a 5 €» → `https://app.officinedellosport.it/iscrizioni/`
+- **Pulsanti** (prima dei recapiti): un paragrafo con «Prova una settimana a 10 €» → `https://app.officinedellosport.it/iscrizioni/`
   e «Scrivici» → `https://wa.me/393463292786` (WhatsApp). Il pulsante del modulo online fa riconoscere la pagina nuova: se lo togli,
   la pagina torna come prima. Il primo è sempre il giallo. L'indirizzo di WhatsApp si scrive **con `https://`**: senza, il sito toglie il link.
 - **Recapiti**: quattro titoli piccoli (Telefono, Instagram, Facebook, Indirizzo), ognuno con il valore e, in un paragrafo che è solo un link,
@@ -63,7 +63,7 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
 
 ## Cosa cambia rispetto a oggi
 
-- Titolo da 140 px (era 200), con due pulsanti: prova una settimana a 5 € e Scrivici su WhatsApp.
+- Titolo da 140 px (era 200), con due pulsanti: prova una settimana a 10 € e Scrivici su WhatsApp.
 - Quattro recapiti tutti toccabili per intero (prima solo il testo sottolineato, 39 px), con l'azione scritta.
 - «Come arrivare»: mappa con segnaposto e tre modi; sparisce «A pochi metri dalla metropolitana Fermi» (ripetuta due volte), resta «vicino alla metro Fermi, Linea 1», senza minuti.
 - «Una settimana per scegliere»: i tre modi per cominciare; la prova vale per tutte le età dai 3 anni, solo la settimana.
