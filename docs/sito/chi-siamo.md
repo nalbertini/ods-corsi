@@ -68,7 +68,7 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
 - **I nostri valori**: un paragrafo e quattro titoli piccoli, ognuno col suo paragrafo.
 - **Lo sport secondo chi lo studia** (prima della chiamata finale): più citazioni di fila. In ognuna: l'estratto (le virgolette le mette il sito, non scriverle), poi il testo intero, poi la firma in corsivo. «Leggi tutto» apre il testo intero nella carta; senza il testo intero la citazione resta com'è. Il sito non accorcia mai un testo: l'estratto lo scrive chi pubblica, uguale alle parole dell'autore, con «[…]» dove si salta.
 - **La chiamata finale** (l'ultima sezione): titolo, paragrafi, i due pulsanti
-  («Prova una settimana a 5 €» verso il modulo online, «Scrivici» verso
+  («Prova una settimana a 10 €» verso il modulo online, «Scrivici» verso
   `/contatti/`) e la foto. **Il pulsante verso il modulo online è quello che
   fa riconoscere la pagina nuova**: se lo togli, la pagina torna come prima,
   senza avvisi.
@@ -81,7 +81,7 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
 - «Gli istruttori»: una foto grande e il pulsante «Conosci gli istruttori» (porta a `/istruttori/`); il testo non ripete più «Tredici».
 - La fila di foto ha una didascalia per foto e il pulsante «Vedi tutti i corsi»; la foto di aikido è nuova (quella di prima compariva due volte).
 - La missione ha una foto.
-- «Chiamata finale» nuova: «Vieni a provare.», la settimana a 5 €, i due pulsanti e la foto degli istruttori. Prima c'era la parola «PROVA» gigante, senza pulsanti.
+- «Chiamata finale» nuova: «Vieni a provare.», la settimana a 10 €, i due pulsanti e la foto degli istruttori. Prima c'era la parola «PROVA» gigante, senza pulsanti.
 - Testi: «in ogni attività, in un ambiente dove chiunque può allenarsi» (6 parole in meno); introduzione dei valori più corta; verbi dei valori tutti alla prima persona («Cresciamo», «Creiamo»).
 - Le descrizioni delle foto (alt) sono corrette: non ci sono judogi nella foto di gruppo e la lotta è un incontro.
 
