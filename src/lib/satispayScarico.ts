@@ -30,6 +30,7 @@ export interface PagamentoGrezzo {
   amount_unit: number
   insert_date: string
   sender?: { name?: string }
+  description?: string
 }
 export interface Pagina {
   data: PagamentoGrezzo[]

@@ -96,9 +96,9 @@ end $$;
 create or replace function id_cassa(n text) returns uuid language sql security definer set search_path = public as $$
   select id from casse where nome = n $$;
 -- Un pagamento come lo dà Satispay.
-create or replace function pag(id text, tipo text, stato text, importo int, quando text, chi text default null) returns jsonb language sql immutable as $$
+create or replace function pag(id text, tipo text, stato text, importo int, quando text, chi text default null, descr text default null) returns jsonb language sql immutable as $$
   select jsonb_strip_nulls(jsonb_build_object('id', id, 'type', tipo, 'status', stato, 'amount_unit', importo,
-    'insert_date', quando, 'sender', jsonb_build_object('name', chi)))
+    'insert_date', quando, 'sender', jsonb_build_object('name', chi), 'description', descr))
 $$;
 create or replace function sal(variadic p jsonb[]) returns text language sql as $$
   select servizio(format('select satispay_negozio_salva(%L::jsonb)', to_jsonb(p))) $$;
@@ -147,7 +147,7 @@ create or replace function candidati_di(sid text) returns text language sql secu
   select coalesce((select string_agg(x::text, ',' order by x::text) from satispay_negozio n, unnest(n.candidati) x where n.satispay_id = sid), 'nessuno') $$;
 
 grant execute on function atteso(text, text, text), chi(text), tenta(text), esito(text), servizio(text), come(text, text, text), come_vedo(text, text, text), come_leggo(text, text, text),
-  id_cassa(text), pag(text, text, text, int, text, text), sal(jsonb[]), app(boolean), conti(jsonb), a_mano(text, int, text, text), pulisci(),
+  id_cassa(text), pag(text, text, text, int, text, text, text), sal(jsonb[]), app(boolean), conti(jsonb), a_mano(text, int, text, text), pulisci(),
   esito_di(text), mov_di(text), n_mov(), n_mov_di(text), oggi_roma(), impronta(), candidati_di(text) to anon, authenticated, service_role;
 
 \echo ''
@@ -572,3 +572,19 @@ select servizio(format('select satispay_scarico_avvisa(%L::jsonb, null)', app(tr
 select atteso('un incasso e un rimborso, niente da decidere',
   (select concat_ws(',', a->>'incassi', a->>'rimborsi', a->>'daDecidere') from (select avviso_da_registro(v) a from avvisi_segreteria v) x), '1,1,0');
 delete from avvisi_segreteria;
+
+
+\echo ''
+\echo '--- 19. la descrizione di Satispay (il commento) si salva, e si completa anche su un pagamento già deciso ---'
+select pulisci();
+select sal(pag('D1', 'TO_BUSINESS', 'ACCEPTED', 500, '2026-10-14T10:00:00Z', 'Mario Rossi', 'Quota ottobre'), pag('D2', 'TO_BUSINESS', 'ACCEPTED', 700, '2026-10-14T11:00:00Z')) as _;
+select atteso('la descrizione arriva', (select descrizione from satispay_negozio where satispay_id = 'D1'), 'Quota ottobre');
+select atteso('senza descrizione resta vuota', ((select descrizione from satispay_negozio where satispay_id = 'D2') is null)::text, 'true');
+-- D1 viene deciso: un secondo giro con la descrizione cambiata non tocca niente, ma D2 la prende ora.
+select app(true) as _;
+select atteso('D1 è deciso', (select esito from satispay_negozio where satispay_id = 'D1'), 'scritto');
+select sal(pag('D1', 'TO_BUSINESS', 'ACCEPTED', 500, '2026-10-14T10:00:00Z', 'Mario Rossi', 'Altro testo'), pag('D2', 'TO_BUSINESS', 'ACCEPTED', 700, '2026-10-14T11:00:00Z', null, 'Arrivata dopo')) as _;
+select atteso('una descrizione già salvata non cambia', (select descrizione from satispay_negozio where satispay_id = 'D1'), 'Quota ottobre');
+select atteso('una che mancava si completa anche se deciso', (select descrizione from satispay_negozio where satispay_id = 'D2'), 'Arrivata dopo');
+select sal(pag('D3', 'TO_BUSINESS', 'ACCEPTED', 900, '2026-10-14T12:00:00Z', null, repeat('x', 300))) as _;
+select atteso('lunga più di 200 caratteri: si taglia', length((select descrizione from satispay_negozio where satispay_id = 'D3'))::text, '200');
