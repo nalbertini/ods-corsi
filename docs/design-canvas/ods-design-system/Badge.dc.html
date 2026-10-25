@@ -19,7 +19,7 @@
 <span title="{{titolo}}" aria-label="{{titolo}}" style="display: inline-block; box-sizing: border-box; width: {{larghezza}}; text-align: {{allinea}}; padding: {{s.padding}}; border: {{s.border}}; background: {{s.bg}}; color: {{s.fg}}; border-radius: {{s.radius}}; font-family: {{s.family}}; font-size: {{s.fontSize}}; font-weight: {{s.peso}}; letter-spacing: {{s.spacing}}; line-height: {{s.lineHeight}}; white-space: nowrap"><sc-if value="{{pallino}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: {{s.punto}}; margin-right: {{s.dopoPunto}}; vertical-align: 1px"></span></sc-if><sc-if value="{{conIcona}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; vertical-align: -2px; margin-right: 5px"><dc-import name="Icona" nome="{{icona}}" misura="14" colore="{{s.fg}}" hint-size="14px,14px"></dc-import></span></sc-if>{{label}}</span>
 </x-dc>
 <script data-dc-script data-props='{"label":{"editor":"text","default":"PROVA"},"icona":{"editor":"text","default":""},"tipo":{"editor":"enum","options":["prova","bollino","tag","segno"],"default":"prova"},"tono":{"editor":"enum","options":["neutro","rosso","giallo","verde","spento"],"default":"neutro"},"larghezza":{"editor":"text","default":"auto"},"compatto":{"editor":"boolean","default":false},"forma":{"editor":"enum","options":["tag","pallino"],"default":"tag"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":140,"height":40}}'>
-// PROPOSTA «icone dappertutto» (../icone-dappertutto/): `icona` = un nome di Icona.dc.html, a linea, tratto 1.75, aria-hidden, nel colore del testo; vuoto = com'è oggi.
+// COSTRUITO «icone dappertutto» (../icone-dappertutto/; `Tag` di segreteria/comune.tsx con `icona`): `icona` = un nome di Icona.dc.html (src/lib/icone.ts), a linea, tratto 1.75, aria-hidden, nel colore del testo; vuoto = com'è oggi.
 // Riproduzione 1:1 dei piccoli segni di stato di src/styles.css:
 // - prova   = .prova-marchio (riga 457): 11px, 0.12em, testo giallo-testo, bordo 2px giallo, padding 1px 6px.
 // - bollino = .sg-bollino (riga 1250): 11px, 0.18em, fondo giallo, testo su-colore, padding 2px 6px (DATI DI PROVA).
@@ -72,7 +72,7 @@ class Component extends DCLogic {
     } else {
       s = { padding: '1px 6px', border: '2px solid ' + c.giallo, bg: 'transparent', fg: c.gialloTesto, fontSize: '11px', spacing: '0.12em', lineHeight: 'normal' };
     }
-    // PROPOSTA: con l'icona (tema sito, tag e segno) l'icona prende il posto del segno ✕ … ✓, e il tag bianco bordato
+    // COSTRUITO (token --tinta-* di src/styles.css): con l'icona (tema sito, tag e segno) l'icona prende il posto del segno ✕ … ✓, e il tag bianco bordato
     // diventa una pastiglia tinta senza bordo: icona e simbolo insieme, sul bordo, erano troppo segni per una parola.
     const TINTE = { rosso: '#fbe9e9', giallo: '#fcf6e6', verde: '#e3f2e8', neutro: '#e6eef3', spento: '#e6eef3' };
     if (sito && p.icona && (tipo === 'tag' || tipo === 'segno') && p.forma !== 'pallino') {

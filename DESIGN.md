@@ -216,6 +216,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 - **Tratteggio** (#4a4a46 / chiaro #b0b0aa): bordi tratteggiati di "aggiungi" e del riquadro firma.
 - **Testo** (#f2f2f0 / chiaro #161616), **Testo Secondario** (#c9c9c4 / #3d3d3a), **Testo Spento** (#8c8c88 / #656561), **Testo Flebile** (#5a5a56 / #a8a8a3): quattro gradini di testo, dal nome al segnaposto. Il segnaposto dei campi della segreteria (Cerca iscritto) usa lo Spento, non il Flebile: è l’unica indicazione di cosa scrivere e deve leggersi.
 - **Tasto** (#b8b8b2 / chiaro #4a4a46): il testo dei tasti a linea a riposo, che si accende in `testo` al passaggio.
+- **Tinte** (solo look sito: `--tinta-rosso` #fbe9e9, `--tinta-giallo` #fcf6e6, `--tinta-verde` #e3f2e8, `--tinta-neutro` #e6eef3): il fondo della pastiglia di un tag con l'icona; il testo resta nel colore pieno del segnale.
 
 ### Named Rules
 **La Regola del Segnale Unico.** Ogni colore del marchio ha un significato e uno solo. Il rosso non decora, il verde non è "brand": se un elemento è verde, qualcosa è fatto o presente. In segreteria il rosso dice solo «manca» o «non si torna indietro». Nella settimana è rosso solo il SENZA APPELLO; istruttore? e sala? sono grigi, perché sono buchi del corso e il rosso lo hanno in CORSI. Le lezioni passate con l'appello fatto si fanno da parte (fondo trasparente, bordo tenue). In DA FARE il numero è rosso solo per ciò che è già un guaio (appelli, certificati mancanti, quote); giallo (`giallo-testo`) per ciò che aspetta una risposta o scade presto, come i numeri del menu; le stampe stanno in una riga neutra in fondo.
@@ -292,6 +293,12 @@ Decisi e da palestra: maiuscolo, obliquo, spaziato largo.
 
 ### Icon Button
 Quadrato 44px con bordo 2px `riga` e segno in `tasto`; quando contiene una parola si allarga (`.icon-btn.testo`).
+
+### Icone
+Un elenco solo (`ICONE` di `src/lib/icone.ts`, `Icona` di `Icons.tsx`, libreria `Icona.dc.html`): a linea, 24×24, punte tonde, `currentColor`, tratto 1,75 (2,5 sul tablet, che si guarda da lontano). Il timer le prende dallo stesso elenco. L'icona sta prima della parola e non la sostituisce (`aria-hidden`); un tasto con la sola icona ha il suo nome per chi legge lo schermo.
+- **Tasti di segreteria:** solo le azioni ricorrenti (salva, annulla, aggiungi, cerca, elimina, scarica, stampa, copia, importa, modifica, chiudi) prendono l'icona da sole (`iconaAzione`); le altre restano in parola.
+- **Testate delle tabelle:** ▲ ▼ ↕ sono le icone crescente, decrescente, ordina a 14px (`iconaVerso`); in ISCRITTI, MOVIMENTI e PRESENZE ISTRUTTORI una colonna può avere l'icona davanti alla parola.
+- **Tag nel look sito:** con l'icona il tag diventa una pastiglia tinta (`--tinta-*`), senza bordo e senza segno ✕ … ✓.
 
 ### Chips & Schede
 - **Chip** (`.sg-chip`): 44px, bordo 2px, Saira 13px 0.12em; premuto: bordo `testo` e fondo `superficie-alta`. Variante piena: fondo `testo`, testo `nero-palestra`.

@@ -35,7 +35,7 @@
 // freccia 12px, righe 1603-1604). ordinata: il testo della colonna ordinata; verso: su / giu / niente.
 // Una colonna «NOME@certificato» o «NOME@quota» mostra l'icona (18px, tratto 1.75: foglio con la croce; euro di
 // ICONE_MENU.pagamenti) invece della parola, per le colonne strette del telefono.
-// PROPOSTA «icone dappertutto»: frecce="icona" disegna ▲ ▼ ↕ con le icone crescente / decrescente / ordina di Icona.dc.html (14px).
+// COSTRUITO «icone dappertutto» (`iconaVerso` di src/lib/icone.ts): frecce="icona" disegna ▲ ▼ ↕ con le icone crescente / decrescente / ordina di Icona.dc.html (14px).
 // ultimaADestra: l'ultima colonna e' allineata a destra (30 GIORNI, `destra`).
 // tema sito (`:root[data-look='sito']`): l'etichetta di colonna e' in Inter (`.sg-etichetta`), stessa misura e maiuscole; il filetto e' #cfe6f4.
 // Non riprodotto: il passaggio del mouse.
@@ -54,7 +54,7 @@ class Component extends DCLogic {
 const nomi = String(p.colonne ?? 'NOME|CORSI|CONTATTO|IN REGOLA|30 GIORNI').split('|').map((x) => x.trim()).filter(Boolean);
     // «NOME@icona» mette l'icona al posto della parola (che resta per chi legge lo schermo): certificato, quota.
     const icone = nomi.map((x) => x.split('@')[1] || '');
-    // PROPOSTA «icone dappertutto» (../icone-dappertutto/): «NOME+icona» mette un'icona di Icona.dc.html (14px, aria-hidden) davanti alla parola, che resta.
+    // COSTRUITO «icone dappertutto» (Iscritti, Movimenti, Presenze istruttori): «NOME+icona» mette un'icona di Icona.dc.html (14px, aria-hidden) davanti alla parola, che resta.
     const davanti = nomi.map((x) => x.split('+')[1] || '');
     nomi.forEach((x, i) => { nomi[i] = x.split('+')[0]; });
     nomi.forEach((x, i) => { nomi[i] = x.split('@')[0]; });
