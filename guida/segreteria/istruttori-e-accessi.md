@@ -26,16 +26,34 @@ Un clic su un nome apre la sua scheda in una finestra sopra l'elenco;
 un kanji scritti e non confermati chiede prima: **Torna a finire** o **Esci
 senza salvare**.
 
+In alto restano sempre il kanji, il nome e il ruolo, e a destra **Altro ▾**.
+Sotto, la scheda è divisa in parti, ognuna con la sua icona: **DATI**,
+**PRESENZE**, **ACCESSO** e **PERSONA**. Si passa dall'una all'altra con un
+clic o con le frecce della tastiera, e si apre la prima che c'è. Una parte che
+per quella persona non ha niente da mostrare non compare: **DATI** c'è solo per
+chi insegna, **PRESENZE** solo per chi sta in sala (segreteria o istruttori),
+così chi è solo di amministrazione ha **ACCESSO** e **PERSONA**. Se hai scritto
+una modifica e passi a un'altra parte, su **PERSONA** compare **● IN
+MODIFICA**: la modifica resta lì, torni a finirla.
+
+**PERSONA**
+
 - **Modifica** — nome, cognome ed email. Chi è già entrato non cambia email da
   qui: è quella con cui fa l'accesso.
 - **RUOLO** — tre spunte, **SEGRETERIA**, **AMMINISTRAZIONE** e **ISTRUTTORE**, anche
   più d'una: si cambia con un tocco, e ne serve almeno una. **AMMINISTRAZIONE** è per chi cura i conti
   (vedi sotto); con più spunte la persona ha più aree, un solo accesso.
+
+**ACCESSO**
+
 - **ACCESSO** — com'è messa. Se non è mai entrata, **MANDA L'INVITO** le manda
   un'altra mail (l'invito non arrivato, scaduto o non spuntato). Chi è già
   entrato e ha perso la password la chiede da sé, dalla porta, con **PASSWORD
   DIMENTICATA?**.
 - **PIN TABLET** — vedi sotto.
+
+**Altro ▾**, in alto a destra, ha le cose che si fanno di rado:
+
 - **TOGLI L'ACCESSO** — la persona non entra più nell'app né nell'area
   istruttore del tablet; le presenze che ha segnato restano nel registro. Se
   si allena anche come allievo, le sue iscrizioni si chiudono oggi, come con
@@ -66,7 +84,7 @@ dell'istruttore: da sola se era previsto, se no da confermare in
 
 ## I dati per lettera e ricevute
 
-Nella scheda di chi insegna, **DATI PER LETTERA E RICEVUTE**: dove e quando è
+Nella parte **DATI** della scheda di chi insegna, **DATI PER LETTERA E RICEVUTE**: dove e quando è
 nato (con la sigla della provincia), codice fiscale, residenza (con la
 provincia) e IBAN. Servono per la lettera d'incarico e per le ricevute dei
 compensi. **Aggiungi i dati** (o **Modifica i dati**) → si scrivono → **Salva**.
@@ -118,7 +136,7 @@ lettere delle stagioni passate.
 
 ## Le presenze del mese, per i compensi
 
-In fondo alla scheda, **PRESENZE**: si sceglie il mese (gli ultimi dodici) e
+Nella parte **PRESENZE** della scheda: si sceglie il mese (gli ultimi dodici) e
 si vede quante **LEZIONI** ha fatto e quante **ORE** (dall'orario delle
 lezioni, coi decimali: 1,5 è un'ora e mezza), e il dettaglio per corso. Un
 corso si apre per vedere i giorni.
