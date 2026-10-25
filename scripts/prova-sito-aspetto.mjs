@@ -225,6 +225,19 @@ console.log('\nTastiera e movimento')
   const mov = blocco(CSS, '@media (prefers-reduced-motion:no-preference)')
   ok('c’è un @media (prefers-reduced-motion:no-preference)', mov !== null, true)
   ok('le transizioni e le animazioni stanno solo lì dentro', mov ? !/transition|animation/.test(mov.senza) : 'nessun blocco', true)
+
+  // Il movimento della Home: il titolo e la foto di apertura si posano, i numeri arrivano uno dopo l'altro,
+  // da una pagina all'altra la testata resta ferma. Tutto in CSS: il sito non ha codice suo.
+  const m = mov?.dentro ?? ''
+  const kf = (nome) => new RegExp(`@keyframes ${nome}\\{([^@]*?\\}\\})`).exec(m)?.[1] ?? ''
+  const anim = (sel) => new RegExp(`(?:^|[},])${sel.replace(/[.>]/g, '\\$&')}(?:,[^{]*)?\\{[^}]*animation:([^;}]+)`).exec(m)?.[1] ?? ''
+  ok('il titolo della pagina sale (sale)', /^sale /.test(anim('.pagina-hero .intro h1')), true)
+  ok('la foto di apertura si posa (si-posa)', /^si-posa /.test(anim('.pagina-hero .hero-foto img')), true)
+  ok('i numeri sotto l’apertura arrivano (compare)', /^compare /.test(anim('.dopo-hero>.numeri>.tessera')), true)
+  ok('da una pagina all’altra c’è la transizione del browser', /@view-transition\{navigation:auto\}/.test(m), true)
+  ok('la testata ha un nome di transizione: resta ferma', /\.testata\{view-transition-name:testata\}/.test(m), true)
+  ok('titolo e foto si muovono solo con transform: l’opacità 0 ritarda la prima immagine e il testo', [kf('sale'), kf('si-posa')].map((x) => /opacity/.test(x)), [false, false])
+  ok('nessuna animazione resta accesa: niente infinite, e sempre «backwards» (senza animazione il contenuto c’è)', [/infinite/.test(m), (m.match(/animation:[^;}]*/g) ?? []).every((x) => /backwards/.test(x))], [false, true])
 }
 
 console.log('\nTitolo lungo e menu lungo')
