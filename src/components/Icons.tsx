@@ -172,6 +172,12 @@ export const ICONE_CONTI = {
   frecce: voce(<><polyline points="15 4 19 8 15 12" /><path d="M5 8h14" /><polyline points="9 20 5 16 9 12" /><path d="M19 16H5" /></>),
 }
 
+/** Le icone del tablet: sulle schede «Quali lezioni» dell'istruttore. Il testo accanto resta il nome. */
+export const ICONE_TABLET = {
+  oggi: voce(<><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><circle cx="12" cy="16" r="1.5" /></>),
+  corso: ICONE_MENU.corsi,
+}
+
 /** Le icone delle linguette delle barre a schede della segreteria (Contabilità, il corso, Presenze): le stesse del menu e dei conti. */
 export const ICONE_SCHEDE = {
   movimenti: ICONE_CONTI.frecce,

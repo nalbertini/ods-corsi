@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- SCELTA DELLE ICONE · tre coppie per OGGI e PER CORSO, sul tema scuro del tablet, con la scheda accesa nei due modi. A e' la proposta: calendario con un punto (oggi) e medaglia, gia' in Icons.tsx come ICONE_MENU.corsi. Sole, orologio, cartella ed elenco non sono nell'app: si aggiungerebbero a Icons.tsx. -->
+<!-- Un segno dell'appello che il server non ha preso (TabletIstruttore.tsx, `nonAndato`): si e' toccato un nome o TUTTI PRESENTI e la scrittura e' fallita. Sotto la testa compare il riquadro rosso NON SEGNATO col motivo (qui il testo di riserva «Il server non risponde»; altrimenti il messaggio che il server ha dato), l'appello si rilegge da solo e i nomi tornano com'erano sul server. Il riquadro resta finche' non si cambia lezione o non riesce un'altra scrittura. Non c'e' fuori dall'area istruttore: sul tablet delle presenze un tocco senza rete va in coda e non da errori (vedi PresenzaAttesa e PresenzaErrore). -->
+<div style="display: flex; flex-direction: column; gap: 28px; width: 1280px; padding: 40px 48px; background: #121212; color: #f2f2f0">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 0.1em">QUALI LEZIONI · LE ICONE</span>
+  <div style="display: flex; gap: 48px; align-items: flex-start">
+  <div style="display: flex; flex-direction: column; gap: 10px; width: 300px">
+    <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.14em; color: #f4c31b">A · CALENDARIO + MEDAGLIA (PROPOSTA)</span>
+    <dc-import name="TabletSchede" scelta="oggi" iconaOggi="calendario" iconaCorso="medaglia" tema="scuro" hint-size="100%,84px"></dc-import>
+    <dc-import name="TabletSchede" scelta="corso" iconaOggi="calendario" iconaCorso="medaglia" tema="scuro" hint-size="100%,84px"></dc-import>
+    <span style="font-size: 15px; line-height: 1.5; color: #c9c9c4">Il calendario col punto dice «il giorno di oggi»; la medaglia è già l'icona di CORSI nel menu della segreteria, quindi chi la conosce la ritrova.</span>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px; width: 300px">
+    <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.14em; color: #8c8c88">B · SOLE + CARTELLA</span>
+    <dc-import name="TabletSchede" scelta="oggi" iconaOggi="sole" iconaCorso="cartella" tema="scuro" hint-size="100%,84px"></dc-import>
+    <dc-import name="TabletSchede" scelta="corso" iconaOggi="sole" iconaCorso="cartella" tema="scuro" hint-size="100%,84px"></dc-import>
+    <span style="font-size: 15px; line-height: 1.5; color: #c9c9c4">Il sole è più immediato per «oggi», ma sul tablet con la luce forte rischia di sembrare il tasto della luminosità. La cartella raccoglie i corsi.</span>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px; width: 300px">
+    <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.14em; color: #8c8c88">C · OROLOGIO + ELENCO</span>
+    <dc-import name="TabletSchede" scelta="oggi" iconaOggi="orologio" iconaCorso="elenco" tema="scuro" hint-size="100%,84px"></dc-import>
+    <dc-import name="TabletSchede" scelta="corso" iconaOggi="orologio" iconaCorso="elenco" tema="scuro" hint-size="100%,84px"></dc-import>
+    <span style="font-size: 15px; line-height: 1.5; color: #c9c9c4">L'orologio suggerisce l'orario più che il giorno; l'elenco dice «scegli da una lista», ma assomiglia al menu.</span>
+  </div>
+  </div>
+  <span style="font-size: 16px; line-height: 1.5; color: #8c8c88; max-width: 900px">Tutte da 28px, tratto 1,75, nel colore della scritta (currentColor): sulla scheda accesa e su quella spenta cambiano insieme al testo. Il testo accanto resta il nome per chi usa il lettore di schermo.</span>
+</div>
+</x-dc>
+</body>
+</html>
