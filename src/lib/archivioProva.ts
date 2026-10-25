@@ -175,6 +175,8 @@ export interface Archivio {
   casse?: Cassa[]
   voci?: VoceContabile[]
   movimenti?: MovimentoManuale[]
+  /** Le chiusure della palestra (118-chiusure.sql), con com'era ogni lezione che hanno annullato. */
+  chiusurePalestra?: Array<{ id: string; dal: string; al: string; salaId: string | null; prima: Record<string, StatoSessione> }>
   /** Le chiusure della Cassa Contanti (60-chiusura-cassa.sql). */
   chiusure?: ChiusuraCassa[]
   /** I pagamenti del negozio Satispay letti dallo scarico (97-satispay-scarico.sql): in prova sono d'esempio. */

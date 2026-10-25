@@ -1,0 +1,25 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Chiusura della palestra · proposta"
+  }
+ ],
+ "artboards": [
+  { "file": "Tasto.dc.html", "title": "SETTIMANA: il tasto «Chiusura dal… al…»", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Periodo.dc.html", "title": "Si sceglie il periodo e le sale; le chiusure già decise", "x": 1560, "y": 300, "page": "page-1" },
+  { "file": "Conferma.dc.html", "title": "La conferma: quante, dove e cosa cambia", "x": 0, "y": 1400, "page": "page-1" },
+  { "file": "Fatto.dc.html", "title": "Fatto: la settimana dice che è chiusa", "x": 1560, "y": 1400, "page": "page-1" },
+  { "file": "Togli.dc.html", "title": "Togliere la chiusura", "x": 3120, "y": 1400, "page": "page-1" }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Chiusura della palestra: annullare in un colpo le lezioni di un periodo, di tutte le sale o di una sola, anche quelle che il calendario crea dopo"
+  }
+ ]
+}

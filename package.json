@@ -175,6 +175,7 @@
     "prova:nucleo": "node scripts/prova-nucleo.mjs",
     "prova:compleanni": "node scripts/prova-compleanni.mjs",
     "prova:gare": "node scripts/prova-gare.mjs",
+    "prova:chiusure": "node scripts/prova-chiusure.mjs",
     "prova:a11y-axe": "node scripts/prova-a11y-axe.mjs"
   },
   "dependencies": {

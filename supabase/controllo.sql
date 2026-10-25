@@ -580,6 +580,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.pagamento_prima(text, uuid, text, text, text, text, uuid)') is not null),
   ('117-gare.sql', 'le gare, con la quota a voci, chi accompagna, gli atleti e l''incasso in CONTABILITÀ',
     exists (select 1 from dentro where nome = 'incassa_gara' and corpo like '%registra_pagamento_diretto%')
-    and exists (select 1 from pg_trigger where tgname = 'gare_atleti_unione' and not tgisinternal))
+    and exists (select 1 from pg_trigger where tgname = 'gare_atleti_unione' and not tgisinternal)),
+  ('118-chiusure.sql', 'le chiusure della palestra, che annullano le lezioni di un periodo e si tolgono',
+    to_regclass('public.chiusure_lezioni') is not null
+    and to_regprocedure('public.togli_chiusura(uuid)') is not null
+    and exists (select 1 from pg_trigger where tgname = 'sessioni_in_chiusura' and not tgisinternal))
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<sc-if value="{{fascia}}" hint-placeholder-val="{{ true }}">
+  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; width: 100%; padding: 10px 14px; background: #ffffff; border: 2px solid #cfe6f4; border-left: 8px solid #0d2a3d; color: #0d2a3d; font-size: 16px">
+    <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em">CHIUSA</span>
+    <span style="flex: 1 1 0; min-width: 0">{{riga}}</span>
+    <span style="{{tasto}}">Togli la chiusura</span>
+  </div>
+</sc-if>
+<sc-if value="{{elenco}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 12px 14px; border: 2px solid #cfe6f4; color: #0d2a3d; font-size: 14px">
+    <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">CHIUSURE GIÀ DECISE</span>
+    <sc-for list="{{righe}}" as="r" hint-placeholder-count="2">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="flex: 1 1 0; min-width: 0">{{r}}</span>
+        <span style="{{tasto}}">Togli</span>
+      </div>
+    </sc-for>
+  </div>
+</sc-if>
+</x-dc>
+<script data-dc-script data-props='{"vista":{"editor":"select","options":["fascia","elenco"],"default":"fascia"},"riga":{"editor":"text","default":"Dal 24 dicembre al 6 gennaio · Tutte le sale · 39 lezioni"},"righe":{"editor":"text","default":"Dal 24 dicembre al 6 gennaio · Tutte le sale · 39 lezioni|Il 2 giugno · Tatami · 1 lezione"},"$preview":{"width":720,"height":120}}'>
+// Le chiusure della palestra in SETTIMANA (Settimana.tsx; .sg-chiusa e .sg-chiusure-decise di src/segreteria.css; storia in
+// ../chiusura-palestra/). `fascia`: sopra la griglia, una per chiusura della settimana: bianca, bordo 2px `line` e 8px `text` a
+// sinistra, padding 10px 14px, gap 12px; CHIUSA (--cond 12px 700 0.18em), la riga di `rigaChiusura` (src/lib/chiusure.ts:
+// periodo · sala o «Tutte le sale» · quante lezioni) e «Togli la chiusura». `elenco`: in fondo al dialogo «Chiusura della
+// palestra», bordo 2px `line`, padding 12px 14px, 14px; CHIUSURE GIÀ DECISE (.sg-etichetta, `dim`) e per riga «Togli».
+// I tasti sono .sg-btn .sg-btn-linea .sg-pericolo nel look del sito: alti 48px, padding 0 18px, --cond 16px 600 obliquo,
+// bordo 2px e testo `rosso-testo` #b81d1d. La nota gialla dei dialoghi (.sg-nota-gialla) e' `tinta-giallo` #fcf6e6 con
+// la barra 4px `giallo-testo` #8f6a00.
+const COND = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif"
+const TASTO = `display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 18px; border: 2px solid #b81d1d; color: #b81d1d; font-family: ${COND}; font-style: oblique 9deg; font-size: 16px; font-weight: 600; white-space: nowrap`
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const vista = p.vista ?? 'fascia';
+    return {
+      fascia: vista === 'fascia', elenco: vista === 'elenco',
+      riga: p.riga ?? 'Dal 24 dicembre al 6 gennaio · Tutte le sale · 39 lezioni',
+      righe: String(p.righe ?? '').split('|').filter(Boolean),
+      cond: COND, tasto: TASTO,
+    };
+  }
+}
+</script>
+</body>
+</html>
