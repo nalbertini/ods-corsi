@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { CAMBIO_CASSA_SATISPAY } from '../../lib/satispayScarico'
 import { dataRicevuta } from '../../lib/ricevute'
 import { SchedaPiena, useCarica, type useAvviso } from './comune'
 
@@ -87,7 +86,7 @@ export function PrimoScarico({ d, fai, onFatto, onChiudi }: { d: DatiSegreteria;
           </div>
         ))}
       </div>
-      <span className="sg-sotto">Dal {dataRicevuta(CAMBIO_CASSA_SATISPAY)} entrano nella cassa Satispay; quelli di prima in Conto Corrente, come si faceva finora, così i saldi passati non cambiano. Uno scarico si annulla movimento per movimento, come ogni movimento.</span>
+      <span className="sg-sotto">Entrano tutti nella cassa Satispay, separati dal Conto Corrente. Uno scarico si annulla movimento per movimento, come ogni movimento.</span>
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void fai(() => d.scaricaSatispay(false), 'Scarico fatto: da stanotte va da solo', onFatto)}>
           {scritti === 1 ? 'Sì, scrivi il movimento' : scritti ? `Sì, scrivi i ${scritti} movimenti` : 'Sì, comincia lo scarico'}

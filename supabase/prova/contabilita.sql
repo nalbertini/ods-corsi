@@ -142,7 +142,7 @@ grant execute on function atteso(text, text, text), chi(text), tenta(text), esit
 
 \echo ''
 \echo '--- 1. le due casse e le due voci di sistema ci sono già ---'
-select atteso('le casse', (select string_agg(nome || ' ' || saldo_iniziale || ' ' || coalesce(dal::text, '—'), ', ' order by nome) from casse), 'Carta 0 —, Cassa Contanti 0 —, Conto Corrente 0 —, Satispay 0 2026-10-01');
+select atteso('le casse', (select string_agg(nome || ' ' || saldo_iniziale || ' ' || coalesce(dal::text, '—'), ', ' order by nome) from casse), 'Carta 0 —, Cassa Contanti 0 —, Conto Corrente 0 —, Satispay 0 2025-01-01');
 -- Le voci «Differenza di cassa» arrivano con 60-chiusura-cassa.sql e le prova chiusura-cassa.sql: qui si contano quelle del 59.
 select atteso('le voci di sistema', (select string_agg(nome || ' ' || tipo || ' ' || di_sistema || ' ' || attiva, ', ' order by nome) from voci_contabili where nome not in ('Differenza di cassa', 'Compensi istruttori', 'Da classificare', 'Commissioni bancarie')), 'Corsi e altri pagamenti entrata true true, Quota associativa entrata true true');
 select atteso('nessun movimento', (select count(*)::text from movimenti), '0');
