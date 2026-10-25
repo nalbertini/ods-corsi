@@ -317,7 +317,7 @@ const ICONE_TAB: Record<IdTabArea, NomeIcona> = { lezioni: 'calendario', regola:
 /** Le icone a linea di LEZIONI (stesse del design, MiaLezione e MiaPresenzaPiccola): accompagnano le parole, non le sostituiscono. */
 const CERCHIO = 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z'
 const ICONE_LEZIONE: Record<IconaCosa | IconaPresenza | 'istruttore' | 'giorno', readonly string[]> = {
-  istruttore: ICONE.istruttore,
+  istruttore: ICONE.persona, // la chiave di ICONE.istruttore è quella degli accessi: accanto a un nome serve una persona
   giorno: ICONE.calendario,
   sala: ICONE.mappa,
   annullata: [CERCHIO, 'M5.6 5.6l12.8 12.8'],
@@ -538,6 +538,7 @@ function Prossime({ lezioni }: { lezioni: MiaLezione[] }) {
       )}
       <section>
         <Titoletto
+          icona="corso"
           conto={
             piu ? (
               <button type="button" className="mia-vedi-tutte" aria-expanded={tutte} onClick={() => setTutte(!tutte)}>
@@ -638,6 +639,7 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
             </button>
           )
         }
+        icona="appello"
       >
         LE ULTIME PRESENZE
       </Titoletto>

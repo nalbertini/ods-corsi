@@ -139,7 +139,7 @@ const T = (x) => e.tastoAppello({ segnatiIscritti: 0, tuttiAssenti: false, tutti
 ok('tasto: nessuno segnato → TUTTI PRESENTI', T({}), 'TUTTI PRESENTI')
 ok('tasto: tutti assenti → TUTTI PRESENTI', T({ segnatiIscritti: 4, tuttiAssenti: true, tuttiSegnati: true }), 'TUTTI PRESENTI')
 ok('tasto: qualcuno segnato → GLI ALTRI PRESENTI', T({ segnatiIscritti: 2 }), 'GLI ALTRI PRESENTI')
-ok('tasto: tutti segnati → ✓ TUTTI SEGNATI', T({ segnatiIscritti: 4, tuttiSegnati: true }), '✓ TUTTI SEGNATI')
+ok('tasto: tutti segnati → TUTTI SEGNATI (la spunta è l’icona del tasto)', T({ segnatiIscritti: 4, tuttiSegnati: true }), 'TUTTI SEGNATI')
 const L = (x) => e.statoLezione({ manca: false, iniziato: true, fatto: false, presentiIscritti: 0, ...x })
 ok('lezione da chiudere: ✕ DA CHIUDERE, tono manca', L({ manca: true }), { testo: '✕ DA CHIUDERE', tono: 'manca' })
 ok('lezione non iniziata: ISCRITTI, senza tono (non è uno stato)', L({ iniziato: false }), { testo: 'ISCRITTI' })

@@ -461,9 +461,11 @@ export function AppelloScreen({
             disabled={!d.elenco.length || (tuttiSegnati && !tuttiAssenti)}
             onClick={tuttiGliAltri}
           >
+            <Icona nome="fatto" />
             {tastoAppello({ segnatiIscritti, tuttiAssenti, tuttiSegnati })}
           </button>
           <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO?" onFai={azzera}>
+            <Icona nome="ricomincia" />
             AZZERA
           </DueTocchi>
         </div>}
@@ -501,7 +503,7 @@ export function AppelloScreen({
                 </span>
                 {x.id in gestite ? (
                   <span className="row num segnalata-esito" data-accolta={gestite[x.id]}>
-                    {gestite[x.id] ? '✓ SEGNATO PRESENTE' : 'RIFIUTATA: RESTA COM’ERA'}
+                    {gestite[x.id] ? <><Icona nome="fatto" misura={16} />SEGNATO PRESENTE</> : 'RIFIUTATA: RESTA COM’ERA'}
                   </span>
                 ) : (
                   <span className="row" style={{ gap: 8 }}>
@@ -509,7 +511,7 @@ export function AppelloScreen({
                       C’ERA: PRESENTE
                     </button>
                     <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px' }} onClick={() => void gestisci(x, false)}>
-                      <Icona nome="annulla" />
+                      <Icona nome="manca" />
                       RIFIUTA
                     </button>
                   </span>

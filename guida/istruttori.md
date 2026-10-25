@@ -131,7 +131,7 @@ I due tasti in cima:
 - **TUTTI PRESENTI**: mette ✓ a tutti. È il modo più veloce: premetelo e poi
   toccate una volta gli assenti. Se qualcuno è già segnato diventa **GLI ALTRI
   PRESENTI**, e mette ✓ solo a chi non ha ancora un segno: le assenze già
-  messe restano. Quando tutti hanno un segno diventa **✓ TUTTI SEGNATI**, e
+  messe restano. Quando tutti hanno un segno diventa **TUTTI SEGNATI**, e
   non si tocca. Se invece gli iscritti sono tutti assenti (un appello chiuso per
   sbaglio, riaperto; chi prova non conta) torna **TUTTI PRESENTI**, e mette ✓
   a tutti.

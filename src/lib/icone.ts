@@ -71,6 +71,7 @@ export const ICONE = {
   oggi: [R(3, 4, 18, 18, 2), 'M16 2v4M8 2v4M3 10h18', C(12, 16, 1.5)],
   orario: [C(12, 12, 10), 'M12 6v6l4 2'],
   corso: [C(12, 8, 6), 'M15.5 12.9 17 22l-5-3-5 3 1.5-9.1'],
+  gara: ['M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2Z'],
   appello: ['M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2', R(9, 3, 6, 4, 1), 'M9 14l2 2 4-4'],
   sala: [R(4, 2, 16, 20, 2), 'M11 18h2'],
   tatami: [R(3, 6, 18, 12), 'M12 6v12M3 12h9'],
@@ -142,7 +143,7 @@ export function iconaAzione(etichetta: string): NomeIcona | null {
   const testo = etichetta.trim().toLowerCase()
   if (NON_RICORRENTI.some((t) => testo.startsWith(t))) return null
   const verbo = testo.split(/[\s,.…]/)[0]
-  return AZIONI[verbo] ?? null
+  return Object.hasOwn(AZIONI, verbo) ? AZIONI[verbo] : null
 }
 
 /** L'icona accanto all'intestazione che ordina: 1 crescente, -1 decrescente, 0 non ordinata. */

@@ -61,6 +61,8 @@ for (const [etichetta, icona] of [
   ['Copia l’elenco', 'copia'], ['Importa tessere', 'carica'], ['Modifica il compenso', 'modifica'], ['Chiudi', 'chiudi'],
   ['Chiudi la cassa', null], ['Prepara', null], ['Segna firmata', null], ['Segna pagato', null], ['C’era', null], ['Salvataggio', null],
 ]) ok(`«${etichetta}»`, iconaAzione(etichetta), icona)
+// Le parole arrivano dal testo dei tasti: «constructor» non deve pescare nel prototipo e rompere il disegno.
+for (const parola of ['constructor', 'toString', '__proto__']) ok(`«${parola}» non è un'azione`, iconaAzione(parola), null)
 
 console.log('\nLe frecce delle tabelle')
 ok('crescente', iconaVerso(1), 'crescente')
@@ -84,6 +86,19 @@ for (const nome of readdirSync('src/components/segreteria', { recursive: true })
 }
 ok('tutti passano da Tasto', aMano, [])
 
+console.log('\nL\'icona prima della parola')
+const ds = leggi('src/components/ds.tsx')
+ok('Tasto e TastoLink della segreteria: icona, poi la parola', comune.match(/\{nome && <Icona nome=\{nome\} \/>\}\s*\{children\}/g)?.length, 2)
+ok('Tasto e TastoLink: `icona={null}` spegne l\'icona dell\'azione', /icona !== undefined \? icona : typeof children === 'string' \? iconaAzione\(children\)/.test(comune), true)
+ok('Titoletto: icona, poi la parola', /\{icona && <Icona nome=\{icona\} misura=\{20\} \/>\}\s*\{children\}/.test(ds), true)
+ok('Tag: icona, poi la parola, e il segno per la pastiglia', /data-icona=\{icona \? '' : undefined\}>\s*\{icona && <Icona nome=\{icona\} misura=\{14\} \/>\}\s*\{children\}/.test(comune), true)
+
+console.log('\nIl tablet: i tasti grandi col tratto 2,5')
+const tabletSenza = readdirSync('src/components/tablet').filter((f) => f.endsWith('.tsx'))
+  .flatMap((f) => [...leggi(`src/components/tablet/${f}`).matchAll(/<Icona\b[^>]*\/>/g)].filter((m) => !m[0].includes('tratto={TRATTO_TABLET}')).map((m) => `${f}: ${m[0]}`))
+ok('ogni <Icona> del tablet ha tratto={TRATTO_TABLET}', tabletSenza, [])
+ok('Spunta e Croce grandi (≥ 20) col tratto del tablet', /trattoSegno = \(size: number\) => \(size >= 20 \? TRATTO_TABLET : TRATTO\)/.test(leggi('src/components/Icons.tsx')), true)
+
 console.log('\nLe pastiglie tinte del look sito')
 const css = leggi('src/styles.css')
 const sito = css.slice(css.indexOf(":root[data-look='sito'] {"), css.indexOf('}', css.indexOf(":root[data-look='sito'] {")))
@@ -96,6 +111,7 @@ const contrasto = (a, b) => {
   const [x, y] = [luce(a), luce(b)].sort((p, q) => q - p)
   return (x + 0.05) / (y + 0.05)
 }
+ok('un Tag con l\'icona prende la tinta del suo tipo', ['manca', 'aspetta', 'fatto'].every((tipo) => new RegExp(`\\.sg-tag\\[data-icona\\]\\[data-tipo='${tipo}'\\]`).test(css)), true)
 for (const [tinta, testo] of [['rosso', 'rosso-testo'], ['giallo', 'giallo-testo'], ['verde', 'verde-testo'], ['neutro', 'dim']]) {
   const a = token(`tinta-${tinta}`)
   const b = token(testo)
