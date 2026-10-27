@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Quadratura del mese col saldo della banca</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .t { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .et { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; }
+    .sotto { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .riq { display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #fff; border: 2px solid #cfe6f4; }
+    .num { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+    .mese { display: flex; flex-direction: column; gap: 4px; min-height: 72px; padding: 10px 12px; background: #fff; border: 2px solid #cfe6f4; }
+    .riga { display: grid; grid-template-columns: 64px minmax(0, 1fr) 120px 230px 96px; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid #cfe6f4; font-size: 15px; }
+    .tag { display: inline-block; padding: 3px 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; }
+    .link { font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; min-height: 44px; display: inline-flex; align-items: center; }
+    .coppia { display: grid; grid-template-columns: 1fr 24px 1fr 110px; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid #cfe6f4; font-size: 14px; }
+  </style>
+</helmet>
+<!-- Proposta: in CONTABILITÀ → CASSE, sotto la tessera del Conto Corrente, il riquadro IL CONTO CON LA BANCA.
+     In alto i mesi dell'anno con lo stato, sotto il mese scelto: app contro banca, la differenza spiegata riga per riga
+     con la causa probabile, e le righe abbinate da controllare. La vista non cambia nessun movimento: «Apri» porta alla riga.
+     Nomi e importi sono esempi. -->
+<div style="display: flex; width: 1440px; min-height: 2050px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" autorizzazioni="segreteria e amministrazione" attiva="CONTABILITÀ" numeri="" nome="Chiara Bianchi" ruolo="Segreteria e amministrazione" altezza="2050px" hint-size="240px,2050px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <h1 class="t" style="margin: 0; font-size: 34px">CONTABILITÀ</h1>
+    <dc-import name="SchedeIcone" barra="contabilita" acceso="3" hint-size="520px,48px"></dc-import>
+
+    <section class="riq" style="max-width: 520px">
+      <span class="et">CASSA</span>
+      <span class="t" style="font-size: 22px">CONTO CORRENTE</span>
+      <div style="display: flex; gap: 24px; align-items: baseline"><span class="et">SUL CONTO</span><span class="num" style="font-size: 40px">12.430,00 €</span></div>
+      <span class="sotto">entrate 96.210,00 € · uscite 83.780,00 €</span>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+        <span class="tag" style="background: #fbe9e9; color: #b81d1d">✕ SETTEMBRE NON TORNA</span>
+        <span class="tag" style="background: #fcf6e6; color: #8f6a00">… OTTOBRE: SALDO DA SCRIVERE</span>
+      </div>
+    </section>
+
+    <section class="riq" style="max-width: 1100px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px">
+        <span class="t" style="font-size: 26px">IL CONTO CON LA BANCA</span>
+        <span class="sotto">2026</span>
+      </div>
+      <span class="sotto">Ogni mese: il saldo del Conto Corrente nell’app contro l’estratto BancoPosta. Il mese torna quando la differenza è zero e non resta niente da classificare.</span>
+
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+        <div class="mese"><b style="font-size: 14px">GEN</b><span style="font-size: 13px; color: #0b7a33">✓ Verificato</span></div>
+        <div class="mese"><b style="font-size: 14px">FEB</b><span style="font-size: 13px; color: #0b7a33">✓ Verificato</span></div>
+        <div class="mese"><b style="font-size: 14px">MAR</b><span style="font-size: 13px; color: #0b7a33">✓ Verificato</span></div>
+        <div class="mese"><b style="font-size: 14px">APR</b><span style="font-size: 13px; color: #0b7a33">✓ Verificato</span></div>
+        <div class="mese"><b style="font-size: 14px">MAG</b><span style="font-size: 13px; color: #0b7a33">✓ Torna</span></div>
+        <div class="mese" style="border-color: #b81d1d"><b style="font-size: 14px">GIU</b><span style="font-size: 13px; color: #b81d1d">✕ Cambiato dopo la verifica</span></div>
+        <div class="mese"><b style="font-size: 14px">LUG</b><span style="font-size: 13px; color: #0b7a33">✓ Torna</span></div>
+        <div class="mese"><b style="font-size: 14px">AGO</b><span style="font-size: 13px; color: #0b7a33">✓ Torna</span></div>
+        <div class="mese" style="border-color: #0d2a3d; background: #eef5fa"><b style="font-size: 14px">SET</b><span style="font-size: 13px; color: #b81d1d">✕ − 480,00 €</span></div>
+        <div class="mese"><b style="font-size: 14px">OTT</b><span style="font-size: 13px; color: #8f6a00">… Saldo da scrivere</span></div>
+        <div class="mese" style="opacity: 1"><b style="font-size: 14px; color: #46606f">NOV</b><span style="font-size: 13px; color: #46606f">Non ancora finito</span></div>
+        <div class="mese"><b style="font-size: 14px; color: #46606f">DIC</b><span style="font-size: 13px; color: #46606f">—</span></div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; padding-top: 10px; border-top: 2px solid #cfe6f4">
+        <span class="t" style="font-size: 22px">SETTEMBRE 2026</span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 2px solid #cfe6f4"><span class="et">NELL’APP · 30/09</span><span class="num" style="font-size: 30px">12.430,00 €</span><span class="sotto">inizio 9.870,00 + entrate 11.020,00 − uscite 8.460,00</span></div>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 2px solid #cfe6f4"><span class="et">IN BANCA · 30/09</span><span class="num" style="font-size: 30px">11.950,00 €</span><span class="sotto">dall’estratto di settembre · <span class="link" style="min-height: 0; font-size: 14px">Cambia</span></span></div>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 2px solid #b81d1d; background: #fbe9e9"><span class="et" style="color: #b81d1d">DIFFERENZA</span><span class="num" style="font-size: 30px; color: #b81d1d">− 480,00 €</span><span class="sotto" style="color: #0d2a3d">nell’app ci sono 480,00 € in più che in banca</span></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 16px; background: #fcf6e6; border-left: 4px solid #8f6a00">
+          <b style="font-size: 15px; color: #8f6a00">2 righe del Conto Corrente sono «Da classificare»: settembre non è finito.</b>
+          <span class="sotto" style="color: #0d2a3d">Anche con la differenza a zero il mese resta aperto finché non hanno una voce. <span class="link" style="min-height: 0; font-size: 14px">Vedi le 2 righe</span></span>
+        </div>
+        <span class="sotto">CSV della banca importato: 64 righe dal 01/09 al 30/09. Entrate e uscite del CSV tornano coi totali dell’estratto. ✓</span>
+
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: 6px 16px; padding: 14px 16px; border: 2px solid #cfe6f4; font-size: 15px">
+          <span>Nell’app, non in banca · 3 righe</span><span class="num" style="text-align: right">+ 625,00 €</span>
+          <span>In banca, non nell’app · 2 righe</span><span class="num" style="text-align: right">− 145,00 €</span>
+          <span>Non spiegato</span><span class="num" style="text-align: right">0,00 €</span>
+          <b style="border-top: 1px solid #cfe6f4; padding-top: 6px">Differenza</b><b class="num" style="border-top: 1px solid #cfe6f4; padding-top: 6px; text-align: right; color: #b81d1d">− 480,00 €</b>
+        </div>
+
+        <div style="display: flex; flex-direction: column">
+          <span class="et">NELL’APP, NON IN BANCA · 3</span>
+          <div class="riga"><span style="color: #46606f">05/09</span><span>Incasso iscritto · Rossi Luca · Estate ragazzi</span><span class="num" style="text-align: right">+ 480,00 €</span><span><span class="tag" style="background: #fcf6e6; color: #8f6a00">FORSE CONTANTI: VA IN CASSA CONTANTI</span></span><span class="link">Apri ›</span></div>
+          <div class="riga"><span style="color: #46606f">12/09</span><span>Satispay · Bianchi Sara</span><span class="num" style="text-align: right">+ 120,00 €</span><span><span class="tag" style="background: #fcf6e6; color: #8f6a00">FORSE UN DOPPIONE SATISPAY</span></span><span class="link">Apri ›</span></div>
+          <div class="riga"><span style="color: #46606f">29/09</span><span>Quota associativa · Verdi Anna</span><span class="num" style="text-align: right">+ 25,00 €</span><span class="sotto">nessuna riga simile in banca</span><span class="link">Apri ›</span></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column">
+          <span class="et">IN BANCA, NON NELL’APP · 2</span>
+          <div class="riga"><span style="color: #46606f">30/09</span><span>Commissioni e spese di tenuta conto</span><span class="num" style="text-align: right">− 12,00 €</span><span><span class="tag" style="background: #eef5fa; color: #0d2a3d">COMMISSIONE DI POSTE</span></span><span class="link">Registra ›</span></div>
+          <div class="riga"><span style="color: #46606f">18/09</span><span>Addebito diretto Enel Energia</span><span class="num" style="text-align: right">− 133,00 €</span><span class="sotto">nessuna riga simile nell’app</span><span class="link">Registra ›</span></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span class="et">CON LA DATA DIVERSA · 1 · NON MANCANO</span>
+          <div class="coppia"><span>in banca 31/08 · Bonifico Neri Paolo</span><span style="color: #46606f">=</span><span>nell’app 01/09 · Incasso iscritto · Neri Paolo</span><span class="num" style="text-align: right">+ 280,00 €</span></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span class="et">ABBINATE · 59 RIGHE · <span style="text-decoration: underline">NASCONDI</span></span>
+          <span class="sotto">Ogni riga dell’app con la riga della banca che le corrisponde. Due importi uguali in giorni vicini si abbinano in ordine di data: se una coppia è sbagliata, apri la riga.</span>
+          <div class="coppia"><span>02/09 · Bonifico Gallo M. quota</span><span style="color: #46606f">=</span><span>02/09 · Incasso iscritto · Gallo Marta</span><span class="num" style="text-align: right">+ 30,00 €</span></div>
+          <div class="coppia"><span>03/09 · Bonifico Gallo M. quota</span><span style="color: #46606f">=</span><span>03/09 · Incasso iscritto · Gallo Pietro</span><span class="num" style="text-align: right">+ 30,00 €</span></div>
+          <div class="coppia"><span>04/09 · Satispay accredito</span><span style="color: #46606f">=</span><span>04/09 · Giroconto Satispay → Conto Corrente</span><span class="num" style="text-align: right">+ 410,00 €</span></div>
+          <span class="sotto">… altre 56</span>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 14px; border-top: 2px solid #cfe6f4">
+          <dc-import name="Bottone" label="SEGNA SETTEMBRE COME VERIFICATO" variante="pieno" contesto="segreteria" alto="48px" hint-size="330px,48px"></dc-import>
+          <span class="sotto">Si può segnare solo quando la differenza è zero e non c’è niente da classificare. Se dopo cambia una riga di settembre, il mese torna «da controllare».</span>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":2050}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    .t { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .sotto { font-size: 14px; color: #46606f; line-height: 1.45; }
+  </style>
+</helmet>
+<section style="display: flex; flex-direction: column; gap: 16px; width: 100%; padding: 22px 24px; background: #fff; border: 2px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <span class="t" style="font-size: 22px">ESTRATTO DI OTTOBRE 2026</span>
+  <span class="sotto">Copia i quattro numeri dal riepilogo dell’estratto BancoPosta di ottobre 2026.</span>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+    <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="SALDO INIZIALE" valore="11.950,00" nota="dal finale di settembre 2026" hint-size="280px,90px"></dc-import>
+    <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="SALDO FINALE" valore="13.210,00" hint-size="280px,90px"></dc-import>
+    <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="ENTRATE" valore="9.840,00" hint-size="280px,70px"></dc-import>
+    <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="USCITE" valore="8.480,00" hint-size="280px,70px"></dc-import>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; background: #fbe9e9; border-left: 4px solid #b81d1d; font-size: 14px">
+    <b>Il saldo non si può salvare così</b>
+    <span>{{errore}}</span>
+  </div>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap">
+    <dc-import name="Bottone" label="Annulla" variante="linea" contesto="segreteria" hint-size="120px,44px"></dc-import>
+    <div style="opacity: 0.45"><dc-import name="Bottone" label="Salva il saldo" variante="pieno" contesto="segreteria" hint-size="160px,44px"></dc-import></div>
+  </div>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"errore":{"editor":"text","default":"11.950,00 + 9.840,00 − 8.480,00 fa 13.310,00 €, non 13.210,00 €: ricontrolla l’estratto."},"$preview":{"width":640,"height":480}}'>
+// COSTRUITA (`ScriviSaldoBanca` in src/components/segreteria/Contabilita.tsx, regole `leggiSaldoBanca` e `cosaNonVaSaldoBanca` in
+// src/lib/quadraturaBanca.ts; proposta in ../quadratura-banca/): si apre sotto i saldi del mese, `sg-riquadro`. Quattro `Campo` in `sg-due`:
+// il saldo iniziale arriva dal finale del mese prima, con la nota «dal finale di <mese>». Un campo scritto male (o uscite col meno) ha
+// l'etichetta rossa e l'errore sotto, nel campo (`nota` guaio); i numeri che non tornano fra loro vanno nel riquadro `tinta-rosso` con la
+// barra `rosso-testo` e il titolo in grassetto, come qui. Un mese già verificato aggiunge «Salvando, <mese> torna da verificare.» (il database
+// toglie la verifica quando cambiano i numeri). «Annulla» a linea chiede prima se ci sono modifiche (`useBozza` + `lasciare`), «Salva il saldo»
+// pieno, spento finché manca un numero o c'è un errore.
+class Component extends DCLogic {
+  renderVals() { return { errore: this.props.errore ?? '' }; }
+}
+</script>
+</body>
+</html>

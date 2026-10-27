@@ -29,6 +29,7 @@ import { cartaPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQ
 import { oggiARoma } from './contabilita'
 import type { ContiScarico, DaDecidere, PagamentoNegozio } from './satispayScarico'
 import type { CopertoBanca } from './importaBanca'
+import { cosaNonVaSaldoBanca, cosaNonVaVerifica, mancaSaldoBanca, SENZA_SALDO_BANCA, type SaldoBanca } from './quadraturaBanca'
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { vociCorsiDi } from './corsiDaPagare'
 import { motivoDaErrore, type InvioRicevuta } from './ricevuteEmail'
@@ -1976,6 +1977,52 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async annullaChiusuraCassa(id) {
       ok(await db.rpc('annulla_chiusura_cassa', { id }))
+    },
+
+    async saldiBanca() {
+      const r = await db.from('saldo_banca').select('*').order('mese')
+      if (mancaSaldoBanca(r.error)) return null
+      // I tipi generati non conoscono 123-quadratura-banca.sql finché non c'è: la forma è quella della tabella.
+      const righe = ok(r) as unknown as Array<{
+        mese: string; saldo_iniziale: number; entrate: number; uscite: number; saldo_finale: number
+        verificato_il: string | null; verificato_da: string | null; impronta_verifica: string | null
+      }>
+      const ids = [...new Set(righe.map((x) => x.verificato_da).filter((x): x is string => !!x))]
+      const persone = ids.length ? (ok(await db.rpc('nomi_persone', { ids })) as Array<{ id: string; nome: string; cognome: string }>) : []
+      return righe.map((x): SaldoBanca => {
+        const p = persone.find((y) => y.id === x.verificato_da)
+        return {
+          mese: x.mese,
+          saldoIniziale: x.saldo_iniziale,
+          entrate: x.entrate,
+          uscite: x.uscite,
+          saldoFinale: x.saldo_finale,
+          verificatoIl: x.verificato_il,
+          // Verificato da chi non c'è più: un trattino, come nelle chiusure.
+          verificatoDa: x.verificato_il ? (p ? `${p.nome} ${p.cognome}` : '—') : null,
+          improntaVerifica: x.impronta_verifica,
+        }
+      })
+    },
+
+    async scriviSaldoBanca(s) {
+      // Il database rifiuta i numeri che non tornano, ma con un errore grezzo: qui il messaggio dice cosa fare.
+      const no = cosaNonVaSaldoBanca(s, oggiARoma())
+      if (no) throw new Error(no)
+      const r = await db.from('saldo_banca').upsert({
+        mese: s.mese, saldo_iniziale: s.saldoIniziale, entrate: s.entrate, uscite: s.uscite, saldo_finale: s.saldoFinale,
+        verificato_il: null, verificato_da: null, impronta_verifica: null,
+      })
+      if (mancaSaldoBanca(r.error)) throw new Error(SENZA_SALDO_BANCA)
+      ok(r)
+    },
+
+    async verificaMeseBanca(q, impronta) {
+      const no = cosaNonVaVerifica(q)
+      if (no) throw new Error(no)
+      const r = await db.from('saldo_banca').update({ verificato_il: new Date().toISOString(), impronta_verifica: impronta }).eq('mese', q.mese).select('mese')
+      if (mancaSaldoBanca(r.error)) throw new Error(SENZA_SALDO_BANCA)
+      if (!(ok(r) as unknown[]).length) throw new Error('Scrivi prima il saldo dell’estratto.')
     },
 
     async cercaPagatori(scritto) {

@@ -594,6 +594,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('121-punteggio-movimenti.sql', 'i movimenti non identificati scelgono la persona con un punteggio, e preselezionano solo il primo «sicuro»',
     exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%ci := array%')),
   ('122-avvisi-senza-quote.sql', 'una quota o un corso pagati dal telefono non sono un «pagamento senza richiesta»',
-    exists (select 1 from dentro where nome = 'avvisi_da_mandare' and corpo like '%s.persona_id is null%'))
+    exists (select 1 from dentro where nome = 'avvisi_da_mandare' and corpo like '%s.persona_id is null%')),
+  ('123-quadratura-banca.sql', 'il saldo dell''estratto della banca mese per mese, per la quadratura del Conto Corrente',
+    to_regclass('public.saldo_banca') is not null
+    and exists (select 1 from pg_constraint where conname = 'saldo_banca_torna')
+    and exists (select 1 from dentro where nome = 'saldo_banca_chi_verifica' and corpo like '%impronta_verifica := null%'))
 ) as x(file, cosa, c)
 order by file, cosa;

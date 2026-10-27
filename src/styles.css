@@ -1989,6 +1989,8 @@ a.sg-voce { text-decoration: none; }
    riga resta alta 44. Sul tablet, più stretto, va sotto. */
 .sg-link { font-size: 13px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 .sg-link:hover { color: var(--text); }
+/* Nel conto con la banca i link sono i tasti delle righe: grandi da toccare. */
+.sg-banca .sg-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; }
 /* In fondo al menu i link (Riparti dall'orario vero, Esci) sono bersagli veri
    da 44, uno sotto l'altro: allargati a mano, col dito, si sovrapponevano. */
 .sg-chi > .sg-link { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; }

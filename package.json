@@ -178,6 +178,7 @@
     "prova:compleanni": "node scripts/prova-compleanni.mjs",
     "prova:gare": "node scripts/prova-gare.mjs",
     "prova:chiusure": "node scripts/prova-chiusure.mjs",
+    "prova:quadratura": "node scripts/prova-quadratura.mjs",
     "prova:edge": "node scripts/prova-edge.mjs",
     "prova:a11y-axe": "node scripts/prova-a11y-axe.mjs"
   },
