@@ -1,0 +1,82 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-27T09:00:00Z"
+  },
+  "title": "Quadratura del Conto Corrente con la banca",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 2050,
+      "title": "Proposta · Casse, il conto con la banca, settembre"
+    },
+    "Saldo.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 640,
+      "h": 520,
+      "title": "Proposta · scrivi il saldo dell'estratto"
+    },
+    "Oggi.dc.html": {
+      "x": 1520,
+      "y": 600,
+      "w": 600,
+      "h": 420,
+      "title": "Oggi (com'è adesso)"
+    },
+    "Menu.dc.html": {
+      "x": 1520,
+      "y": 1140,
+      "w": 240,
+      "h": 900,
+      "title": "Menu (libreria)"
+    },
+    "SchedeIcone.dc.html": {
+      "x": 1840,
+      "y": 1140,
+      "w": 520,
+      "h": 48,
+      "title": "SchedeIcone (libreria)"
+    },
+    "Bottone.dc.html": {
+      "x": 2440,
+      "y": 1140,
+      "w": 260,
+      "h": 80,
+      "title": "Bottone (libreria)"
+    },
+    "Campo.dc.html": {
+      "x": 2780,
+      "y": 1140,
+      "w": 360,
+      "h": 90,
+      "title": "Campo (libreria)"
+    },
+    "Icona.dc.html": {
+      "x": 3220,
+      "y": 1140,
+      "w": 24,
+      "h": 24,
+      "title": "Icona (libreria)"
+    }
+  },
+  "order": [
+    "Oggi.dc.html",
+    "Main.dc.html",
+    "Saldo.dc.html",
+    "Menu.dc.html",
+    "SchedeIcone.dc.html",
+    "Bottone.dc.html",
+    "Campo.dc.html",
+    "Icona.dc.html"
+  ],
+  "notes": {},
+  "designSystems": []
+}

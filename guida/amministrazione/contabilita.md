@@ -384,7 +384,7 @@ controlla che torni. In **CASSE**, **Chiudi la cassa**:
    movimento «Differenza di cassa» di quel giorno (un'entrata se c'erano più soldi, un'uscita se meno),
    così a fine giorno «in cassa» è quanto hai contato. Non si sceglie a mano in NUOVO MOVIMENTO.
 
-Il Conto Corrente non si conta: si confronta con l'estratto della banca.
+Il Conto Corrente non si conta: si confronta con l'estratto della banca (vedi sotto).
 
 **Dopo la chiusura quei giorni sono chiusi**: non si registrano né si annullano più movimenti con
 quella data, e il saldo iniziale della cassa non cambia. La descrizione e la nota si possono ancora
@@ -407,6 +407,46 @@ già nei conti di quel giorno. Se stai per annullare una ricevuta o un pagamento
 già chiuso, la domanda di conferma te lo dice prima, anche alla segreteria. Se dopo una chiusura qualcuno annulla una ricevuta o un pagamento in contanti di quei giorni,
 compare un avviso rosso «La chiusura del … non è più in regola»: il foglio già stampato non torna
 più coi conti, e la correzione è una rettifica con una data dopo la chiusura.
+
+## Il conto con la banca
+
+Ogni mese il **Conto Corrente** dell'app si confronta con l'estratto BancoPosta, così una
+differenza si trova subito e non a fine anno. In **CASSE**, sotto le tessere, **IL CONTO CON LA
+BANCA** mostra i mesi dell'anno (‹ › cambia anno), ognuno col suo stato:
+
+- **✓ Verificato** o **✓ Torna**: il saldo dell'app a fine mese è quello della banca.
+- **✕ e la differenza**: non torna. **✕ Cambiato dopo la verifica**: il mese era verificato, poi
+  una riga del Conto Corrente di quel mese è cambiata (nuova, annullata, importo o data diversi).
+- **… Saldo da scrivere**, **… CSV mancante**, **… Da classificare**: manca qualcosa per controllarlo.
+
+I mesi rossi e gialli compaiono anche sulla tessera del Conto Corrente, i più recenti per primi. Un
+mese senza saldo prima del primo saldo scritto non chiede niente, tranne l'ultimo mese finito.
+
+**Scrivi il saldo dell'estratto**: copia i quattro numeri del riepilogo dell'estratto del mese,
+**SALDO INIZIALE**, **SALDO FINALE**, **ENTRATE**, **USCITE** (con il meno davanti se il saldo è
+sotto zero). Il saldo iniziale è già scritto col finale del mese prima, se c'è. I numeri devono
+tornare fra loro (iniziale + entrate − uscite = finale) e il mese non può essere nel futuro.
+**Cambia il saldo dell'estratto** riscrive i quattro numeri: un mese verificato torna da verificare.
+
+Scelto un mese, si vedono **NELL'APP** (il saldo del Conto Corrente all'ultimo giorno del mese),
+**IN BANCA** e la **DIFFERENZA** (app meno banca). Sotto, le righe che la spiegano, confrontando i
+movimenti dell'app con le righe della banca importate dal CSV (vedi **Importare dalla banca**):
+due righe sono la stessa se hanno lo stesso importo e lo stesso verso entro due giorni.
+
+- **DA DOVE VIENE LA DIFFERENZA**: quanto pesano le righe che mancano da una parte o dall'altra, un
+  saldo iniziale diverso, le righe a cavallo col mese prima o dopo, e quel che resta non spiegato.
+- **NELL'APP, NON IN BANCA**: di solito un pagamento in contanti scritto in Conto Corrente, o un
+  doppione (l'app lo dice quando è forse un doppione Satispay). **Apri** porta al movimento.
+- **IN BANCA, NON NELL'APP**: per esempio un versamento di contanti (forse un giroconto da scrivere)
+  o una commissione di Poste. **Registra** porta a IMPORTAZIONI.
+- **CON LA DATA DIVERSA**: la stessa riga con un giorno o due di differenza. Non mancano.
+- **ABBINATE**: le righe che tornano, chiuse all'inizio.
+
+Senza il CSV del mese l'app non sa quali righe ci sono in banca: lo dice, con **Importa**. Le righe
+**«Da classificare»** del mese si vedono con **Vedi le righe** e vanno sistemate prima.
+
+**Segna … come verificato** si può solo quando la differenza è zero e non ci sono righe «Da
+classificare». Resta scritto chi l'ha verificato e quando.
 
 ## Lo storico dal vecchio programma
 

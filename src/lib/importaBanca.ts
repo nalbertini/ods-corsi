@@ -67,7 +67,7 @@ export interface DatoImportBanca {
 }
 
 export const PREFISSO_CHIAVE_BANCA = 'banca:'
-const GIORNI_DI_DIFFERENZA = 2
+export const GIORNI_DI_DIFFERENZA = 2
 const LUNGHEZZA_MASSIMA = 200
 
 const NON_E_QUELLO_GIUSTO = 'Nel file non trovo l’elenco dei movimenti del conto. Scarica dall’home banking «Lista movimenti» in formato CSV e riprova.'

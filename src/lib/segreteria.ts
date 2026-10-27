@@ -2,6 +2,7 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
 import type { Chiusura, ContoChiusura } from './chiusure'
+import type { SaldoBanca } from './quadraturaBanca'
 import type { CopertoBanca, DatoImportBanca } from './importaBanca'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
@@ -900,6 +901,12 @@ export interface DatiSegreteria {
   chiudiCassa(d: { cassaId: string; data: string; contato: number; nota?: string }): Promise<string>
   /** Si annulla solo l'ultima chiusura, con il suo movimento di differenza. */
   annullaChiusuraCassa(id: string): Promise<void>
+  /** I saldi dell'estratto BancoPosta, mese per mese (`122-quadratura-banca.sql`); `null` se il file non è ancora lanciato. */
+  saldiBanca(): Promise<SaldoBanca[] | null>
+  /** Scrive il saldo di un mese: riscriverlo lo sostituisce e toglie la verifica, perché i numeri sono cambiati. */
+  scriviSaldoBanca(s: SaldoBanca): Promise<void>
+  /** Segna verificato un mese con l'impronta dei suoi movimenti: chi verifica lo scrive il database. */
+  verificaMeseBanca(mese: string, impronta: string): Promise<void>
   /** Registra un pagamento fatto a mano, senza ricevuta. */
   registraPagamentoDiretto(d: DatiPagamentoDiretto): Promise<PagamentoDiretto>
   /** Lo annulla: resta in elenco, segnato annullato. */

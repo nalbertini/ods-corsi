@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Scrivi il saldo della banca</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .t { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .sotto { font-size: 14px; color: #46606f; line-height: 1.45; }
+  </style>
+</helmet>
+<!-- Proposta: la finestra per scrivere i quattro numeri dell'estratto BancoPosta di un mese.
+     Il saldo iniziale arriva dal finale del mese prima, da confermare. Prima di salvare si controlla
+     che iniziale + entrate − uscite = finale: qui i numeri non tornano e il tasto resta spento. -->
+<div style="width: 640px; padding: 28px; background: #eef5fa">
+  <div style="display: flex; flex-direction: column; gap: 16px; padding: 24px 28px; background: #fff; border: 2px solid #0d2a3d">
+    <span class="t" style="font-size: 26px">ESTRATTO DI OTTOBRE 2026</span>
+    <span class="sotto">Copia i quattro numeri dal riepilogo dell’estratto BancoPosta di ottobre.</span>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+      <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="SALDO INIZIALE" valore="11.950,00" nota="dal finale di settembre" hint-size="280px,90px"></dc-import>
+      <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="SALDO FINALE" valore="13.210,00" hint-size="280px,90px"></dc-import>
+      <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="ENTRATE" valore="9.840,00" hint-size="280px,70px"></dc-import>
+      <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="USCITE" valore="8.480,00" hint-size="280px,70px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; background: #fbe9e9; border-left: 4px solid #b81d1d">
+      <b style="font-size: 15px; color: #b81d1d">I numeri non tornano fra loro.</b>
+      <span style="font-size: 14px">11.950,00 + 9.840,00 − 8.480,00 fa 13.310,00 €, non 13.210,00 €. Ricontrolla l’estratto: di solito è una cifra copiata male.</span>
+    </div>
+    <div style="display: flex; gap: 12px; justify-content: flex-end">
+      <dc-import name="Bottone" label="ANNULLA" variante="linea" contesto="segreteria" alto="48px" hint-size="140px,48px"></dc-import>
+      <div style="opacity: 0.45"><dc-import name="Bottone" label="SALVA IL SALDO" variante="pieno" contesto="segreteria" alto="48px" hint-size="200px,48px"></dc-import></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":640,"height":520}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

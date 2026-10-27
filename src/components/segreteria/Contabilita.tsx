@@ -28,6 +28,7 @@ import {
   giornoRoma,
   importoPerCassa,
   NOME_CASSA_CONTANTI,
+  NOME_CASSA_CONTO,
   nonSiVedra,
   oggiARoma,
   pacchetti,
@@ -82,6 +83,8 @@ import { corsiConImporto } from '../../lib/abbinaMovimenti'
 import { Bilancio } from './Bilancio'
 import { rigaDaSistemare } from '../../lib/bilancio'
 import { ScaricoSatispay } from './ScaricoSatispay'
+import { centesimiConSegno, cosaNonVaSaldoBanca, firmato, cosaNonVaVerifica, improntaMese, meseInLettere, mesePrima, quadratura, riepilogoDifferenza, righeBanca, saldoInizialeProposto, segniDelConto, SENZA_SALDO_BANCA, type Quadratura, type RigaApp, type SaldoBanca, type StatoQuadratura } from '../../lib/quadraturaBanca'
+import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import { commissioneSatispay, NOME_CASSA_SATISPAY, spesaCommissione } from '../../lib/satispayScarico'
 
 type Scheda = 'movimenti' | 'bilancio' | 'voci' | 'casse'
@@ -116,6 +119,8 @@ export function Contabilita({ d, movimento, onPersona, onImportazioni }: { d: Da
   const { avviso, fai } = useAvviso()
   // Le azioni di MOVIMENTI stanno nella testata della pagina, accanto al titolo: il posto lo dà qui, i tasti li mette Movimenti.
   const [azioni, setAzioni] = useState<HTMLElement | null>(null)
+  // «Apri ›» dal conto con la banca: un oggetto nuovo a ogni clic, così lo stesso movimento si riapre.
+  const [apri, setApri] = useState<{ id: string } | null>(null)
 
   const daiConti = [casse, voci, manuali]
   const guaio = daiConti.map((x) => x.guaio).find(Boolean)
@@ -181,10 +186,10 @@ export function Contabilita({ d, movimento, onPersona, onImportazioni }: { d: Da
       {/* Le schede si nascondono, non si smontano: filtri e bozze restano dove sono. */}
       {pronto && (
         <>
-          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} movimento={movimento} onPersona={onPersona} onImportazioni={onImportazioni} /></div>
+          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} movimento={movimento} apriRiga={apri} onPersona={onPersona} onImportazioni={onImportazioni} /></div>
           <div hidden={scheda !== 'bilancio'}><Bilancio d={d} casse={casse.dato ?? []} righe={elenco} oggi={oggiARoma()} fai={fai} /></div>
           <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
-          <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} chiusure={dateChiusure} guaioChiusure={chiusure.guaio ?? undefined} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
+          <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} chiusure={dateChiusure} guaioChiusure={chiusure.guaio ?? undefined} righe={elenco} fai={fai} onCambiato={rileggi} onApri={(id) => { setApri({ id }); setScheda('movimenti') }} onImportazioni={onImportazioni} /></div>
         </>
       )}
       {avviso}
@@ -253,7 +258,7 @@ function FiltroCasse({ casse, scelte, onChange }: { casse: Cassa[]; scelte: stri
   )
 }
 
-function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, movimento, onPersona, onImportazioni }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; movimento?: string; onPersona?: (personaId: string) => void; onImportazioni?: () => void }) {
+function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, movimento, apriRiga, onPersona, onImportazioni }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; movimento?: string; apriRiga?: { id: string } | null; onPersona?: (personaId: string) => void; onImportazioni?: () => void }) {
   // Dove ScaricoSatispay porta la sua voce nel menu delle azioni.
   const [listaMenu, setListaMenu] = useState<HTMLElement | null>(null)
   const oggi = oggiARoma()
@@ -268,6 +273,10 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
   const [appena, setAppena] = useState<RigaMovimento | null>(null)
   // Arrivando dalla scheda di una persona («Apri in contabilità») il movimento è già aperto.
   const [aperto, setAperto] = useState<RigaMovimento | null>(() => righe.find((r) => r.id === movimento) ?? null)
+  // Solo al clic su «Apri ›»: le righe che si rileggono non devono riaprire niente.
+  useEffect(() => {
+    if (apriRiga) setAperto(righe.find((r) => r.id === apriRiga.id) ?? null)
+  }, [apriRiga])
   const [viste, setViste] = useState(RIGHE_ELENCO)
   const [scelti, setScelti] = useState<Set<string>>(new Set())
   const [cambio, setCambio] = useState(false)
@@ -1248,8 +1257,9 @@ function ColonnaVoci({ d, tipo, titolo, voci, usate, fai, onCambiato }: { d: Dat
   )
 }
 
-function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato }: { d: DatiSegreteria; casse: Cassa[]; chiusure: ChiusuraCassa[]; guaioChiusure?: string; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
+function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato, onApri, onImportazioni }: { d: DatiSegreteria; casse: Cassa[]; chiusure: ChiusuraCassa[]; guaioChiusure?: string; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; onApri: (id: string) => void; onImportazioni?: () => void }) {
   const conti = residui(casse, righe)
+  const banca = useBanca(d, casse, righe)
   const contanti = casse.find((c) => c.nome === NOME_CASSA_CONTANTI)
   const [chiudo, setChiudo] = useState(false)
   const chiusureRef = useRef<HTMLDivElement>(null)
@@ -1268,10 +1278,12 @@ function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato }: { 
             onCambiato={onCambiato}
             onChiudi={c.id === contanti?.id && !guaioChiusure ? () => setChiudo(true) : undefined}
             nonSiChiude={c.id === contanti?.id ? motivoNonSiChiude(c, ultimaChiusura(chiusure, c.id)) : undefined}
+            segni={c.id === banca.conto?.id ? <SegniDelConto segni={banca.segni} /> : undefined}
           />
         ))}
       </div>
       {guaioChiusure && <Guaio testo={guaioChiusure} />}
+      {banca.conto && <ContoConLaBanca d={d} b={banca} righe={righe} fai={fai} onApri={onApri} onImportazioni={onImportazioni} />}
       {chiudo && contanti && (
         <InVista>
           <ChiudiCassa d={d} cassa={contanti} casse={casse} chiusure={chiusure} righe={righe} fai={fai} onFatto={() => { setChiudo(false); onCambiato(); window.setTimeout(() => chiusureRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 150) }} onRileggi={onCambiato} onChiudi={() => setChiudo(false)} />
@@ -1280,6 +1292,303 @@ function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato }: { 
       <div ref={chiusureRef} style={{ scrollMarginTop: 12 }}>{contanti && chiusure.length > 0 && <ElencoChiusure d={d} cassa={contanti} casse={casse} chiusure={chiusure} righe={righe} fai={fai} onCambiato={onCambiato} />}</div>
       <span className="sg-sotto">Il saldo iniziale cambia solo da qui e solo dall’amministrazione, e non dopo una chiusura. Il Conto Corrente non si conta: si confronta con l’estratto della banca.</span>
     </div>
+  )
+}
+
+/** Come si dice ogni stato del mese nella griglia e nei segni, e il suo colore. */
+const STATI: Record<StatoQuadratura, { testo: string; tono: 'verde' | 'rosso' | 'giallo' | null }> = {
+  'non ancora finito': { testo: 'Non ancora finito', tono: null },
+  'saldo da scrivere': { testo: 'Saldo da scrivere', tono: 'giallo' },
+  'non verificabile': { testo: '—', tono: null },
+  'CSV del mese mancante': { testo: 'CSV mancante', tono: 'giallo' },
+  verificato: { testo: 'Verificato', tono: 'verde' },
+  'cambiato dopo la verifica': { testo: 'Cambiato dopo la verifica', tono: 'rosso' },
+  'non torna': { testo: 'Non torna', tono: 'rosso' },
+  'da classificare': { testo: 'Da classificare', tono: 'giallo' },
+  torna: { testo: 'Torna', tono: 'verde' },
+}
+const SIMBOLO = { verde: '✓ ', rosso: '✕ ', giallo: '… ' }
+const COLORE = { verde: 'var(--verde-testo)', rosso: 'var(--rosso-testo)', giallo: 'var(--giallo-testo)' }
+/** Quanti segni stanno sulla tessera del Conto Corrente: il resto è «+ altri N». */
+const SEGNI_VISTI = 3
+
+const meseCorto = (mese: string) => new Date(`${mese}-15T12:00:00Z`).toLocaleDateString('it-IT', { month: 'short', timeZone: 'UTC' }).replace('.', '').toUpperCase()
+const ultimoGiorno = (mese: string) => {
+  const [a, m] = mese.split('-').map(Number)
+  return `${String(new Date(Date.UTC(a, m, 0)).getUTCDate()).padStart(2, '0')}/${mese.slice(5)}`
+}
+const conSegno = (c: number) => (c < 0 ? `-${euro(-c)}` : euro(c))
+
+/** I saldi della banca, le sue righe e la quadratura di ogni mese, letta una volta per mese finché non cambia niente. */
+function useBanca(d: DatiSegreteria, casse: Cassa[], righe: RigaMovimento[]) {
+  const conto = casse.find((c) => c.nome === NOME_CASSA_CONTO)
+  const letti = useCarica(async () => {
+    const [saldi, coperti] = await Promise.all([d.saldiBanca(), d.bancaCoperti()])
+    return { saldi, coperti }
+  }, [d])
+  const oggi = oggiARoma()
+  const dati = useMemo(() => {
+    const saldi = letti.dato?.saldi
+    if (!conto || !saldi) return null
+    const banca = righeBanca(righe, letti.dato?.coperti ?? null)
+    const fatte = new Map<string, Quadratura>()
+    const di = (mese: string) => {
+      const q = fatte.get(mese) ?? quadratura({ mese, oggi, contoId: conto.id, casse, righe, banca, saldo: saldi.find((s) => s.mese === mese) ?? null, saldoPrima: saldi.find((s) => s.mese === mesePrima(mese)) ?? null })
+      fatte.set(mese, q)
+      return q
+    }
+    return { saldi, banca, di }
+  }, [conto, casse, righe, letti.dato, oggi])
+  const ultimi: string[] = []
+  for (let m = mesePrima(oggi.slice(0, 7)); ultimi.length < 12; m = mesePrima(m)) ultimi.push(m)
+  const segni = dati ? segniDelConto(ultimi.map(dati.di), dati.saldi) : []
+  return { conto, letti, oggi, dati, segni }
+}
+type Banca = ReturnType<typeof useBanca>
+
+function SegniDelConto({ segni }: { segni: Banca['segni'] }) {
+  if (!segni.length) return null
+  return (
+    <div className="row" style={{ gap: 6, flexWrap: 'wrap' }} aria-label="Il conto con la banca">
+      {segni.slice(0, SEGNI_VISTI).map((s) => (
+        <span key={s.mese} className="sg-segno-regola" data-tono={s.tono}>{meseInLettere(s.mese).toUpperCase()}: {STATI[s.stato].testo.toUpperCase()}</span>
+      ))}
+      {segni.length > SEGNI_VISTI && <span className="sg-sotto">+ altri {segni.length - SEGNI_VISTI}</span>}
+    </div>
+  )
+}
+
+/**
+ * IL CONTO CON LA BANCA: ogni mese il Conto Corrente dell'app contro il saldo dell'estratto BancoPosta, e le righe
+ * che spiegano la differenza (`quadraturaBanca.ts`). La vede chi vede CONTABILITÀ: è l'amministrazione, come nel database.
+ */
+function ContoConLaBanca({ d, b, righe, fai, onApri, onImportazioni }: { d: DatiSegreteria; b: Banca; righe: RigaMovimento[]; fai: Fai; onApri: (id: string) => void; onImportazioni?: () => void }) {
+  const { conto, letti, oggi, dati } = b
+  const ultimoFinito = mesePrima(oggi.slice(0, 7))
+  const [mese, setMese] = useState(ultimoFinito)
+  const [anno, setAnno] = useState(Number(ultimoFinito.slice(0, 4)))
+  if (letti.guaio) return <Guaio testo={letti.guaio} />
+  if (!letti.dato) return <p className="sg-sotto">Sto leggendo il conto con la banca…</p>
+  if (!dati || !conto) return <Guaio testo={SENZA_SALDO_BANCA} />
+  const primoAnno = Math.min(Number(ultimoFinito.slice(0, 4)), ...dati.saldi.map((s) => Number(s.mese.slice(0, 4))), ...dati.banca.map((x) => Number(x.data.slice(0, 4))))
+  const ultimoAnno = Number(oggi.slice(0, 4))
+  const mesi = Array.from({ length: 12 }, (_, i) => `${anno}-${String(i + 1).padStart(2, '0')}`)
+  return (
+    <section aria-label="Il conto con la banca" className="sg-riquadro">
+      <div className="row" style={{ gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+        <span className="sg-riquadro-titolo ob">IL CONTO CON LA BANCA</span>
+        <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+          <button type="button" className="sg-btn sg-btn-linea" aria-label="L’anno prima" disabled={anno <= primoAnno} onClick={() => setAnno(anno - 1)}>‹</button>
+          <span className="num" style={{ fontWeight: 700, minWidth: 48, textAlign: 'center' }}>{anno}</span>
+          <button type="button" className="sg-btn sg-btn-linea" aria-label="L’anno dopo" disabled={anno >= ultimoAnno} onClick={() => setAnno(anno + 1)}>›</button>
+        </div>
+      </div>
+      <span className="sg-sotto">Ogni mese il saldo del Conto Corrente qui contro il saldo finale dell’estratto BancoPosta. Scegli un mese per vedere le righe che non tornano.</span>
+      <div role="group" aria-label={`I mesi del ${anno}`} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(112px, 1fr))', gap: 8 }}>
+        {mesi.map((m) => {
+          const q = dati.di(m)
+          const s = STATI[q.stato]
+          const testo = q.stato === 'non torna' && q.differenza !== null ? soldiConSegno(q.differenza) : s.testo
+          return (
+            <button
+              key={m}
+              type="button"
+              aria-pressed={m === mese}
+              aria-label={`${meseInLettere(m)}: ${q.stato === 'non torna' ? `non torna di ${testo}` : s.testo}`}
+              onClick={() => setMese(m)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, padding: '10px 12px', textAlign: 'left', background: m === mese ? 'var(--tinta-neutro)' : 'var(--surface)', border: `${m === mese ? 2 : 1}px solid ${m === mese ? 'var(--sec)' : 'var(--line-soft)'}`, borderRadius: 'inherit', cursor: 'pointer', font: 'inherit', color: 'inherit' }}
+            >
+              <span className="sg-etichetta">{meseCorto(m)}</span>
+              <span className="num" style={{ fontSize: 13, fontWeight: 600, color: s.tono ? COLORE[s.tono] : 'var(--sec)' }}>{s.tono ? SIMBOLO[s.tono] : ''}{testo}</span>
+            </button>
+          )
+        })}
+      </div>
+      {mese.startsWith(String(anno)) && <MeseConLaBanca key={mese} d={d} q={dati.di(mese)} saldi={dati.saldi} banca={dati.banca} righe={righe} contoId={conto.id} oggi={oggi} fai={fai} onRileggi={() => void letti.ricarica()} onApri={onApri} onImportazioni={onImportazioni} />}
+    </section>
+  )
+}
+
+function MeseConLaBanca({ d, q, saldi, banca, righe, contoId, oggi, fai, onRileggi, onApri, onImportazioni }: { d: DatiSegreteria; q: Quadratura; saldi: SaldoBanca[]; banca: { data: string }[]; righe: RigaMovimento[]; contoId: string; oggi: string; fai: Fai; onRileggi: () => void; onApri: (id: string) => void; onImportazioni?: () => void }) {
+  const { mese, differenza } = q
+  const saldo = saldi.find((s) => s.mese === mese) ?? null
+  const [scrivo, setScrivo] = useState(false)
+  const [vediDaClassificare, setVediDaClassificare] = useState(false)
+  const nome = meseInLettere(mese)
+  const bancaDelMese = banca.filter((x) => x.data.startsWith(mese)).map((x) => x.data).sort()
+  const r = riepilogoDifferenza(q, saldo)
+  const motivo = cosaNonVaVerifica(q)
+  const futuro = mese > oggi.slice(0, 7)
+  const daClassificare = righe.filter((x) => !x.annullato && x.cassaId === contoId && x.data.startsWith(mese) && x.voce === VOCE_DA_CLASSIFICARE)
+  const rigaApp = (x: { riga: RigaApp; causa: string | null }) => ({ chiave: x.riga.id, data: x.riga.data, descrizione: x.riga.descrizione, importo: firmato(x.riga), nota: x.causa ?? 'nessuna riga simile in banca', azione: { testo: 'Apri ›', fai: () => onApri(x.riga.id) } })
+  return (
+    <div className="stack" style={{ gap: 14, borderTop: '1px solid var(--line-soft)', paddingTop: 14 }}>
+      <span className="sg-riquadro-titolo ob">{nome.toUpperCase()}</span>
+      <div className="sg-saldi" role="group" aria-label={`Il conto di ${nome}`}>
+        <Saldo nome={`Nell’app · ${ultimoGiorno(mese)}`} icona={null} valore={soldiConSegno(q.app.saldoFinale)} sotto={[`inizio ${soldiConSegno(q.app.saldoIniziale)}`, `+ entrate ${soldi(q.app.entrate)}`, `− uscite ${soldi(q.app.uscite)}`]} />
+        <Saldo nome={`In banca · ${ultimoGiorno(mese)}`} icona={null} valore={saldo ? soldiConSegno(saldo.saldoFinale) : '—'} sotto={[saldo ? `dall’estratto di ${nome}` : 'saldo da scrivere']} />
+        <Saldo
+          nome="Differenza"
+          icona={null}
+          valore={differenza === null ? '—' : soldiConSegno(differenza)}
+          sotto={[differenza === null ? 'manca il saldo della banca' : differenza > 0 ? `nell’app ci sono ${soldi(differenza)} in più che in banca` : differenza < 0 ? `in banca ci sono ${soldi(-differenza)} in più che nell’app` : 'il conto torna con la banca']}
+        />
+      </div>
+      {!scrivo && (
+        <div>
+          <Tasto disabled={futuro} onClick={() => setScrivo(true)}>{saldo ? 'Cambia il saldo dell’estratto' : 'Scrivi il saldo dell’estratto'}</Tasto>
+          {futuro && <span className="sg-sotto" style={{ display: 'block', paddingTop: 6 }}>{nome} non è ancora cominciato.</span>}
+        </div>
+      )}
+      {scrivo && <InVista><ScriviSaldoBanca d={d} mese={mese} saldo={saldo} saldi={saldi} oggi={oggi} fai={fai} onFatto={() => { setScrivo(false); onRileggi() }} onChiudi={() => setScrivo(false)} /></InVista>}
+      {q.avvisi.map((a) => (
+        <div key={a.tipo} role="status" style={{ background: 'var(--tinta-giallo)', borderLeft: '4px solid var(--giallo-testo)', padding: '10px 14px', fontSize: 14 }}>{a.testo}</div>
+      ))}
+      {daClassificare.length > 0 && (
+        <div role="status" style={{ background: 'var(--tinta-giallo)', borderLeft: '4px solid var(--giallo-testo)', padding: '10px 14px', fontSize: 14 }} className="stack">
+          <span>{daClassificare.length === 1 ? 'C’è 1 riga' : `Ci sono ${daClassificare.length} righe`} «Da classificare» in {nome}: dagli una voce prima di segnare il mese verificato.</span>
+          <div><button type="button" className="sg-link" onClick={() => setVediDaClassificare(!vediDaClassificare)}>{vediDaClassificare ? 'Nascondi' : `Vedi ${daClassificare.length === 1 ? 'la riga' : `le ${daClassificare.length} righe`}`}</button></div>
+          {vediDaClassificare && <RigheBanca titolo="DA CLASSIFICARE" righe={daClassificare.map((x) => ({ chiave: x.id, data: x.data, descrizione: x.descrizione, importo: x.tipo === 'uscita' ? -x.importo : x.importo, nota: null, azione: { testo: 'Apri ›', fai: () => onApri(x.id) } }))} />}
+        </div>
+      )}
+      {bancaDelMese.length > 0 ? (
+        <span className="sg-sotto">CSV della banca importato: {bancaDelMese.length === 1 ? '1 riga' : `${bancaDelMese.length} righe`} dal {dataRicevuta(bancaDelMese[0])} al {dataRicevuta(bancaDelMese[bancaDelMese.length - 1])} ✓</span>
+      ) : (
+        !futuro && q.stato !== 'non ancora finito' && (
+          <div className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 14 }}>Mancano le righe della banca di {nome}: scarica la «Lista movimenti» del mese da BancoPosta e importala.</span>
+            {onImportazioni && <Tasto onClick={onImportazioni}>Importa</Tasto>}
+          </div>
+        )
+      )}
+      {r && differenza !== 0 && (
+        <div className="stack" style={{ gap: 4 }} aria-label="Da dove viene la differenza">
+          <span className="sg-etichetta">DA DOVE VIENE LA DIFFERENZA</span>
+          {([
+            ['Righe nell’app che in banca non ci sono', r.soloApp],
+            ['Righe in banca che nell’app non ci sono', r.soloBanca],
+            ['Saldo iniziale diverso', r.inizioDiverso],
+            ['Righe a cavallo con l’altro mese', r.altroMese],
+            ['Non spiegato dalle righe', r.nonSpiegato],
+          ] as const).filter(([, v]) => v !== 0).map(([testo, v]) => (
+            <div key={testo} className="row" style={{ gap: 12, justifyContent: 'space-between', fontSize: 14, maxWidth: 520 }}>
+              <span>{testo}</span>
+              <span className="num">{v > 0 ? '+ ' : ''}{soldiConSegno(v)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {q.soloApp && q.soloApp.length > 0 && <RigheBanca titolo={`NELL’APP, NON IN BANCA · ${q.soloApp.length}`} righe={q.soloApp.map(rigaApp)} />}
+      {q.soloBanca && q.soloBanca.length > 0 && (
+        <RigheBanca
+          titolo={`IN BANCA, NON NELL’APP · ${q.soloBanca.length}`}
+          righe={q.soloBanca.map((x) => ({ chiave: x.riga.chiave, data: x.riga.data, descrizione: x.riga.descrizione, importo: firmato(x.riga), nota: x.causa ?? 'nessuna riga simile nell’app', azione: onImportazioni ? { testo: 'Registra ›', fai: onImportazioni } : null }))}
+        />
+      )}
+      {q.dataDiversa && q.dataDiversa.length > 0 && (
+        <RigheBanca
+          titolo={`CON LA DATA DIVERSA · ${q.dataDiversa.length} · NON MANCANO`}
+          righe={q.dataDiversa.map((c) => ({ chiave: c.app.id, data: c.app.data, descrizione: c.app.descrizione, importo: firmato(c.app), nota: `in banca il ${dataRicevuta(c.banca.data)}`, azione: { testo: 'Apri ›', fai: () => onApri(c.app.id) } }))}
+        />
+      )}
+      {q.abbinate && q.abbinate.length > 0 && (
+        <RigheBanca
+          titolo={`ABBINATE · ${q.abbinate.length === 1 ? '1 RIGA' : `${q.abbinate.length} RIGHE`}`}
+          sotto="Le righe che ci sono nell’app e in banca, con lo stesso importo entro due giorni: vanno bene così."
+          chiusa
+          righe={q.abbinate.map((c) => ({ chiave: c.app.id, data: c.app.data, descrizione: c.app.descrizione, importo: firmato(c.app), nota: null, azione: { testo: 'Apri ›', fai: () => onApri(c.app.id) } }))}
+        />
+      )}
+      {saldo?.verificatoIl ? (
+        <span className="sg-sotto" style={{ color: q.stato === 'verificato' ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}>
+          {q.stato === 'verificato' ? '✓ Verificato' : '✕ Verificato, ma poi è cambiata una riga del mese: ricontrolla e segnalo di nuovo'} · {saldo.verificatoDa ?? '—'}, {dataRicevuta(saldo.verificatoIl.slice(0, 10))}
+        </span>
+      ) : null}
+      {q.stato !== 'verificato' && q.stato !== 'non ancora finito' && (
+        <div>
+          <Tasto tono="pieno" disabled={!!motivo} onClick={() => void fai(() => d.verificaMeseBanca(mese, improntaMese(righe, contoId, mese)), `${nome} è segnato come verificato`, onRileggi)}>
+            Segna {nome} come verificato
+          </Tasto>
+          <span className="sg-sotto" style={{ display: 'block', paddingTop: 6 }}>{motivo ?? 'Resta scritto chi l’ha verificato e quando. Se poi cambia una riga del mese, qui lo vedi.'}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+type RigaDaMostrare = { chiave: string; data: string; descrizione: string; importo: number; nota: string | null; azione: { testo: string; fai: () => void } | null }
+
+/** Una lista di righe del mese: data, descrizione, importo col segno, cosa può essere e cosa farne. Lunga si apre a richiesta. */
+function RigheBanca({ titolo, sotto, righe, chiusa }: { titolo: string; sotto?: string; righe: RigaDaMostrare[]; chiusa?: boolean }) {
+  const [aperta, setAperta] = useState(!chiusa)
+  const [viste, setViste] = useState(RIGHE_VISTE * 4)
+  return (
+    <div className="stack" style={{ gap: 6 }}>
+      <div className="row" style={{ gap: 12, alignItems: 'baseline', flexWrap: 'wrap' }}>
+        <span className="sg-etichetta">{titolo}</span>
+        {chiusa && <button type="button" className="sg-link" aria-expanded={aperta} onClick={() => setAperta(!aperta)}>{aperta ? 'Nascondi' : 'Mostra'}</button>}
+      </div>
+      {sotto && <span className="sg-sotto">{sotto}</span>}
+      {aperta && (
+        <>
+          <ul className="stack" style={{ gap: 0, listStyle: 'none', margin: 0, padding: 0 }}>
+            {righe.slice(0, viste).map((x) => (
+              <li key={x.chiave} className="row" style={{ gap: 12, columnGap: 16, alignItems: 'baseline', flexWrap: 'wrap', padding: '8px 0', borderBottom: '1px solid var(--line-soft)', fontSize: 14 }}>
+                <span className="num" style={{ minWidth: 84 }}>{dataRicevuta(x.data)}</span>
+                <span style={{ flex: '1 1 220px', minWidth: 0, overflowWrap: 'anywhere' }}>{x.descrizione}</span>
+                <span className="num" style={{ fontWeight: 600, whiteSpace: 'nowrap', color: x.importo < 0 ? 'var(--rosso-testo)' : undefined }}>{x.importo > 0 ? '+ ' : ''}{soldiConSegno(x.importo)}</span>
+                {x.nota && <span className="sg-segno-regola" data-tono="giallo" style={{ whiteSpace: 'normal' }}>{x.nota}</span>}
+                {x.azione && <button type="button" className="sg-link" onClick={x.azione.fai}>{x.azione.testo}</button>}
+              </li>
+            ))}
+          </ul>
+          {righe.length > viste && <div><button type="button" className="sg-link" onClick={() => setViste(righe.length)}>… altre {righe.length - viste}</button></div>}
+        </>
+      )}
+    </div>
+  )
+}
+
+/** I quattro numeri del riepilogo dell'estratto, scritti a mano: il database rifiuta quelli che non tornano fra loro. */
+function ScriviSaldoBanca({ d, mese, saldo, saldi, oggi, fai, onFatto, onChiudi }: { d: DatiSegreteria; mese: string; saldo: SaldoBanca | null; saldi: SaldoBanca[]; oggi: string; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
+  const proposto = saldo ? null : saldoInizialeProposto(saldi, mese)
+  const prima = {
+    iniziale: saldo ? conSegno(saldo.saldoIniziale) : proposto !== null ? conSegno(proposto) : '',
+    finale: saldo ? conSegno(saldo.saldoFinale) : '',
+    entrate: saldo ? euro(saldo.entrate) : '',
+    uscite: saldo ? euro(saldo.uscite) : '',
+  }
+  const [t, setT] = useState(prima)
+  const nome = meseInLettere(mese)
+  useBozza(JSON.stringify(t) !== JSON.stringify(prima), `Il saldo dell’estratto di ${nome}`)
+  const c = { iniziale: centesimiConSegno(t.iniziale), finale: centesimiConSegno(t.finale), entrate: centesimiConSegno(t.entrate), uscite: centesimiConSegno(t.uscite) }
+  const vuoto = Object.values(t).some((x) => !x.trim())
+  const scrittoMale = Object.entries(t).some(([k, x]) => x.trim() && c[k as keyof typeof c] === null)
+  const s: SaldoBanca | null = c.iniziale !== null && c.finale !== null && c.entrate !== null && c.uscite !== null ? { mese, saldoIniziale: c.iniziale, entrate: c.entrate, uscite: c.uscite, saldoFinale: c.finale } : null
+  const guaio = scrittoMale ? 'Scrivi gli importi come nell’estratto, per esempio 1.234,56 (con il meno davanti se il saldo è sotto zero).' : s ? cosaNonVaSaldoBanca(s, oggi) : null
+  const campo = (k: keyof typeof t, etichetta: string, nota?: string) => (
+    <Campo id={`banca-${k}`} etichetta={etichetta}>
+      <input id={`banca-${k}`} className="sg-campo" inputMode="decimal" value={t[k]} onChange={(e) => setT({ ...t, [k]: e.target.value })} aria-invalid={(!!guaio && !!t[k].trim()) || undefined} />
+      {nota && <span className="sg-sotto">{nota}</span>}
+    </Campo>
+  )
+  return (
+    <section aria-label={`Il saldo dell’estratto di ${nome}`} className="sg-riquadro">
+      <span className="sg-riquadro-titolo ob">ESTRATTO DI {nome.toUpperCase()}</span>
+      <span className="sg-sotto">Copia i quattro numeri dal riepilogo dell’estratto BancoPosta di {nome}.</span>
+      <div className="sg-due sg-scheda-campi">
+        {campo('iniziale', 'SALDO INIZIALE', proposto !== null ? `dal finale di ${meseInLettere(mesePrima(mese))}` : undefined)}
+        {campo('finale', 'SALDO FINALE')}
+        {campo('entrate', 'ENTRATE')}
+        {campo('uscite', 'USCITE')}
+      </div>
+      {guaio && <div role="alert" style={{ background: 'var(--tinta-rosso)', borderLeft: '4px solid var(--rosso-testo)', padding: '10px 14px', fontSize: 14 }}>{guaio}</div>}
+      {saldo?.verificatoIl && <span className="sg-sotto">Salvando, {nome} torna da verificare.</span>}
+      <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+        <Tasto onClick={onChiudi}>Annulla</Tasto>
+        <Tasto tono="pieno" disabled={vuoto || !!guaio || !s} onClick={() => s && void fai(() => d.scriviSaldoBanca(s), 'Saldo dell’estratto salvato', onFatto)}>Salva il saldo</Tasto>
+      </div>
+    </section>
   )
 }
 
@@ -1432,7 +1741,7 @@ function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: {
   )
 }
 
-function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiudi, nonSiChiude }: { d: DatiSegreteria; cassa: Cassa; righe: RigaMovimento[]; chiusura?: ChiusuraCassa; conto?: { entrate: number; uscite: number; residuo: number }; fai: Fai; onCambiato: () => void; onChiudi?: () => void; nonSiChiude?: string }) {
+function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiudi, nonSiChiude, segni }: { d: DatiSegreteria; cassa: Cassa; righe: RigaMovimento[]; chiusura?: ChiusuraCassa; conto?: { entrate: number; uscite: number; residuo: number }; fai: Fai; onCambiato: () => void; onChiudi?: () => void; nonSiChiude?: string; segni?: ReactNode }) {
   const [saldo, setSaldo] = useState(euro(cassa.saldoIniziale))
   const [dal, setDal] = useState(cassa.dal ?? '')
   const cent = centesimi(saldo)
@@ -1447,6 +1756,7 @@ function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiud
         <span className="num" style={{ fontSize: 40, fontWeight: 700, whiteSpace: 'nowrap' }}>{soldiConSegno(conto?.residuo ?? 0)}</span>
       </div>
       <span className="sg-sotto">entrate {soldi(conto?.entrate ?? 0)} · uscite {soldi(conto?.uscite ?? 0)}</span>
+      {segni}
       {chiusura && <span className="sg-sotto">Ultima chiusura: {dataRicevuta(chiusura.data)} · {chiusura.chiusaDa ?? '—'}</span>}
       {onChiudi && (
         <div>
