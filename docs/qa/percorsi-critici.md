@@ -142,9 +142,6 @@ quando arriva la prova.
   titolare (DA FARE).
 - RPC del client `pagaQuota`, `pagaCorso`, `statoCorso`, `chiPagaCorsi` in
   `prova-iscritto-supabase.mjs` (DA FARE).
-- Compensi: `tenuti` in `anagraficaDi` (IBAN e province), `cosaNonVaLettera`,
-  `lettereDellaScheda` con `sostituitaIl`, il tetto di 100.000 € in
-  `paga_compensi`, `bastaUno` in `segreteriaSupabase.ts`.
 - «Vince il più recente» in `unisci_persone` e `segreteriaProva.ts`.
 - Certificati: il lucchetto del tetto con due invii insieme;
   `chiCertificatiRicevuti`.
