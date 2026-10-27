@@ -414,6 +414,8 @@ select atteso('un movimento già di Satispay non si copre: la riga entra nuova',
 select atteso('…nel Conto Corrente, da classificare',
   (select concat_ws('|', m.tipo, m.data, m.importo, c.nome, v.nome, m.descrizione) from movimenti m join casse c on c.id = m.cassa_id join voci_contabili v on v.id = m.voce_id where m.origine_import = 'banca:k2'),
   'entrata|2026-10-14|1250|Conto Corrente|Da classificare|Da Mario BONIFICO');
+select atteso('anche dritto sulla tabella, un movimento di Satispay non prende il segno della banca',
+  left(esito(format('update movimenti set banca_chiave = %L where id = %L', 'banca:dritta', :'m2')), 5), '23514');
 select atteso('una seconda riga della banca sullo stesso movimento: entra nuova', copre('banca:k3', :'m1') || ' ' || stato_banca('banca:k3') || ' ' || chiave_di(:'m1'), 'ok 0 coperto, 1 scritto banca:k1');
 select atteso('un altro importo: entra nuova', copre('banca:k4', :'m3', 999) || ' ' || stato_banca('banca:k4') || ' ' || chiave_di(:'m3'), 'ok 0 coperto, 1 scritto nessuna');
 select atteso('un movimento che non c''è: entra nuova', copre('banca:k5', 'aaaaaaaa-9999-0000-0000-000000000000') || ' ' || stato_banca('banca:k5'), 'ok 0 coperto, 1 scritto');
