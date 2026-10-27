@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.222.4 — 27 ottobre 2026
+
+### Risolto
+
+- La segreteria non riceve più l'avviso «pagamento senza richiesta» per le quote pagate dal telefono
+
 ## 0.222.3 — 27 ottobre 2026
 
 ### Risolto
