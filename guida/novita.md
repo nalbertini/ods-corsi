@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.223.0 — 27 ottobre 2026
+
+### Novità
+
+- Ogni mese vedi se il Conto Corrente torna con l'estratto della banca
+
 ## 0.222.5 — 27 ottobre 2026
 
 ### Risolto
