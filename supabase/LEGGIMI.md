@@ -353,7 +353,7 @@ va lanciato questo file; caricare un certificato non funziona, e il certificato
 resta su carta come prima. Va lanciato prima di pubblicare l'app che non
 stampa più il certificato.
 
-Per la sola email basta `99-email-unica.sql` (dopo `95-certificato-piu-lontano.sql`, quindi anche dopo `45` e `76`), che non chiede di rilanciare `06-iscrizioni.sql`. **Prima di lanciarlo** si guardano gli indirizzi che lascia da parte, cioè gli iscritti con due email diverse (tiene quella di contatto): la query è in testa al file. Finché non c'è, l'app che manda una sola email non riesce a salvare due iscritti con lo stesso indirizzo e dice che manca l'aggiornamento: va lanciato prima di pubblicare. Chi rilancia `45`, `53`, `90`, `95` o `76` rilancia poi anche `99`.
+Per la sola email basta `99-email-unica.sql` (dopo `95-certificato-piu-lontano.sql`, quindi anche dopo `45` e `76`), che non chiede di rilanciare `06-iscrizioni.sql`. **Prima di lanciarlo** si guardano gli indirizzi che lascia da parte, cioè gli iscritti con due email diverse e senza account (tiene quella di contatto; chi con la sua email ha un account la tiene): la query è in testa al file. Finché non c'è, l'app che manda una sola email non riesce a salvare due iscritti con lo stesso indirizzo e dice che manca l'aggiornamento: va lanciato prima di pubblicare. Chi rilancia `45`, `53`, `90`, `95` o `76` rilancia poi anche `99`.
 
 Per segnare il collega che insegnava con te basta `46-istruttore-collega.sql`
 (dopo `23-istruttori-dalle-lezioni.sql`), che non chiede di rilanciare

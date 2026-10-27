@@ -15,7 +15,11 @@
 --         dove arrivava la posta della famiglia; chi ha un accesso tiene quella
 --         di accesso. L'altra NON si conserva (per l'iscritto è quella di
 --         accesso, che non gli serve): la query qui sotto le elenca, da
---         guardare e copiare PRIMA di lanciare il file.
+--         guardare e copiare PRIMA di lanciare il file. Fa eccezione l'iscritto
+--         che con la sua email di accesso ha già un account: la tiene, e il
+--         contatto resta in `email_contatto`: per lui il rilancio dopo che la
+--         segreteria ha cambiato l'email non è innocuo, e prima di rilanciare si
+--         copia il contatto dove serve e si azzera.
 --   · `email_contatto` non si toglie: si toglie in un file successivo. Dopo la
 --     migrazione i suoi valori già portati in `email` si azzerano: così
 --     rilanciare il file non rimette un'email vecchia al posto di una nuova.
@@ -34,7 +38,8 @@
 --   select nome, cognome, email as accesso, email_contatto as contatto
 --     from persone
 --    where ruolo = 'iscritto' and email is not null and email_contatto is not null
---      and email <> email_contatto;
+--      and email <> email_contatto
+--      and not exists (select 1 from auth.users u where lower(u.email) = lower(persone.email::text));
 -- ---------------------------------------------------------------------------
 
 -- Prima delle update: il vecchio indice valeva su tutte le righe, e due
@@ -42,9 +47,12 @@
 drop index if exists persone_email_unica;
 
 -- Un iscritto con le due email diverse tiene il contatto: dove scriviamo alla
--- famiglia. Senza `email_contatto` il rilancio non rifà niente.
+-- famiglia. Senza `email_contatto` il rilancio non rifà niente. Non se con
+-- quell'email ha un account (101): è la sua porta nell'app, e cambiarla gli
+-- toglie l'accesso al primo giro; il suo contatto resta in `email_contatto`.
 update persone set email = email_contatto
- where ruolo = 'iscritto' and email_contatto is not null and email is distinct from email_contatto;
+ where ruolo = 'iscritto' and email_contatto is not null and email is distinct from email_contatto
+   and not exists (select 1 from auth.users u where lower(u.email) = lower(persone.email::text));
 
 -- Chi ha un accesso e solo il contatto, lo tiene come email se è libero fra
 -- gli accessi (e il primo, se due lo chiedono).
@@ -62,7 +70,7 @@ update persone set email = email_contatto
 -- Quel che è passato in `email` non serve più nella vecchia colonna: un
 -- rilancio dopo la pubblicazione non deve rimettere un'email vecchia.
 update persone set email_contatto = null
- where email_contatto is not null and (ruolo = 'iscritto' or email = email_contatto);
+ where email_contatto is not null and email = email_contatto;
 
 create unique index persone_email_unica on persone (email) where email is not null and ruolo <> 'iscritto';
 

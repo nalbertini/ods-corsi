@@ -112,8 +112,6 @@ prova tiene stanno in «Scoperti», in fondo.
 Regole che si possono rompere senza che una prova cada. Si toglie la riga
 quando arriva la prova.
 
-- **GRAVE** — `99-email-unica.sql` perde l'email di accesso, ed
-  `email-unica.sql` §4 tiene la perdita come attesa.
 - **GRAVE** — Stesso movimento a mano per un pagamento Satispay e per una riga
   della banca: nessuna prova lo impedisce, né in app né nel database.
 - **GRAVE** — Ricevuta da un pagamento a mano: un `pagamentoId` perso per
