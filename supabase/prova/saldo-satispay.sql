@@ -231,8 +231,44 @@ reset role;
 delete from pagamenti_satispay where saldo_di in (rid(10), rid(11));
 delete from ricevute where id in (rid(10), rid(11), rid(12));
 
+-- Cosa si toglie dal conto: solo il pagato di quella persona, su quella ricevuta, non ancora in una ricevuta.
+-- Ogni riga qui sotto, se contasse, farebbe scendere l'importo da 5000.
+select rv(13, pid(8), 0), rv(14, pid(8), 0);
+insert into pagamenti_satispay (chi, importo, stato, persona_id, saldo_di, pagato_il, ricevuta_id) values
+  ('Fam Nilde', 2000, 'pagato', pid(8), rid(13), now(), rid(13)),    -- già entrato in una ricevuta: lo conta la ricevuta
+  ('Fam Luca', 1000, 'pagato', pid(3), rid(13), now(), null),        -- di un'altra persona
+  ('Fam Nilde', 700, 'pagato', pid(8), rid(14), now(), null),        -- di un'altra ricevuta
+  ('Fam Nilde', 300, 'non-andato', pid(8), rid(13), null, null);     -- mai arrivato
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select atteso('il pagato già in una ricevuta, di un altro, di un''altra ricevuta o non andato non si toglie', riga($$select satispay_prepara_saldo(pid(8), rid(13))->>'importo'$$), '5000');
+reset role;
+delete from pagamenti_satispay where saldo_di in (rid(13), rid(14));
+insert into pagamenti_satispay (chi, importo, stato, persona_id, saldo_di, pagato_il) values ('Fam Nilde', 2000, 'pagato', pid(8), rid(13), now());
+set role authenticated;
+select atteso('…mentre il pagato suo, su quella ricevuta, ancora fuori dalle ricevute sì', riga($$select satispay_prepara_saldo(pid(8), rid(13))->>'importo'$$), '3000');
+reset role;
+delete from pagamenti_satispay where saldo_di in (rid(13), rid(14));
+delete from ricevute where id in (rid(13), rid(14));
+
+-- I confini della quota (dal e al sono inclusi) e quel che pesa sulla ricevuta.
+select rv(15, pid(8), 0, dal => current_date, al => current_date), rv(16, pid(8), 0, dal => current_date - 30, al => current_date - 1),
+       rv(17, pid(8), 0, dal => current_date + 1, al => current_date + 300), rv(18, pid(8), 0), rv(19, pid(8), 0);
+update ricevute set anticipo = 2000 where id = rid(18);
+update ricevute set voci = jsonb_set(jsonb_set(voci, '{0,quantita}', '2'), '{0,pagamenti}', '[{"data":"2026-01-01","importo":3000,"metodo":"Contanti"}]'), totale = 10000, pagato = 3000 where id = rid(19);
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select atteso('una quota che comincia e finisce oggi vale oggi', riga($$select satispay_prepara_saldo(pid(8), rid(15))->>'importo'$$), '5000');
+select atteso('una quota finita ieri no', codice($$select satispay_prepara_saldo(pid(8), rid(16))$$), '22023');
+select atteso('una quota che comincia domani no', codice($$select satispay_prepara_saldo(pid(8), rid(17))$$), '22023');
+select atteso('un anticipo già dato pesa sulla ricevuta (5000 − 2000)', riga($$select satispay_prepara_saldo(pid(8), rid(18))->>'importo'$$), '3000');
+select atteso('due quote da 5000 con 3000 già dati: manca il resto (10000 − 3000)', riga($$select satispay_prepara_saldo(pid(8), rid(19))->>'importo'$$), '7000');
+reset role;
+delete from pagamenti_satispay where saldo_di in (rid(15), rid(18), rid(19));
+delete from ricevute where id in (rid(15), rid(16), rid(17), rid(18), rid(19));
+
 \echo ''
-\echo '--- 6. nessuno legge i pagamenti, e lo stato si legge con la funzione ---'
+\echo '--- 6.nessuno legge i pagamenti, e lo stato si legge con la funzione ---'
 select chi('33333333-3333-3333-3333-333333333333');
 set role authenticated;
 select atteso('l''iscritto non legge pagamenti_satispay (anche se c''è il suo)', riga($$select count(*)::text from pagamenti_satispay$$), '0');

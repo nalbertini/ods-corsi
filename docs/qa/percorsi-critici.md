@@ -13,9 +13,9 @@ prova tiene stanno in «Scoperti», in fondo.
 
 | Percorso | Chi | Se cade | Prove | Collaudo |
 | --- | --- | --- | --- | --- |
-| Quota associativa con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo diverso dal listino, quota pagata due volte o per un altro | `prova:quota-satispay`, `scripts/prova-iscritto-supabase.mjs`, `quota-satispay.sql` | sì |
-| Corso con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo sbagliato, corso pagato due volte o per un altro | `prova:corso-satispay`, `scripts/prova-iscritto-supabase.mjs`, `corso-satispay.sql` | sì |
-| Saldo della quota con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | resto calcolato male o pagato due volte, nucleo sbagliato | `prova:saldo-satispay`, `prova:satispay`, `saldo-satispay.sql` | sì |
+| Quota associativa con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo diverso dal listino, quota pagata due volte o per un altro | `prova:quota-satispay`, `prova:edge`, `scripts/prova-iscritto-supabase.mjs`, `quota-satispay.sql` | sì |
+| Corso con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo sbagliato, corso pagato due volte o per un altro | `prova:corso-satispay`, `prova:edge`, `scripts/prova-iscritto-supabase.mjs`, `corso-satispay.sql` | sì |
+| Saldo della quota con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | resto calcolato male o pagato due volte, nucleo sbagliato | `prova:saldo-satispay`, `prova:satispay`, `prova:edge`, `saldo-satispay.sql` | sì |
 | Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:campi`, `prova:listino`, `prova:moduli`, `prova:fogli-moduli`, `prova:richieste`, `prova:ricevuta`, `prova:avvisi-segreteria`, `iscrizioni.sql`, `listino.sql`, `orari-aperti.sql`, `rls.sql` | sì |
 | Aspetto del modulo di iscrizione | genitore | modulo illeggibile o col colore del sito sbagliato | `prova:iscrizione-sito`, `prova:campi`, `prova:iscrizione-pagina`, `prova:tema`, `prova:iscrizione-passi` | sì |
 | Modulo di iscrizione da tastiera e a 320px | genitore, segreteria | chi usa la tastiera non riesce a iscriversi | `prova:accessibilita-iscrizione` | sì |
@@ -36,9 +36,9 @@ prova tiene stanno in «Scoperti», in fondo.
 | Contanti di un giorno di cassa chiusa | segreteria, amministrazione | chiusura rotta senza che nessuno lo sappia | `prova:contabilita`, `prova:pagamenti`, `ricevuta-cassa-chiusa.sql` | sì |
 | Ricevute e pagamenti | segreteria, amministrazione | quota o ricevuta sbagliata, ricevuta doppia | `prova:ricevuta`, `prova:segreteria`, `prova:pagamenti`, `prova:satispay`, `ricevute.sql`, `satispay.sql` | sì |
 | Corsi da pagare | segreteria | corso scaduto che non si vede, sollecito a chi ha pagato | `prova:dafare`, `prova:corsi-da-pagare`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:scheda`, `prova:sollecito`, `prova:tessere` | sì |
-| Ricevuta per email alla famiglia | segreteria, amministrazione, famiglie | ricevuta all'indirizzo sbagliato o annullata che parte | `prova:ricevute-email`, `prova:cornice-mail`, `prova:avvisi-segreteria`, `ricevute-email.sql` | sì |
+| Ricevuta per email alla famiglia | segreteria, amministrazione, famiglie | ricevuta all'indirizzo sbagliato o annullata che parte | `prova:ricevute-email`, `prova:edge`, `prova:cornice-mail`, `prova:avvisi-segreteria`, `ricevute-email.sql` | sì |
 | Documenti sulla carta intestata | segreteria, amministrazione, genitore | cifra coperta, voci perse fra le pagine | `prova:carta`, `prova:ricevuta`, `prova:compensi`, `prova:bilancio`, `prova:chiusura-pdf`, `prova:ore` | sì |
-| Satispay dal modulo di iscrizione | genitore, segreteria, amministrazione | importo diverso dal listino, pagato perso o doppio | `prova:satispay`, `satispay.sql` | sì |
+| Satispay dal modulo di iscrizione | genitore, segreteria, amministrazione | importo diverso dal listino, pagato perso o doppio | `prova:satispay`, `prova:edge`, `satispay.sql` | sì |
 | Satispay: prima paghi, poi mandi | genitore, segreteria, amministrazione | soldi presi e richiesta che non arriva | `prova:satispay`, `satispay.sql` | sì |
 | Carta dal modulo di iscrizione (PayPal) | genitore, segreteria, amministrazione | soldi senza richiesta, pagato due volte, importo sbagliato, dati della carta | `prova:pagamento-carta`, `prova:satispay`, `prova:csp`, `prova:contabilita`, `carta.sql`, `satispay.sql`, `contabilita.sql` | sì |
 | Scarico automatico Satispay in CONTABILITÀ | amministrazione, segreteria | incasso nella cassa sbagliata, doppio o perso | `prova:satispay-scarico`, `prova:importazioni`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:segreteria`, `satispay-scarico.sql`, `importazioni.sql`, `116-satispay-separato.sql`, `avvisi-scarico-satispay.sql`, `update-con-where.sql` | sì |
@@ -133,10 +133,6 @@ quando arriva la prova.
 - `update-con-where.sql`: il controllo cerca un WHERE dopo l'UPDATE, nello
   stesso `;`. Un UPDATE senza WHERE con una sottoquery che ha il suo WHERE
   (`set x = (select … where …)`) passa (DA FARE).
-- Edge Function `satispay` (quota, corso, saldo) e quella delle ricevute per
-  email: nessuna prova.
-- Saldo Satispay: `least`/`greatest`, `ricevuta_id is null`, `utente_id`, le
-  date `dal`/`al` si possono togliere senza che una prova cada.
 - `quota-satispay.sql`: pagamento `voce='quota'` senza richiesta (DA FARE).
 - `corso-satispay.sql`: paga dal suo telefono, e per un minorenne paga il
   titolare (DA FARE).
