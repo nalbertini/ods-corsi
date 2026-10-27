@@ -3,8 +3,8 @@
 -- per chi ha un accesso (istruttore, segreteria, amministrazione), gli iscritti
 -- possono dividerla; `collega_utente()` lega per email solo il personale; e i
 -- dati dell'email di contatto passano nel campo unico (l'email di accesso di un
--- iscritto con due indirizzi diversi non si conserva: la segreteria la vede
--- prima nell'elenco in testa al file) e rilanciando il file non cambia più niente.
+-- iscritto con due indirizzi diversi non si conserva, salvo che con quella abbia un
+-- account: la segreteria vede gli altri nell'elenco in testa al file) e rilanciando il file non cambia più niente.
 -- Si lancia dopo finto-supabase.sql e i file dello schema.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
@@ -101,13 +101,18 @@ insert into persone (id, nome, cognome, ruolo, email, email_contatto) values
   ('aaaaaaaa-0000-0000-0000-000000000025', 'Fio', 'Sei', 'iscritto', 'fio@esempio.it', 'fio@esempio.it'),
   -- Due fratelli con lo stesso contatto: il vecchio indice unico farebbe fallire il file.
   ('aaaaaaaa-0000-0000-0000-000000000026', 'Gil', 'Sette', 'iscritto', 'gil@esempio.it', 'fratelli@esempio.it'),
-  ('aaaaaaaa-0000-0000-0000-000000000027', 'Ida', 'Sette', 'iscritto', 'ida@esempio.it', 'fratelli@esempio.it');
+  ('aaaaaaaa-0000-0000-0000-000000000027', 'Ida', 'Sette', 'iscritto', 'ida@esempio.it', 'fratelli@esempio.it'),
+  -- Un iscritto con l'account: quell'email è la sua porta nell'app.
+  ('aaaaaaaa-0000-0000-0000-000000000028', 'Hugo', 'Otto', 'iscritto', 'hugo@esempio.it', 'casa.hugo@esempio.it');
+insert into auth.users (id, email) values ('88888888-8888-8888-8888-888888888888', 'hugo@esempio.it');
 \i supabase/99-email-unica.sql
 select atteso('un iscritto con due email diverse tiene quella dove si scrive alla famiglia',
   (select email::text from persone where nome = 'Ada'), 'famiglia@esempio.it');
-select atteso('l''email di accesso dell''iscritto non si conserva (è nell''elenco di controllo)', (select count(*)::text from persone where 'accesso@esempio.it' in (email::text, email_contatto::text)), '0');
+select atteso('l''email di accesso di chi non ha un account non si conserva (è nell''elenco di controllo)', (select count(*)::text from persone where 'accesso@esempio.it' in (email::text, email_contatto::text)), '0');
+select atteso('un iscritto con un account tiene l''email con cui entra', (select email::text from persone where nome = 'Hugo'), 'hugo@esempio.it');
+select atteso('e il contatto resta dov''era, per la segreteria', (select email_contatto::text from persone where nome = 'Hugo'), 'casa.hugo@esempio.it');
 select atteso('due fratelli con lo stesso contatto lo hanno entrambi', (select count(*)::text from persone where nome in ('Gil', 'Ida') and email = 'fratelli@esempio.it'), '2');
-select atteso('il contatto passato non resta nella colonna di prima', (select count(*)::text from persone where ruolo = 'iscritto' and email_contatto is not null), '0');
+select atteso('il contatto passato non resta nella colonna di prima (solo quello di chi tiene l''accesso)', (select string_agg(nome, ',') from persone where ruolo = 'iscritto' and email_contatto is not null), 'Hugo');
 select atteso('un iscritto con solo il contatto lo ha ora come email', (select email::text from persone where nome = 'Bea'), 'solo.contatto@esempio.it');
 select atteso('chi ha un accesso lo tiene, anche se aveva un contatto', (select email::text from persone where nome = 'Cleo'), 'cleo@ods.it');
 select atteso('chi ha un accesso e solo il contatto, se è libero, lo prende', (select email::text from persone where nome = 'Dino'), 'dino.casa@esempio.it');
