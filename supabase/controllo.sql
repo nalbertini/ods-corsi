@@ -595,6 +595,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%ci := array%')),
   ('122-quadratura-banca.sql', 'il saldo dell''estratto della banca mese per mese, per la quadratura del Conto Corrente',
     to_regclass('public.saldo_banca') is not null
-    and exists (select 1 from pg_constraint where conname = 'saldo_banca_torna'))
+    and exists (select 1 from pg_constraint where conname = 'saldo_banca_torna')
+    and exists (select 1 from dentro where nome = 'saldo_banca_chi_verifica' and corpo like '%impronta_verifica := null%'))
 ) as x(file, cosa, c)
 order by file, cosa;
