@@ -197,12 +197,6 @@ quando arriva la prova.
 - Scheda del personale: la conferma di «Togli l’accesso» e il tasto Elimina
   (`accesso` ed `elimina` in `Scheda`, `Personale.tsx`) stanno nel `.tsx`; le
   voci del menù vengono da `vociAltro` e la prova le tiene, la conferma no.
-- **GRAVE** — Gare: togliere un atleta che ha già pagato cancella la sua riga
-  col pagamento (`togli` in `gareDati.ts`, delete su `gare_atleti`).
-  L'incasso della gara scende, il pagamento resta in CONTABILITÀ.
-- Gare: togli, rimetti e incassa di nuovo conta due volte in CONTABILITÀ.
-  Nessuna prova: `gare.sql` toglie solo un atleta non pagato, `prova:gare`
-  non tocca `togli`.
 - Gare: la lista della segreteria con un id gara due volte (warning React di
   chiave doppia): causa non trovata; nessuna prova.
 - Gare: il nome può arrivare a 200 caratteri, il database ne accetta 120: il
