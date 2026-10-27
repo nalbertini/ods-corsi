@@ -83,7 +83,7 @@ import { corsiConImporto } from '../../lib/abbinaMovimenti'
 import { Bilancio } from './Bilancio'
 import { rigaDaSistemare } from '../../lib/bilancio'
 import { ScaricoSatispay } from './ScaricoSatispay'
-import { centesimiConSegno, cosaNonVaSaldoBanca, firmato, cosaNonVaVerifica, improntaMese, meseInLettere, mesePrima, quadratura, riepilogoDifferenza, righeBanca, saldoInizialeProposto, segniDelConto, SENZA_SALDO_BANCA, type Quadratura, type RigaApp, type SaldoBanca, type StatoQuadratura } from '../../lib/quadraturaBanca'
+import { firmato, leggiSaldoBanca, type CampoSaldoBanca, cosaNonVaVerifica, improntaMese, meseInLettere, mesePrima, quadratura, riepilogoDifferenza, righeBanca, saldoInizialeProposto, segniDelConto, SENZA_SALDO_BANCA, type Quadratura, type RigaApp, type SaldoBanca, type StatoQuadratura } from '../../lib/quadraturaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import { commissioneSatispay, NOME_CASSA_SATISPAY, spesaCommissione } from '../../lib/satispayScarico'
 
@@ -221,9 +221,9 @@ function IconaConto({ nome }: { nome: IconaConti | 'frecce' | null }) {
 }
 
 /** Un saldo nella striscia sopra l'elenco: cifra da 28px perché un milione stia in un quarto di riga. */
-function Saldo({ nome, icona, valore, sotto }: { nome: string; icona: IconaConti | null; valore: string; sotto: string[] }) {
+function Saldo({ nome, icona, valore, sotto, rosso }: { nome: string; icona: IconaConti | null; valore: string; sotto: string[]; rosso?: boolean }) {
   return (
-    <div className="sg-saldo">
+    <div className="sg-saldo" style={rosso ? { borderColor: 'var(--rosso-testo)', background: 'var(--tinta-rosso)' } : undefined}>
       <span className="sg-etichetta sg-cella-icona"><IconaConto nome={icona} />{nome.toUpperCase()}</span>
       <span className="num sg-saldo-cifra">{valore}</span>
       <span className="sg-saldo-sotto">{sotto.map((x) => <span key={x}>{x}</span>)}</span>
@@ -1299,7 +1299,6 @@ function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato, onAp
 const STATI: Record<StatoQuadratura, { testo: string; tono: 'verde' | 'rosso' | 'giallo' | null }> = {
   'non ancora finito': { testo: 'Non ancora finito', tono: null },
   'saldo da scrivere': { testo: 'Saldo da scrivere', tono: 'giallo' },
-  'non verificabile': { testo: '—', tono: null },
   'CSV del mese mancante': { testo: 'CSV mancante', tono: 'giallo' },
   verificato: { testo: 'Verificato', tono: 'verde' },
   'cambiato dopo la verifica': { testo: 'Cambiato dopo la verifica', tono: 'rosso' },
@@ -1349,7 +1348,7 @@ type Banca = ReturnType<typeof useBanca>
 function SegniDelConto({ segni }: { segni: Banca['segni'] }) {
   if (!segni.length) return null
   return (
-    <div className="row" style={{ gap: 6, flexWrap: 'wrap' }} aria-label="Il conto con la banca">
+    <div className="row" style={{ gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Il conto con la banca">
       {segni.slice(0, SEGNI_VISTI).map((s) => (
         <span key={s.mese} className="sg-segno-regola" data-tono={s.tono}>{meseInLettere(s.mese).toUpperCase()}: {STATI[s.stato].testo.toUpperCase()}</span>
       ))}
@@ -1370,17 +1369,20 @@ function ContoConLaBanca({ d, b, righe, fai, onApri, onImportazioni }: { d: Dati
   if (letti.guaio) return <Guaio testo={letti.guaio} />
   if (!letti.dato) return <p className="sg-sotto">Sto leggendo il conto con la banca…</p>
   if (!dati || !conto) return <Guaio testo={SENZA_SALDO_BANCA} />
-  const primoAnno = Math.min(Number(ultimoFinito.slice(0, 4)), ...dati.saldi.map((s) => Number(s.mese.slice(0, 4))), ...dati.banca.map((x) => Number(x.data.slice(0, 4))))
+  // reduce e non Math.min(...): gli anni di BancoPosta sono migliaia di righe, troppi argomenti.
+  const primoAnno = [...dati.saldi.map((s) => s.mese), ...dati.banca.map((x) => x.data)].reduce((min, x) => Math.min(min, Number(x.slice(0, 4))), Number(ultimoFinito.slice(0, 4)))
+  // Cambiare mese o anno chiude il saldo che si sta scrivendo: prima si chiede.
+  const vaiA = (f: () => void) => void lasciare().then((si) => si && f())
   const ultimoAnno = Number(oggi.slice(0, 4))
   const mesi = Array.from({ length: 12 }, (_, i) => `${anno}-${String(i + 1).padStart(2, '0')}`)
   return (
-    <section aria-label="Il conto con la banca" className="sg-riquadro">
+    <section aria-label="Il conto con la banca" className="sg-riquadro sg-banca">
       <div className="row" style={{ gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <span className="sg-riquadro-titolo ob">IL CONTO CON LA BANCA</span>
         <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-          <button type="button" className="sg-btn sg-btn-linea" aria-label="L’anno prima" disabled={anno <= primoAnno} onClick={() => setAnno(anno - 1)}>‹</button>
+          <button type="button" className="sg-btn sg-btn-linea" aria-label="L’anno prima" disabled={anno <= primoAnno} onClick={() => vaiA(() => setAnno(anno - 1))}>‹</button>
           <span className="num" style={{ fontWeight: 700, minWidth: 48, textAlign: 'center' }}>{anno}</span>
-          <button type="button" className="sg-btn sg-btn-linea" aria-label="L’anno dopo" disabled={anno >= ultimoAnno} onClick={() => setAnno(anno + 1)}>›</button>
+          <button type="button" className="sg-btn sg-btn-linea" aria-label="L’anno dopo" disabled={anno >= ultimoAnno} onClick={() => vaiA(() => setAnno(anno + 1))}>›</button>
         </div>
       </div>
       <span className="sg-sotto">Ogni mese il saldo del Conto Corrente qui contro il saldo finale dell’estratto BancoPosta. Scegli un mese per vedere le righe che non tornano.</span>
@@ -1395,7 +1397,7 @@ function ContoConLaBanca({ d, b, righe, fai, onApri, onImportazioni }: { d: Dati
               type="button"
               aria-pressed={m === mese}
               aria-label={`${meseInLettere(m)}: ${q.stato === 'non torna' ? `non torna di ${testo}` : s.testo}`}
-              onClick={() => setMese(m)}
+              onClick={() => vaiA(() => setMese(m))}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, padding: '10px 12px', textAlign: 'left', background: m === mese ? 'var(--tinta-neutro)' : 'var(--surface)', border: `${m === mese ? 2 : 1}px solid ${m === mese ? 'var(--sec)' : 'var(--line-soft)'}`, borderRadius: 'inherit', cursor: 'pointer', font: 'inherit', color: 'inherit' }}
             >
               <span className="sg-etichetta">{meseCorto(m)}</span>
@@ -1430,7 +1432,8 @@ function MeseConLaBanca({ d, q, saldi, banca, righe, contoId, oggi, fai, onRileg
         <Saldo
           nome="Differenza"
           icona={null}
-          valore={differenza === null ? '—' : soldiConSegno(differenza)}
+          valore={differenza === null ? '—' : differenza ? `✕ ${soldiConSegno(differenza)}` : soldiConSegno(differenza)}
+          rosso={!!differenza}
           sotto={[differenza === null ? 'manca il saldo della banca' : differenza > 0 ? `nell’app ci sono ${soldi(differenza)} in più che in banca` : differenza < 0 ? `in banca ci sono ${soldi(-differenza)} in più che nell’app` : 'il conto torna con la banca']}
         />
       </div>
@@ -1440,7 +1443,7 @@ function MeseConLaBanca({ d, q, saldi, banca, righe, contoId, oggi, fai, onRileg
           {futuro && <span className="sg-sotto" style={{ display: 'block', paddingTop: 6 }}>{nome} non è ancora cominciato.</span>}
         </div>
       )}
-      {scrivo && <InVista><ScriviSaldoBanca d={d} mese={mese} saldo={saldo} saldi={saldi} oggi={oggi} fai={fai} onFatto={() => { setScrivo(false); onRileggi() }} onChiudi={() => setScrivo(false)} /></InVista>}
+      {scrivo && <InVista><ScriviSaldoBanca d={d} mese={mese} saldo={saldo} saldi={saldi} oggi={oggi} fai={fai} onFatto={() => { setScrivo(false); onRileggi() }} onChiudi={() => void lasciare().then((si) => si && setScrivo(false))} /></InVista>}
       {q.avvisi.map((a) => (
         <div key={a.tipo} role="status" style={{ background: 'var(--tinta-giallo)', borderLeft: '4px solid var(--giallo-testo)', padding: '10px 14px', fontSize: 14 }}>{a.testo}</div>
       ))}
@@ -1506,7 +1509,7 @@ function MeseConLaBanca({ d, q, saldi, banca, righe, contoId, oggi, fai, onRileg
       ) : null}
       {q.stato !== 'verificato' && q.stato !== 'non ancora finito' && (
         <div>
-          <Tasto tono="pieno" disabled={!!motivo} onClick={() => void fai(() => d.verificaMeseBanca(mese, improntaMese(righe, contoId, mese)), `${nome} è segnato come verificato`, onRileggi)}>
+          <Tasto tono="pieno" disabled={!!motivo} onClick={() => void fai(() => d.verificaMeseBanca(q, improntaMese(righe, contoId, mese)), `${nome} è segnato come verificato`, onRileggi)}>
             Segna {nome} come verificato
           </Tasto>
           <span className="sg-sotto" style={{ display: 'block', paddingTop: 6 }}>{motivo ?? 'Resta scritto chi l’ha verificato e quando. Se poi cambia una riga del mese, qui lo vedi.'}</span>
@@ -1561,15 +1564,14 @@ function ScriviSaldoBanca({ d, mese, saldo, saldi, oggi, fai, onFatto, onChiudi 
   const [t, setT] = useState(prima)
   const nome = meseInLettere(mese)
   useBozza(JSON.stringify(t) !== JSON.stringify(prima), `Il saldo dell’estratto di ${nome}`)
-  const c = { iniziale: centesimiConSegno(t.iniziale), finale: centesimiConSegno(t.finale), entrate: centesimiConSegno(t.entrate), uscite: centesimiConSegno(t.uscite) }
+  const { saldo: s, errore: guaio, campi } = leggiSaldoBanca(t, mese, oggi)
   const vuoto = Object.values(t).some((x) => !x.trim())
-  const scrittoMale = Object.entries(t).some(([k, x]) => x.trim() && c[k as keyof typeof c] === null)
-  const s: SaldoBanca | null = c.iniziale !== null && c.finale !== null && c.entrate !== null && c.uscite !== null ? { mese, saldoIniziale: c.iniziale, entrate: c.entrate, uscite: c.uscite, saldoFinale: c.finale } : null
-  const guaio = scrittoMale ? 'Scrivi gli importi come nell’estratto, per esempio 1.234,56 (con il meno davanti se il saldo è sotto zero).' : s ? cosaNonVaSaldoBanca(s, oggi) : null
-  const campo = (k: keyof typeof t, etichetta: string, nota?: string) => (
-    <Campo id={`banca-${k}`} etichetta={etichetta}>
-      <input id={`banca-${k}`} className="sg-campo" inputMode="decimal" value={t[k]} onChange={(e) => setT({ ...t, [k]: e.target.value })} aria-invalid={(!!guaio && !!t[k].trim()) || undefined} />
-      {nota && <span className="sg-sotto">{nota}</span>}
+  // Sapendo quale campo sbaglia, l'errore sta sotto quel campo; se no in un riquadro sotto i quattro.
+  const sulCampo = (k: CampoSaldoBanca) => (guaio && campi.includes(k) ? { testo: guaio, guaio: true } : undefined)
+  const campo = (k: CampoSaldoBanca, etichetta: string, nota?: string) => (
+    <Campo id={`banca-${k}`} etichetta={etichetta} nota={sulCampo(k)} manca={!!sulCampo(k)}>
+      <input id={`banca-${k}`} className="sg-campo" inputMode="decimal" value={t[k]} onChange={(e) => setT({ ...t, [k]: e.target.value })} aria-invalid={(!!guaio && (campi.length ? campi.includes(k) : !!t[k].trim())) || undefined} aria-describedby={sulCampo(k) ? `banca-${k}-nota` : undefined} />
+      {nota && !sulCampo(k) && <span className="sg-sotto">{nota}</span>}
     </Campo>
   )
   return (
@@ -1582,7 +1584,12 @@ function ScriviSaldoBanca({ d, mese, saldo, saldi, oggi, fai, onFatto, onChiudi 
         {campo('entrate', 'ENTRATE')}
         {campo('uscite', 'USCITE')}
       </div>
-      {guaio && <div role="alert" style={{ background: 'var(--tinta-rosso)', borderLeft: '4px solid var(--rosso-testo)', padding: '10px 14px', fontSize: 14 }}>{guaio}</div>}
+      {guaio && !campi.length && (
+        <div role="alert" className="stack" style={{ gap: 4, background: 'var(--tinta-rosso)', borderLeft: '4px solid var(--rosso-testo)', padding: '10px 14px', fontSize: 14 }}>
+          <strong>Il saldo non si può salvare così</strong>
+          {guaio}
+        </div>
+      )}
       {saldo?.verificatoIl && <span className="sg-sotto">Salvando, {nome} torna da verificare.</span>}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         <Tasto onClick={onChiudi}>Annulla</Tasto>

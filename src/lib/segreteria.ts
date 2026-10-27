@@ -2,7 +2,7 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
 import type { Chiusura, ContoChiusura } from './chiusure'
-import type { SaldoBanca } from './quadraturaBanca'
+import type { QuadraturaDaVerificare, SaldoBanca } from './quadraturaBanca'
 import type { CopertoBanca, DatoImportBanca } from './importaBanca'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
@@ -905,8 +905,8 @@ export interface DatiSegreteria {
   saldiBanca(): Promise<SaldoBanca[] | null>
   /** Scrive il saldo di un mese: riscriverlo lo sostituisce e toglie la verifica, perché i numeri sono cambiati. */
   scriviSaldoBanca(s: SaldoBanca): Promise<void>
-  /** Segna verificato un mese con l'impronta dei suoi movimenti: chi verifica lo scrive il database. */
-  verificaMeseBanca(mese: string, impronta: string): Promise<void>
+  /** Segna verificato il mese della quadratura, se `cosaNonVaVerifica` lo permette, con l'impronta dei suoi movimenti: chi verifica lo scrive il database. */
+  verificaMeseBanca(q: QuadraturaDaVerificare, impronta: string): Promise<void>
   /** Registra un pagamento fatto a mano, senza ricevuta. */
   registraPagamentoDiretto(d: DatiPagamentoDiretto): Promise<PagamentoDiretto>
   /** Lo annulla: resta in elenco, segnato annullato. */

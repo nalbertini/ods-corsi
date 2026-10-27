@@ -25,7 +25,7 @@ import { NOTA_DI_DEFAULT, type IncassoPrima } from './pagatoPrima'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 import { MASSIMO_PER_IMPORTAZIONE, nonEQuestoBanca, PREFISSO_CHIAVE_BANCA, segnaCoperti } from './importaBanca'
-import { cosaNonVaSaldoBanca, type SaldoBanca } from './quadraturaBanca'
+import { cosaNonVaSaldoBanca, cosaNonVaVerifica, type SaldoBanca } from './quadraturaBanca'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
 const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
@@ -1965,9 +1965,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
-    async verificaMeseBanca(mese, impronta) {
+    async verificaMeseBanca(q, impronta) {
+      const { mese } = q
       const saldi = a().saldiBanca ?? []
       if (!saldi.some((x) => x.mese === mese)) throw new Error('Scrivi prima il saldo dell’estratto.')
+      const no = cosaNonVaVerifica(q)
+      if (no) throw new Error(no)
       const adesso = new Date().toISOString()
       a().saldiBanca = saldi.map((x) => (x.mese === mese ? { ...x, verificatoIl: adesso, verificatoDa: 'Amministrazione', improntaVerifica: impronta } : x))
       salva()

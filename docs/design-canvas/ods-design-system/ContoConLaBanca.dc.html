@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    .t { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .et { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; }
+    .sotto { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .num { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+    .mese { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; background: #fff; border: 1px solid #cfe6f4; }
+    .saldo { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 2px solid #cfe6f4; }
+    .riga { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid #cfe6f4; font-size: 14px; }
+    .tag { padding: 3px 8px; font-size: 12px; font-weight: 600; background: #fcf6e6; color: #8f6a00; }
+    .link { font-size: 14px; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+    .freccia { width: 38px; height: 38px; border: 2px solid #0d2a3d; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; }
+  </style>
+</helmet>
+<section style="display: flex; flex-direction: column; gap: 14px; width: 100%; padding: 22px 24px; background: #fff; border: 2px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap">
+    <span class="t" style="font-size: 22px">IL CONTO CON LA BANCA</span>
+    <div style="display: flex; gap: 8px; align-items: center"><span class="freccia">‹</span><span class="num" style="min-width: 48px; text-align: center">{{anno}}</span><span class="freccia" style="opacity: 0.4">›</span></div>
+  </div>
+  <span class="sotto">Ogni mese il saldo del Conto Corrente qui contro il saldo finale dell’estratto BancoPosta. Scegli un mese per vedere le righe che non tornano.</span>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px">
+    <div class="mese"><span class="et">GEN</span><span class="num" style="font-size: 13px; font-weight: 600; color: #0b7a33">✓ Verificato</span></div>
+    <div class="mese"><span class="et">FEB</span><span class="num" style="font-size: 13px; font-weight: 600; color: #0b7a33">✓ Torna</span></div>
+    <div class="mese"><span class="et">MAR</span><span class="num" style="font-size: 13px; font-weight: 600; color: #b81d1d">✕ Cambiato dopo la verifica</span></div>
+    <div class="mese"><span class="et">APR</span><span class="num" style="font-size: 13px; font-weight: 600; color: #8f6a00">… Da classificare</span></div>
+    <div class="mese"><span class="et">MAG</span><span class="num" style="font-size: 13px; font-weight: 600; color: #8f6a00">… CSV mancante</span></div>
+    <div class="mese" style="border: 2px solid #46606f; background: #eef5fa"><span class="et">SET</span><span class="num" style="font-size: 13px; font-weight: 600; color: #b81d1d">✕ {{differenza}}</span></div>
+    <div class="mese"><span class="et">OTT</span><span class="num" style="font-size: 13px; font-weight: 600; color: #8f6a00">… Saldo da scrivere</span></div>
+    <div class="mese"><span class="et">NOV</span><span class="num" style="font-size: 13px; font-weight: 600; color: #46606f">Non ancora finito</span></div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 14px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+    <span class="t" style="font-size: 18px">SETTEMBRE 2026</span>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+      <div class="saldo"><span class="et">NELL’APP · 30/09</span><span class="num" style="font-size: 28px">{{app}}</span><span class="sotto">inizio 9.870,00 € · + entrate 11.020,00 € · − uscite 8.460,00 €</span></div>
+      <div class="saldo"><span class="et">IN BANCA · 30/09</span><span class="num" style="font-size: 28px">{{banca}}</span><span class="sotto">dall’estratto di settembre 2026</span></div>
+      <div class="saldo" style="border-color: #b81d1d; background: #fbe9e9"><span class="et">DIFFERENZA</span><span class="num" style="font-size: 28px">✕ {{differenza}}</span><span class="sotto">nell’app ci sono {{differenza}} in più che in banca</span></div>
+    </div>
+    <div><span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 2px solid #0d2a3d; font-weight: 600; font-size: 14px">Cambia il saldo dell’estratto</span></div>
+    <span class="sotto">CSV della banca importato: 64 righe dal 01/09/2026 al 30/09/2026 ✓</span>
+    <div style="display: flex; flex-direction: column; gap: 4px; max-width: 520px">
+      <span class="et">DA DOVE VIENE LA DIFFERENZA</span>
+      <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Righe nell’app che in banca non ci sono</span><span class="num">+ 480,00 €</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span class="et">NELL’APP, NON IN BANCA · 1</span>
+      <div class="riga"><span class="num" style="min-width: 84px">05/09/2026</span><span style="flex: 1 1 220px">Incasso iscritto · Rossi Luca · Estate ragazzi</span><span class="num" style="font-weight: 600">+ 480,00 €</span><span class="tag">forse contanti: va in Cassa contanti</span><span class="link">Apri ›</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; gap: 12px; align-items: baseline"><span class="et">ABBINATE · 63 RIGHE</span><span class="link">Mostra</span></div>
+      <span class="sotto">Le righe che ci sono nell’app e in banca, con lo stesso importo entro due giorni: vanno bene così.</span>
+    </div>
+    <div>
+      <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; background: #0d2a3d; color: #fff; font-weight: 600; font-size: 14px; opacity: 0.45">Segna settembre 2026 come verificato</span>
+      <span class="sotto" style="display: block; padding-top: 6px">Il conto non torna con la banca: prima trova da dove viene la differenza.</span>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"anno":{"editor":"text","default":"2026"},"app":{"editor":"text","default":"12.430,00 €"},"banca":{"editor":"text","default":"11.950,00 €"},"differenza":{"editor":"text","default":"480,00 €"},"$preview":{"width":1100,"height":1000}}'>
+// COSTRUITA (`ContoConLaBanca`, `MeseConLaBanca` e `RigheBanca` in src/components/segreteria/Contabilita.tsx, regole in src/lib/quadraturaBanca.ts;
+// proposta e storia in ../quadratura-banca/): in CONTABILITÀ → CASSE, sotto le tessere, riquadro `.sg-riquadro.sg-banca`. In testa l'anno con le
+// frecce ‹ › (`sg-btn-linea`; la seconda spenta sull'anno in corso), poi i mesi in griglia `auto-fill minmax(112px, 1fr)` gap 8: etichetta e
+// stato da 13px col segno (✓ verde, ✕ rosso, … giallo; «non torna» mostra la differenza); il mese scelto ha bordo 2px `sec` e fondo `tinta-neutro`.
+// Sotto il mese: tre saldi (`Saldo`), la DIFFERENZA diversa da zero ha bordo `rosso-testo`, fondo `tinta-rosso` e ✕ davanti; «Scrivi/Cambia il
+// saldo dell'estratto» (spento sui mesi non cominciati); gli avvisi e le righe «Da classificare» in un riquadro `tinta-giallo` con barra
+// `giallo-testo`; la riga del CSV o «Mancano le righe della banca…» con Importa; DA DOVE VIENE LA DIFFERENZA; le liste NELL'APP, NON IN BANCA,
+// IN BANCA, NON NELL'APP, CON LA DATA DIVERSA e ABBINATE (chiusa) con la causa probabile come `sg-segno-regola` giallo e i link `sg-link` alti
+// 44px, 14px (`.sg-banca .sg-link` in styles.css). In fondo «Segna <mese> come verificato» (pieno, spento col motivo sotto) o la riga
+// «✓ Verificato · chi, quando». Cambiare mese o anno col saldo a metà chiede prima (`lasciare`). Sulla tessera del Conto Corrente fino a tre
+// segni `sg-segno-regola` «SETTEMBRE: NON TORNA», poi «+ altri N». Rispetto alla proposta: niente riga «Non spiegato» a zero, il tasto
+// «Cambia il saldo» invece del link nel saldo, la causa in un segno giallo.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { anno: p.anno ?? '2026', app: p.app ?? '', banca: p.banca ?? '', differenza: p.differenza ?? '' };
+  }
+}
+</script>
+</body>
+</html>

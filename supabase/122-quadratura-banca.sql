@@ -32,15 +32,32 @@ create table if not exists saldo_banca (
   constraint saldo_banca_verifica check ((verificato_il is null) = (impronta_verifica is null))
 );
 
--- Chi ha verificato lo scrive il database, dalla sessione: l'app non può
--- dichiarare un altro. Senza sessione (un file lanciato a mano) resta il dato.
+-- Chi ha verificato e quando lo scrive il database, dalla sessione: l'app non
+-- può dichiarare un altro. Senza sessione (un file lanciato a mano) resta il
+-- dato. Numeri cambiati senza una verifica nuova: il mese torna da verificare.
 create or replace function saldo_banca_chi_verifica() returns trigger
-  language plpgsql set search_path = public as $$
+  language plpgsql set search_path = public, extensions as $$
 begin
+  if tg_op = 'UPDATE'
+     and (new.saldo_iniziale, new.entrate, new.uscite, new.saldo_finale)
+         is distinct from (old.saldo_iniziale, old.entrate, old.uscite, old.saldo_finale)
+     and new.verificato_il is not distinct from old.verificato_il
+     and new.impronta_verifica is not distinct from old.impronta_verifica then
+    new.verificato_il := null;
+    new.impronta_verifica := null;
+  end if;
   if new.verificato_il is null then
     new.verificato_da := null;
-  else
-    new.verificato_da := coalesce(persona_corrente(), new.verificato_da);
+  elsif tg_op = 'UPDATE'
+        and new.verificato_il is not distinct from old.verificato_il
+        and new.impronta_verifica is not distinct from old.impronta_verifica then
+    -- Nessuna verifica nuova: resta chi c'era, o nessuno se la persona è stata tolta.
+    if new.verificato_da is not null then
+      new.verificato_da := old.verificato_da;
+    end if;
+  elsif persona_corrente() is not null then
+    new.verificato_da := persona_corrente();
+    new.verificato_il := now();
   end if;
   return new;
 end $$;

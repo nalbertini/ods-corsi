@@ -29,7 +29,7 @@ import { cartaPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQ
 import { oggiARoma } from './contabilita'
 import type { ContiScarico, DaDecidere, PagamentoNegozio } from './satispayScarico'
 import type { CopertoBanca } from './importaBanca'
-import { mancaSaldoBanca, SENZA_SALDO_BANCA, type SaldoBanca } from './quadraturaBanca'
+import { cosaNonVaSaldoBanca, cosaNonVaVerifica, mancaSaldoBanca, SENZA_SALDO_BANCA, type SaldoBanca } from './quadraturaBanca'
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { vociCorsiDi } from './corsiDaPagare'
 import { motivoDaErrore, type InvioRicevuta } from './ricevuteEmail'
@@ -2006,6 +2006,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async scriviSaldoBanca(s) {
+      // Il database rifiuta i numeri che non tornano, ma con un errore grezzo: qui il messaggio dice cosa fare.
+      const no = cosaNonVaSaldoBanca(s, oggiARoma())
+      if (no) throw new Error(no)
       const r = await db.from('saldo_banca').upsert({
         mese: s.mese, saldo_iniziale: s.saldoIniziale, entrate: s.entrate, uscite: s.uscite, saldo_finale: s.saldoFinale,
         verificato_il: null, verificato_da: null, impronta_verifica: null,
@@ -2014,8 +2017,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(r)
     },
 
-    async verificaMeseBanca(mese, impronta) {
-      const r = await db.from('saldo_banca').update({ verificato_il: new Date().toISOString(), impronta_verifica: impronta }).eq('mese', mese).select('mese')
+    async verificaMeseBanca(q, impronta) {
+      const no = cosaNonVaVerifica(q)
+      if (no) throw new Error(no)
+      const r = await db.from('saldo_banca').update({ verificato_il: new Date().toISOString(), impronta_verifica: impronta }).eq('mese', q.mese).select('mese')
       if (mancaSaldoBanca(r.error)) throw new Error(SENZA_SALDO_BANCA)
       if (!(ok(r) as unknown[]).length) throw new Error('Scrivi prima il saldo dell’estratto.')
     },

@@ -425,7 +425,8 @@ mese senza saldo prima del primo saldo scritto non chiede niente, tranne l'ultim
 **Scrivi il saldo dell'estratto**: copia i quattro numeri del riepilogo dell'estratto del mese,
 **SALDO INIZIALE**, **SALDO FINALE**, **ENTRATE**, **USCITE** (con il meno davanti se il saldo è
 sotto zero). Il saldo iniziale è già scritto col finale del mese prima, se c'è. I numeri devono
-tornare fra loro (iniziale + entrate − uscite = finale) e il mese non può essere nel futuro.
+tornare fra loro (iniziale + entrate − uscite = finale) e il mese non può essere nel futuro: se
+no, in rosso, «Il saldo non si può salvare così» con il motivo, e il saldo non si salva.
 **Cambia il saldo dell'estratto** riscrive i quattro numeri: un mese verificato torna da verificare.
 
 Scelto un mese, si vedono **NELL'APP** (il saldo del Conto Corrente all'ultimo giorno del mese),

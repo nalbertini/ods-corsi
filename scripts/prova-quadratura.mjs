@@ -33,12 +33,12 @@
 //       saldo / saldoPrima: SaldoBanca del mese e del mese prima, o null.
 //     Quadratura {
 //       mese,
-//       stato: 'non ancora finito' | 'saldo da scrivere' | 'non verificabile' | 'CSV del mese mancante'
+//       stato: 'non ancora finito' | 'saldo da scrivere' | 'CSV del mese mancante'
 //            | 'verificato' | 'cambiato dopo la verifica' | 'non torna' | 'da classificare' | 'torna'
-//         in questo ordine di precedenza. «non verificabile» = nessuna riga della banca, o il mese è prima
-//         della prima riga importata; «CSV del mese mancante» = dopo la prima, ma nessuna riga nel mese;
-//         «verificato» / «cambiato dopo la verifica» solo se `saldo.verificatoIl` c'è e l'impronta salvata
-//         è uguale / diversa da quella di adesso.
+//         in questo ordine di precedenza. «CSV del mese mancante» = il saldo c'è ma nessuna riga della banca
+//         nel mese (anche prima della prima importazione: chi scrive il saldo vuole il confronto);
+//         «verificato» solo se `saldo.verificatoIl` c'è, l'impronta salvata è quella di adesso e la differenza
+//         è 0 (un mese prima cambiato sposta il saldo iniziale); se no «cambiato dopo la verifica».
 //       app: saldoAppDelMese(...),
 //       differenza: number | null      CONVENZIONE: app − banca, sui saldi finali (app.saldoFinale − saldo.saldoFinale);
 //                                      positiva = nell'app c'è più di quanto dice la banca. null senza saldo.
@@ -67,6 +67,11 @@
 //   saldiBanca(): Promise<SaldoBanca[]> · scriviSaldoBanca(saldo): Promise<void> (rifiuta con cosaNonVaSaldoBanca;
 //   riscrivere un mese lo sostituisce e toglie la verifica) · verificaMeseBanca(mese, impronta): Promise<void>
 //   (rifiuta un mese senza saldo).
+//   verificaMeseBanca(quadratura, impronta) rifiuta anche quel che rifiuta cosaNonVaVerifica.
+//   leggiSaldoBanca({ iniziale, finale, entrate, uscite }, mese, oggi) → { saldo, errore, campi }
+//       I quattro numeri scritti nel modulo: `saldo` solo se si può salvare; `errore` il messaggio per chi scrive
+//       (null finché manca un campo e niente è scritto male); `campi` quelli da segnare rossi (nessuno se non si
+//       sa quale dei quattro è sbagliato).
 // Le righe, i nomi e i codici sono tutti inventati: il repository è pubblico.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
@@ -211,9 +216,9 @@ console.log('6. R5 e R6 · senza CSV non si dice «torna»')
   ok('mese dopo la prima importazione ma senza CSV: «CSV del mese mancante»', nov.stato, 'CSV del mese mancante')
   ok('…le liste «non in banca» non si calcolano', [nov.stato, nov.soloApp, nov.soloBanca, nov.dataDiversa, nov.abbinate], ['CSV del mese mancante', null, null, null, null])
   const set = quadra(base({ mese: '2026-09', righe: [], casse: [{ ...conto, saldoIniziale: 13000 }], banca: bancaOttobre, saldo: sb('2026-09', 13000, 0, 0, 13000) }))
-  ok('mese prima della prima importazione: «non verificabile», anche con differenza 0', [set.stato, set.differenza], ['non verificabile', 0])
+  ok('mese prima della prima importazione, col saldo scritto: «CSV del mese mancante», anche con differenza 0', [set.stato, set.differenza], ['CSV del mese mancante', 0])
   const nessuna = quadra(base({ righe: ottobre, banca: [], saldo: sb('2026-10', 10000, 5000, 2000, 13000) }))
-  ok('mai importato niente: «non verificabile», non «torna»', nessuna.stato, 'non verificabile')
+  ok('mai importato niente, col saldo scritto: «CSV del mese mancante», non «torna»', nessuna.stato, 'CSV del mese mancante')
 }
 
 console.log('7. R6 · un incasso Satispay e il suo doppione')
@@ -325,6 +330,8 @@ console.log('14. «verificato» e l’impronta')
   ok('con l’impronta salvata uguale a quella di adesso: «verificato»', quadra({ ...dati, saldo: sb('2026-10', 10000, 5000, 2000, 13000, verificato) }).stato, 'verificato')
   const cambiato = quadra({ ...dati, righe: [ottobre[0], { ...ottobre[1], importo: 2100 }], saldo: sb('2026-10', 10000, 5000, 2000, 13000, verificato) })
   ok('se dopo cambia una riga del mese: «cambiato dopo la verifica»', cambiato.stato, 'cambiato dopo la verifica')
+  const settembre = quadra({ ...dati, righe: [...ottobre, mv('s1', 'entrata', '2026-09-20', 300)], saldo: sb('2026-10', 10000, 5000, 2000, 13000, verificato) })
+  ok('se cambia una riga del mese prima (il saldo iniziale si sposta): «cambiato dopo la verifica»', [settembre.stato, settembre.differenza], ['cambiato dopo la verifica', 300])
   ok('un’impronta salvata ma senza il momento della verifica non vale', quadra({ ...dati, saldo: sb('2026-10', 10000, 5000, 2000, 13000, { improntaVerifica: 'vecchia' }) }).stato, 'torna')
   const torna = quadra({ ...dati, saldo: sb('2026-10', 10000, 5000, 2000, 13000) })
   ok('si segna con differenza 0 e niente da classificare', chiama('cosaNonVaVerifica', torna), null)
@@ -378,8 +385,13 @@ console.log('17. R13 · la modalità prova scrive i saldi come il database')
   ok('un finale che non torna è rifiutato', await esito(() => s.scriviSaldoBanca(dati({ mese: '2026-02', saldoFinale: 12500 }))), 'rifiutato')
   ok('un mese futuro è rifiutato', await esito(() => s.scriviSaldoBanca(dati({ mese: '2999-01', saldoIniziale: 0, entrate: 0, uscite: 0, saldoFinale: 0 }))), 'rifiutato')
   ok('un mese scritto male è rifiutato', await esito(() => s.scriviSaldoBanca(dati({ mese: '01/2026' }))), 'rifiutato')
-  ok('verificare un mese senza saldo è rifiutato', await esito(() => s.verificaMeseBanca('2025-12', 'abc')), 'rifiutato')
-  ok('verificare un mese con saldo si può', await esito(() => s.verificaMeseBanca('2026-01', 'abc')), 'ok')
+  // La quadratura come la calcola la schermata: gennaio torna, salvo dove si cambia di proposito.
+  const gen = (extra = {}) => ({ mese: '2026-01', stato: 'torna', differenza: 0, daClassificare: 0, ...extra })
+  ok('verificare un mese senza saldo è rifiutato', await esito(() => s.verificaMeseBanca(gen({ mese: '2025-12' }), 'abc')), 'rifiutato')
+  ok('verificare un mese che non torna è rifiutato', await esito(() => s.verificaMeseBanca(gen({ stato: 'non torna', differenza: 500 }), 'abc')), 'rifiutato')
+  ok('…anche con righe «Da classificare»', await esito(() => s.verificaMeseBanca(gen({ stato: 'da classificare', daClassificare: 2 }), 'abc')), 'rifiutato')
+  ok('…e un mese senza le righe della banca', await esito(() => s.verificaMeseBanca(gen({ stato: 'CSV del mese mancante', differenza: 0 }), 'abc')), 'rifiutato')
+  ok('verificare un mese con saldo che torna si può', await esito(() => s.verificaMeseBanca(gen(), 'abc')), 'ok')
   ok('…e resta l’impronta', (await prova(() => s.saldiBanca()))?.map?.((x) => [x.mese, x.improntaVerifica, !!x.verificatoIl]), [['2026-01', 'abc', true]])
   await esito(() => s.scriviSaldoBanca(dati({ entrate: 6000, saldoFinale: 14000 })))
   ok('riscrivere un mese lo sostituisce (uno solo) e toglie la verifica', (await prova(() => s.saldiBanca()))?.map?.((x) => [x.mese, x.saldoFinale, x.verificatoIl ?? null]), [['2026-01', 14000, null]])
@@ -429,7 +441,24 @@ console.log('21. i segni sulla tessera del Conto Corrente: i mesi finiti che chi
   ])
   ok('senza nessun saldo chiede solo l’ultimo mese finito', chiama('segniDelConto', mesi.filter((x) => x.stato === 'saldo da scrivere'), [])?.map?.((x) => x.mese), ['2026-10'])
   ok('CSV mancante e da classificare sono gialli', chiama('segniDelConto', [q('2026-09', 'CSV del mese mancante'), q('2026-10', 'da classificare')], [sb('2026-09', 0, 0, 0, 0)])?.map?.((x) => x.tono), ['giallo', 'giallo'])
-  ok('verificato, torna, non verificabile non chiedono niente', chiama('segniDelConto', [q('2026-08', 'verificato'), q('2026-09', 'torna'), q('2026-10', 'non verificabile')], [sb('2026-08', 0, 0, 0, 0)]), [])
+  ok('verificato e torna non chiedono niente', chiama('segniDelConto', [q('2026-08', 'verificato'), q('2026-09', 'torna')], [sb('2026-08', 0, 0, 0, 0)]), [])
+}
+
+console.log('22. il modulo del saldo: cosa si salva e quale campo è sbagliato')
+{
+  const leggi = (t, oggi = '2026-11-15') => chiama('leggiSaldoBanca', { iniziale: '100,00', finale: '130,00', entrate: '50,00', uscite: '20,00', ...t }, '2026-10', oggi)
+  const giusto = leggi({})
+  ok('quattro numeri che tornano: si salva, senza errore', [giusto?.saldo, giusto?.errore, giusto?.campi], [sb('2026-10', 10000, 5000, 2000, 13000), null, []])
+  ok('un saldo sotto zero, col meno', leggi({ iniziale: '-10,00', finale: '20,00' })?.saldo?.saldoIniziale, -1000)
+  const vuoto = leggi({ uscite: ' ' })
+  ok('un campo vuoto: non si salva, ma non è ancora un errore', [vuoto?.saldo, vuoto?.errore, vuoto?.campi], [null, null, []])
+  const male = leggi({ entrate: 'cinquanta', uscite: '' })
+  ok('un numero scritto male: errore, e rosso solo quel campo (anche se un altro è vuoto)', [male?.saldo, msg(male?.errore), male?.campi], [null, 'string', ['entrate']])
+  const meno = leggi({ uscite: '-20,00' })
+  ok('le uscite col meno: rosso sulle uscite', [meno?.saldo, msg(meno?.errore), meno?.campi], [null, 'string', ['uscite']])
+  const nonTorna = leggi({ finale: '125,00' })
+  ok('i numeri che non tornano fra loro: errore, nessun campo in particolare', [nonTorna?.saldo, msg(nonTorna?.errore), nonTorna?.campi], [null, 'string', []])
+  ok('un mese non ancora cominciato: errore', msg(leggi({}, '2026-09-30')?.errore), 'string')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

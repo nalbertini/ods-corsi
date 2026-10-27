@@ -136,3 +136,45 @@ select atteso('un''impronta senza il momento no', tenta($$update saldo_banca set
 select atteso('verificato con l''impronta sì', tenta($$update saldo_banca set verificato_il = now(), verificato_da = 'aaaaaaaa-0000-0000-0000-000000000001', impronta_verifica = 'abc123' where mese = '2026-09'$$), 'FATTO (1 righe)');
 select atteso('se la persona se ne va, la verifica resta', tenta($$delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000001'$$), 'FATTO (1 righe)');
 select atteso('…e non dice più chi', (select coalesce(verificato_da::text, 'nessuno') || ' ' || impronta_verifica from saldo_banca where mese = '2026-09'), 'nessuno abc123');
+
+\echo ''
+\echo '--- 6. chi ha verificato resta quello: né chi cambia altro, né chi toglie una persona prende il suo posto ---'
+insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2026-11', 0, 100, 0, 100);
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('Ada verifica novembre', tenta($$update saldo_banca set verificato_il = '2000-01-01', impronta_verifica = 'nov1' where mese = '2026-11'$$), 'FATTO (1 righe)');
+select atteso('…chi è lei, quando è adesso: la data non la sceglie chi scrive', (select verificato_da::text || ' ' || (verificato_il > now() - interval '1 minute')::text from saldo_banca where mese = '2026-11'), 'aaaaaaaa-0000-0000-0000-000000000002 true');
+select atteso('verificare un mese senza saldo non fa niente', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'x' where mese = '2025-01'$$), 'a vuoto (0 righe)');
+reset role;
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('Ivo tocca la riga senza cambiare niente', tenta($$update saldo_banca set entrate = entrate where mese = '2026-11'$$), 'FATTO (1 righe)');
+select atteso('…la verifica resta di Ada', (select verificato_da::text || ' ' || impronta_verifica from saldo_banca where mese = '2026-11'), 'aaaaaaaa-0000-0000-0000-000000000002 nov1');
+select atteso('Ivo prova a mettersi come chi ha verificato', tenta($$update saldo_banca set verificato_da = 'aaaaaaaa-0000-0000-0000-000000000004' where mese = '2026-11'$$), 'FATTO (1 righe)');
+select atteso('…resta Ada', (select verificato_da::text from saldo_banca where mese = '2026-11'), 'aaaaaaaa-0000-0000-0000-000000000002');
+select atteso('Ivo cambia i numeri', tenta($$update saldo_banca set entrate = 200, saldo_finale = 200 where mese = '2026-11'$$), 'FATTO (1 righe)');
+select atteso('…e il mese torna da verificare: i numeri verificati non ci sono più', (select coalesce(verificato_da::text, '-') || coalesce(verificato_il::text, '-') || coalesce(impronta_verifica, '-') from saldo_banca where mese = '2026-11'), '---');
+select atteso('Ivo lo verifica di nuovo: adesso è lui', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'nov2' where mese = '2026-11'$$), 'FATTO (1 righe)');
+select atteso('…Ivo', (select verificato_da::text from saldo_banca where mese = '2026-11'), 'aaaaaaaa-0000-0000-0000-000000000004');
+reset role;
+-- La persona la toglie qualcuno con una sessione: il «set null» sulla riga non deve mettere il suo nome.
+select chi('33333333-3333-3333-3333-333333333333');
+select atteso('si toglie Ivo, con Sandro collegato', tenta($$delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000004'$$), 'FATTO (1 righe)');
+select atteso('…la verifica resta, senza nome: non diventa di Sandro', (select coalesce(verificato_da::text, 'nessuno') || ' ' || impronta_verifica from saldo_banca where mese = '2026-11'), 'nessuno nov2');
+select chi('');
+
+\echo ''
+\echo '--- 7. la funzione del trigger non si chiama da fuori, e il tablet non vede i saldi ---'
+select atteso('authenticated non la esegue', has_function_privilege('authenticated', 'saldo_banca_chi_verifica()', 'EXECUTE')::text, 'false');
+select atteso('anon nemmeno', has_function_privilege('anon', 'saldo_banca_chi_verifica()', 'EXECUTE')::text, 'false');
+select atteso('né public', has_function_privilege('public', 'saldo_banca_chi_verifica()', 'EXECUTE')::text, 'false');
+insert into auth.users (id, email) values ('99999999-9999-9999-9999-999999999999', 'tablet@ods.it');
+insert into sale (id, nome) values ('bbbbbbbb-0000-0000-0000-000000000001', 'Tatami');
+insert into postazioni (id, nome, sala_id, utente_id) values ('dddddddd-0000-0000-0000-000000000001', 'Tablet', 'bbbbbbbb-0000-0000-0000-000000000001', '99999999-9999-9999-9999-999999999999');
+select chi('99999999-9999-9999-9999-999999999999');
+set role authenticated;
+select atteso('il tablet non vede i saldi', (select count(*)::text from saldo_banca), '0');
+select atteso('non ne scrive', tenta($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2026-06', 0, 0, 0, 0)$$), 'NEGATO: …');
+select atteso('non ne toglie', tenta($$delete from saldo_banca$$), 'a vuoto (0 righe)');
+reset role;
+select chi('');

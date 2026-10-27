@@ -43,7 +43,6 @@ export interface SaldoMese {
 export type StatoQuadratura =
   | 'non ancora finito'
   | 'saldo da scrivere'
-  | 'non verificabile'
   | 'CSV del mese mancante'
   | 'verificato'
   | 'cambiato dopo la verifica'
@@ -128,7 +127,7 @@ export function righeBanca(righe: RigaMovimento[], coperti: CopertoBanca[] | nul
   return [...importate, ...(coperti ?? []).filter((c) => !viste.has(c.chiave)).map((c) => ({ chiave: c.chiave, data: c.data, tipo: c.tipo, importo: c.importo, descrizione: c.descrizione }))]
 }
 
-export const saldoInizialeProposto =(saldi: SaldoBanca[], mese: string): number | null =>
+export const saldoInizialeProposto = (saldi: SaldoBanca[], mese: string): number | null =>
   saldi.find((s) => s.mese === mesePrima(mese))?.saldoFinale ?? null
 
 const tocca = (r: RigaMovimento, contoId: string) => r.cassaId === contoId || (r.tipo === 'giroconto' && r.cassaAId === contoId)
@@ -211,9 +210,9 @@ export function quadratura(o: {
   const conto = o.casse.find((c) => c.id === contoId)
   // Solo i cinque campi: il codice fiscale letto dalla banca non esce di qui.
   const banca: RigaBanca[] = o.banca.map((b) => ({ chiave: b.chiave, data: b.data, tipo: b.tipo, importo: b.importo, descrizione: b.descrizione }))
-  const primoMese = banca.reduce<string | null>((p, b) => (p === null || b.data < p ? b.data : p), null)?.slice(0, 7) ?? null
   const bancaDelMese = banca.filter((b) => nelMese(b.data))
-  const senzaCsv = primoMese === null || mese < primoMese ? 'non verificabile' : bancaDelMese.length ? null : 'CSV del mese mancante'
+  // Anche prima della prima importazione: chi ha scritto il saldo del mese ne vuole il confronto.
+  const senzaCsv = bancaDelMese.length ? null : 'CSV del mese mancante'
 
   const avvisi: Quadratura['avvisi'] = []
   if (saldo && o.saldoPrima && saldo.saldoIniziale !== o.saldoPrima.saldoFinale)
@@ -253,7 +252,8 @@ export function quadratura(o: {
     }
   }
 
-  const verifica = saldo?.verificatoIl ? (saldo.improntaVerifica === improntaMese(o.righe, contoId, mese) ? 'verificato' : 'cambiato dopo la verifica') : null
+  // Anche con le righe del mese intatte, un mese prima cambiato sposta il saldo iniziale: la differenza lo dice.
+  const verifica = saldo?.verificatoIl ? (saldo.improntaVerifica === improntaMese(o.righe, contoId, mese) && differenza === 0 ? 'verificato' : 'cambiato dopo la verifica') : null
   const stato: StatoQuadratura =
     mese >= o.oggi.slice(0, 7) ? 'non ancora finito'
     : !saldo ? 'saldo da scrivere'
@@ -273,7 +273,9 @@ export function riepilogoDifferenza(q: Quadratura, saldo: SaldoBanca | null) {
   return { soloApp, soloBanca, inizioDiverso, altroMese: q.differenza - soloApp - soloBanca - inizioDiverso - q.nonSpiegato, nonSpiegato: q.nonSpiegato }
 }
 
-export function cosaNonVaVerifica(q: Quadratura): string | null {
+/** Quel che serve per segnare un mese verificato: lo controllano la schermata e chi scrive. */
+export type QuadraturaDaVerificare = Pick<Quadratura, 'mese' | 'stato' | 'differenza' | 'daClassificare'>
+export function cosaNonVaVerifica(q: QuadraturaDaVerificare): string | null {
   if (q.stato === 'verificato') return 'Questo mese è già verificato.'
   if (q.stato !== 'torna' && q.stato !== 'cambiato dopo la verifica' && q.stato !== 'da classificare' && q.stato !== 'non torna')
     return q.stato === 'non ancora finito' ? 'Il mese non è ancora finito: lo segni verificato quando c’è il suo estratto.'
@@ -282,6 +284,24 @@ export function cosaNonVaVerifica(q: Quadratura): string | null {
   if (q.differenza !== 0) return 'Il conto non torna ancora con la banca: sistema le righe che mancano, poi segnalo verificato.'
   if (q.daClassificare) return `Ci sono ancora ${q.daClassificare === 1 ? '1 riga' : `${q.daClassificare} righe`} «Da classificare»: dagli una voce, poi segnalo verificato.`
   return null
+}
+
+export type CampoSaldoBanca = 'iniziale' | 'finale' | 'entrate' | 'uscite'
+
+/**
+ * I quattro numeri scritti nel modulo del saldo: `saldo` solo se si può salvare, `errore` per chi scrive (null finché
+ * manca un campo e niente è scritto male), `campi` quelli da segnare: nessuno se non si sa quale dei quattro sbaglia.
+ */
+export function leggiSaldoBanca(t: Record<CampoSaldoBanca, string>, mese: string, oggi: string): { saldo: SaldoBanca | null; errore: string | null; campi: CampoSaldoBanca[] } {
+  const nomi: CampoSaldoBanca[] = ['iniziale', 'finale', 'entrate', 'uscite']
+  const c = { iniziale: centesimiConSegno(t.iniziale), finale: centesimiConSegno(t.finale), entrate: centesimiConSegno(t.entrate), uscite: centesimiConSegno(t.uscite) }
+  const male = nomi.filter((k) => t[k].trim() && c[k] === null)
+  if (male.length) return { saldo: null, errore: 'Scrivi gli importi come nell’estratto, per esempio 1.234,56 (con il meno davanti se il saldo è sotto zero).', campi: male }
+  if (c.iniziale === null || c.finale === null || c.entrate === null || c.uscite === null) return { saldo: null, errore: null, campi: [] }
+  const saldo: SaldoBanca = { mese, saldoIniziale: c.iniziale, entrate: c.entrate, uscite: c.uscite, saldoFinale: c.finale }
+  const errore = cosaNonVaSaldoBanca(saldo, oggi)
+  if (!errore) return { saldo, errore: null, campi: [] }
+  return { saldo: null, errore, campi: (['entrate', 'uscite'] as const).filter((k) => (c[k] ?? 0) < 0) }
 }
 
 /** Un saldo dell'estratto può essere sotto zero: `centesimi` non vuole il meno, qui si accetta anche quello lungo. */
