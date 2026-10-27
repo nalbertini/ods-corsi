@@ -130,11 +130,13 @@ quando arriva la prova.
 - `update-con-where.sql`: il controllo cerca un WHERE dopo l'UPDATE, nello
   stesso `;`. Un UPDATE senza WHERE con una sottoquery che ha il suo WHERE
   (`set x = (select … where …)`) passa (DA FARE).
-- `quota-satispay.sql`: pagamento `voce='quota'` senza richiesta (DA FARE).
-- `corso-satispay.sql`: paga dal suo telefono, e per un minorenne paga il
-  titolare (DA FARE).
-- RPC del client `pagaQuota`, `pagaCorso`, `statoCorso`, `chiPagaCorsi` in
-  `prova-iscritto-supabase.mjs` (DA FARE).
+- Edge Function `satispay` (quota, corso, saldo) e quella delle ricevute per
+  email: nessuna prova.
+- Saldo Satispay: `least`/`greatest`, `ricevuta_id is null`, `utente_id`, le
+  date `dal`/`al` si possono togliere senza che una prova cada.
+- Compensi: `tenuti` in `anagraficaDi` (IBAN e province), `cosaNonVaLettera`,
+  `lettereDellaScheda` con `sostituitaIl`, il tetto di 100.000 € in
+  `paga_compensi`, `bastaUno` in `segreteriaSupabase.ts`.
 - «Vince il più recente» in `unisci_persone` e `segreteriaProva.ts`.
 - Certificati: il lucchetto del tetto con due invii insieme;
   `chiCertificatiRicevuti`.

@@ -31,6 +31,9 @@ const m = await impacchetta(`
   export * from './src/lib/iscrittoSupabase'
   export * from './src/lib/accessoIscritto'
   export { datiIscritto } from './src/lib/iscritto'
+  export { ERRORE_SATISPAY } from './src/lib/satispay'
+  export { QUOTA_SPENTA } from './src/lib/quotaSatispay'
+  export { CORSO_SPENTO } from './src/lib/corsoSatispay'
 `)
 
 console.log('\nDalle colonne ai tipi')
@@ -237,6 +240,70 @@ ok('via tutto: resta il solo percorso, senza «?»', m.indirizzoSenzaAccesso('/i
   ok('legge il link con accessoDalLink', /accessoDalLink\(window\.location\.search\)/.test(tsx), true)
   ok('toglie email e codice dalla barra (replaceState) prima di entrare', toglie > -1 && /history\.replaceState/.test(tsx) && toglie < tsx.indexOf('entraConCodice(', tsx.indexOf('accessoDalLink')), true)
   ok('il campo del codice a mano resta', tsx.includes('autoComplete="one-time-code"'), true)
+}
+
+console.log('\nPagare quota e corso dal telefono')
+{
+  // Un client che risponde alla Edge Function `satispay` e a `satispay_corsi_chi`, e ricorda cosa gli è stato chiesto.
+  const clientePaga = (risposta, rpcRisposta = { data: null, error: null }) => {
+    const richieste = { invoke: [], rpc: [] }
+    return {
+      richieste,
+      c: {
+        functions: { invoke: async (nome, o) => { richieste.invoke.push([nome, o.body]); return { data: risposta, error: null } } },
+        rpc: async (nome, args) => { richieste.rpc.push([nome, args]); return rpcRisposta },
+      },
+    }
+  }
+  const prova = async (f) => { try { return { ok: await f() } } catch (e) { return { errore: e instanceof Error ? e.message : String(e) } } }
+  const dati = (c) => m.creaIscrittoSupabase(c)
+
+  {
+    const { c, richieste } = clientePaga({ link: 'https://satispay.example/q' })
+    ok('pagaQuota: chiede «quota» per quella persona e dà il link', [await prova(() => dati(c).pagaQuota('p1')), richieste.invoke], [{ ok: { link: 'https://satispay.example/q' } }, [['satispay', { azione: 'quota', persona: 'p1' }]]])
+  }
+  {
+    const { c, richieste } = clientePaga({ link: 'https://satispay.example/c' })
+    ok('pagaCorso: chiede «corso» con corso e formula e dà il link', [await prova(() => dati(c).pagaCorso('p1', 'c1', 'trimestre')), richieste.invoke], [{ ok: { link: 'https://satispay.example/c' } }, [['satispay', { azione: 'corso', persona: 'p1', corso: 'c1', formula: 'trimestre' }]]])
+  }
+  ok('pagaQuota: pagamento online spento, lo dice (la quota si paga in palestra)', await prova(() => dati(clientePaga({ attivo: false }).c).pagaQuota('p1')), { errore: m.QUOTA_SPENTA })
+  ok('pagaCorso: pagamento online spento, lo dice (il corso si paga in palestra)', await prova(() => dati(clientePaga({ attivo: false }).c).pagaCorso('p1', 'c1', 'annuale')), { errore: m.CORSO_SPENTO })
+  ok('pagaQuota: risposta senza link, Satispay non risponde', await prova(() => dati(clientePaga({}).c).pagaQuota('p1')), { errore: m.ERRORE_SATISPAY })
+  ok('pagaCorso: risposta senza link, Satispay non risponde', await prova(() => dati(clientePaga({ link: 42 }).c).pagaCorso('p1', 'c1', 'annuale')), { errore: m.ERRORE_SATISPAY })
+
+  const pagato = { stato: 'pagato', importo: 4500, pagato_il: '2026-10-20T10:00:00+00:00', chi: 'Gaia' }
+  {
+    const { c, richieste } = clientePaga({ pagamento: pagato })
+    ok('statoCorso: chiede «corso_stato» e mappa pagato_il in pagatoIl', [await prova(() => dati(c).statoCorso('p1', 'c1')), richieste.invoke], [{ ok: { stato: 'pagato', importo: 4500, pagatoIl: '2026-10-20T10:00:00+00:00', chi: 'Gaia' } }, [['satispay', { azione: 'corso_stato', persona: 'p1', corso: 'c1' }]]])
+  }
+  ok('statoCorso: in attesa, pagato_il null diventa assente', await prova(() => dati(clientePaga({ pagamento: { ...pagato, stato: 'attesa', pagato_il: null } }).c).statoCorso('p1', 'c1')), { ok: { stato: 'attesa', importo: 4500, chi: 'Gaia' } })
+  ok('statoCorso: nessun pagamento, null', await prova(() => dati(clientePaga({ pagamento: null }).c).statoCorso('p1', 'c1')), { ok: null })
+  ok('statoCorso: pagamento online spento', await prova(() => dati(clientePaga({ attivo: false }).c).statoCorso('p1', 'c1')), { errore: m.CORSO_SPENTO })
+  ok('statoQuota: chiede «quota_stato» e mappa pagato_il in pagatoIl', await prova(() => dati(clientePaga({ pagamento: pagato }).c).statoQuota('p1')), { ok: { stato: 'pagato', importo: 4500, pagatoIl: '2026-10-20T10:00:00+00:00', chi: 'Gaia' } })
+  ok('statoQuota: nessun pagamento, null', await prova(() => dati(clientePaga({}).c).statoQuota('p1')), { ok: null })
+
+  const chiCorsi = {
+    adulto: true, accesso_proprio: true, come_titolare: false,
+    corsi: [
+      { corso_id: 'c1', annuale: 30000, trimestre: 12000, segreteria: false, a_pagamento: true, pagato: false },
+      { corso_id: 'c2', annuale: null, trimestre: null, segreteria: true, a_pagamento: false, pagato: true },
+    ],
+  }
+  {
+    const { c, richieste } = clientePaga(null, { data: chiCorsi, error: null })
+    ok('chiPagaCorsi: chiama satispay_corsi_chi, snake_case in camelCase, i prezzi null diventano assenti', [await prova(() => dati(c).chiPagaCorsi('p1', 'io')), richieste.rpc], [
+      { ok: { adulto: true, haAccessoProprio: true, comeTitolare: false, corsi: [
+        { corsoId: 'c1', annuale: 30000, trimestre: 12000, segreteria: false, aPagamento: true, pagato: false },
+        { corsoId: 'c2', segreteria: true, aPagamento: false, pagato: true },
+      ] } },
+      [['satispay_corsi_chi', { persona: 'p1' }]],
+    ])
+  }
+  // Una sola delle tre cose vera alla volta: così scambiare due campi si vede.
+  for (const [chi, adulto, proprio, titolare] of [['un adulto', true, false, false], ['un minorenne col suo accesso', false, true, false], ['un minorenne del titolare', false, false, true]])
+    ok(`chiPagaCorsi: ${chi}`, await prova(() => dati(clientePaga(null, { data: { adulto, accesso_proprio: proprio, come_titolare: titolare, corsi: [] }, error: null }).c).chiPagaCorsi('p1', 'io')), { ok: { adulto, haAccessoProprio: proprio, comeTitolare: titolare, corsi: [] } })
+  ok('chiPagaCorsi: errore del database (106 non lanciato, rete), niente PAGA', await prova(() => dati(clientePaga(null, { data: chiCorsi, error: { code: 'PGRST202', message: 'boom' } }).c).chiPagaCorsi('p1', 'io')), { ok: null })
+  ok('chiPagaCorsi: nessun dato, null', await prova(() => dati(clientePaga(null, { data: null, error: null }).c).chiPagaCorsi('p1', 'io')), { ok: null })
 }
 
 console.log('\nQuale strato dati')
