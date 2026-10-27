@@ -1982,7 +1982,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async saldiBanca() {
       const r = await db.from('saldo_banca').select('*').order('mese')
       if (mancaSaldoBanca(r.error)) return null
-      // I tipi generati non conoscono 122-quadratura-banca.sql finché non c'è: la forma è quella della tabella.
+      // I tipi generati non conoscono 123-quadratura-banca.sql finché non c'è: la forma è quella della tabella.
       const righe = ok(r) as unknown as Array<{
         mese: string; saldo_iniziale: number; entrate: number; uscite: number; saldo_finale: number
         verificato_il: string | null; verificato_da: string | null; impronta_verifica: string | null

@@ -180,7 +180,7 @@ export interface Archivio {
   chiusurePalestra?: Array<{ id: string; dal: string; al: string; salaId: string | null; prima: Record<string, StatoSessione> }>
   /** Le chiusure della Cassa Contanti (60-chiusura-cassa.sql). */
   chiusure?: ChiusuraCassa[]
-  /** I saldi dell'estratto della banca (122-quadratura-banca.sql). */
+  /** I saldi dell'estratto della banca (123-quadratura-banca.sql). */
   saldiBanca?: SaldoBanca[]
   /** I pagamenti del negozio Satispay letti dallo scarico (97-satispay-scarico.sql): in prova sono d'esempio. */
   satispayNegozio?: PagamentoNegozio[]

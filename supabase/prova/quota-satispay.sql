@@ -367,6 +367,25 @@ select atteso('una quota già in ricevuta non è lo stato della quota: niente', 
 reset role;
 
 \echo ''
+\echo '--- 9c. una quota pagata non è un «pagamento senza richiesta»: la segreteria non va avvisata di soldi da restituire ---'
+-- Chi paga la quota dal telefono non ha una richiesta di iscrizione, e finché la segreteria non ne fa la ricevuta
+-- il pagamento resta senza `ricevuta_id` e senza `preso_il`: come quello di chi ha pagato in fondo al modulo e non ha
+-- mandato niente. Ma questo ha un nome, e la quota è di una persona già iscritta.
+select atteso('ci sono quote pagate senza ricevuta, da più di un''ora', (select (count(*) > 0)::text from pagamenti_satispay where voce = 'quota' and stato = 'pagato' and ricevuta_id is null), 'true');
+update pagamenti_satispay set pagato_il = now() - interval '2 hours', creato_il = now() - interval '2 hours' where voce = 'quota' and stato = 'pagato' and ricevuta_id is null;
+update avvisi_indirizzi set a = 'segreteria@esempio.it';
+update avvisi_indirizzi set dal = now() - interval '1 day';
+set role service_role;
+select atteso('nessun avviso per le quote pagate', (select count(*)::text from avvisi_da_mandare() where avviso->>'tipo' = 'pagamento_senza_richiesta'), '0');
+reset role;
+-- Il controllo: uno vero, di chi ha pagato in fondo al modulo e non è arrivato, avvisa.
+insert into pagamenti_satispay (chi, importo, stato, satispay_id, formula, nome, cognome, email, pagato_il, creato_il)
+  values ('Bianchi Laura', 12000, 'pagato', 'SP-LAURA-QUOTA', 'annuale', 'Laura', 'Bianchini', 'laura.bianchi@esempio.it', now() - interval '2 hours', now() - interval '2 hours');
+set role service_role;
+select atteso('…mentre uno senza persona né richiesta avvisa', (select count(*)::text from avvisi_da_mandare() where avviso->>'tipo' = 'pagamento_senza_richiesta'), '1');
+reset role;
+
+\echo ''
 \echo '--- 10. rilanciare il file non cambia niente ---'
 select count(*)::text as dopo_conta from pagamenti_satispay \gset
 \ir ../105-paga-quota-satispay.sql

@@ -239,6 +239,8 @@ export function pagaGara(g: Pick<Gara, 'voci'>, { metodo, data }: { metodo: stri
  * col totale (una riga per voce porterebbe l'incasso in «Corsi e altri pagamenti»).
  */
 export function pagamentoPerRicevuta(g: Pick<Gara, 'nome' | 'voci'>, personaId: string, incasso: { metodo: string; data: string }, pagamentoId: string, chiaveRicevuta: string): DatiPagamentoDiretto {
+  // Senza il pagamento registrato la ricevuta lo registrerebbe una seconda volta: gli stessi soldi due volte.
+  if (!pagamentoId) throw new Error('Il pagamento è registrato, ma la ricevuta non si apre: cercalo in PAGAMENTI della persona e fanne la ricevuta da lì')
   return { personaId, data: incasso.data, importo: pagaGara(g, incasso).importo, metodo: incasso.metodo, voce: VOCE_GARE, nota: g.nome, chiaveRicevuta, pagamentoId }
 }
 

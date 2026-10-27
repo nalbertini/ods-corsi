@@ -5,7 +5,7 @@ import { centesimi, euro } from './ricevute'
 
 /**
  * La quadratura mensile del Conto Corrente con l'estratto BancoPosta: il saldo dell'app contro i quattro
- * numeri del riepilogo (tabella `saldo_banca`, `supabase/122-quadratura-banca.sql`), e le righe che spiegano
+ * numeri del riepilogo (tabella `saldo_banca`, `supabase/123-quadratura-banca.sql`), e le righe che spiegano
  * la differenza. L'abbinamento segue la regola dell'importazione (`importaBanca.ts`): prima la chiave della
  * banca, poi stesso tipo e importo entro GIORNI_DI_DIFFERENZA giorni. Importi in centesimi.
  */
@@ -330,8 +330,8 @@ export function segniDelConto(q: Pick<Quadratura, 'mese' | 'stato'>[], saldi: Sa
     .sort((a, b) => b.mese.localeCompare(a.mese))
 }
 
-/** Il database non ha ancora 122-quadratura-banca.sql: il riquadro lo dice, il resto dell'app va avanti. */
+/** Il database non ha ancora 123-quadratura-banca.sql: il riquadro lo dice, il resto dell'app va avanti. */
 export const mancaSaldoBanca = (e: { code?: string; message?: string } | null | undefined): boolean =>
   !!e && ['42P01', 'PGRST205'].includes(e.code ?? '') && /saldo_banca/.test(e.message ?? '')
 
-export const SENZA_SALDO_BANCA = 'Il conto con la banca non è ancora disponibile: chiedi a chi cura il database di lanciare il file 122-quadratura-banca.sql.'
+export const SENZA_SALDO_BANCA = 'Il conto con la banca non è ancora disponibile: chiedi a chi cura il database di lanciare il file 123-quadratura-banca.sql.'

@@ -901,7 +901,7 @@ export interface DatiSegreteria {
   chiudiCassa(d: { cassaId: string; data: string; contato: number; nota?: string }): Promise<string>
   /** Si annulla solo l'ultima chiusura, con il suo movimento di differenza. */
   annullaChiusuraCassa(id: string): Promise<void>
-  /** I saldi dell'estratto BancoPosta, mese per mese (`122-quadratura-banca.sql`); `null` se il file non è ancora lanciato. */
+  /** I saldi dell'estratto BancoPosta, mese per mese (`123-quadratura-banca.sql`); `null` se il file non è ancora lanciato. */
   saldiBanca(): Promise<SaldoBanca[] | null>
   /** Scrive il saldo di un mese: riscriverlo lo sostituisce e toglie la verifica, perché i numeri sono cambiati. */
   scriviSaldoBanca(s: SaldoBanca): Promise<void>

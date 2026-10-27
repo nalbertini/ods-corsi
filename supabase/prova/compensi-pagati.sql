@@ -177,6 +177,26 @@ reset role;
 select atteso('e resta valida e pagata', (select coalesce(annullata_il::text, 'valida') || ' ' || (movimento_id is not null) from ricevute_compensi where id = :'m_set'), 'valida true');
 select atteso('il movimento di un pagamento non si cancella, nemmeno da dentro', tenta(format('delete from movimenti where id = %L', :'pag_set_ott')), 'NEGATO: …');
 
+-- Prima di 5 bis: lì si rilancia l'81, che rimette la `paga_compensi` senza le extra del 96.
+\echo ''
+\echo '--- 5 ter. il tetto: 100.000 € in un pagamento solo ---'
+-- Una ricevuta vale al massimo 100.000 € (`importo <= 10000000`): per superare il tetto del pagamento ne servono due.
+select semina('aaaaaaaa-0000-0000-0000-000000000006', '2026-03-01', 10000000) as i_tetto1 \gset
+select semina('aaaaaaaa-0000-0000-0000-000000000006', '2026-04-01', 10000000) as i_tetto2 \gset
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('200.000 € in un pagamento solo no, col messaggio', tenta(paga(format('{%s,%s}', :'i_tetto1', :'i_tetto2'), giorno(0), :'conto')), 'NEGATO: Il totale è troppo alto per un pagamento solo: paga i mesi in più volte');
+reset role;
+select atteso('niente movimento e le due ricevute ancora da pagare',
+  (select count(*)::text from movimenti where importo >= 10000000) || ' ' || (select count(*)::text from ricevute_compensi where id in (:'i_tetto1', :'i_tetto2') and movimento_id is null), '0 2');
+-- Il tetto è compreso: 100.000 € esatti si pagano (e si disfa, per non cambiare i conti dopo).
+begin;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('100.000 € esatti sì', tenta(paga(format('{%s}', :'i_tetto1'), giorno(0), :'conto')), 'true');
+reset role;
+rollback;
+
 \echo ''
 \echo '--- 5 bis. una voce «Compensi istruttori» già scritta a mano diventa quella di sistema ---'
 -- Rilanciare l'81 con una voce omonima non di sistema (come arriverebbe dalla prima nota) non lascia il pagamento senza voce.

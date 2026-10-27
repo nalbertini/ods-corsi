@@ -5,7 +5,7 @@
 //
 // Controlla `src/lib/quadraturaBanca.ts` (da scrivere) e `GIORNI_DI_DIFFERENZA` di `importaBanca.ts` (da esportare).
 // Gli stessi rifiuti del database (iniziale + entrate − uscite = finale, un mese unico) sono in
-// `supabase/prova/quadratura-banca.sql`: tabella `saldo_banca` di `supabase/122-quadratura-banca.sql`.
+// `supabase/prova/quadratura-banca.sql`: tabella `saldo_banca` di `supabase/123-quadratura-banca.sql`.
 //
 // LE FIRME (le fissa questa prova: il codice le segue). Tutto puro, importi in centesimi, mesi `AAAA-MM`,
 // giorni `AAAA-MM-GG`; nessuna funzione cambia i dati che riceve.
@@ -350,7 +350,7 @@ console.log('15. la tabella non c’è ancora')
   ok('una tabella di un’altra cosa no', chiama('mancaSaldoBanca', { code: '42P01', message: 'relation "public.chiusure" does not exist' }), false)
   ok('un altro errore no', chiama('mancaSaldoBanca', { code: '23505', message: 'duplicate key value violates unique constraint "saldo_banca_pkey"' }), false)
   ok('nessun errore no', [chiama('mancaSaldoBanca', null), chiama('mancaSaldoBanca', undefined)], [false, false])
-  ok('il messaggio dice quale file lanciare', [typeof q.SENZA_SALDO_BANCA, /122-quadratura-banca\.sql/.test(q.SENZA_SALDO_BANCA ?? '')], ['string', true])
+  ok('il messaggio dice quale file lanciare', [typeof q.SENZA_SALDO_BANCA, /123-quadratura-banca\.sql/.test(q.SENZA_SALDO_BANCA ?? '')], ['string', true])
 }
 
 console.log('16. privacy · mai un codice fiscale')

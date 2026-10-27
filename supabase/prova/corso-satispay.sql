@@ -327,6 +327,29 @@ select chi('');
 set role anon;
 select atteso('anon non legge lo stato', codice($$select satispay_corso_stato(pid(17), cid(1))$$), '42501');
 reset role;
+-- Il nome di chi ha pagato: Gaia (14 anni, account suo) e Maria (adulta) hanno pagato dal loro telefono, Teo (9 anni)
+-- lo ha pagato Luca. Un minorenne che guarda da sé vede solo il nome: il cognome è del nucleo, e il titolare lo vede intero.
+insert into pagamenti_satispay (chi, importo, stato, persona_id, voce, corso_id, formula, pagato_il) values
+  ('Fam Gaia', 30000, 'pagato', pid(9), 'corso', cid(1), 'annuale', now()),
+  ('Fam Maria', 30000, 'pagato', pid(4), 'corso', cid(1), 'annuale', now()),
+  ('Fam Teo', 30000, 'pagato', pid(5), 'corso', cid(1), 'annuale', now());
+select chi('99999999-9999-9999-9999-999999999999');
+set role authenticated;
+select atteso('Gaia, minorenne, da sé vede solo il nome', riga($$select satispay_corso_stato(pid(9), cid(1))->>'chi'$$), 'Gaia');
+reset role;
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('Maria, adulta, da sé vede il nome intero', riga($$select satispay_corso_stato(pid(4), cid(1))->>'chi'$$), 'Fam Maria');
+reset role;
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select atteso('Luca, titolare, vede Teo col nome intero', riga($$select satispay_corso_stato(pid(5), cid(1))->>'chi'$$), 'Fam Teo');
+select atteso('…e un corso pagato da un minorenne con l''accesso suo non lo vede', riga($$select satispay_corso_stato(pid(9), cid(1))::text$$), 'niente');
+reset role;
+select chi('55555555-5555-5555-5555-555555555555');
+set role authenticated;
+select atteso('Bruno non vede quello di Teo', riga($$select satispay_corso_stato(pid(5), cid(1))::text$$), 'niente');
+reset role;
 
 \echo ''
 \echo '--- 9. chi è la persona, per chi paga, e quanto ---'
@@ -346,12 +369,17 @@ select atteso('Remo, pagato fuori app: null', riga($$select ((e->'annuale') = 'n
 select atteso('Gino ha l''iscrizione di Satispay: null', riga($$select ((e->'annuale') = 'null'::jsonb)::text from satispay_corsi_chi(pid(16)) c, jsonb_array_elements(c->'corsi') e where e->>'corso_id' = cid(1)::text$$), 'true');
 select atteso('Nora, con la ricevuta finita, si può: 300', riga($$select e->>'annuale' from satispay_corsi_chi(pid(19)) c, jsonb_array_elements(c->'corsi') e where e->>'corso_id' = cid(1)::text$$), '30000');
 select atteso('Pia, con l''iscrizione finita, non ha corsi', riga($$select jsonb_array_length(satispay_corsi_chi(pid(11))->'corsi')::text$$), '0');
-select atteso('Maria ha l''accesso suo: Luca non la vede', riga($$select satispay_corsi_chi(pid(4))::text$$), 'niente');
+select atteso('Luca vede com''è Teo: senza accesso, del nucleo, minorenne', riga($$select (c->>'accesso_proprio') || ' ' || (c->>'come_titolare') || ' ' || (c->>'adulto') from satispay_corsi_chi(pid(5)) c$$), 'false true false');
+select atteso('Maria ha l''accesso suo: Luca non la vede',riga($$select satispay_corsi_chi(pid(4))::text$$), 'niente');
 select atteso('una persona che non c''è: niente', riga($$select satispay_corsi_chi(gen_random_uuid())::text$$), 'niente');
 reset role;
 select chi('');
 set role anon;
 select atteso('anon non sa chi è nessuno', codice($$select satispay_corsi_chi(pid(5))$$), '42501');
+reset role;
+select chi('99999999-9999-9999-9999-999999999999');
+set role authenticated;
+select atteso('Gaia, da sé: accesso suo, non titolare, minorenne', riga($$select (c->>'accesso_proprio') || ' ' || (c->>'come_titolare') || ' ' || (c->>'adulto') from satispay_corsi_chi(pid(9)) c$$), 'true false false');
 reset role;
 
 \echo ''

@@ -2,7 +2,7 @@
 -- scritto a mano, un mese per riga) la leggono e la scrivono solo chi ha il ruolo di amministrazione (anche
 -- doppio), come i movimenti di 59-contabilita.sql, e il
 -- database tiene da sé i conti dell'estratto. Si lancia dopo finto-supabase.sql, i file dello schema e
--- supabase/122-quadratura-banca.sql. Le regole dell'app (differenza, righe spaiate, stati, impronta) sono
+-- supabase/123-quadratura-banca.sql. Le regole dell'app (differenza, righe spaiate, stati, impronta) sono
 -- provate da scripts/prova-quadratura.mjs, che ha gli stessi rifiuti con gli stessi messaggi.
 --
 -- Lo schema che questa prova si aspetta (lo fissa lei: il file SQL lo segue):
@@ -25,7 +25,7 @@ begin
   end if;
   return 'ok  ' || cosa || ' → ' || avuto;
 end $$;
-select atteso('122-quadratura-banca.sql è stato lanciato: c''è la tabella saldo_banca', (to_regclass('public.saldo_banca') is not null)::text, 'true');
+select atteso('123-quadratura-banca.sql è stato lanciato: c''è la tabella saldo_banca', (to_regclass('public.saldo_banca') is not null)::text, 'true');
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'anna@ods.it'),

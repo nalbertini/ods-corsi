@@ -10,6 +10,33 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.222.5 — 27 ottobre 2026
+
+### Risolto
+
+- Chi ha un account non perde più l'email con cui entra
+
+## 0.222.4 — 27 ottobre 2026
+
+### Risolto
+
+- La segreteria non riceve più l'avviso «pagamento senza richiesta» per le quote pagate dal telefono
+
+## 0.222.3 — 27 ottobre 2026
+
+### Risolto
+
+- Il pagamento con la carta non incassa più un ordine scaduto da oltre 30 minuti senza che una prova lo difenda
+
+## 0.222.2 — 27 ottobre 2026
+
+### Risolto
+
+- Nelle gare togli, rimetti e incassa di nuovo non conta due volte
+- La ricevuta di una gara non registra due volte lo stesso incasso
+- Le funzioni dei pagamenti Satispay e delle ricevute per email ora hanno le loro prove
+- Il pagamento dei compensi si ferma ai 100.000 € per volta, e ora c'è la prova
+
 ## 0.222.1 — 25 ottobre 2026
 
 ### Modificato
