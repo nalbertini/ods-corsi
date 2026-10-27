@@ -47,6 +47,8 @@ end $$;
 drop trigger if exists saldo_banca_chi_verifica on saldo_banca;
 create trigger saldo_banca_chi_verifica before insert or update on saldo_banca
   for each row execute function saldo_banca_chi_verifica();
+-- Gira solo come trigger: il permesso si controlla quando si crea il trigger, non a ogni riga.
+revoke all on function saldo_banca_chi_verifica() from public, anon, authenticated;
 
 alter table saldo_banca enable row level security;
 
