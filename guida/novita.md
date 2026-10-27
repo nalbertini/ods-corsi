@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.222.5 — 27 ottobre 2026
+
+### Risolto
+
+- Chi ha un account non perde più l'email con cui entra
+
 ## 0.222.4 — 27 ottobre 2026
 
 ### Risolto
