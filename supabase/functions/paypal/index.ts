@@ -25,7 +25,8 @@
 // modulo pubblico chiama senza accesso): vedi `LEGGIMI.md`.
 // ---------------------------------------------------------------------------
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { siCattura, statoCarta, statoDopoCattura } from './stato.ts'
+import { catturaOrdine } from './cattura.ts'
+import { statoCarta } from './stato.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -232,18 +233,14 @@ Deno.serve(async (req) => {
     return risposta({ pagamento: nuovo ? { ...perIlBrowser(s), ...nuovo } : perIlBrowser(s) })
   }
 
-  // Oltre i 30 minuti l'ordine non vale più (`statoCarta`): lo si scrive e non si cattura, se no si incasserebbe
-  // un pagamento che il modulo ha già dato per non andato.
-  if (!siCattura(s.creato_il, new Date())) {
-    const nuovo = await scrivi(ordine, 'non-andato')
-    return risposta({ pagamento: nuovo ? { ...perIlBrowser(s), ...nuovo } : perIlBrowser(s) })
-  }
-  const fatto = await paypal('POST', `/v2/checkout/orders/${encodeURIComponent(ordine)}/capture`, {}, `cattura-${pagamento}`)
-  const esito = !fatto ? null : 'rifiuto' in fatto ? 'rifiuto' : { status: fatto.status, cattura: cattura(fatto) }
-  // Senza risposta, o con un no (la carta rifiutata, o già catturato e la prima risposta persa), decide l'ordine riletto.
-  const riletto = esito && esito !== 'rifiuto' ? null : await rileggi(ordine)
-  const stato = statoDopoCattura(esito, riletto, s.creato_il, new Date())
-  const nuovo = stato && (await scrivi(ordine, stato))
-  if (!nuovo) return risposta({ guaio: NON_RISPONDE }, 502)
-  return risposta({ pagamento: { ...perIlBrowser(s), ...nuovo } })
+  const r = await catturaOrdine(s, ordine, pagamento, new Date(), {
+    cattura: async (o, idempotenza) => {
+      const fatto = await paypal('POST', `/v2/checkout/orders/${encodeURIComponent(o)}/capture`, {}, idempotenza)
+      return !fatto ? null : 'rifiuto' in fatto ? 'rifiuto' : { status: fatto.status, cattura: cattura(fatto) }
+    },
+    rileggi,
+    scrivi,
+  })
+  if (r.errore) return risposta({ guaio: NON_RISPONDE }, 502)
+  return risposta({ pagamento: r.nuovo ? { ...perIlBrowser(s), ...r.nuovo } : perIlBrowser(s) })
 })
