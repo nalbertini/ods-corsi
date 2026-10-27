@@ -376,6 +376,8 @@ console.log('\n17 · INCASSA: CONTABILITÀ E RICEVUTA')
   ok('una riga di ricevuta «Iscrizione» non è più delle gare', m.voceDiSistema('Iscrizione'), 'Corsi e altri pagamenti')
   const dp = m.pagamentoPerRicevuta(trofeo, 'a', { metodo: 'Contanti', data: '2026-10-25' }, 'pag-1', 'chiave-1')
   ok('la ricevuta parte dal pagamento registrato, con la gara nella nota', [dp.personaId, dp.pagamentoId, dp.chiaveRicevuta, dp.nota], ['a', 'pag-1', 'chiave-1', trofeo.nome])
+  // Un pagamentoId perso farebbe registrare lo stesso incasso una seconda volta dalla ricevuta: meglio fermarsi.
+  ok('senza il pagamento registrato la ricevuta non parte', errore(() => m.pagamentoPerRicevuta(trofeo, 'a', { metodo: 'Contanti', data: '2026-10-25' }, '', 'chiave-1')), 'Il pagamento è registrato, ma la ricevuta non si apre: cercalo in PAGAMENTI della persona e fanne la ricevuta da lì')
   const voce = m.voceDaPagamento(dp)
   ok('e ha una riga sola, «Gare», col totale della quota', [voce.descrizione, voce.quantita, voce.prezzo], ['Gare', 1, 9000])
   ok('pagata il giorno e col metodo dell’incasso', voce.pagamenti, [{ data: '2026-10-25', importo: 9000, metodo: 'Contanti' }])
