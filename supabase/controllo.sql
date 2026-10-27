@@ -592,6 +592,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('120-abbina-cognome-nome-corso.sql', 'i movimenti non identificati propongono le persone anche dal solo cognome e dal nome col corso',
     exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%nome e corso%')),
   ('121-punteggio-movimenti.sql', 'i movimenti non identificati scelgono la persona con un punteggio, e preselezionano solo il primo «sicuro»',
-    exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%ci := array%'))
+    exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%ci := array%')),
+  ('122-avvisi-senza-quote.sql', 'una quota o un corso pagati dal telefono non sono un «pagamento senza richiesta»',
+    exists (select 1 from dentro where nome = 'avvisi_da_mandare' and corpo like '%s.persona_id is null%'))
 ) as x(file, cosa, c)
 order by file, cosa;

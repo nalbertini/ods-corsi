@@ -137,11 +137,6 @@ quando arriva la prova.
   email: nessuna prova.
 - Saldo Satispay: `least`/`greatest`, `ricevuta_id is null`, `utente_id`, le
   date `dal`/`al` si possono togliere senza che una prova cada.
-- `quota-satispay.sql`: pagamento `voce='quota'` senza richiesta (DA FARE).
-- `corso-satispay.sql`: paga dal suo telefono, e per un minorenne paga il
-  titolare (DA FARE).
-- RPC del client `pagaQuota`, `pagaCorso`, `statoCorso`, `chiPagaCorsi` in
-  `prova-iscritto-supabase.mjs` (DA FARE).
 - Compensi: `tenuti` in `anagraficaDi` (IBAN e province), `cosaNonVaLettera`,
   `lettereDellaScheda` con `sostituitaIl`, il tetto di 100.000 € in
   `paga_compensi`, `bastaUno` in `segreteriaSupabase.ts`.
