@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.223.1 — 27 ottobre 2026
+
+### Modificato
+
+- Il canvas unico senza le sezioni vecchie, con tutta la libreria
+
 ## 0.223.0 — 27 ottobre 2026
 
 ### Novità
