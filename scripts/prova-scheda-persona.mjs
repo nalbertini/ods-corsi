@@ -81,12 +81,12 @@ ok('solo il CF: la data dal CF', seg('natoIlDi', {}, { codiceFiscale: CF_ADULTO 
 
 console.log('\nA3. Il genitore del minorenne')
 const GEN_CF = /codice fiscale del genitore · serve per la ricevuta/
-ok('CF del genitore vuoto: la riga', conta(cosaManca(persona, { ...minore, genitoreCodiceFiscale: '' }), GEN_CF), 1)
-ok('CF del genitore non valido: la riga dice che non è giusto', conta(cosaManca(persona, { ...minore, genitoreCodiceFiscale: 'ABC' }), /codice fiscale del genitore.*non è giusto/), 1)
+ok('CF del genitore vuoto: nessuna riga, la ricevuta si fa', conta(cosaManca(persona, { ...minore, genitoreCodiceFiscale: '' }), GEN_CF), 0)
+ok('CF del genitore non valido: nessuna riga, la ricevuta si fa', conta(cosaManca(persona, { ...minore, genitoreCodiceFiscale: 'ABC' }), /codice fiscale del genitore.*non è giusto/), 0)
 ok('CF del genitore valido: nessuna riga', conta(cosaManca(persona, minore), /genitore/i), 0)
 ok('senza nome del genitore: la riga del nome', conta(cosaManca(persona, { ...minore, genitoreNome: '', genitoreCognome: '' }), /nome del genitore/i), 1)
 // Come la ricevuta (intestatarioDaRichiesta): senza nome il CF del genitore non conta.
-ok('senza nome del genitore: chiede anche il CF', conta(cosaManca(persona, { ...minore, genitoreNome: '', genitoreCognome: '' }), GEN_CF), 1)
+ok('senza nome del genitore: il CF non si chiede', conta(cosaManca(persona, { ...minore, genitoreNome: '', genitoreCognome: '' }), GEN_CF), 0)
 const primaRiga = cosaManca(persona, { ...adulta, codiceFiscale: '' })
 ok('le righe separano cosa e perché', Array.isArray(primaRiga) ? primaRiga[0] : primaRiga, { cosa: 'Codice fiscale', perche: 'serve per la ricevuta' })
 
@@ -114,8 +114,6 @@ const casi = [
   ['adulto senza CF', { ...adulta, codiceFiscale: '' }],
   ['adulto con CF sbagliato', { ...adulta, codiceFiscale: 'ABC' }],
   ['minore senza genitore', { ...minore, genitoreNome: '', genitoreCognome: '' }],
-  ['minore, CF del genitore vuoto', { ...minore, genitoreCodiceFiscale: '' }],
-  ['minore, CF del genitore sbagliato', { ...minore, genitoreCodiceFiscale: 'ABC' }],
   ['minore senza CF suo', { ...minore, codiceFiscale: '' }],
 ]
 for (const [nome, a] of casi) {
