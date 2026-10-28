@@ -336,8 +336,9 @@ export interface CampoCheManca {
 /**
  * Cosa manca nei dati del socio. Il codice fiscale la palestra lo vuole
  * sempre: per un adulto il suo; per un minore il suo e, siccome la ricevuta va
- * al genitore, anche nome e codice fiscale del genitore. Senza, la ricevuta
- * non si fa, e nemmeno con un codice scritto sbagliato, che sulla ricevuta
+ * al genitore, anche il nome del genitore; il suo codice fiscale per ora si
+ * può lasciare vuoto (lo si dice e basta, come l'indirizzo). Senza il resto, la
+ * ricevuta non si fa, e nemmeno con un codice scritto sbagliato, che sulla ricevuta
  * varrebbe quanto uno vuoto. L'indirizzo si può lasciare vuoto: lo si dice e
  * basta. Minore o no si decide al `giorno` della ricevuta, non a oggi. Senza
  * NATO IL la data si legge dal codice fiscale, se è giusto: un bambino col
@@ -354,7 +355,7 @@ export function mancanoDatiSocio(i: IntestatarioRicevuta, giorno = new Date()) {
     ...(minore
       ? [
           { campo: 'genitore' as const, testo: 'il genitore', blocca: true },
-          { campo: 'genitoreCodiceFiscale' as const, testo: 'il codice fiscale del genitore', blocca: true },
+          { campo: 'genitoreCodiceFiscale' as const, testo: 'il codice fiscale del genitore', blocca: false },
         ]
       : []),
   ]

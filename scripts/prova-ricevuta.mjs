@@ -395,8 +395,8 @@ const OGGI_SOCIO = new Date('2026-09-10')
 const manca = (campo, testo) => ({ campo, testo })
 ok('un adulto senza codice fiscale: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: '' }, OGGI_SOCIO)), { minore: false, blocca: [manca('codiceFiscale', 'il codice fiscale')], avvisa: [] })
 ok('un adulto senza indirizzo: si fa, ma lo dice', prova(() => m.mancanoDatiSocio({ ...adulto, indirizzo: '  ' }, OGGI_SOCIO)), { minore: false, blocca: [], avvisa: [manca('indirizzo', 'l’indirizzo')] })
-ok('un minore senza il codice fiscale del genitore: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, genitoreCodiceFiscale: undefined }, OGGI_SOCIO)), { minore: true, blocca: [manca('genitoreCodiceFiscale', 'il codice fiscale del genitore')], avvisa: [] })
-ok('un minore senza il genitore: servono nome e codice fiscale', prova(() => m.mancanoDatiSocio({ ...minore, genitore: undefined, genitoreCodiceFiscale: undefined }, OGGI_SOCIO).blocca), [manca('genitore', 'il genitore'), manca('genitoreCodiceFiscale', 'il codice fiscale del genitore')])
+ok('un minore senza il codice fiscale del genitore: si fa, ma lo dice (per ora)', prova(() => m.mancanoDatiSocio({ ...minore, genitoreCodiceFiscale: undefined }, OGGI_SOCIO)), { minore: true, blocca: [], avvisa: [manca('genitoreCodiceFiscale', 'il codice fiscale del genitore')] })
+ok('un minore senza il genitore: serve il nome', prova(() => m.mancanoDatiSocio({ ...minore, genitore: undefined, genitoreCodiceFiscale: undefined }, OGGI_SOCIO).blocca), [manca('genitore', 'il genitore')])
 ok('un minore senza il suo codice fiscale: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, codiceFiscale: ' ' }, OGGI_SOCIO)), { minore: true, blocca: [manca('codiceFiscale', 'il codice fiscale del socio')], avvisa: [] })
 ok('un adulto con tutto: completo', prova(() => m.mancanoDatiSocio(adulto, OGGI_SOCIO)), { minore: false, blocca: [], avvisa: [] })
 ok('un minore con tutto: completo', prova(() => m.mancanoDatiSocio(minore, OGGI_SOCIO)), { minore: true, blocca: [], avvisa: [] })
@@ -409,7 +409,7 @@ ok('alla data della ricevuta del 1° ottobre non più', prova(() => m.mancanoDat
 // ricevuta finirebbe un codice che l'Agenzia delle entrate rifiuta.
 ok('un adulto col codice fiscale «R»: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: 'R' }, OGGI_SOCIO).blocca), [manca('codiceFiscale', 'il codice fiscale non è giusto')])
 ok('un minore col suo codice fiscale «R»: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, codiceFiscale: 'R' }, OGGI_SOCIO).blocca), [manca('codiceFiscale', 'il codice fiscale del socio non è giusto')])
-ok('un minore col codice fiscale del genitore «F»: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, genitoreCodiceFiscale: 'F' }, OGGI_SOCIO).blocca), [manca('genitoreCodiceFiscale', 'il codice fiscale del genitore non è giusto')])
+ok('un minore col codice fiscale del genitore «F»: si fa, ma lo dice', prova(() => m.mancanoDatiSocio({ ...minore, genitoreCodiceFiscale: 'F' }, OGGI_SOCIO)), { minore: true, blocca: [], avvisa: [manca('genitoreCodiceFiscale', 'il codice fiscale del genitore non è giusto')] })
 ok('sedici caratteri con l’ultimo sbagliato: non è giusto', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: 'LBRNCL80C02L219X' }, OGGI_SOCIO).blocca), [manca('codiceFiscale', 'il codice fiscale non è giusto')])
 ok('un codice giusto scritto in minuscolo e con gli spazi: va', prova(() => m.mancanoDatiSocio({ ...minore, codiceFiscale: 'lbrmnl 14h53 l219x', genitoreCodiceFiscale: ' lbrncl80c02l219f ' }, OGGI_SOCIO).blocca), [])
 ok('un codice con l’omocodia (lettere al posto delle cifre): va', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: 'LBRNCL80C02L21VU' }, OGGI_SOCIO).blocca), [])
@@ -417,7 +417,7 @@ ok('un codice con l’omocodia (lettere al posto delle cifre): va', prova(() => 
 // Senza NATO IL la data di nascita sta nel codice fiscale: un bambino del 2018
 // non diventa adulto perché il campo è vuoto.
 const bimbo = { ...adulto, natoIl: '', codiceFiscale: 'GRDLRD18A01L219E' }
-ok('senza NATO IL, il codice fiscale di un nato nel 2018: è minore', prova(() => m.mancanoDatiSocio(bimbo, OGGI_SOCIO)), { minore: true, blocca: [manca('genitore', 'il genitore'), manca('genitoreCodiceFiscale', 'il codice fiscale del genitore')], avvisa: [] })
+ok('senza NATO IL, il codice fiscale di un nato nel 2018: è minore', prova(() => m.mancanoDatiSocio(bimbo, OGGI_SOCIO)), { minore: true, blocca: [manca('genitore', 'il genitore')], avvisa: [manca('genitoreCodiceFiscale', 'il codice fiscale del genitore')] })
 ok('senza NATO IL, il codice fiscale di un nato nel 1980: è adulto', prova(() => m.mancanoDatiSocio({ ...adulto, natoIl: '' }, OGGI_SOCIO)), { minore: false, blocca: [], avvisa: [] })
 ok('senza NATO IL, il codice in minuscolo con gli spazi: è minore lo stesso', prova(() => m.mancanoDatiSocio({ ...bimbo, codiceFiscale: 'grdlrd 18a01 l219e' }, OGGI_SOCIO).minore), true)
 ok('NATO IL scritto vince sul codice fiscale', prova(() => m.mancanoDatiSocio({ ...bimbo, natoIl: '1980-03-02' }, OGGI_SOCIO).minore), false)

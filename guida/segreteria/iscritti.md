@@ -438,7 +438,9 @@ vedere che ha pagato basta la scheda della persona: la quota dice quanto manca.
   ricevuta; con **NATO IL** vuoto, dalla data scritta nel codice fiscale. Si
   correggono per la ricevuta, la scheda non cambia.
   - Il **codice fiscale** serve sempre: quello del socio e, per un minore,
-    anche nome e codice fiscale del genitore. Se manca, o è scritto ma non
+    il nome del genitore. Il codice fiscale del genitore per ora si può
+    lasciare vuoto: la ricevuta si fa lo stesso e i dati ricordano che manca.
+    Se un codice che serve manca, o è scritto ma non
     è giusto («il codice fiscale non è giusto»), i dati si aprono da soli col
     campo segnato in rosso, e **FAI LA RICEVUTA** resta spento finché non lo
     si sistema. Aperti all'inizio restano aperti mentre si scrive: si
