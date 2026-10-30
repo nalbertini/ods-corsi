@@ -10,6 +10,14 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.223.3 — 30 ottobre 2026
+
+### Risolto
+
+- I tablet di sala usavano un indirizzo email su un dominio non nostro
+- Nei fogli CSV delle presenze un nome che comincia per = non diventa più una formula di Excel
+- Il collegamento di Claude si approva solo se viene davvero da Claude
+
 ## 0.223.2 — 28 ottobre 2026
 
 ### Modificato
