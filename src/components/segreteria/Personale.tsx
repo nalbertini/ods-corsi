@@ -5,6 +5,7 @@ import { personaCambiata } from '../../lib/segreteria'
 import { lette } from '../../lib/letture'
 import { daSpunte, insegna, nomeDelRuolo, puo, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga, giornoPerEsteso, oraDi } from '../../lib/sala'
+import { csv } from '../../lib/vestiario'
 import { chiedi, Campo, Guaio, lasciare, MenuAzioni, Riga, SchedaPiena, suCarta, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina, Tasto } from './comune'
 import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
@@ -760,11 +761,10 @@ function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: P
 
 /** Le lezioni confermate del mese in un foglio da aprire con Excel, come il registro delle presenze. */
 function scaricaCsv(righe: PresenzaIstruttoreSeg[], chi: string, mese: string) {
-  const q = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
-  const testo = [
-    ['data', 'inizio', 'fine', 'ore', 'corso', 'sala', 'previsto'].join(';'),
-    ...righe.map((x) => [chiaveGiorno(new Date(x.inizio)), oraDi(x.inizio), oraDi(x.fine), ore(minutiDi(x)), x.corso, x.sala ?? '', x.prevista ? 'sì' : 'no'].map(q).join(';')),
-  ].join('\r\n')
+  const testo = csv([
+    ['data', 'inizio', 'fine', 'ore', 'corso', 'sala', 'previsto'],
+    ...righe.map((x) => [chiaveGiorno(new Date(x.inizio)), oraDi(x.inizio), oraDi(x.fine), ore(minutiDi(x)), x.corso, x.sala ?? '', x.prevista ? 'sì' : 'no']),
+  ])
   const url = URL.createObjectURL(new Blob(['\ufeff' + testo], { type: 'text/csv;charset=utf-8' }))
   const a = document.createElement('a')
   a.href = url

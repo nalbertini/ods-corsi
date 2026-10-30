@@ -3,22 +3,13 @@ import type { DatiSegreteria, ProvaSeg, RigaRegistro } from '../../lib/segreteri
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { Guaio, Riga, Testa, useCarica, Tasto } from './comune'
+import { csvRegistro } from '../../lib/presenzeCsv'
 import { mesi } from '../../lib/ore'
 import { accorcia, chiSiStaPerdendo, conAppello, DI_FILA, GIORNI_RECENTI } from '../../lib/frequenza'
 
 /** Il registro del mese in un foglio da aprire con Excel: punto e virgola e BOM, come i fogli che si importano. */
 function scaricaCsv(righe: RigaRegistro[], nome: string) {
-  const q = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
-  const testo = [
-    ['data', 'ora', 'corso', 'sala', 'istruttore', 'cognome', 'nome', 'stato'].join(';'),
-    ...righe.flatMap((r) =>
-      r.appello.map((p) =>
-        [chiaveGiorno(new Date(r.inizio)), oraDi(r.inizio), r.corso, r.sala ?? '', r.istruttori, p.cognome, p.nome, r.stato === 'annullata' ? 'lezione annullata' : (p.stato ?? '')]
-          .map(q)
-          .join(';'),
-      ),
-    ),
-  ].join('\r\n')
+  const testo = csvRegistro(righe)
   const url = URL.createObjectURL(new Blob(['﻿' + testo], { type: 'text/csv;charset=utf-8' }))
   const a = document.createElement('a')
   a.href = url

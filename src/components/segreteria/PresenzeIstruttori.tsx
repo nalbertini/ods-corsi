@@ -3,6 +3,7 @@ import { comeArrivata, previstiSenzaPresenza, type DatiSegreteria, type LezioneS
 import type { StatoPresenzaIstruttore } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { mesi } from '../../lib/ore'
+import { csv } from '../../lib/vestiario'
 import { SOCIETA } from '../../lib/cartaPdf'
 import { lette } from '../../lib/letture'
 import { chiedi, Guaio, suCarta, Testa, useAvviso, useCarica, useOrdina, Tasto } from './comune'
@@ -21,9 +22,8 @@ const minuti = (x: PresenzaIstruttoreSeg) => Math.round((Date.parse(x.fine) - Da
  * all'italiana, «1,5», per moltiplicarle per la paga oraria.
  */
 function scaricaCsv(righe: PresenzaIstruttoreSeg[], nome: string) {
-  const q = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
-  const testo = [
-    ['data', 'inizio', 'fine', 'ore', 'istruttore', 'corso', 'previsto', 'sala', 'entrato', 'stato', 'gestita da', 'gestita il'].join(';'),
+  const testo = csv([
+    ['data', 'inizio', 'fine', 'ore', 'istruttore', 'corso', 'previsto', 'sala', 'entrato', 'stato', 'gestita da', 'gestita il'],
     ...righe.map((x) =>
       [
         chiaveGiorno(new Date(x.inizio)),
@@ -38,11 +38,9 @@ function scaricaCsv(righe: PresenzaIstruttoreSeg[], nome: string) {
         STATI[x.stato],
         x.gestitaIl ? (x.gestitaDa ?? '') : x.prevista ? 'da sé: era previsto' : '',
         x.gestitaIl ? `${chiaveGiorno(new Date(x.gestitaIl))} ${oraDi(x.gestitaIl)}` : '',
-      ]
-        .map(q)
-        .join(';'),
+      ],
     ),
-  ].join('\r\n')
+  ])
   const url = URL.createObjectURL(new Blob(['\ufeff' + testo], { type: 'text/csv;charset=utf-8' }))
   const a = document.createElement('a')
   a.href = url

@@ -3,6 +3,7 @@ import type { DatiSegreteria, LezioneStat, PersonaSeg, ProvaSeg } from '../../li
 import { comePaga, contaCertificati, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
+import { csv } from '../../lib/vestiario'
 import { Colonne, Guaio, Riga, Testa, useCarica, useOrdina, Tasto } from './comune'
 import { Numero } from './Presenze'
 import { StatisticheSito } from './StatisticheSito'
@@ -89,19 +90,16 @@ const plurale = (n: number, uno: string, tanti: string) => `${n} ${n === 1 ? uno
 
 /** I numeri di ogni lezione in un foglio da aprire con Excel, come il CSV di PRESENZE. */
 function scaricaCsv(lezioni: LezioneStat[], nome: string) {
-  const q = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
-  const testo = [
-    ['data', 'ora', 'corso', 'sala', 'istruttore', 'stato', 'iscritti', 'presenti', 'assenti', 'giustificati', 'prove', 'capienza'].join(';'),
+  const testo = csv([
+    ['data', 'ora', 'corso', 'sala', 'istruttore', 'stato', 'iscritti', 'presenti', 'assenti', 'giustificati', 'prove', 'capienza'],
     ...lezioni.map((l) =>
       [
         chiaveGiorno(new Date(l.inizio)), oraDi(l.inizio), l.corso, l.sala ?? '', l.istruttori.join(', '),
         l.stato === 'annullata' ? 'annullata' : conAppello(l) ? 'con appello' : 'senza appello',
         String(l.iscritti), String(l.presenti), String(l.assenti), String(l.giustificati), String(l.prove), l.capienza ? String(l.capienza) : '',
-      ]
-        .map(q)
-        .join(';'),
+      ],
     ),
-  ].join('\r\n')
+  ])
   const url = URL.createObjectURL(new Blob(['﻿' + testo], { type: 'text/csv;charset=utf-8' }))
   const a = document.createElement('a')
   a.href = url
