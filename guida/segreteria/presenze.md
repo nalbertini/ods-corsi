@@ -13,7 +13,7 @@ questo sta in un riquadro a parte e non abbassa le medie.
 
 - il **mese** da guardare, o gli **ultimi 30 giorni** (quelli di DA FARE, anche a cavallo di due mesi);
 - **Tutti i corsi**, o un corso solo;
-- **Scarica CSV** — il registro del periodo in un file che si apre con Excel.
+- **Scarica CSV** — il registro del periodo in un file che si apre con Excel. Un nome che comincia per `=`, `+`, `-` o `@` esce col segno ' davanti, così Excel lo legge come testo e non lo calcola; vale anche per gli altri fogli (istruttori, statistiche, ore del mese).
 
 ## Com'è andato il mese
 
