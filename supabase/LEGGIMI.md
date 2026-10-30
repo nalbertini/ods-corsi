@@ -148,6 +148,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 121. `121-punteggio-movimenti.sql` — chi ha pagato un movimento non identificato si sceglie con un punteggio al posto delle regole in cascata di `119` e `120`: `abbina_pagatori_movimento` somma nome intero (4), codice fiscale letto (4), genitore intero (3), storico (3: un altro movimento con le stesse parole, senza le cifre, già collegato a quella persona), corso dell'importo col cognome (2), nome e corso (2) e cognome (1; da solo propone solo se nessuno ha di più), e rende in più `sicuro`, vero solo per il primo se ha almeno 4, almeno 2 più del secondo e non è già iscritto: l'app preseleziona solo lui, mai per «nome e corso». I corsi dell'importo li ricava dal listino: il parametro `corsi` non conta più. Il punteggio non esce. `parole_pagatori` toglie l'apostrofo dopo una vocale a fine parola, come l'app. `abbina_testo_banca` rende per ogni movimento il segno più forte, senza cascata. Solo l'amministrazione. Prova: `prova/abbina-movimenti.sql`. Si lancia dopo `120`; rilanciando `119` o `120` va rilanciato anche questo.
 122. `122-avvisi-senza-quote.sql` — gli avvisi alla segreteria non scambiano più una quota o un corso pagati dal telefono (`105`, `106`) per un «pagamento senza richiesta»: `avvisi_da_mandare()` rifatta com'è in `84`, ma il ramo `pagamento_senza_richiesta` guarda solo i pagamenti senza `persona_id`, cioè quelli fatti in fondo al modulo. Prima, ogni quota pagata dall'area iscritti faceva partire un'ora dopo l'avviso «soldi da restituire o persona da chiamare». Prova: `prova/quota-satispay.sql`. Si lancia dopo `121`; rilanciando `84` va rilanciato anche questo.
 123. `123-quadratura-banca.sql` — il saldo dell'estratto BancoPosta, mese per mese: `saldo_banca` (mese `AAAA-MM` una volta sola, saldo iniziale, entrate, uscite, saldo finale in centesimi, con iniziale + entrate − uscite = finale) e la verifica del mese (chi, quando e l'impronta dei movimenti, sempre insieme). Il confronto coi movimenti lo fa l'app. Legge e scrive solo l'amministrazione, anche col ruolo doppio, come movimenti e casse. Prova: `prova/quadratura-banca.sql`. Si lancia dopo `59-contabilita.sql`; non chiede di rilanciare `06-iscrizioni.sql`.
+124. `124-dominio-sale.sql` — gli account dei tablet su un dominio nostro: l'email passa da `@sale.ods-corsi.it` (dominio non registrato: chi lo comprava riceveva codici di accesso e recuperi password) a `@sale.officinedellosport.it`, solo per gli utenti che sono un tablet; utente, password e sessioni restano
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -218,6 +219,7 @@ Per Satispay separato dal Conto Corrente basta `116-satispay-separato.sql` (dopo
 Per le gare basta `117-gare.sql` (dopo `116`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, GARE dice «non ancora disponibile» e il resto dell'app non cambia.
 Per le chiusure basta `118-chiusure.sql` (dopo `117`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, il tasto della chiusura in SETTIMANA dice «non ancora disponibile» e il resto dell'app non cambia.
 Per la quadratura col saldo della banca basta `123-quadratura-banca.sql` (dopo `121`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, in CONTABILITÀ → Casse il riquadro «Il conto con la banca» dice quale file lanciare e il resto dell'app non cambia.
+Per gli account dei tablet basta `124-dominio-sale.sql` (non chiede di rilanciare `06-iscrizioni.sql`): va lanciato prima di pubblicare l'app, se no un tablet che si ricollega cerca l'indirizzo nuovo e non lo trova.
 `15-presenze-istruttori.sql` (dopo `04-tablet.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, il tablet apre l'area
 istruttore come prima senza segnare niente, e PRESENZE ISTRUTTORI in
@@ -820,8 +822,8 @@ I numeri stanno in `tablet_regole()`, in cima a `04-tablet.sql`.
 
 Per metterne uno in una sala: la sala ha un **nome utente** e una password,
 non un'email. Supabase però vuole un'email, e l'app aggiunge da sé
-`@sale.ods-corsi.it` al nome utente (vedi `DOMINIO_SALE` in `src/lib/tablet.ts`):
-a quell'indirizzo non arriva mai niente, serve solo da nome.
+`@sale.officinedellosport.it` al nome utente (vedi `DOMINIO_SALE` in `src/lib/tablet.ts`):
+a quell'indirizzo non arriva niente (`sale.` non ha caselle e il dominio è dell'associazione), serve solo da nome. Gli account fatti col dominio vecchio (`@sale.ods-corsi.it`, non registrato) li sposta `124-dominio-sale.sql`.
 
 Il modo più corto è **`account-sale.sql`** nel SQL Editor: per ogni sala che
 non ha ancora un tablet crea l'utente e la riga in `postazioni`, e alla fine
@@ -831,13 +833,13 @@ password si vedono solo lì, una volta: vanno scritte subito. Si rilancia senza
 danni, e una sala aggiunta dopo prende il suo account al giro successivo.
 
 A mano, per una sala sola: si crea un utente in **Authentication → Users → Add
-user → Create new user**, con email `lotta@sale.ods-corsi.it`, una password
+user → Create new user**, con email `lotta@sale.officinedellosport.it`, una password
 lunga e **Auto Confirm User** acceso, poi
 
 ```sql
 insert into postazioni (nome, sala_id, utente_id)
 select 'Tablet Lotta', (select id from sale where nome = 'Lotta'),
-       (select id from auth.users where email = 'lotta@sale.ods-corsi.it');
+       (select id from auth.users where email = 'lotta@sale.officinedellosport.it');
 ```
 
 e sul tablet si apre l'app con `sala/` in fondo all'indirizzo (per esempio
