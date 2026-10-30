@@ -208,12 +208,13 @@ export interface DatiTablet {
 //
 // Una sala non ha un'email: ha un nome utente, «lotta», e una password.
 // Supabase però fa entrare solo con un'email, e allora il nome diventa
-// un'email interna, `lotta@sale.ods-corsi.it`, che è quella con cui la
-// segreteria crea l'utente. Non ci arriva mai niente: serve solo da nome.
+// un'email interna, `lotta@sale.officinedellosport.it`, che è quella con cui la
+// segreteria crea l'utente. Non ci arriva niente: `sale.` non ha caselle, e il
+// dominio è dell'associazione (un dominio di altri riceverebbe i codici di accesso).
 // Chi scrive un'email intera entra con quella, così valgono anche gli
 // account fatti prima.
 // ---------------------------------------------------------------------------
-export const DOMINIO_SALE = 'sale.ods-corsi.it'
+export const DOMINIO_SALE = 'sale.officinedellosport.it'
 
 export function emailDellaSala(utente: string): string {
   const u = utente.trim().toLowerCase()

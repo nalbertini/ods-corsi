@@ -598,6 +598,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('123-quadratura-banca.sql', 'il saldo dell''estratto della banca mese per mese, per la quadratura del Conto Corrente',
     to_regclass('public.saldo_banca') is not null
     and exists (select 1 from pg_constraint where conname = 'saldo_banca_torna')
-    and exists (select 1 from dentro where nome = 'saldo_banca_chi_verifica' and corpo like '%impronta_verifica := null%'))
+    and exists (select 1 from dentro where nome = 'saldo_banca_chi_verifica' and corpo like '%impronta_verifica := null%')),
+  ('124-dominio-sale.sql', 'nessun tablet con l''email sul dominio vecchio (non registrato)',
+    not exists (select 1 from auth.users u join postazioni p on p.utente_id = u.id where u.email ilike '%@sale.ods-corsi.it'))
 ) as x(file, cosa, c)
 order by file, cosa;

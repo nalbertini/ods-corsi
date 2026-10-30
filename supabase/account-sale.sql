@@ -13,9 +13,10 @@
 --
 -- Il nome utente è il nome della sala in minuscolo, senza accenti e con i
 -- trattini al posto degli spazi («Sala grande» → `sala-grande`). Supabase
--- vuole un'email, e l'email è il nome utente più `@sale.ods-corsi.it`, lo
+-- vuole un'email, e l'email è il nome utente più `@sale.officinedellosport.it`, lo
 -- stesso dominio che il tablet aggiunge da sé (`DOMINIO_SALE` in
--- `src/lib/tablet.ts`): a quell'indirizzo non arriva mai niente.
+-- `src/lib/tablet.ts`): è dell'associazione e `sale.` non ha caselle, quindi
+-- a quell'indirizzo non arriva niente (e nessun altro può riceverci i codici).
 --
 -- Si rilancia senza danni: una sala che ha già un tablet attivo si salta, e
 -- se l'utente c'è già (fatto a mano, o da un giro prima) si usa quello e la
@@ -43,7 +44,7 @@ begin
     utente := trim(both '-' from regexp_replace(
       translate(lower(s.nome), 'àáâäèéêëìíîïòóôöùúûüç', 'aaaaeeeeiiiioooouuuuc'),
       '[^a-z0-9]+', '-', 'g'));
-    indirizzo := utente || '@sale.ods-corsi.it';
+    indirizzo := utente || '@sale.officinedellosport.it';
 
     select u.id into uid from auth.users u where lower(u.email) = indirizzo;
     if uid is null then
