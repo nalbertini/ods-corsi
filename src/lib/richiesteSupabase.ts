@@ -180,6 +180,8 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             conosciuto: d.conosciuto,
             // Il pagamento fatto in fondo al modulo: senza 83-satispay-prima.sql la chiave si ignora.
             pagamento_satispay: d.pagamentoSatispay,
+            // Chi ha pagato è chi manda: senza 124-satispay-chiave.sql il database la ignora.
+            chiave_pagamento: d.chiavePagamento,
             // Le richieste della stessa famiglia: senza 84-avvisi-segreteria.sql la chiave si ignora.
             invio: d.invio,
             // Il titolare del nucleo: senza 100-nucleo.sql la chiave si ignora; senza nucleo non parte.
@@ -211,7 +213,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
     async prepara(x, metodo) {
       const carta = metodo === 'carta'
       const errore = carta ? ERRORE_CARTA : ERRORE_SATISPAY
-      const r = await (carta ? paypal : satispay)({ azione: 'prepara', corso: x.corso, formula: x.formula, nome: x.nome, cognome: x.cognome, email: x.email, ...(carta ? { chiave: x.chiave } : {}) })
+      const r = await (carta ? paypal : satispay)({ azione: 'prepara', corso: x.corso, formula: x.formula, nome: x.nome, cognome: x.cognome, email: x.email, chiave: x.chiave ?? '' })
       // Senza il file SQL (83-satispay-prima, 115-carta) la funzione dice che il servizio non c'è: si paga col bonifico.
       if (r.attivo === false) throw new Error(carta ? CARTA_SPENTA : SATISPAY_SPENTO)
       if (typeof r.id !== 'string' || typeof r.importo !== 'number') throw new Error(errore)

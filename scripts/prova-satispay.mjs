@@ -439,11 +439,11 @@ console.log('\n9. in prova: prima paghi, poi mandi')
   const listino = await aspetta(async () => (await seg.listino()).listino)
   const corsi = await aspetta(async () => (await seg.corsi()).filter((x) => x.id === 'judo-adulti'))
   const stima = prova(() => p.stimaIscrizione({ chi: 'Rossi Luca', corsi, formula: 'annuale' }, [], '2026-10-20', listino))
-  const scelta = { corso: 'judo-adulti', formula: 'annuale', nome: 'Luca', cognome: 'Rossi', email: 'luca.prima@esempio.it' }
+  const scelta = { corso: 'judo-adulti', formula: 'annuale', nome: 'Luca', cognome: 'Rossi', email: 'luca.prima@esempio.it', chiave: 'k-luca' }
   const modulo = (cambi = {}) => ({
     nome: 'Luca', cognome: 'Rossi', natoIl: '1996-01-01', natoA: 'Torino', codiceFiscale: 'RSSLCU96A01L219K',
     indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'luca.prima@esempio.it', telefono: '347 111 2233',
-    corsi: ['judo-adulti'], formula: 'annuale', regolamento: true, ...cambi,
+    corsi: ['judo-adulti'], formula: 'annuale', regolamento: true, chiavePagamento: 'k-luca', ...cambi,
   })
   const quante = async () => (await aspetta(() => r.richieste())).length
 
@@ -459,6 +459,10 @@ console.log('\n9. in prova: prima paghi, poi mandi')
 
   await aspetta(() => pp.pagaSatispayProva(primo.id))
   ok('aperto il link: pagato', await aspetta(async () => (await r.statoSatispay(primo.id))?.stato), 'pagato')
+  ok('senza chiave: ricarica la pagina, come il database', await aspetta(() => r.prepara({ ...scelta, chiave: undefined })), 'ERRORE: Ricarica la pagina e riprova a pagare')
+  ok('un altro browser non ritrova il pagamento: ne ha uno suo', await aspetta(async () => (await r.prepara({ ...scelta, chiave: 'k-ladro' })).id !== primo.id), true)
+  ok('l’id di un altro, con la chiave di un altro: no', await aspetta(() => r.invia(modulo({ chiavePagamento: 'k-ladro', pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_ALTRO_BROWSER}`)
+  ok('l’id di un altro, senza chiave: no', await aspetta(() => r.invia(modulo({ chiavePagamento: undefined, pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_ALTRO_BROWSER}`)
   ok('pagato per l’annuale, la richiesta col trimestre: no', await aspetta(() => r.invia(modulo({ formula: 'trimestre', pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_ALTRA_SCELTA}`)
   ok('un pagamento che non c’è: no', await aspetta(() => r.invia(modulo({ pagamentoSatispay: 'sp-che-non-ce' }))), `ERRORE: ${s.PAGAMENTO_NON_VALE}`)
   ok('pagato per un corso, la richiesta per un altro: no', await aspetta(() => r.invia(modulo({ corsi: ['judo-agonisti'], pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_ALTRA_SCELTA}`)

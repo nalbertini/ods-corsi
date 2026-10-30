@@ -250,7 +250,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
 
   // La scelta per cui si paga e chi paga: con Satispay o la carta sempre un corso solo (`nonSemplice`).
   const metodo: 'carta' | undefined = modo === 'carta' ? 'carta' : undefined
-  const scelta = (modo === 'satispay' || modo === 'carta') && scelti.length === 1 ? { corso: scelti[0].id, formula: b.formula, nome: b.nome, cognome: b.cognome, email: b.email, chiave: metodo && chiaveDelBrowser() } : null
+  const scelta = (modo === 'satispay' || modo === 'carta') && scelti.length === 1 ? { corso: scelti[0].id, formula: b.formula, nome: b.nome, cognome: b.cognome, email: b.email, chiave: chiaveDelBrowser() } : null
 
   const errori = problemi(pronta)
 
@@ -463,7 +463,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       // Da dove arriva: l'etichetta del link della visita e la risposta; dall'area iscritti «area-iscritti», senza domanda.
       const { conosciuto, ...risposte } = pronta
       // Con Satispay la richiesta prende con sé il pagamento già fatto: senza, il database la rifiuta.
-      id = await d!.invia({ ...risposte, ...origineDellaRichiesta(!!nucleo, conosciuto), pagamentoSatispay: pagamentoDaMandare(modo, sp) })
+      id = await d!.invia({ ...risposte, ...origineDellaRichiesta(!!nucleo, conosciuto), pagamentoSatispay: pagamentoDaMandare(modo, sp), chiavePagamento: chiaveDelBrowser() })
     } catch (e) {
       setFase({ tipo: 'compila' })
       return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')

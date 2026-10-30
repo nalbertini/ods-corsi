@@ -77,6 +77,8 @@ export interface DatiRichiesta {
    * arrivato ed è per il suo corso e la sua formula.
    */
   pagamentoSatispay?: string
+  /** La chiave del browser che ha pagato (`chiaveDelBrowser`): senza, il pagamento di un altro non si prende (`124-satispay-chiave.sql`). */
+  chiavePagamento?: string
   /**
    * Lo stesso per tutte le richieste mandate insieme dal modulo (una
    * famiglia): la segreteria ne riceve un avviso solo (`84-avvisi-segreteria.sql`).
@@ -362,7 +364,7 @@ export function tipiDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new D
 }
 
 /** I campi del modulo che possono non andare, per segnarli uno per uno. */
-export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'provenienza' | 'conosciuto' | 'pagamentoSatispay' | 'invio'>
+export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'provenienza' | 'conosciuto' | 'pagamentoSatispay' | 'chiavePagamento' | 'invio'>
 
 /**
  * Una cosa che non va: `messaggio` è quello del server, `testo` quello corto

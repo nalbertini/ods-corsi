@@ -50,7 +50,7 @@ export interface PagamentoSatispay {
   voce?: 'quota' | 'corso'
   /** Pagato con la carta (`115-carta.sql`): assente, è Satispay. */
   circuito?: 'carta'
-  /** Con la carta, la chiave del browser che l'ha preparato (`chiaveDelBrowser`). */
+  /** La chiave del browser che l'ha preparato (`chiaveDelBrowser`). */
   chiave?: string
 }
 
@@ -61,8 +61,8 @@ const CHIAVE_DEL_BROWSER = 'ods-chiave-pagamento'
 let chiaveInMemoria: string | undefined
 
 /**
- * La chiave di questo browser per i pagamenti con la carta (`115-carta.sql`):
- * solo chi l'ha fatto ritrova un pagamento, non chi conosce nome, email e
+ * La chiave di questo browser per i pagamenti, con la carta e con Satispay
+ * (`115-carta.sql`, `124-satispay-chiave.sql`): solo chi l'ha fatto ritrova un pagamento, non chi conosce nome, email e
  * scelta. Resta in localStorage per ritrovarlo dopo aver ricaricato la pagina;
  * senza (navigazione privata) vale finché resta aperta la pagina.
  */
@@ -91,6 +91,8 @@ export const ERRORE_SATISPAY = 'Satispay non risponde: riprova fra qualche minut
 export const PAGAMENTO_NON_ARRIVATO = 'Il pagamento Satispay non è ancora arrivato: conferma in Satispay e riprova'
 export const PAGAMENTO_ALTRA_SCELTA = 'Il pagamento Satispay era per un altro corso o un’altra formula: rimetti la scelta di prima, o chiama la segreteria'
 export const PAGAMENTO_NON_VALE = 'Questo pagamento Satispay non vale più: paga di nuovo in fondo al modulo'
+export const PAGAMENTO_ALTRO_BROWSER = 'Il pagamento Satispay è stato fatto da un altro browser: apri il modulo da dove hai pagato, o chiama la segreteria'
+export const PAGAMENTO_CARTA_ALTRO_BROWSER = 'Il pagamento con la carta è stato fatto da un altro browser: apri il modulo da dove hai pagato, o chiama la segreteria'
 export const PAGAMENTO_ALTRA_PERSONA = 'Il pagamento Satispay è a un altro nome o un’altra email: rimetti quelli di prima, o chiama la segreteria'
 /** Nome o cognome oltre la misura della colonna: lo stesso testo di `satispay_prepara_prima`. */
 export const NOME_TROPPO_LUNGO = 'Un campo non va: nome e cognome hanno al massimo 80 caratteri'
@@ -425,7 +427,7 @@ export type SceltaPaga = {
   nome: string
   cognome: string
   email: string
-  /** Con la carta, la chiave del browser (`chiaveDelBrowser`). */
+  /** La chiave del browser (`chiaveDelBrowser`). */
   chiave?: string
 }
 

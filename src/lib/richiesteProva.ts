@@ -14,6 +14,8 @@ import {
   NOME_TROPPO_LUNGO,
   nonSemplice,
   PAGAMENTO_ALTRA_PERSONA,
+  PAGAMENTO_ALTRO_BROWSER,
+  PAGAMENTO_CARTA_ALTRO_BROWSER,
   PAGAMENTO_ALTRA_SCELTA,
   PAGAMENTO_CARTA_ALTRA_PERSONA,
   PAGAMENTO_CARTA_ALTRA_SCELTA,
@@ -223,7 +225,7 @@ export function creaRichiesteProva(): DatiRichieste {
     },
 
     // In prova nessun avviso parte: la chiave dell'invio non serve.
-    async invia({ pagamentoSatispay, invio: _invio, ...dati }) {
+    async invia({ pagamentoSatispay, chiavePagamento, invio: _invio, ...dati }) {
       const guaio = controlla(dati)
       if (guaio) throw new Error(guaio)
       const aperti = new Set(archivio.dati.corsi.filter((c) => c.attivo).map((c) => c.id))
@@ -249,6 +251,8 @@ export function creaRichiesteProva(): DatiRichieste {
         if (pagato.stato !== 'pagato') throw new Error(carta ? PAGAMENTO_CARTA_NON_ARRIVATO : PAGAMENTO_NON_ARRIVATO)
         if (new Set(dati.corsi).size !== 1 || dati.corsi[0] !== pagato.corsoId || dati.formula !== pagato.formula)
           throw new Error(carta ? PAGAMENTO_CARTA_ALTRA_SCELTA : PAGAMENTO_ALTRA_SCELTA)
+        // Come 124-satispay-chiave.sql: il pagamento fatto da un browser lo prende solo quel browser (quelli di prima non hanno chiave).
+        if (pagato.chiave && pagato.chiave !== chiavePagamento) throw new Error(carta ? PAGAMENTO_CARTA_ALTRO_BROWSER : PAGAMENTO_ALTRO_BROWSER)
         const uguale = (a = '', b = '') => a.trim().toLowerCase() === b.trim().toLowerCase()
         if (!uguale(pagato.email, email) || !uguale(pagato.nome, dati.nome) || !uguale(pagato.cognome, dati.cognome))
           throw new Error(carta ? PAGAMENTO_CARTA_ALTRA_PERSONA : PAGAMENTO_ALTRA_PERSONA)
@@ -329,7 +333,7 @@ export function creaRichiesteProva(): DatiRichieste {
       const email = x.email.trim().toLowerCase()
       if (!nome || !cognome || !email) throw new Error('Scrivi nome, cognome ed email prima di pagare')
       if (nome.length > 80 || cognome.length > 80 || email.length > 254) throw new Error(NOME_TROPPO_LUNGO)
-      if (metodo === 'carta' && !x.chiave) throw new Error('Ricarica la pagina e riprova a pagare')
+      if (!x.chiave) throw new Error('Ricarica la pagina e riprova a pagare')
       const corso = archivio.dati.corsi.find((c) => c.id === x.corso && c.attivo)
       if (!corso) throw new Error("Uno dei corsi scelti non c'è più: ricarica la pagina")
       // Il listino prima di leggere i pagamenti: due tocchi insieme ritrovano lo stesso, come col lucchetto del database.

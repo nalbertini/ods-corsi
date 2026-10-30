@@ -415,7 +415,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'corsi' and column_name = 'basta_uno')
     and to_regprocedure('public.segna_istruttore_assente(uuid,uuid)') is not null),
   ('83-satispay-prima.sql', 'Satispay prima di mandare: il pagamento senza richiesta e la richiesta che lo prende',
-    to_regprocedure('public.satispay_prepara_prima(uuid,text,text,text,text)') is not null
+    -- Dal 124 la funzione ha la chiave del browser come sesto argomento.
+    (to_regprocedure('public.satispay_prepara_prima(uuid,text,text,text,text)') is not null
+      or to_regprocedure('public.satispay_prepara_prima(uuid,text,text,text,text,uuid)') is not null)
     and to_regprocedure('public.satispay_stato_pagamento(uuid)') is not null
     and to_regprocedure('public.importo_corso(uuid,text,date)') is not null
     and exists (select 1 from information_schema.columns
@@ -598,6 +600,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('123-quadratura-banca.sql', 'il saldo dell''estratto della banca mese per mese, per la quadratura del Conto Corrente',
     to_regclass('public.saldo_banca') is not null
     and exists (select 1 from pg_constraint where conname = 'saldo_banca_torna')
-    and exists (select 1 from dentro where nome = 'saldo_banca_chi_verifica' and corpo like '%impronta_verifica := null%'))
+    and exists (select 1 from dentro where nome = 'saldo_banca_chi_verifica' and corpo like '%impronta_verifica := null%')),
+  ('124-satispay-chiave.sql', 'il pagamento Satispay (e della carta) lo prende solo il browser che ha pagato',
+    to_regprocedure('public.satispay_prepara_prima(uuid,text,text,text,text,uuid)') is not null
+    and to_regprocedure('public.satispay_prepara_prima(uuid,text,text,text,text)') is null
+    -- Rilanciare 83 o 115 dopo 124 rimette l'invia_iscrizione che non guarda la chiave: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%chiave_pag%'))
 ) as x(file, cosa, c)
 order by file, cosa;

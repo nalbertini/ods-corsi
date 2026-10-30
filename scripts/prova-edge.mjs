@@ -313,6 +313,11 @@ console.log('\n5. satispay: il modulo di iscrizione (senza login) e la callback'
   await chiama(g, { azione: 'prepara', corso: A, formula: 'annuale', nome: 'N'.repeat(200), cognome: 'C', email: 'e'.repeat(300) }, { token: '' })
   const prima = chiamate.find((c) => c.nome === 'satispay_prepara_prima')?.args
   ok('prepara: nome e cognome a 80 caratteri, email a 254', [prima?.nome.length, prima?.email.length], [80, 254])
+  const K = '11111111-2222-3333-4444-555555555555'
+  await chiama(g, { azione: 'prepara', corso: A, formula: 'annuale', nome: 'N', cognome: 'C', email: 'e@e.it', chiave: K }, { token: '' })
+  ok('prepara: la chiave del browser arriva al database', chiamate.filter((c) => c.nome === 'satispay_prepara_prima').at(-1)?.args.chiave, K)
+  await chiama(g, { azione: 'prepara', corso: A, formula: 'annuale', nome: 'N', cognome: 'C', email: 'e@e.it', chiave: 'non-un-uuid' }, { token: '' })
+  ok('prepara: una chiave storta diventa null (il database dice di ricaricare)', chiamate.filter((c) => c.nome === 'satispay_prepara_prima').at(-1)?.args.chiave, null)
 
   riparti()
   risposteDb['admin:satispay_esito'] = () => ({ data: { stato: 'pagato', importo: 100 }, error: null })

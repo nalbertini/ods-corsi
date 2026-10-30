@@ -346,7 +346,7 @@ reset role;
 \echo ''
 \echo '--- 9. satispay_prepara_prima: il pagamento nasce senza richiesta ---'
 set role service_role;
-select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it') as pa \gset
+select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b') as pa \gset
 select atteso('in attesa, con l''importo del database (oggi il saldo è chiuso)',
   (:'pa'::jsonb->>'stato') || ' ' || (:'pa'::jsonb->>'importo'),
   'attesa ' || importo_corso('cccccccc-0000-0000-0000-000000000001', 'annuale', (now() at time zone 'Europe/Rome')::date));
@@ -359,38 +359,38 @@ select atteso('la riga: senza richiesta, con corso, formula, nome, cognome, emai
   'senza richiesta cccccccc-0000-0000-0000-000000000001 annuale Luca Rossi luca.prima@esempio.it Rossi Luca');
 set role service_role;
 select atteso('lo stesso modulo una seconda volta: lo stesso pagamento',
-  satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it')->>'id', :'pa'::jsonb->>'id');
+  satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'id', :'pa'::jsonb->>'id');
 select satispay_creato((:'pa'::jsonb->>'id')::uuid, 'SP-P1', 'https://online.satispay.com/pay/SP-P1');
 select atteso('dopo satispay_creato torna con l''id e il link di Satispay',
-  ((satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it')->>'id') = (:'pa'::jsonb->>'id'))::text
-    || ' ' || (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it')->>'link'),
+  ((satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'id') = (:'pa'::jsonb->>'id'))::text
+    || ' ' || (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'link'),
   'true https://online.satispay.com/pay/SP-P1');
 select atteso('stessa scelta, un''altra email: un altro pagamento (mai quello di un altro)',
-  ((satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'altro.luca@esempio.it')->>'id') <> (:'pa'::jsonb->>'id'))::text, 'true');
+  ((satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'altro.luca@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'id') <> (:'pa'::jsonb->>'id'))::text, 'true');
 select atteso('un nome oltre gli 80 caratteri: detto per chi paga',
-  tenta(format($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', %L, 'Rossi', 'luca.prima@esempio.it')::text$$, repeat('L', 81))),
+  tenta(format($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', %L, 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')::text$$, repeat('L', 81))),
   'NEGATO: Un campo non va: nome e cognome hanno al massimo 80 caratteri');
 select atteso('un''altra formula: un altro pagamento',
-  ((satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'trimestre', 'Luca', 'Rossi', 'luca.prima@esempio.it')->>'id') <> (:'pa'::jsonb->>'id'))::text, 'true');
+  ((satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'trimestre', 'Luca', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'id') <> (:'pa'::jsonb->>'id'))::text, 'true');
 select atteso('un corso senza prezzo: col bonifico',
-  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000003', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it')::text$$),
+  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000003', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')::text$$),
   'NEGATO: Un corso non ha ancora il prezzo: paga col bonifico');
 select atteso('un corso con più righe di prezzo: col bonifico',
-  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000004', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it')::text$$),
+  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000004', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')::text$$),
   'NEGATO: Un corso non ha ancora il prezzo: paga col bonifico');
 select atteso('un corso che non c''è: rifiutato per chi paga',
-  rifiuto($$select satispay_prepara_prima('cccccccc-0000-0000-0000-0000000000ff', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it')$$), '22023 …');
+  rifiuto($$select satispay_prepara_prima('cccccccc-0000-0000-0000-0000000000ff', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')$$), '22023 …');
 select atteso('una formula che non c''è: rifiutata per chi paga',
-  rifiuto($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'mensile', 'Luca', 'Rossi', 'luca.prima@esempio.it')$$), '22023 …');
+  rifiuto($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'mensile', 'Luca', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')$$), '22023 …');
 select atteso('senza nome: no',
-  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', ' ', 'Rossi', 'luca.prima@esempio.it')::text$$), 'NEGATO: …');
+  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', ' ', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')::text$$), 'NEGATO: …');
 -- Annullato in Satispay: si riprova con un pagamento nuovo.
-select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000002', 'annuale', 'Gino', 'Neri', 'gino.prima@esempio.it') as pg \gset
+select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000002', 'annuale', 'Gino', 'Neri', 'gino.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b') as pg \gset
 select satispay_creato((:'pg'::jsonb->>'id')::uuid, 'SP-P3', 'https://online.satispay.com/pay/SP-P3');
 select satispay_esito('SP-P3', 'CANCELED');
 select atteso('dopo un pagamento non andato: uno nuovo, in attesa',
-  ((satispay_prepara_prima('cccccccc-0000-0000-0000-000000000002', 'annuale', 'Gino', 'Neri', 'gino.prima@esempio.it')->>'id') <> (:'pg'::jsonb->>'id'))::text
-    || ' ' || (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000002', 'annuale', 'Gino', 'Neri', 'gino.prima@esempio.it')->>'stato'), 'true attesa');
+  ((satispay_prepara_prima('cccccccc-0000-0000-0000-000000000002', 'annuale', 'Gino', 'Neri', 'gino.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'id') <> (:'pg'::jsonb->>'id'))::text
+    || ' ' || (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000002', 'annuale', 'Gino', 'Neri', 'gino.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'stato'), 'true attesa');
 reset role;
 
 \echo ''
@@ -413,7 +413,11 @@ create or replace function modulo(cambi jsonb default '{}') returns jsonb langua
 $$;
 -- La richiesta mandata da anon col pagamento: l'esito, «22023 …» se rifiutata.
 create or replace function manda_con(pagamento text, cambi jsonb default '{}') returns text language plpgsql as $$
-declare dati jsonb := modulo(cambi || jsonb_build_object('pagamento_satispay', pagamento)); esito text;
+declare
+  -- Di norma manda la chiave del browser che ha pagato (124); le prove del furto la cambiano in `cambi`.
+  dati jsonb := modulo(jsonb_build_object('chiave_pagamento', (select x.chiave from pagamenti_satispay x where x.id::text = pagamento))
+    || cambi || jsonb_build_object('pagamento_satispay', pagamento));
+  esito text;
 begin
   perform set_config('prova.utente', '', false);
   set role anon;
@@ -464,7 +468,7 @@ select atteso('cancellata la richiesta: il pagamento resta, senza richiesta', (s
 select atteso('e non si riusa, nemmeno da chi l''ha pagato', manda_con(:'pa'::jsonb->>'id', '{"email": "luca.prima@esempio.it"}'), '22023 Questo pagamento Satispay non vale più: paga di nuovo in fondo al modulo');
 set role service_role;
 select atteso('e prepara non lo ripropone: se ne fa uno nuovo',
-  ((satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it')->>'id') <> (:'pa'::jsonb->>'id'))::text, 'true');
+  ((satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'id') <> (:'pa'::jsonb->>'id'))::text, 'true');
 reset role;
 
 \echo ''
@@ -489,13 +493,13 @@ insert into auth.users (id, email) values ('44444444-4444-4444-4444-444444444444
 insert into persone (id, nome, cognome, ruolo, email, utente_id) values
   ('aaaaaaaa-0000-0000-0000-000000000004', 'Ada', 'Conti', 'amministrazione', 'ada@ods.it', '44444444-4444-4444-4444-444444444444');
 set role service_role;
-select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'trimestre', 'Sara', 'Verdi', 'sara.prima@esempio.it') as ps \gset
+select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'trimestre', 'Sara', 'Verdi', 'sara.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b') as ps \gset
 select satispay_creato((:'ps'::jsonb->>'id')::uuid, 'SP-P2', 'https://online.satispay.com/pay/SP-P2');
 select satispay_esito('SP-P2', 'ACCEPTED');
 -- Sara ricarica la pagina dopo aver pagato: il modulo riparte e prepara di nuovo.
 select atteso('pagato e non ancora preso: prepara lo ritrova pagato, non se ne paga un altro',
-  (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'trimestre', 'Sara', 'Verdi', ' Sara.Prima@esempio.it')->>'id' = :'ps'::jsonb->>'id')::text
-    || ' ' || (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'trimestre', 'Sara', 'Verdi', 'sara.prima@esempio.it')->>'stato'), 'true pagato');
+  (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'trimestre', 'Sara', 'Verdi', ' Sara.Prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'id' = :'ps'::jsonb->>'id')::text
+    || ' ' || (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'trimestre', 'Sara', 'Verdi', 'sara.prima@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'stato'), 'true pagato');
 reset role;
 -- Chi legge il pagato di Sara, che non ha mandato la richiesta.
 create or replace function sara(ps uuid) returns text language sql as $$
@@ -526,7 +530,7 @@ select chi('');
 set role anon;
 select atteso('anon: importo_corso no', tenta($$select importo_corso('cccccccc-0000-0000-0000-000000000001', 'annuale', '2026-10-20')::text$$), 'NEGATO: …');
 select atteso('anon: satispay_prepara_prima no',
-  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'X', 'Y', 'x@esempio.it')::text$$), 'NEGATO: …');
+  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'X', 'Y', 'x@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')::text$$), 'NEGATO: …');
 select atteso('anon: satispay_stato_pagamento no', tenta(format($$select satispay_stato_pagamento(%L)::text$$, :'ps'::jsonb->>'id')), 'NEGATO: …');
 select atteso('anon: un pagamento senza richiesta non lo crea',
   non_scrive($$insert into pagamenti_satispay (chi, importo, stato, corso_id, formula, nome, cognome, email) values ('Y X', 100, 'pagato', 'cccccccc-0000-0000-0000-000000000001', 'annuale', 'X', 'Y', 'x@esempio.it')$$), 'non scrive');
@@ -535,14 +539,14 @@ select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('segreteria: importo_corso no', tenta($$select importo_corso('cccccccc-0000-0000-0000-000000000001', 'annuale', '2026-10-20')::text$$), 'NEGATO: …');
 select atteso('segreteria: satispay_prepara_prima no',
-  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'X', 'Y', 'x@esempio.it')::text$$), 'NEGATO: …');
+  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'X', 'Y', 'x@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')::text$$), 'NEGATO: …');
 select atteso('segreteria: non collega a mano un pagamento',
   non_scrive(format($$update pagamenti_satispay set richiesta_id = %L where id = %L$$, :'senza', :'ps'::jsonb->>'id')), 'non scrive');
 reset role;
 select chi('33333333-3333-3333-3333-333333333333');
 set role authenticated;
 select atteso('iscritto: satispay_prepara_prima no',
-  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'X', 'Y', 'x@esempio.it')::text$$), 'NEGATO: …');
+  tenta($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'X', 'Y', 'x@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')::text$$), 'NEGATO: …');
 reset role;
 select atteso('e il pagato di Sara resta senza richiesta',
   (select coalesce(richiesta_id::text, 'senza richiesta') from pagamenti_satispay where id = (:'ps'::jsonb->>'id')::uuid), 'senza richiesta');
@@ -580,6 +584,68 @@ select atteso('…e il pagamento non è in nessuna ricevuta valida',
   (select count(*)::text from pagamenti_satispay p join ricevute r on r.id = p.ricevuta_id
     where p.id = :'pagato_paolo' and r.annullata_il is null), '0');
 reset role;
+
+-- ---------------------------------------------------------------------------
+\echo '--- 15. La chiave del browser: chi conosce nome ed email di un altro non prende il suo pagamento (124) ---'
+set role service_role;
+select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'vera.chiave@esempio.it',
+  'aaaaaaaa-1111-0000-0000-000000000001') as vittima \gset
+select satispay_creato((:'vittima'::jsonb->>'id')::uuid, 'SP-V1', 'https://online.satispay.com/pay/SP-V1');
+select satispay_esito('SP-V1', 'ACCEPTED');
+select atteso('senza la chiave: no, e nessun pagamento nuovo',
+  rifiuto($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'vera.chiave@esempio.it')$$),
+  '22023 Ricarica la pagina e riprova a pagare');
+select atteso('con una chiave null: no',
+  rifiuto($$select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'vera.chiave@esempio.it', null)$$),
+  '22023 Ricarica la pagina e riprova a pagare');
+select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'Vera.Chiave@esempio.it ',
+  'aaaaaaaa-2222-0000-0000-000000000002') as ladro \gset
+select atteso('chi ha un''altra chiave non ritrova il pagamento pagato: ne ha uno suo, in attesa',
+  ((:'ladro'::jsonb->>'id') <> (:'vittima'::jsonb->>'id'))::text || ' ' || (:'ladro'::jsonb->>'stato'), 'true attesa');
+select atteso('chi paga dallo stesso browser lo ritrova, pagato',
+  (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'vera.chiave@esempio.it',
+    'aaaaaaaa-1111-0000-0000-000000000001')->>'id' = :'vittima'::jsonb->>'id')::text, 'true');
+reset role;
+select atteso('la chiave sta sul pagamento', (select chiave::text from pagamenti_satispay where id = (:'vittima'::jsonb->>'id')::uuid),
+  'aaaaaaaa-1111-0000-0000-000000000001');
+
+-- L'id da solo non basta: la richiesta lo prende solo con la chiave di chi ha pagato.
+select count(*) as richieste_chiave from richieste_iscrizione \gset
+select atteso('l''id di un altro, con la chiave di un altro: no',
+  manda_con(:'vittima'::jsonb->>'id', '{"nome": "Luca", "cognome": "Rossi", "email": "vera.chiave@esempio.it", "chiave_pagamento": "aaaaaaaa-2222-0000-0000-000000000002"}'),
+  '22023 Il pagamento Satispay è stato fatto da un altro browser: apri il modulo da dove hai pagato, o chiama la segreteria');
+select atteso('l''id di un altro, senza chiave: no',
+  manda_con(:'vittima'::jsonb->>'id', '{"nome": "Luca", "cognome": "Rossi", "email": "vera.chiave@esempio.it", "chiave_pagamento": null}'),
+  '22023 Il pagamento Satispay è stato fatto da un altro browser: apri il modulo da dove hai pagato, o chiama la segreteria');
+select atteso('…e il pagamento è ancora libero, nessuna richiesta entrata',
+  (select (preso_il is null and richiesta_id is null)::text from pagamenti_satispay where id = (:'vittima'::jsonb->>'id')::uuid)
+    || ' ' || ((select count(*) from richieste_iscrizione)::text = :'richieste_chiave')::text, 'true true');
+select atteso('chi ha pagato, con la sua chiave: la richiesta entra',
+  manda_con(:'vittima'::jsonb->>'id', '{"nome": "Luca", "cognome": "Rossi", "email": "vera.chiave@esempio.it"}'), 'nessun errore');
+select atteso('…e rimandata dopo una risposta persa: nessun errore',
+  manda_con(:'vittima'::jsonb->>'id', jsonb_build_object('nome', 'Luca', 'cognome', 'Rossi', 'email', 'vera.chiave@esempio.it',
+    'codice_fiscale', (select r.codice_fiscale from richieste_iscrizione r join pagamenti_satispay x on x.richiesta_id = r.id
+                         where x.id = (:'vittima'::jsonb->>'id')::uuid))), 'nessun errore');
+select atteso('…ma con la chiave di un altro non ritrova la richiesta di chi ha pagato',
+  manda_con(:'vittima'::jsonb->>'id', jsonb_build_object('nome', 'Luca', 'cognome', 'Rossi', 'email', 'vera.chiave@esempio.it',
+    'chiave_pagamento', 'aaaaaaaa-2222-0000-0000-000000000002',
+    'codice_fiscale', (select r.codice_fiscale from richieste_iscrizione r join pagamenti_satispay x on x.richiesta_id = r.id
+                         where x.id = (:'vittima'::jsonb->>'id')::uuid))),
+  '22023 Questo pagamento Satispay non vale più: paga di nuovo in fondo al modulo');
+
+-- Un pagamento di prima del rilascio (chiave null): non si ritrova più da fuori, ma chi ha l'id lo manda come prima.
+insert into pagamenti_satispay (chi, importo, stato, corso_id, formula, nome, cognome, email, circuito, satispay_id, link, pagato_il)
+  values ('Rossi Luca', 40000, 'pagato', 'cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'dino.vecchio@esempio.it',
+    'satispay', 'SP-VECCHIO', 'https://online.satispay.com/pay/SP-VECCHIO', now()) returning id as vecchio \gset
+set role service_role;
+select atteso('un pagamento di prima, senza chiave: prepara non lo ritrova',
+  (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'dino.vecchio@esempio.it',
+    'aaaaaaaa-3333-0000-0000-000000000003')->>'id' <> :'vecchio')::text, 'true');
+reset role;
+select atteso('…ma la richiesta con il suo id entra, come prima',
+  manda_con(:'vecchio', '{"nome": "Luca", "cognome": "Rossi", "email": "dino.vecchio@esempio.it", "chiave_pagamento": null}'), 'nessun errore');
+select atteso('satispay_prepara_prima ha solo la versione con la chiave',
+  (select count(*)::text from pg_proc where proname = 'satispay_prepara_prima'), '1');
 
 \echo ''
 \echo 'Satispay: tutto a posto.'
