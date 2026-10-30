@@ -263,7 +263,9 @@ riepilogo: registra solo dopo il tuo «ok», e poi dice cosa ha scritto.
 
 - **Collegarlo, una volta**: in Claude, Impostazioni → Connettori, si aggiunge ODS Corsi.
   Si apre una pagina dell'app: entri col tuo account, leggi cosa potrà fare e tocchi
-  **Consenti**. Lo può fare solo chi ha l'amministrazione. Il collegamento si toglie da lì,
+  **Consenti**. Sotto c'è scritto dove si torna dopo il tuo sì: deve essere claude.ai
+  (o claude.com); se la pagina dice che il collegamento non viene da Claude, non si approva.
+  Lo può fare solo chi ha l'amministrazione. Il collegamento si toglie da lì,
   dai Connettori di Claude.
 - **Cosa può fare**: leggere voci, casse e i movimenti simili, e registrare un'entrata o
   un'uscita. Non annulla, non fa giroconti, non chiude la cassa.

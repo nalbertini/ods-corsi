@@ -414,7 +414,7 @@ $$;
 -- La richiesta mandata da anon col pagamento: l'esito, «22023 …» se rifiutata.
 create or replace function manda_con(pagamento text, cambi jsonb default '{}') returns text language plpgsql as $$
 declare
-  -- Di norma manda la chiave del browser che ha pagato (124); le prove del furto la cambiano in `cambi`.
+  -- Di norma manda la chiave del browser che ha pagato (125); le prove del furto la cambiano in `cambi`.
   dati jsonb := modulo(jsonb_build_object('chiave_pagamento', (select x.chiave from pagamenti_satispay x where x.id::text = pagamento))
     || cambi || jsonb_build_object('pagamento_satispay', pagamento));
   esito text;
@@ -586,7 +586,7 @@ select atteso('…e il pagamento non è in nessuna ricevuta valida',
 reset role;
 
 -- ---------------------------------------------------------------------------
-\echo '--- 15. La chiave del browser: chi conosce nome ed email di un altro non prende il suo pagamento (124) ---'
+\echo '--- 15. La chiave del browser: chi conosce nome ed email di un altro non prende il suo pagamento (125) ---'
 set role service_role;
 select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'vera.chiave@esempio.it',
   'aaaaaaaa-1111-0000-0000-000000000001') as vittima \gset

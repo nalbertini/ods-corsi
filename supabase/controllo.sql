@@ -601,10 +601,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.saldo_banca') is not null
     and exists (select 1 from pg_constraint where conname = 'saldo_banca_torna')
     and exists (select 1 from dentro where nome = 'saldo_banca_chi_verifica' and corpo like '%impronta_verifica := null%')),
-  ('124-satispay-chiave.sql', 'il pagamento Satispay (e della carta) lo prende solo il browser che ha pagato',
+  ('124-dominio-sale.sql', 'nessun tablet con l''email sul dominio vecchio (non registrato)',
+    not exists (select 1 from auth.users u join postazioni p on p.utente_id = u.id where u.email ilike '%@sale.ods-corsi.it')),
+  ('125-satispay-chiave.sql', 'il pagamento Satispay (e della carta) lo prende solo il browser che ha pagato',
     to_regprocedure('public.satispay_prepara_prima(uuid,text,text,text,text,uuid)') is not null
     and to_regprocedure('public.satispay_prepara_prima(uuid,text,text,text,text)') is null
-    -- Rilanciare 83 o 115 dopo 124 rimette l'invia_iscrizione che non guarda la chiave: la riga torna «da lanciare».
+    -- Rilanciare 83 o 115 dopo 125 rimette l'invia_iscrizione che non guarda la chiave: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%chiave_pag%'))
 ) as x(file, cosa, c)
 order by file, cosa;

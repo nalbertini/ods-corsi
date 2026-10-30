@@ -1,5 +1,5 @@
 -- ---------------------------------------------------------------------------
--- 124 · Satispay col suo browser: la chiave del pagamento
+-- 125 · Satispay col suo browser: la chiave del pagamento
 --
 -- Un pagamento Satispay fatto prima di mandare il modulo si ritrovava con
 -- nome, cognome, email e scelta: chi li conosceva di un altro riceveva l'id del
@@ -108,7 +108,7 @@ declare
   testo text;
   -- Il pagamento Satispay fatto prima, in fondo al modulo (83-satispay-prima.sql): la richiesta lo prende con sé.
   pagato uuid;
-  -- La chiave del browser che ha pagato (124): senza, l'id del pagamento da solo non basta.
+  -- La chiave del browser che ha pagato (125): senza, l'id del pagamento da solo non basta.
   chiave_pag uuid;
   p pagamenti_satispay;
   -- «Satispay» o «con la carta» nei testi, dal circuito del pagamento (115-carta.sql). Un id che non c'è resta Satispay.
@@ -269,7 +269,7 @@ begin
       raise exception 'Questo pagamento % non vale più: paga di nuovo in fondo al modulo', via using errcode = '22023';
     end if;
     -- Un pagamento fatto da un browser con la sua chiave si prende solo da quel browser (i pagamenti di prima di
-    -- 124 non ce l'hanno: restano come erano).
+    -- 125 non ce l'hanno: restano come erano).
     if p.chiave is not null and p.chiave is distinct from chiave_pag then
       raise exception 'Il pagamento % è stato fatto da un altro browser: apri il modulo da dove hai pagato, o chiama la segreteria', via
         using errcode = '22023';

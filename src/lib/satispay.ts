@@ -62,7 +62,7 @@ let chiaveInMemoria: string | undefined
 
 /**
  * La chiave di questo browser per i pagamenti, con la carta e con Satispay
- * (`115-carta.sql`, `124-satispay-chiave.sql`): solo chi l'ha fatto ritrova un pagamento, non chi conosce nome, email e
+ * (`115-carta.sql`, `125-satispay-chiave.sql`): solo chi l'ha fatto ritrova un pagamento, non chi conosce nome, email e
  * scelta. Resta in localStorage per ritrovarlo dopo aver ricaricato la pagina;
  * senza (navigazione privata) vale finché resta aperta la pagina.
  */

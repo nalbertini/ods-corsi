@@ -180,7 +180,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             conosciuto: d.conosciuto,
             // Il pagamento fatto in fondo al modulo: senza 83-satispay-prima.sql la chiave si ignora.
             pagamento_satispay: d.pagamentoSatispay,
-            // Chi ha pagato è chi manda: senza 124-satispay-chiave.sql il database la ignora.
+            // Chi ha pagato è chi manda: senza 125-satispay-chiave.sql il database la ignora.
             chiave_pagamento: d.chiavePagamento,
             // Le richieste della stessa famiglia: senza 84-avvisi-segreteria.sql la chiave si ignora.
             invio: d.invio,

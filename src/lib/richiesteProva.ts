@@ -251,7 +251,7 @@ export function creaRichiesteProva(): DatiRichieste {
         if (pagato.stato !== 'pagato') throw new Error(carta ? PAGAMENTO_CARTA_NON_ARRIVATO : PAGAMENTO_NON_ARRIVATO)
         if (new Set(dati.corsi).size !== 1 || dati.corsi[0] !== pagato.corsoId || dati.formula !== pagato.formula)
           throw new Error(carta ? PAGAMENTO_CARTA_ALTRA_SCELTA : PAGAMENTO_ALTRA_SCELTA)
-        // Come 124-satispay-chiave.sql: il pagamento fatto da un browser lo prende solo quel browser (quelli di prima non hanno chiave).
+        // Come 125-satispay-chiave.sql: il pagamento fatto da un browser lo prende solo quel browser (quelli di prima non hanno chiave).
         if (pagato.chiave && pagato.chiave !== chiavePagamento) throw new Error(carta ? PAGAMENTO_CARTA_ALTRO_BROWSER : PAGAMENTO_ALTRO_BROWSER)
         const uguale = (a = '', b = '') => a.trim().toLowerCase() === b.trim().toLowerCase()
         if (!uguale(pagato.email, email) || !uguale(pagato.nome, dati.nome) || !uguale(pagato.cognome, dati.cognome))

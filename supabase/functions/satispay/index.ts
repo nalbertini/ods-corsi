@@ -14,7 +14,7 @@
 //     Satispay se è ancora in attesa (la callback può essersi persa);
 //   · POST { azione: 'prepara', corso, formula, nome, cognome, email, chiave }: il
 //     pagamento da fare in fondo al modulo, prima di mandare la richiesta
-//     (`satispay_prepara_prima`, 124-satispay-chiave.sql): quello in attesa per
+//     (`satispay_prepara_prima`, 125-satispay-chiave.sql): quello in attesa per
 //     la stessa scelta e la stessa chiave del browser, o uno nuovo. Torna l'id, il link e l'importo;
 //   · POST { azione: 'stato_pagamento', pagamento }: com'è andato quel
 //     pagamento, per id, chiedendolo a Satispay se è ancora in attesa;

@@ -77,7 +77,7 @@ export interface DatiRichiesta {
    * arrivato ed è per il suo corso e la sua formula.
    */
   pagamentoSatispay?: string
-  /** La chiave del browser che ha pagato (`chiaveDelBrowser`): senza, il pagamento di un altro non si prende (`124-satispay-chiave.sql`). */
+  /** La chiave del browser che ha pagato (`chiaveDelBrowser`): senza, il pagamento di un altro non si prende (`125-satispay-chiave.sql`). */
   chiavePagamento?: string
   /**
    * Lo stesso per tutte le richieste mandate insieme dal modulo (una
