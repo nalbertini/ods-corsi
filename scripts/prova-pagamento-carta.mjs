@@ -370,7 +370,7 @@ console.log('\n10. in prova: prima paghi con la carta, poi mandi, e PayPal non s
   const modulo = (cambi = {}) => ({
     nome: 'Luca', cognome: 'Rossi', natoIl: '1996-01-01', natoA: 'Torino', codiceFiscale: 'RSSLCU96A01L219K',
     indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'luca.carta@esempio.it', telefono: '347 111 2233',
-    corsi: ['judo-adulti'], formula: 'annuale', regolamento: true, ...cambi,
+    corsi: ['judo-adulti'], formula: 'annuale', regolamento: true, chiavePagamento: 'k-luca', ...cambi,
   })
   const quante = async () => (await aspetta(() => r.richieste())).length
 

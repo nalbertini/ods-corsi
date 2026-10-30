@@ -157,7 +157,10 @@ Chi si iscrive risponde alle domande dal telefono:
     pagamento non è andato c'è **RIPROVA CON SATISPAY**, o si sceglie il
     bonifico. Chiudere Satispay senza confermare non fa pagare due volte: si
     riapre lo stesso pagamento, e chi ricarica la pagina dopo aver pagato
-    ritrova il pagamento fatto, con gli stessi nome, email e corso. Satispay
+    ritrova il pagamento fatto, con gli stessi nome, email e corso, ma solo
+    dallo stesso browser (e dallo stesso telefono o computer) da cui ha
+    pagato: da un altro il pagamento non si ritrova, e la richiesta non lo
+    prende. Satispay
     riporta a una pagina (`iscrizioni/?satispay=…`) che dice com'è andata e di
     tornare alla scheda del modulo.
   - Con la **Carta** (di credito o di debito, tramite PayPal) si paga anche

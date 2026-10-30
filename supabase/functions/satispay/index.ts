@@ -12,10 +12,10 @@
 //     secondo. Torna il link della pagina di Satispay;
 //   · POST { azione: 'stato', richiesta }: com'è andata, chiedendolo a
 //     Satispay se è ancora in attesa (la callback può essersi persa);
-//   · POST { azione: 'prepara', corso, formula, nome, cognome, email }: il
+//   · POST { azione: 'prepara', corso, formula, nome, cognome, email, chiave }: il
 //     pagamento da fare in fondo al modulo, prima di mandare la richiesta
-//     (`satispay_prepara_prima`, 83-satispay-prima.sql): quello in attesa per
-//     la stessa scelta, o uno nuovo. Torna l'id, il link e l'importo;
+//     (`satispay_prepara_prima`, 125-satispay-chiave.sql): quello in attesa per
+//     la stessa scelta e la stessa chiave del browser, o uno nuovo. Torna l'id, il link e l'importo;
 //   · POST { azione: 'stato_pagamento', pagamento }: com'è andato quel
 //     pagamento, per id, chiedendolo a Satispay se è ancora in attesa;
 //   · POST { azione: 'saldo', persona, ricevuta }: il saldo della quota associativa
@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return risposta({ guaio: 'Solo GET e POST' }, 405)
   if (!attivo) return risposta({ attivo: false })
 
-  let corpo: { azione?: unknown; richiesta?: unknown; persona?: unknown; ricevuta?: unknown; pagamento?: unknown; corso?: unknown; formula?: unknown; nome?: unknown; cognome?: unknown; email?: unknown }
+  let corpo: { azione?: unknown; richiesta?: unknown; persona?: unknown; ricevuta?: unknown; pagamento?: unknown; corso?: unknown; formula?: unknown; nome?: unknown; cognome?: unknown; email?: unknown; chiave?: unknown }
   try {
     corpo = await req.json()
   } catch {
@@ -180,12 +180,15 @@ Deno.serve(async (req) => {
     const testo = (x: unknown, quanto = 80) => (typeof x === 'string' ? x.slice(0, quanto) : '')
     const corso = typeof corpo.corso === 'string' && UUID.test(corpo.corso) ? corpo.corso : null
     if (!corso) return risposta({ guaio: 'Manca il corso' }, 400)
+    // Una chiave storta resta null: il database risponde «Ricarica la pagina e riprova a pagare».
+    const chiave = typeof corpo.chiave === 'string' && UUID.test(corpo.chiave) ? corpo.chiave : null
     const { data, error } = await admin.rpc('satispay_prepara_prima', {
       corso,
       formula: testo(corpo.formula),
       nome: testo(corpo.nome),
       cognome: testo(corpo.cognome),
       email: testo(corpo.email, 254),
+      chiave,
     })
     // PGRST202: 83-satispay-prima.sql non c'è ancora.
     if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: detto(error) }, 409)

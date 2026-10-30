@@ -205,14 +205,14 @@ select atteso('senza nome: no',
   tenta($$select carta_prepara_prima(scelta('cccccccc-0000-0000-0000-000000000001', 'annuale', ' ', 'Rossi', 'luca.carta@esempio.it'))::text$$), 'NEGATO: …');
 
 -- La carta e Satispay non si scambiano il pagamento, né l'una né l'altra.
-select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.carta@esempio.it') as sat \gset
+select satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.carta@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b') as sat \gset
 select atteso('Satispay con la stessa scelta: un altro pagamento, non quello della carta',
   ((:'sat'::jsonb->>'id') <> (:'pa'::jsonb->>'id'))::text, 'true');
 reset role;
 select atteso('…che è Satispay', (select circuito from pagamenti_satispay where id = (:'sat'::jsonb->>'id')::uuid), 'satispay');
 set role service_role;
 select atteso('…e Satispay ritrova il suo, non quello della carta',
-  satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.carta@esempio.it')->>'id', :'sat'::jsonb->>'id');
+  satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.carta@esempio.it', 'bbbbbbbb-0000-0000-0000-00000000000b')->>'id', :'sat'::jsonb->>'id');
 select atteso('…e la carta ritrova il suo, non quello di Satispay',
   carta_prepara_prima(scelta('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'luca.carta@esempio.it'))->>'id', :'pa'::jsonb->>'id');
 reset role;
@@ -346,7 +346,11 @@ create or replace function modulo(cambi jsonb default '{}') returns jsonb langua
 $$;
 -- La richiesta mandata da anon col pagamento: l'esito, «22023 …» se rifiutata.
 create or replace function manda_con(pagamento text, cambi jsonb default '{}') returns text language plpgsql as $$
-declare dati jsonb := modulo(cambi || jsonb_build_object('pagamento_satispay', pagamento)); esito text;
+declare
+  -- Di norma manda la chiave del browser che ha pagato (125); le prove del furto la cambiano in `cambi`.
+  dati jsonb := modulo(jsonb_build_object('chiave_pagamento', (select x.chiave from pagamenti_satispay x where x.id::text = pagamento))
+    || cambi || jsonb_build_object('pagamento_satispay', pagamento));
+  esito text;
 begin
   perform set_config('prova.utente', '', false);
   set role anon;
