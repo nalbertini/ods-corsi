@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.223.4 — 30 ottobre 2026
+
+### Risolto
+
+- Chi conosce nome ed email di un altro non può più prendere il suo pagamento Satispay
+
 ## 0.223.3 — 30 ottobre 2026
 
 ### Risolto
