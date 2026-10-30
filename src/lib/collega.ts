@@ -61,12 +61,32 @@ export const fraseDallaChat = (r: Pick<RigaMovimento, 'dallaChat' | 'creatoIl'>)
 const db = () => import('./supabase').then((m) => m.clientSupabase())
 const MSG_NON_RIUSCITO = 'Il collegamento non è riuscito: riprova da Claude, dall’inizio'
 
-/** Il nome di chi chiede (di solito «Claude»), o l'indirizzo dove tornare se il consenso c'è già. */
-export async function chiChiede(id: string): Promise<{ nome: string } | { torna: string }> {
+/**
+ * Dove Claude fa tornare chi ha consentito, come dicono i documenti di Anthropic per i connettori personalizzati
+ * (claude.ai oggi, claude.com in futuro). Lista esatta: la registrazione dei client è aperta a chiunque, quindi il nome
+ * non basta a capire chi chiede. Claude Code in locale (localhost) non è compreso: si aggiunge solo se serve.
+ */
+const RITORNI_DI_CLAUDE = ['https://claude.ai/api/mcp/auth_callback', 'https://claude.com/api/mcp/auth_callback']
+const MSG_NON_CLAUDE = 'Questo collegamento non viene da Claude: non si può approvare. Riprova da Claude, dalle sue impostazioni (Connettori)'
+
+type DettagliAutorizzazione = { redirect_uri?: string; client?: { name?: string } } | { redirect_url: string }
+
+/** Cosa fare di ciò che dice Supabase: chi chiede e dove tornerà, il ritorno se il consenso c'è già, o il guaio. */
+export function esaminaAutorizzazione(d: DettagliAutorizzazione): { nome: string; host: string } | { torna: string } | { guaio: string } {
+  if ('redirect_url' in d) return { torna: d.redirect_url }
+  const nome = d.client?.name?.trim()
+  if (!nome || !d.redirect_uri || !RITORNI_DI_CLAUDE.includes(d.redirect_uri)) return { guaio: MSG_NON_CLAUDE }
+  return { nome, host: new URL(d.redirect_uri).host }
+}
+
+/** Il nome di chi chiede e l'host dove tornerà, o l'indirizzo dove tornare se il consenso c'è già. */
+export async function chiChiede(id: string): Promise<{ nome: string; host: string } | { torna: string }> {
   // Anche il client che non si carica (rete, versione nuova) è «non riuscito»: mai il testo del browser.
   const { data, error } = await db().then((c) => c.auth.oauth.getAuthorizationDetails(id)).catch(() => ({ data: null, error: true }))
   if (error || !data) throw new Error(MSG_NON_RIUSCITO)
-  return 'authorization_id' in data ? { nome: data.client.name || 'Claude' } : { torna: data.redirect_url }
+  const r = esaminaAutorizzazione(data)
+  if ('guaio' in r) throw new Error(r.guaio)
+  return r
 }
 
 /** CONSENTI o NO, GRAZIE: Supabase risponde con l'indirizzo di Claude dove tornare. */

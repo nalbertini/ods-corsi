@@ -14,6 +14,7 @@ export function Collega() {
   const [chi, setChi] = useState<Account | null | undefined>(undefined)
   // Chi chiede, da Supabase: finché non si sa, «un attimo» e niente tasti.
   const [nome, setNome] = useState<string | null>(null)
+  const [host, setHost] = useState<string | null>(null)
   const [errore, setErrore] = useState<string | null>(null)
   const [aspetta, setAspetta] = useState(false)
 
@@ -27,7 +28,11 @@ export function Collega() {
     if (!id || !chi) return
     if (!puoCollegare(chi.persona)) return setNome('Claude')
     chiChiede(id).then(
-      (r) => ('torna' in r ? window.location.replace(r.torna) : setNome(r.nome)),
+      (r) => {
+        if ('torna' in r) return window.location.replace(r.torna)
+        setHost(r.host)
+        setNome(r.nome)
+      },
       // `chiChiede` lancia solo messaggi per chi usa l'app.
       (x: Error) => setErrore(x.message),
     )
@@ -58,6 +63,16 @@ export function Collega() {
   if (chi === undefined) return <UnAttimo />
   if (!chi) return <Accesso collega onEntrato={() => void account().then(setChi, () => setChi(null))} />
   if (!nome && !errore) return <UnAttimo />
+  // Un collegamento che non viene da Claude (o che non si carica): solo il motivo, niente CONSENTI.
+  if (!nome)
+    return (
+      <div className="accesso pad" style={{ paddingTop: 20, paddingBottom: 20 }}>
+        <Riquadro tono="guaio">
+          <Etichetta>NON SI PUÒ</Etichetta>
+          <span role="alert" style={{ fontSize: 15, lineHeight: 1.45 }}>{errore}</span>
+        </Riquadro>
+      </div>
+    )
   const chiede = nome ?? 'Claude'
   const righe = chi.persona ? cosaPotra(chi.persona) : null
   const frasi = chi.persona ? frasiConsenso(chi.persona, chiede) : null
@@ -88,6 +103,11 @@ export function Collega() {
             <span className="passo-dettaglio" style={{ fontSize: 14 }}>
               {frasi.nota}
             </span>
+            {host && (
+              <span className="passo-dettaglio" style={{ fontSize: 14 }}>
+                Dopo il tuo sì si torna a <b>{host}</b>.
+              </span>
+            )}
             <Tasto variante="vai" disabled={aspetta || !nome} onClick={() => void decidi(true)}>
               {aspetta ? 'UN ATTIMO…' : 'CONSENTI'}
             </Tasto>

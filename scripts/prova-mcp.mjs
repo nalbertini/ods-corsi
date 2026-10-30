@@ -1263,5 +1263,23 @@ console.log('\n36. le Edge Function con la chiave service_role non si chiamano c
   }
 }
 
+console.log('\n37. il consenso a Claude: solo se si torna a un indirizzo vero di Claude (esaminaAutorizzazione)')
+{
+  const dettagli = (redirect_uri, name = 'Claude') => ({ authorization_id: 'a1', redirect_uri, client: { name }, user: { id: 'u', email: 'x@y.it' }, scope: 'openid' })
+  const esamina = (d) => prova(() => collega.esaminaAutorizzazione(d))
+  const NO = 'Questo collegamento non viene da Claude: non si può approvare. Riprova da Claude, dalle sue impostazioni (Connettori)'
+  ok('claude.ai passa, con l\'host da mostrare', esamina(dettagli('https://claude.ai/api/mcp/auth_callback')), { nome: 'Claude', host: 'claude.ai' })
+  ok('claude.com passa', esamina(dettagli('https://claude.com/api/mcp/auth_callback')), { nome: 'Claude', host: 'claude.com' })
+  ok('un indirizzo di un altro: rifiutato col messaggio per chi usa l\'app', esamina(dettagli('https://attacker.example/cb')), { guaio: NO })
+  ok('…anche col nome «Claude»', esamina(dettagli('https://attacker.example/cb', 'Claude')), { guaio: NO })
+  ok('…host simile, percorso diverso, http o porta: rifiutati', [
+    'https://claude.ai.attacker.example/api/mcp/auth_callback', 'https://claude.ai/api/mcp/auth_callback/altro', 'http://claude.ai/api/mcp/auth_callback',
+    'https://claude.ai:8443/api/mcp/auth_callback', 'https://attacker.example/?x=https://claude.ai/api/mcp/auth_callback', 'https://claude.ai@attacker.example/api/mcp/auth_callback', '',
+  ].map((u) => esamina(dettagli(u))), Array(7).fill({ guaio: NO }))
+  ok('senza redirect_uri: rifiutato', esamina({ authorization_id: 'a1', client: { name: 'Claude' } }), { guaio: NO })
+  ok('nome vuoto: rifiutato, mai «Claude» di ripiego', esamina(dettagli('https://claude.ai/api/mcp/auth_callback', '')), { guaio: NO })
+  ok('chi ha già consentito torna dove dice Supabase', esamina({ redirect_url: 'https://claude.ai/api/mcp/auth_callback?code=1' }), { torna: 'https://claude.ai/api/mcp/auth_callback?code=1' })
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
