@@ -613,6 +613,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.metodi_spenti()') is not null),
   ('127-verbali.sql', 'i verbali delle riunioni (VERBALI)',
     to_regclass('public.verbali') is not null
-    and to_regprocedure('public.firma_verbale(uuid,date)') is not null)
+    and to_regprocedure('public.firma_verbale(uuid,date)') is not null),
+  ('129-metodo-spento-nel-database.sql', 'un metodo di pagamento online spento lo ferma anche il database',
+    exists (select 1 from pg_trigger where tgname = 'pagamenti_satispay_metodo_acceso' and tgrelid = 'public.pagamenti_satispay'::regclass))
 ) as x(file, cosa, c)
 order by file, cosa;
