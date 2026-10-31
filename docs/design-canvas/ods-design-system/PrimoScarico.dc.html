@@ -15,7 +15,7 @@
   </style>
 </helmet>
 <section aria-label="Primo scarico da Satispay" style="display: flex; flex-direction: column; gap: 14px; width: 100%; min-width: 0; color: {{c.text}}; font-family: {{c.body}}">
-  <span style="font-family: {{c.cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">NIENTE SI SCRIVE FINCHÉ NON DICI SÌ</span>
+  <span style="font-family: {{c.cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">ANTEPRIMA · LA CONTABILITÀ NON CAMBIA</span>
   <h2 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em">PRIMO SCARICO DA SATISPAY</h2>
   <span style="font-size: 15px">Satispay ha <b>{{tuttiTesto}}</b> del negozio{{dal}}. Ecco cosa ne farebbe l’app.</span>
   <div style="display: flex; flex-direction: column; gap: 8px">
@@ -26,27 +26,21 @@
       </div>
     </sc-for>
   </div>
-  <span style="font-size: 14px; color: {{c.dim}}">Dal 01/10/2026 entrano nella cassa Satispay; quelli di prima in Conto Corrente, come si faceva finora, così i saldi passati non cambiano. Uno scarico si annulla movimento per movimento, come ogni movimento.</span>
+  <span style="font-size: 14px; color: {{c.dim}}">Chi ha pagato lo trovi poi in IMPORTAZIONI → Chi ha pagato.</span>
   <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px">
-    <dc-import name="Bottone" contesto="segreteria" variante="pieno" label="{{tastoSi}}" hint-size="260px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Sì, comincia lo scarico" hint-size="260px,48px"></dc-import>
     <dc-import name="Bottone" contesto="segreteria" variante="linea" label="Non ora" hint-size="110px,48px"></dc-import>
   </div>
 </section>
 </x-dc>
-<script data-dc-script data-props='{"incassi":{"editor":"text","default":"31"},"rimborsi":{"editor":"text","default":"2"},"modulo":{"editor":"text","default":"12"},"pagamenti":{"editor":"text","default":"4"},"aMano":{"editor":"text","default":"3"},"daDecidere":{"editor":"text","default":"2"},"prima":{"editor":"text","default":"9"},"dal":{"editor":"text","default":"01/06/2026"},"$preview":{"width":820,"height":560}}'>
-// COSTRUITA (`PrimoScarico` in src/components/segreteria/ScaricoSatispay.tsx; proposta e storia in ../satispay-scarico/): la pagina intera
-// (`SchedaPiena` «Primo scarico da Satispay», torna a «I movimenti») che si apre da «Guarda il primo scarico». Colonna con gap 14px:
-// .sg-etichetta «NIENTE SI SCRIVE FINCHÉ NON DICI SÌ», titolo 20px 700 (.sg-riquadro-titolo) «PRIMO SCARICO DA SATISPAY», frase da 15px
-// «Satispay ha N pagamenti del negozio, dal GG/MM/AAAA. Ecco cosa ne farebbe l'app.», poi le righe (gap 8px, allineate alla base, gap 14px):
-// il numero grande a sinistra (.num 22px 700, larghezza minima 48px, a destra) e la frase col verbo in grassetto. Le righe con 0 non ci sono.
-// Le sette righe, nell'ordine: incassi del negozio (in «Da classificare», col segno DA SATISPAY), rimborsi (come uscite), pagamenti del
-// modulo di iscrizione (gia' in PAGAMENTI o in una ricevuta), «sono gia' in PAGAMENTI» (pagati in palestra con Satispay, stesso giorno e
-// stesso importo), «erano gia' scritti a mano» (un solo movimento possibile, resta quello a mano e prende il segno), «sono da decidere»
-// (giorno chiuso o piu' movimenti a mano con lo stesso importo: finiscono nell'avviso giallo), «sono di prima dell'inizio dei conti».
-// Sotto, la nota da 14px `dim` (CAMBIO_CASSA_SATISPAY = 01/10/2026: da li' nella cassa Satispay, prima in Conto Corrente) e i tasti pieno
-// «Sì, scrivi i N movimenti» (incassi + rimborsi; «Sì, scrivi il movimento» se uno, «Sì, comincia lo scarico» se nessuno) e a linea «Non ora».
-// Differenze dalla proposta: la pagina non e' un riquadro bianco (e' la SchedaPiena), le righe sono senza fili e col numero a 22px, la
-// riga «sono gia' in PAGAMENTI» e' nuova, il numero dei «da decidere» non e' giallo, la data e' solo «dal GG/MM/AAAA».
+<script data-dc-script data-props='{"incassi":{"editor":"text","default":"31"},"rimborsi":{"editor":"text","default":"2"},"modulo":{"editor":"text","default":"12"},"pagamenti":{"editor":"text","default":"4"},"prima":{"editor":"text","default":"9"},"dal":{"editor":"text","default":"01/06/2026"},"$preview":{"width":820,"height":560}}'>
+// COSTRUITA (`PrimoScarico` in src/components/segreteria/ScaricoSatispay.tsx; prima in ../satispay-scarico/, dal 132 in
+// ../satispay-chi-ha-pagato/): la pagina intera (`SchedaPiena`) che si apre da IMPORTAZIONI la prima volta. Anteprima: dal 132 lo
+// scarico non scrive movimenti, dice solo chi ha pagato. Colonna con gap 14px: .sg-etichetta «ANTEPRIMA · LA CONTABILITÀ NON CAMBIA»,
+// titolo 20px 700 «PRIMO SCARICO DA SATISPAY», frase da 15px «Satispay ha N pagamenti del negozio, dal GG/MM/AAAA. Ecco cosa ne farebbe
+// l'app.», poi le righe col numero grande a sinistra (.num 22px 700, larghezza minima 48px) e la frase col verbo in grassetto; le righe
+// con 0 non ci sono. Cinque righe: pagamenti nei versamenti della banca, rimborsi, modulo, già fra gli incassi degli iscritti, di prima.
+// Sotto, la nota da 14px `dim` e i tasti pieno «Sì, comincia lo scarico» e a linea «Non ora».
 const T = {
   sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', giallo: '#8f6a00', rosso: '#b81d1d', cond: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif", body: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
 };
@@ -55,23 +49,19 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const n = (k, d) => Number(p[k] ?? d);
-    const c = { incassi: n('incassi', 31), rimborsi: n('rimborsi', 2), modulo: n('modulo', 12), pagamenti: n('pagamenti', 4), a_mano: n('aMano', 3), da_decidere: n('daDecidere', 2), prima: n('prima', 9) };
-    const tutti = c.incassi + c.rimborsi + c.modulo + c.pagamenti + c.a_mano + c.da_decidere + c.prima;
-    const scritti = c.incassi + c.rimborsi;
+    const c = { incassi: n('incassi', 31), rimborsi: n('rimborsi', 2), modulo: n('modulo', 12), pagamenti: n('pagamenti', 4), prima: n('prima', 9) };
+    const tutti = c.incassi + c.rimborsi + c.modulo + c.pagamenti + c.prima;
     const righe = [
-      [c.incassi, 'incassi del negozio entrano', ' in «Da classificare», col segno DA SATISPAY. La voce la scegli dopo, con Cambia voce.'],
-      [c.rimborsi, 'rimborsi entrano come uscite', ', anche loro in «Da classificare».'],
-      [c.modulo, 'sono pagamenti del modulo di iscrizione', ': sono già in PAGAMENTI o in una ricevuta. Non si scrivono una seconda volta.'],
-      [c.pagamenti, 'sono già in PAGAMENTI', ': pagati in palestra con Satispay e registrati lì, stesso giorno e stesso importo. Non si scrivono una seconda volta.'],
-      [c.a_mano, 'erano già scritti a mano', ': stesso giorno, stesso importo, un solo movimento possibile. Resta quello a mano, con la sua voce; prende il segno DA SATISPAY.'],
-      [c.da_decidere, 'sono da decidere', ': un giorno già chiuso, o più movimenti a mano con lo stesso importo quel giorno. Non entrano: li trovi in MOVIMENTI, nell’avviso giallo.'],
+      [c.incassi, 'pagamenti sono nei versamenti della banca', ': non entrano in contabilità. Arrivano in Conto Corrente col versamento «Da Satispay Europe S.A.».'],
+      [c.rimborsi, 'rimborsi escono dai versamenti della banca', ': non entrano in contabilità nemmeno loro.'],
+      [c.modulo, 'sono pagamenti del modulo di iscrizione', ': sono già fra gli incassi degli iscritti o in una ricevuta. Non si contano due volte.'],
+      [c.pagamenti, 'sono già fra gli incassi degli iscritti', ': pagati in palestra con Satispay e registrati lì, stesso giorno e stesso importo. Non si contano due volte.'],
       [c.prima, 'sono di prima dell’inizio dei conti', ': non entrano.'],
     ].filter((r) => r[0] > 0).map((r) => ({ n: String(r[0]), cosa: r[1], resto: r[2] }));
     return {
       c: T.sito, righe,
       tuttiTesto: tutti === 1 ? '1 pagamento' : tutti + ' pagamenti',
       dal: p.dal ? ', dal ' + p.dal : '',
-      tastoSi: scritti === 1 ? 'Sì, scrivi il movimento' : scritti ? 'Sì, scrivi i ' + scritti + ' movimenti' : 'Sì, comincia lo scarico',
     };
   }
 }

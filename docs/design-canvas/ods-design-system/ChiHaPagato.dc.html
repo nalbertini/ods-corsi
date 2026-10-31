@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+    <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITA (`Entrato` con fonte satispay in src/components/segreteria/Importazioni.tsx; regole in chiHaPagato di src/lib/satispayScarico.ts; proposta in ../satispay-chi-ha-pagato/): la pagina CHI HA PAGATO, da IMPORTAZIONI → «Chi ha pagato» (SchedaPiena, torna a «Le importazioni»). Sola lettura. Filtri: MESE (select), CERCA «Nome o importo», chip «Solo non riconosciuti». Tre Numero: PAGATO CON SATISPAY (verso col segno), RICONOSCIUTI «N su M», NON RICONOSCIUTI (allarme se > 0). La tabella DATA, CHI, IMPORTO (verde-testo incasso, rosso-testo rimborso), COME È RICONOSCIUTO («Non riconosciuto» giallo-testo 700) e, sulle righe «Collegato a mano» coi giorni aperti, il tasto a linea «Non è questo». Differenze dalla proposta: il mese e' una select, non un chip; c'e' la colonna del tasto. -->
+  <main style="display: flex; flex-direction: column; gap: 18px; width: 100%; min-width: 0">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CHI HA PAGATO</h1>
+      <span style="font-size: 14px; color: #46606f">Da Satispay, ottobre 2026: ogni pagamento scaricato e a chi è stato riconosciuto. I soldi sono nei versamenti della banca.</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end">
+      <div style="width: 200px"><dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="MESE" valore="Ottobre 2026" hint-size="200px,90px"></dc-import></div>
+      <div style="width: 360px"><dc-import name="Campo" contesto="segreteria" etichetta="CERCA" segnaposto="Nome o importo" hint-size="360px,90px"></dc-import></div>
+      <dc-import name="Chip" tema="sito" label="Solo non riconosciuti" hint-size="200px,44px"></dc-import>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+      <dc-import name="Numero" tema="sito" titolo="PAGATO CON SATISPAY" valore="+1.385,00 €" sotto="31 pagamenti · 2 rimborsi" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="RICONOSCIUTI" valore="28 su 31" sotto="in una ricevuta, nei pagamenti o dal modulo" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="NON RICONOSCIUTI" valore="3" sotto="nessuna ricevuta né pagamento con quel nome" hint-size="100%,120px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; background: #ffffff; border: 2px solid #cfe6f4">
+      <dc-import name="TestataTabella" tema="sito" colonne="DATA|CHI|IMPORTO|COME È RICONOSCIUTO" griglia="100px minmax(0, 1.2fr) 100px minmax(0, 1.6fr)" ordinata="DATA" verso="giu" ultima-a-destra="{{ false }}" hint-size="100%,40px"></dc-import>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.2fr) 100px minmax(0, 1.6fr); gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>18/10/2026</span><span style="font-weight: 600">Giulia R.</span><span style="text-align: right; font-weight: 600;">+50,00 €</span><span>In una ricevuta · 412/2026, Rossi Giulia</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.2fr) 100px minmax(0, 1.6fr); gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>18/10/2026</span><span style="font-weight: 600">Marco B.</span><span style="text-align: right; font-weight: 600;">+12,00 €</span><span style="color: #8f6a00; font-weight: 600">Non riconosciuto</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.2fr) 100px minmax(0, 1.6fr); gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>17/10/2026</span><span style="font-weight: 600">Laura P.</span><span style="text-align: right; font-weight: 600;">+35,00 €</span><span>Dal modulo · iscrizione di Pini Tommaso</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.2fr) 100px minmax(0, 1.6fr); gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>17/10/2026</span><span style="font-weight: 600">Samuele M.</span><span style="text-align: right; font-weight: 600;">+50,00 €</span><span>Nei pagamenti · Marchi Samuele, quota 2026/27</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.2fr) 100px minmax(0, 1.6fr); gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>16/10/2026</span><span style="font-weight: 600">Maria S.</span><span style="text-align: right; font-weight: 600;">+50,00 €</span><span>Collegato a mano · Cliente CIROLLI MARIA STELLA <dc-import name="Bottone" contesto="segreteria" variante="linea" label="Non è questo" hint-size="130px,40px"></dc-import></span>
+      </div>
+      <div style="display: grid; grid-template-columns: 100px minmax(0, 1.2fr) 100px minmax(0, 1.6fr); gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <span>16/10/2026</span><span style="font-weight: 600">Paolo T.</span><span style="text-align: right; font-weight: 600; color: #b81d1d;">−8,00 €</span><span>Rimborso · esce dal versamento, non dai conti</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 10px 14px; font-size: 14px; background: #cfe6f4"><span>ne vedi 6 su 33</span></div>
+    </div>
+    <span style="font-size: 14px; color: #46606f; max-width: 880px">Sola lettura: da qui non si scrive niente in contabilità. «Non riconosciuto» vuol dire che Satispay l'ha incassato ma nessuna ricevuta o pagamento lo copre: la quota si segna dalla scheda della persona.</span>
+  </main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1160,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

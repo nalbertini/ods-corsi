@@ -83,10 +83,9 @@ import { cercaPersonaDelMovimento, confermaDi, motivoCandidati, parolaDelMovimen
 import { corsiConImporto } from '../../lib/abbinaMovimenti'
 import { Bilancio } from './Bilancio'
 import { rigaDaSistemare } from '../../lib/bilancio'
-import { ScaricoSatispay } from './ScaricoSatispay'
 import { firmato, leggiSaldoBanca, type CampoSaldoBanca, cosaNonVaVerifica, improntaMese, meseInLettere, mesePrima, quadratura, riepilogoDifferenza, righeBanca, saldoInizialeProposto, segniDelConto, SENZA_SALDO_BANCA, type Quadratura, type RigaApp, type SaldoBanca, type StatoQuadratura } from '../../lib/quadraturaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
-import { commissioneSatispay, NOME_CASSA_SATISPAY, spesaCommissione } from '../../lib/satispayScarico'
+import { NOME_CASSA_SATISPAY } from '../../lib/satispayScarico'
 
 type Scheda = 'movimenti' | 'bilancio' | 'voci' | 'casse'
 const SCHEDE: readonly (readonly [Scheda, string])[] = [
@@ -187,7 +186,7 @@ export function Contabilita({ d, movimento, onPersona, onImportazioni }: { d: Da
       {/* Le schede si nascondono, non si smontano: filtri e bozze restano dove sono. */}
       {pronto && (
         <>
-          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} movimento={movimento} apriRiga={apri} onPersona={onPersona} onImportazioni={onImportazioni} /></div>
+          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} movimento={movimento} apriRiga={apri} onPersona={onPersona} /></div>
           <div hidden={scheda !== 'bilancio'}><Bilancio d={d} casse={casse.dato ?? []} righe={elenco} oggi={oggiARoma()} fai={fai} /></div>
           <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
           <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} chiusure={dateChiusure} guaioChiusure={chiusure.guaio ?? undefined} righe={elenco} fai={fai} onCambiato={rileggi} onApri={(id) => { setApri({ id }); setScheda('movimenti') }} onImportazioni={onImportazioni} /></div>
@@ -259,9 +258,7 @@ function FiltroCasse({ casse, scelte, onChange }: { casse: Cassa[]; scelte: stri
   )
 }
 
-function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, movimento, apriRiga, onPersona, onImportazioni }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; movimento?: string; apriRiga?: { id: string } | null; onPersona?: (personaId: string) => void; onImportazioni?: () => void }) {
-  // Dove ScaricoSatispay porta la sua voce nel menu delle azioni.
-  const [listaMenu, setListaMenu] = useState<HTMLElement | null>(null)
+function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, movimento, apriRiga, onPersona }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; movimento?: string; apriRiga?: { id: string } | null; onPersona?: (personaId: string) => void }) {
   const oggi = oggiARoma()
   const [f, setF] = useState<FiltriElenco>(FILTRI_INIZIALI)
   const { testo, periodo, tipo, voce, persona, annullati } = f
@@ -401,6 +398,8 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
   }
 
   if (scrivo) {
+    // La cassa Satispay è chiusa: i soldi arrivano col versamento in Conto Corrente.
+    const casseAperte = casse.filter((c) => c.nome !== NOME_CASSA_SATISPAY)
     return (
       <InVista>
       <div className="stack" style={{ gap: 18 }}>
@@ -410,9 +409,9 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
           </button>
         </div>
         {scrivo === 'movimento' ? (
-          <NuovoMovimento d={d} voci={voci} casse={casse} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
+          <NuovoMovimento d={d} voci={voci} casse={casseAperte} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
         ) : (
-          <NuovoGiroconto d={d} casse={casse} voci={voci} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
+          <NuovoGiroconto d={d} casse={casseAperte} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
         )}
       </div>
       </InVista>
@@ -423,7 +422,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
     <div className="stack" style={{ gap: 18 }}>
       {azioni && createPortal(
         <>
-          <MenuAzioni etichetta="Altre azioni" onLista={setListaMenu}>
+          <MenuAzioni etichetta="Altre azioni">
             {!esitiLetti.guaio && <button type="button" role="menuitem" onClick={() => void collegaSicuri()}>Collega i casi sicuri</button>}
             <button type="button" role="menuitem" onClick={() => void apri('banca')}>Importa dalla banca</button>
             <button type="button" role="menuitem" onClick={() => void apri('giroconto')}>Giroconto</button>
@@ -442,7 +441,6 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
         })}
         <Saldo nome="Totale" icona={null} valore={soldiConSegno(totaleResidui(conti))} sotto={['saldi iniziali compresi']} />
       </div>
-      <ScaricoSatispay d={d} fai={fai} onCambiato={onCambiato} menu={listaMenu} onImportazioni={onImportazioni} />
 
       {cambio && idScelti.length > 0 && sceltaRiep.tipo !== 'misto' && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={cambioFinito} onChiudi={() => setCambio(false)} /></InVista>}
       {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', persona: 'da_decidere' }) }} onChiudi={chiudiCollega} /></InVista>}
@@ -662,7 +660,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
       )}
 
       <span className="sg-sotto">
-        I giroconti e gli annullati non contano in entrate e uscite. Un incasso degli iscritti apre la scheda della persona, dove nasce; qui non si cambia. Contanti vanno in Cassa Contanti, i pagamenti Satispay del negozio nella cassa Satispay, tutto il resto in Conto Corrente.
+        I giroconti e gli annullati non contano in entrate e uscite. Un incasso degli iscritti apre la scheda della persona, dove nasce; qui non si cambia. Contanti vanno in Cassa Contanti, tutto il resto in Conto Corrente. I pagamenti Satispay del negozio non entrano qui: arrivano col versamento in banca.
       </span>
     </div>
   )
@@ -867,7 +865,7 @@ function NuovoMovimento({ d, voci, casse, righe, chiusure, fai, onFatto, onChiud
   )
 }
 
-function NuovoGiroconto({ d, casse, voci, righe, chiusure, fai, onFatto, onChiudi }: { d: DatiSegreteria; casse: Cassa[]; voci: VoceContabile[]; righe: RigaMovimento[]; chiusure: ChiusuraCassa[]; fai: Fai; onFatto: (nuova: RigaMovimento) => void; onChiudi: () => void }) {
+function NuovoGiroconto({ d, casse, chiusure, fai, onFatto, onChiudi }: { d: DatiSegreteria; casse: Cassa[]; chiusure: ChiusuraCassa[]; fai: Fai; onFatto: (nuova: RigaMovimento) => void; onChiudi: () => void }) {
   const oggi = oggiARoma()
   const [da, setDa] = useState(casse[0]?.id ?? '')
   const [a, setA] = useState(casse[1]?.id ?? '')
@@ -878,11 +876,6 @@ function NuovoGiroconto({ d, casse, voci, righe, chiusure, fai, onFatto, onChiud
   const cent = centesimi(importo)
   const guaio = cosaNonVaImporto(importo, '1000,00') ?? (cent === null ? null : cosaNonVaGiroconto({ daCassaId: da, aCassaId: a, data, importo: cent, nota }, casse, oggi, chiusure))
   const manca = cent === null || !!guaio
-  // Dalla cassa Satispay arriva in banca l'incassato meno la commissione: la differenza si propone come uscita.
-  const [conCommissione, setConCommissione] = useState(true)
-  const daSatispay = casse.some((c) => c.id === da && c.nome === NOME_CASSA_SATISPAY)
-  const voceCommissioni = voci.find((v) => v.tipo === 'uscita' && v.attiva && v.nome === 'Commissioni bancarie')
-  const commissione = daSatispay && voceCommissioni && !manca ? commissioneSatispay(righe, da, data, cent) : null
   const scelta = (id: string, valore: string, set: (v: string) => void, etichetta: string) => (
     <Campo id={id} etichetta={etichetta}>
       <select id={id} className="sg-campo" value={valore} onChange={(e) => set(e.target.value)}>
@@ -902,27 +895,15 @@ function NuovoGiroconto({ d, casse, voci, righe, chiusure, fai, onFatto, onChiud
         <Campo id="gc-data" etichetta="DATA">
           <input id="gc-data" className="sg-campo" type="date" value={data} max={oggi} onChange={(e) => setData(e.target.value)} />
         </Campo>
-        <Campo id="gc-importo" etichetta={daSatispay ? 'ARRIVATI IN BANCA' : 'IMPORTO'} manca={importo === ''}>
+        <Campo id="gc-importo" etichetta="IMPORTO" manca={importo === ''}>
           <input id="gc-importo" className="sg-campo" inputMode="decimal" placeholder="1000,00" value={importo} onChange={(e) => setImporto(e.target.value)} aria-invalid={(importo !== '' && cent === null) || undefined} />
         </Campo>
         <Campo id="gc-nota" etichetta="NOTA · FACOLTATIVA" largo>
           <textarea id="gc-nota" className="sg-campo" rows={2} maxLength={300} value={nota} onChange={(e) => setNota(e.target.value)} />
         </Campo>
       </div>
-      {commissione && cent !== null && (
-        <div className="stack" style={{ gap: 6, background: 'var(--bg)', padding: '14px 16px' }}>
-          <span style={{ fontSize: 14 }}>
-            Dal {dataRicevuta(commissione.dal).slice(0, 5)} al {dataRicevuta(commissione.al).slice(0, 5)} Satispay ha incassato <b>{soldi(commissione.incassato)}</b> ({commissione.pagamenti === 1 ? '1 pagamento' : `${commissione.pagamenti} pagamenti`}{commissione.rimborsi ? `, meno ${commissione.rimborsi === 1 ? '1 rimborso' : `${commissione.rimborsi} rimborsi`}` : ''}). In banca ne sono arrivati {soldi(cent)}.
-          </span>
-          <label className="row" style={{ gap: 12, alignItems: 'center', fontSize: 14, minHeight: 44 }}>
-            <input type="checkbox" style={{ width: 24, height: 24, margin: 0, accentColor: 'var(--testo)', flexShrink: 0 }} checked={conCommissione} onChange={(e) => setConCommissione(e.target.checked)} />
-            <span>Registra <b>{soldi(commissione.commissione)}</b> come uscita «Commissioni bancarie» dalla cassa Satispay</span>
-          </label>
-          <span className="sg-sotto">Se la differenza non è la commissione (un versamento a metà, un errore), togli la spunta e scrivila tu.</span>
-        </div>
-      )}
       {giornoChiuso(chiusure, [da, a], data) && <span role="status" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>Quel giorno una delle casse è già chiusa: scegli una data dopo la chiusura.</span>}
-      <span className="sg-sotto">Sposta soldi fra le casse: non è un’entrata né un’uscita, e non entra nei totali per voce. Si annulla come un movimento{commissione && conCommissione ? '; la commissione si annulla a parte' : ''}.</span>
+      <span className="sg-sotto">Sposta soldi fra le casse: non è un’entrata né un’uscita, e non entra nei totali per voce. Si annulla come un movimento.</span>
       {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         <button
@@ -933,21 +914,11 @@ function NuovoGiroconto({ d, casse, voci, righe, chiusure, fai, onFatto, onChiud
             if (cent === null) return
             const dati = { daCassaId: da, aCassaId: a, data, importo: cent, nota: nota.trim() || undefined }
             const riepilogo = riepilogoGiroconto(dati, casse.find((c) => c.id === da)?.nome ?? '', casse.find((c) => c.id === a)?.nome ?? '')
-            const spesa = commissione && conCommissione ? spesaCommissione(commissione, da, data, voci) : null
-            if (spesa) riepilogo.push(`Commissione: ${soldi(spesa.importo)} in «Commissioni bancarie»`)
-            if (!(await chiedi(`Registrare questo giroconto?\n${riepilogo.join('\n')}`, spesa ? 'Sì, registra giroconto e commissione' : 'Sì, registra il giroconto', { no: 'No, torna al modulo' }))) return
-            const fatto = () => onFatto(rigaAppenaScritta({ tipo: 'giroconto', data, importo: cent, descrizione: `Giroconto da ${casse.find((c) => c.id === da)?.nome ?? ''} a ${casse.find((c) => c.id === a)?.nome ?? ''}`, cassaId: da, cassaAId: a }))
-            // Due scritture, non una: se la seconda non va, il giroconto resta, il modulo si chiude (rifarlo lo scriverebbe due volte) e la commissione si scrive a mano.
-            let giroScritto = false
-            const riuscito = await fai(async () => {
-              await d.registraGiroconto(dati)
-              giroScritto = true
-              if (spesa) await d.registraMovimento(spesa).catch(() => { throw new Error('Il giroconto c’è, la commissione no: scrivila da CONTABILITÀ con Nuovo movimento') })
-            }, spesa ? 'Giroconto e commissione registrati' : 'Giroconto registrato', fatto)
-            if (!riuscito && giroScritto) fatto()
+            if (!(await chiedi(`Registrare questo giroconto?\n${riepilogo.join('\n')}`, 'Sì, registra il giroconto', { no: 'No, torna al modulo' }))) return
+            await fai(() => d.registraGiroconto(dati), 'Giroconto registrato', () => onFatto(rigaAppenaScritta({ tipo: 'giroconto', data, importo: cent, descrizione: `Giroconto da ${casse.find((c) => c.id === da)?.nome ?? ''} a ${casse.find((c) => c.id === a)?.nome ?? ''}`, cassaId: da, cassaAId: a })))
           }}
         >
-          {commissione && conCommissione ? 'Registra giroconto e commissione' : 'Registra il giroconto'}
+          Registra il giroconto
         </button>
         <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
           No, torna indietro

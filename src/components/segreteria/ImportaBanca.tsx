@@ -245,9 +245,7 @@ export function ImportaBanca({ d, casse, voci, righe, fai, onRileggi, onVedi }: 
               <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>AVVISI · ENTRANO, MA CONTROLLALI</span>
               {a.avvisi.map((v) => (
                 <span key={v.tipo} style={{ fontSize: 15 }}>
-                  {v.tipo === 'satispay'
-                    ? <><b>{v.conteggio === 1 ? '1 versamento da Satispay' : `${v.conteggio} versamenti da Satispay`}</b> ({soldi(v.totale)}): sono incassi già contati con Satispay, se li lasci così si contano due volte. Dopo l’importazione, in MOVIMENTI, controllali uno per uno.</>
-                    : <><b>{v.conteggio === 1 ? '1 versamento di contanti' : `${v.conteggio} versamenti di contanti`}</b> ({soldi(v.totale)}): controlla che non siano già nella cassa contanti.</>}
+                  <b>{v.conteggio === 1 ? '1 versamento di contanti' : `${v.conteggio} versamenti di contanti`}</b> ({soldi(v.totale)}): controlla che non siano già nella cassa contanti.
                 </span>
               ))}
             </section>

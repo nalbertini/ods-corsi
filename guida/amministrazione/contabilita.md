@@ -13,8 +13,7 @@ MOVIMENTI è un **estratto conto**. In cima, in una riga di stato, **Saldo inizi
 tabella ha le colonne **DATA**, **DESCRIZIONE**, **TIPO** (con la sua icona: Incasso iscritto,
 Giroconto, Entrata, Uscita), **CASSA**, **ENTRATE** e **USCITE**, con le righe dalla più
 recente. Accanto al titolo CONTABILITÀ, e solo in questa scheda, c'è **Nuovo movimento**
-e il menu **Altre azioni**: **Collega i casi sicuri**, **Giroconto**, **Esporta CSV** e
-quella di Satispay (vedi sotto).
+e il menu **Altre azioni**: **Collega i casi sicuri**, **Giroconto** ed **Esporta CSV**.
 
 Ogni riga dice da dove viene, con un tag accanto al nome: **Dal gestionale** (incassi degli iscritti e movimenti scritti qui), **Dalla banca**, **Dallo storico**, **Da Satispay**, **Dalla chat**. Voce, descrizione e nota di un movimento si correggono allo stesso modo, qualunque sia l'origine.
 
@@ -28,15 +27,11 @@ L'elenco unisce due cose:
   o un pagamento si annulla, cambia da sé anche qui. In **PERSONA** c'è il nome
   della scheda dell'iscritto (vuota se il pagamento non ha una scheda): la
   descrizione resta il nome scritto sulla ricevuta, che può essere diverso. Contanti vanno in Cassa
-  Contanti; Satispay, dal 1° ottobre 2026, nella cassa **Satispay** (prima in Conto
-  Corrente); tutto il resto (bonifico, POS, assegno) in Conto Corrente.
+  Contanti; tutto il resto (bonifico, POS, assegno) in Conto Corrente. Satispay no:
+  vedi [Satispay](#satispay).
   Prima di registrare un pagamento a mano, il riepilogo dice già dove entra
   («Entra in CONTABILITÀ: Cassa Contanti · Quota associativa»).
-  Il «pagato fino al» non è un incasso e qui non compare. Satispay entra per
-  l'importo pagato dalla famiglia: la commissione si scrive col giroconto verso
-  la banca (vedi sotto);
-- i **pagamenti del negozio Satispay** (anche col QR alla cassa) e i loro
-  rimborsi: li porta lo scarico, vedi [Lo scarico da Satispay](#lo-scarico-da-satispay);
+  Il «pagato fino al» non è un incasso e qui non compare;
 - i **movimenti che scrivi tu**: altre entrate (contributi, gare, attività
   fatturate) e le uscite.
 
@@ -190,49 +185,26 @@ contanti in banca: da Cassa Contanti a Conto Corrente. Non è un'entrata né
 un'uscita: non entra nei totali, né nei totali per voce. Si annulla come un movimento.
 Anche qui, prima di scrivere c'è il riepilogo da confermare.
 
-Da **Satispay** a Conto Corrente il campo si chiama **ARRIVATI IN BANCA**: Satispay
-versa quello che ha incassato meno la sua commissione. Sotto, l'app dice quanto ha
-incassato Satispay dall'ultimo versamento e propone la differenza come uscita
-«Commissioni bancarie» dalla cassa Satispay, con una casella già spuntata. Se la
-differenza non è la commissione (un versamento a metà, un errore), togli la spunta
-e scrivila tu. Giroconto e commissione si annullano ognuno per conto suo. Se il
-giroconto va e la commissione no, l'app lo dice: la commissione si scrive da
-**Nuovo movimento**.
+### Satispay
 
-### Lo scarico da Satispay
+Satispay non entra in CONTABILITÀ, né i pagamenti del modulo né quelli del negozio (anche
+col QR alla cassa) né quelli registrati in palestra. I soldi arrivano in banca col
+versamento **«Da Satispay Europe S.A.»**: è quello l'incasso, e entra in Conto Corrente con
+[Importare dalla banca](#importare-dalla-banca), sulla voce **Incassi Satispay**, che l'app
+propone da sola. Così ogni
+euro si conta una volta sola.
 
-I pagamenti del negozio Satispay entrano da soli, ogni notte, fino al giorno prima.
-In MOVIMENTI, nel menu **Altre azioni**, **Scarica ora i pagamenti Satispay** lo fa subito
-(la prima volta c'è invece **Guarda il primo scarico Satispay**); lo stesso fa **Scarica ora** in
-[IMPORTAZIONI](importazioni.md). Se l'ultimo scarico non è riuscito, o ci sono casi da decidere, un
-avviso breve lo dice sopra l'elenco, con il link a IMPORTAZIONI.
+Il versamento è già **al netto della commissione** di Satispay: l'importo in banca è un
+po' meno di quanto hanno pagato le famiglie. Non si scrive a parte, e non c'è niente da
+far tornare.
 
-**La prima volta** c'è l'anteprima: l'app legge tutto Satispay e dice cosa
-scriverebbe, senza scrivere niente finché non dici sì. Ogni pagamento entra una volta
-sola, nella voce **Da classificare**: la voce giusta la
-scegli dopo, con **Cambia voce**. Finché non la scegli, in MOVIMENTI la riga è
-evidenziata in giallo, come ogni movimento su «Da classificare», «Varie» o senza voce. Un rimborso entra come uscita. Non entrano:
+La cassa **Satispay** è chiusa: non prende movimenti nuovi, né giroconti. Quel che c'era
+dentro resta visibile, e si annulla come ogni movimento.
 
-- i pagamenti del **modulo di iscrizione**: sono già negli incassi degli iscritti o in una ricevuta;
-- quelli **già negli incassi**: un pagamento col metodo Satispay registrato in
-  palestra, stesso giorno e stesso importo;
-- quelli **già scritti a mano**: stesso giorno, stesso importo, un solo movimento
-  possibile nella cassa Satispay. Resta il tuo, con la sua voce. Le entrate del
-  Conto Corrente non contano: un incasso Satispay non è un incasso della banca;
-- quelli di prima dell'inizio dei conti.
-
-**Da decidere**: se il giorno è già chiuso, o se quel giorno ci sono più movimenti
-a mano in Satispay con lo stesso importo, il pagamento non entra: si decide in
-[IMPORTAZIONI](importazioni.md#da-decidere), a gruppi, con una conferma per gruppo.
-
-I pagamenti Satispay entrano tutti nella cassa **Satispay**, che parte dal 1°
-gennaio 2025, separata dal Conto Corrente. Quelli scritti in Conto Corrente prima
-di ottobre 2026 restano dove sono.
-Uno scarico si annulla movimento per movimento, come ogni movimento.
-
-Dopo ogni scarico che ha scritto qualcosa, lasciato pagamenti da decidere o non è
-riuscito, arriva un'email agli indirizzi degli avvisi (IMPOSTAZIONI → GLI AVVISI,
-vedi [Le regole](../segreteria/regole.md#gli-avvisi)). L'anteprima non manda niente.
+Chi ha pagato con Satispay (nome, importo, giorno, se l'app lo riconosce fra gli iscritti)
+lo dice lo scarico, ogni notte, in [IMPORTAZIONI → Chi ha pagato](importazioni.md#chi-ha-pagato).
+Se lo scarico non riesce arriva un'email agli indirizzi degli avvisi (IMPOSTAZIONI → GLI
+AVVISI, vedi [Le regole](../segreteria/regole.md#gli-avvisi)).
 
 ### Importare dalla banca
 
@@ -260,7 +232,7 @@ importo, restano fuori).
 - **Da decidere**: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo) e più di un possibile pagamento. Sotto **POTREBBE ESSERE** scegli quello giusto con la **spunta verde** (**È questa**), oppure **È nuova**. Finché non scegli, non entra. Se il testo ha nome e cognome di una persona (o del suo genitore), quella scheda è in evidenza con «Sembra questo»; se il nome è di una e il genitore di un'altra, sono in evidenza tutte e due e scegli tu: **Conferma quelli che sembrano giusti** li conferma tutti insieme, e una riga con una sola scheda così non cambia finché non confermi.
 - **Scartata**: la data o l'importo sono illeggibili, o la data è nel futuro. Il motivo è scritto nella riga. Correggila nel file e riprova.
 
-Sopra l'elenco, gli **avvisi**: i **versamenti da Satispay** entrano, ma i soldi sono già negli incassi Satispay: dopo, in MOVIMENTI, controllali uno per uno: se sono già negli incassi Satispay, annullali, o spostali con **Cambia voce** su un giroconto da Satispay, per non contarli due volte. Controlla anche i versamenti di contanti. Le duplicate si ricontrollano dopo l'importazione in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
+Sopra l'elenco, gli **avvisi**: i **versamenti di contanti** entrano, ma controlla che non siano già nella cassa contanti. I versamenti **«Da Satispay Europe S.A.»** entrano come gli altri: sono l'incasso di Satispay, sulla voce **Incassi Satispay** (vedi [Satispay](#satispay)). Le duplicate si ricontrollano dopo l'importazione in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
 
 Sulle righe che entrano scegli la **tipologia**: parte da quella che l'app propone (come per
 i movimenti da classificare) o da **Da classificare**. Per una quota o un corso serve anche la

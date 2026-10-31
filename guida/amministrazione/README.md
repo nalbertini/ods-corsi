@@ -31,7 +31,7 @@ Il gruppo **I CONTI** (per chi ha solo Amministrazione è l'unico):
 | Voce | Cosa fa |
 |---|---|
 | **Contabilità** | Le entrate e le uscite in due casse: movimenti, voci, saldi iniziali. [Apri](contabilita.md) |
-| **Importazioni** | Satispay e banca: cosa arriva, cosa resta da decidere, cosa è entrato. [Apri](importazioni.md) |
+| **Importazioni** | Satispay e banca: cosa arriva, chi ha pagato con Satispay, cosa è entrato dalla banca. [Apri](importazioni.md) |
 | **Listino** | I costi della stagione, gli stessi della [segreteria](../segreteria/listino.md): si cambiano da qui. |
 
 Gli incassi degli iscritti sono in **CONTABILITÀ → MOVIMENTI**, insieme agli altri

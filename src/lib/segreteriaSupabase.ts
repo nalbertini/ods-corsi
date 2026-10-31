@@ -28,7 +28,7 @@ import { funzioneAssente, type Abbinato } from './abbinaMovimenti'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
 import { cartaPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
-import type { ContiScarico, DaDecidere, PagamentoNegozio } from './satispayScarico'
+import type { ContiScarico, PagamentoNegozio } from './satispayScarico'
 import type { CopertoBanca } from './importaBanca'
 import { cosaNonVaSaldoBanca, cosaNonVaVerifica, mancaSaldoBanca, SENZA_SALDO_BANCA, type SaldoBanca } from './quadraturaBanca'
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
@@ -1784,16 +1784,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Senza 97-satispay-scarico.sql la funzione non c'è: niente striscia, il resto della contabilità va.
       if (r.error && (r.error.code === 'PGRST202' || r.error.code === '42883')) return null
       // `as`: la forma di satispay_scarico_stato() in 97-satispay-scarico.sql, che il client non conosce.
-      const x = ok(r) as {
-        primo_fatto: boolean; ultimo: string | null; errore: string | null
-        da_decidere: Array<Omit<DaDecidere, 'satispayId'> & { satispay_id: string }>
-      }
-      return {
-        primoFatto: x.primo_fatto,
-        ultimo: x.ultimo,
-        errore: x.errore,
-        daDecidere: x.da_decidere.map(({ satispay_id, ...resto }) => ({ satispayId: satispay_id, ...resto })),
-      }
+      const x = ok(r) as { primo_fatto: boolean; ultimo: string | null; errore: string | null }
+      return { primoFatto: x.primo_fatto, ultimo: x.ultimo, errore: x.errore }
     },
 
     async scaricaSatispay(anteprima) {
@@ -1805,20 +1797,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return r.conti
     },
 
-    async decidiSatispay(satispayId, scelta, movimentoId) {
-      ok(await db.rpc('satispay_decidi', { satispay_id: satispayId, scelta, movimento: movimentoId ?? null }))
-    },
-
-    async decidiGruppoSatispay(scelte) {
-      ok(senza114(await db.rpc('satispay_decidi_gruppo', { scelte })))
-    },
-
     async scollegaSatispay(satispayId) {
       ok(senza114(await db.rpc('satispay_scollega', { satispay_id: satispayId })))
     },
 
     async negozioSatispay(mese) {
-      // Un giorno in più per parte: il mese è quello di Roma, e lo sceglie `righeEntrato`.
+      // Un giorno in più per parte: il mese è quello di Roma, e lo sceglie `chiHaPagato`.
       const [anno, m] = mese.split('-').map(Number)
       const dal = new Date(Date.UTC(anno, m - 1, 0)).toISOString()
       const al = new Date(Date.UTC(anno, m, 2)).toISOString()

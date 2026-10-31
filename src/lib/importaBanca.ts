@@ -47,7 +47,7 @@ export interface AnteprimaBanca {
   giaImportati: MovimentoBanca[]
   coperti: { movimento: MovimentoBanca; con: RigaMovimento }[]
   daDecidere: { movimento: MovimentoBanca; candidati: RigaMovimento[]; preselezionato: string | null; come: Record<string, ComeAbbinato> }[]
-  avvisi: { tipo: 'satispay' | 'contanti'; conteggio: number; totale: number }[]
+  avvisi: { tipo: 'contanti'; conteggio: number; totale: number }[]
   scartate: RigaBancaScartata[]
   /** Tutte le righe del file, nell'ordine del file, ognuna col suo stato. */
   righe: RigaAnteprima[]
@@ -329,15 +329,15 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
   }
   const entrate = somma('entrata')
   const uscite = somma('uscita')
-  // Gli stessi due controlli danno gli avvisi e lo stato «da controllare» delle righe.
-  const eSatispay = (x: MovimentoBanca) => x.tipo === 'entrata' && /satispay europe/i.test(x.descrizione)
+  // Lo stesso controllo dà l'avviso e lo stato «da controllare» delle righe. Il versamento di Satispay non ne ha
+  // bisogno: è l'incasso, lo scarico non scrive più movimenti.
   const eContanti = (x: MovimentoBanca) => x.tipo === 'entrata' && /versament/i.test(x.descrizione) && /contant/i.test(x.descrizione)
-  const avviso = (tipo: 'satispay' | 'contanti', vale: (x: MovimentoBanca) => boolean) => {
+  const avviso = (tipo: 'contanti', vale: (x: MovimentoBanca) => boolean) => {
     const v = entrano.filter(vale)
     return v.length ? [{ tipo, conteggio: v.length, totale: v.reduce((s, x) => s + x.importo, 0) }] : []
   }
   const righeTutte = [
-    ...righeDelFile.map((r) => (r.stato === 'nuova' && r.movimento && (eSatispay(r.movimento) || eContanti(r.movimento)) ? { ...r, stato: 'da-controllare' as const } : r)),
+    ...righeDelFile.map((r) => (r.stato === 'nuova' && r.movimento && eContanti(r.movimento) ? { ...r, stato: 'da-controllare' as const } : r)),
     ...scartate.map((x) => riga({ riga: x.riga, stato: 'scartata', testo: x.testo, motivo: x.motivo })),
   ].sort((a, b) => a.riga - b.riga)
   return {
@@ -347,7 +347,6 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
     coperti,
     daDecidere,
     avvisi: [
-      ...avviso('satispay', eSatispay),
       ...avviso('contanti', eContanti),
     ],
     scartate,

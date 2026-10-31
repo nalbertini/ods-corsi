@@ -110,14 +110,16 @@ export interface RigaMovimento {
 export const NOME_CASSA_CONTANTI = 'Cassa Contanti'
 export const NOME_CASSA_CONTO = 'Conto Corrente'
 export const NOME_CASSA_SATISPAY = 'Satispay'
-/** Dal 1° ottobre 2026 Satispay è una cassa a sé (97-satispay-scarico.sql); prima si scriveva nel Conto Corrente. */
-export const CAMBIO_CASSA_SATISPAY = '2026-10-01'
+/** Come il trigger del 132: i soldi di Satispay arrivano col versamento in banca, la cassa non prende movimenti. */
+export const MSG_CASSA_SATISPAY_CHIUSA = 'La cassa Satispay è chiusa: i soldi di Satispay arrivano col versamento in Conto Corrente'
 /** La carta dal modulo di iscrizione (115-carta.sql): una cassa sua da subito. Al banco la carta resta «POS», sul conto. */
 export const NOME_CASSA_CARTA = 'Carta'
 export const VOCE_QUOTA = 'Quota associativa'
 export const VOCE_CORSI = 'Corsi e altri pagamenti'
 /** Le quote delle gare (`117-gare.sql`): una voce a sé, per sapere quanto entra e quanto si spende per le gare. */
 export const VOCE_GARE = 'Gare'
+/** Il versamento «Da Satispay Europe S.A.» in banca, al netto della commissione: è l'incasso di Satispay (`132-satispay-solo-chi-ha-pagato.sql`). */
+export const VOCE_INCASSI_SATISPAY = 'Incassi Satispay'
 /** Un'entrata su una quota o un corso, scritta a mano, ha la persona che ha pagato (`98-quote-persona.sql`). */
 export const vuolePersona = (tipo: string, voceNome: string | null | undefined): boolean =>
   tipo === 'entrata' && (voceNome === VOCE_QUOTA || voceNome === VOCE_CORSI)
@@ -135,10 +137,13 @@ export const VOCE_VARIE = 'Varie'
 /** Sopra questa differenza (in centesimi) la schermata chiede una conferma in più. */
 export const SOGLIA_DIFFERENZA = 2000
 
-/** Contanti in Cassa Contanti, Satispay dal cambio nella cassa Satispay, Carta nella cassa Carta, tutto il resto (bonifico, POS, assegno) in Conto Corrente. */
-export const cassaDelMetodo = (metodo: string, data: string): 'contanti' | 'conto' | 'satispay' | 'carta' => {
+/**
+ * Contanti in Cassa Contanti, Carta nella cassa Carta, tutto il resto (bonifico, POS, assegno) in Conto Corrente.
+ * Satispay, di qualunque data, non entra in CONTABILITÀ: i soldi sono il versamento «Da Satispay Europe S.A.» in banca.
+ */
+export const cassaDelMetodo = (metodo: string, _data: string): 'contanti' | 'conto' | 'satispay' | 'carta' => {
   const m = metodo.trim().toLowerCase()
-  return m === 'contanti' ? 'contanti' : m === 'carta' ? 'carta' : m === 'satispay' && data >= CAMBIO_CASSA_SATISPAY ? 'satispay' : 'conto'
+  return m === 'contanti' ? 'contanti' : m === 'carta' ? 'carta' : m === 'satispay' ? 'satispay' : 'conto'
 }
 const NOME_CASSA = { contanti: NOME_CASSA_CONTANTI, conto: NOME_CASSA_CONTO, satispay: NOME_CASSA_SATISPAY, carta: NOME_CASSA_CARTA }
 
@@ -150,16 +155,18 @@ export const voceDiSistema = (voce: string) => {
 
 /** Dove va un incasso in CONTABILITÀ, detto prima di registrarlo: la cassa e la voce che `incassiDerivati` gli darà. */
 export const doveEntraInContabilita = (metodo: string, voce: string, data: string) =>
-  `Entra in CONTABILITÀ: ${NOME_CASSA[cassaDelMetodo(metodo, data)]} · ${voceDiSistema(voce)}`
+  cassaDelMetodo(metodo, data) === 'satispay'
+    ? 'Non entra in CONTABILITÀ: i soldi arrivano col versamento di Satispay in banca'
+    : `Entra in CONTABILITÀ: ${NOME_CASSA[cassaDelMetodo(metodo, data)]} · ${voceDiSistema(voce)}`
 
 /**
  * Gli incassi degli iscritti come movimenti di entrata, uno per pagamento. Sono
  * le righe di PAGAMENTI (`righeDaRicevute`, `righeDirette`): `pagato fino al` e
- * l'anticipo non ci sono, e un annullo resta, segnato annullato.
+ * l'anticipo non ci sono, e un annullo resta, segnato annullato. Satispay no: è già nel versamento della banca.
  */
 export function incassiDerivati(righe: RigaPagamento[], casse: Cassa[]): RigaMovimento[] {
   const cassa = (nome: string) => casse.find((c) => c.nome === nome)?.id ?? ''
-  return righe.map((r) => ({
+  return righe.filter((r) => cassaDelMetodo(r.metodo, r.data) !== 'satispay').map((r) => ({
     id: `incasso:${r.id}`,
     origine: r.ricevuta ? 'ricevuta' : 'pagamento',
     tipo: 'entrata',
@@ -748,6 +755,7 @@ export function cosaNonVaMovimento(d: DatiMovimento, voci: VoceContabile[], cass
   if (vuolePersona(d.tipo, voce.nome) && !d.personaId) return SCEGLI_LA_PERSONA
   const cassa = casse.find((c) => c.id === d.cassaId)
   if (!cassa) return 'Scegli la cassa'
+  if (cassa.nome === NOME_CASSA_SATISPAY) return MSG_CASSA_SATISPAY_CHIUSA
   if (cassa.dal && d.data < cassa.dal) return 'La data è prima dell’inizio della cassa'
   if (giornoChiuso(chiusure, [cassa.id], d.data)) return MSG_GIORNO_CHIUSO
   if (!d.descrizione.trim()) return 'Scrivi una descrizione'
@@ -795,6 +803,7 @@ export function cosaNonVaGiroconto(d: DatiGiroconto, casse: Cassa[], oggi: strin
   const a = casse.find((c) => c.id === d.aCassaId)
   if (!da || !a) return 'Scegli le due casse'
   if (da.id === a.id) return 'Scegli due casse diverse'
+  if (da.nome === NOME_CASSA_SATISPAY || a.nome === NOME_CASSA_SATISPAY) return MSG_CASSA_SATISPAY_CHIUSA
   const comune = cosaNonVaIlComune(d.importo, d.data, d.nota, oggi)
   if (comune) return comune
   if ((da.dal && d.data < da.dal) || (a.dal && d.data < a.dal)) return 'La data è prima dell’inizio della cassa'

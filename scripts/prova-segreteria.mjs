@@ -3406,7 +3406,7 @@ await sezione('la contabilità di prova: le tre casse e le due voci di sistema',
   cx.contanti = casse.find((c) => c.nome === 'Cassa Contanti').id
   cx.conto = casse.find((c) => c.nome === 'Conto Corrente').id
   // «Differenza di cassa» arriva con 60-chiusura-cassa.sql e ha le sue prove (la chiusura di cassa, più sotto); «Compensi istruttori» con 81-compensi-pagati.sql (prova-compensi-pagati); «Gare» con 117-gare.sql (prova-gare).
-  const di = (await s.voci()).filter((v) => v.diSistema && !['Differenza di cassa', 'Compensi istruttori', 'Gare'].includes(v.nome))
+  const di = (await s.voci()).filter((v) => v.diSistema && !['Differenza di cassa', 'Compensi istruttori', 'Gare', 'Incassi Satispay'].includes(v.nome))
   ok('le voci di sistema, attive', di.map((v) => [v.nome, v.tipo, v.attiva]).sort(), [['Corsi e altri pagamenti', 'entrata', true], ['Quota associativa', 'entrata', true]])
   cx.quota = di.find((v) => v.nome === 'Quota associativa').id
   cx.corsi = di.find((v) => v.nome === 'Corsi e altri pagamenti').id
@@ -3416,7 +3416,7 @@ await sezione('la contabilità di prova: le tre casse e le due voci di sistema',
   ok('«Corsi e altri pagamenti» nemmeno', await errore(() => s.attivaVoce(cx.corsi, false)), SOLO_AMM)
   ok('un doppione della quota no', await errore(() => s.salvaVoce({ nome: 'QUOTA ASSOCIATIVA', tipo: 'entrata' })), 'C’è già una voce «QUOTA ASSOCIATIVA» tra le entrate')
   ok('né di «Corsi e altri pagamenti», con spazi', await errore(() => s.salvaVoce({ nome: '  corsi e altri pagamenti ', tipo: 'entrata' })), 'C’è già una voce «corsi e altri pagamenti» tra le entrate')
-  ok('sono rimaste com\'erano', (await s.voci()).filter((v) => v.diSistema && !['Differenza di cassa', 'Compensi istruttori', 'Gare'].includes(v.nome)).map((v) => [v.nome, v.attiva]).sort(), [['Corsi e altri pagamenti', true], ['Quota associativa', true]])
+  ok('sono rimaste com\'erano', (await s.voci()).filter((v) => v.diSistema && !['Differenza di cassa', 'Compensi istruttori', 'Gare', 'Incassi Satispay'].includes(v.nome)).map((v) => [v.nome, v.attiva]).sort(), [['Corsi e altri pagamenti', true], ['Quota associativa', true]])
 })
 
 await sezione('le voci: il nome è unico per tipo, una voce si disattiva', async () => {
@@ -4461,11 +4461,16 @@ await sezione('la ricevuta una volta sola, sul database (client finto): la chiav
     [['emetti_ricevuta', dati.chiave], ['emetti_ricevuta_satispay', dati.chiave]])
 })
 
-await sezione('lo scarico Satispay in prova: c’è un caso da decidere, per vedere l’avviso giallo', async () => {
+await sezione('lo scarico Satispay in prova: dice solo chi ha pagato, come il database (nessun movimento, nessun da decidere)', async () => {
   const s = m.creaSegreteriaProva()
-  await s.scaricaSatispay(true)
-  const stato = await s.statoScaricoSatispay()
-  ok('dopo l’anteprima, un pagamento da decidere per un giorno chiuso', stato.daDecidere.map((c) => c.motivo), ['giorno_chiuso'])
+  const movimenti = async () => (await s.movimenti()).length
+  const prima = await movimenti()
+  const anteprima = await s.scaricaSatispay(true)
+  ok('c’è la voce di sistema «Incassi Satispay» per il versamento in banca (132)', (await s.voci()).filter((v) => v.nome === 'Incassi Satispay').map((v) => [v.tipo, v.diSistema, v.attiva]), [['entrata', true, true]])
+  ok('lo stato non porta più pagamenti da decidere', 'daDecidere' in (await s.statoScaricoSatispay()), false)
+  ok('l’anteprima non scrive movimenti né chiede decisioni', [anteprima.scritti, anteprima.da_decidere, await movimenti()], [0, 0, prima])
+  const vero = await s.scaricaSatispay(false)
+  ok('lo scarico vero nemmeno: i soldi sono nel versamento in banca', [vero.scritti, vero.da_decidere, await movimenti()], [0, 0, prima])
 })
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
