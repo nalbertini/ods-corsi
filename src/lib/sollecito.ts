@@ -3,6 +3,7 @@ import { anni, telefonoGiusto } from './richieste'
 import { cifreTelefono } from './vestiario'
 import { euro, euroBreve } from './ricevute'
 import type { StatoCorso } from './corsiDaPagare'
+import { titolareSenzaCorsi } from './filtriIscritti'
 import type { PagatoNelVecchio } from './pagatoPrima'
 import { dalCertificato, pagamentoDi, statoCertificato, type Anagrafica, type PersonaSeg, type UltimoSollecito } from './segreteria'
 
@@ -66,6 +67,8 @@ export interface OpzioniSollecito {
   tesseraDaSistemare?: boolean
   /** I corsi della persona (`statoCorsi`): quelli non coperti si sollecitano dopo la quota. */
   corsi?: StatoCorso[]
+  /** I titolari dei nuclei (`titolariDi`): al titolare senza corsi la quota non si chiede, come nei conti. */
+  titolari?: ReadonlySet<string>
 }
 
 /** Il motivo di un corso non coperto; null per quelli pagati e per «da controllare», che la segreteria guarda prima. */
@@ -85,7 +88,7 @@ function motivoCorso(s: StatoCorso): (Motivo & { frase: string }) | null {
 /** I motivi con la loro frase per il messaggio, nell'ordine in cui si dicono. */
 function cosaManca(p: PersonaSeg, quota: number, oggi: string, opz: OpzioniSollecito): Array<Motivo & { frase: string }> {
   const fuori: Array<Motivo & { frase: string }> = []
-  const paga = opz.quotaNelVecchio ? { come: 'pagato' as const } : pagamentoDi(p, oggi)
+  const paga = opz.quotaNelVecchio || titolareSenzaCorsi(p, opz.titolari, oggi) ? { come: 'pagato' as const } : pagamentoDi(p, oggi)
   const prezzo = `${euro(quota)} €`
   if (paga.come === 'da_pagare') fuori.push({ testo: `Quota associativa da pagare: ${prezzo}`, tono: 'rosso', frase: `la quota associativa è da pagare (${prezzo})` })
   if (paga.come === 'scaduto' && paga.fino)

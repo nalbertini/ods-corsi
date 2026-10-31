@@ -9,7 +9,7 @@ import { useCarica, type useAvviso } from './comune'
  * segnato. null finché si legge, e quando non c'è niente da sollecitare: il
  * tasto in testata allora non c'è.
  */
-export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio, corsi }: {
+export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio, titolari, corsi }: {
   d: DatiSegreteria
   p: PersonaSeg
   oggi: string
@@ -18,6 +18,7 @@ export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio,
   /** Cambia quando un sollecito si segna o si toglie dall'elenco: si rilegge l'ultimo. */
   giroSolleciti: number
   quotaNelVecchio: boolean
+  titolari?: ReadonlySet<string>
   /** I corsi della persona (`statoCorsi`): il sollecito nomina quelli scaduti. */
   corsi?: StatoCorso[]
 }) {
@@ -30,7 +31,7 @@ export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio,
     [d, p.id, oggi, giro],
   )
   const ultimo = useCarica(() => d.ultimoSollecito(p.id), [d, p.id, giroSolleciti])
-  const s = dati.dato ? sollecitoDi(p, dati.dato.anagrafica, dati.dato.quota, oggi, { quotaNelVecchio, corsi }) : null
+  const s = dati.dato ? sollecitoDi(p, dati.dato.anagrafica, dati.dato.quota, oggi, { quotaNelVecchio, titolari, corsi }) : null
   return { s, guaio: dati.guaio, ultimo: ultimo.dato }
 }
 

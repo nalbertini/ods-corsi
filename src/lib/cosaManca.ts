@@ -11,8 +11,9 @@
  */
 
 import type { FiltroSegreteria, Voce } from './indirizzoSegreteria'
-import { comePaga, senzaCertificatoValido, type LezioneSeg, type PersonaSeg } from './segreteria'
+import { senzaCertificatoValido, type LezioneSeg, type PersonaSeg } from './segreteria'
 import { SEGNALA_TESSERE } from './tessere'
+import { quotaDaIncassare, titolariDi } from './filtriIscritti'
 
 /** Fin dove si guarda indietro per gli appelli che mancano. */
 export const GIORNI_APPELLI = 30
@@ -241,7 +242,8 @@ export function certificatiDaSistemare(persone: PersonaSeg[], oggi: string): num
 
 /** Fra chi è attivo, chi non è in regola con la quota: le righe del filtro DA PAGARE di ISCRITTI. */
 export function pagamentiNonInRegola(persone: PersonaSeg[], oggi: string): number {
-  return persone.filter((p) => p.attiva && !p.genitoreNonIscritto && comePaga(p, oggi) !== 'pagato').length
+  const titolari = titolariDi(persone)
+  return persone.filter((p) => quotaDaIncassare(p, oggi, titolari)).length
 }
 
 /**

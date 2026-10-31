@@ -89,22 +89,29 @@ export const titolariDi = (persone: PersonaSeg[]): Set<string> => new Set(person
  * altri: la quota e il certificato non sono cosa sua, e non conta come
  * da incassare né da sistemare.
  */
-const titolareSenzaCorsi = (p: PersonaSeg, c: ContestoFiltri) => !!c.titolari?.has(p.id) && !p.iscrizioni.some((i) => inCorso(i, c.oggi))
+export const titolareSenzaCorsi = (p: PersonaSeg, titolari: ReadonlySet<string> | undefined, oggi: string) => !!titolari?.has(p.id) && !p.iscrizioni.some((i) => inCorso(i, oggi))
 
 // La quota si cerca fra chi è attivo: chi ha smesso non la deve portare. Gli stessi conti di DA FARE.
 export const daPagare = (p: PersonaSeg, oggi: string) => p.attiva && comePaga(p, oggi) !== 'pagato'
+
+/**
+ * La quota da incassare: la stessa regola per il filtro DA PAGARE, COSA MANCA, DA FARE e la coda del banco.
+ * Il genitore non iscritto e il titolare senza corsi ci sono per gli altri: a loro non si chiede.
+ */
+export const quotaDaIncassare = (p: PersonaSeg, oggi: string, titolari: ReadonlySet<string> | undefined) =>
+  daPagare(p, oggi) && !p.genitoreNonIscritto && !titolareSenzaCorsi(p, titolari, oggi)
 
 /** Se una persona passa un chip: la stessa regola per il filtro e per il suo conto. */
 export function passaChip(id: ChipConto, p: PersonaSeg, c: ContestoFiltri): boolean {
   // Il genitore non iscritto c'è per i figli: niente certificato, quota né corsi da chiedergli.
   if (p.genitoreNonIscritto) return false
   if (id === 'certificato') return senzaCertificatoValido(p, c.oggi)
-  if (id === 'pagare') return daPagare(p, c.oggi) && !titolareSenzaCorsi(p, c)
+  if (id === 'pagare') return quotaDaIncassare(p, c.oggi, c.titolari)
   if (id === 'corsi-scaduti') return c.scopertiDi(p).length > 0
   // Nell'elenco c'è solo la data di nascita, non il codice fiscale: chi non ce l'ha vale da adulto (`senzaNascita` lo conta).
   // `T00:00` senza fuso è la mezzanotte locale, come il compleanno in `minorenne`: se no a ovest di Greenwich il giorno slitta.
   if (id === 'minorenni') return eMinorenne(p, null, new Date(`${c.oggi}T00:00`))
-  if (titolareSenzaCorsi(p, c)) return false
+  if (titolareSenzaCorsi(p, c.titolari, c.oggi)) return false
   return fuoriRegola(p, c.oggi) || (p.attiva && senzaTessera(c.tesseraDi(p)))
 }
 

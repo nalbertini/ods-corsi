@@ -329,6 +329,7 @@ export function Iscritti({
           quotaNelVecchio: nelVecchioIds.has(p.id),
           tesseraDaSistemare: senzaTessera(tesseraDi(p)),
           corsi: statiDi(p),
+          titolari,
         })
       : null
   const suoiCorsi = (p: PersonaSeg) => p.iscrizioni.filter((i) => inCorso(i, oggi)).map((i) => perId.get(i.corsoId)?.nome).filter(Boolean)
@@ -419,6 +420,7 @@ export function Iscritti({
             contabilita={contabilita}
             onMovimento={onMovimento}
             quotaNelVecchio={nelVecchioIds.has(persona.id)}
+            titolari={titolari}
             giroSolleciti={giroSolleciti}
             onSollecitato={() => setGiroSolleciti((g) => g + 1)}
             onCambiato={() => {
@@ -748,6 +750,7 @@ function Scheda({
   contabilita,
   onMovimento,
   quotaNelVecchio,
+  titolari,
   giroSolleciti,
   onSollecitato,
   statiCorsi,
@@ -778,6 +781,8 @@ function Scheda({
   onMovimento?: (id: string) => void
   /** Ha la quota pagata nel vecchio programma: il sollecito non la chiede (come la riga dell'elenco). */
   quotaNelVecchio: boolean
+  /** I titolari dei nuclei: al titolare senza corsi il sollecito non chiede la quota. */
+  titolari: ReadonlySet<string>
   /** Cambia quando un sollecito si segna o si toglie dall'elenco. */
   giroSolleciti: number
   onSollecitato: () => void
@@ -822,7 +827,7 @@ function Scheda({
     window.addEventListener(APRI_SCHEDA, apri)
     return () => window.removeEventListener(APRI_SCHEDA, apri)
   }, [])
-  const sollecito = useSollecito({ d, p, oggi, giro: giroAnagrafica, giroSolleciti, quotaNelVecchio, corsi: statiCorsi })
+  const sollecito = useSollecito({ d, p, oggi, giro: giroAnagrafica, giroSolleciti, quotaNelVecchio, titolari, corsi: statiCorsi })
   const azioni = azioniTestata(p, !!sollecito.s, { modifica: !!modifica, unendo, pagando })
   const voci = azioni.altro
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])

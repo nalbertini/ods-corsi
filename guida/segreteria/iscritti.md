@@ -30,6 +30,9 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   ricevuta con «Trimestre» o «Annuale» e il nome del corso. Conta anche chi ha
   la quota a posto. In sala si entra lo stesso. Con questo filtro la colonna
   **CORSI** dice cosa manca per ogni corso (**Judo: scaduto il 31 dicembre**).
+  Un corso **da controllare** non conta qui né in DA FARE: si guarda nella
+  scheda, ma non è da pagare. Il genitore non iscritto e il titolare senza
+  corsi non sono né in **Da pagare** né in **Corsi scaduti**.
 - **Non in regola** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
   anche dal bottone **Chi non è in regola** delle [Statistiche](statistiche.md).
 - **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([Le tessere](#le-tessere)).

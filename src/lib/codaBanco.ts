@@ -2,9 +2,12 @@ import type { Voce } from './indirizzoSegreteria'
 import { cosaBlocca } from './cosaBlocca'
 import { giornoPerEsteso, oraDi } from './sala'
 import type { LezioneSeg, PersonaSeg } from './segreteria'
-import { comePaga, senzaCertificatoValido, statoCertificato } from './segreteria'
+import { senzaCertificatoValido, statoCertificato } from './segreteria'
+import { corsiDaPagare, testoCorsoBreve } from './corsiDaPagare'
+import { quotaDaIncassare, titolariDi } from './filtriIscritti'
+import type { CorsoRef, Listino } from './listino'
 
-export type FiltroCoda = 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'file-di-prima' | 'stampare' | 'fuori-regola' | 'senza-appello'
+export type FiltroCoda = 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'corsi-scaduti' | 'file-di-prima' | 'stampare' | 'fuori-regola' | 'senza-appello'
 
 /** Una riga della coda «da fare al banco»: cosa, quanto preme, e dove porta il tasto. */
 export interface RigaCoda {
@@ -23,7 +26,7 @@ const PER_TIPO = 3
 const conNome = (p: PersonaSeg) => `${p.cognome} ${p.nome}`
 const perNome = (a: PersonaSeg, b: PersonaSeg) => conNome(a).localeCompare(conNome(b), 'it')
 
-export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; richieste: number; istruttori: number; segnalate?: number }, oggi: string): RigaCoda[] {
+export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; richieste: number; istruttori: number; segnalate?: number; corsi?: CorsoRef[]; listino?: Listino }, oggi: string): RigaCoda[] {
   const righe: RigaCoda[] = []
 
   // Gli appelli: la lezione più recente prima.
@@ -46,7 +49,8 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
   }
 
   const attive = i.persone.filter((p) => p.attiva)
-  const senzaCert = attive.filter((p) => senzaCertificatoValido(p, oggi)).sort(perNome)
+  // Il genitore non iscritto non entra in sala: il certificato non gli si chiede, come in ISCRITTI.
+  const senzaCert = attive.filter((p) => !p.genitoreNonIscritto && senzaCertificatoValido(p, oggi)).sort(perNome)
   for (const p of senzaCert.slice(0, PER_TIPO)) {
     righe.push({
       id: `certificato-${p.id}`,
@@ -63,7 +67,8 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
 
   // Chi è già fra i certificati non si ripete: la scheda è la stessa. Per questo «Altri N» può
   // essere meno del filtro DA PAGARE che apre, che conta anche loro.
-  const daPagare = attive.filter((p) => !senzaCertificatoValido(p, oggi) && comePaga(p, oggi) !== 'pagato').sort(perNome)
+  const titolari = titolariDi(i.persone)
+  const daPagare = attive.filter((p) => !senzaCertificatoValido(p, oggi) && quotaDaIncassare(p, oggi, titolari)).sort(perNome)
   for (const p of daPagare.slice(0, PER_TIPO)) {
     righe.push({
       id: `quota-${p.id}`,
@@ -76,6 +81,25 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
   }
   if (daPagare.length > PER_TIPO) {
     righe.push({ id: 'quote-altre', livello: 'blocca', titolo: `Altri ${daPagare.length - PER_TIPO} da pagare`, sotto: 'La quota non è in regola.', tasto: 'Vedi chi', vai: { voce: 'iscritti', filtro: 'pagare' } })
+  }
+
+  // I corsi da pagare di chi non è già in coda per il certificato o la quota: la scheda è la
+  // stessa, e lì si vedono anche i corsi. Senza corsi o listino letti, niente.
+  const giaInCoda = new Set([...senzaCert, ...daPagare].map((p) => p.id))
+  const { corsi, listino } = i
+  const conCorsi = corsi && listino ? attive.filter((p) => !giaInCoda.has(p.id)).map((p) => ({ p, scoperti: corsiDaPagare(p, corsi, listino, oggi) })).filter((x) => x.scoperti.length > 0).sort((a, b) => perNome(a.p, b.p)) : []
+  for (const { p, scoperti } of conCorsi.slice(0, PER_TIPO)) {
+    righe.push({
+      id: `corsi-${p.id}`,
+      livello: 'blocca',
+      titolo: `${conNome(p)} · ${scoperti.length === 1 ? 'corso' : 'corsi'} da pagare`,
+      sotto: scoperti.map(testoCorsoBreve).join(' · '),
+      tasto: 'Fai la ricevuta',
+      vai: { voce: 'iscritti', persona: p.id },
+    })
+  }
+  if (conCorsi.length > PER_TIPO) {
+    righe.push({ id: 'corsi-altri', livello: 'blocca', titolo: `Altri ${conCorsi.length - PER_TIPO} con un corso da pagare`, sotto: 'Un trimestre o un annuale non è in regola.', tasto: 'Vedi chi', vai: { voce: 'iscritti', filtro: 'corsi-scaduti' } })
   }
 
   if (i.richieste > 0) {

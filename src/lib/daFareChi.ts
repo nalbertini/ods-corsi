@@ -1,5 +1,6 @@
 import { dalCertificato, mancaLaData, pagamentoDi, senzaCertificatoValido, statoCertificato, certificatoInArrivo, certificatoInScadenza, type PersonaSeg } from './segreteria'
 import { corsiDaPagare, corsiScaduti, testoCorsoBreve } from './corsiDaPagare'
+import { quotaDaIncassare, titolariDi } from './filtriIscritti'
 import type { CorsoRef, Listino } from './listino'
 import type { Richiesta } from './richieste'
 import type { ChiaveDaFare } from './daFareTesti'
@@ -93,8 +94,9 @@ export function chiArrivo(persone: PersonaSeg[], oggi: string): VoceChi[] {
 export function chiPagare(persone: PersonaSeg[], oggi: string): VoceChi[] {
   const stati = new Map(persone.map((p) => [p.id, pagamentoDi(p, oggi)]))
   const s = (p: PersonaSeg) => stati.get(p.id) ?? pagamentoDi(p, oggi)
+  const titolari = titolariDi(persone)
   return inOrdine(
-    persone.filter((p) => p.attiva && s(p).come !== 'pagato'),
+    persone.filter((p) => quotaDaIncassare(p, oggi, titolari)),
     (p) => {
       const x = s(p)
       return x.come === 'scaduto' ? `0${x.fino ?? ''}` : x.come === 'da_pagare' ? '1' : x.mancano ? '2' : '3'

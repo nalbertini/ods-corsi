@@ -30,12 +30,13 @@ prova tiene stanno in «Scoperti», in fondo.
 | Ricevuta di compenso extra | segreteria, amministrazione, tecnici | ricevuta extra persa, cambiata dopo il pagamento | `prova:compensi-extra`, `scripts/prova-compensi-extra.mjs`, `compensi-extra.sql` | sì, da fare |
 | Certificati medici | segreteria, iscritto | certificato perso o visibile a chi non deve | `prova:certificati`, `prova:dafare`, `prova:schede-iscritto`, `prova:segreteria`, `prova:segreteria-comune`, `prova:mcp`, `prova:gare`, `certificati.sql` | sì |
 | Certificato mandato dall'iscritto | iscritto, segreteria | certificato di un altro, file sanitario visibile | `prova:certificato-iscritto`, `prova:dafare`, `prova:iscritto-supabase`, `prova:segreteria`, `certificato-iscritto.sql`, `109-privilegi-e-certificati.sql`, `movimenti-persona.sql`, `110-tetto-certificato-messaggio.sql` | sì |
-| Striscia COSA MANCA | segreteria | un «a posto» falso | `prova:dafare`, `prova:cosa-manca`, `prova:certificati`, `prova:segreteria` | sì |
+| Striscia COSA MANCA | segreteria | un «a posto» falso | `prova:dafare`, `prova:cosa-manca`, `prova:certificati`, `prova:segreteria`, `prova:conteggi-dovuti` | sì |
+| Chi deve pagare, in tutte le schermate | segreteria | numeri diversi fra le schermate, chi deve non chiamato | `prova:conteggi-dovuti`, `prova:righe-dovute`, `prova:dafare`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:banco` | sì |
 | Storico dei pagamenti | segreteria | pagamento che non compare o conta due volte | `prova:schede-iscritto`, `prova:pagamenti`, `prova:segreteria`, `pagamenti-diretti.sql`, `ricevuta-pagamento-perso.sql` | sì |
 | Ricevuta da un pagamento a mano | segreteria, amministrazione | incasso contato due volte o perso | `prova:pagamenti`, `prova:satispay`, `pagamento-una-volta.sql`, `pagamento-diventa-ricevuta.sql`, `ricevuta-pagamento-perso.sql` | sì |
 | Contanti di un giorno di cassa chiusa | segreteria, amministrazione | chiusura rotta senza che nessuno lo sappia | `prova:contabilita`, `prova:pagamenti`, `ricevuta-cassa-chiusa.sql` | sì |
 | Ricevute e pagamenti | segreteria, amministrazione | quota o ricevuta sbagliata, ricevuta doppia | `prova:ricevuta`, `prova:segreteria`, `prova:pagamenti`, `prova:satispay`, `prova:righe-dovute`, `ricevute.sql`, `satispay.sql` | sì |
-| Corsi da pagare | segreteria | corso scaduto che non si vede, sollecito a chi ha pagato | `prova:dafare`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:scheda`, `prova:sollecito`, `prova:tessere` | sì |
+| Corsi da pagare | segreteria | corso scaduto che non si vede, sollecito a chi ha pagato | `prova:dafare`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `prova:conteggi-dovuti`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:scheda`, `prova:sollecito`, `prova:tessere` | sì |
 | Annuale a rate (la quota non è una rata) | segreteria, amministrazione | quota contata come rata, annuale scaduto non visto, versamento doppio | `prova:ricevuta`, `prova:corsi-da-pagare`, `prova:righe-dovute` | sì |
 | Ricevuta per email alla famiglia | segreteria, amministrazione, famiglie | ricevuta all'indirizzo sbagliato o annullata che parte | `prova:ricevute-email`, `prova:edge`, `prova:cornice-mail`, `prova:avvisi-segreteria`, `ricevute-email.sql` | sì |
 | Documenti sulla carta intestata | segreteria, amministrazione, genitore | cifra coperta, voci perse fra le pagine | `prova:carta`, `prova:ricevuta`, `prova:compensi`, `prova:bilancio`, `prova:chiusura-pdf`, `prova:ore` | sì |
@@ -52,7 +53,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Importazione persone da CSV | segreteria | persona persa, duplicata o scritta male | `prova:importa` | no |
 | Anagrafiche, nuclei, doppioni | segreteria | persone duplicate o unite male | `prova:iscritti`, `prova:filtri-iscritti`, `prova:cerca-persone`, `prova:email-unica`, `prova:segreteria`, `prova:ricevute-email`, `prova:importa`, `anagrafiche.sql`, `non-doppioni.sql`, `unisci-doppioni.sql`, `cerca-persone.sql`, `email-unica.sql` | no |
 | Nucleo familiare | segreteria | figlio nel nucleo di un altro, titolare minorenne | `prova:nucleo`, `nucleo.sql` | sì |
-| Genitore non iscritto, titolare del nucleo dei figli | segreteria, genitore | genitore contato come iscritto o come quota da pagare; figlio senza titolare | `prova:nucleo`, `prova:filtri-iscritti`, `prova:cosa-manca`, `prova:sollecito`, `genitore-non-iscritto.sql`, `nucleo.sql` | sì |
+| Genitore non iscritto, titolare del nucleo dei figli | segreteria, genitore | genitore contato come iscritto o come quota da pagare; figlio senza titolare | `prova:nucleo`, `prova:filtri-iscritti`, `prova:cosa-manca`, `prova:sollecito`, `prova:conteggi-dovuti`, `genitore-non-iscritto.sql`, `nucleo.sql` | sì |
 | Area degli iscritti sul database | iscritto, titolare di un nucleo, segreteria | un iscritto che vede un altro | `prova:iscritto-supabase`, `iscritto.sql`, `certificato-iscritto.sql`, `segreteria.sql` | no |
 | Entra con Google (iscritti) | iscritto, personale | entrare con l'account di un altro | `prova:iscritto-supabase` | sì |
 | Entra con Google (istruttori e segreteria) | istruttore, segreteria | Google estraneo collegato in silenzio | `prova:accesso-google` | no, da fare con un account vero |
@@ -85,7 +86,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Esporta i dati di una persona | segreteria | file incompleto o con i dati di un altro | `prova:scheda-iscritto`, `prova:segreteria`, `prova:richieste`, `prova:compensi`, `prova:lettere` | sì |
 | Modifiche non salvate | segreteria, amministrazione | modifica persa senza avviso | `prova:scheda-finestra` | sì |
 | Musica, timer, tablet di sala | istruttore, sala | lezione senza timer o musica | `prova:musica`, `prova:timer-istruttori`, `prova:segreteria`, `prova:musica-file`, `prova:tablet`, `prova:scaletta`, `prova:strumenti`, `prova:anteprima`, `prova:discipline`, `musica.sql`, `categorie-esercizi.sql`, `discipline.sql`, `timer.sql`, `timer-lezioni.sql`, `tablet.sql` | sì |
-| Il Banco | segreteria | un guaio che non si vede | `prova:banco`, `prova:ruoli` | sì |
+| Il Banco | segreteria | un guaio che non si vede | `prova:banco`, `prova:ruoli`, `prova:conteggi-dovuti` | sì |
 | Scheda dell'iscritto a quattro schede | segreteria | un guaio nascosto su una scheda chiusa | `prova:scheda-iscritto`, `prova:schede-iscritto`, `prova:scheda` | sì |
 | COSA MANCA nella scheda dell'iscritto | segreteria | ricevuta bloccata senza CF, minore trattato da adulto | `prova:scheda-persona`, `prova:segreteria`, `prova:ricevuta` | sì |
 | Aspetto della segreteria e dell'amministrazione | segreteria, amministrazione | colori illeggibili, aspetto diverso dal sito | `prova:look`, `prova:menu`, `prova:banco`, `prova:sito-aspetto`, `prova:testi`, `prova:etichette-lezione`, `prova:segreteria`, `prova:richieste`, `prova:ricevuta`, `prova:pagamenti`, `prova:tessere`, `prova:certificati`, `prova:sito`, `prova:tema`, `prova:icone`, `scripts/prova-look.mjs` | sì |
@@ -142,6 +143,10 @@ quando arriva la prova.
 - Certificati: il lucchetto del tetto con due invii insieme;
   `chiCertificatiRicevuti`.
 - Corsi da pagare: la lettura di `vociCorsi` da Supabase.
+- Coda del banco: `Oggi.tsx` passa `corsi` e `listino` caricati a parte; se non
+  si leggono, i corsi spariscono dalla coda in silenzio. Solo collaudo a mano.
+- Coda del banco: nessuna prova che chi ha quota e corso da pagare compaia una
+  volta sola, né che «Altri N» conti le persone oltre le tre (DA FARE).
 - Nucleo: titolare minorenne scritto con un `update` diretto (trigger
   `persone_nucleo_regole`).
 - `riprendiDaGoogle`.
