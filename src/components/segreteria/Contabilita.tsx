@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import {
   cambiabile,
+  originiMovimento,
   chiusuraNonPiuInRegola,
   chiusuraVisibile,
   cosaNonVaAnnulloChiusura,
@@ -571,7 +572,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{dataRicevuta(r.data)}</span>
                 <span role="cell" style={{ fontSize: 15, fontWeight: 600, textDecoration: r.annullato ? 'line-through' : undefined }}>
                   <button type="button" className="sg-riga-apri">{r.descrizione}</button>
-                  {r.origineImport?.startsWith('banca:') && <span className="num sg-tag" style={{ marginLeft: 8 }}>Dalla banca</span>}
+                  <span className="num sg-tag" style={{ marginLeft: 8 }}>{originiMovimento(r)}</span>
                   {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
                   {/* Lo stato del collegamento alla persona sta accanto alla descrizione: la colonna PERSONA non c'è più. */}
                   {r.personaId && collegatoAMano(r) && <span className="num sg-tag" data-tipo="fatto" style={{ marginLeft: 8 }}>Collegato</span>}
@@ -1022,7 +1023,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
         <div className="stack" style={{ gap: 6, minWidth: 0 }}>
           <div className="row" style={{ gap: 10, alignItems: 'center' }}>
             <span className="sg-etichetta">{manuale ? 'IL MOVIMENTO' : 'INCASSO DI UN ISCRITTO'}</span>
-            {riga.dallaChat && <span className="num sg-tag">Dalla chat</span>}
+            <span className="num sg-tag">{originiMovimento(riga)}</span>
           </div>
           <span className="sg-riquadro-titolo ob">{riga.descrizione}</span>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap', paddingTop: 6 }}>
