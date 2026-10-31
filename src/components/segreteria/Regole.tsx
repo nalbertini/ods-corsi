@@ -8,6 +8,7 @@ import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
 import { idLinguettaImp, idPannelloImp, SCHEDA_IMPOSTAZIONI_INIZIALE, SCHEDE_IMPOSTAZIONI, tastoImpostazioni, type IdImpostazioni } from '../../lib/schedeImpostazioni'
+import { cambiaSpento, METODI_PAGAMENTO, type IdMetodo } from '../../lib/metodiPagamento'
 import { chiedi, Campo, MostraBozza, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica, Tasto } from './comune'
 import { EserciziPalestra, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
@@ -231,6 +232,10 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
         <EnteRicevute d={d} />
       </Pannello>
 
+      <Pannello apri={setAperta} id="pagamenti" aperta={aperta} sotto="Un metodo spento sparisce dalle scelte in tutta l'app. I pagamenti già registrati restano come sono.">
+        <ComePagare spenti={imp.dato?.metodiSpenti} pronto={!!imp.dato} fai={(id, accendi) => fai(() => d.salvaImpostazioni({ metodiSpenti: cambiaSpento(imp.dato?.metodiSpenti ?? [], id, accendi) }), accendi ? 'Acceso' : 'Spento', imp.ricarica)} />
+      </Pannello>
+
       <Pannello apri={setAperta} id="avvisi" aperta={aperta}>
         <AvvisiSegreteria d={d} />
       </Pannello>
@@ -376,6 +381,35 @@ function FormSala({
         <Spunta size={18} />
       </button>
     </form>
+  )
+}
+
+/** Un interruttore per metodo: spento sparisce dalle scelte in segreteria, nel modulo e nell'area iscritti. */
+function ComePagare({ spenti, pronto, fai }: { spenti: IdMetodo[] | undefined; pronto: boolean; fai: (id: IdMetodo, accendi: boolean) => unknown }) {
+  const fuori = spenti ?? []
+  // Un tocco alla volta: l'elenco si riscrive tutto, e due tocchi prima del ricarico si cancellerebbero.
+  const [inCorso, setInCorso] = useState(false)
+  return (
+    <div className="stack" style={{ gap: 4 }}>
+      {METODI_PAGAMENTO.map((m) => (
+        <label key={m.id} className="row" style={{ gap: 12, minHeight: 44, alignItems: 'center' }}>
+          <input
+            type="checkbox"
+            style={{ width: 24, height: 24, margin: 0, accentColor: 'var(--text)', cursor: 'pointer' }}
+            checked={!fuori.includes(m.id)}
+            disabled={!pronto || inCorso}
+            onChange={(e) => {
+              setInCorso(true)
+              void Promise.resolve(fai(m.id, e.target.checked)).finally(() => setInCorso(false))
+            }}
+          />
+          <span>
+            <b>{m.nome}</b>
+            <span className="sg-sotto" style={{ display: 'block' }}>{m.riga}</span>
+          </span>
+        </label>
+      ))}
+    </div>
   )
 }
 

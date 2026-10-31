@@ -2,6 +2,7 @@ import { haUnServer } from './dati'
 import type { Conosciuto } from './provenienza'
 import { cfNatoIl, cfTornaColNome, cfTornaConLaData, cfValido } from './codiceFiscale'
 import type { SceltaPaga, StatoSatispay } from './satispay'
+import type { IdMetodo } from './metodiPagamento'
 
 // Le forme di email e telefono, le stesse del database: le usano anche gli ordini del vestiario.
 export const FORMA_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
@@ -136,6 +137,8 @@ export interface DatiRichieste {
    * non è attivo. In prova finge l'approvazione.
    */
   paga(richiestaId: string): Promise<{ link: string } | { pagato: true } | null>
+  /** I metodi che la segreteria ha spento (REGOLE → COME SI PAGA); senza rete o senza `126-metodi-pagamento.sql`, nessuno. */
+  metodiSpenti(): Promise<IdMetodo[]>
   /** Se il modulo può offrire Satispay: mai un errore, senza servizio o senza rete è `false`. */
   satispayAttivo(): Promise<boolean>
   /** Lo stato del pagamento Satispay della richiesta, riletto da Satispay se è in attesa; `null` se non ce n'è. */

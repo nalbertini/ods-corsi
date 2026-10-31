@@ -4,9 +4,9 @@
 
 Le scelte che spettano alla palestra, non al programma.
 
-La pagina ha otto schede, una per gruppo, ognuna con la sua icona davanti al nome, e se ne
+La pagina ha nove schede, una per gruppo, ognuna con la sua icona davanti al nome, e se ne
 vede una alla volta: **LA STAGIONE** (quella che si apre), **LE SALE E I TABLET**, **GLI
-ESERCIZI**, **LE RICEVUTE**, **GLI AVVISI**, **DATI E
+ESERCIZI**, **LE RICEVUTE**, **COME SI PAGA**, **GLI AVVISI**, **DATI E
 PRIVACY**, **IMPORTA** (la [guida](importa.md)) e, in fondo, **QUESTO COMPUTER**. Le spiegazioni
 lunghe di un riquadro stanno dietro **COME FUNZIONA?**: si tocca per aprirle; i numeri e gli
 avvisi restano sempre in vista.
@@ -119,6 +119,15 @@ sbagliato: si correggono tutti e due e si salva. **Salva** compare quando si cam
 ricevute che si fanno da lì in poi: quelle già fatte restano come erano. Le
 ricevute si fanno dalla scheda di un iscritto (vedi
 [Iscritti](iscritti.md#un-pagamento-e-la-sua-ricevuta)).
+
+## Come si paga
+
+Un interruttore per metodo: **Satispay**, **Carta**, **Bonifico**, **Contanti**, **POS**, **Assegno**.
+Un metodo spento sparisce dalle scelte in tutta l'app: il modulo di iscrizione, l'area degli iscritti,
+le ricevute, i pagamenti e le gare. Spegnere il bonifico toglie anche l'IBAN e la causale dal modulo.
+I pagamenti già registrati restano com'erano, e una ricevuta già fatta col metodo spento si vede lo
+stesso. L'ultimo metodo acceso non si spegne. Se si spengono tutti i modi del modulo di iscrizione,
+la richiesta parte lo stesso e il modulo dice di chiedere alla segreteria come pagare.
 
 ## Gli avvisi
 

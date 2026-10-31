@@ -8,6 +8,7 @@ import { cosaNonVaScadenza } from './segreteria'
 import { MASSIMO_PERSONE } from './passiIscrizione'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { caricaListino } from './listino'
+import { acceso, spentiDa } from './metodiPagamento'
 import { cosaNonVaNucleo, stimaIscrizione } from './nucleo'
 import {
   ERRORE_CARTA,
@@ -27,6 +28,8 @@ import {
   siCattura,
   statoCarta,
   type PagamentoSatispay,
+  CARTA_SPENTA,
+  SATISPAY_SPENTO,
 } from './satispay'
 
 /**
@@ -317,15 +320,21 @@ export function creaRichiesteProva(): DatiRichieste {
       return { link: `${location.pathname}?prova&pagamento=${encodeURIComponent(richiestaId)}` }
     },
 
+    async metodiSpenti() {
+      return spentiDa(archivio.dati.impostazioni?.metodiSpenti)
+    },
+
     async satispayAttivo() {
-      return true
+      return acceso(archivio.dati.impostazioni?.metodiSpenti ?? [], 'satispay')
     },
 
     async cartaAttiva() {
-      return { clientId: 'prova', sandbox: true }
+      return acceso(archivio.dati.impostazioni?.metodiSpenti ?? [], 'carta') ? { clientId: 'prova', sandbox: true } : null
     },
 
     async prepara(x, metodo) {
+      // Come l'Edge Function: a metodo spento non si prepara niente.
+      if (!acceso(archivio.dati.impostazioni?.metodiSpenti ?? [], metodo ?? 'satispay')) throw new Error(metodo === 'carta' ? CARTA_SPENTA : SATISPAY_SPENTO)
       // Come `satispay_prepara_prima`: quello vivo per la stessa scelta e persona (anche già pagato e non ancora
       // preso: chi ricarica la pagina non paga due volte), o uno nuovo con l'importo del listino.
       const nome = x.nome.trim()

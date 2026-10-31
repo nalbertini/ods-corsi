@@ -10,7 +10,8 @@ import { altriAperti, corsiAmmessi, testoAltriCorsi, type CorsoPerEta, type List
 import { elenco, euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import * as P from '../lib/passiIscrizione'
-import { useListino } from './Costi'
+import { useListino, useMetodiSpenti } from './Costi'
+import { acceso } from '../lib/metodiPagamento'
 import { Avanzamento, BarraPasso, Bollino, CaricaFile, Campo, Chip, Dettaglio, NotaCampo, Riepilogo, Riquadro, SceltaCorsi, Tasti, Tasto, TestoAPezzi, TitoloEsito, Titoletto, type Nota, type RigaRiepilogo } from './ds'
 import { Contatti, Prova } from './IscrizioniScreen'
 import { useDialogo } from './segreteria/comune'
@@ -398,6 +399,7 @@ function Flusso({
 }) {
   // La famiglia: ogni persona ha il suo stato, il suo passo e la sua firma; `attivo` è quella che si sta scrivendo.
   // Con una persona sola è il flusso di sempre.
+  const bonifico = acceso(useMetodiSpenti(), 'bonifico')
   const [persone, setPersone] = useState<P.StatoPassi[]>(() => [iniziale ?? P.nuovoStato(chi)])
   const [attivo, setAttivo] = useState(0)
   const [passi, setPassi] = useState([1])
@@ -755,10 +757,10 @@ function Flusso({
                 <>
                   <span className="esito-testo esito-importo">
                     {riassunto.importo ? `In tutto ${riassunto.importo}${riassunto.conSconto ? ', con lo sconto famiglia' : ''}. ` : ''}
-                    Paghi in segreteria, oppure con un bonifico a {PAGAMENTO.intestatario}; poi mandi la ricevuta.
+                    {bonifico ? `Paghi in segreteria, oppure con un bonifico a ${PAGAMENTO.intestatario}; poi mandi la ricevuta.` : 'Paghi in segreteria.'}
                   </span>
                   {/* La stessa causale di QUANTO PAGHI: con più persone ha i nomi di tutti. */}
-                  <ComePagare causale={P.causaleDelModulo(tutte, corsi ?? [])} />
+                  {bonifico && <ComePagare causale={P.causaleDelModulo(tutte, corsi ?? [])} />}
                 </>
               )}
               {riassunto.famiglia && riassunto.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">{riassunto.senzaPrezzo.join(', ')}: prezzo da confermare, lo dice la segreteria.</Dettaglio>}
@@ -1289,13 +1291,13 @@ function Flusso({
                     <Conto righe={conto.righe} totale={conto.totale} />
                     {conto.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">Senza prezzo nel listino: {conto.senzaPrezzo.join(', ')}. Lo dice la segreteria.</Dettaglio>}
                     <Dettaglio>
-                      Paga questo totale{conto.conSconto ? ': lo sconto è già dentro' : ''}. Se la segreteria trova una differenza, te lo dice lei. Bonifico a {PAGAMENTO.intestatario}:
+                      Paga questo totale{conto.conSconto ? ': lo sconto è già dentro' : ''}. Se la segreteria trova una differenza, te lo dice lei.{bonifico ? ` Bonifico a ${PAGAMENTO.intestatario}:` : ''}
                     </Dettaglio>
                   </>
                 ) : (
-                  <Dettaglio>L’importo te lo conferma la segreteria. Bonifico a {PAGAMENTO.intestatario}:</Dettaglio>
+                  <Dettaglio>L’importo te lo conferma la segreteria.{bonifico ? ` Bonifico a ${PAGAMENTO.intestatario}:` : ''}</Dettaglio>
                 )}
-                <ComePagare causale={P.causaleDelModulo(tutte, corsi ?? [])} />
+                {bonifico && <ComePagare causale={P.causaleDelModulo(tutte, corsi ?? [])} />}
               </Riquadro>
             </div>
           </div>

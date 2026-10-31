@@ -11,6 +11,7 @@ import { cosaNonVaCompenso, cosaNonVaExtra, type RicevutaCompenso } from './comp
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cosaNonVaAnagrafica, emailNonValida, SERVE_IL_99, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
+import { spentiDa } from './metodiPagamento'
 import { genitoriDa, type RigaGenitore } from './sollecito'
 import { tutteLeRighe } from './tutteLeRighe'
 import { ESTENSIONI } from './richieste'
@@ -683,9 +684,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     // Con `*`: su un database senza le date dei corsi (`12-calendario-da-se.sql`
     // non rilanciato) le impostazioni si leggono lo stesso.
     const r = ok(await db.from('impostazioni').select('*').maybeSingle()) as {
-      mesi_presenze: number; giorni_calendario: number; inizio_corsi?: string | null; fine_corsi?: string | null
+      mesi_presenze: number; giorni_calendario: number; inizio_corsi?: string | null; fine_corsi?: string | null; metodi_spenti?: unknown
     } | null
-    return { mesiPresenze: r?.mesi_presenze ?? 24, giorniCalendario: r?.giorni_calendario ?? 60, inizioCorsi: r?.inizio_corsi, fineCorsi: r?.fine_corsi }
+    return { mesiPresenze: r?.mesi_presenze ?? 24, giorniCalendario: r?.giorni_calendario ?? 60, inizioCorsi: r?.inizio_corsi, fineCorsi: r?.fine_corsi, metodiSpenti: spentiDa(r?.metodi_spenti) }
   }
 
   /**
@@ -2886,11 +2887,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     impostazioni,
 
     async salvaImpostazioni(i) {
-      const riga: Record<string, number | string | null> = {}
+      const riga: Record<string, number | string | string[] | null> = {}
       if (i.mesiPresenze !== undefined) riga.mesi_presenze = i.mesiPresenze
       if (i.giorniCalendario !== undefined) riga.giorni_calendario = i.giorniCalendario
       if (i.inizioCorsi !== undefined) riga.inizio_corsi = i.inizioCorsi
       if (i.fineCorsi !== undefined) riga.fine_corsi = i.fineCorsi
+      if (i.metodiSpenti !== undefined) riga.metodi_spenti = i.metodiSpenti
       ok(await db.from('impostazioni').update(riga).eq('id', true))
     },
 

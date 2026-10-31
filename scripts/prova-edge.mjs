@@ -211,6 +211,26 @@ console.log('\n2. satispay: la quota intera')
 }
 
 // ===========================================================================
+console.log('\n3b. satispay: spento da REGOLE → COME SI PAGA')
+{
+  const g = await carica(testoSatispay, ENV)
+  for (const azione of ['attivo', 'prepara', 'saldo_attivo', 'quota', 'saldo', 'corso']) {
+    riparti()
+    risposteDb['admin:metodi_spenti'] = () => ({ data: ['satispay'], error: null })
+    const r = await chiama(g, { azione, persona: A, ricevuta: B, corso: B })
+    ok(`${azione}: Satispay spento, attivo false`, [r.stato, r.corpo?.attivo], [200, false])
+    ok(`${azione}: e non si chiama Satispay`, rete.length, 0)
+  }
+  riparti()
+  risposteDb['admin:metodi_spenti'] = () => ({ data: ['satispay'], error: null })
+  risposteDb['lui:satispay_quota_stato'] = () => ({ data: { stato: 'pagato', importo: 5000, chi: 'Rossi Anna', satispay_id: 'sp-9' }, error: null })
+  ok('un pagamento già avviato si legge lo stesso, anche spento', (await chiama(g, { azione: 'quota_stato', persona: A })).corpo?.pagamento?.stato, 'pagato')
+  riparti()
+  risposteDb['admin:metodi_spenti'] = () => ({ data: ['satispay'], error: null })
+  ok('senza accesso: 401 prima di toccare il database', (await chiama(g, { azione: 'quota', persona: A }, { token: 'falso' })).stato, 401)
+}
+
+// ===========================================================================
 console.log('\n3. satispay: com\'è andata (quota_stato, corso_stato, saldo_stato)')
 {
   const g = await carica(testoSatispay, ENV)

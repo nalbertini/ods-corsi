@@ -34,8 +34,8 @@ const f = (nome, ...args) => (typeof m[nome] === 'function' ? m[nome](...args) :
 const schede = m.SCHEDE_IMPOSTAZIONI ?? []
 
 console.log('Le schede, in ordine')
-ok('otto, in ordine', schede.map((s) => s.id), ['stagione', 'sale', 'esercizi', 'ricevute', 'avvisi', 'dati', 'importa', 'computer'])
-ok('i nomi, in maiuscolo', schede.map((s) => s.nome), ['LA STAGIONE', 'LE SALE E I TABLET', 'GLI ESERCIZI', 'LE RICEVUTE', 'GLI AVVISI', 'DATI E PRIVACY', 'IMPORTA', 'QUESTO COMPUTER'])
+ok('nove, in ordine', schede.map((s) => s.id), ['stagione', 'sale', 'esercizi', 'ricevute', 'pagamenti', 'avvisi', 'dati', 'importa', 'computer'])
+ok('i nomi, in maiuscolo', schede.map((s) => s.nome), ['LA STAGIONE', 'LE SALE E I TABLET', 'GLI ESERCIZI', 'LE RICEVUTE', 'COME SI PAGA', 'GLI AVVISI', 'DATI E PRIVACY', 'IMPORTA', 'QUESTO COMPUTER'])
 ok('QUESTO COMPUTER è l’ultima', schede.at(-1)?.nome, 'QUESTO COMPUTER')
 ok('la prima si apre senza scelta', m.SCHEDA_IMPOSTAZIONI_INIZIALE, 'stagione')
 
@@ -43,7 +43,7 @@ console.log('\nLa tastiera')
 const t = (aperta, tasto, mod = {}) => f('tastoImpostazioni', aperta, { key: tasto, ...mod })
 ok('→ passa alla successiva', t('stagione', 'ArrowRight'), 'sale')
 ok('→ dall’ultima torna alla prima', t('computer', 'ArrowRight'), 'stagione')
-ok('← passa alla precedente', t('avvisi', 'ArrowLeft'), 'ricevute')
+ok('← passa alla precedente', t('avvisi', 'ArrowLeft'), 'pagamenti')
 ok('← dalla prima va all’ultima', t('stagione', 'ArrowLeft'), 'computer')
 ok('Home: la prima', t('dati', 'Home'), 'stagione')
 ok('End: l’ultima', t('dati', 'End'), 'computer')

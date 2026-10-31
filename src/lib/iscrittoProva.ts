@@ -7,7 +7,10 @@ import { minorenne } from './richieste'
 import { quoteDi } from './ricevute'
 import { satispayCorsiPerPersona, satispayQuotaPerPersona, satispayPerPersona, saldoPerPersona } from './satispay'
 import { LISTINO_PREDEFINITO, listinoDa, listinoProva, nomeCorso, voceDelCorso } from './listino'
-import { prezzoDelCorso, type ChiPagaCorsi, type Formula } from './corsoSatispay'
+import { SALDO_SPENTO } from './saldoSatispay'
+import { QUOTA_SPENTA } from './quotaSatispay'
+import { CORSO_SPENTO, prezzoDelCorso, type ChiPagaCorsi, type Formula } from './corsoSatispay'
+import { acceso } from './metodiPagamento'
 import { segnalaProva, segnalateDi } from './segnalateProva'
 import { comeE, iscrittiIl, lezioniFra, memoria, nomeIstruttore, salaDelGiorno } from './datiProva'
 import { chiaveGiorno, perCognome } from './sala'
@@ -195,7 +198,7 @@ export function creaIscrittoProva(): DatiIscritto {
     },
 
     async saldoAttivo() {
-      return true
+      return acceso(archivio.dati.impostazioni?.metodiSpenti ?? [], 'satispay')
     },
 
     async chiPaga(personaId, io) {
@@ -206,6 +209,7 @@ export function creaIscrittoProva(): DatiIscritto {
     },
 
     async pagaSaldo(personaId, ricevutaId) {
+      if (!(await this.saldoAttivo())) throw new Error(SALDO_SPENTO)
       await pagaSaldoProva(personaId, ricevutaId)
       return null
     },
@@ -218,11 +222,13 @@ export function creaIscrittoProva(): DatiIscritto {
     },
 
     async pagaQuota(personaId) {
+      if (!(await this.saldoAttivo())) throw new Error(QUOTA_SPENTA)
       await pagaQuotaProva(personaId)
       return null
     },
 
     async pagaCorso(personaId, corsoId, formula) {
+      if (!(await this.saldoAttivo())) throw new Error(CORSO_SPENTO)
       await pagaCorsoProva(personaId, corsoId, formula)
       return null
     },
