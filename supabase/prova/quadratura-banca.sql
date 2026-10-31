@@ -2,7 +2,7 @@
 -- scritto a mano, un mese per riga) la leggono e la scrivono solo chi ha il ruolo di amministrazione (anche
 -- doppio), come i movimenti di 59-contabilita.sql, e il
 -- database tiene da sé i conti dell'estratto. Si lancia dopo finto-supabase.sql, i file dello schema e
--- supabase/123-quadratura-banca.sql. Le regole dell'app (differenza, righe spaiate, stati, impronta) sono
+-- supabase/123-quadratura-banca.sql e 131-quadratura-nel-database.sql. Le regole dell'app (differenza, righe spaiate, stati, impronta) sono
 -- provate da scripts/prova-quadratura.mjs, che ha gli stessi rifiuti con gli stessi messaggi.
 --
 -- Lo schema che questa prova si aspetta (lo fissa lei: il file SQL lo segue):
@@ -43,6 +43,13 @@ insert into persone (id, nome, cognome, ruolo, anche_istruttore, anche_amministr
   ('aaaaaaaa-0000-0000-0000-000000000004', 'Ivo', 'Conti', 'amministrazione', true, false, 'ivo@ods.it', '44444444-4444-4444-4444-444444444444'),
   ('aaaaaaaa-0000-0000-0000-000000000005', 'Maura', 'Uno', 'istruttore', false, false, 'maura@ods.it', '55555555-5555-5555-5555-555555555555'),
   ('aaaaaaaa-0000-0000-0000-000000000007', 'Luca', 'Rossi', 'iscritto', false, false, 'luca@ods.it', '77777777-7777-7777-7777-777777777777');
+-- I movimenti del Conto Corrente (saldo iniziale 0): il saldo dell'app fa 17.000 a fine ottobre 2025, 100 a
+-- fine novembre 2025 e 13.000 a fine settembre 2026, come i mesi che le sezioni sotto segnano verificati.
+insert into voci_contabili (nome, tipo) values ('Affitto', 'uscita') on conflict do nothing;
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione) values
+  ('entrata', '2025-10-05', 17000, (select id from voci_contabili where nome = 'Corsi e altri pagamenti'), (select id from casse where nome = 'Conto Corrente'), 'Bonifici di ottobre'),
+  ('uscita', '2025-11-10', 16900, (select id from voci_contabili where nome = 'Affitto'), (select id from casse where nome = 'Conto Corrente'), 'Affitto'),
+  ('entrata', '2026-09-05', 12900, (select id from voci_contabili where nome = 'Corsi e altri pagamenti'), (select id from casse where nome = 'Conto Corrente'), 'Bonifici di settembre');
 -- Un mese già scritto, per chi deve solo leggerlo o non poterlo cambiare.
 insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2026-09', 10000, 5000, 2000, 13000);
 
@@ -63,18 +70,18 @@ grant execute on function tenta(text), atteso(text, text, text), chi(text) to an
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 select atteso('l''amministrazione legge i saldi', (select count(*)::text from saldo_banca), '1');
-select atteso('scrive il saldo di ottobre', tenta($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2026-10', 13000, 5000, 2000, 16000)$$), 'FATTO (1 righe)');
-select atteso('lo corregge', tenta($$update saldo_banca set entrate = 6000, saldo_finale = 17000 where mese = '2026-10'$$), 'FATTO (1 righe)');
-select atteso('lo segna verificato, con la sua impronta', tenta($$update saldo_banca set verificato_il = now(), verificato_da = 'aaaaaaaa-0000-0000-0000-000000000002', impronta_verifica = 'abc123' where mese = '2026-10'$$), 'FATTO (1 righe)');
-select atteso('chi ha verificato lo scrive il database: dire «Anna» non basta', tenta($$update saldo_banca set verificato_il = now(), verificato_da = 'aaaaaaaa-0000-0000-0000-000000000001', impronta_verifica = 'def456' where mese = '2026-10'$$), 'FATTO (1 righe)');
-select atteso('…resta Ada', (select verificato_da::text from saldo_banca where mese = '2026-10'), 'aaaaaaaa-0000-0000-0000-000000000002');
-select atteso('lo toglie', tenta($$delete from saldo_banca where mese = '2026-10'$$), 'FATTO (1 righe)');
+select atteso('scrive il saldo di ottobre 2025', tenta($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2025-10', 13000, 5000, 2000, 16000)$$), 'FATTO (1 righe)');
+select atteso('lo corregge', tenta($$update saldo_banca set entrate = 6000, saldo_finale = 17000 where mese = '2025-10'$$), 'FATTO (1 righe)');
+select atteso('lo segna verificato, con la sua impronta', tenta($$update saldo_banca set verificato_il = now(), verificato_da = 'aaaaaaaa-0000-0000-0000-000000000002', impronta_verifica = 'abc123' where mese = '2025-10'$$), 'FATTO (1 righe)');
+select atteso('chi ha verificato lo scrive il database: dire «Anna» non basta', tenta($$update saldo_banca set verificato_il = now(), verificato_da = 'aaaaaaaa-0000-0000-0000-000000000001', impronta_verifica = 'def456' where mese = '2025-10'$$), 'FATTO (1 righe)');
+select atteso('…resta Ada', (select verificato_da::text from saldo_banca where mese = '2025-10'), 'aaaaaaaa-0000-0000-0000-000000000002');
+select atteso('lo toglie', tenta($$delete from saldo_banca where mese = '2025-10'$$), 'FATTO (1 righe)');
 select atteso('e scrive agosto', tenta($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2026-08', 0, 10000, 0, 10000)$$), 'FATTO (1 righe)');
 reset role;
 select chi('33333333-3333-3333-3333-333333333333');
 set role authenticated;
 select atteso('segreteria e amministrazione insieme: legge', (select count(*)::text from saldo_banca), '2');
-select atteso('e scrive', tenta($$update saldo_banca set uscite = 2000, saldo_finale = 8000 where mese = '2026-08'$$), 'FATTO (1 righe)');
+select atteso('e scrive', tenta($$update saldo_banca set saldo_iniziale = 2000, uscite = 2000 where mese = '2026-08'$$), 'FATTO (1 righe)');
 reset role;
 select chi('44444444-4444-4444-4444-444444444444');
 set role authenticated;
@@ -139,28 +146,28 @@ select atteso('…e non dice più chi', (select coalesce(verificato_da::text, 'n
 
 \echo ''
 \echo '--- 6. chi ha verificato resta quello: né chi cambia altro, né chi toglie una persona prende il suo posto ---'
-insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2026-11', 0, 100, 0, 100);
+insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2025-11', 0, 100, 0, 100);
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
-select atteso('Ada verifica novembre', tenta($$update saldo_banca set verificato_il = '2000-01-01', impronta_verifica = 'nov1' where mese = '2026-11'$$), 'FATTO (1 righe)');
-select atteso('…chi è lei, quando è adesso: la data non la sceglie chi scrive', (select verificato_da::text || ' ' || (verificato_il > now() - interval '1 minute')::text from saldo_banca where mese = '2026-11'), 'aaaaaaaa-0000-0000-0000-000000000002 true');
+select atteso('Ada verifica novembre 2025', tenta($$update saldo_banca set verificato_il = '2000-01-01', impronta_verifica = 'nov1' where mese = '2025-11'$$), 'FATTO (1 righe)');
+select atteso('…chi è lei, quando è adesso: la data non la sceglie chi scrive', (select verificato_da::text || ' ' || (verificato_il > now() - interval '1 minute')::text from saldo_banca where mese = '2025-11'), 'aaaaaaaa-0000-0000-0000-000000000002 true');
 select atteso('verificare un mese senza saldo non fa niente', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'x' where mese = '2025-01'$$), 'a vuoto (0 righe)');
 reset role;
 select chi('44444444-4444-4444-4444-444444444444');
 set role authenticated;
-select atteso('Ivo tocca la riga senza cambiare niente', tenta($$update saldo_banca set entrate = entrate where mese = '2026-11'$$), 'FATTO (1 righe)');
-select atteso('…la verifica resta di Ada', (select verificato_da::text || ' ' || impronta_verifica from saldo_banca where mese = '2026-11'), 'aaaaaaaa-0000-0000-0000-000000000002 nov1');
-select atteso('Ivo prova a mettersi come chi ha verificato', tenta($$update saldo_banca set verificato_da = 'aaaaaaaa-0000-0000-0000-000000000004' where mese = '2026-11'$$), 'FATTO (1 righe)');
-select atteso('…resta Ada', (select verificato_da::text from saldo_banca where mese = '2026-11'), 'aaaaaaaa-0000-0000-0000-000000000002');
-select atteso('Ivo cambia i numeri', tenta($$update saldo_banca set entrate = 200, saldo_finale = 200 where mese = '2026-11'$$), 'FATTO (1 righe)');
-select atteso('…e il mese torna da verificare: i numeri verificati non ci sono più', (select coalesce(verificato_da::text, '-') || coalesce(verificato_il::text, '-') || coalesce(impronta_verifica, '-') from saldo_banca where mese = '2026-11'), '---');
-select atteso('Ivo lo verifica di nuovo: adesso è lui', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'nov2' where mese = '2026-11'$$), 'FATTO (1 righe)');
-select atteso('…Ivo', (select verificato_da::text from saldo_banca where mese = '2026-11'), 'aaaaaaaa-0000-0000-0000-000000000004');
+select atteso('Ivo tocca la riga senza cambiare niente', tenta($$update saldo_banca set entrate = entrate where mese = '2025-11'$$), 'FATTO (1 righe)');
+select atteso('…la verifica resta di Ada', (select verificato_da::text || ' ' || impronta_verifica from saldo_banca where mese = '2025-11'), 'aaaaaaaa-0000-0000-0000-000000000002 nov1');
+select atteso('Ivo prova a mettersi come chi ha verificato', tenta($$update saldo_banca set verificato_da = 'aaaaaaaa-0000-0000-0000-000000000004' where mese = '2025-11'$$), 'FATTO (1 righe)');
+select atteso('…resta Ada', (select verificato_da::text from saldo_banca where mese = '2025-11'), 'aaaaaaaa-0000-0000-0000-000000000002');
+select atteso('Ivo cambia i numeri', tenta($$update saldo_banca set entrate = 150, uscite = 50 where mese = '2025-11'$$), 'FATTO (1 righe)');
+select atteso('…e il mese torna da verificare: i numeri verificati non ci sono più', (select coalesce(verificato_da::text, '-') || coalesce(verificato_il::text, '-') || coalesce(impronta_verifica, '-') from saldo_banca where mese = '2025-11'), '---');
+select atteso('Ivo lo verifica di nuovo: adesso è lui', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'nov2' where mese = '2025-11'$$), 'FATTO (1 righe)');
+select atteso('…Ivo', (select verificato_da::text from saldo_banca where mese = '2025-11'), 'aaaaaaaa-0000-0000-0000-000000000004');
 reset role;
 -- La persona la toglie qualcuno con una sessione: il «set null» sulla riga non deve mettere il suo nome.
 select chi('33333333-3333-3333-3333-333333333333');
 select atteso('si toglie Ivo, con Sandro collegato', tenta($$delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000004'$$), 'FATTO (1 righe)');
-select atteso('…la verifica resta, senza nome: non diventa di Sandro', (select coalesce(verificato_da::text, 'nessuno') || ' ' || impronta_verifica from saldo_banca where mese = '2026-11'), 'nessuno nov2');
+select atteso('…la verifica resta, senza nome: non diventa di Sandro', (select coalesce(verificato_da::text, 'nessuno') || ' ' || impronta_verifica from saldo_banca where mese = '2025-11'), 'nessuno nov2');
 select chi('');
 
 \echo ''
@@ -178,3 +185,55 @@ select atteso('non ne scrive', tenta($$insert into saldo_banca (mese, saldo_iniz
 select atteso('non ne toglie', tenta($$delete from saldo_banca$$), 'a vuoto (0 righe)');
 reset role;
 select chi('');
+
+\echo ''
+\echo '--- 8. le regole della verifica stanno nel database (131): non basta il pulsante dell''app ---'
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('il saldo di un mese che non è ancora cominciato no', tenta(format($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values (%L, 0, 0, 0, 0)$$, to_char(now() + interval '2 months', 'YYYY-MM'))), 'NEGATO: …non è ancora cominciato…');
+select atteso('…né spostandoci un mese scritto', tenta(format($$update saldo_banca set mese = %L where mese = '2026-07'$$, to_char(now() + interval '2 months', 'YYYY-MM'))), 'NEGATO: …non è ancora cominciato…');
+select atteso('…e un mese scritto non si sposta nemmeno nel passato: la verifica resterebbe su un mese che non torna', tenta($$update saldo_banca set mese = '2024-01' where mese = '2025-11'$$), 'NEGATO: …non si cambia…');
+select atteso('quello del mese in corso si scrive', tenta(format($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values (%L, 0, 0, 0, 0)$$, to_char(now(), 'YYYY-MM'))), 'FATTO (1 righe)');
+select atteso('…ma non si segna verificato: non è finito', tenta(format($$update saldo_banca set verificato_il = now(), impronta_verifica = 'x' where mese = %L$$, to_char(now(), 'YYYY-MM'))), 'NEGATO: …non è ancora finito…');
+-- Giugno 2025: nell'app il conto fa 0 (i movimenti cominciano a ottobre).
+select atteso('giugno 2025, l''estratto dice 5,00 in più', tenta($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2025-06', 0, 500, 0, 500)$$), 'FATTO (1 righe)');
+select atteso('…non si segna verificato: il conto non torna', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'giu' where mese = '2025-06'$$), 'NEGATO: …non torna…');
+select atteso('corretto l''estratto (0,00)', tenta($$update saldo_banca set entrate = 0, saldo_finale = 0 where mese = '2025-06'$$), 'FATTO (1 righe)');
+select atteso('…si segna verificato', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'giu' where mese = '2025-06'$$), 'FATTO (1 righe)');
+reset role;
+-- Luglio 2025: un incasso di 3,00 ancora «Da classificare».
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione) values
+  ('entrata', '2025-07-10', 300, (select id from voci_contabili where nome = 'Da classificare' and tipo = 'entrata'), (select id from casse where nome = 'Conto Corrente'), 'Bonifico da capire');
+set role authenticated;
+select atteso('luglio torna con la banca', tenta($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2025-07', 0, 300, 0, 300)$$), 'FATTO (1 righe)');
+select atteso('…ma con una riga «Da classificare» non si segna verificato', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'lug' where mese = '2025-07'$$), 'NEGATO: …Da classificare…');
+reset role;
+update movimenti set voce_id = (select id from voci_contabili where nome = 'Corsi e altri pagamenti') where descrizione = 'Bonifico da capire';
+set role authenticated;
+select atteso('data la voce, si segna verificato', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'lug' where mese = '2025-07'$$), 'FATTO (1 righe)');
+-- Agosto 2025: il conto torna (3,00), ma l'estratto comincia da 1,00 e luglio finiva a 3,00.
+select atteso('agosto, col saldo iniziale che non è il finale di luglio', tenta($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2025-08', 100, 200, 0, 300)$$), 'FATTO (1 righe)');
+select atteso('…non si segna verificato', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'ago' where mese = '2025-08'$$), 'NEGATO: …mese prima…');
+reset role;
+select atteso('…nemmeno senza sessione, da un file lanciato a mano', tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'ago' where mese = '2025-08'$$), 'NEGATO: …mese prima…');
+set role authenticated;
+
+\echo ''
+\echo '--- 9. un mese verificato torna da verificare se cambia il saldo da cui parte ---'
+select atteso('giugno cambia, ma finisce sempre a 0,00', tenta($$update saldo_banca set entrate = 50, uscite = 50 where mese = '2025-06'$$), 'FATTO (1 righe)');
+select atteso('…luglio resta verificato', (select (verificato_il is not null)::text || ' ' || coalesce(impronta_verifica, '-') from saldo_banca where mese = '2025-07'), 'true lug');
+select atteso('giugno ora finisce a 1,00', tenta($$update saldo_banca set entrate = 100, uscite = 0, saldo_finale = 100 where mese = '2025-06'$$), 'FATTO (1 righe)');
+select atteso('…luglio non parte più da lì: torna da verificare', (select coalesce(verificato_il::text, '-') || coalesce(verificato_da::text, '-') || coalesce(impronta_verifica, '-') from saldo_banca where mese = '2025-07'), '---');
+select atteso('giugno torna a 0,00 e luglio si verifica di nuovo', tenta($$update saldo_banca set entrate = 0, saldo_finale = 0 where mese = '2025-06'$$) || ' ' || tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'lug2' where mese = '2025-07'$$), 'FATTO (1 righe) FATTO (1 righe)');
+select atteso('un mese prima scritto da zero, che finisce dove luglio non parte', tenta($$delete from saldo_banca where mese = '2025-06'$$) || ' ' || tenta($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2025-06', 0, 700, 0, 700)$$), 'FATTO (1 righe) FATTO (1 righe)');
+select atteso('…luglio torna da verificare', (select coalesce(impronta_verifica, '-') from saldo_banca where mese = '2025-07'), '-');
+select atteso('settembre 2026 è ancora verificato (sezione 5)', (select impronta_verifica from saldo_banca where mese = '2026-09'), 'abc123');
+select atteso('riscritto come fa l''app (insert … on conflict), senza dire niente della verifica: coi numeri nuovi il database la toglie da sé', tenta($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2026-09', 10000, 5000, 1000, 14000) on conflict (mese) do update set saldo_iniziale = excluded.saldo_iniziale, entrate = excluded.entrate, uscite = excluded.uscite, saldo_finale = excluded.saldo_finale$$), 'FATTO (1 righe)');
+select atteso('…settembre torna da verificare', (select coalesce(impronta_verifica, '-') from saldo_banca where mese = '2026-09'), '-');
+reset role;
+select chi('');
+
+\echo ''
+\echo '--- 10. le funzioni nuove dei trigger non si chiamano da fuori ---'
+select atteso('authenticated non esegue saldo_banca_regole', has_function_privilege('authenticated', 'saldo_banca_regole()', 'EXECUTE')::text, 'false');
+select atteso('anon nemmeno saldo_banca_mese_dopo', has_function_privilege('anon', 'saldo_banca_mese_dopo()', 'EXECUTE')::text, 'false');

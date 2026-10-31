@@ -124,19 +124,6 @@ quando arriva la prova.
   della banca: nessuna prova lo impedisce, né in app né nel database.
 - **GRAVE** — Ricevuta da un pagamento a mano: un `pagamentoId` perso per
   strada non fa cadere niente, e lo stesso incasso conta due volte.
-- **GRAVE** — Quadratura: un mese «verificato» resta tale se cambia il saldo
-  iniziale che gli arriva dal mese prima (una riga di settembre, il saldo del
-  conto): l'impronta copre solo le righe del mese. Nessuna prova.
-- **GRAVE** — Quadratura: riscrivere il saldo nel percorso Supabase
-  (`scriviSaldoBanca`) toglie la verifica con `verificato_il: null`, ma nessuna
-  prova lo tiene: tolto, la prova resta verde. Il database non lo fa da sé.
-- **GRAVE** — Quadratura: `verificaMeseBanca` (prova e Supabase) non chiede
-  differenza 0 né «Da classificare»: la regola sta nel pulsante disabilitato di
-  `Contabilita.tsx`. Nessuna prova.
-- **GRAVE** — Quadratura: `scriviSaldoBanca` (Supabase) non chiama
-  `cosaNonVaSaldoBanca`: mese futuro e numeri che non tornano li ferma solo il
-  `.tsx` (il database ferma i numeri, non il mese). Nessuna prova sul percorso
-  Supabase.
 - Quadratura: `revoke` su `saldo_banca_chi_verifica()` (123) senza prova: nessun
   controllo che anon e authenticated non abbiano EXECUTE (DA FARE).
 - COMPENSI (`Compensi.tsx`): il doppio clic su «C'era», «Non c'era» e «Segna

@@ -25,7 +25,7 @@ import { NOTA_DI_DEFAULT, type IncassoPrima } from './pagatoPrima'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 import { MASSIMO_PER_IMPORTAZIONE, nonEQuestoBanca, PREFISSO_CHIAVE_BANCA, segnaCoperti } from './importaBanca'
-import { cosaNonVaSaldoBanca, cosaNonVaVerifica, type SaldoBanca } from './quadraturaBanca'
+import { cosaNonVaSaldoBanca, cosaNonVaVerifica, meseDopo, type SaldoBanca } from './quadraturaBanca'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
 const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
@@ -1961,7 +1961,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (no) throw new Error(no)
       // Numeri nuovi, verifica vecchia: come il database, che la azzera riscrivendo il mese.
       const nuovo: SaldoBanca = { mese: s.mese, saldoIniziale: s.saldoIniziale, entrate: s.entrate, uscite: s.uscite, saldoFinale: s.saldoFinale }
+      const dopo = meseDopo(s.mese)
+      // E il mese dopo, se non parte più dal saldo finale di questo.
       a().saldiBanca = [...(a().saldiBanca ?? []).filter((x) => x.mese !== s.mese), nuovo]
+        .map((x) => (x.mese === dopo && x.saldoIniziale !== s.saldoFinale ? { ...x, verificatoIl: null, verificatoDa: null, improntaVerifica: null } : x))
       salva()
     },
 
