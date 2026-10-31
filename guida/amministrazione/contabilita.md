@@ -436,7 +436,8 @@ BANCA** mostra i mesi dell'anno (‹ › cambia anno), ognuno col suo stato:
 
 - **✓ Verificato** o **✓ Torna**: il saldo dell'app a fine mese è quello della banca.
 - **✕ e la differenza**: non torna. **✕ Cambiato dopo la verifica**: il mese era verificato, poi
-  una riga del Conto Corrente di quel mese è cambiata (nuova, annullata, importo o data diversi).
+  una riga del Conto Corrente di quel mese è cambiata (nuova, annullata, importo o data diversi), o
+  il saldo finale del mese prima non è più il suo saldo iniziale.
 - **… Saldo da scrivere**, **… CSV mancante**, **… Da classificare**: manca qualcosa per controllarlo.
 
 I mesi rossi e gialli compaiono anche sulla tessera del Conto Corrente, i più recenti per primi. Un
@@ -447,7 +448,8 @@ mese senza saldo prima del primo saldo scritto non chiede niente, tranne l'ultim
 sotto zero). Il saldo iniziale è già scritto col finale del mese prima, se c'è. I numeri devono
 tornare fra loro (iniziale + entrate − uscite = finale) e il mese non può essere nel futuro: se
 no, in rosso, «Il saldo non si può salvare così» con il motivo, e il saldo non si salva.
-**Cambia il saldo dell'estratto** riscrive i quattro numeri: un mese verificato torna da verificare.
+**Cambia il saldo dell'estratto** riscrive i quattro numeri: un mese verificato torna da verificare,
+e anche il mese dopo, se non parte più dal nuovo saldo finale.
 
 Scelto un mese, si vedono **NELL'APP** (il saldo del Conto Corrente all'ultimo giorno del mese),
 **IN BANCA** e la **DIFFERENZA** (app meno banca). Sotto, le righe che la spiegano, confrontando i
@@ -466,8 +468,9 @@ due righe sono la stessa se hanno lo stesso importo e lo stesso verso entro due 
 Senza il CSV del mese l'app non sa quali righe ci sono in banca: lo dice, con **Importa**. Le righe
 **«Da classificare»** del mese si vedono con **Vedi le righe** e vanno sistemate prima.
 
-**Segna … come verificato** si può solo quando la differenza è zero e non ci sono righe «Da
-classificare». Resta scritto chi l'ha verificato e quando.
+**Segna … come verificato** si può solo a mese finito, quando la differenza è zero, non ci sono
+righe «Da classificare» e il saldo iniziale è il finale del mese prima. Resta scritto chi l'ha
+verificato e quando.
 
 ## Lo storico dal vecchio programma
 
