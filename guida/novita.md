@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.227.0 — 31 ottobre 2026
+
+### Novità
+
+- Importando dalla banca scegli la voce e la persona di ogni movimento, e vedi solo entrate o uscite
+
 ## 0.226.0 — 31 ottobre 2026
 
 ### Novità
