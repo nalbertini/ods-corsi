@@ -629,6 +629,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_trigger where tgname = 'movimenti_cassa_satispay_chiusa' and not tgisinternal)
     and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%nel_versamento%')
     and exists (select 1 from dentro where nome = 'satispay_scarico_avvisa' and corpo like '%errore is null%')
-    and exists (select 1 from voci_contabili where nome = 'Incassi Satispay'))
+    and exists (select 1 from voci_contabili where nome = 'Incassi Satispay')),
+  ('133-verbali-semplici.sql', 'un verbale si firma col solo PDF firmato, senza ore, luogo, presidente e presenti',
+    exists (select 1 from dentro where nome = 'firma_verbale' and corpo like '%Per firmare serve il PDF%' and corpo not like '%ora d’inizio%'))
 ) as x(file, cosa, c)
 order by file, cosa;

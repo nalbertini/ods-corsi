@@ -8,7 +8,6 @@ import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
 import { idLinguettaImp, idPannelloImp, SCHEDA_IMPOSTAZIONI_INIZIALE, SCHEDE_IMPOSTAZIONI, tastoImpostazioni, type IdImpostazioni } from '../../lib/schedeImpostazioni'
-import { datiVerbali } from '../../lib/verbaliDati'
 import { cambiaSpento, METODI_PAGAMENTO, type IdMetodo } from '../../lib/metodiPagamento'
 import { chiedi, Campo, MostraBozza, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica, Tasto } from './comune'
 import { EserciziPalestra, VoceSale } from './TimerPalestra'
@@ -243,10 +242,6 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
 
       <Pannello apri={setAperta} id="importa" aperta={aperta} sotto="Le tessere del RASD si caricano da TESSERE.">
         <Importa d={d} onVai={onVai} />
-      </Pannello>
-
-      <Pannello apri={setAperta} id="verbali" aperta={aperta} sotto="Chi può fare il segretario di una riunione: nel verbale si sceglie fra questi.">
-        <SegretariVerbali d={d} fai={fai} />
       </Pannello>
 
       <Pannello apri={setAperta} id="dati" aperta={aperta} sotto="I dati di una persona si esportano dalla sua scheda, in ISCRITTI.">
@@ -915,39 +910,5 @@ function AvvisiSegreteria({ d }: { d: DatiSegreteria }) {
       <span className="sg-sotto">Al più 50 avvisi al giorno: le ricevute alle famiglie vengono prima. Quelli in più li conta RICHIESTE ONLINE.</span>
       {avviso}
     </section>
-  )
-}
-
-/** La lista di chi può fare il segretario nei verbali: si spunta fra le persone attive, un tocco alla volta. */
-function SegretariVerbali({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
-  const persone = useCarica(() => d.persone(), [d])
-  const scelti = useCarica(async () => (await datiVerbali()).leggiSegretari(), [])
-  const [inCorso, setInCorso] = useState(false)
-  const ids = scelti.dato ?? []
-  // Chi è già scelto resta in lista anche se non è più attivo, così si può togliere.
-  const lista = (persone.dato ?? []).filter((p) => p.attiva || ids.includes(p.id)).sort((a, b) => `${a.cognome} ${a.nome}`.localeCompare(`${b.cognome} ${b.nome}`, 'it'))
-  const guaio = persone.guaio || scelti.guaio
-  if (guaio) return <Guaio testo={guaio} />
-  if (!persone.dato || !scelti.dato) return <p className="sg-sotto">Un attimo…</p>
-  return (
-    <div className="stack" style={{ gap: 4 }}>
-      {lista.map((p) => (
-        <label key={p.id} className="row" style={{ gap: 12, minHeight: 44, alignItems: 'center' }}>
-          <input
-            type="checkbox"
-            style={{ width: 24, height: 24, margin: 0, accentColor: 'var(--text)', cursor: 'pointer' }}
-            checked={ids.includes(p.id)}
-            disabled={inCorso}
-            onChange={(e) => {
-              setInCorso(true)
-              const nuovi = e.target.checked ? [...ids, p.id] : ids.filter((x) => x !== p.id)
-              void fai(async () => (await datiVerbali()).salvaSegretari(nuovi), e.target.checked ? 'Aggiunto' : 'Tolto', scelti.ricarica).finally(() => setInCorso(false))
-            }}
-          />
-          <b>{p.cognome} {p.nome}</b>
-        </label>
-      ))}
-      {!lista.length && <p className="sg-sotto">Nessuna persona ancora.</p>}
-    </div>
   )
 }

@@ -1,0 +1,115 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-31T15:00:00Z"
+ },
+ "title": "Verbali semplici",
+ "launch": {
+  "view": "canvas",
+  "page": "p1"
+ },
+ "pages": [
+  {
+   "id": "p1",
+   "name": "Proposta"
+  },
+  {
+   "id": "lib",
+   "name": "Libreria"
+  }
+ ],
+ "boards": {
+  "InChat.dc.html": {
+   "x": 800,
+   "y": 300,
+   "w": 720,
+   "h": 1100,
+   "title": "2 · Dopo: Claude riporta la trascrizione al modello, chiede cosa manca e fa il PDF (fuori dall'app)",
+   "page": "p1"
+  },
+  "Menu.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 240,
+   "h": 900,
+   "page": "lib"
+  },
+  "Badge.dc.html": {
+   "x": 320,
+   "y": 0,
+   "w": 140,
+   "h": 40,
+   "page": "lib"
+  },
+  "Bottone.dc.html": {
+   "x": 540,
+   "y": 0,
+   "w": 260,
+   "h": 80,
+   "page": "lib"
+  },
+  "Campo.dc.html": {
+   "x": 880,
+   "y": 0,
+   "w": 360,
+   "h": 90,
+   "page": "lib"
+  },
+  "Icona.dc.html": {
+   "x": 1320,
+   "y": 0,
+   "w": 24,
+   "h": 24,
+   "page": "lib"
+  },
+  "Registrazione.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 720,
+   "h": 1100,
+   "title": "1 · Durante la riunione: una scaletta da dire ad alta voce mentre si registra (fuori dall'app)",
+   "page": "p1"
+  },
+  "Carica.dc.html": {
+   "x": 1600,
+   "y": 300,
+   "w": 1440,
+   "h": 1200,
+   "title": "3 · Nell'app: PDF firmato + la riunione. Uguale per i verbali nuovi e per quelli vecchi",
+   "page": "p1",
+   "expand": "fill"
+  },
+  "Elenco.dc.html": {
+   "x": 1600,
+   "y": 1600,
+   "w": 1440,
+   "h": 1000,
+   "title": "4 · L'elenco: vecchi e nuovi uguali, una riga e il PDF",
+   "page": "p1",
+   "expand": "fill"
+  }
+ },
+ "order": [
+  "Registrazione.dc.html",
+  "InChat.dc.html",
+  "Carica.dc.html",
+  "Elenco.dc.html",
+  "Menu.dc.html",
+  "Badge.dc.html",
+  "Bottone.dc.html",
+  "Campo.dc.html",
+  "Icona.dc.html"
+ ],
+ "notes": {
+  "titolo": {
+   "x": 0,
+   "y": 0,
+   "text": "Verbali: il testo si fa fuori, nell'app la riunione e il PDF firmato",
+   "kind": "title1",
+   "maxW": 3040,
+   "page": "p1"
+  }
+ },
+ "designSystems": []
+}

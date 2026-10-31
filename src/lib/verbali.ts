@@ -1,12 +1,13 @@
 import { dataLunga } from './sala'
 
 /**
- * I verbali delle riunioni dei soci e del direttivo. La segreteria li scrive
- * (bozza), li fa firmare a mano, carica la scansione e li marca «firmato»; da
- * lì in poi non si cambiano: si rettificano con una nota datata o si sostituisce
- * il PDF dicendo perché. Un verbale vecchio (storico) si carica col minimo.
+ * I verbali delle riunioni dei soci e del direttivo. Il testo si scrive fuori
+ * dall'app (skill `preparare-verbale`) e si firma a mano: qui si carica la
+ * scansione con i dati della riunione, e il verbale nasce «firmato». Da lì in
+ * poi non si cambia: si rettifica con una nota datata o si sostituisce il PDF
+ * dicendo perché. Vecchi (storici) e nuovi si caricano uguali.
  * Tutte funzioni pure: le date sono `AAAA-MM-GG`, le ore `HH:MM`, `oggi` lo
- * passa chi chiama. Il database è `supabase/127-verbali.sql`.
+ * passa chi chiama. Il database è `supabase/127-verbali.sql`, con le regole di firma di `133-verbali-semplici.sql`.
  */
 
 export type TipoVerbale = 'soci' | 'direttivo' | 'soci_direttivo' | 'straordinaria' | 'elettiva'
@@ -107,9 +108,6 @@ export interface DatiVerbali {
   sostituisciPdf(id: string, file: FilePdf, motivo: string): Promise<void>
   /** Un indirizzo a tempo per aprire un PDF; vuoto in prova, dove i file non ci sono. */
   linkPdf(a: Allegato): Promise<string>
-  /** Chi può fare il segretario di seduta (la lista delle regole). */
-  leggiSegretari(): Promise<string[]>
-  salvaSegretari(personaIds: string[]): Promise<void>
 }
 
 export const MAX_PESO_PDF = 20 * 1024 * 1024
@@ -163,32 +161,17 @@ export function cosaNonVaVerbale(v: Verbale, { staFirmando = false } = {}): stri
   if (v.delibere.some((d) => vuoto(d.titolo))) return 'Una delibera non ha il titolo: scrivilo o toglila'
   if (v.cariche.some((c) => c.dal && c.al && c.al < c.dal)) return 'Una carica finisce prima di cominciare: controlla le date'
   if (!staFirmando) return null
+  // Il resto (ore, luogo, presidente, presenti…) sta nel PDF firmato: l'app non lo chiede.
   if (!pdfInVigore(v)) return 'Per firmare serve il PDF firmato: caricalo prima'
-  if (v.storico) return null
-  if (!v.oraInizio) return 'Per firmare serve l’ora d’inizio'
-  if (vuoto(v.luogo)) return 'Per firmare serve il luogo'
-  if (!v.odg.some((r) => !vuoto(r))) return 'Per firmare serve almeno un punto dell’ordine del giorno'
-  if (!v.presidenteId) return 'Per firmare serve il presidente'
-  if (!v.segretarioId) return 'Per firmare serve il segretario'
-  if (!v.presenti || v.presenti < 1) return 'Per firmare servono i presenti'
   return null
 }
 
 /** Cose strane ma non bloccanti, una per caso. `altri` sono gli altri verbali, per i numeri doppi. */
 export function avvisiVerbale(v: Verbale, altri: Verbale[] = []): string[] {
   const a: string[] = []
-  const mancano = v.storico ? [] : [
-    !v.oraInizio && 'ora d’inizio',
-    vuoto(v.luogo) && 'luogo',
-    !v.odg.some((r) => !vuoto(r)) && 'ordine del giorno',
-    !v.presidenteId && 'presidente',
-    !v.segretarioId && 'segretario',
-    !v.presenti && 'presenti',
-  ].filter((c): c is string => !!c)
-  if (mancano.length) a.push(`Per firmare mancano: ${mancano.join(', ')}`)
   if (v.aventiDiritto !== undefined && (v.presenti ?? 0) + (v.deleghe ?? 0) > v.aventiDiritto) a.push('Presenti e deleghe sono più degli aventi diritto')
   if (v.data && Number(v.data.slice(0, 4)) !== v.anno) a.push('L’anno del numero è diverso dall’anno della data')
-  if (altri.some((o) => o.id !== v.id && o.anno === v.anno && o.numero === v.numero)) a.push(`Il numero ${numeroDi(v)} è già usato da un altro verbale`)
+  if (altri.some((o) => o.id !== v.id && o.anno === v.anno && o.numero === v.numero)) a.push(`Il numero ${numeroDi(v)} è già usato da un altro verbale: scegline un altro, se no non si carica`)
   if (v.oraInizio && v.oraFine && v.oraFine < v.oraInizio) a.push('L’ora di fine è prima dell’ora d’inizio')
   const visti = new Set<string>()
   const doppio = v.delibere.some((d) => {
@@ -228,6 +211,25 @@ export function cosaNonVaFile(f: { nome: string; tipo: string; peso: number }): 
   if (!(f.peso > 0)) return 'Il file è vuoto: rifai la scansione'
   if (f.peso > MAX_PESO_PDF) return 'Il PDF pesa più di 20 MB: rifai la scansione più leggera'
   return null
+}
+
+/** Cosa impedisce di caricare un verbale già firmato (il file, la riunione, la data della firma); null se va. */
+export function cosaNonVaCaricamento(v: Verbale, file: { nome: string; peso: number; tipo: string } | undefined, firmatoIl: string, oggi: string): string | null {
+  if (!file) return 'Scegli il PDF firmato'
+  return cosaNonVaFile(file) ?? cosaNonVaVerbale(v) ?? cosaNonVaDataFirma(v, firmatoIl, oggi)
+}
+
+/**
+ * Salva la riunione, carica il PDF e firma: tre chiamate, non una transazione. `onId` riceve l'id appena
+ * la bozza esiste: se il PDF o la firma cadono, chi chiama lo ripassa in `v.id` al tentativo dopo, così
+ * si riusa la stessa bozza invece di crearne un'altra col numero già preso.
+ */
+export async function caricaVerbaleFirmato(dati: Pick<DatiVerbali, 'salva' | 'caricaPdf' | 'firma'>, v: VerbaleNuovo, file: FilePdf, firmatoIl: string, onId: (id: string) => void): Promise<string> {
+  const id = await dati.salva(v)
+  onId(id)
+  await dati.caricaPdf(id, file)
+  await dati.firma(id, firmatoIl)
+  return id
 }
 
 /** Firma, sostituzioni del PDF e rettifiche, dal più vecchio al più nuovo. */

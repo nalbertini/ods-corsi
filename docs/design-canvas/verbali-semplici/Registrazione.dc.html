@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>La scaletta della riunione</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: fuori dall'app. Un foglio (A4, o una nota sul telefono) che chi presiede legge ad alta voce mentre si registra:
+     così nella trascrizione ci sono sempre le stesse cose nello stesso ordine e Claude non deve indovinare. Vive nel repo accanto alla skill. -->
+<div style="width: 720px; min-height: 1100px; padding: 32px; display: flex; flex-direction: column; gap: 16px; background: #eef5fa">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">DURANTE LA RIUNIONE · FUORI DALL'APP</span>
+  <article style="display: flex; flex-direction: column; gap: 14px; padding: 32px 36px; background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px; font-size: 15px; line-height: 1.55">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">DA DIRE AD ALTA VOCE</h1>
+      <span style="font-size: 14px; color: #46606f">Avvia la registrazione e leggi le frasi in grassetto, completandole. Il resto parla come sempre.</span>
+    </div>
+    <ol style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 12px">
+      <li><strong>«Oggi è il … alle ore …, siamo in …»</strong></li>
+      <li><strong>«È una riunione del direttivo / dei soci, convocata il …»</strong></li>
+      <li><strong>«Presiede …, verbalizza …»</strong></li>
+      <li><strong>«Sono presenti …» </strong>(i nomi)<strong>, «assenti …», «deleghe …»</strong></li>
+      <li><strong>«L'ordine del giorno è: uno …, due …»</strong></li>
+      <li>Per ogni punto: <strong>«Punto uno: …»</strong>, la discussione, poi <strong>«Si vota: favorevoli …, contrari …, astenuti …»</strong></li>
+      <li>Se si elegge qualcuno: <strong>«… è nominato … dal … al …»</strong></li>
+      <li><strong>«La riunione si chiude alle ore …»</strong>, poi ferma la registrazione.</li>
+    </ol>
+    <div style="padding: 12px 14px; background: #eef5fa; border-radius: 6px; font-size: 14px; color: #46606f">Una frase dimenticata non è un problema: Claude la chiede dopo, prima di fare il PDF.</div>
+  </article>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":720,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

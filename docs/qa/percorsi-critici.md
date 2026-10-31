@@ -109,7 +109,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | DAL SITO ALLE RICHIESTE in STATISTICHE | segreteria | numero sbagliato in silenzio | `prova:fila-sito` | no |
 | Avvisi per email alla segreteria | segreteria | richiesta o pagamento che non si vede arrivare | `prova:avvisi-segreteria`, `prova:cornice-mail`, `prova:ricevute-email`, `avvisi-segreteria.sql` | sì |
 | COME SI PAGA in REGOLE | segreteria, chi si iscrive, iscritto | metodo spento ancora offerto o aggirato, pagamento fatto che sparisce | `prova:metodi-pagamento`, `prova:impostazioni`, `prova:edge`, `metodi-pagamento.sql`, `metodo-spento-nel-database.sql` | sì, da fare |
-| Verbali delle riunioni (firma, rettifica, PDF) | segreteria, direttivo | verbale firmato cambiato, PDF perso, numero doppio, dati visti da chi non deve | `prova:verbali`, `verbali.sql` | sì, da fare |
+| Verbali delle riunioni (PDF firmato, firma, rettifica) | segreteria, direttivo | firmato senza PDF o data sbagliata, cambiato, numero doppio, dati a chi non deve | `prova:verbali`, `verbali.sql` | sì, da fare |
 | Sollecito su WhatsApp | segreteria, famiglia | importo sbagliato chiesto, messaggio al minore | `prova:scheda-iscritto`, `prova:sollecito`, `prova:filtri-iscritti`, `solleciti.sql` | sì |
 
 ## Scoperti
@@ -228,6 +228,13 @@ quando arriva la prova.
 - Icona dei tasti di segreteria: `prova:icone` controlla che il nome sia in
   `iconaAzione` e che il tasto passi da `Tasto`, non che l'icona compaia
   (DA FARE).
+
+- Verbali, firma senza data: il database la rifiuta solo col vincolo
+  `verbale_firma_intera`, con un messaggio grezzo; il controllo «Scrivi la
+  data della firma» non è provato (DA FARE in `verbali.sql`).
+- Verbali, «Carica un verbale» (`Verbali.tsx`): mostra DOVE, INIZIO, FINE e
+  ordine del giorno, che la regola non chiede; se la firma cade dopo il
+  caricamento resta una bozza col PDF. Solo collaudo a mano.
 
 ## Come si aggiorna
 

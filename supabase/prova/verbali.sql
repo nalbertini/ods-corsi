@@ -1,7 +1,7 @@
 -- I verbali delle riunioni dei soci e del direttivo (ASD): li scrive e li legge
 -- solo la segreteria; istruttori, iscritti, tablet e anon non vedono niente,
 -- nemmeno i PDF nello Storage. Si lancia dopo finto-supabase.sql, i file dello
--- schema e il file dei verbali (supabase/127-verbali.sql).
+-- schema e i file dei verbali (supabase/127-verbali.sql e 133-verbali-semplici.sql).
 --
 -- Lo schema che questa prova si aspetta (lo fissa lei: il file SQL lo segue):
 --
@@ -307,44 +307,21 @@ select atteso('firmato, ora non si cambia più', riuscito($$update verbali set l
 select atteso('un verbale che non c''è no', (rifiuto($$select firma_verbale(gen_random_uuid(), current_date)$$) = 'nessun errore')::text, 'false');
 reset role;
 
--- Un verbale nuovo (non storico) si firma solo con i dati veri; un campo alla volta.
+-- Un verbale nuovo (non storico) è «la riunione» + il PDF firmato: ora, luogo, ordine del giorno,
+-- presidente, segretario e presenti stanno nel PDF e non servono per firmare.
 insert into verbali (id, anno, numero, tipo, data) values ('dddddddd-0000-0000-0000-000000000009', 2042, 1, 'direttivo', '2020-02-01');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('non storico senza PDF firmato no, e parla del PDF', (rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', current_date)$$) ilike '%pdf%')::text, 'true');
+reset role;
 insert into verbali_allegati (verbale_id, tipo, nome, percorso) values ('dddddddd-0000-0000-0000-000000000009', 'firmato', 'f.pdf', 'x');
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
-select atteso('senza ora d''inizio no, e lo dice', rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', current_date)$$), 'P0001 …');
-select atteso('il messaggio nomina l''ora', (rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', current_date)$$) ilike '%ora%')::text, 'true');
 select atteso('una firma prima della riunione no', (rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', '2020-01-31')$$) ilike '%prima della riunione%')::text, 'true');
-reset role;
-update verbali set ora_inizio = '18:00' where id = 'dddddddd-0000-0000-0000-000000000009';
-select chi('11111111-1111-1111-1111-111111111111');
-set role authenticated;
-select atteso('senza luogo no', (rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', current_date)$$) ilike '%luogo%')::text, 'true');
-reset role;
-update verbali set luogo = 'Sede' where id = 'dddddddd-0000-0000-0000-000000000009';
-select chi('11111111-1111-1111-1111-111111111111');
-set role authenticated;
-select atteso('senza ordine del giorno no', (rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', current_date)$$) ilike '%ordine del giorno%')::text, 'true');
-reset role;
-update verbali set odg = array['Varie'] where id = 'dddddddd-0000-0000-0000-000000000009';
-select chi('11111111-1111-1111-1111-111111111111');
-set role authenticated;
-select atteso('senza presidente no', (rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', current_date)$$) ilike '%presidente%')::text, 'true');
-reset role;
-update verbali set presidente_id = 'aaaaaaaa-0000-0000-0000-000000000004' where id = 'dddddddd-0000-0000-0000-000000000009';
-select chi('11111111-1111-1111-1111-111111111111');
-set role authenticated;
-select atteso('senza segretario no', (rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', current_date)$$) ilike '%segretario%')::text, 'true');
-reset role;
-update verbali set segretario_id = 'aaaaaaaa-0000-0000-0000-000000000005' where id = 'dddddddd-0000-0000-0000-000000000009';
-select chi('11111111-1111-1111-1111-111111111111');
-set role authenticated;
-select atteso('senza presenti no', (rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', current_date)$$) ilike '%presenti%')::text, 'true');
-reset role;
-update verbali set presenti = 12 where id = 'dddddddd-0000-0000-0000-000000000009';
-select chi('11111111-1111-1111-1111-111111111111');
-set role authenticated;
-select atteso('completo, ora si firma', rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', '2020-02-01')$$), 'nessun errore');
+select atteso('una firma nel futuro no, e lo dice', (rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', current_date + 1)$$) ilike '%futuro%')::text, 'true');
+select atteso('una firma senza data no, e lo dice', (rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', null)$$) ilike '%Scrivi la data della firma%')::text, 'true');
+select atteso('il non storico con solo numero, data, tipo e PDF si firma', rifiuto($$select firma_verbale('dddddddd-0000-0000-0000-000000000009', '2020-02-01')$$), 'nessun errore');
+select atteso('e risulta firmato con la sua data', (select stato || ' ' || firmato_il from verbali where id = 'dddddddd-0000-0000-0000-000000000009'), 'firmato 2020-02-01');
 reset role;
 
 -- --- 5. sostituisci_pdf_firmato ----------------------------------------------
