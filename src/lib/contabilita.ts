@@ -229,6 +229,10 @@ export const quanteUsate = (righe: RigaMovimento[], voce: VoceContabile): number
 
 export const totaleResidui = (conti: Array<{ residuo: number }>): number => conti.reduce((s, c) => s + c.residuo, 0)
 
+/** Le casse dei saldi in testa a CONTABILITÀ: Satispay e Carta, a zero, no (i loro soldi arrivano sul Conto Corrente). Con qualcosa dentro tornano, se no il Totale non si spiega. */
+export const casseDeiSaldi = (casse: Cassa[], conti: Array<{ cassaId: string; residuo: number }>): Cassa[] =>
+  casse.filter((c) => ![NOME_CASSA_SATISPAY, NOME_CASSA_CARTA].includes(c.nome) || (conti.find((x) => x.cassaId === c.id)?.residuo ?? 0) !== 0)
+
 /** Il giorno dopo, come `AAAA-MM-GG`. */
 export const giornoDopo = (giorno: string): string => new Date(new Date(`${giorno}T12:00:00Z`).getTime() + 86_400_000).toISOString().slice(0, 10)
 

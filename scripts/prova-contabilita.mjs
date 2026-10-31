@@ -1468,5 +1468,16 @@ console.log('\n100. un\'uscita dalla banca senza destinatario lo chiede')
   ok('destinatario vuoto o di soli spazi: niente descrizione vuota, nota invariata', [testo('Distinta: X', 'Fattura 12', ''), testo('Distinta: X', null, '   ')], [{ descrizione: 'Distinta: X', nota: 'Fattura 12' }, { descrizione: 'Distinta: X', nota: '' }])
 }
 
+{
+  // I saldi in testa a CONTABILITÀ: Satispay e Carta, a zero, non si mostrano (i loro soldi sono sul Conto Corrente).
+  const K = ['Cassa Contanti', 'Conto Corrente', 'Satispay', 'Carta'].map((nome, i) => ({ id: `k${i}`, nome }))
+  const conti = (...r) => K.map((c, i) => ({ cassaId: c.id, entrate: 0, uscite: 0, residuo: r[i] }))
+  const mostrate = (cc) => prova(() => m.casseDeiSaldi(K, cc).map((c) => c.nome))
+  ok('Satispay e Carta a zero non si mostrano', mostrate(conti(100, 200, 0, 0)), ['Cassa Contanti', 'Conto Corrente'])
+  ok('Contanti e Conto Corrente si mostrano anche a zero', mostrate(conti(0, 0, 0, 0)), ['Cassa Contanti', 'Conto Corrente'])
+  ok('una Carta con qualcosa dentro torna a vedersi, anche in negativo', mostrate(conti(0, 0, 0, -500)), ['Cassa Contanti', 'Conto Corrente', 'Carta'])
+  ok('Satispay con qualcosa dentro torna a vedersi', mostrate(conti(0, 0, 21000, 0)), ['Cassa Contanti', 'Conto Corrente', 'Satispay'])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
