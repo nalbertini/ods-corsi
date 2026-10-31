@@ -1,0 +1,27 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Importa dalla banca · le righe del file"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Main.dc.html",
+   "title": "Anteprima · tutte le righe del file, con la voce abbinata",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1440,
+   "text": "Importa dalla banca: vedere tutte le righe del file, anche le già scritte"
+  }
+ ]
+}

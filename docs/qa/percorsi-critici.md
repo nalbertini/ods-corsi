@@ -195,6 +195,8 @@ quando arriva la prova.
 - Suggerimento da classificare: il caricamento in `Contabilita.tsx` (listino
   assente → solo importo escluso; nessun abbinato → ricerca per nome) sta nel
   `.tsx`; nessuna prova, solo collaudo a mano.
+- Importa dalla banca: filtri e righe di `ImportaBanca.tsx` (chip, X rossa,
+  «È questa») stanno nel `.tsx`: solo collaudo a mano.
 - Suggerimento da classificare: `ImportaBanca.tsx` (al massimo trenta
   richieste; «Conferma quelli che sembrano giusti» scrive) sta nel `.tsx`:
   solo collaudo a mano.
