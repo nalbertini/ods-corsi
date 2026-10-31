@@ -107,7 +107,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | IL SITO in STATISTICHE | segreteria | chiave esposta, numeri sbagliati | `prova:statistiche-sito` | no |
 | DAL SITO ALLE RICHIESTE in STATISTICHE | segreteria | numero sbagliato in silenzio | `prova:fila-sito` | no |
 | Avvisi per email alla segreteria | segreteria | richiesta o pagamento che non si vede arrivare | `prova:avvisi-segreteria`, `prova:cornice-mail`, `prova:ricevute-email`, `avvisi-segreteria.sql` | sì |
-| COME SI PAGA in REGOLE | segreteria, chi si iscrive, iscritto | metodo spento ancora offerto, o pagamento fatto che sparisce | `prova:metodi-pagamento`, `prova:impostazioni`, `prova:edge`, `metodi-pagamento.sql` | sì, da fare |
+| COME SI PAGA in REGOLE | segreteria, chi si iscrive, iscritto | metodo spento ancora offerto o usato aggirando l'app, o pagamento fatto che sparisce | `prova:metodi-pagamento`, `prova:impostazioni`, `prova:edge`, `metodi-pagamento.sql`, `metodo-spento-nel-database.sql` | sì, da fare |
 | Verbali delle riunioni (firma, rettifica, PDF) | segreteria, direttivo | verbale firmato cambiato, PDF perso, numero doppio, dati visti da chi non deve | `prova:verbali`, `verbali.sql` | sì, da fare |
 | Sollecito su WhatsApp | segreteria, famiglia | importo sbagliato chiesto, messaggio al minore | `prova:scheda-iscritto`, `prova:sollecito`, `prova:filtri-iscritti`, `solleciti.sql` | sì |
 
@@ -117,9 +117,6 @@ Regole che si possono rompere senza che una prova cada. Si toglie la riga
 quando arriva la prova.
 
 - Annuale a rate: il tetto di 3 rate (`troppe`) si dice ma non blocca l'emissione, e `emetti_ricevuta` non ha la regola; nessuna prova SQL.
-- **GRAVE** — Metodo di pagamento online spento: lo ferma solo l'Edge Function.
-  Un iscritto con la sessione può chiamare da solo le funzioni SQL
-  `satispay_*_prepara` e il database lo lascia passare. Nessuna prova.
 - **GRAVE** — Stesso movimento a mano per un pagamento Satispay e per una riga
   della banca: nessuna prova lo impedisce, né in app né nel database.
 - **GRAVE** — Ricevuta da un pagamento a mano: un `pagamentoId` perso per
