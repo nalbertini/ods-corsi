@@ -1,8 +1,9 @@
-import { giornoChiuso, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento } from './contabilita'
+import { cosaNonVaCambioVoce, giornoChiuso, pacchetti, vuolePersonaRiga, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento, type VoceContabile } from './contabilita'
 import { STRUTTURA_CF } from './codiceFiscale'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { nomeDallaCausale } from './movimentiPersona'
 import type { ComeAbbinato } from './abbinaMovimenti'
+import type { SuggerimentoMovimento } from './suggerimentoMovimento'
 
 /**
  * La «Lista movimenti» di BancoPosta (CSV scaricato dall'home banking), letta nel browser e pronta per
@@ -48,6 +49,8 @@ export interface AnteprimaBanca {
   daDecidere: { movimento: MovimentoBanca; candidati: RigaMovimento[]; preselezionato: string | null; come: Record<string, ComeAbbinato> }[]
   avvisi: { tipo: 'satispay' | 'contanti'; conteggio: number; totale: number }[]
   scartate: RigaBancaScartata[]
+  /** Tutte le righe del file, nell'ordine del file, ognuna col suo stato. */
+  righe: RigaAnteprima[]
   /** I movimenti letti che non sono nel futuro, e il loro periodo: i conti dell'anteprima partono da qui. */
   lette: number
   dal: string | null
@@ -150,6 +153,120 @@ const giorniTra = (a: string, b: string) => Math.abs(Date.parse(a) - Date.parse(
 
 const parolePiene = (s: string): string[] => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().split(/[^\p{L}0-9']+/u).filter(Boolean)
 
+/** Lo stato di una riga del file nell'anteprima: com'è finita, non solo se entra. */
+export type StatoRigaBanca = 'nuova' | 'da-controllare' | 'duplicata' | 'da-decidere' | 'scartata'
+
+/** Una riga del file, nell'ordine del file. `voce` è il movimento già presente di cui è la duplicata. */
+export interface RigaAnteprima {
+  riga: number
+  stato: StatoRigaBanca
+  /** Null solo per le scartate: del file di cui non si è letto niente resta il testo. */
+  movimento: MovimentoBanca | null
+  voce: RigaMovimento | null
+  /** L'abbinamento l'ha fatto questa anteprima e la segreteria può rifiutarlo; se la riga era già importata di prima, no. */
+  rifiutabile: boolean
+  candidati: RigaMovimento[]
+  preselezionato: string | null
+  come: Record<string, ComeAbbinato>
+  /** Solo delle scartate: il testo della riga e perché. */
+  testo: string
+  motivo: string
+}
+
+export type FiltroRigheBanca = 'tutte' | 'nuove' | 'duplicate' | 'da-decidere' | 'scartate'
+
+const STATI_DEL_FILTRO: Record<FiltroRigheBanca, StatoRigaBanca[]> = {
+  tutte: ['nuova', 'da-controllare', 'duplicata', 'da-decidere', 'scartata'],
+  nuove: ['nuova', 'da-controllare'],
+  duplicate: ['duplicata'],
+  'da-decidere': ['da-decidere'],
+  scartate: ['scartata'],
+}
+
+export type SegnoBanca = 'entrambe' | 'entrate' | 'uscite'
+
+/** Con un segno le scartate non si vedono: non sono movimenti, non hanno segno. */
+const delSegno = (r: RigaAnteprima, segno: SegnoBanca): boolean =>
+  segno === 'entrambe' || r.movimento?.tipo === (segno === 'entrate' ? 'entrata' : 'uscita')
+
+export const filtraRighe = (righe: RigaAnteprima[], filtro: FiltroRigheBanca, segno: SegnoBanca = 'entrambe'): RigaAnteprima[] =>
+  righe.filter((r) => STATI_DEL_FILTRO[filtro].includes(r.stato) && delSegno(r, segno))
+
+export const contaRighe = (righe: RigaAnteprima[], segno: SegnoBanca = 'entrambe') => ({
+  tutte: filtraRighe(righe, 'tutte', segno).length,
+  nuove: filtraRighe(righe, 'nuove', segno).length,
+  duplicate: filtraRighe(righe, 'duplicate', segno).length,
+  daDecidere: filtraRighe(righe, 'da-decidere', segno).length,
+  scartate: filtraRighe(righe, 'scartate', segno).length,
+})
+
+/** Una riga del file com'è appena importata: un movimento a mano del conto, in «Da classificare». Serve alle regole della voce prima di scrivere. */
+export const rigaComeMovimento = (mv: MovimentoBanca, contoId: string): RigaMovimento => ({
+  id: mv.chiave, origine: 'movimento', tipo: mv.tipo, data: mv.data, importo: mv.importo, descrizione: mv.descrizione,
+  voce: VOCE_DA_CLASSIFICARE, cassaId: contoId, annullato: false, origineImport: mv.chiave,
+})
+
+/** La voce (e per una quota o un corso la persona) scelta per una riga prima di importarla. */
+export interface SceltaVoceBanca {
+  voceId: string
+  personaId?: string
+  /** Solo per mostrarla: il database tiene l'id. */
+  nomePersona?: string
+}
+
+/** Cosa non va in una scelta, con le parole di `cambia_voce_movimenti`: la riga come sarà una volta importata. */
+export const cosaNonVaSceltaBanca = (mv: MovimentoBanca, scelta: SceltaVoceBanca, voci: VoceContabile[], contoId: string): string | null =>
+  cosaNonVaCambioVoce([mv.chiave], [rigaComeMovimento(mv, contoId)], voci, scelta.voceId, scelta.personaId)
+
+/** La riga vuole una persona con questa voce? (Quota o corsi su un'entrata.) */
+export const sceltaVuolePersona = (mv: MovimentoBanca, voce: VoceContabile | undefined, contoId: string): boolean =>
+  !!voce && vuolePersonaRiga(rigaComeMovimento(mv, contoId), voce.nome)
+
+/** La scelta che parte dal suggerimento: la voce, e la persona solo se è preselezionata. */
+export function sceltaProposta(sug: SuggerimentoMovimento | null): SceltaVoceBanca | null {
+  if (!sug?.voce) return null
+  return sug.preselezionato ? { voceId: sug.voce.voceId, personaId: sug.preselezionato } : { voceId: sug.voce.voceId }
+}
+
+/**
+ * Cosa si scrive per ogni riga che entra: la scelta della segreteria, se no la voce suggerita. La persona
+ * proposta non entra mai da sola: vale solo dopo il ✓, che la mette fra le scelte a mano.
+ */
+export function scelteDaScrivere(
+  entrano: Pick<MovimentoBanca, 'chiave'>[], aMano: Record<string, SceltaVoceBanca>, proposte: Record<string, SuggerimentoMovimento | null>,
+): Record<string, SceltaVoceBanca> {
+  return Object.fromEntries(entrano.flatMap(({ chiave }) => {
+    if (aMano[chiave]) return [[chiave, aMano[chiave]]]
+    const p = sceltaProposta(proposte[chiave] ?? null)
+    return p ? [[chiave, { voceId: p.voceId }]] : []
+  }))
+}
+
+/**
+ * Dopo l'importazione: a quali movimenti scritti (ritrovati dalla chiave, `origine_import`) cambiare la voce.
+ * Le righe con la persona vanno una per volta (il database lo vuole); le altre a lotti per voce. Una scelta che
+ * non va, o una riga che non si ritrova, resta in «Da classificare»: l'importazione non si ferma per questo.
+ */
+export function pianoDiClassificazione(
+  entrano: MovimentoBanca[], scelte: Record<string, SceltaVoceBanca>, scritti: Pick<MovimentoManuale, 'id' | 'origineImport' | 'annullatoIl'>[], voci: VoceContabile[], contoId: string,
+): { lotti: { ids: string[]; voceId: string; personaId?: string }[]; restano: number } {
+  // Un annullato con la stessa chiave non è il movimento appena scritto.
+  const perChiave = new Map(scritti.filter((x) => x.origineImport && !x.annullatoIl).map((x) => [x.origineImport, x.id]))
+  const conPersona: { ids: string[]; voceId: string; personaId?: string }[] = []
+  const perVoce = new Map<string, string[]>()
+  let restano = 0
+  for (const mv of entrano) {
+    const scelta = scelte[mv.chiave]
+    const id = perChiave.get(mv.chiave)
+    const voce = voci.find((v) => v.id === scelta?.voceId)
+    if (!scelta || !id || !voce || voce.nome === VOCE_DA_CLASSIFICARE || cosaNonVaSceltaBanca(mv, scelta, voci, contoId)) { restano++; continue }
+    if (sceltaVuolePersona(mv, voce, contoId)) conPersona.push({ ids: [id], voceId: voce.id, personaId: scelta.personaId })
+    else perVoce.set(voce.id, [...(perVoce.get(voce.id) ?? []), id])
+  }
+  const aLotti = [...perVoce].flatMap(([voceId, ids]) => pacchetti(ids).map((p) => ({ ids: p, voceId })))
+  return { lotti: [...aLotti, ...conPersona], restano }
+}
+
 /**
  * Cosa succederebbe importando, senza scrivere niente. `righe` sono i movimenti già in elenco, `scelte` le
  * decisioni della segreteria: l'id del pagamento giusto, o «nessuno» (è un movimento nuovo).
@@ -168,6 +285,8 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
   const giaImportati: MovimentoBanca[] = []
   const coperti: AnteprimaBanca['coperti'] = []
   const daDecidere: AnteprimaBanca['daDecidere'] = []
+  const righeDelFile: RigaAnteprima[] = []
+  const riga = (r: Pick<RigaAnteprima, 'riga' | 'stato'> & Partial<RigaAnteprima>): RigaAnteprima => ({ movimento: null, voce: null, rifiutabile: false, candidati: [], preselezionato: null, come: {}, testo: '', motivo: '', ...r })
 
   for (const mv of lettura.movimenti) {
     if (mv.data > oggi) {
@@ -176,6 +295,8 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
     }
     if (giaImportate.has(mv.chiave)) {
       giaImportati.push(mv)
+      // Il movimento che l'ha scritta o che la copre, anche annullato: dice a cosa si riferisce.
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'duplicata', movimento: mv, voce: righe.find((r) => r.origineImport === mv.chiave || r.bancaChiave === mv.chiave) ?? null }))
       continue
     }
     const candidati = liberi
@@ -184,6 +305,7 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
     const scelta = scelte[mv.chiave]
     if (scelta === 'nessuno' || candidati.length === 0) {
       entrano.push(mv)
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'nuova', movimento: mv }))
       continue
     }
     const migliori = candidati.filter((r) => giorniTra(r.data, mv.data) === giorniTra(candidati[0].data, mv.data))
@@ -193,8 +315,11 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
     if (scelto) {
       usati.add(scelto.id)
       coperti.push({ movimento: mv, con: scelto })
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'duplicata', movimento: mv, voce: scelto, rifiutabile: true }))
     } else {
-      daDecidere.push({ movimento: mv, ...inCimaChiSembra(mv, candidati, perGenitore[mv.chiave] ?? []) })
+      const d = { movimento: mv, ...inCimaChiSembra(mv, candidati, perGenitore[mv.chiave] ?? []) }
+      daDecidere.push(d)
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'da-decidere', ...d }))
     }
   }
 
@@ -204,18 +329,26 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
   }
   const entrate = somma('entrata')
   const uscite = somma('uscita')
+  // Gli stessi due controlli danno gli avvisi e lo stato «da controllare» delle righe.
+  const eSatispay = (x: MovimentoBanca) => x.tipo === 'entrata' && /satispay europe/i.test(x.descrizione)
+  const eContanti = (x: MovimentoBanca) => x.tipo === 'entrata' && /versament/i.test(x.descrizione) && /contant/i.test(x.descrizione)
   const avviso = (tipo: 'satispay' | 'contanti', vale: (x: MovimentoBanca) => boolean) => {
-    const v = entrano.filter((x) => x.tipo === 'entrata' && vale(x))
+    const v = entrano.filter(vale)
     return v.length ? [{ tipo, conteggio: v.length, totale: v.reduce((s, x) => s + x.importo, 0) }] : []
   }
+  const righeTutte = [
+    ...righeDelFile.map((r) => (r.stato === 'nuova' && r.movimento && (eSatispay(r.movimento) || eContanti(r.movimento)) ? { ...r, stato: 'da-controllare' as const } : r)),
+    ...scartate.map((x) => riga({ riga: x.riga, stato: 'scartata', testo: x.testo, motivo: x.motivo })),
+  ].sort((a, b) => a.riga - b.riga)
   return {
+    righe: righeTutte,
     entrano,
     giaImportati,
     coperti,
     daDecidere,
     avvisi: [
-      ...avviso('satispay', (x) => /satispay europe/i.test(x.descrizione)),
-      ...avviso('contanti', (x) => /versament/i.test(x.descrizione) && /contant/i.test(x.descrizione)),
+      ...avviso('satispay', eSatispay),
+      ...avviso('contanti', eContanti),
     ],
     scartate,
     lette: validi.length,

@@ -202,7 +202,7 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
       )}
       {vista === 'importa' && pronto && (
         <SchedaPiena etichetta="Importa dalla banca" torna="Le importazioni" onTorna={() => setVista(null)}>
-          <ImportaBanca d={d} casse={casse.dato ?? []} righe={righe} fai={fai} onRileggi={rileggi} onVedi={() => setVista('banca')} />
+          <ImportaBanca d={d} casse={casse.dato ?? []} voci={voci.dato ?? []} righe={righe} fai={fai} onRileggi={rileggi} onVedi={() => setVista('banca')} />
         </SchedaPiena>
       )}
       {avviso}

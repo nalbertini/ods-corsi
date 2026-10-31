@@ -16,6 +16,8 @@ recente. Accanto al titolo CONTABILITÀ, e solo in questa scheda, c'è **Nuovo m
 e il menu **Altre azioni**: **Collega i casi sicuri**, **Giroconto**, **Esporta CSV** e
 quella di Satispay (vedi sotto).
 
+Ogni riga dice da dove viene, con un tag accanto al nome: **Dal gestionale** (incassi degli iscritti e movimenti scritti qui), **Dalla banca**, **Dallo storico**, **Da Satispay**, **Dalla chat**. Voce, descrizione e nota di un movimento si correggono allo stesso modo, qualunque sia l'origine.
+
 L'elenco unisce due cose:
 
 - gli **incassi degli iscritti**: le ricevute, i pagamenti a mano e i
@@ -234,21 +236,37 @@ vedi [Le regole](../segreteria/regole.md#gli-avvisi)). L'anteprima non manda nie
 
 ### Importare dalla banca
 
-**Importa dalla banca**, in MOVIMENTI (o **Importa un file** in [IMPORTAZIONI](importazioni.md)), legge il file della banca e scrive nel **Conto
-Corrente** i movimenti che mancano. Dall'home banking di BancoPosta scarica la
+**Importa dalla banca**, in MOVIMENTI (o **Importa un file** in [IMPORTAZIONI](importazioni.md)), apre una pagina sua che legge il file della banca e scrive nel **Conto
+Corrente** i movimenti che mancano; **I movimenti**, in alto, torna indietro. Dall'home banking di BancoPosta scarica la
 **Lista movimenti** in formato CSV, poi scegli il file. Il file resta sul tuo computer:
 l'app ne legge solo i movimenti, e toglie dalla descrizione IBAN e codici fiscali.
 
 Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**. Dice
-quanti movimenti ci sono, quanti entrano e per quanto, e poi:
+quanti movimenti ci sono, quanti entrano e per quanto, e sotto elenca **tutte le righe
+del file**, nuove o già importate, una per riga: data, testo della banca, tipologia, persona,
+importo e uno **stato** in parole. Con i filtri sopra l'elenco (**Tutte**, **Nuove**, **Duplicate**,
+**Da decidere**, **Scartate**) vedi solo quelle che ti interessano, e accanto **Entrambe**,
+**Entrate** o **Uscite** tiene solo i soldi che entrano o che escono (le scartate, senza
+importo, restano fuori).
 
-- **Da decidere**: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo) e più di un possibile pagamento. Scegli quello giusto, oppure **Nessuno: scrivilo**. Finché non scegli, non entra. Se il testo ha nome e cognome di una persona (o del suo genitore), quella scheda è in evidenza con «Sembra questo»; se il nome è di una e il genitore di un'altra, sono in evidenza tutte e due e scegli tu: **Conferma quelli che sembrano giusti** li conferma tutti insieme, e una riga con una sola scheda così non cambia finché non confermi.
-- **Avvisi**: i **versamenti da Satispay** entrano, ma i soldi sono già negli incassi Satispay: dopo, in MOVIMENTI, controllali uno per uno: se sono già negli incassi Satispay, annullali, o spostali con **Cambia voce** su un giroconto da Satispay, per non contarli due volte. Controlla anche i versamenti di contanti.
-- **Scartati**: righe con la data o l'importo illeggibili, o con la data nel futuro. Correggili nel file e riprova.
-- **Già coperti**: movimenti già scritti a mano, o già importati. Non si scrivono di nuovo; se l'abbinamento è sbagliato, **Non è questo**. Dopo l'importazione si ricontrollano in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
+- **Nuova**: entra come movimento nuovo.
+- **Da controllare**: entra, ma ricontrollala dopo (per esempio un versamento).
+- **Duplicata**: c'è già. Al posto di tipologia e persona, **GIÀ SCRITTA COME** dice la voce già presente a cui si riferisce (descrizione, data, cassa, tipo e numero). Se l'abbinamento l'ha fatto l'anteprima e non è giusto, **È nuova** fa entrare la riga come movimento nuovo. Sulle righe già importate in una volta precedente il tasto non c'è, per non scrivere due volte lo stesso pagamento.
+- **Da decidere**: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo) e più di un possibile pagamento. Sotto **POTREBBE ESSERE** scegli quello giusto con la **spunta verde** (**È questa**), oppure **È nuova**. Finché non scegli, non entra. Se il testo ha nome e cognome di una persona (o del suo genitore), quella scheda è in evidenza con «Sembra questo»; se il nome è di una e il genitore di un'altra, sono in evidenza tutte e due e scegli tu: **Conferma quelli che sembrano giusti** li conferma tutti insieme, e una riga con una sola scheda così non cambia finché non confermi.
+- **Scartata**: la data o l'importo sono illeggibili, o la data è nel futuro. Il motivo è scritto nella riga. Correggila nel file e riprova.
 
-I movimenti entrano nella voce **Da classificare**, col segno **DALLA BANCA**: la voce
-giusta la scegli dopo, con **Cambia voce**. Rileggere lo stesso file non duplica niente,
+Sopra l'elenco, gli **avvisi**: i **versamenti da Satispay** entrano, ma i soldi sono già negli incassi Satispay: dopo, in MOVIMENTI, controllali uno per uno: se sono già negli incassi Satispay, annullali, o spostali con **Cambia voce** su un giroconto da Satispay, per non contarli due volte. Controlla anche i versamenti di contanti. Le duplicate si ricontrollano dopo l'importazione in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
+
+Sulle righe che entrano scegli la **tipologia**: parte da quella che l'app propone (come per
+i movimenti da classificare) o da **Da classificare**. Per una quota o un corso serve anche la
+**persona**: sulle entrate l'app propone quella col nome che c'è nel testo, e conta solo
+quando la confermi con la **spunta verde**; **Cambia**, **Cerca** o **Scegli** (se più schede
+hanno quel nome) la cercano a mano. In fondo l'app dice quante righe avranno la voce scelta e
+quante restano in **Da classificare**: una quota senza persona, per esempio, entra lo stesso e
+resta lì. Se esci dalla pagina con delle scelte fatte, l'app chiede prima.
+
+I movimenti entrano col segno **DALLA BANCA**, nella voce scelta o in **Da classificare**:
+quelle rimaste le sistemi dopo, con **Cambia voce**. Rileggere lo stesso file non duplica niente,
 nemmeno un movimento annullato. Se qualcosa non torna, **Annulla tutta l'importazione**
 toglie in un colpo i movimenti dell'ultima importazione; uno annullato per sbaglio si
 recupera da **Annullati**. Solo l'amministrazione importa; la segreteria può poi

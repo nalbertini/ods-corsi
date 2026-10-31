@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Importa dalla banca · pagina intera</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: la pagina intera al posto del popup (cornice SchedaPiena, look sito). Filtro per segno accanto ai chip di stato; due colonne nuove,
+     TIPOLOGIA e PERSONA. Ogni cella ha la stessa forma su ogni riga: una riga di testo, sotto al più una fila di tasti. Cifre e nomi d'esempio. -->
+<div style="display:flex;width:1440px;min-height:2000px;background:#eef5fa">
+<div style="width:240px;flex-shrink:0"><dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Nicola Albertini" ruolo="Amministrazione" area="amministrazione" autorizzazioni="segreteria e amministrazione" altezza="2000px" hint-size="240px,2000px"></dc-import></div>
+<main style="display:flex;flex-direction:column;gap:18px;flex:1;min-width:0;padding:28px 36px">
+<div><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="← I movimenti" hint-size="170px,44px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-size:34px;font-weight:800;letter-spacing:.04em;line-height:1">CONTABILITÀ</h1><span style="font-size:14px;color:#46606f">Importa dalla banca · solo l’amministrazione</span></div>
+<section aria-label="Il file" style="display:flex;flex-direction:column;gap:14px;padding:22px 24px;background:#ffffff;border:2px solid #cfe6f4;"><span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">NIENTE SI SCRIVE FINCHÉ NON DICI SÌ</span><span style="font-size:22px;font-weight:700">IL FILE DELLA BANCA</span><span style="font-size:15px;line-height:1.5">Il file ha <b>121 movimenti</b>, dal 30/09/2026 al 30/10/2026. <b>75 sono nuovi</b>, <b>46 sono duplicati</b>. Qui sotto li vedi tutti, nell’ordine del file.</span>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+<dc-import name="Numero" tema="sito" titolo="ENTRATE CHE ENTRANO" valore="+ 13.074,68 €" sotto="61 movimenti" hint-size="100%,120px"></dc-import>
+<dc-import name="Numero" tema="sito" titolo="USCITE CHE ENTRANO" valore="− 2.762,17 €" sotto="14 movimenti" hint-size="100%,120px"></dc-import>
+<dc-import name="Numero" tema="sito" titolo="DIFFERENZA" valore="+ 10.312,51 €" sotto="confrontala col saldo della banca" hint-size="100%,120px"></dc-import></div></section>
+<section aria-label="Le righe del file" style="display:flex;flex-direction:column;gap:14px;padding:22px 24px;background:#ffffff;border:2px solid #cfe6f4;"><span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">LE RIGHE DEL FILE · 121</span>
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Tutte · 121" hint-size="150px,44px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Nuove · 75" hint-size="150px,44px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Duplicate · 46" hint-size="150px,44px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Da decidere · 1" hint-size="150px,44px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Scartate · 1" hint-size="150px,44px"></dc-import></div>
+<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">SEGNO</span><div role="group" aria-label="Segno dei movimenti" style="display:inline-flex;gap:0;border:2px solid #14709f;border-radius:6px;overflow:hidden"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Entrambe" hint-size="120px,44px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Entrate" hint-size="110px,44px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Uscite" hint-size="110px,44px"></dc-import></div></div></div>
+<span style="font-size:14px;color:#46606f;line-height:1.5">La tipologia parte da «Da classificare». La persona si propone solo sulle entrate e la confermi tu.</span>
+<div style="display:flex;flex-direction:column;border-top:1px solid #cfe6f4">
+<div style="display:grid;grid-template-columns:120px 96px minmax(0,1fr) 230px 250px 112px;gap:16px;padding:10px 12px;border-bottom:2px solid #cfe6f4;font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f"><span>COSA SUCCEDE</span><span>DATA</span><span>NEL FILE</span><span>TIPOLOGIA</span><span>PERSONA</span><span style="text-align:right">IMPORTO</span></div>
+
+<div style="display:grid;grid-template-columns:120px 96px minmax(0,1fr) 230px 250px 112px;gap:16px;align-items:center;min-height:76px;padding:12px;border-bottom:1px solid #cfe6f4">
+<dc-import name="Badge" tema="sito" tipo="tag" tono="verde" label="NUOVA" larghezza="100%" hint-size="120px,24px"></dc-import>
+<span style="font-size:14px;font-variant-numeric:tabular-nums">29/10/2026</span>
+<span style="font-size:14px;line-height:1.4">Da BIANCHI ANNA TRN 0329…IT per quota trimestre judo BONIFICO SEPA</span>
+<select aria-label="Tipologia" style="width:100%;min-height:44px;padding:0 10px;background:#ffffff;border:2px solid #14709f;border-radius:6px;font:inherit;font-size:14px;font-weight:600;color:#0d2a3d"><option>Quota trimestrale</option></select>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><b style="font-size:14px">Anna Bianchi</b><div style="display:flex;gap:6px"><button type="button" aria-label="È questa: collega il movimento a Anna Bianchi" title="È questa" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;background:#ffffff;border:2px solid #0b7a33;border-radius:6px;cursor:pointer"><dc-import name="Icona" nome="conferma" misura="20" tratto="2.5" colore="#0b7a33" hint-size="20px,20px"></dc-import></button><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Cambia" hint-size="96px,44px"></dc-import></div></div>
+<b style="text-align:right;font-variant-numeric:tabular-nums;font-size:15px;color:#0b7a33">+ 120,00 €</b>
+</div>
+
+<div style="display:grid;grid-template-columns:120px 96px minmax(0,1fr) 230px 250px 112px;gap:16px;align-items:center;min-height:76px;padding:12px;border-bottom:1px solid #cfe6f4">
+<dc-import name="Badge" tema="sito" tipo="tag" tono="verde" label="NUOVA" larghezza="100%" hint-size="120px,24px"></dc-import>
+<span style="font-size:14px;font-variant-numeric:tabular-nums">28/10/2026</span>
+<span style="font-size:14px;line-height:1.4">Da VERDI MARTA TRN 0328…IT per quota annuale BONIFICO SEPA</span>
+<select aria-label="Tipologia" style="width:100%;min-height:44px;padding:0 10px;background:#ffffff;border:2px solid #14709f;border-radius:6px;font:inherit;font-size:14px;font-weight:600;color:#0d2a3d"><option>Quota annuale</option></select>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:14px;font-weight:600;color:#8f6a00">Manca la persona</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Cerca" hint-size="96px,44px"></dc-import></div>
+<b style="text-align:right;font-variant-numeric:tabular-nums;font-size:15px;color:#0b7a33">+ 350,00 €</b>
+</div>
+
+<div style="display:grid;grid-template-columns:120px 96px minmax(0,1fr) 230px 250px 112px;gap:16px;align-items:center;min-height:76px;padding:12px;border-bottom:1px solid #cfe6f4">
+<dc-import name="Badge" tema="sito" tipo="tag" tono="verde" label="NUOVA" larghezza="100%" hint-size="120px,24px"></dc-import>
+<span style="font-size:14px;font-variant-numeric:tabular-nums">27/10/2026</span>
+<span style="font-size:14px;line-height:1.4">Da GALLI M. TRN 0327…IT per quota ottobre BONIFICO SEPA</span>
+<select aria-label="Tipologia" style="width:100%;min-height:44px;padding:0 10px;background:#ffffff;border:2px solid #14709f;border-radius:6px;font:inherit;font-size:14px;font-weight:600;color:#0d2a3d"><option>Quota trimestrale</option></select>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:14px;font-weight:600;color:#8f6a00">3 schede possibili</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Scegli" hint-size="96px,44px"></dc-import></div>
+<b style="text-align:right;font-variant-numeric:tabular-nums;font-size:15px;color:#0b7a33">+ 120,00 €</b>
+</div>
+
+<div style="display:grid;grid-template-columns:120px 96px minmax(0,1fr) 230px 250px 112px;gap:16px;align-items:center;min-height:76px;padding:12px;border-bottom:1px solid #cfe6f4">
+<dc-import name="Badge" tema="sito" tipo="tag" tono="verde" label="NUOVA" larghezza="100%" hint-size="120px,24px"></dc-import>
+<span style="font-size:14px;font-variant-numeric:tabular-nums">26/10/2026</span>
+<span style="font-size:14px;line-height:1.4">Da NERI PAOLO TRN 0326…IT BONIFICO SEPA</span>
+<select aria-label="Tipologia" style="width:100%;min-height:44px;padding:0 10px;background:#ffffff;border:2px solid #14709f;border-radius:6px;font:inherit;font-size:14px;color:#46606f"><option>Da classificare</option></select>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><b style="font-size:14px">Paolo Neri</b><div style="display:flex;gap:6px"><button type="button" aria-label="È questa: collega il movimento a Paolo Neri" title="È questa" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;background:#ffffff;border:2px solid #0b7a33;border-radius:6px;cursor:pointer"><dc-import name="Icona" nome="conferma" misura="20" tratto="2.5" colore="#0b7a33" hint-size="20px,20px"></dc-import></button><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Cambia" hint-size="96px,44px"></dc-import></div></div>
+<b style="text-align:right;font-variant-numeric:tabular-nums;font-size:15px;color:#0b7a33">+ 50,00 €</b>
+</div>
+
+<div style="display:grid;grid-template-columns:120px 96px minmax(0,1fr) 230px 250px 112px;gap:16px;align-items:center;min-height:76px;padding:12px;border-bottom:1px solid #cfe6f4">
+<dc-import name="Badge" tema="sito" tipo="tag" tono="verde" label="NUOVA" larghezza="100%" hint-size="120px,24px"></dc-import>
+<span style="font-size:14px;font-variant-numeric:tabular-nums">21/10/2026</span>
+<span style="font-size:14px;line-height:1.4">Pagamento POS Enel Energia bolletta 10/2026</span>
+<select aria-label="Tipologia" style="width:100%;min-height:44px;padding:0 10px;background:#ffffff;border:2px solid #14709f;border-radius:6px;font:inherit;font-size:14px;font-weight:600;color:#0d2a3d"><option>Utenze</option></select>
+<span style="font-size:14px;color:#46606f">—</span>
+<b style="text-align:right;font-variant-numeric:tabular-nums;font-size:15px">− 48,60 €</b>
+</div>
+
+<!-- Duplicate e da decidere: tipologia e persona non si scelgono, al loro posto una cella sola dice a cosa si riferisce la riga. -->
+<div style="display:grid;grid-template-columns:120px 96px minmax(0,1fr) 230px 250px 112px;gap:16px;align-items:center;min-height:76px;padding:12px;border-bottom:1px solid #cfe6f4;background:#f7fafc">
+<dc-import name="Badge" tema="sito" tipo="tag" tono="neutro" label="DUPLICATA" larghezza="100%" hint-size="120px,24px"></dc-import>
+<span style="font-size:14px;font-variant-numeric:tabular-nums;color:#46606f">30/10/2026</span>
+<span style="font-size:14px;line-height:1.4;color:#46606f">Distinta: 179334207212710MADEF BONIFICO SEPA</span>
+<div style="grid-column:span 2;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">GIÀ SCRITTA COME</span><span style="font-size:14px"><b>Spese riscaldamento sede</b> · 30/10/2026 · movimento a mano</span></div>
+<b style="text-align:right;font-variant-numeric:tabular-nums;font-size:15px;color:#46606f">− 1.317,39 €</b>
+</div>
+
+<div style="display:grid;grid-template-columns:120px 96px minmax(0,1fr) 230px 250px 112px;gap:16px;align-items:center;min-height:76px;padding:12px;border-bottom:1px solid #cfe6f4">
+<dc-import name="Badge" tema="sito" tipo="tag" tono="giallo" label="DA DECIDERE" larghezza="100%" hint-size="120px,24px"></dc-import>
+<span style="font-size:14px;font-variant-numeric:tabular-nums">27/10/2026</span>
+<span style="font-size:14px;line-height:1.4">Da ROSSI LUCA TRN 0329…IT per quota BONIFICO SEPA</span>
+<div style="grid-column:span 2;display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">POTREBBE ESSERE</span><span style="font-size:14px"><b>Quota trimestre · Luca Rossi</b> · 26/10/2026</span></div><div style="display:flex;gap:6px;flex:none"><button type="button" aria-label="È questa: è la stessa voce" title="È questa" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;background:#ffffff;border:2px solid #0b7a33;border-radius:6px;cursor:pointer"><dc-import name="Icona" nome="conferma" misura="20" tratto="2.5" colore="#0b7a33" hint-size="20px,20px"></dc-import></button><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="È nuova" hint-size="104px,44px"></dc-import></div></div>
+<b style="text-align:right;font-variant-numeric:tabular-nums;font-size:15px;color:#0b7a33">+ 50,00 €</b>
+</div>
+</div>
+<span style="font-size:14px;color:#46606f">Altre 114 righe allo stesso modo: scorri o usa i filtri.</span></section>
+<section aria-label="Conferma" style="display:flex;flex-direction:column;gap:14px;padding:22px 24px;background:#ffffff;border:2px solid #cfe6f4;"><span style="font-size:15px;line-height:1.5"><b>52 righe</b> hanno voce e persona scelte; <b>23 restano in «Da classificare»</b>: le sistemi dopo, con Cambia voce.</span>
+<span style="font-size:14px;color:#46606f;line-height:1.5">Se rileggi lo stesso file, i movimenti già importati non si scrivono di nuovo.</span>
+<div style="display:flex;flex-wrap:wrap;gap:10px"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Sì, importa i 75 movimenti" hint-size="250px,44px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="110px,44px"></dc-import></div></section>
+<div style="padding:12px 16px;background:#fcf6e6;border-left:4px solid #8f6a00;font-size:13px;line-height:1.5"><b>Ancora aperte</b><br>(a) Quota o corsi senza persona: il tasto «Sì, importa» resta spento finché manca, oppure la riga resta in «Da classificare» e entra lo stesso.<br>(b) Filtro «Uscite»: con le scartate (il segno non si legge) o senza.</div>
+</main></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

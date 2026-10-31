@@ -609,6 +609,14 @@ export const tipoMovimento = (r: Pick<RigaMovimento, 'origine' | 'tipo'>): { nom
   : r.origine !== 'movimento' ? { nome: 'Incasso iscritto', icona: 'tessera' }
   : { nome: r.tipo === 'entrata' ? 'Entrata' : 'Uscita', icona: 'banconota' }
 
+/** Da dove viene una riga, per il tag nell'elenco e nel movimento aperto: tutti i movimenti si correggono allo stesso modo, qualunque sia l'origine. */
+export const originiMovimento = (r: Pick<RigaMovimento, 'origine' | 'origineImport' | 'satispayId' | 'dallaChat'>): string =>
+  r.origineImport?.startsWith('banca:') ? 'Dalla banca'
+  : r.origineImport?.startsWith('prima-nota:') ? 'Dallo storico'
+  : r.satispayId ? 'Da Satispay'
+  : r.dallaChat ? 'Dalla chat'
+  : 'Dal gestionale'
+
 /** La linea sotto il nome di una riga: la voce, e la persona solo se non è già il nome (negli incassi lo è). */
 export const lineaVoce = (r: Pick<RigaMovimento, 'descrizione' | 'voce'>, persona?: string): string => {
   const uguale = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()

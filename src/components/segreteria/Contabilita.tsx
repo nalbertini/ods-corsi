@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import {
   cambiabile,
+  originiMovimento,
   chiusuraNonPiuInRegola,
   chiusuraVisibile,
   cosaNonVaAnnulloChiusura,
@@ -390,6 +391,15 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
     if (await lasciare()) setAperto(null)
   }
 
+  // L'importazione è una pagina intera: il file ha decine di righe, ognuna con la sua voce e la sua persona.
+  if (scrivo === 'banca') {
+    return (
+      <SchedaPiena etichetta="Importa dalla banca" torna="I movimenti" onTorna={() => void tornaDalModulo()}>
+        <ImportaBanca d={d} casse={casse} voci={voci} righe={righe} fai={fai} onRileggi={onCambiato} onVedi={() => { chiudi(); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', voce: 'Da classificare' }) }} />
+      </SchedaPiena>
+    )
+  }
+
   if (scrivo) {
     return (
       <InVista>
@@ -399,9 +409,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
             ← I movimenti
           </button>
         </div>
-        {scrivo === 'banca' ? (
-          <ImportaBanca d={d} casse={casse} righe={righe} fai={fai} onRileggi={onCambiato} onVedi={() => { chiudi(); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', voce: 'Da classificare' }) }} />
-        ) : scrivo === 'movimento' ? (
+        {scrivo === 'movimento' ? (
           <NuovoMovimento d={d} voci={voci} casse={casse} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
         ) : (
           <NuovoGiroconto d={d} casse={casse} voci={voci} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
@@ -571,7 +579,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{dataRicevuta(r.data)}</span>
                 <span role="cell" style={{ fontSize: 15, fontWeight: 600, textDecoration: r.annullato ? 'line-through' : undefined }}>
                   <button type="button" className="sg-riga-apri">{r.descrizione}</button>
-                  {r.origineImport?.startsWith('banca:') && <span className="num sg-tag" style={{ marginLeft: 8 }}>Dalla banca</span>}
+                  <span className="num sg-tag" style={{ marginLeft: 8 }}>{originiMovimento(r)}</span>
                   {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
                   {/* Lo stato del collegamento alla persona sta accanto alla descrizione: la colonna PERSONA non c'è più. */}
                   {r.personaId && collegatoAMano(r) && <span className="num sg-tag" data-tipo="fatto" style={{ marginLeft: 8 }}>Collegato</span>}
@@ -1022,7 +1030,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
         <div className="stack" style={{ gap: 6, minWidth: 0 }}>
           <div className="row" style={{ gap: 10, alignItems: 'center' }}>
             <span className="sg-etichetta">{manuale ? 'IL MOVIMENTO' : 'INCASSO DI UN ISCRITTO'}</span>
-            {riga.dallaChat && <span className="num sg-tag">Dalla chat</span>}
+            <span className="num sg-tag">{originiMovimento(riga)}</span>
           </div>
           <span className="sg-riquadro-titolo ob">{riga.descrizione}</span>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap', paddingTop: 6 }}>
