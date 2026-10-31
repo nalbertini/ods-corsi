@@ -97,9 +97,10 @@ la nasconde da **IMPOSTAZIONI → QUESTO COMPUTER** ([guida](regole.md)): la sce
 | **Esercizi** (in IMPOSTAZIONI) | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
 | **Listino** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
 | **Vestiario** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |
-| **IMPOSTAZIONI** | In sette schede: la stagione; le sale e i tablet (musica, voce); le ricevute; gli avvisi; dati e privacy (presenze, backup, informativa); **IMPORTA**: corsi e iscritti dai fogli o dalle risposte del modulo Google; questo computer (aspetto, striscia) | [Apri](regole.md) · [Importa](importa.md) |
+| **IMPOSTAZIONI** | In dieci schede: la stagione; le sale e i tablet (musica, voce); gli esercizi; le ricevute; come si paga; gli avvisi; i verbali (chi può fare il segretario); dati e privacy (presenze, backup, informativa); **IMPORTA**: corsi e iscritti dai fogli o dalle risposte del modulo Google; questo computer (aspetto, striscia) | [Apri](regole.md) · [Importa](importa.md) |
 | **Segnalazioni** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
 | **Sito** | Le pagine del sito della palestra, il menu in alto e il footer: si scrive la bozza e si pubblica | [Apri](sito.md) |
+| **Verbali** | Le riunioni dei soci e del direttivo: bozza, firma con la scansione, rettifiche, ricerca per anno e argomento | [Apri](verbali.md) |
 
 In fondo al menu, nel riquadro col tuo nome, ci sono due voci: **AIUTO**, la
 guida della voce aperta, in un'altra scheda, e **IMPOSTAZIONI**. In prova, nel

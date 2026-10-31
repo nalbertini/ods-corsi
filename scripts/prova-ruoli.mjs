@@ -133,7 +133,7 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
     ['Iscritti e soldi', ['iscritti']],
     ['Corsi e orari', ['settimana', 'corsi', 'gare', 'listino']],
     ['Istruttori', ['istruttori', 'compensi', 'personale']],
-    ['Il resto', ['statistiche', 'vestiario', 'segnalazioni', 'sito']],
+    ['Il resto', ['statistiche', 'vestiario', 'segnalazioni', 'sito', 'verbali']],
   ]
   ok('solo segreteria: i cinque gruppi, senza CONTABILITÀ', gruppi('segreteria'), DELLA_SEGRETERIA_NEL_MENU)
   ok('segreteria e amministrazione: gli stessi, e «I conti» con CONTABILITÀ e IMPORTAZIONI dopo «Iscritti e soldi»', gruppi('segreteria + amministrazione'), DELLA_SEGRETERIA_NEL_MENU.flatMap(([t, v]) => (t === 'Iscritti e soldi' ? [[t, v], ['I conti', ['contabilita', 'importazioni']]] : [[t, v]])))

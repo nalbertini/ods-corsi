@@ -1283,3 +1283,18 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* L'icona sta davanti al nome e non si schiaccia quando la scheda va a capo. */
 .sg-schede-impostazioni > button { gap: 8px; }
 .sg-schede-impostazioni svg { flex: none; }
+
+/* La riga del verbale: numero, riunione, data, stato, PDF. La bozza ha la barra gialla a sinistra. */
+.sg-riga-verbale > * { min-width: 0; overflow-wrap: anywhere; }
+.sg-riga-verbale[data-bozza='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
+@media (min-width: 1001px) {
+  .sg-riga-verbale { grid-template-columns: 96px minmax(0, 1fr) 150px 210px 90px; }
+}
+/* Per attributo, come le gare: .sg-tag si usa anche fuori dalla segreteria (prova:css-ingresso). */
+.sg-riga-verbale [data-tipo] { white-space: normal; max-width: 100%; }
+.sg-riga-verbale .sg-riga-apri { min-height: 44px; }
+@media (max-width: 1000px) {
+  .sg-riga-verbale { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); row-gap: 6px; }
+  .sg-riga-verbale > :nth-child(2) { grid-column: 1 / -1; }
+  .sg-lista-testa.sg-riga-verbale { display: none; }
+}

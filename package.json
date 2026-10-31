@@ -179,6 +179,7 @@
     "prova:nucleo": "node scripts/prova-nucleo.mjs",
     "prova:compleanni": "node scripts/prova-compleanni.mjs",
     "prova:gare": "node scripts/prova-gare.mjs",
+    "prova:verbali": "node scripts/prova-verbali.mjs",
     "prova:chiusure": "node scripts/prova-chiusure.mjs",
     "prova:quadratura": "node scripts/prova-quadratura.mjs",
     "prova:edge": "node scripts/prova-edge.mjs",

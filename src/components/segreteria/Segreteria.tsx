@@ -26,6 +26,7 @@ const Presenze = lazy(() => import('./Presenze').then((m) => ({ default: m.Prese
 const Compensi = lazy(() => import('./Compensi').then((m) => ({ default: m.Compensi })))
 const Vestiario = lazy(() => import('./Vestiario').then((m) => ({ default: m.Vestiario })))
 const Gare = lazy(() => import('./Gare').then((m) => ({ default: m.Gare })))
+const Verbali = lazy(() => import('./Verbali').then((m) => ({ default: m.Verbali })))
 const PresenzeSegnalate = lazy(() => import('./PresenzeSegnalate').then((m) => ({ default: m.PresenzeSegnalate })))
 const Sito = lazy(() => import('./Sito').then((m) => ({ default: m.Sito })))
 import { tocca } from '../../lib/segnalazioni'
@@ -703,6 +704,7 @@ export function Segreteria({
         {d && voce === 'listino' && <Listino d={d} />}
         {d && voce === 'vestiario' && <Vestiario onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'gare' && <Gare d={d} apri={garaDaAprire} onCambiato={() => setGiroConte((g) => g + 1)} />}
+        {d && voce === 'verbali' && <Verbali d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'regole' && <Regole d={d} onVai={vai} />}
         {voce === 'palestra' && <Palestra daRispondere={daRispondere} onVai={(v) => void vai(v)} />}
         {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}

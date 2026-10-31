@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: NUOVO VERBALE. Per salvare una bozza bastano TIPO e DATA, o anche solo una riga: il resto si scrive quando si ha il foglio sotto mano. Il NUMERO lo propone l'app (il prossimo dell'anno) e si può cambiare. Una bozza si può eliminare, ma dopo una conferma. -->
+<div style="display:flex;gap:32px;align-items:flex-start;padding:28px;width:1480px;min-height:1000px">
+<div style="display:flex;flex-direction:column;gap:14px;width:720px;padding:28px;background:#ffffff;border:1px solid #cfe6f4;border-radius:6px">
+  <span style="font-size:12px;font-weight:700;letter-spacing:0.2em;color:#8f6a00">PROPOSTA · NUOVO VERBALE: BASTANO TRE RIGHE</span>
+  <h2 style="margin:0;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;letter-spacing:0.04em;line-height:1;font-size:28px">NUOVO VERBALE</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="TIPO DI RIUNIONE" valore="Soci e direttivo" tipo="select" hint-size="100%,72px"></dc-import><dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="DATA" valore="31/10/2026"  hint-size="100%,72px"></dc-import></div>
+  <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="NUMERO · PROPOSTO" valore="n.4-2026" tipo="sola-lettura" hint-size="100%,72px"></dc-import>
+  <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="DI COSA SI PARLA · FACOLTATIVO" valore="Bilancio preventivo 2027, nuovo corso di judo adulti" tipo="area" hint-size="100%,110px"></dc-import>
+  <span style="font-size:14px;line-height:1.4;color:#46606f">Il resto (ora, luogo, presenti, delibere, cariche) lo aggiungi dopo, dalla bozza. Finché non c'è il PDF firmato, il verbale resta una BOZZA e si può cambiare e togliere.</span>
+  <details open style="border:1px solid #cfe6f4;border-radius:6px;padding:10px 14px;background:#eef5fa"><summary style="min-height:44px;display:flex;align-items:center;font-size:15px;font-weight:600;color:#14709f;cursor:pointer">Che differenza c'è fra i tipi?</summary>
+  <div style="display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.4;padding-bottom:6px"><span><b>Soci</b>: l'assemblea dei soci.</span><span><b>Direttivo</b>: riunisce solo il consiglio direttivo.</span><span><b>Soci e direttivo</b>: una riunione unica con tutti e due.</span><span><b>Straordinaria</b>: cambia lo statuto o scioglie.</span><span><b>Elettiva</b>: si eleggono le cariche.</span></div></details>
+  <div style="display:flex;gap:8px;justify-content:flex-end"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Lascia stare" hint-size="150px,56px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="principale" label="Salva la bozza" hint-size="190px,56px"></dc-import></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;width:640px">
+  <span style="font-size:12px;font-weight:700;letter-spacing:0.2em;color:#8f6a00">PROPOSTA · ELIMINARE UNA BOZZA CHIEDE CONFERMA</span>
+  <dc-import name="Dialogo" tema="sito" tipo="conferma" pericolo="true" domanda="Eliminare la bozza n.4-2026?" resto="Si perdono il testo scritto e i file caricati. Un verbale firmato invece non si elimina mai." no="LASCIA STARE" si="ELIMINA LA BOZZA" hint-size="620px,260px"></dc-import>
+  <span style="font-size:12px;font-weight:700;letter-spacing:0.2em;color:#8f6a00">PROPOSTA · PER I VERBALI VECCHI BASTANO QUATTRO COSE</span>
+  <div style="display:flex;flex-direction:column;gap:10px;padding:16px;background:#ffffff;border:1px solid #cfe6f4;border-radius:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.2em;color:#46606f">VERBALI STORICI, GIÀ FIRMATI SU CARTA</span><span style="font-size:14px;line-height:1.4;color:#46606f">Per segnare come firmato un verbale vecchio servono solo <b>numero, data, tipo e il PDF</b>. Ora, luogo, presenti e delibere restano vuoti e si aggiungono se si vuole. L'app lo dice con un avviso rosso, ma non ti ferma.</span></div>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1480,"height":1000}}'>class Component extends DCLogic { renderVals() { return {}; } }</script>
+</body>
+</html>

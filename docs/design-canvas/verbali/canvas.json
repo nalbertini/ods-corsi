@@ -1,0 +1,48 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Verbali · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Elenco.dc.html",
+   "title": "VERBALI: l'elenco, con la ricerca e le bozze in cima",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Verbale.dc.html",
+   "title": "Un verbale firmato: delibere, cariche, allegati, rettifica",
+   "x": 1560,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Bozza.dc.html",
+   "title": "Nuovo verbale: tre righe bastano; eliminare chiede conferma",
+   "x": 0,
+   "y": 1600,
+   "page": "page-1"
+  },
+  {
+   "file": "Firma.dc.html",
+   "title": "Firmare, sostituire il PDF firmato e le parole spiegate",
+   "x": 0,
+   "y": 2900,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "I verbali delle riunioni: si scrivono, si firmano con il PDF e si ritrovano per anno e argomento"
+  }
+ ]
+}
