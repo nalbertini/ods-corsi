@@ -49,17 +49,20 @@ export function Oggi({ d, conti, onVai, onRiprova }: { d: DatiSegreteria; conti:
   const sale = useCarica(() => d.sale(), [d])
   const lezioni = useCarica(() => d.settimana(new Date(`${giorno}T00:00`), new Date(`${giorno}T23:59`)), [d, giorno])
   const persone = useCarica(() => d.persone(), [d])
+  // Per i corsi da pagare: quali si pagano, e con che nome. Senza, la coda guarda solo la quota.
+  const corsiListino = useCarica(() => Promise.all([d.corsi(), d.listino()]), [d])
 
   const l = lezioni.dato ?? []
   const { dalleOre: dalle, alleOre: alle } = fasciaDelleLezioni(l)
   const tab = tabellone(l, sale.dato ?? [], adesso, { dalleOre: dalle, alleOre: alle, oraPx: ORA_PX })
   const ore = Array.from({ length: alle - dalle }, (_, i) => dalle + i)
-  const coda = codaBanco({ appelli: conti.appelli ?? [], persone: persone.dato ?? [], richieste: conti.richieste ?? 0, istruttori: conti.istruttori ?? 0, segnalate: conti.segnalate ?? undefined }, giorno)
+  const coda = codaBanco({ appelli: conti.appelli ?? [], persone: persone.dato ?? [], richieste: conti.richieste ?? 0, istruttori: conti.istruttori ?? 0, segnalate: conti.segnalate ?? undefined, corsi: corsiListino.dato?.[0], listino: corsiListino.dato?.[1].listino }, giorno)
   const caselle = caselleDaMostrare(conti.striscia)
   const riepilogo = lezioni.dato ? riepilogoGiornata(l, adesso) : null
 
   const apri = (x: LezioneSeg) => onVai('settimana', { lezione: { id: x.id, inizio: x.inizio } })
-  const guaio = lezioni.guaio ?? sale.guaio ?? persone.guaio
+  // Anche corsi e listino: senza, la coda direbbe «tutto a posto» senza guardare i corsi.
+  const guaio = lezioni.guaio ?? sale.guaio ?? persone.guaio ?? corsiListino.guaio
 
   return (
     <>

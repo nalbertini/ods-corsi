@@ -130,8 +130,13 @@ export function statoCorsi(p: Pick<PersonaSeg, 'attiva' | 'pagamento' | 'iscrizi
 /** Fra gli stati, i corsi non coperti. */
 export const nonPagati = (stati: StatoCorso[]): StatoCorso[] => stati.filter((s) => !PAGATI.includes(s.come))
 
-/** Solo i corsi non coperti; [] per chi non è attivo o se le ricevute non si sono lette. */
-export const corsiDaPagare = (p: PersonaSeg, corsi: CorsoRef[], listino: Listino, oggi: string): StatoCorso[] => nonPagati(statoCorsi(p, corsi, listino, oggi) ?? [])
+/**
+ * I corsi da chiedere: quelli che `righeDovute` dà non coperti. «Da controllare» è una voce a mano da guardare,
+ * non da far pagare: resta nella scheda, non nei conti. [] per chi non è attivo, per il genitore non iscritto
+ * o se le ricevute non si sono lette.
+ */
+export const corsiDaPagare = (p: PersonaSeg, corsi: CorsoRef[], listino: Listino, oggi: string): StatoCorso[] =>
+  p.genitoreNonIscritto ? [] : nonPagati(statoCorsi(p, corsi, listino, oggi) ?? []).filter((s) => s.come !== 'da_controllare')
 
 /**
  * Quante persone attive hanno almeno un corso da pagare: lo stesso numero in

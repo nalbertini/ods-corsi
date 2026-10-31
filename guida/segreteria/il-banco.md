@@ -59,7 +59,7 @@ cui nasce, col filtro già acceso. In OGGI la striscia non c'è: sono già quest
 Un numero che non si riesce a contare mostra «—», e sotto c'è **Riconta**.
 
 A destra la coda **DA FARE AL BANCO**, in ordine di urgenza: prima gli appelli
-non fatti, poi chi è senza certificato, poi chi deve la quota (in rosso), infine
+non fatti, poi chi è senza certificato, poi chi deve la quota, poi chi ha un corso da pagare (in rosso), infine
 richieste, presenze da confermare e segnalate (in giallo). Ogni riga ha il suo
 tasto. Oltre le tre righe per tipo c'è una riga **Altri N …**, che apre l'elenco.
 
