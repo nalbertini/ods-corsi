@@ -1,4 +1,4 @@
-import { conti, euroBreve, QUOTA, type Ricevuta } from './ricevute'
+import { conti, entroAnnuale, euroBreve, QUOTA, type Ricevuta } from './ricevute'
 import { voceDelCorso, nomeCorso, type CorsoRef, type Listino } from './listino'
 import { STAGIONE, type VoceCosto } from './costi'
 import { dataLunga } from './sala'
@@ -18,6 +18,8 @@ export interface VoceCorso {
   dal?: string
   al?: string
   mancano: number
+  /** Il giorno della ricevuta: l'annuale si chiude entro il 31 dicembre di quell'anno. */
+  data?: string
 }
 
 /** Come `quoteDi`, per le altre voci: quel che manca non supera quel che resta della ricevuta (l'anticipo copre). */
@@ -30,7 +32,7 @@ export function vociCorsiDi(ricevute: Ricevuta[]): VoceCorso[] {
         .filter((v) => v.descrizione.trim().toUpperCase() !== QUOTA)
         .map((v) => {
           const pagata = v.pagamenti.reduce((s, p) => s + p.importo, 0)
-          return { descrizione: v.descrizione, dal: v.dal, al: v.al, mancano: Math.min(Math.max(0, v.quantita * v.prezzo - pagata), resta) }
+          return { descrizione: v.descrizione, dal: v.dal, al: v.al, mancano: Math.min(Math.max(0, v.quantita * v.prezzo - pagata), resta), data: r.data }
         })
     })
 }
@@ -45,6 +47,10 @@ export interface StatoCorso {
   al?: string
   /** Centesimi, per `in_parte`. */
   mancano?: number
+  /** Per un annuale `in_parte`: entro quando va chiuso (31 dicembre dell'anno della ricevuta). */
+  entro?: string
+  /** Passata quella data. */
+  oltre?: boolean
 }
 
 const PAGATI: ComeCorso[] = ['pagato', 'fuori_app', 'satispay']
@@ -106,7 +112,10 @@ export function statoCorsi(p: Pick<PersonaSeg, 'attiva' | 'pagamento' | 'iscrizi
       const pagata = piuLontana(sue.filter((v) => v.mancano === 0 && (!v.al || v.al >= oggi)))
       if (pagata) return { ...base, come: 'pagato', formula: pagata.formula, al: pagata.al }
       const parte = sue.filter((v) => v.mancano > 0 && (!v.dal || v.dal <= oggi) && (!v.al || v.al >= oggi)).sort((a, b) => a.mancano - b.mancano)[0]
-      if (parte) return { ...base, come: 'in_parte', formula: parte.formula, al: parte.al, mancano: parte.mancano }
+      if (parte) {
+        const entro = parte.formula === 'annuale' && parte.data ? entroAnnuale(parte.data) : undefined
+        return { ...base, come: 'in_parte', formula: parte.formula, al: parte.al, mancano: parte.mancano, ...(entro ? { entro, oltre: oggi > entro } : {}) }
+      }
       if (ecc.stato === 'pagato' && fino >= oggi) return { ...base, come: 'fuori_app', al: fino }
       // La quota pagata dall'area iscritti è dentro `satispay` ma non è l'iscrizione di prima: i corsi no.
       if ((p.satispay ?? 0) - (p.satispayQuota ?? 0) > 0 || p.satispayCorsi?.includes(c.id)) return { ...base, come: 'satispay' }
@@ -150,7 +159,9 @@ export function dettaglioCorso(s: StatoCorso): { testo: string; tono: 'sec' | 'r
     scaduto: [`scaduto il ${al}, da pagare`, 'rosso'],
     fuori_scaduto: [`pagata fuori dall’app fino al ${al}, ora da pagare`, 'rosso'],
     da_pagare: ['da pagare', 'rosso'],
-    in_parte: [`pagato in parte, mancano ${euroBreve(s.mancano ?? 0)}`, 'giallo'],
+    in_parte: s.entro && s.oltre
+      ? [`l’annuale andava chiuso entro il ${dataLunga(s.entro)}, mancano ancora ${euroBreve(s.mancano ?? 0)}`, 'rosso']
+      : [`pagato in parte, mancano ${euroBreve(s.mancano ?? 0)}${s.entro ? `, da chiudere entro il ${dataLunga(s.entro)}` : ''}`, 'giallo'],
     da_controllare: ['da controllare, c’è una voce scritta a mano', 'giallo'],
   }
   const [testo, tono] = righe[s.come]

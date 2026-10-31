@@ -36,6 +36,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Contanti di un giorno di cassa chiusa | segreteria, amministrazione | chiusura rotta senza che nessuno lo sappia | `prova:contabilita`, `prova:pagamenti`, `ricevuta-cassa-chiusa.sql` | sì |
 | Ricevute e pagamenti | segreteria, amministrazione | quota o ricevuta sbagliata, ricevuta doppia | `prova:ricevuta`, `prova:segreteria`, `prova:pagamenti`, `prova:satispay`, `ricevute.sql`, `satispay.sql` | sì |
 | Corsi da pagare | segreteria | corso scaduto che non si vede, sollecito a chi ha pagato | `prova:dafare`, `prova:corsi-da-pagare`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:scheda`, `prova:sollecito`, `prova:tessere` | sì |
+| Annuale a rate (la quota non è una rata) | segreteria, amministrazione | quota contata come rata, annuale scaduto non visto, versamento doppio | `prova:ricevuta`, `prova:corsi-da-pagare` | sì |
 | Ricevuta per email alla famiglia | segreteria, amministrazione, famiglie | ricevuta all'indirizzo sbagliato o annullata che parte | `prova:ricevute-email`, `prova:edge`, `prova:cornice-mail`, `prova:avvisi-segreteria`, `ricevute-email.sql` | sì |
 | Documenti sulla carta intestata | segreteria, amministrazione, genitore | cifra coperta, voci perse fra le pagine | `prova:carta`, `prova:ricevuta`, `prova:compensi`, `prova:bilancio`, `prova:chiusura-pdf`, `prova:ore` | sì |
 | Satispay dal modulo di iscrizione | genitore, segreteria, amministrazione | importo diverso dal listino, pagato perso o doppio | `prova:satispay`, `prova:edge`, `satispay.sql` | sì |
@@ -114,6 +115,7 @@ prova tiene stanno in «Scoperti», in fondo.
 Regole che si possono rompere senza che una prova cada. Si toglie la riga
 quando arriva la prova.
 
+- Annuale a rate: il tetto di 3 rate (`troppe`) si dice ma non blocca l'emissione, e `emetti_ricevuta` non ha la regola; nessuna prova SQL.
 - **GRAVE** — Metodo di pagamento online spento: lo ferma solo l'Edge Function.
   Un iscritto con la sessione può chiamare da solo le funzioni SQL
   `satispay_*_prepara` e il database lo lascia passare. Nessuna prova.

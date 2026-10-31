@@ -1079,7 +1079,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // finché quel file non è passato, le stesse righe si ricavano dalle ricevute qui.
       // Le ricevute servono per le voci dei corsi, e per le quote se la vista non c'è. null: non si sono lette.
       const leRicevute = (async () => {
-        const r = await tutteLeRighe((prima, ultima) => db.from('ricevute').select('persona_id, anno, numero, voci, anticipo').is('annullata_il', null).not('persona_id', 'is', null).order('id').range(prima, ultima))
+        const r = await tutteLeRighe((prima, ultima) => db.from('ricevute').select('persona_id, anno, numero, data, voci, anticipo').is('annullata_il', null).not('persona_id', 'is', null).order('id').range(prima, ultima))
         // as: le righe sono quelle del select qui sopra, con i campi che leggono `conti` e `quoteDi`.
         return r.error ? null : (r.data as unknown as Array<Ricevuta & { persona_id: string }>)
       })()

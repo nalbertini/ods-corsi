@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Avviso sul doppione</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    label { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f; }
+    .campo { height: 44px; padding: 0 12px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; font: 16px Inter, sans-serif; color: #0d2a3d; width: 100%; }
+  </style>
+</helmet>
+<!-- PROPOSTA: nel modulo della ricevuta, se «Pagato adesso» e «Già dato prima» sono uguali (la causa del caso 315/2026), un avviso lo dice prima di emettere. Non blocca. -->
+<div style="display: flex; width: 1440px; min-height: 760px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="PAGAMENTI" numeri="" nome="Marco Rossi" ruolo="Segreteria" altezza="760px" hint-size="240px,760px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">NUOVA RICEVUTA · ROSSI ANNA</h1>
+    <div style="display: flex; flex-direction: column; gap: 14px; max-width: 560px; padding: 18px 20px; background: #ffffff; border-radius: 6px">
+      <div style="display: flex; flex-direction: column; gap: 6px"><label for="v">ANNUALE JUDO ADULTI</label><input id="v" class="campo" value="500,00 €" readonly></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><label for="a">GIÀ DATO PRIMA</label><input id="a" class="campo" value="150,00 €" readonly></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><label for="p">PAGATO ADESSO · BONIFICO</label><input id="p" class="campo" value="150,00 €" readonly></div>
+      <dc-import name="Avviso" tema="sito" testo="Hai scritto 150,00 € sia come già dato prima sia come pagato adesso. Se sono lo stesso versamento, togline uno: così la ricevuta lo conta una volta sola. Se sono due versamenti, va bene così." hint-size="100%,80px"></dc-import>
+      <div style="display: flex; justify-content: space-between; align-items: baseline; padding-top: 8px; border-top: 1px solid #cfe6f4">
+        <span style="font-size: 14px; color: #46606f">Resta da dare</span>
+        <span style="font-size: 20px; font-weight: 700; color: #0d2a3d">200,00 €</span>
+      </div>
+      <div style="display: flex; gap: 10px"><dc-import name="Bottone" tema="sito" etichetta="EMETTI LA RICEVUTA" hint-size="220px,48px"></dc-import></div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-31T12:00:00Z"
+ },
+ "title": "Annuale a rate",
+ "pages": [
+  {
+   "id": "p1",
+   "name": "Proposta"
+  }
+ ],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 1440,
+   "h": 900,
+   "title": "Com'è oggi · scheda di 315/2026: 500 − 150 − 150 = 200 non si capisce",
+   "page": "p1"
+  },
+  "Scheda.dc.html": {
+   "x": 1520,
+   "y": 300,
+   "w": 1440,
+   "h": 1000,
+   "title": "Proposta · la scheda con l'anticipo come riga e le rate",
+   "page": "p1"
+  },
+  "DaFare.dc.html": {
+   "x": 0,
+   "y": 1420,
+   "w": 1440,
+   "h": 760,
+   "title": "Proposta · DA FARE con l'annuale scaduto",
+   "page": "p1"
+  },
+  "Modulo.dc.html": {
+   "x": 1520,
+   "y": 1420,
+   "w": 1440,
+   "h": 760,
+   "title": "Proposta · modulo ricevuta: avviso sul doppione",
+   "page": "p1"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Scheda.dc.html",
+  "DaFare.dc.html",
+  "Modulo.dc.html"
+ ],
+ "notes": {
+  "titolo": {
+   "x": 0,
+   "y": 0,
+   "text": "Annuale a rate: l'anticipo si vede, le rate pure",
+   "kind": "title1",
+   "maxW": 2960,
+   "page": "p1"
+  }
+ },
+ "launch": {
+  "view": "canvas",
+  "page": "p1"
+ },
+ "designSystems": []
+}

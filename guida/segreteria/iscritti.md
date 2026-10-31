@@ -455,9 +455,18 @@ vedere che ha pagato basta la scheda della persona: la quota dice quanto manca.
   RICEVUTA** su un pagamento a mano già registrato: quei soldi sono già nei
   conti di quel giorno.
 - **ANTICIPO** — quello che si era già dato prima, fuori da queste voci.
+  Se è lo stesso importo di un pagamento che scrivi sotto, il modulo avvisa
+  in giallo che potrebbe essere lo stesso versamento scritto due volte: non
+  blocca, se sono davvero due versamenti vai avanti.
   **NOTE** — facoltative, vanno nel riquadro «Note».
 - Sotto si legge il **totale**, il **pagato** e il **netto a pagare** (quel
   che resta, se è un acconto).
+- **L'annuale a rate**: l'annuale si può pagare in al massimo 3 rate, fino al
+  31 dicembre dell'anno della ricevuta. Nella scheda dell'iscritto, in
+  **Quota e pagamenti**, l'anticipo compare come «Già dato prima · rata 1», i
+  pagamenti dell'annuale come «rata 2», «rata 3», e sotto si legge «2 rate
+  pagate su 3 · manca 1 rata da 200,00 € entro il 31 dicembre». La quota
+  associativa non è una rata.
 - Con la **QUOTA ASSOCIATIVA** fra le voci, fatta la ricevuta la quota è
   pagata da sola. Senza, la ricevuta non cambia se è in regola, e sotto lo
   dice.

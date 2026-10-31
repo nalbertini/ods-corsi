@@ -617,6 +617,56 @@ console.log('La ricevuta sulla carta intestata')
   }
 }
 
+console.log('Annuale a rate (caso 315/2026)')
+// 500 € di annuale: 150 già dati prima (rata 1), 150 di bonifico (rata 2), 200 ancora da dare (rata 3).
+const aRate = {
+  ...quella,
+  id: 'r315',
+  numero: 315,
+  data: '2026-10-28',
+  anticipo: 15000,
+  voci: [{ descrizione: 'Annuale Judo adulti', quantita: 1, prezzo: 50000, dal: '2026-09-01', al: '2027-06-30', pagamenti: [{ data: '2026-10-28', importo: 15000, metodo: 'Bonifico' }] }],
+}
+const rate = (r, oggi) => (typeof m.rateAnnuale === 'function' ? m.rateAnnuale(r, oggi) : 'ERRORE: rateAnnuale non c’è')
+const sul = rate(aRate, '2026-10-31')
+ok('i conti non cambiano: 500 − 150 − 150 = 200', m.conti(aRate), { totale: 50000, pagato: 15000, netto: 20000 })
+ok('le rate: anticipo, bonifico, quella da dare', sul?.rate?.map((x) => [x.n, x.importo, x.come, x.data ?? null, x.metodo ?? null]), [
+  [1, 15000, 'anticipo', null, null],
+  [2, 15000, 'pagata', '2026-10-28', 'Bonifico'],
+  [3, 20000, 'da_dare', null, null],
+])
+ok('2 rate pagate su 3', [sul?.pagate, sul?.totali], [2, 3])
+ok('mancano 200 €, entro il 31 dicembre dell’anno della ricevuta', [sul?.mancano, sul?.entro], [20000, '2026-12-31'])
+ok('il 31 dicembre non è ancora scaduta', rate(aRate, '2026-12-31')?.scaduta, false)
+ok('dal 1° gennaio è scaduta', rate(aRate, '2027-01-01')?.scaduta, true)
+ok('al massimo 3 rate: con tre già date e una da dare sono troppe', rate({ ...aRate, voci: [{ ...aRate.voci[0], pagamenti: [...aRate.voci[0].pagamenti, { data: '2026-11-10', importo: 5000, metodo: 'Bonifico' }] }] }, '2026-11-11')?.troppe, true)
+ok('con le tre rate nei limiti non sono troppe', sul?.troppe, false)
+ok('pagata tutta in una volta: niente rate da dire', rate({ ...aRate, anticipo: 0, voci: [{ ...aRate.voci[0], pagamenti: pagato(50000) }] }, '2026-10-31'), null)
+ok('una ricevuta che non è un annuale: niente rate', rate({ ...aRate, voci: [{ ...aRate.voci[0], descrizione: 'Trimestre Judo adulti' }] }, '2026-10-31'), null)
+ok('annullata: niente rate', rate({ ...aRate, annullataIl: '2026-11-01T10:00:00Z' }, '2026-11-02'), null)
+ok('pagata per intero con anticipo e bonifico: rate fatte, non scade', [rate({ ...aRate, voci: [{ ...aRate.voci[0], pagamenti: pagato(35000) }] }, '2027-02-01')?.scaduta, rate({ ...aRate, voci: [{ ...aRate.voci[0], pagamenti: pagato(35000) }] }, '2027-02-01')?.mancano], [false, 0])
+console.log('Quota associativa + annuale: la quota non è una rata')
+const conQuota = {
+  ...aRate,
+  anticipo: 0,
+  voci: [
+    { descrizione: 'Quota associativa', quantita: 1, prezzo: 5000, dal: '2026-09-01', al: '2027-06-30', pagamenti: [{ data: '2026-10-28', importo: 5000, metodo: 'Bonifico' }] },
+    { descrizione: 'Annuale Judo adulti', quantita: 1, prezzo: 48000, dal: '2026-09-01', al: '2027-06-30', pagamenti: [{ data: '2026-10-28', importo: 48000, metodo: 'Bonifico' }] },
+  ],
+}
+ok('quota + annuale pagati in un colpo: niente rate', rate(conQuota, '2026-10-31'), null)
+const conQuotaERata = { ...conQuota, anticipo: 15000, voci: [conQuota.voci[0], { ...conQuota.voci[1], pagamenti: [{ data: '2026-10-28', importo: 15000, metodo: 'Bonifico' }] }] }
+const sQ = rate(conQuotaERata, '2026-10-31')
+ok('la quota non entra nelle rate: anticipo, bonifico, da dare', sQ && sQ.rate.map((x) => x.come), ['anticipo', 'pagata', 'da_dare'])
+
+console.log('Avviso del doppione')
+const doppione = (r) => (typeof m.avvisoDoppione === 'function' ? m.avvisoDoppione(r) : 'ERRORE: avvisoDoppione non c’è')
+ok('avviso del doppione solo per l’annuale: la quota uguale all’anticipo non lo fa scattare', doppione({ anticipo: 5000, voci: [{ descrizione: 'Quota associativa', quantita: 1, prezzo: 5000, pagamenti: [{ data: '2026-10-28', importo: 5000, metodo: 'Bonifico' }] }] }), null)
+ok('pagato e già dato prima uguali: l’avviso lo dice', doppione(aRate), 'Hai scritto 150,00 € sia come già dato prima sia come pagato adesso. Se è lo stesso versamento, togline uno.')
+ok('importi diversi: nessun avviso', doppione({ ...aRate, anticipo: 10000 }), null)
+ok('senza anticipo: nessun avviso', doppione({ ...aRate, anticipo: 0 }), null)
+ok('l’avviso non blocca la ricevuta', m.cosaNonVa(aRate, '2026-10-31'), null)
+
 if (guai) {
   console.log(`\n${guai} cose non tornano`)
   process.exit(1)
