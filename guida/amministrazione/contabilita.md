@@ -16,6 +16,8 @@ recente. Accanto al titolo CONTABILITÀ, e solo in questa scheda, c'è **Nuovo m
 e il menu **Altre azioni**: **Collega i casi sicuri**, **Giroconto**, **Esporta CSV** e
 quella di Satispay (vedi sotto).
 
+Ogni riga dice da dove viene, con un tag accanto al nome: **Dal gestionale** (incassi degli iscritti e movimenti scritti qui), **Dalla banca**, **Dallo storico**, **Da Satispay**, **Dalla chat**. Voce, descrizione e nota di un movimento si correggono allo stesso modo, qualunque sia l'origine.
+
 L'elenco unisce due cose:
 
 - gli **incassi degli iscritti**: le ricevute, i pagamenti a mano e i

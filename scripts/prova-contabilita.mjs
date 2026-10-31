@@ -1431,5 +1431,12 @@ console.log('\n98. il tipo di un movimento ha una colonna sua, e la riga non rip
   ok('un giroconto non ha voce', voce({ descrizione: 'Giroconto da A a B', voce: null }, undefined), '')
 }
 
+console.log('\n99. ogni riga dice da dove viene')
+{
+  const da = (r) => prova(() => m.originiMovimento(r))
+  ok('un incasso di un iscritto e un movimento scritto qui', [da({ origine: 'ricevuta' }), da({ origine: 'pagamento' }), da({ origine: 'movimento' })], ['Dal gestionale', 'Dal gestionale', 'Dal gestionale'])
+  ok('dalla banca, dallo storico, da Satispay, dalla chat', [da({ origine: 'movimento', origineImport: 'banca:x' }), da({ origine: 'movimento', origineImport: 'prima-nota:3' }), da({ origine: 'movimento', satispayId: 's1' }), da({ origine: 'movimento', dallaChat: true })], ['Dalla banca', 'Dallo storico', 'Da Satispay', 'Dalla chat'])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
