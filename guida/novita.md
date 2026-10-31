@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.231.0 — 31 ottobre 2026
+
+### Novità
+
+- I verbali si caricano con la riunione e il PDF firmato, il testo lo prepara Claude dalla registrazione
+
 ## 0.230.4 — 31 ottobre 2026
 
 ### Risolto
