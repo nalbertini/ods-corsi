@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="row" style="display: grid; grid-template-columns: 150px 96px minmax(0, 1fr) 120px; gap: 12px; align-items: start; width: 100%; padding: 12px 0; border-bottom: 1px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <dc-import name="Badge" tema="sito" tipo="tag" tono="{{tono}}" label="{{stato}}" larghezza="150px" hint-size="150px,24px"></dc-import>
+  <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{data}}</span>
+  <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+    <span style="font-size: 14px; overflow-wrap: anywhere">{{testo}}</span>
+    <sc-if value="{{conVoce}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; padding: 8px 8px 8px 12px; background: #cfe6f4; border-left: 4px solid #46606f">
+        <span aria-hidden="true" style="color: #46606f">↳</span>
+        <span style="font-size: 13px; color: #46606f">{{introVoce}}</span>
+        <b style="font-size: 14px">{{voce}}</b>
+        <span style="font-size: 13px; color: #46606f">{{dettaglio}}</span>
+        <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}">
+          <span role="img" aria-label="{{ariaTasto}}" style="display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; margin-left: auto; background: #ffffff; border: 2px solid {{coloreTasto}}; border-radius: 6px; font-size: 22px; font-weight: 700; color: {{coloreTasto}}">{{segnoTasto}}</span>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+  <b style="text-align: right; font-size: 15px; font-variant-numeric: tabular-nums">{{importo}}</b>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["nuova","da controllare","duplicata","da decidere","scartata"],"default":"duplicata"},"data":{"editor":"text","default":"27/10/2026"},"testo":{"editor":"text","default":"Da MERIGO GIANLUCA TRN 0329…IT per acconto annuale BONIFICO SEPA"},"voce":{"editor":"text","default":"Merigo Elena"},"dettaglio":{"editor":"text","default":"27/10/2026 · Quota annuale · ricevuta n. 212"},"importo":{"editor":"text","default":"+ 120,00 €"},"rifiutabile":{"editor":"boolean","default":true},"$preview":{"width":1100,"height":110}}'>
+// COSTRUITA (ImportaBanca.tsx, `.sg-banca-riga`; docs/design-canvas/importa-banca-righe): una riga del file della banca nell'anteprima «Le righe del file». Griglia 150px 96px 1fr 120px, filetto 1px `line-soft`, stato in parole con `Badge` tag:
+// nuova = verde, da controllare e da decidere = giallo, duplicata = neutro, scartata = rosso. Sotto il testo del file, per la duplicata, il blocco della voce gia' presente (fondo `surface-2`, barra 4px `dim`):
+// «E' la duplicata di» voce, data · cassa · tipo e numero. `rifiutabile` aggiunge la X rossa (bottone 44×44, bordo 2px `rosso-testo`, «Non e' questo: entra come movimento nuovo»), solo quando l'abbinamento l'ha fatto l'anteprima
+// e non quando la riga era gia' importata di prima. Da decidere: il blocco dice «Potrebbe essere la voce» e il tasto e' la spunta verde 44×44 (`verde-testo`, «E' questa: collega il movimento a questa voce»). Scartata: niente blocco, il motivo sta nel testo.
+// Sul telefono (<768px) la griglia diventa stato · data · importo in alto e il testo su tutta la larghezza sotto.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const stato = p.stato || 'duplicata';
+    const tono = { 'nuova': 'verde', 'da controllare': 'giallo', 'duplicata': 'neutro', 'da decidere': 'giallo', 'scartata': 'rosso' }[stato];
+    const conVoce = stato === 'duplicata' || stato === 'da decidere';
+    const decide = stato === 'da decidere';
+    const rifiutabile = p.rifiutabile !== false;
+    return {
+      tono, stato: stato.toUpperCase(), data: p.data ?? '', testo: p.testo ?? '', importo: p.importo ?? '',
+      conVoce, introVoce: decide ? 'Potrebbe essere la voce' : 'È la duplicata di', voce: p.voce ?? '', dettaglio: p.dettaglio ?? '',
+      conTasto: decide || rifiutabile,
+      coloreTasto: decide ? '#0b7a33' : '#b81d1d', segnoTasto: decide ? '✓' : '✕',
+      ariaTasto: decide ? 'È questa: collega il movimento a questa voce' : 'Non è questo: entra come movimento nuovo',
+    };
+  }
+}
+</script>
+</body>
+</html>

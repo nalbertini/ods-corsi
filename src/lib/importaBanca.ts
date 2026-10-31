@@ -48,6 +48,8 @@ export interface AnteprimaBanca {
   daDecidere: { movimento: MovimentoBanca; candidati: RigaMovimento[]; preselezionato: string | null; come: Record<string, ComeAbbinato> }[]
   avvisi: { tipo: 'satispay' | 'contanti'; conteggio: number; totale: number }[]
   scartate: RigaBancaScartata[]
+  /** Tutte le righe del file, nell'ordine del file, ognuna col suo stato. */
+  righe: RigaAnteprima[]
   /** I movimenti letti che non sono nel futuro, e il loro periodo: i conti dell'anteprima partono da qui. */
   lette: number
   dal: string | null
@@ -150,6 +152,46 @@ const giorniTra = (a: string, b: string) => Math.abs(Date.parse(a) - Date.parse(
 
 const parolePiene = (s: string): string[] => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().split(/[^\p{L}0-9']+/u).filter(Boolean)
 
+/** Lo stato di una riga del file nell'anteprima: com'è finita, non solo se entra. */
+export type StatoRigaBanca = 'nuova' | 'da-controllare' | 'duplicata' | 'da-decidere' | 'scartata'
+
+/** Una riga del file, nell'ordine del file. `voce` è il movimento già presente di cui è la duplicata. */
+export interface RigaAnteprima {
+  riga: number
+  stato: StatoRigaBanca
+  /** Null solo per le scartate: del file di cui non si è letto niente resta il testo. */
+  movimento: MovimentoBanca | null
+  voce: RigaMovimento | null
+  /** L'abbinamento l'ha fatto questa anteprima e la segreteria può rifiutarlo; se la riga era già importata di prima, no. */
+  rifiutabile: boolean
+  candidati: RigaMovimento[]
+  preselezionato: string | null
+  come: Record<string, ComeAbbinato>
+  /** Solo delle scartate: il testo della riga e perché. */
+  testo: string
+  motivo: string
+}
+
+export type FiltroRigheBanca = 'tutte' | 'nuove' | 'duplicate' | 'da-decidere' | 'scartate'
+
+const STATI_DEL_FILTRO: Record<FiltroRigheBanca, StatoRigaBanca[]> = {
+  tutte: ['nuova', 'da-controllare', 'duplicata', 'da-decidere', 'scartata'],
+  nuove: ['nuova', 'da-controllare'],
+  duplicate: ['duplicata'],
+  'da-decidere': ['da-decidere'],
+  scartate: ['scartata'],
+}
+
+export const filtraRighe = (righe: RigaAnteprima[], filtro: FiltroRigheBanca): RigaAnteprima[] => righe.filter((r) => STATI_DEL_FILTRO[filtro].includes(r.stato))
+
+export const contaRighe = (righe: RigaAnteprima[]) => ({
+  tutte: righe.length,
+  nuove: filtraRighe(righe, 'nuove').length,
+  duplicate: filtraRighe(righe, 'duplicate').length,
+  daDecidere: filtraRighe(righe, 'da-decidere').length,
+  scartate: filtraRighe(righe, 'scartate').length,
+})
+
 /**
  * Cosa succederebbe importando, senza scrivere niente. `righe` sono i movimenti già in elenco, `scelte` le
  * decisioni della segreteria: l'id del pagamento giusto, o «nessuno» (è un movimento nuovo).
@@ -168,6 +210,8 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
   const giaImportati: MovimentoBanca[] = []
   const coperti: AnteprimaBanca['coperti'] = []
   const daDecidere: AnteprimaBanca['daDecidere'] = []
+  const righeDelFile: RigaAnteprima[] = []
+  const riga = (r: Pick<RigaAnteprima, 'riga' | 'stato'> & Partial<RigaAnteprima>): RigaAnteprima => ({ movimento: null, voce: null, rifiutabile: false, candidati: [], preselezionato: null, come: {}, testo: '', motivo: '', ...r })
 
   for (const mv of lettura.movimenti) {
     if (mv.data > oggi) {
@@ -176,6 +220,8 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
     }
     if (giaImportate.has(mv.chiave)) {
       giaImportati.push(mv)
+      // Il movimento che l'ha scritta o che la copre, anche annullato: dice a cosa si riferisce.
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'duplicata', movimento: mv, voce: righe.find((r) => r.origineImport === mv.chiave || r.bancaChiave === mv.chiave) ?? null }))
       continue
     }
     const candidati = liberi
@@ -184,6 +230,7 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
     const scelta = scelte[mv.chiave]
     if (scelta === 'nessuno' || candidati.length === 0) {
       entrano.push(mv)
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'nuova', movimento: mv }))
       continue
     }
     const migliori = candidati.filter((r) => giorniTra(r.data, mv.data) === giorniTra(candidati[0].data, mv.data))
@@ -193,8 +240,11 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
     if (scelto) {
       usati.add(scelto.id)
       coperti.push({ movimento: mv, con: scelto })
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'duplicata', movimento: mv, voce: scelto, rifiutabile: true }))
     } else {
-      daDecidere.push({ movimento: mv, ...inCimaChiSembra(mv, candidati, perGenitore[mv.chiave] ?? []) })
+      const d = { movimento: mv, ...inCimaChiSembra(mv, candidati, perGenitore[mv.chiave] ?? []) }
+      daDecidere.push(d)
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'da-decidere', ...d }))
     }
   }
 
@@ -204,18 +254,26 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
   }
   const entrate = somma('entrata')
   const uscite = somma('uscita')
+  // Gli stessi due controlli danno gli avvisi e lo stato «da controllare» delle righe.
+  const eSatispay = (x: MovimentoBanca) => x.tipo === 'entrata' && /satispay europe/i.test(x.descrizione)
+  const eContanti = (x: MovimentoBanca) => x.tipo === 'entrata' && /versament/i.test(x.descrizione) && /contant/i.test(x.descrizione)
   const avviso = (tipo: 'satispay' | 'contanti', vale: (x: MovimentoBanca) => boolean) => {
-    const v = entrano.filter((x) => x.tipo === 'entrata' && vale(x))
+    const v = entrano.filter(vale)
     return v.length ? [{ tipo, conteggio: v.length, totale: v.reduce((s, x) => s + x.importo, 0) }] : []
   }
+  const righeTutte = [
+    ...righeDelFile.map((r) => (r.stato === 'nuova' && r.movimento && (eSatispay(r.movimento) || eContanti(r.movimento)) ? { ...r, stato: 'da-controllare' as const } : r)),
+    ...scartate.map((x) => riga({ riga: x.riga, stato: 'scartata', testo: x.testo, motivo: x.motivo })),
+  ].sort((a, b) => a.riga - b.riga)
   return {
+    righe: righeTutte,
     entrano,
     giaImportati,
     coperti,
     daDecidere,
     avvisi: [
-      ...avviso('satispay', (x) => /satispay europe/i.test(x.descrizione)),
-      ...avviso('contanti', (x) => /versament/i.test(x.descrizione) && /contant/i.test(x.descrizione)),
+      ...avviso('satispay', eSatispay),
+      ...avviso('contanti', eContanti),
     ],
     scartate,
     lette: validi.length,

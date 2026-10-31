@@ -1283,3 +1283,14 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* L'icona sta davanti al nome e non si schiaccia quando la scheda va a capo. */
 .sg-schede-impostazioni > button { gap: 8px; }
 .sg-schede-impostazioni svg { flex: none; }
+
+/* «Importa dalla banca»: una riga del file ha stato, data, testo e importo; la voce già presente sta sotto il testo. */
+.sg-banca-riga { display: grid; grid-template-columns: 150px 96px minmax(0, 1fr) 120px; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+.sg-banca-testa { padding: 6px 0; border-bottom: 2px solid var(--text); }
+.sg-banca-voce { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; padding: 8px 8px 8px 12px; background: var(--surface-2); border-left: 4px solid var(--dim); }
+@media (max-width: 767px) {
+  .sg-banca-testa { display: none; }
+  .sg-banca-riga { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .sg-banca-riga > :nth-child(2) { text-align: left; }
+  .sg-banca-riga > :nth-child(3) { grid-column: 1 / -1; order: 3; }
+}

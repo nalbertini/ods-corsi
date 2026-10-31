@@ -288,5 +288,47 @@ console.log('\n9. «Da decidere»: la persona giusta in cima, e preselezionata s
   ok('…e rifatto non annulla più niente', await s.annullaImportazioneBanca(primo.creatoIl), 0)
 }
 
+console.log('\n10. «Le righe del file»: tutte, nell\'ordine del file, ognuna col suo stato')
+{
+  const stati = (a) => a.righe.map((x) => [x.riga, x.stato])
+  const a0 = anteprima([])
+  ok('senza niente nel registro: ogni riga del file, in ordine, scartate comprese', prova(() => a0.righe.map((x) => x.riga)), [6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+  ok('…nuova, da controllare (Satispay e contanti), scartata', prova(() => stati(a0)), [[6, 'nuova'], [7, 'nuova'], [8, 'nuova'], [9, 'nuova'], [10, 'da-controllare'], [11, 'da-controllare'], [12, 'scartata'], [13, 'scartata'], [14, 'scartata'], [15, 'nuova']])
+  ok('una scartata dice il motivo, e non ha movimento', prova(() => { const x = a0.righe.find((r) => r.riga === 12); return [typeof x.motivo === 'string' && x.motivo.length > 3, x.movimento] }), [true, null])
+  ok('una riga letta porta il suo movimento', prova(() => a0.righe[0].movimento.chiave), mv[0]?.chiave)
+
+  const a = anteprima([riga({ id: 'x1', tipo: 'entrata', importo: 12000, origineImport: mv[1]?.chiave, data: '2026-10-03', descrizione: 'Luca Verdi saldo', voce: 'Corsi e altri pagamenti' }), riga({ id: 'mano', tipo: 'uscita', importo: 5000, data: '2026-10-02', descrizione: 'Lezioni Anna' })])
+  ok('già importata (da un\'importazione di prima): duplicata, con la voce già presente', prova(() => { const x = a.righe.find((r) => r.riga === 7); return [x.stato, x.voce.id, x.voce.descrizione] }), ['duplicata', 'x1', 'Luca Verdi saldo'])
+  ok('coperta da un movimento a mano: duplicata, con quel movimento', prova(() => { const x = a.righe.find((r) => r.riga === 6); return [x.stato, x.voce.id] }), ['duplicata', 'mano'])
+  ok('una nuova non ha voce', prova(() => a.righe.find((r) => r.riga === 8).voce), null)
+  ok('…una chiave già vista con la riga annullata: duplicata, con la voce annullata', prova(() => { const x = anteprima([riga({ id: 'ann', origineImport: mv[0]?.chiave, annullato: true })]).righe.find((r) => r.riga === 6); return [x.stato, x.voce.id] }), ['duplicata', 'ann'])
+
+  const due = [riga({ id: 'prima', tipo: 'entrata', importo: 12000, data: '2026-10-02' }), riga({ id: 'dopo', tipo: 'entrata', importo: 12000, data: '2026-10-04' })]
+  const d = anteprima(due)
+  ok('da decidere: stato, candidati, nessuna voce', prova(() => { const x = d.righe.find((r) => r.riga === 7); return [x.stato, x.candidati.map((c) => c.id), x.voce] }), ['da-decidere', ['prima', 'dopo'], null])
+  ok('«È questa»: diventa duplicata di quella voce', prova(() => { const x = anteprima(due, { [mv[1]?.chiave]: 'dopo' }).righe.find((r) => r.riga === 7); return [x.stato, x.voce.id] }), ['duplicata', 'dopo'])
+  ok('«Nessuna» (o la X rossa su una coperta): diventa nuova, senza voce', prova(() => [anteprima(due, { [mv[1]?.chiave]: 'nessuno' }).righe.find((r) => r.riga === 7), anteprima([riga({ id: 'mano' })], { [mv[0]?.chiave]: 'nessuno' }).righe.find((r) => r.riga === 6)].map((x) => [x.stato, x.voce])), [['nuova', null], ['nuova', null]])
+
+  // La X rossa compare solo dove l'abbinamento l'ha fatto l'anteprima: su una riga già importata farebbe pagare due volte.
+  ok('«rifiutabile»: sì per la coperta da un movimento a mano e per «È questa», no per già importata, annullata, nuova e da decidere', prova(() => [
+    a.righe.find((r) => r.riga === 6).rifiutabile,
+    anteprima(due, { [mv[1]?.chiave]: 'dopo' }).righe.find((r) => r.riga === 7).rifiutabile,
+    a.righe.find((r) => r.riga === 7).rifiutabile,
+    anteprima([riga({ id: 'ann', origineImport: mv[0]?.chiave, annullato: true })]).righe.find((r) => r.riga === 6).rifiutabile,
+    a.righe.find((r) => r.riga === 8).rifiutabile,
+    d.righe.find((r) => r.riga === 7).rifiutabile,
+  ]), [true, true, false, false, false, false])
+  ok('da decidere: «come» e «preselezionato» sono gli stessi dell\'elenco di prima', prova(() => { const x = d.righe.find((r) => r.riga === 7); return [x.come, x.preselezionato] }), [d.daDecidere[0].come, d.daDecidere[0].preselezionato])
+
+  ok('i conteggi dei filtri: tutte, nuove (anche da controllare), duplicate, da decidere, scartate', prova(() => [m.contaRighe(a0.righe), m.contaRighe(a.righe), m.contaRighe(d.righe)]), [
+    { tutte: 10, nuove: 7, duplicate: 0, daDecidere: 0, scartate: 3 },
+    { tutte: 10, nuove: 5, duplicate: 2, daDecidere: 0, scartate: 3 },
+    { tutte: 10, nuove: 6, duplicate: 0, daDecidere: 1, scartate: 3 },
+  ])
+  ok('il filtro tiene l\'ordine del file', prova(() => [m.filtraRighe(a.righe, 'duplicate').map((x) => x.riga), m.filtraRighe(a.righe, 'nuove').map((x) => x.riga), m.filtraRighe(a.righe, 'scartate').map((x) => x.riga), m.filtraRighe(a.righe, 'tutte').length]), [[6, 7], [8, 9, 10, 11, 15], [12, 13, 14], 10])
+  ok('le righe sono tante quante quelle lette più le scartate', prova(() => a.righe.length === a.lette + a.scartate.length), true)
+  ok('i vecchi elenchi restano com\'erano (i totali e i dati per il database non cambiano)', prova(() => [a.giaImportati.length, a.coperti.length, m.datiImportBanca(a).length]), [1, 1, 5])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
