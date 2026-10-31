@@ -166,6 +166,75 @@ export function conti(r: Pick<DatiRicevuta, 'voci' | 'anticipo'>) {
   return { totale, pagato, netto: Math.max(0, totale - pagato - r.anticipo) }
 }
 
+/** Una rata dell'annuale: l'anticipo è la prima, poi ogni pagamento, infine quel che manca. */
+export interface RataAnnuale {
+  n: number
+  importo: number
+  come: 'anticipo' | 'pagata' | 'da_dare'
+  data?: string
+  metodo?: string
+}
+
+/** Le rate di un annuale: si chiude entro il 31 dicembre dell'anno della ricevuta, in al massimo 3 rate. */
+export interface RateAnnuale {
+  rate: RataAnnuale[]
+  pagate: number
+  /** Le rate che ci sono, pagate e da dare, mai meno di quelle usate. */
+  totali: number
+  /** Centesimi ancora da dare. */
+  mancano: number
+  entro: string
+  /** Passato il 31 dicembre con qualcosa ancora da dare. */
+  scaduta: boolean
+  /** Più di 3 rate: la regola dell'annuale non regge, la segreteria lo guarda. */
+  troppe: boolean
+}
+
+export const RATE_ANNUALE_MAX = 3
+
+/** La scadenza dell'annuale: il 31 dicembre dell'anno in cui si apre (la data della ricevuta). */
+export const entroAnnuale = (dataRicevuta: string) => `${dataRicevuta.slice(0, 4)}-12-31`
+
+/** Solo le voci «Annuale …» si pagano a rate: la quota associativa e il resto no. */
+export const eVoceAnnuale = (descrizione: string): boolean => /^annuale\s/i.test(descrizione.trim())
+
+/**
+ * Le rate di una ricevuta con un annuale, solo quando ce n'è da dire: un
+ * anticipo, più pagamenti, o qualcosa ancora da dare. Null per le altre
+ * ricevute e per l'annuale pagato in un colpo solo.
+ */
+export function rateAnnuale(r: Pick<Ricevuta, 'voci' | 'anticipo' | 'data' | 'annullataIl'>, oggi: string): RateAnnuale | null {
+  if (r.annullataIl || !r.voci.some((v) => eVoceAnnuale(v.descrizione))) return null
+  const c = conti(r)
+  const date: RataAnnuale[] = [
+    ...(r.anticipo > 0 ? [{ n: 0, importo: r.anticipo, come: 'anticipo' as const }] : []),
+    ...r.voci.filter((v) => eVoceAnnuale(v.descrizione)).flatMap((v) => v.pagamenti.filter((p) => p.importo > 0).map((p) => ({ n: 0, importo: p.importo, come: 'pagata' as const, data: p.data, metodo: p.metodo }))),
+    ...(c.netto > 0 ? [{ n: 0, importo: c.netto, come: 'da_dare' as const }] : []),
+  ]
+  if (date.length < 2) return null
+  const rate = date.map((x, i) => ({ ...x, n: i + 1 }))
+  const entro = entroAnnuale(r.data)
+  return {
+    rate,
+    pagate: rate.filter((x) => x.come !== 'da_dare').length,
+    totali: rate.length,
+    mancano: c.netto,
+    entro,
+    scaduta: c.netto > 0 && oggi > entro,
+    troppe: rate.length > RATE_ANNUALE_MAX,
+  }
+}
+
+/**
+ * «Già dato prima» e un pagamento di oggi con la stessa cifra sono quasi
+ * sempre lo stesso versamento scritto due volte: si dice sotto al modulo, ma
+ * non si blocca (possono essere due versamenti uguali).
+ */
+export function avvisoDoppione(r: Pick<DatiRicevuta, 'voci' | 'anticipo'>): string | null {
+  if (r.anticipo <= 0 || !r.voci.some((v) => eVoceAnnuale(v.descrizione) && v.pagamenti.some((p) => p.importo === r.anticipo))) return null
+  return `Hai scritto ${euro(r.anticipo)} € sia come già dato prima sia come pagato adesso. Se è lo stesso versamento, togline uno.`
+}
+
 /**
  * Gli stessi rifiuti di `emetti_ricevuta`, per dirli subito sotto al modulo.
  * `oggi` è il giorno di Roma; `prossimo` il numero che l'anno della ricevuta

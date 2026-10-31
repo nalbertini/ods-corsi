@@ -12,6 +12,9 @@ import {
   centesimi,
   conti,
   cosaNonVa,
+  avvisoDoppione,
+  eVoceAnnuale,
+  rateAnnuale,
   enteCambiato,
   euro,
   METODI,
@@ -183,6 +186,7 @@ export function StoricoIscritto({
         const r = riga.r
         const manca = r.annullataIl ? 0 : conti(r).netto
         const righe = righeDaRicevute([r])
+        const rate = rateAnnuale(r, oggi)
         const suoi = invii.filter((i) => i.ricevutaId === r.id)
         const stato = statoPosta(r, suoi, p.email ?? null, dal)
         return (
@@ -227,9 +231,31 @@ export function StoricoIscritto({
                 </div>
               )}
             </div>
+            {/* L'anticipo non è un pagamento con la sua data: sta qui, come prima rata, per far tornare 500 − 150 − 150. */}
+            {rate && r.anticipo > 0 && (
+              <div className="sg-voce-elenco sg-pagamento" style={{ flexWrap: 'wrap' }}>
+                <span className="stack grow" style={{ minWidth: 0, flex: '1 1 200px' }}>
+                  <span style={{ fontSize: 15, fontWeight: 600 }}>Già dato prima · rata 1</span>
+                  <span style={{ fontSize: 12, color: 'var(--dim)' }}>Anticipo scritto sulla ricevuta</span>
+                </span>
+                <span className="num" style={{ fontSize: 18, fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--verde-testo)' }}>{euro(r.anticipo)} €</span>
+              </div>
+            )}
             {righe.map((x) => (
-              <RigaDelloStorico key={x.id} riga={x} />
+              <RigaDelloStorico
+                key={x.id}
+                riga={x}
+                // Stessa numerazione di rateAnnuale: l'anticipo è la 1, poi i pagamenti dell'annuale nell'ordine in cui sono scritti.
+                rata={rate && x.importo > 0 && eVoceAnnuale(x.voce) ? (r.anticipo > 0 ? 1 : 0) + righe.slice(0, righe.indexOf(x) + 1).filter((y) => y.importo > 0 && eVoceAnnuale(y.voce)).length : undefined}
+              />
             ))}
+            {rate && (
+              <span className="sg-sotto" style={{ marginBottom: 8 }} data-tono={rate.mancano > 0 ? (rate.scaduta || rate.troppe ? 'guaio' : 'aspetta') : 'fatto'}>
+                {rate.pagate} {rate.pagate === 1 ? 'rata pagata' : 'rate pagate'} su {rate.totali}
+                {rate.mancano > 0 && ` · manca ${rate.totali - rate.pagate === 1 ? '1 rata' : `${rate.totali - rate.pagate} rate`} da ${euro(rate.mancano)} € ${rate.scaduta ? `(andava chiusa entro il ${dataLunga(rate.entro)})` : `entro il ${dataLunga(rate.entro)}`}`}
+                {rate.troppe && ' · l’annuale si paga in al massimo 3 rate'}
+              </span>
+            )}
           </div>
         )
       })}
@@ -273,14 +299,14 @@ export function StoricoIscritto({
 }
 
 /** Un pagamento nello storico: la data e come, a cosa serve, l'importo. */
-function RigaDelloStorico({ riga, aMano, stato, diventato, onFanne, onAnnulla }: { riga: RigaPagamento; aMano?: boolean; stato?: string; diventato?: boolean; onFanne?: () => void; onAnnulla?: () => void }) {
+function RigaDelloStorico({ riga, rata, aMano, stato, diventato, onFanne, onAnnulla }: { riga: RigaPagamento; rata?: number; aMano?: boolean; stato?: string; diventato?: boolean; onFanne?: () => void; onAnnulla?: () => void }) {
   const barrato = riga.annullato ? 'line-through' : undefined
   return (
     <div className="sg-voce-elenco sg-pagamento" data-amano={aMano || undefined} data-annullato={riga.annullato || undefined} style={{ flexWrap: 'wrap' }}>
       {/* Base 200: sul telefono il testo non si schiaccia accanto all'importo. */}
       <span className="stack grow" style={{ minWidth: 0, flex: '1 1 200px' }}>
         <span style={{ fontSize: 15, fontWeight: 600, textDecoration: barrato, color: riga.annullato ? 'var(--dim)' : undefined }}>
-          {dataLunga(riga.data)} · {riga.metodo}
+          {dataLunga(riga.data)} · {riga.metodo}{rata ? <span style={{ whiteSpace: 'nowrap' }}> · rata {rata}</span> : null}
         </span>
         <span style={{ fontSize: 12, color: 'var(--dim)', overflowWrap: 'anywhere' }}>
           {[riga.voce, riga.nota].filter(Boolean).join(' · ')}
@@ -960,6 +986,8 @@ export function NuovaRicevuta({
       )}
 
       {guaio && <span role="alert" style={{ fontSize: 15, color: 'var(--rosso-testo)' }}>{guaio}</span>}
+      {/* Non blocca: due versamenti uguali possono esserci davvero. */}
+      {dati && avvisoDoppione(dati) && <span style={{ fontSize: 15, color: 'var(--giallo-testo)' }}>{avvisoDoppione(dati)}</span>}
       {avvisa.length > 0 && (
         <span style={{ fontSize: 15, color: 'var(--giallo-testo)' }}>
           {avvisaTesto}: si può fare lo stesso, ma {avvisa.length > 1 ? 'resteranno vuoti' : 'resterà vuoto'}.

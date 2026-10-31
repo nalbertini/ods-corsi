@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Scheda con le rate</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: l'anticipo diventa una riga («già dato prima»), un riepilogo dice quante rate sono pagate (l'anticipo è la rata 1, al massimo 3) e fino a quando si può chiudere (31/12). Il Satispay non collegato resta fuori dalla somma, con una nota. -->
+<div style="display: flex; width: 1440px; min-height: 1000px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="ISCRITTI" numeri="" nome="Marco Rossi" ruolo="Segreteria" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ROSSI ANNA</h1>
+    <dc-import name="SchedeIscritto" tema="sito" acceso="QUOTA E PAGAMENTI" segnoQuota="giallo" parolaQuota="DA PAGARE" hint-size="100%,56px"></dc-import>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 18px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; background: #ffffff; border-radius: 6px">
+        <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">RICEVUTE E PAGAMENTI</span>
+        <dc-import name="RigaPagamento" tipo="ricevuta" titolo="N. 315/2026 · 28 ottobre 2026" sotto="ANNUALE JUDO ADULTI" importo="500,00 €" tag="A RATE" tagTono="giallo" tasti="PDF|ANNULLA RICEVUTA" hint-size="100%,100px"></dc-import>
+        <dc-import name="RigaPagamento" tipo="pagamento" titolo="Già dato prima · rata 1" sotto="ANTICIPO SCRITTO SULLA RICEVUTA" importo="150,00 €" tasti="" hint-size="100%,70px"></dc-import>
+        <dc-import name="RigaPagamento" tipo="pagamento" titolo="Bonifico · 28 ottobre 2026 · rata 2" sotto="PAGATO SULLA RICEVUTA 315/2026" importo="150,00 €" tasti="" hint-size="100%,70px"></dc-import>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; padding-top: 8px; border-top: 1px solid #cfe6f4">
+          <span style="font-size: 14px; color: #46606f">Manca (rata 3)</span>
+          <span style="font-size: 20px; font-weight: 700; color: #b81d1d">200,00 €</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <dc-import name="Timbro" tema="sito" titolo="ANNUALE JUDO ADULTI" parola="2 RATE SU 3" tono="giallo" righe="manca 1 rata da 200,00 €:giallo|entro il 31 dicembre 2026 (tra 61 giorni):giallo" hint-size="100%,120px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; background: #ffffff; border-radius: 6px">
+          <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">LE RATE</span>
+          <span style="font-size: 14px; color: #0b7a33">1 · 150,00 € · già data prima</span>
+          <span style="font-size: 14px; color: #0b7a33">2 · 150,00 € · bonifico del 28 ottobre</span>
+          <span style="font-size: 14px; color: #8f6a00">3 · 200,00 € · da dare entro il 31 dicembre</span>
+          <span style="font-size: 13px; color: #46606f; padding-top: 4px">L’annuale si può pagare in al massimo 3 rate, fino al 31 dicembre.</span>
+        </div>
+        <div style="padding: 12px 14px; background: #fff7dc; border-radius: 6px; font-size: 13px; line-height: 1.45; color: #8f6a00">In CONTABILITÀ c’è uno scritto Satispay da 148,58 € non collegato a questa ricevuta: non è nel conto qui sopra. Se è l’anticipo, vedi PAGATO PRIMA.</div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

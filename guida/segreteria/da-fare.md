@@ -45,6 +45,9 @@ dalla più vecchia.
   trimestre o l'annuale di un corso finito, o non pagato del tutto. In sala si
   entra lo stesso. **Vedi tutti** apre gli [iscritti](iscritti.md) col filtro
   **Corsi scaduti**.
+  Un annuale pagato in parte si legge come «andava chiuso entro il 31
+  dicembre, mancano ancora X» dal 1° gennaio; prima dice solo quanto manca e
+  fino a quando.
 - **Corsi con un prezzo mancante**: i corsi attivi senza la voce nel
   [listino](listino.md), o senza il prezzo dell'annuale o del trimestre. Nel
   modulo d'iscrizione, chi li sceglie trova il prezzo da confermare. Sotto
