@@ -619,6 +619,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from pg_trigger where tgname = 'ricevute_non_due_volte')
     and coalesce((select pg_get_functiondef(to_regprocedure('public.registra_pagamento_diretto(jsonb)'))), '') like '%creato_da, chiave_ricevuta%'),
   ('129-metodo-spento-nel-database.sql', 'un metodo di pagamento online spento lo ferma anche il database',
-    exists (select 1 from pg_trigger where tgname = 'pagamenti_satispay_metodo_acceso' and tgrelid = 'public.pagamenti_satispay'::regclass))
+    exists (select 1 from pg_trigger where tgname = 'pagamenti_satispay_metodo_acceso' and tgrelid = 'public.pagamenti_satispay'::regclass)),
+  ('131-quadratura-nel-database.sql', 'un mese della banca si verifica solo se torna, e torna da verificare se cambia il mese prima',
+    exists (select 1 from dentro where nome = 'saldo_banca_regole' and corpo like '%Da classificare%')
+    and exists (select 1 from pg_trigger where tgname = 'saldo_banca_mese_dopo'))
 ) as x(file, cosa, c)
 order by file, cosa;

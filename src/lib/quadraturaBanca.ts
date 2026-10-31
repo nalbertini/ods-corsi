@@ -75,6 +75,11 @@ const MESE = /^\d{4}-(0[1-9]|1[0-2])$/
 export const meseInLettere = (mese: string) =>
   new Date(`${mese}-15T12:00:00Z`).toLocaleDateString('it-IT', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
+export function meseDopo(mese: string): string {
+  const [a, m] = mese.split('-').map(Number)
+  return m === 12 ? `${a + 1}-01` : `${a}-${String(m + 1).padStart(2, '0')}`
+}
+
 export function mesePrima(mese: string): string {
   const [a, m] = mese.split('-').map(Number)
   return m === 1 ? `${a - 1}-12` : `${a}-${String(m - 1).padStart(2, '0')}`
@@ -252,8 +257,11 @@ export function quadratura(o: {
     }
   }
 
-  // Anche con le righe del mese intatte, un mese prima cambiato sposta il saldo iniziale: la differenza lo dice.
-  const verifica = saldo?.verificatoIl ? (saldo.improntaVerifica === improntaMese(o.righe, contoId, mese) && differenza === 0 ? 'verificato' : 'cambiato dopo la verifica') : null
+  // Anche con le righe del mese intatte, un mese prima cambiato sposta il saldo iniziale: la differenza lo dice;
+  // un estratto del mese prima riscritto, la continuità.
+  const intatto = saldo?.improntaVerifica === improntaMese(o.righe, contoId, mese) && differenza === 0
+    && (!o.saldoPrima || o.saldoPrima.saldoFinale === saldo?.saldoIniziale)
+  const verifica = saldo?.verificatoIl ? (intatto ? 'verificato' : 'cambiato dopo la verifica') : null
   const stato: StatoQuadratura =
     mese >= o.oggi.slice(0, 7) ? 'non ancora finito'
     : !saldo ? 'saldo da scrivere'
@@ -274,7 +282,7 @@ export function riepilogoDifferenza(q: Quadratura, saldo: SaldoBanca | null) {
 }
 
 /** Quel che serve per segnare un mese verificato: lo controllano la schermata e chi scrive. */
-export type QuadraturaDaVerificare = Pick<Quadratura, 'mese' | 'stato' | 'differenza' | 'daClassificare'>
+export type QuadraturaDaVerificare = Pick<Quadratura, 'mese' | 'stato' | 'differenza' | 'daClassificare' | 'avvisi'>
 export function cosaNonVaVerifica(q: QuadraturaDaVerificare): string | null {
   if (q.stato === 'verificato') return 'Questo mese è già verificato.'
   if (q.stato !== 'torna' && q.stato !== 'cambiato dopo la verifica' && q.stato !== 'da classificare' && q.stato !== 'non torna')
@@ -282,6 +290,7 @@ export function cosaNonVaVerifica(q: QuadraturaDaVerificare): string | null {
       : q.stato === 'saldo da scrivere' ? 'Scrivi prima il saldo dell’estratto.'
       : 'Mancano le righe della banca del mese: importa la «Lista movimenti» e riprova.'
   if (q.differenza !== 0) return 'Il conto non torna ancora con la banca: sistema le righe che mancano, poi segnalo verificato.'
+  if (q.avvisi.some((a) => a.tipo === 'discontinuita')) return 'Il saldo iniziale non è il finale del mese prima: correggi uno dei due estratti, poi segnalo verificato.'
   if (q.daClassificare) return `Ci sono ancora ${q.daClassificare === 1 ? '1 riga' : `${q.daClassificare} righe`} «Da classificare»: dagli una voce, poi segnalo verificato.`
   return null
 }
