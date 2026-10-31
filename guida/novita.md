@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.229.0 — 31 ottobre 2026
+
+### Novità
+
+- I VERBALI delle riunioni dei soci e del direttivo si scrivono, si firmano e si ritrovano per anno e argomento
+
 ## 0.228.0 — 31 ottobre 2026
 
 ### Novità
