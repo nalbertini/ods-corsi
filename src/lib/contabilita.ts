@@ -617,6 +617,20 @@ export const originiMovimento = (r: Pick<RigaMovimento, 'origine' | 'origineImpo
   : r.dallaChat ? 'Dalla chat'
   : 'Dal gestionale'
 
+/** Un'uscita dalla banca che ha ancora solo la scritta grezza («Distinta: …»): del destinatario non si sa niente. */
+export const mancaDestinatario = (r: Pick<RigaMovimento, 'origine' | 'tipo' | 'origineImport' | 'satispayId' | 'descrizione'>): boolean =>
+  r.origine === 'movimento' && r.tipo === 'uscita' && !r.satispayId && !!r.origineImport?.startsWith('banca:') && (!r.descrizione.trim() || /^distinta:/i.test(r.descrizione.trim()))
+
+/** Il destinatario scritto a mano diventa la descrizione; la scritta della banca va in nota, per il confronto con l'estratto conto. */
+export function testoConDestinatario(descrizioneBanca: string, notaAttuale: string | null | undefined, destinatario: string): { descrizione: string; nota: string } {
+  const nota = notaAttuale ?? ''
+  const descrizione = destinatario.trim().replace(/\s+/g, ' ')
+  if (!descrizione) return { descrizione: descrizioneBanca, nota }
+  if (!descrizioneBanca.trim()) return { descrizione, nota }
+  const traccia = `Dalla banca: ${descrizioneBanca}`
+  return { descrizione, nota: nota.includes(traccia) ? nota : nota ? `${nota}\n${traccia}` : traccia }
+}
+
 /** La linea sotto il nome di una riga: la voce, e la persona solo se non è già il nome (negli incassi lo è). */
 export const lineaVoce = (r: Pick<RigaMovimento, 'descrizione' | 'voce'>, persona?: string): string => {
   const uguale = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()

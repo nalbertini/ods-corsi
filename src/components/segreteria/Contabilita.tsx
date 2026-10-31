@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import {
   cambiabile,
-  originiMovimento,
+  originiMovimento, mancaDestinatario, testoConDestinatario,
   chiusuraNonPiuInRegola,
   chiusuraVisibile,
   cosaNonVaAnnulloChiusura,
@@ -969,6 +969,9 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
   const [descrizione, setDescrizione] = useState(riga.descrizione)
   const [nota, setNota] = useState(riga.nota ?? '')
   const [chiedendo, setChiedendo] = useState(false)
+  const [destinatario, setDestinatario] = useState('')
+  useBozza(destinatario.trim() !== '', 'Il destinatario')
+  const testoDestinatario = testoConDestinatario(riga.descrizione, riga.nota, destinatario)
   // La voce si cambia anche nei giorni chiusi: non tocca i soldi. La traccia dice chi l'ha cambiata e quando.
   const offerte = riga.tipo === 'entrata' || riga.tipo === 'uscita' ? vociOfferte(voci, riga.tipo) : []
   const voceAttuale = voci.find((v) => v.nome === riga.voce && v.tipo === riga.tipo)
@@ -1042,6 +1045,22 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           <b className="num">{soldi(riga.importo)}</b>
         </div>
       </div>
+      {mancaDestinatario(riga) && !riga.annullato && (
+        <div className="stack" style={{ gap: 14, padding: '18px 20px', border: '2px solid var(--giallo)', background: 'var(--bg)' }}>
+          <span className="sg-etichetta">MANCANO DEI DATI</span>
+          <b style={{ fontSize: 18 }}>A chi hai pagato questi {soldi(riga.importo).replace(' €', ' €')}?</b>
+          <span className="sg-sotto">La banca ci dà solo il numero della distinta. Scrivi il destinatario: la scritta della banca resta nella nota.</span>
+          <Campo id="ma-destinatario" etichetta="DESTINATARIO" largo>
+            <input id="ma-destinatario" className="sg-campo" maxLength={200} placeholder="A chi hai fatto il bonifico" value={destinatario} onChange={(e) => setDestinatario(e.target.value)} />
+          </Campo>
+          {testoDestinatario.nota.length > 300 && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>La nota è troppo lunga per tenere anche la scritta della banca: accorciala qui sotto con «Salva il testo», poi scrivi il destinatario.</span>}
+          <div className="row sg-movimento-gruppo">
+            <Tasto disabled={!destinatario.trim() || testoDestinatario.nota.length > 300} onClick={() => void fai(() => d.correggiTestoMovimento(riga.id, testoDestinatario.descrizione, testoDestinatario.nota), 'Destinatario salvato', onFatto)}>
+              Salva il destinatario
+            </Tasto>
+          </div>
+        </div>
+      )}
       {manuale && !riga.annullato && sug && !daSolo && (
         <div className="stack" style={{ gap: 14, padding: '16px 18px', border: `2px solid ${sug.caso === 'D' ? 'var(--line)' : 'var(--giallo)'}`, background: 'var(--bg)' }}>
           <span className="sg-etichetta">{sug.caso === 'D' ? 'SUGGERITO' : 'SUGGERITO · CONFERMA TU'}</span>

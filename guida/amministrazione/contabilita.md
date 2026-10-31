@@ -241,6 +241,11 @@ Corrente** i movimenti che mancano; **I movimenti**, in alto, torna indietro. Da
 **Lista movimenti** in formato CSV, poi scegli il file. Il file resta sul tuo computer:
 l'app ne legge solo i movimenti, e toglie dalla descrizione IBAN e codici fiscali.
 
+Di un bonifico in uscita la banca dà solo «Distinta: …», senza dire a chi hai pagato.
+Aprendo il movimento compare **MANCANO DEI DATI**: scrivi il destinatario e premi
+**Salva il destinatario**. Diventa il titolo del movimento, e la scritta della banca resta
+nella nota (con «Dalla banca:»), per ritrovarlo sull'estratto conto.
+
 Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**. Dice
 quanti movimenti ci sono, quanti entrano e per quanto, e sotto elenca **tutte le righe
 del file**, nuove o già importate, una per riga: data, testo della banca, tipologia, persona,

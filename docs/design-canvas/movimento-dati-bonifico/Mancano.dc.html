@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Movimento con i dati del bonifico che mancano</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #cfe6f4; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Proposta, dati mancanti: in cima un riquadro dice cosa manca, il destinatario per primo, e come averlo (caricare il file
+     dei bonifici della banca, oppure scriverlo a mano). I campi che la banca non ci ha dato restano «—». -->
+<div style="width: 808px; padding: 24px; background: #cfe6f4">
+  <div style="display: flex; flex-direction: column; gap: 22px; padding: 28px 32px; background: #ffffff; border: 2px solid #0d2a3d">
+
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+        <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">IL MOVIMENTO · DALLA BANCA</span>
+        <h1 style="margin: 0; font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 30px; font-weight: 700; letter-spacing: 0.03em; overflow-wrap: anywhere">Bonifico SEPA · distinta 17921318811082CSDDEF</h1>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; padding-top: 6px">
+          <span style="padding: 6px 12px; border: 2px solid #cfe6f4; font-size: 14px; font-weight: 600">16 ott 2026</span>
+          <span style="padding: 6px 12px; border: 2px solid #cfe6f4; font-size: 14px; font-weight: 600">Uscita</span>
+          <span style="padding: 6px 12px; border: 2px solid #cfe6f4; font-size: 14px; font-weight: 600">Conto Corrente</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none">
+        <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">USCITA</span>
+        <b style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums">366,00 €</b>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; border: 2px solid #f4c31b; background: #eef5fa">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #8f6a00; font-family: Inter, Arial, sans-serif">MANCANO DEI DATI</span>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <b style="font-size: 18px; font-family: Inter, Arial, sans-serif">A chi hai pagato questi 366,00 €?</b>
+        <span style="font-size: 14px; line-height: 1.4; font-family: Inter, Arial, sans-serif">La banca ci dà solo il numero della distinta. Il destinatario e la causale stanno nel file dei bonifici: caricalo e li troviamo da soli.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; gap: 14px; align-items: baseline"><span style="width: 130px; flex: none; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">DESTINATARIO</span><span style="font-size: 15px; color: #b81d1d; font-family: Inter, Arial, sans-serif">Manca</span></div>
+        <div style="display: flex; gap: 14px; align-items: baseline"><span style="width: 130px; flex: none; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">IBAN</span><span style="font-size: 15px; color: #b81d1d; font-family: Inter, Arial, sans-serif">Manca</span></div>
+        <div style="display: flex; gap: 14px; align-items: baseline"><span style="width: 130px; flex: none; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">CAUSALE</span><span style="font-size: 15px; color: #b81d1d; font-family: Inter, Arial, sans-serif">Manca</span></div>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <dc-import name="Bottone" label="CARICA IL FILE DEI BONIFICI" variante="pieno" contesto="segreteria" alto="48px" hint-size="270px,48px"></dc-import>
+        <dc-import name="Bottone" label="SCRIVILO TU" variante="linea" contesto="segreteria" alto="48px" hint-size="140px,48px"></dc-import>
+      </div>
+    </div>
+
+    <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="DESTINATARIO" valore="" segnaposto="A chi hai fatto il bonifico" hint-size="100%,90px"></dc-import>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; border: 2px solid #f4c31b; background: #eef5fa">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #8f6a00; font-family: Inter, Arial, sans-serif">SUGGERITO · CONFERMA TU</span>
+      <span style="font-size: 14px; line-height: 1.4; font-family: Inter, Arial, sans-serif">Non c'è un suggerimento: scegli la voce qui sotto. Con il destinatario ne troviamo uno.</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">IL BONIFICO</span>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 24px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">ESITO</span><span style="font-size: 16px; font-family: Inter, Arial, sans-serif; color: #46606f">—</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">DATA ESECUZIONE</span><span style="font-size: 16px; font-weight: 500; font-family: Inter, Arial, sans-serif">16 ott 2026</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">CREATO IL</span><span style="font-size: 16px; font-family: Inter, Arial, sans-serif; color: #46606f">—</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">METODO</span><span style="font-size: 16px; font-weight: 500; font-family: Inter, Arial, sans-serif">Bonifico SEPA</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">CATEGORIA</span><span style="font-size: 16px; font-family: Inter, Arial, sans-serif; color: #46606f">—</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">LIVELLO DI SERVIZIO</span><span style="font-size: 16px; font-family: Inter, Arial, sans-serif; color: #46606f">—</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">COMMISSIONI</span><span style="font-size: 16px; font-family: Inter, Arial, sans-serif; color: #46606f">—</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">DISTINTA</span><span style="font-size: 16px; font-weight: 500; font-family: Inter, Arial, sans-serif; overflow-wrap: anywhere">17921318811082CSDDEF</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f; font-family: Inter, Arial, sans-serif">PAGATO DAL CONTO</span><span style="font-size: 16px; font-weight: 500; font-family: Inter, Arial, sans-serif">Conto Corrente · BancoPosta</span></div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px">
+      <dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="VOCE" valore="Da classificare" hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="DESCRIZIONE" valore="Distinta: 17921318811082CSDDEF BONIFICO SEPA" hint-size="100%,90px"></dc-import>
+      <div style="grid-column: 1 / -1">
+        <dc-import name="Campo" tipo="area" contesto="segreteria" etichetta="NOTA" valore="" segnaposto="Una nota per chi guarda dopo di te" hint-size="100%,120px"></dc-import>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 20px; border-top: 2px solid #cfe6f4">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <dc-import name="Bottone" label="CAMBIA LA VOCE" variante="pieno" contesto="segreteria" alto="48px" hint-size="180px,48px"></dc-import>
+        <dc-import name="Bottone" label="SALVA IL TESTO" variante="linea" contesto="segreteria" alto="48px" hint-size="160px,48px"></dc-import>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <dc-import name="Bottone" label="ANNULLA IL MOVIMENTO" variante="pericolo" contesto="segreteria" alto="48px" hint-size="230px,48px"></dc-import>
+        <dc-import name="Bottone" label="CHIUDI" variante="linea" contesto="segreteria" alto="48px" hint-size="110px,48px"></dc-import>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":808,"height":1360}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
