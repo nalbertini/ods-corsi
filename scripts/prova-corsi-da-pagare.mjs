@@ -209,7 +209,8 @@ console.log('\n9. Una voce scritta a mano: da controllare')
   ok('«Trimestre» di un nome che non è di nessun corso: da controllare', stati(mano([voce('Trimestre Boh', '2026-09-01', '2027-06-30')])), [['Judo 3', 'da_controllare', null]])
   ok('una voce scritta a mano già finita: da pagare', stati(mano([voce('Lezioni private', '2026-09-01', '2026-10-30')])), [['Judo 3', 'da_pagare', null]])
   ok('la voce di un altro corso del listino non fa dubitare: da pagare', stati(mano([trimestre('MGA', '2026-09-16', '2027-03-15')])), [['Judo 3', 'da_pagare', null]])
-  ok('da controllare è fra quelli da pagare', corsiScaduti([mano([voce('Lezioni private', '2026-09-01', '2027-06-30')])], corsi, listino, OGGI), 1)
+  // Una voce che l'app non sa leggere si guarda, non si chiede: resta nella scheda, esce dai conti.
+  ok('da controllare non è fra quelli da pagare', corsiScaduti([mano([voce('Lezioni private', '2026-09-01', '2027-06-30')])], corsi, listino, OGGI), 0)
 }
 
 console.log('\n10. Come si riconosce la voce del corso')

@@ -38,7 +38,8 @@ dalla più vecchia.
   da pagare**, contati fra chi è attivo. Chi ha meno di 6 anni non ha l'obbligo
   del certificato, e non è nei primi due: **Vedi tutti** apre
   gli [iscritti](iscritti.md) col filtro già acceso, e le righe sono quelle
-  contate qui. Gli stessi numeri li dice la testata di ISCRITTI. Il filtro, e
+  contate qui. Gli stessi numeri li dicono la testata di ISCRITTI, COSA MANCA
+e la coda del banco. Il filtro, e
   la ricerca scritta sopra, restano finché si resta negli iscritti, anche
   aprendo una scheda e tornando dal menu.
 - **Iscritti con un corso scaduto**: chi ha la quota in regola o no, ma il
