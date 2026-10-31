@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.228.0 — 31 ottobre 2026
+
+### Novità
+
+- Le rate dell’annuale e l’anticipo visibile nella scheda
+
 ## 0.227.0 — 31 ottobre 2026
 
 ### Novità
