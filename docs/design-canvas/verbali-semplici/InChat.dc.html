@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Dalla trascrizione al PDF</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: fuori dall'app. Tu dai a Claude (o simili) la trascrizione; Claude la riporta al modello del verbale, dice cosa manca
+     e fa il PDF con la carta intestata. Nell'app non scrive niente: il PDF lo carichi tu, firmato. Schema, non l'aspetto vero della chat. -->
+<div style="width: 720px; min-height: 1100px; padding: 32px; display: flex; flex-direction: column; gap: 16px; background: #eef5fa">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">DOPO LA RIUNIONE · IN CHAT, FUORI DALL'APP</span>
+  <div style="align-self: flex-end; max-width: 520px; padding: 14px 16px; background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px; font-size: 15px; line-height: 1.5">
+    <span style="display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #46606f; margin-bottom: 4px">TU</span>
+    Ecco la trascrizione del direttivo di ieri. Fammi il verbale.
+    <span style="display: block; margin-top: 8px; font-size: 14px; color: #46606f">📎 direttivo-12-11.txt</span>
+  </div>
+  <div style="max-width: 600px; display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; background: #ffffff; border: 1px solid #cfe6f4; border-left: 6px solid #14709f; border-radius: 6px; font-size: 15px; line-height: 1.5">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #14709f">CLAUDE</span>
+    <span>Dalla trascrizione ho capito questo:</span>
+    <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; background: #eef5fa; border-radius: 6px">
+      <span><strong>Direttivo n.3-2026</strong> · 12 novembre, dalle 20:30, in sede</span>
+      <span><strong>Presenti</strong> 4 su 5 (assente Giorgio Valli) · numero legale c'è</span>
+      <span><strong>Presiede</strong> Mario Innella · <strong>verbalizza</strong> Paola Fornetti</span>
+      <span><strong>1.</strong> Verbale n.2-2026 approvato all'unanimità</span>
+      <span><strong>2.</strong> Quote 2027: 380 €, sotto i 6 anni 290 € · 3 sì, 1 astenuto</span>
+      <span><strong>3.</strong> Luca Bianchi segretario fino al 2028 · esito ?</span>
+    </div>
+    <span style="color: #b81d1d; font-weight: 600">Non sento: a che ora è finita, e se la nomina di Luca è stata votata.</span>
+  </div>
+  <div style="align-self: flex-end; max-width: 520px; padding: 14px 16px; background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px; font-size: 15px; line-height: 1.5">
+    <span style="display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #46606f; margin-bottom: 4px">TU</span>
+    Finita alle 22:10, Luca approvato all'unanimità.
+  </div>
+  <div style="max-width: 600px; display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; background: #ffffff; border: 1px solid #cfe6f4; border-left: 6px solid #14709f; border-radius: 6px; font-size: 15px; line-height: 1.5">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #14709f">CLAUDE</span>
+    <span>Ecco il PDF, con le righe per le firme di presidente e segretario. Stampalo, fallo firmare e caricalo in VERBALI.</span>
+    <span style="display: inline-flex; align-self: flex-start; padding: 10px 14px; border: 1px solid #cfe6f4; border-radius: 6px; font-weight: 600">📄 verbale-3-2026.pdf</span>
+    <span style="font-size: 14px; color: #46606f">Per l'app ti servono: Direttivo · n.3-2026 · 12/11/2026 · 20:30–22:10 · in sede.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":720,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

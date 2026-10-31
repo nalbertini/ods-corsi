@@ -164,9 +164,8 @@ export interface Archivio {
   /** Le gare e chi ci va, come `gare` e `gare_atleti` (117-gare.sql). */
   gare?: Gara[]
   gareAtleti?: AtletaGara[]
-  /** I verbali delle riunioni, come `verbali` e le sue tabelle (127-verbali.sql), e chi può fare il segretario (`verbali_segretari`). */
+  /** I verbali delle riunioni, come `verbali` e le sue tabelle (127-verbali.sql). */
   verbali?: Verbale[]
-  verbaliSegretari?: string[]
   /** Le ricevute dei pagamenti, come le righe di `ricevute` (16-ricevute.sql). */
   ricevute?: Ricevuta[]
   /** I tentativi di mandare le ricevute per email, come `invii_ricevute` (76-ricevute-email.sql): in prova nessuna mail parte. */

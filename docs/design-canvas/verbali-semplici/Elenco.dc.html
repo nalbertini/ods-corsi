@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Tutti i verbali</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #14709f; } a:hover { color: #0d2a3d; }
+  </style>
+</helmet>
+<!-- PROPOSTA: l'elenco. Vecchi e nuovi sono uguali: una riga per riunione, il PDF a un clic. Niente BOZZA (non ce ne sono più);
+     rettifica e sostituzione del PDF restano dove sono oggi, dentro il verbale. -->
+<div style="display: flex; flex-wrap: wrap; min-height: 1000px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="VERBALI" numeri="RICHIESTE ONLINE:3" nome="Marco Rossi" ruolo="Segreteria" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 999 1 560px; min-width: 0; max-width: 1000px; padding: 28px 36px">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">VERBALI</h1>
+      <a href="Carica.dc.html" style="text-decoration: none"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="principale" label="Carica un verbale" hint-size="220px,56px"></dc-import></a>
+    </div>
+    <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="CERCA" valore="" nota="Per anno, riunione o parola dell'ordine del giorno." hint-size="100%,96px"></dc-import>
+    <div style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px">
+      <div style="display: grid; grid-template-columns: 110px 160px minmax(0, 1fr) auto; gap: 16px; align-items: center; min-height: 64px; padding: 0 18px">
+        <strong>n.3-2026</strong><span>Direttivo</span><span>12 novembre 2026 · Quote 2027, nomina del segretario</span><a href="#" style="font-weight: 600; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center">Apri il PDF</a>
+      </div>
+      <div style="display: grid; grid-template-columns: 110px 160px minmax(0, 1fr) auto; gap: 16px; align-items: center; min-height: 64px; padding: 0 18px; border-top: 1px solid #cfe6f4">
+        <strong>n.2-2026</strong><span>Soci</span><span>24 aprile 2026 · Bilancio consuntivo 2025</span><a href="#" style="font-weight: 600; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center">Apri il PDF</a>
+      </div>
+      <div style="display: grid; grid-template-columns: 110px 160px minmax(0, 1fr) auto; gap: 16px; align-items: center; min-height: 64px; padding: 0 18px; border-top: 1px solid #cfe6f4">
+        <strong>n.4-2019</strong><span>Elettiva</span><span>3 ottobre 2019</span><a href="#" style="font-weight: 600; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center">Apri il PDF</a>
+      </div>
+      <div style="display: grid; grid-template-columns: 110px 160px minmax(0, 1fr) auto; gap: 16px; align-items: center; min-height: 64px; padding: 0 18px; border-top: 1px solid #cfe6f4">
+        <strong>n.1-2015</strong><span>Soci</span><span>12 marzo 2015</span><a href="#" style="font-weight: 600; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center">Apri il PDF</a>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

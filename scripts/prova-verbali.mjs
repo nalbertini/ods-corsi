@@ -40,6 +40,7 @@
 //   pdfInVigore(v): Allegato | undefined     tipo 'firmato' e sostituitoIl vuoto
 //   storiaPdf(v): { quando; cosa; motivo? }[]   dal più vecchio al più nuovo; «Firmato», «Rettificato», «PDF firmato sostituito»
 //   cosaNonVaFile({ nome, tipo, peso }): string | null   solo application/pdf, max 20*1024*1024
+//   cosaNonVaCaricamento(v, file | undefined, firmatoIl, oggi): string | null   file, poi numero/data/tipo, poi data della firma
 //   cercaVerbali(verbali, { anno?, tipo?, argomento?, stato?: 'bozza'|'firmato'|'rettificato', testo? }): Verbale[]
 //   ordinaVerbali(verbali): { daCompletare: Verbale[]; firmati: Verbale[] }
 //   anniDei(verbali): number[]               decrescente, senza doppioni
@@ -168,21 +169,25 @@ ok('una carica che finisce prima di cominciare non va', parla(m.cosaNonVaVerbale
 ok('una carica dal e al lo stesso giorno va', m.cosaNonVaVerbale(bozza({ cariche: [{ carica: 'Presidente', personaId: 'p1', dal: '2026-03-01', al: '2026-03-01' }] })), null)
 ok('una carica senza fine va', m.cosaNonVaVerbale(bozza({ cariche: [{ carica: 'Presidente', personaId: 'p1', dal: '2026-03-01' }] })), null)
 
-console.log('\n4 · COSA NON VA: per firmare serve tutto')
+console.log('\n4 · COSA NON VA: per firmare bastano numero, data, tipo e PDF')
 const F = { staFirmando: true }
+const scarno = (extra = {}) => bozza({ allegati: [pdf()], ...extra })
 ok('il verbale completo si può firmare', m.cosaNonVaVerbale(completo(), F), null)
-ok('senza ora d’inizio', parla(m.cosaNonVaVerbale(completo({ oraInizio: undefined }), F), 'ora'), true)
-ok('senza luogo', parla(m.cosaNonVaVerbale(completo({ luogo: '' }), F), 'luogo'), true)
-ok('senza ordine del giorno', parla(m.cosaNonVaVerbale(completo({ odg: [] }), F), 'ordine del giorno'), true)
-ok('un ordine del giorno di righe vuote è vuoto', parla(m.cosaNonVaVerbale(completo({ odg: ['  '] }), F), 'ordine del giorno'), true)
-ok('senza presidente', parla(m.cosaNonVaVerbale(completo({ presidenteId: undefined }), F), 'presidente'), true)
-ok('senza segretario', parla(m.cosaNonVaVerbale(completo({ segretarioId: undefined }), F), 'segretari'), true)
-ok('senza presenti', parla(m.cosaNonVaVerbale(completo({ presenti: undefined }), F), 'presenti'), true)
-ok('zero presenti non vale', parla(m.cosaNonVaVerbale(completo({ presenti: 0 }), F), 'presenti'), true)
+ok('un verbale non storico con solo numero, data, tipo e PDF si può firmare', m.cosaNonVaVerbale(scarno(), F), null)
+// Regola nuova (ora, luogo, odg, presidente, segretario, presenti stanno nel PDF): non bloccano più la firma.
+ok('senza ora d’inizio si firma', m.cosaNonVaVerbale(completo({ oraInizio: undefined }), F), null)
+ok('senza luogo si firma', m.cosaNonVaVerbale(completo({ luogo: '' }), F), null)
+ok('senza ordine del giorno si firma', m.cosaNonVaVerbale(completo({ odg: [] }), F), null)
+ok('con un ordine del giorno di righe vuote si firma', m.cosaNonVaVerbale(completo({ odg: ['  '] }), F), null)
+ok('senza presidente si firma', m.cosaNonVaVerbale(completo({ presidenteId: undefined }), F), null)
+ok('senza segretario si firma', m.cosaNonVaVerbale(completo({ segretarioId: undefined }), F), null)
+ok('senza presenti si firma', m.cosaNonVaVerbale(completo({ presenti: undefined }), F), null)
+ok('con zero presenti si firma', m.cosaNonVaVerbale(completo({ presenti: 0 }), F), null)
 ok('senza PDF firmato', parla(m.cosaNonVaVerbale(completo({ allegati: [] }), F), 'pdf'), true)
 ok('un PDF sostituito non è in vigore', parla(m.cosaNonVaVerbale(completo({ allegati: [pdf({ sostituitoIl: '2026-04-01' })] }), F), 'pdf'), true)
 ok('un allegato che non è il firmato non basta', parla(m.cosaNonVaVerbale(completo({ allegati: [pdf({ tipo: 'convocazione' })] }), F), 'pdf'), true)
-ok('la stessa bozza senza questi dati passa se non si firma', m.cosaNonVaVerbale(completo({ oraInizio: undefined, allegati: [] })), null)
+ok('senza PDF, non storico, dice ancora del PDF e non d’altro', parla(m.cosaNonVaVerbale(scarno({ allegati: [] }), F), 'pdf') && !/\bora\b|luogo|presidente|segretario|presenti/i.test(m.cosaNonVaVerbale(scarno({ allegati: [] }), F)), true)
+ok('la stessa bozza senza PDF passa se non si firma', m.cosaNonVaVerbale(completo({ allegati: [] })), null)
 
 console.log('\n5 · COSA NON VA: lo storico chiede il minimo')
 ok('storico: numero, data, tipo e PDF bastano', m.cosaNonVaVerbale(bozza({ storico: true, allegati: [pdf()] }), F), null)
@@ -194,19 +199,19 @@ ok('storico senza luogo e presidente passa', m.cosaNonVaVerbale(bozza({ storico:
 console.log('\n6 · AVVISI: non bloccano, uno per caso')
 ok('nessun avviso su un verbale ben fatto', m.avvisiVerbale(completo()), [])
 ok('nessun avviso su uno storico scarno', m.avvisiVerbale(bozza({ storico: true, allegati: [pdf()] })), [])
-ok('campi importanti vuoti: un avviso', m.avvisiVerbale(bozza()).length, 1)
-// l'avviso nomina solo i campi che mancano davvero
-const campiMancanti = (extra) => m.avvisiVerbale(completo(extra))[0] ?? ''
+ok('campi importanti vuoti: nessun avviso', m.avvisiVerbale(bozza()), [])
+// Ora, luogo, odg, presidente, segretario, presenti non servono più per firmare: niente «Per firmare mancano».
+const nessunPerFirmare = (extra) => m.avvisiVerbale(completo(extra)).some((x) => /Per firmare/i.test(x))
 for (const [campo, extra] of [['ora d’inizio', { oraInizio: undefined }], ['luogo', { luogo: '  ' }], ['ordine del giorno', { odg: ['', ' '] }], ['presidente', { presidenteId: undefined }], ['segretario', { segretarioId: undefined }], ['presenti', { presenti: 0 }]]) {
-  const avviso = campiMancanti(extra)
-  const altri = ['ora d’inizio', 'luogo', 'ordine del giorno', 'presidente', 'segretario', 'presenti'].filter((c) => c !== campo)
-  ok(`manca solo ${campo}: l'avviso lo nomina e basta`, [avviso.includes(campo), altri.some((c) => avviso.includes(c))], [true, false])
+  ok(`manca solo ${campo}: nessun avviso «Per firmare»`, nessunPerFirmare(extra), false)
 }
-ok('mancano due campi: l’avviso li nomina entrambi, in una riga sola', (() => { const r = m.avvisiVerbale(completo({ luogo: '', presidenteId: undefined })); return [r.length, r[0].includes('luogo') && r[0].includes('presidente')] })(), [1, true])
+ok('non storico senza ora, luogo, presidente e presenti: nessun avviso «Per firmare»', m.avvisiVerbale(bozza({ allegati: [pdf()] })).some((x) => /Per firmare/i.test(x)), false)
 ok('presenti più deleghe oltre gli aventi diritto', m.avvisiVerbale(completo({ aventiDiritto: 10, presenti: 9, deleghe: 2 })).length, 1)
 ok('presenti più deleghe pari agli aventi diritto: niente', m.avvisiVerbale(completo({ aventiDiritto: 11, presenti: 9, deleghe: 2 })), [])
 ok('anno del numero diverso dall’anno della data', m.avvisiVerbale(completo({ anno: 2025, data: '2026-03-10' })).length, 1)
 ok('numero già usato nell’anno', m.avvisiVerbale(completo(), [completo({ id: 'v9' })]).length, 1)
+// Il database rifiuta il doppione: l'avviso deve dire che così non si carica.
+ok('il numero doppio dice che non si carica', parla(m.avvisiVerbale(completo(), [completo({ id: 'v9' })])[0], 'non si carica'), true)
 ok('lo stesso numero in un altro anno va bene', m.avvisiVerbale(completo(), [completo({ id: 'v9', anno: 2025, data: '2025-03-10' })]), [])
 ok('il verbale stesso nell’elenco non è un doppione', m.avvisiVerbale(completo(), [completo()]), [])
 ok('ora di fine prima dell’inizio', m.avvisiVerbale(completo({ oraInizio: '19:00', oraFine: '18:00' })).length, 1)
@@ -226,7 +231,7 @@ ok('il rettificato non si elimina', m.puoEliminare(firmato({ rettifiche: [{ data
 ok('la bozza completa col PDF si firma', m.puoFirmare(completo()), true)
 ok('senza PDF non si firma', m.puoFirmare(completo({ allegati: [] })), false)
 ok('con solo un PDF sostituito non si firma', m.puoFirmare(completo({ allegati: [pdf({ sostituitoIl: '2026-04-01' })] })), false)
-ok('con un campo mancante non si firma', m.puoFirmare(completo({ luogo: '' })), false)
+ok('senza il luogo si firma lo stesso', m.puoFirmare(completo({ luogo: '' })), true)
 ok('lo storico col PDF si firma', m.puoFirmare(bozza({ storico: true, allegati: [pdf()] })), true)
 ok('il già firmato non si firma di nuovo', m.puoFirmare(firmato()), false)
 ok('il firmato si rettifica', m.puoRettificare(firmato()), true)
@@ -279,6 +284,49 @@ ok('una foto no', parla(m.cosaNonVaFile({ nome: 'v.jpg', tipo: 'image/jpeg', pes
 ok('un Word no', parla(m.cosaNonVaFile({ nome: 'v.docx', tipo: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', peso: 1000 }), 'pdf'), true)
 ok('un file senza nome no', parla(m.cosaNonVaFile({ nome: '  ', tipo: 'application/pdf', peso: 1000 }), 'nome'), true)
 ok('un file vuoto no', typeof m.cosaNonVaFile({ nome: 'v.pdf', tipo: 'application/pdf', peso: 0 }), 'string')
+
+console.log('\n10b · IL CARICAMENTO: la riunione + il PDF firmato')
+const FILE = { nome: 'v.pdf', tipo: 'application/pdf', peso: 300000 }
+const carica = (v, file, firmatoIl, oggi = OGGI) => (typeof m.cosaNonVaCaricamento === 'function' ? m.cosaNonVaCaricamento(v, file, firmatoIl, oggi) : 'cosaNonVaCaricamento non esiste')
+ok('la funzione esiste', typeof m.cosaNonVaCaricamento, 'function')
+ok('tutto giusto: va', carica(bozza(), FILE, '2026-03-12'), null)
+ok('non chiede ora, luogo, ordine del giorno, presidente, segretario, presenti', carica(bozza({ oraInizio: undefined, luogo: undefined, odg: [], presidenteId: undefined, segretarioId: undefined, presenti: undefined }), FILE, '2026-03-12'), null)
+ok('senza file dice di scegliere il PDF', parla(carica(bozza(), undefined, '2026-03-12'), 'pdf'), true)
+ok('un file che non è PDF non va', parla(carica(bozza(), { ...FILE, tipo: 'image/jpeg' }, '2026-03-12'), 'pdf'), true)
+ok('un PDF troppo grande non va', parla(carica(bozza(), { ...FILE, peso: 20 * MB + 1 }, '2026-03-12'), '20 ?MB'), true)
+ok('senza data della riunione lo dice', parla(carica(bozza({ data: '' }), FILE, '2026-03-12'), 'data'), true)
+ok('senza numero lo dice', parla(carica(bozza({ numero: undefined }), FILE, '2026-03-12'), 'numero'), true)
+ok('senza tipo lo dice', parla(carica(bozza({ tipo: undefined }), FILE, '2026-03-12'), 'tipo'), true)
+ok('firma senza data lo dice', parla(carica(bozza(), FILE, ''), 'data'), true)
+ok('firma nel futuro non va', parla(carica(bozza(), FILE, '2026-10-26'), 'futur|oggi'), true)
+ok('firma prima della riunione non va', parla(carica(bozza(), FILE, '2026-03-09'), 'riunione'), true)
+ok('firma nel giorno della riunione va', carica(bozza(), FILE, '2026-03-10'), null)
+ok('uno storico in bozza si completa allo stesso modo', carica(bozza({ storico: true }), FILE, '2026-03-12'), null)
+
+console.log('\n10c · CARICARE: salva, PDF e firma, e se un passo cade non nasce un doppione')
+// Dati finti in memoria: caricaPdf cade la prima volta.
+const finto = () => {
+  const salvati = []
+  let cadute = 1
+  return {
+    salvati,
+    async salva(v) { if (v.id) return v.id; salvati.push(v); return `n${salvati.length}` },
+    async caricaPdf() { if (cadute-- > 0) throw new Error('rete giù') },
+    async firma() {},
+  }
+}
+const nuovo = { ...bozza(), id: undefined }
+if (typeof m.caricaVerbaleFirmato !== 'function') ok('caricaVerbaleFirmato esiste', typeof m.caricaVerbaleFirmato, 'function')
+else {
+  const f = finto()
+  let tenuto
+  const primo = await m.caricaVerbaleFirmato(f, nuovo, { nome: 'v.pdf', peso: 1 }, '2026-03-12', (id) => (tenuto = id)).then(() => 'fatto', (x) => x.message)
+  ok('il primo tentativo cade col PDF', primo, 'rete giù')
+  ok('ma l’id della bozza creata arriva a chi chiama', tenuto, 'n1')
+  const secondo = await m.caricaVerbaleFirmato(f, { ...nuovo, id: tenuto }, { nome: 'v.pdf', peso: 1 }, '2026-03-12', (id) => (tenuto = id))
+  ok('il secondo riusa la stessa bozza', secondo, 'n1')
+  ok('nasce un verbale solo', f.salvati.length, 1)
+}
 
 // ---------------------------------------------------------------------------
 console.log('\n11 · CERCARE')
@@ -366,6 +414,11 @@ ok('firmare con la data nel futuro è un rifiuto', parla(await dati.firma(idB, '
 await dati.firma(idB, '2026-10-24')
 const firmatoOra = (await dati.leggi()).find((v) => v.id === idB)
 ok('firmata: stato e data registrati', [firmatoOra.stato, firmatoOra.firmatoIl], ['firmato', '2026-10-24'])
+// Un non storico con solo numero, data, tipo e PDF si firma (la riunione + il PDF firmato).
+const idS = await dati.salva({ ...bozza({ numero: 79 }), id: undefined })
+await dati.caricaPdf(idS, { nome: 'solo-pdf.pdf', peso: 5000 })
+ok('in prova: firmare un non storico con solo il PDF riesce', await dati.firma(idS, '2026-10-24').then(() => 'fatto', (x) => x.message), 'fatto')
+ok('e risulta firmato', (await dati.leggi()).find((v) => v.id === idS).stato, 'firmato')
 ok('un firmato non si salva di nuovo', typeof (await dati.salva(firmatoOra).then(() => null, (x) => x.message)), 'string')
 
 ok('rettificare senza motivo è un rifiuto', parla(await dati.rettifica(idB, { data: OGGI, motivo: ' ', testo: 'Presenti 13' }).then(() => null, (x) => x.message), 'motivo'), true)

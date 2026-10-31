@@ -1295,6 +1295,8 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-riga-verbale .sg-riga-apri { min-height: 44px; }
 @media (max-width: 1000px) {
   .sg-riga-verbale { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); row-gap: 6px; }
+  /* Riunione e data restano: la regola delle righe degli iscritti le nasconde. */
+  .sg-riga-verbale > :nth-child(2), .sg-riga-verbale > :nth-child(3) { display: revert; }
   .sg-riga-verbale > :nth-child(2) { grid-column: 1 / -1; }
   .sg-lista-testa.sg-riga-verbale { display: none; }
 }

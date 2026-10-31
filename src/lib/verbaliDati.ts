@@ -227,17 +227,6 @@ export function creaVerbaliSupabase(db: SupabaseClient): DatiVerbali {
       if (error || !data) throw new Error('Il PDF non si apre: riprova fra poco')
       return data.signedUrl
     },
-
-    async leggiSegretari() {
-      return (ok(await db.from('verbali_segretari').select('persona_id')) as { persona_id: string }[]).map((x) => x.persona_id)
-    },
-
-    async salvaSegretari(personaIds) {
-      const ids = [...new Set(personaIds)]
-      if (ids.length) ok(await db.from('verbali_segretari').upsert(ids.map((persona_id) => ({ persona_id })), { onConflict: 'persona_id', ignoreDuplicates: true }))
-      const via = db.from('verbali_segretari').delete()
-      ok(await (ids.length ? via.not('persona_id', 'in', `(${ids.join(',')})`) : via.not('persona_id', 'is', null)))
-    },
   }
 }
 

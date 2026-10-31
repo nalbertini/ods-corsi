@@ -91,7 +91,7 @@ export async function creaVerbaliProva(): Promise<DatiVerbali> {
     async firma(id, data) {
       const v = trova(id)
       if (v.stato !== 'bozza') throw new Error('Questo verbale è già firmato')
-      const no = cosaNonVaDataFirma(v, data, oggiARoma()) ?? cosaNonVaVerbale(v, { staFirmando: true })
+      const no = cosaNonVaVerbale(v, { staFirmando: true }) ?? cosaNonVaDataFirma(v, data, oggiARoma())
       if (no) throw new Error(no)
       sostituisci({ ...v, stato: 'firmato', firmatoIl: data })
     },
@@ -117,15 +117,6 @@ export async function creaVerbaliProva(): Promise<DatiVerbali> {
 
     async linkPdf() {
       return ''
-    },
-
-    async leggiSegretari() {
-      return a().verbaliSegretari ?? []
-    },
-
-    async salvaSegretari(personaIds) {
-      a().verbaliSegretari = [...new Set(personaIds)]
-      archivio.salva()
     },
   }
 }

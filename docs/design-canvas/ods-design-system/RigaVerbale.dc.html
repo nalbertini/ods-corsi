@@ -19,13 +19,17 @@
   <span style="min-width: 0; font-size: 15px; font-weight: 600"><span style="display: flex; align-items: center; min-height: 44px">{{tipo}}</span><span style="display: block; font-size: 12px; font-weight: 400; color: #46606f">{{odg}}</span></span>
   <span style="font-size: 14px; font-variant-numeric: tabular-nums">{{data}}</span>
   <span><span style="display: inline-block; max-width: 100%; padding: 1px 8px; border: 1.5px solid {{colore}}; border-radius: 6px; background: #ffffff; color: {{colore}}; font-size: 12px; font-weight: 700; letter-spacing: 0.02em">{{stato}}</span></span>
-  <span style="font-size: 14px">{{pdf}}</span>
+  <span style="display: flex; align-items: center; min-height: 44px; font-size: 14px">{{pdf}}</span>
 </div>
 </x-dc>
 <script data-dc-script data-props='{"numero":{"editor":"text","default":"2026/3"},"tipo":{"editor":"text","default":"Direttivo"},"odg":{"editor":"text","default":"Andamento dei corsi · Cena di Natale"},"data":{"editor":"text","default":"12 marzo 2026"},"firmato":{"editor":"boolean","default":true},"$preview":{"width":1000,"height":72}}'>
 // COSTRUITA (src/components/segreteria/Verbali.tsx, elenco; stile in src/segreteria.css, blocco VERBALI): la riga dell'elenco VERBALI.
 // Colonne sopra i 1001px: 96px minmax(0,1fr) 150px 210px 90px (NUMERO, RIUNIONE col suo ordine del giorno a 12px `dim`, DATA, STATO, PDF).
-// Una bozza ha la barra gialla a sinistra (inset 4px `giallo-testo`) e il tag giallo «Bozza»; un verbale firmato il tag verde «Firmato il …».
+// Una bozza (solo gli storici importati a metà o un caricamento interrotto, in DA COMPLETARE) ha la barra gialla a sinistra
+// (inset 4px `giallo-testo`) e il tag giallo «Bozza», e si apre in CARICA UN VERBALE; un verbale firmato il tag verde «Firmato»,
+// corto (la data della firma è nella scheda), e se ha rettifiche accanto il giallo «Rettificato». Nella colonna PDF il tasto
+// «Apri il PDF» (44px, apre il file senza aprire la scheda); senza PDF «—».
+// Sotto i 1001px due colonne: RIUNIONE a tutta riga, NUMERO, DATA, STATO e PDF a coppie, la testa nascosta.
 // Il tag va a capo (white-space normal) e la riga e' alta almeno 56px, con l'area di tocco del titolo a 44px.
 class Component extends DCLogic {
   renderVals() {
@@ -35,8 +39,8 @@ class Component extends DCLogic {
       numero: p.numero, tipo: p.tipo, odg: p.odg, data: p.data,
       barra: firmato ? 'none' : 'inset 4px 0 0 #8f6a00',
       colore: firmato ? '#0b7a33' : '#8f6a00',
-      stato: firmato ? 'Firmato il ' + p.data : 'Bozza',
-      pdf: firmato ? 'PDF' : '—',
+      stato: firmato ? 'Firmato' : 'Bozza',
+      pdf: firmato ? 'Apri il PDF' : '—',
     };
   }
 }
