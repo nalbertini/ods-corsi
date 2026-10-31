@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Movimento della banca, com'è oggi</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #cfe6f4; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Com'è adesso (Contabilita.tsx, MovimentoAperto) per un bonifico dalla banca: del destinatario non si sa niente,
+     la descrizione è solo il numero della distinta. -->
+<div style="width: 808px; padding: 24px; background: #cfe6f4">
+  <div style="display: flex; flex-direction: column; gap: 22px; padding: 28px 32px; background: #ffffff; border: 2px solid #0d2a3d">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+        <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">IL MOVIMENTO · DALLA BANCA</span>
+        <h1 style="margin: 0; font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 30px; font-weight: 700; letter-spacing: 0.03em; overflow-wrap: anywhere">Distinta: 17921318811082CSDDEF BONIFICO SEPA</h1>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; padding-top: 6px">
+          <span style="padding: 6px 12px; border: 2px solid #cfe6f4; font-size: 14px; font-weight: 600">16 ott 2026</span>
+          <span style="padding: 6px 12px; border: 2px solid #cfe6f4; font-size: 14px; font-weight: 600">Uscita</span>
+          <span style="padding: 6px 12px; border: 2px solid #cfe6f4; font-size: 14px; font-weight: 600">Conto Corrente</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none">
+        <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">USCITA</span>
+        <b style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums">366,00 €</b>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; border: 2px solid #f4c31b; background: #eef5fa">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #8f6a00; font-family: Inter, Arial, sans-serif">SUGGERITO · CONFERMA TU</span>
+      <span style="font-size: 14px; line-height: 1.4; font-family: Inter, Arial, sans-serif">Non c'è un suggerimento: scegli la voce qui sotto.</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px">
+      <dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="VOCE" valore="Da classificare" hint-size="100%,90px"></dc-import>
+      <div style="grid-column: 1 / -1">
+        <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="DESCRIZIONE" valore="Distinta: 17921318811082CSDDEF BONIFICO SEPA" hint-size="100%,90px"></dc-import>
+      </div>
+      <div style="grid-column: 1 / -1">
+        <dc-import name="Campo" tipo="area" contesto="segreteria" etichetta="NOTA" valore="" hint-size="100%,120px"></dc-import>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap">
+      <dc-import name="Bottone" label="CAMBIA LA VOCE" variante="pieno" contesto="segreteria" alto="48px" hint-size="180px,48px"></dc-import>
+      <dc-import name="Bottone" label="SALVA IL TESTO" variante="linea" contesto="segreteria" alto="48px" hint-size="160px,48px"></dc-import>
+      <dc-import name="Bottone" label="ANNULLA IL MOVIMENTO" variante="pericolo" contesto="segreteria" alto="48px" hint-size="230px,48px"></dc-import>
+      <dc-import name="Bottone" label="CHIUDI" variante="linea" contesto="segreteria" alto="48px" hint-size="110px,48px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":808,"height":720}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1438,5 +1438,29 @@ console.log('\n99. ogni riga dice da dove viene')
   ok('dalla banca, dallo storico, da Satispay, dalla chat', [da({ origine: 'movimento', origineImport: 'banca:x' }), da({ origine: 'movimento', origineImport: 'prima-nota:3' }), da({ origine: 'movimento', satispayId: 's1' }), da({ origine: 'movimento', dallaChat: true })], ['Dalla banca', 'Dallo storico', 'Da Satispay', 'Dalla chat'])
 }
 
+console.log('\n100. un\'uscita dalla banca senza destinatario lo chiede')
+{
+  const base = { origineImport: 'banca:x', tipo: 'uscita', origine: 'movimento', descrizione: 'Distinta: BONIFICO 123' }
+  const manca = (r) => prova(() => m.mancaDestinatario({ ...base, ...r }))
+  ok('un\'uscita dalla banca con la scritta grezza chiede il destinatario', manca({}), true)
+  ok('…anche con «distinta:» minuscolo e spazi davanti', manca({ descrizione: '  distinta: bonifico' }), true)
+  ok('…e con la descrizione vuota', manca({ descrizione: '' }), true)
+  ok('Satispay non lo chiede', manca({ satispayId: 's1' }), false)
+  ok('un giroconto non lo chiede', manca({ tipo: 'giroconto' }), false)
+  ok('un\'entrata non lo chiede', manca({ tipo: 'entrata' }), false)
+  ok('un movimento non dalla banca non lo chiede', [manca({ origineImport: null }), manca({ origineImport: 'prima-nota:3' })], [false, false])
+  ok('un incasso di un iscritto non lo chiede', manca({ origine: 'ricevuta' }), false)
+  ok('una descrizione già riscritta a mano non lo chiede', manca({ descrizione: 'Enel Energia' }), false)
+
+  const testo = (...a) => prova(() => m.testoConDestinatario(...a))
+  ok('il destinatario diventa la descrizione, la scritta della banca va in nota', testo('Distinta: BONIFICO 123', null, 'Enel Energia'), { descrizione: 'Enel Energia', nota: 'Dalla banca: Distinta: BONIFICO 123' })
+  ok('spazi ai bordi e doppi ripuliti', testo('Distinta: X', undefined, '  Enel   Energia  ').descrizione, 'Enel Energia')
+  ok('una nota già piena resta, la scritta va in coda a capo', testo('Distinta: X', 'Fattura 12', 'Enel').nota, 'Fattura 12\nDalla banca: Distinta: X')
+  ok('la scritta già nella nota non si duplica', testo('Distinta: X', 'Fattura 12\nDalla banca: Distinta: X', 'Enel').nota, 'Fattura 12\nDalla banca: Distinta: X')
+  ok('una nota lunga non si taglia in silenzio: la funzione la dà intera, sta al modale dire che non entra', testo('Distinta: X', 'a'.repeat(290), 'Enel').nota, `${'a'.repeat(290)}\nDalla banca: Distinta: X`)
+  ok('la banca non ha scritto niente: niente «Dalla banca: » vuoto in nota', testo('  ', 'Fattura 12', 'Enel').nota, 'Fattura 12')
+  ok('destinatario vuoto o di soli spazi: niente descrizione vuota, nota invariata', [testo('Distinta: X', 'Fattura 12', ''), testo('Distinta: X', null, '   ')], [{ descrizione: 'Distinta: X', nota: 'Fattura 12' }, { descrizione: 'Distinta: X', nota: '' }])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

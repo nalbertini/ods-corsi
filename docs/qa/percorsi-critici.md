@@ -189,6 +189,8 @@ quando arriva la prova.
   listino non è caricato (`listino === null`); nessuna prova (DA FARE).
 - Suggerimento da classificare: «scrive solo alla conferma» sta in
   `Contabilita.tsx`; nessuna prova, solo collaudo a mano.
+- Destinatario di un'uscita dalla banca: `testoConDestinatario` non tiene il tetto di 300 caratteri della nota, e `Contabilita.tsx` taglia con `.slice(0, 300)`: la scritta della banca può sparire in silenzio (DA FARE, caso nella prova 100).
+- Destinatario di un'uscita dalla banca: il riquadro «MANCANO DEI DATI» e il salvataggio stanno in `Contabilita.tsx`; nessuna prova, solo collaudo a mano.
 - Suggerimento da classificare: oltre otto candidati il nono manca, e «più
   candidati» non lo dice; il tetto è provato (`abbina-movimenti.sql`,
   `prova:abbina-movimenti`), il messaggio no.
