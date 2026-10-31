@@ -770,5 +770,39 @@ console.log('\n30. in prova: i contanti in un giorno di cassa chiusa non entrano
   ok('…e i contanti datati 10 passano', await fatta(dati('2026-09-10', [pag('2026-09-10', 3000)])), 'string')
 }
 
+console.log('\n31. in prova: la ricevuta con la chiave di un pagamento a mano attivo no (come 128-ricevuta-pagamento-perso.sql)')
+{
+  // «Lascia stare», registrato senza ricevuta, poi la ricevuta di quel modulo arriva lo stesso: gli stessi soldi due volte.
+  const s = m.creaSegreteriaProva()
+  const [chi, altra] = (await s.persone()).filter((p) => p.attiva)
+  const K = 'dddddddd-0000-4000-8000-000000000031'
+  const d = { personaId: chi.id, data: '2026-10-10', importo: 28000, metodo: 'POS', voce: 'ANNUALE JUDO KIDS' }
+  const dati = (chiave, personaId = chi.id) => ({ data: d.data, personaId, ente: m.ENTE_PREDEFINITO, intestatario: { nome: chi.nome, cognome: chi.cognome }, voci: [m.voceDaPagamento(d)], anticipo: 0, chiave })
+  const fai = async (x, pid) => {
+    try {
+      return typeof (await s.emettiRicevuta(x, undefined, pid)).id
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  const quante = async () => (await s.ricevute()).length
+  const p = await s.registraPagamentoDiretto({ ...d, chiaveRicevuta: K })
+  const prima = await quante()
+  ok('la ricevuta con la chiave del pagamento a mano: no', await fai(dati(K)),
+    `ERRORE: Questi soldi sono già nel pagamento a mano di ${m.soldi(28000)} del 10/10/2026: chiudi il modulo e fai la ricevuta da lì, con FANNE LA RICEVUTA`)
+  ok('…anche con la chiave in maiuscolo', (await fai(dati(` ${K.toUpperCase()} `))).startsWith('ERRORE: Questi soldi'), true)
+  ok('…e nessuna ricevuta nuova', await quante(), prima)
+  await s.registraPagamentoDiretto({ ...d, personaId: altra.id, chiaveRicevuta: 'dddddddd-0000-4000-8000-000000000032' })
+  ok('la chiave di un pagamento di un\'altra persona non ferma', await fai(dati('dddddddd-0000-4000-8000-000000000032')), 'string')
+  ok('FANNE LA RICEVUTA (chiave nuova) sul pagamento con la chiave va', await fai(dati('dddddddd-0000-4000-8000-000000000033'), p.id), 'string')
+  const dopo = await fai(dati(K))
+  ok('…e la ricevuta del modulo, dopo, no: i soldi sono già nella ricevuta fatta da lì',
+    dopo.startsWith('ERRORE: Questi soldi sono già nella ricevuta n. ') && dopo.endsWith('/2026: chiudi il modulo'), true)
+  const K5 = 'dddddddd-0000-4000-8000-000000000035'
+  const p5 = await s.registraPagamentoDiretto({ ...d, chiaveRicevuta: K5 })
+  await s.annullaPagamentoDiretto(p5.id)
+  ok('annullato il pagamento a mano, la ricevuta con la sua chiave va', await fai(dati(K5)), 'string')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

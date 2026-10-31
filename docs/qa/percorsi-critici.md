@@ -31,8 +31,8 @@ prova tiene stanno in «Scoperti», in fondo.
 | Certificati medici | segreteria, iscritto | certificato perso o visibile a chi non deve | `prova:certificati`, `prova:dafare`, `prova:schede-iscritto`, `prova:segreteria`, `prova:segreteria-comune`, `prova:mcp`, `prova:gare`, `certificati.sql` | sì |
 | Certificato mandato dall'iscritto | iscritto, segreteria | certificato di un altro, file sanitario visibile | `prova:certificato-iscritto`, `prova:dafare`, `prova:iscritto-supabase`, `prova:segreteria`, `certificato-iscritto.sql`, `109-privilegi-e-certificati.sql`, `movimenti-persona.sql`, `110-tetto-certificato-messaggio.sql` | sì |
 | Striscia COSA MANCA | segreteria | un «a posto» falso | `prova:dafare`, `prova:cosa-manca`, `prova:certificati`, `prova:segreteria` | sì |
-| Storico dei pagamenti | segreteria | pagamento che non compare o conta due volte | `prova:schede-iscritto`, `prova:pagamenti`, `prova:segreteria`, `pagamenti-diretti.sql` | sì |
-| Ricevuta da un pagamento a mano | segreteria, amministrazione | incasso contato due volte o perso | `prova:pagamenti`, `prova:satispay`, `pagamento-una-volta.sql`, `pagamento-diventa-ricevuta.sql` | sì |
+| Storico dei pagamenti | segreteria | pagamento che non compare o conta due volte | `prova:schede-iscritto`, `prova:pagamenti`, `prova:segreteria`, `pagamenti-diretti.sql`, `ricevuta-pagamento-perso.sql` | sì |
+| Ricevuta da un pagamento a mano | segreteria, amministrazione | incasso contato due volte o perso | `prova:pagamenti`, `prova:satispay`, `pagamento-una-volta.sql`, `pagamento-diventa-ricevuta.sql`, `ricevuta-pagamento-perso.sql` | sì |
 | Contanti di un giorno di cassa chiusa | segreteria, amministrazione | chiusura rotta senza che nessuno lo sappia | `prova:contabilita`, `prova:pagamenti`, `ricevuta-cassa-chiusa.sql` | sì |
 | Ricevute e pagamenti | segreteria, amministrazione | quota o ricevuta sbagliata, ricevuta doppia | `prova:ricevuta`, `prova:segreteria`, `prova:pagamenti`, `prova:satispay`, `ricevute.sql`, `satispay.sql` | sì |
 | Corsi da pagare | segreteria | corso scaduto che non si vede, sollecito a chi ha pagato | `prova:dafare`, `prova:corsi-da-pagare`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:scheda`, `prova:sollecito`, `prova:tessere` | sì |
@@ -122,8 +122,6 @@ quando arriva la prova.
   `satispay_*_prepara` e il database lo lascia passare. Nessuna prova.
 - **GRAVE** — Stesso movimento a mano per un pagamento Satispay e per una riga
   della banca: nessuna prova lo impedisce, né in app né nel database.
-- **GRAVE** — Ricevuta da un pagamento a mano: un `pagamentoId` perso per
-  strada non fa cadere niente, e lo stesso incasso conta due volte.
 - **GRAVE** — Quadratura: un mese «verificato» resta tale se cambia il saldo
   iniziale che gli arriva dal mese prima (una riga di settembre, il saldo del
   conto): l'impronta copre solo le righe del mese. Nessuna prova.

@@ -28,11 +28,14 @@ export interface PagamentoDiretto {
   annullatoIl?: string
   /** La ricevuta in cui è finito (`89-pagamento-diventa-ricevuta.sql`): annullato, ma non perso. */
   ricevutaId?: string
+  /**
+   * Con «Fai anche la ricevuta»: la chiave della ricevuta, che resta col pagamento ripreso dopo «Lascia stare».
+   * Il pagamento la tiene: una ricevuta con quella chiave non entra finché lui è attivo (128-ricevuta-pagamento-perso.sql).
+   */
+  chiaveRicevuta?: string
 }
 
 export type DatiPagamentoDiretto = Omit<PagamentoDiretto, 'id' | 'creatoIl' | 'annullatoIl'> & {
-  /** Con «Fai anche la ricevuta»: la chiave della ricevuta, che resta col pagamento ripreso dopo «Lascia stare». */
-  chiaveRicevuta?: string
   /** Da FANNE LA RICEVUTA: il pagamento a mano già registrato, che la ricevuta annulla (`emetti_ricevuta_da_pagamento`). */
   pagamentoId?: string
 }
@@ -111,6 +114,10 @@ export function cosaNonVaDaPagamento(voci: VoceRicevuta[], giorno: string, x: Pi
     ? null
     : `Il pagamento a mano di ${soldi(x.importo)} (${x.metodo}, ${dataRicevuta(x.data)}) va nella ricevuta così com’è: rimettilo, o annulla il pagamento e fai la ricevuta a mano`
 }
+
+/** Come `ricevute_non_due_volte` (128): la ricevuta del modulo da cui viene un pagamento a mano ancora attivo. */
+export const giaNelPagamento = (x: Pick<PagamentoDiretto, 'data' | 'importo'>) =>
+  `Questi soldi sono già nel pagamento a mano di ${soldi(x.importo)} del ${dataRicevuta(x.data)}: chiudi il modulo e fai la ricevuta da lì, con FANNE LA RICEVUTA`
 
 /** Un pagamento a mano registrato, come i dati da cui FANNE LA RICEVUTA compila la ricevuta (una chiave nuova). */
 export const datiDaPagamento = (x: PagamentoDiretto, chiaveRicevuta: string): DatiPagamentoDiretto => ({
