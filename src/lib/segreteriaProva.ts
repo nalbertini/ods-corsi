@@ -44,7 +44,7 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { abbinaMovimento, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
-import { cosaNonVaDaPagamento, cosaNonVaDiretto, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
+import { cosaNonVaDaPagamento, cosaNonVaDiretto, giaNelPagamento, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
   cosaNonVaAnnulloMovimento,
@@ -1456,6 +1456,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       // Come `fai_ricevuta` (92): i contanti di un giorno chiuso no, tranne quelli del pagamento a mano che diventa ricevuta.
       const chiuso = contantiInGiornoChiuso(r.voci.flatMap((v) => v.pagamenti), r.data, fino(), pd)
       if (chiuso) throw new Error(chiuso)
+      // Come `ricevute_non_due_volte` (128), all'ultimo come il trigger: i soldi di questo modulo sono già in un pagamento a mano attivo, o nella ricevuta fatta da lì.
+      const doppio = chiave ? (a().pagamentiDiretti ?? []).find((x) => x.chiaveRicevuta === chiave && x.personaId === dati.personaId && (!x.annullatoIl || x.ricevutaId)) : undefined
+      const giaRicevuta = doppio?.ricevutaId ? tutte.find((x) => x.id === doppio.ricevutaId) : undefined
+      if (giaRicevuta) throw new Error(`Questi soldi sono già nella ricevuta n. ${giaRicevuta.numero}/${giaRicevuta.anno}: chiudi il modulo`)
+      if (doppio) throw new Error(giaNelPagamento(doppio))
       // Come `fai_ricevuta` (93): il numero dato solo in un anno vuoto, se no il primo dopo l'ultimo.
       const numero = r.numero ?? prossimo
       const voci = r.voci.map((v) => ({ ...v, descrizione: v.descrizione.trim(), pagamenti: v.pagamenti.filter((p) => p.importo > 0) }))
@@ -2096,8 +2101,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       // Come registra_pagamento_diretto (115-carta.sql): Satispay e la carta si controllano ognuno coi suoi soldi.
       const sp = cosaNonVaSatispayAMano(dati.metodo, satispayPerPersona(tutti.filter((x) => x.circuito !== 'carta')).get(dati.personaId), cartaPerPersona(tutti).get(dati.personaId))
       if (sp) throw new Error(sp)
-      const { chiaveRicevuta: _chiave, ...senzaChiave } = dati
-      const nuovo: PagamentoDiretto = { ...senzaChiave, metodo: dati.metodo.trim(), voce: dati.voce.trim(), nota: dati.nota?.trim() || undefined, id: `pd-${unico()}`, creatoIl: new Date().toISOString() }
+      const nuovo: PagamentoDiretto = { ...dati, chiaveRicevuta: chiave, metodo: dati.metodo.trim(), voce: dati.voce.trim(), nota: dati.nota?.trim() || undefined, id: `pd-${unico()}`, creatoIl: new Date().toISOString() }
       a().pagamentiDiretti = [...(a().pagamentiDiretti ?? []), nuovo]
       salva()
       return nuovo
