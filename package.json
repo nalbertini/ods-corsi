@@ -36,6 +36,7 @@
     "prova:coda": "node scripts/prova-coda.mjs",
     "prova:tablet": "node scripts/prova-tablet.mjs",
     "prova:accesso-google": "node scripts/prova-accesso-google.mjs",
+    "prova:righe-dovute": "node scripts/prova-righe-dovute.mjs",
     "prova:segreteria": "node scripts/prova-segreteria.mjs",
     "prova:segreteria-comune": "node scripts/prova-segreteria-comune.mjs",
     "prova:attesa": "node scripts/prova-attesa.mjs",
