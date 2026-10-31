@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.229.1 — 31 ottobre 2026
+
+### Risolto
+
+- Un metodo di pagamento spento non si può più usare neanche aggirando l'app
+
 ## 0.229.0 — 31 ottobre 2026
 
 ### Novità
