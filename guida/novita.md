@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.225.0 — 31 ottobre 2026
+
+### Novità
+
+- L'importazione dalla banca mostra tutte le righe del file, con la voce già presente per le duplicate
+
 ## 0.224.0 — 31 ottobre 2026
 
 ### Novità
