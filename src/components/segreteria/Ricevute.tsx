@@ -1,3 +1,4 @@
+import { accesi } from '../../lib/metodiPagamento'
 import { cosaNonVaMetodo, cosaNonVaSatispay, cosaNonVaSatispayAMano, fraseDalModulo, metodiRicevuta, metodoDi, satispayDaUsare, soldi } from '../../lib/satispay'
 import { cartaSePuoi } from '../../lib/cartaPdf'
 import { pagatoNellaStagione, primeRighe, storicoPagamenti } from '../../lib/schedeIscritto'
@@ -342,7 +343,11 @@ export function RegistraPagamento({
   const [fino, setFino] = useState<string | null>(null)
   useEffect(() => { void d.contantiChiusiFino().then(setFino).catch(() => undefined) }, [d])
   const [importo, setImporto] = useState(iniziale ? euro(iniziale.importo) : '')
-  const [metodo, setMetodo] = useState(iniziale?.metodo ?? METODI_A_MANO[0])
+  const spenti = useCarica(() => d.impostazioni(), [d]).dato?.metodiSpenti ?? []
+  const scelte = accesi(METODI_A_MANO, spenti, iniziale?.metodo)
+  const [scelto, setMetodo] = useState(iniziale?.metodo ?? METODI_A_MANO[0])
+  // Un metodo spento nel frattempo non resta scelto: vale il primo acceso, o niente.
+  const metodo = scelte.includes(scelto) ? scelto : scelte[0] ?? ''
   const [voce, setVoce] = useState(iniziale?.voce ?? '')
   const [nota, setNota] = useState(iniziale?.nota ?? '')
   // Lasciarlo a metà chiede prima di perderlo, come il resto della scheda.
@@ -364,7 +369,7 @@ export function RegistraPagamento({
         </Campo>
         <Campo id="pd-metodo" etichetta="COME HA PAGATO">
           <select id="pd-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
-            {METODI_A_MANO.map((m) => (
+            {scelte.map((m) => (
               <option key={m}>{m}</option>
             ))}
           </select>
@@ -563,7 +568,8 @@ export function NuovaRicevuta({
     [d, p.id, nucleo.map((x) => x.id).join()],
   )
   const [numero, setNumero] = useState('')
-  const [metodo, setMetodo] = useState<string>(daPagamento?.metodo.trim() ?? METODI[0])
+  const spenti = useCarica(() => d.impostazioni(), [d]).dato?.metodiSpenti ?? []
+  const [scelto, setMetodo] = useState<string>(daPagamento?.metodo.trim() ?? METODI[0])
   const [voci, setVoci] = useState<Bozza[] | null>(null)
   const [socio, setSocio] = useState<IntestatarioRicevuta | null>(null)
   const [ente, setEnte] = useState<EnteRicevuta | null>(null)
@@ -578,6 +584,9 @@ export function NuovaRicevuta({
   // Pagata dal modulo con Satispay: quei soldi entrano in questa ricevuta, una volta sola (`emetti_ricevuta_satispay`).
   const satispay = useCarica(() => d.pagamentiSatispay(), [d])
   const sp = satispayDaUsare(satispay.dato ?? [], p.id)
+  // Un metodo spento nel frattempo non resta scelto: vale il primo acceso.
+  const scelte = metodiRicevuta(sp, daPagamento?.metodo, spenti)
+  const metodo = scelte.includes(scelto) ? scelto : scelte[0] ?? ''
   // I pagamenti a mano ancora SENZA RICEVUTA: se sono gli stessi soldi, la ricevuta si fa da lì (se no contano due volte).
   const diretti = useCarica(() => (daPagamento || sp ? Promise.resolve([]) : d.pagamentiDiretti(p.id)), [d, p.id, !!sp])
   const senzaRicevuta = (diretti.dato ?? []).filter((x) => !x.annullatoIl)
@@ -783,7 +792,7 @@ export function NuovaRicevuta({
         <Campo id="rc-metodo" etichetta="PAGATO CON">
           <select id="rc-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
             {/* Satispay anche dal pagamento a mano (senza un Satispay arrivato): lì è un modo di pagare come un altro. */}
-            {metodiRicevuta(sp, daPagamento?.metodo).map((m) => (
+            {scelte.map((m) => (
               <option key={m}>{m}</option>
             ))}
           </select>

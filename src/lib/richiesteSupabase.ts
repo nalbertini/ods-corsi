@@ -6,6 +6,7 @@ import { cosaNonVaScadenza } from './segreteria'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { CARTA_SPENTA, ERRORE_CARTA, ERRORE_SATISPAY, SATISPAY_SPENTO, type StatoSatispay } from './satispay'
 import { SERVE_RETE } from './saldoSatispay'
+import { spentiDa } from './metodiPagamento'
 
 /**
  * Le richieste di iscrizione col database vero (`supabase/06-iscrizioni.sql`).
@@ -249,6 +250,12 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       // `as`: la forma è quella di `satispay_stato_pagamento` (83-satispay-prima.sql), riletta dalla funzione.
       const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null; collegato?: boolean } | null | undefined
       return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined, collegato: p.collegato === true } : null
+    },
+
+    async metodiSpenti() {
+      // `anon` non legge `impostazioni`: la funzione di 126-metodi-pagamento.sql. Senza (o senza rete), tutti accesi.
+      const { data, error } = await db.rpc('metodi_spenti')
+      return error ? [] : spentiDa(data)
     },
 
     async satispayAttivo() {

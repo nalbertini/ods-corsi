@@ -26,6 +26,7 @@ import {
   type Gara,
   type RigaAtletaGara,
 } from '../../lib/gare'
+import { accesi } from '../../lib/metodiPagamento'
 import { METODI_A_MANO, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import { nucleoPerRicevuta } from '../../lib/nucleo'
 import { nuovoId } from '../../lib/prove'
@@ -175,6 +176,7 @@ export function Gare({ d, apri, onCambiato }: { d: DatiSegreteria; /** Arrivando
       )}
       {cassetto?.a === 'incassa' && garaCassetto && (
         <Incassa
+          d={d}
           g={garaCassetto}
           p={tutti.find((p) => p.id === cassetto.personaId)}
           oggi={oggi}
@@ -921,6 +923,7 @@ function AggiungiAtleti({
 }
 
 function Incassa({
+  d,
   g,
   p,
   oggi,
@@ -929,6 +932,7 @@ function Incassa({
   onChiudi,
   onIncassato,
 }: {
+  d: DatiSegreteria
   g: Gara
   p?: PersonaSeg
   oggi: string
@@ -937,7 +941,11 @@ function Incassa({
   onChiudi: () => void
   onIncassato: (dp: DatiPagamentoDiretto, conRicevuta: boolean) => Promise<void>
 }) {
-  const [metodo, setMetodo] = useState(METODI_A_MANO[0])
+  const spenti = useCarica(() => d.impostazioni(), [d]).dato?.metodiSpenti ?? []
+  const scelte = accesi(METODI_A_MANO, spenti)
+  const [scelto, setMetodo] = useState(METODI_A_MANO[0])
+  // Se la scelta è stata spenta (o ancora non si sa), vale la prima ancora accesa; con tutto spento resta vuota.
+  const metodo = scelte.includes(scelto) ? scelto : scelte[0] ?? ''
   const totale = totaleQuota(g.voci)
   if (!p) return null
 
@@ -970,7 +978,7 @@ function Incassa({
           {g.nome}, {dateGara(g)}: {g.voci.map((v) => `${v.voce} ${euroBreve(v.importo)}`).join(' · ')}
         </span>
         <Campo etichetta="COME HA PAGATO">
-          <Segmenti etichetta="Come ha pagato" voci={METODI_A_MANO.map((m) => [m, m] as const)} scelta={metodo} onScegli={setMetodo} />
+          <Segmenti etichetta="Come ha pagato" voci={scelte.map((m) => [m, m] as const)} scelta={metodo} onScegli={setMetodo} />
         </Campo>
         <div className="row" style={{ gap: 10 }}>
           <span className="grow" />

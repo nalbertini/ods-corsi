@@ -607,6 +607,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regprocedure('public.satispay_prepara_prima(uuid,text,text,text,text,uuid)') is not null
     and to_regprocedure('public.satispay_prepara_prima(uuid,text,text,text,text)') is null
     -- Rilanciare 83 o 115 dopo 125 rimette l'invia_iscrizione che non guarda la chiave: la riga torna «da lanciare».
-    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%chiave_pag%'))
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%chiave_pag%')),
+  ('126-metodi-pagamento.sql', 'i metodi di pagamento che la segreteria spegne (REGOLE → COME SI PAGA)',
+    exists (select 1 from information_schema.columns where table_name = 'impostazioni' and column_name = 'metodi_spenti')
+    and to_regprocedure('public.metodi_spenti()') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

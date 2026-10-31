@@ -11,7 +11,8 @@ import { altriAperti, corsiPerEta, testoAltriCorsi, type CorsoPerEta, type Corso
 import { causale, stimaIscrizione, type Abbonamento, type Stima } from '../lib/nucleo'
 import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
-import { useListino } from './Costi'
+import { useListino, useMetodiSpenti } from './Costi'
+import { acceso } from '../lib/metodiPagamento'
 import type { SceltaModulo } from '../lib/firma'
 import { haUnServer } from '../lib/dati'
 import { contaIscrizione, EVENTI_ISCRIZIONE } from '../lib/contaIscrizione'
@@ -241,7 +242,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const puoi = complicato ? ({ satispay: false, perche: complicato } as const) : comePuoiPagare(senzaPrezzo, attivo)
   // La carta negli stessi casi di Satispay, e solo col suo servizio acceso.
   const cartaPuoi = puoi.satispay && !!carta
-  const modo = modoPagamento(pago, { ...puoi, carta: cartaPuoi }, !!nucleo)
+  const spenti = useMetodiSpenti()
+  const bonificoAcceso = acceso(spenti, 'bonifico')
+  const modo = modoPagamento(pago, { ...puoi, carta: cartaPuoi }, !!nucleo, bonificoAcceso)
   const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || chiedeRicevuta(modo, !!nucleo)))
   // I file di I FILE: il modulo ha la sua sezione, e la ricevuta del bonifico sta in IL PAGAMENTO (dal nucleo, qui come prima).
   const fileQui = daChiedere.filter((f) => f.tipo !== 'modulo' && (f.tipo !== 'ricevuta' || !!nucleo))
@@ -351,7 +354,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
   const blocco =
     mancaModulo ??
-    (stima && scelti.length ? cosaNonVaModo(modo, !!nucleo, !!file.ricevuta, { pronto: riquadroPaga?.cosa === 'pagato', giaPagato: sp?.stato === 'pagato', circuito: sp?.circuito }, cartaPuoi) : null)
+    (stima && scelti.length ? cosaNonVaModo(modo, !!nucleo, !!file.ricevuta, { pronto: riquadroPaga?.cosa === 'pagato', giaPagato: sp?.stato === 'pagato', circuito: sp?.circuito }, cartaPuoi, puoi.satispay || bonificoAcceso) : null)
 
   // Si prepara da solo col modulo a posto, dopo un attimo senza modifiche (l'email non a metà), e di nuovo se cambiano
   // la scelta o chi paga. Dopo un errore si riprova col tasto, non a ogni lettera.
@@ -727,6 +730,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             modo={modo}
             puoi={puoi}
             carta={cartaPuoi}
+            bonifico={bonificoAcceso}
             onModo={setPago}
             causale={causale(b.nome.trim(), b.cognome.trim(), scelti.map((c) => c.nome))}
             ricevuta={
@@ -1129,6 +1133,7 @@ function Conto({ s }: { s: Stima }) {
 /** L'IBAN e la causale col nome, da copiare; col link fisso di Satispay dove il pagamento non si segna da solo. */
 function Bonifico({ causale: testo, satispay }: { causale: string | null; satispay?: boolean }) {
   const [copiato, setCopiato] = useState<string | null>(null)
+  const spenti = useMetodiSpenti()
   const copia = (cosa: string, valore: string) =>
     navigator.clipboard?.writeText(valore).then(
       () => {
@@ -1137,6 +1142,8 @@ function Bonifico({ causale: testo, satispay }: { causale: string | null; satisp
       },
       () => {},
     )
+  // REGOLE → COME SI PAGA: con il bonifico spento l'IBAN non si dà.
+  if (!acceso(spenti, 'bonifico')) return null
   return (
     <>
       <Dettaglio>Bonifico a {PAGAMENTO.intestatario}:</Dettaglio>
@@ -1168,7 +1175,7 @@ const MODI: Array<{ id: Pago; testo: string; riga: string }> = [
  * che calcola il database, e si paga in fondo al modulo prima di mandare; col
  * bonifico IBAN, causale e la sua ricevuta stanno qui insieme.
  */
-function IlPagamento({ stima, modo, puoi, carta, onModo, causale: testo, ricevuta }: { stima: Stima; modo: Pago | null; puoi: ReturnType<typeof comePuoiPagare>; carta: boolean; onModo: (m: Pago) => void; causale: string; ricevuta: ReactNode }) {
+function IlPagamento({ stima, modo, puoi, carta, bonifico, onModo, causale: testo, ricevuta }: { stima: Stima; modo: Pago | null; puoi: ReturnType<typeof comePuoiPagare>; carta: boolean; bonifico: boolean; onModo: (m: Pago) => void; causale: string; ricevuta: ReactNode }) {
   return (
     <>
       <div className="modulo-campo modulo-largo">
@@ -1185,12 +1192,13 @@ function IlPagamento({ stima, modo, puoi, carta, onModo, causale: testo, ricevut
             id="m-pago"
             etichetta="Paghi con"
             una
-            voci={MODI.filter((m) => (m.id === 'satispay' ? puoi.satispay : m.id === 'carta' ? carta : true))}
+            voci={MODI.filter((m) => (m.id === 'satispay' ? puoi.satispay : m.id === 'carta' ? carta : bonifico))}
             scelti={modo ? [modo] : []}
             // `as`: SceltaCorsi rende l'id di una delle voci date, cioè un modo di MODI.
             onScegli={(m) => onModo(m as Pago)}
           />
         </div>
+        {!puoi.satispay && !carta && !bonifico && <Dettaglio>Come pagare te lo dice la segreteria.</Dettaglio>}
         {!puoi.satispay && puoi.perche && <Dettaglio>{puoi.perche}.</Dettaglio>}
         {(modo === 'satispay' || modo === 'carta') && (
           <Dettaglio>

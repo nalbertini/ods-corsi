@@ -2766,7 +2766,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async impostazioni() {
-      return { inizioCorsi: null, fineCorsi: null, ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }) }
+      return { inizioCorsi: null, fineCorsi: null, metodiSpenti: [], ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }) }
     },
 
     async salvaImpostazioni(i) {

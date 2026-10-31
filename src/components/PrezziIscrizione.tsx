@@ -3,7 +3,8 @@ import { INFORMATIVA_PUBBLICA, MODULO_IN_APP, PAGAMENTO } from '../lib/iscrizion
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { INDIRIZZO_RICHIESTA } from '../lib/cancelletti'
 import { COME_SI_PAGA, fondoDellaPagina, INFORMATIVA_FRASE } from '../lib/paginaIscrizioni'
-import { Costi } from './Costi'
+import { Costi, useMetodiSpenti } from './Costi'
+import { acceso } from '../lib/metodiPagamento'
 import { Dettaglio, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 
 /**
@@ -60,6 +61,9 @@ export function PrezziIscrizione() {
 function ComeSiPaga() {
   const [copiato, setCopiato] = useState(false)
   const iban = PAGAMENTO.iban
+  const spenti = useMetodiSpenti()
+  const bonifico = acceso(spenti, 'bonifico')
+  const satispay = !!PAGAMENTO.satispay && acceso(spenti, 'satispay')
 
   const copia = () => {
     // Senza spazi: è così che lo vogliono i campi delle app della banca.
@@ -72,19 +76,25 @@ function ComeSiPaga() {
     )
   }
 
+  // REGOLE → COME SI PAGA: senza bonifico né Satispay la sezione non ha niente da dire.
+  if (!bonifico && !satispay) return null
   return (
     <section>
       <Titoletto>COME SI PAGA</Titoletto>
       <div className="pad">
         <Riquadro>
           <span className="passo-titolo">{COME_SI_PAGA.titolo}</span>
-          <Dettaglio>Bonifico a {PAGAMENTO.intestatario}:</Dettaglio>
-          <span className="num iban">{iban}</span>
-          {PAGAMENTO.satispay && <Dettaglio>Oppure con Satispay, dall'app.</Dettaglio>}
-          <Dettaglio>{COME_SI_PAGA.ricevuta}</Dettaglio>
+          {bonifico && (
+            <>
+              <Dettaglio>Bonifico a {PAGAMENTO.intestatario}:</Dettaglio>
+              <span className="num iban">{iban}</span>
+            </>
+          )}
+          {satispay && <Dettaglio>{bonifico ? 'Oppure con' : 'Con'} Satispay, dall'app.</Dettaglio>}
+          {bonifico && <Dettaglio>{COME_SI_PAGA.ricevuta}</Dettaglio>}
           <Tasti>
-            <Tasto icona="copia" onClick={copia}>{copiato ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
-            {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
+            {bonifico && <Tasto icona="copia" onClick={copia}>{copiato ? 'COPIATO' : 'COPIA IBAN'}</Tasto>}
+            {satispay && PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
           </Tasti>
         </Riquadro>
       </div>

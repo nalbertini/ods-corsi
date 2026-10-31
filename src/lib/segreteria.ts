@@ -1,6 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
+import type { IdMetodo } from './metodiPagamento'
 import type { Chiusura, ContoChiusura } from './chiusure'
 import type { QuadraturaDaVerificare, SaldoBanca } from './quadraturaBanca'
 import type { CopertoBanca, DatoImportBanca } from './importaBanca'
@@ -558,6 +559,12 @@ export interface Impostazioni {
    */
   inizioCorsi?: string | null
   fineCorsi?: string | null
+  /**
+   * I metodi di pagamento spenti da REGOLE → COME SI PAGA (`IdMetodo`);
+   * `undefined` quando il database non ha ancora la colonna
+   * (`126-metodi-pagamento.sql` da lanciare): sono tutti accesi.
+   */
+  metodiSpenti?: IdMetodo[]
 }
 
 export interface DatiPersona {

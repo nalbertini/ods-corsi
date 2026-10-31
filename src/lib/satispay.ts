@@ -3,6 +3,7 @@ import { dataLunga } from './sala'
 import { inEuro } from './vestiario'
 import type { CorsoRef, Listino } from './listino'
 import { METODI } from './ricevute'
+import { accesi } from './metodiPagamento'
 import { chiama } from './sito'
 
 /**
@@ -261,8 +262,9 @@ export function segnoRichiesta(
 
 /** Il pagamento Satispay da mettere nella ricevuta di una persona: arrivato e non ancora in una ricevuta. */
 /** PAGATO CON nella ricevuta: i soliti, più quello del pagamento arrivato dal modulo o del pagamento a mano con Satispay. */
-export const metodiRicevuta = (sp: { circuito?: 'carta' } | undefined, metodoDaPagamento: string | undefined): string[] =>
-  sp ? [...METODI, metodoDi(sp)] : metodoDaPagamento?.trim() === 'Satispay' ? [...METODI, 'Satispay'] : [...METODI]
+export const metodiRicevuta = (sp: { circuito?: 'carta' } | undefined, metodoDaPagamento: string | undefined, spenti: readonly string[] = []): string[] =>
+  // Il pagamento già arrivato o già scritto resta fra le scelte anche se il metodo è spento: è successo.
+  accesi(sp ? [...METODI, metodoDi(sp)] : metodoDaPagamento?.trim() === 'Satispay' ? [...METODI, 'Satispay'] : [...METODI], spenti, sp ? metodoDi(sp) : metodoDaPagamento)
 
 /** La frase della scheda senza ricevute, per i soldi arrivati dal modulo (`satispay`, tutti, e `carta`, quanti con la carta). */
 export function fraseDalModulo(satispay: number | undefined, carta: number | undefined): string | null {
@@ -293,13 +295,16 @@ export type Pago = 'satispay' | 'carta' | 'bonifico'
  * Il modo che vale davvero. Satispay scelto ma non possibile (un corso senza
  * prezzo, il servizio spento) è il bonifico; la carta vale negli stessi casi
  * di Satispay, e solo col suo servizio acceso. Dal nucleo di un iscritto non
- * si sceglie: si paga come prima (`null`); `null` anche finché non si sceglie.
+ * si sceglie: si paga come prima (`null`); `null` anche finché non si sceglie, e col bonifico spento
+ * (REGOLE → COME SI PAGA) quando non resta nessun altro modo.
  */
-export const modoPagamento = (scelto: Pago | null, puoi: { satispay: boolean; carta?: boolean }, nucleo: boolean): Pago | null =>
+export const modoPagamento = (scelto: Pago | null, puoi: { satispay: boolean; carta?: boolean }, nucleo: boolean, bonifico = true): Pago | null =>
   nucleo || !scelto
     ? null
-    : (scelto === 'satispay' && !puoi.satispay) || (scelto === 'carta' && !(puoi.satispay && puoi.carta))
-      ? 'bonifico'
+    : (scelto === 'satispay' && !puoi.satispay) || (scelto === 'carta' && !(puoi.satispay && puoi.carta)) || (scelto === 'bonifico' && !bonifico)
+      ? bonifico
+        ? 'bonifico'
+        : null
       : scelto
 
 /**
@@ -405,8 +410,10 @@ export function cosaNonVaModo(
   },
   /** se il modulo offre la carta */
   carta = false,
+  /** se c'è almeno un modo da scegliere: tutti spenti, la richiesta parte e la segreteria sente chi paga */
+  scelte = true,
 ): string | null {
-  if (nucleo) return null
+  if (nucleo || (!modo && !scelte)) return null
   if (!modo) return carta ? 'Manca come paghi: Satispay, carta o bonifico' : 'Manca come paghi: Satispay o bonifico'
   // Pagato e poi cambiato modo: i soldi ci sono già, in un altro modo si pagherebbe due volte.
   const pagatoCon = satispay.circuito ?? 'satispay'

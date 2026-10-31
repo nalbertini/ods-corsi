@@ -146,6 +146,12 @@ async function comeChiChiama(req: Request) {
   })
 }
 
+/** Satispay spento da REGOLE → COME SI PAGA; senza `126-metodi-pagamento.sql` (o se il database non risponde) è acceso. */
+async function spento() {
+  const { data } = await admin.rpc('metodi_spenti')
+  return Array.isArray(data) && data.includes('satispay')
+}
+
 const detto = (e: { message?: string; code?: string }) =>
   // I messaggi del database con errcode 22023 sono già scritti per chi paga (73-satispay.sql).
   e.code === '22023' && e.message ? e.message : NON_RISPONDE
@@ -169,6 +175,11 @@ Deno.serve(async (req) => {
   } catch {
     return risposta({ guaio: 'Richiesta storta' }, 400)
   }
+  // REGOLE → COME SI PAGA (126-metodi-pagamento.sql). Spento, non si comincia un pagamento nuovo; quelli già avviati
+  // si rileggono lo stesso (`stato*`), se no chi ha già pagato non vedrebbe la ricevuta.
+  // shortcut: i pagamenti `authenticated` (saldo, quota, corso) si fermano qui e non nelle funzioni SQL; un iscritto
+  // con la sessione potrebbe ancora chiamarle da solo. Da stringere quando serve, nelle funzioni.
+  if (['attivo', 'prepara', 'saldo_attivo'].includes(String(corpo.azione)) && (await spento())) return risposta({ attivo: false })
   if (corpo.azione === 'attivo') {
     // Il servizio c'è se c'è anche 83-satispay-prima.sql (e quindi 73): PGRST202 vuol dire che non è stato lanciato.
     // L'app di prima chiede solo 73, ma 83 si lancia prima che la nuova vada in linea.
@@ -224,6 +235,7 @@ Deno.serve(async (req) => {
     if (!persona || !ricevuta) return risposta({ guaio: 'Manca la persona o la ricevuta' }, 400)
     const lui = await comeChiChiama(req)
     if (!lui) return risposta({ guaio: 'Entra con il tuo accesso per pagare' }, 401)
+    if (corpo.azione === 'saldo' && (await spento())) return risposta({ attivo: false })
 
     if (corpo.azione === 'saldo_stato') {
       const { data, error } = await lui.rpc('satispay_saldo_stato', { persona, ricevuta })
@@ -258,6 +270,7 @@ Deno.serve(async (req) => {
     if (!persona) return risposta({ guaio: 'Manca la persona' }, 400)
     const lui = await comeChiChiama(req)
     if (!lui) return risposta({ guaio: 'Entra con il tuo accesso per pagare' }, 401)
+    if (corpo.azione === 'quota' && (await spento())) return risposta({ attivo: false })
 
     if (corpo.azione === 'quota_stato') {
       const { data, error } = await lui.rpc('satispay_quota_stato', { persona })
@@ -291,6 +304,7 @@ Deno.serve(async (req) => {
     if (!persona || !corso) return risposta({ guaio: 'Manca la persona o il corso' }, 400)
     const lui = await comeChiChiama(req)
     if (!lui) return risposta({ guaio: 'Entra con il tuo accesso per pagare' }, 401)
+    if (corpo.azione === 'corso' && (await spento())) return risposta({ attivo: false })
 
     if (corpo.azione === 'corso_stato') {
       const { data, error } = await lui.rpc('satispay_corso_stato', { persona, corso })

@@ -1,3 +1,4 @@
+import type { IdMetodo } from './metodiPagamento'
 import { nascitaOggi } from './compleanni'
 import type { Lettera } from './lettere'
 import type { RicevutaCompenso } from './compensi'
@@ -136,7 +137,7 @@ export interface Archivio {
   attivita?: AttivitaProva[]
   /** I PIN del tablet cambiati dalla segreteria, per persona. */
   pin?: Record<string, string>
-  impostazioni?: { mesiPresenze: number; giorniCalendario: number; inizioCorsi?: string | null; fineCorsi?: string | null }
+  impostazioni?: { mesiPresenze: number; giorniCalendario: number; inizioCorsi?: string | null; fineCorsi?: string | null; metodiSpenti?: IdMetodo[] }
   /** Le liste della musica delle sale; `sala` nulla vuol dire tutte. */
   musica?: Array<{ id: string; nome: string; link: string; sala: string | null; disciplina?: string }>
   /** Il timer dei tablet di sala, uguale per tutti: lo cambia un tablet qualunque. */

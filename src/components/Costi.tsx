@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { saldoAperto, STAGIONE } from '../lib/costi'
 import { LISTINO, PAGAMENTO } from '../lib/iscrizione'
 import { caricaListino, type ListinoLetto } from '../lib/listino'
+import { datiRichieste } from '../lib/richieste'
+import type { IdMetodo } from '../lib/metodiPagamento'
 import { chiaveGiorno } from '../lib/sala'
 import { inEuro } from '../lib/vestiario'
 import { paginaSito, presentazione } from '../lib/sito'
@@ -18,6 +20,19 @@ export function useListino(): ListinoLetto | null {
     }
   }, [])
   return letto
+}
+
+/** I metodi di pagamento spenti dalla segreteria; vuoto (tutti accesi) finché non arriva. */
+export function useMetodiSpenti(): IdMetodo[] {
+  const [spenti, setSpenti] = useState<IdMetodo[]>([])
+  useEffect(() => {
+    let vivo = true
+    void datiRichieste().then((d) => d.metodiSpenti()).then((x) => vivo && setSpenti(x), () => {})
+    return () => {
+      vivo = false
+    }
+  }, [])
+  return spenti
 }
 
 // «50 €», «12,50 €»: uno solo per tutta l'app, e chi lo prendeva da qui continua a trovarlo.

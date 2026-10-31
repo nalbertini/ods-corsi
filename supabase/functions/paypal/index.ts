@@ -158,6 +158,12 @@ Deno.serve(async (req) => {
     return risposta({ guaio: 'Richiesta storta' }, 400)
   }
 
+  // REGOLE → COME SI PAGA (126-metodi-pagamento.sql). Spenta, non si comincia un pagamento nuovo; l'ordine già
+  // approvato si cattura lo stesso, se no chi ha già autorizzato la carta resterebbe senza ricevuta.
+  if (corpo.azione === 'attivo' || corpo.azione === 'prepara') {
+    const { data } = await admin.rpc('metodi_spenti')
+    if (Array.isArray(data) && data.includes('carta')) return risposta({ attivo: false })
+  }
   if (corpo.azione === 'attivo') {
     // La carta c'è se c'è anche 115-carta.sql: PGRST202 vuol dire che non è stato lanciato.
     const { error } = await admin.rpc('carta_stato_pagamento', { pagamento: '00000000-0000-0000-0000-000000000000' })

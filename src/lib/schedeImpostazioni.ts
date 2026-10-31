@@ -2,7 +2,7 @@
 // ordine, e come si muove la tastiera. Il .tsx mostra e chiama.
 import { tastoLinguette } from './schedaSezioni'
 
-export type IdImpostazioni = 'stagione' | 'sale' | 'esercizi' | 'ricevute' | 'avvisi' | 'dati' | 'importa' | 'computer'
+export type IdImpostazioni = 'stagione' | 'sale' | 'esercizi' | 'ricevute' | 'pagamenti' | 'avvisi' | 'dati' | 'importa' | 'computer'
 
 // QUESTO COMPUTER in fondo: vale solo per il computer davanti, non per la palestra.
 export const SCHEDE_IMPOSTAZIONI: ReadonlyArray<{ id: IdImpostazioni; nome: string }> = [
@@ -10,6 +10,7 @@ export const SCHEDE_IMPOSTAZIONI: ReadonlyArray<{ id: IdImpostazioni; nome: stri
   { id: 'sale', nome: 'LE SALE E I TABLET' },
   { id: 'esercizi', nome: 'GLI ESERCIZI' },
   { id: 'ricevute', nome: 'LE RICEVUTE' },
+  { id: 'pagamenti', nome: 'COME SI PAGA' },
   { id: 'avvisi', nome: 'GLI AVVISI' },
   { id: 'dati', nome: 'DATI E PRIVACY' },
   { id: 'importa', nome: 'IMPORTA' },
