@@ -10,6 +10,24 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.229.3 — 31 ottobre 2026
+
+### Risolto
+
+- Gli stessi soldi non contano più due volte tra un pagamento a mano e la ricevuta del suo modulo
+
+## 0.229.2 — 31 ottobre 2026
+
+### Risolto
+
+- Un mese verificato col conto della banca torna da verificare se cambia qualcosa prima
+
+## 0.229.1 — 31 ottobre 2026
+
+### Risolto
+
+- Un metodo di pagamento spento non si può più usare neanche aggirando l'app
+
 ## 0.229.0 — 31 ottobre 2026
 
 ### Novità

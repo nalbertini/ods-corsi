@@ -577,6 +577,13 @@ Anche **+ FAI LA RICEVUTA** mostra in cima i pagamenti SENZA RICEVUTA della
 persona, ognuno col suo **FANNE LA RICEVUTA**: se la ricevuta è per quei
 soldi, si fa da lì; se sono altri soldi, si va avanti col modulo.
 
+Un modulo di ricevuta da cui è nato un pagamento a mano (con **Lascia stare**
+e poi **REGISTRA IL PAGAMENTO**) non fa più la sua ricevuta, nemmeno se la
+rete l'aveva lasciata a metà: l'app dice «Questi soldi sono già nel pagamento a
+mano di …» (o «… nella ricevuta n. …», se è già diventato ricevuta). Chiudi il
+modulo e fai la ricevuta da **FANNE LA RICEVUTA**. Se il pagamento a mano è
+stato annullato, il modulo va come prima.
+
 Annullando una ricevuta nata da un pagamento a mano, la domanda lo dice, e il
 pagamento torna **SENZA RICEVUTA** com'era: i soldi non spariscono, e da lì si
 rifà la ricevuta giusta.
