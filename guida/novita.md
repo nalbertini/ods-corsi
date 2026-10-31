@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.229.3 — 31 ottobre 2026
+
+### Risolto
+
+- Gli stessi soldi non contano più due volte tra un pagamento a mano e la ricevuta del suo modulo
+
 ## 0.229.2 — 31 ottobre 2026
 
 ### Risolto
