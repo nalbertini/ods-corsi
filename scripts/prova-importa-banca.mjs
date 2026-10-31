@@ -330,5 +330,87 @@ console.log('\n10. «Le righe del file»: tutte, nell\'ordine del file, ognuna c
   ok('i vecchi elenchi restano com\'erano (i totali e i dati per il database non cambiano)', prova(() => [a.giaImportati.length, a.coperti.length, m.datiImportBanca(a).length]), [1, 1, 5])
 }
 
+console.log('\n11. Entrate o uscite: il filtro per segno, sopra quello per stato')
+{
+  const a0 = anteprima([])
+  const righe = (segno, filtro = 'tutte') => prova(() => m.filtraRighe(a0.righe, filtro, segno).map((x) => x.riga))
+  ok('«Entrambe» è com\'era: tutte, scartate comprese', righe('entrambe'), [6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+  ok('senza segno vale «Entrambe»', prova(() => m.filtraRighe(a0.righe, 'tutte').length), 10)
+  ok('«Entrate»: solo gli accrediti, senza le scartate (non hanno segno)', righe('entrate'), [7, 10, 11, 15])
+  ok('«Uscite»: solo gli addebiti', righe('uscite'), [6, 8, 9])
+  ok('i due filtri insieme: le nuove fra le uscite', righe('uscite', 'nuove'), [6, 8, 9])
+  ok('le scartate con un segno: nessuna', righe('entrate', 'scartate'), [])
+  ok('i conteggi dei chip seguono il segno', prova(() => [m.contaRighe(a0.righe, 'entrate'), m.contaRighe(a0.righe, 'uscite'), m.contaRighe(a0.righe)]), [
+    { tutte: 4, nuove: 4, duplicate: 0, daDecidere: 0, scartate: 0 },
+    { tutte: 3, nuove: 3, duplicate: 0, daDecidere: 0, scartate: 0 },
+    { tutte: 10, nuove: 7, duplicate: 0, daDecidere: 0, scartate: 3 },
+  ])
+}
+
+console.log('\n12. La voce e la persona di ogni riga, scelte prima di importare')
+{
+  const per = (n) => mv.find((x) => x.riga === n)
+  const voci = [
+    { id: 'dc-e', nome: 'Da classificare', tipo: 'entrata', diSistema: true, attiva: true },
+    { id: 'dc-u', nome: 'Da classificare', tipo: 'uscita', diSistema: true, attiva: true },
+    { id: 'quota', nome: 'Quota associativa', tipo: 'entrata', diSistema: true, attiva: true },
+    { id: 'varie', nome: 'Varie', tipo: 'uscita', diSistema: false, attiva: true },
+    { id: 'vecchia', nome: 'Affitto vecchio', tipo: 'uscita', diSistema: false, attiva: false },
+  ]
+  // Prima di importare la riga è come sarà dopo: un movimento a mano del Conto, in «Da classificare», con la sua chiave.
+  ok('una riga del file come movimento da classificare', prova(() => m.rigaComeMovimento(per(7), 'conto')), {
+    id: per(7)?.chiave, origine: 'movimento', tipo: 'entrata', data: '2026-10-03', importo: 12000, descrizione: per(7)?.descrizione, voce: 'Da classificare', cassaId: 'conto', annullato: false, origineImport: per(7)?.chiave,
+  })
+
+  const nonVa = (n, scelta) => prova(() => m.cosaNonVaSceltaBanca(per(n), scelta, voci, 'conto'))
+  ok('una quota senza persona: manca la persona', nonVa(15, { voceId: 'quota' }), 'Scegli la persona')
+  ok('una quota con la persona: va', nonVa(15, { voceId: 'quota', personaId: 'p1' }), null)
+  ok('una voce di entrata su un\'uscita: non va', nonVa(6, { voceId: 'quota', personaId: 'p1' }), 'La voce scelta non va con questo tipo di movimento')
+  ok('una voce non più in uso: non va', nonVa(6, { voceId: 'vecchia' }), 'La voce non è più in uso: scegline un’altra')
+  ok('una spesa su Varie: va, senza persona', nonVa(6, { voceId: 'varie' }), null)
+
+  const sug = (o) => ({ caso: 'A', voce: null, persona: 'candidati', candidati: [], preselezionato: null, ...o })
+  ok('dal suggerimento: la voce e la persona preselezionata', prova(() => m.sceltaProposta(sug({ voce: { voceId: 'quota', nome: 'Quota associativa', motivo: 'x' }, preselezionato: 'p1' }))), { voceId: 'quota', personaId: 'p1' })
+  ok('…più schede e nessuna preselezionata: solo la voce, la persona la sceglie la segreteria', prova(() => m.sceltaProposta(sug({ caso: 'B', voce: { voceId: 'quota', nome: 'Quota associativa', motivo: 'x' } }))), { voceId: 'quota' })
+  ok('…senza voce suggerita: niente, resta «Da classificare»', prova(() => [m.sceltaProposta(sug({ caso: 'D', persona: 'nessuna-spesa' })), m.sceltaProposta(null)]), [null, null])
+
+  // Dopo l'importazione i movimenti si ritrovano dalla chiave (origine_import): si cambia la voce a quelli.
+  const entrano = [6, 7, 8, 9, 10, 15].map(per)
+  const scritti = entrano.filter((x) => x.riga !== 9).map((x) => ({ id: `db${x.riga}`, origineImport: x.chiave }))
+  const scelte = {
+    [per(6)?.chiave]: { voceId: 'varie' },
+    [per(7)?.chiave]: { voceId: 'quota', personaId: 'p1' },
+    [per(8)?.chiave]: { voceId: 'varie' },
+    [per(9)?.chiave]: { voceId: 'varie' },
+    [per(10)?.chiave]: { voceId: 'dc-e' },
+    [per(15)?.chiave]: { voceId: 'quota' },
+  }
+  const piano = prova(() => m.pianoDiClassificazione(entrano, scelte, scritti, voci, 'conto'))
+  ok('il piano: le stesse voci senza persona in un lotto, ogni quota da sola con la sua persona', piano.lotti, [
+    { ids: ['db6', 'db8'], voceId: 'varie' },
+    { ids: ['db7'], voceId: 'quota', personaId: 'p1' },
+  ])
+  // La 9 non si è ritrovata, la 10 resta dov'è, la 15 non ha la persona: entrano in «Da classificare» e basta.
+  ok('…restano in «Da classificare» quelle senza scelta valida o non ritrovate', piano.restano, 3)
+  ok('senza scelte: niente da cambiare, restano tutte', prova(() => m.pianoDiClassificazione(entrano, {}, scritti, voci, 'conto')), { lotti: [], restano: 6 })
+  ok('una scelta di una riga che non entra (duplicata) non si scrive', prova(() => m.pianoDiClassificazione([per(6)], { [per(7)?.chiave]: { voceId: 'quota', personaId: 'p1' } }, scritti, voci, 'conto').lotti), [])
+  // Un movimento annullato con la stessa chiave non prende la voce: la prende quello vivo.
+  ok('…un annullato con la stessa chiave non conta', prova(() => m.pianoDiClassificazione([per(6)], { [per(6)?.chiave]: { voceId: 'varie' } }, [{ id: 'vivo', origineImport: per(6)?.chiave }, { id: 'morto', origineImport: per(6)?.chiave, annullatoIl: '2026-10-04' }], voci, 'conto').lotti), [{ ids: ['vivo'], voceId: 'varie' }])
+  // Il database cambia al massimo 500 movimenti per volta: 1200 della stessa voce vanno in tre lotti.
+  const tanti = Array.from({ length: 1200 }, (_, i) => ({ ...per(6), chiave: `k${i}` }))
+  ok('1200 righe della stessa voce: lotti da 500, 500 e 200', prova(() => m.pianoDiClassificazione(tanti, Object.fromEntries(tanti.map((x) => [x.chiave, { voceId: 'varie' }])), tanti.map((x) => ({ id: x.chiave, origineImport: x.chiave })), voci, 'conto').lotti.map((l) => l.ids.length)), [500, 500, 200])
+
+  // Cosa si scrive: la scelta a mano vince; se no la voce suggerita, mai la persona proposta senza il ✓.
+  const proposte = {
+    a: sug({ voce: { voceId: 'quota', nome: 'Quota associativa', motivo: 'x' }, preselezionato: 'p1' }),
+    b: sug({ voce: { voceId: 'varie', nome: 'Varie', motivo: 'x' } }),
+    c: sug({ caso: 'D', persona: 'nessuna-spesa' }),
+  }
+  ok('le scelte da scrivere: a mano, poi la voce suggerita senza la persona proposta', prova(() => m.scelteDaScrivere(['a', 'b', 'c', 'd'].map((chiave) => ({ chiave })), { b: { voceId: 'quota', personaId: 'p2' } }, proposte)), {
+    a: { voceId: 'quota' },
+    b: { voceId: 'quota', personaId: 'p2' },
+  })
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

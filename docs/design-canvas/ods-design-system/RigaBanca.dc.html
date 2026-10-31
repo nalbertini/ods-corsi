@@ -14,46 +14,68 @@
     body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div role="row" style="display: grid; grid-template-columns: 150px 96px minmax(0, 1fr) 120px; gap: 12px; align-items: start; width: 100%; padding: 12px 0; border-bottom: 1px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<div role="row" style="display: grid; grid-template-columns: 150px 90px minmax(160px, 1fr) 200px 220px 104px; gap: 16px; align-items: center; min-height: 76px; width: 100%; padding: 12px 0; border-bottom: 1px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
   <dc-import name="Badge" tema="sito" tipo="tag" tono="{{tono}}" label="{{stato}}" larghezza="150px" hint-size="150px,24px"></dc-import>
   <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{data}}</span>
-  <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
-    <span style="font-size: 14px; overflow-wrap: anywhere">{{testo}}</span>
-    <sc-if value="{{conVoce}}" hint-placeholder-val="{{ true }}">
-      <div style="display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; padding: 8px 8px 8px 12px; background: #cfe6f4; border-left: 4px solid #46606f">
-        <span aria-hidden="true" style="color: #46606f">↳</span>
-        <span style="font-size: 13px; color: #46606f">{{introVoce}}</span>
-        <b style="font-size: 14px">{{voce}}</b>
-        <span style="font-size: 13px; color: #46606f">{{dettaglio}}</span>
-        <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}">
-          <span role="img" aria-label="{{ariaTasto}}" style="display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; margin-left: auto; background: #ffffff; border: 2px solid {{coloreTasto}}; border-radius: 6px; font-size: 22px; font-weight: 700; color: {{coloreTasto}}">{{segnoTasto}}</span>
+  <span style="font-size: 14px; overflow-wrap: anywhere; min-width: 0">{{testo}}</span>
+  <sc-if value="{{entra}}" hint-placeholder-val="{{ true }}">
+    <span style="display: flex; align-items: center; height: 44px; padding: 0 12px; border: 2px solid #46606f; border-radius: 6px; background: #ffffff; font-size: 15px">{{tipologia}} ▾</span>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+      <sc-if value="{{conPersona}}" hint-placeholder-val="{{ true }}">
+        <b style="font-size: 14px; color: {{colorePersona}}">{{persona}}</b>
+        <span style="display: flex; gap: 6px">
+          <sc-if value="{{conSpunta}}" hint-placeholder-val="{{ true }}">
+            <span role="img" aria-label="È questa: collega il movimento a {{persona}}" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #ffffff; border: 2px solid #0b7a33; border-radius: 6px; font-size: 22px; font-weight: 700; color: #0b7a33">✓</span>
+          </sc-if>
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="{{tastoPersona}}" hint-size="96px,44px"></dc-import>
+        </span>
+      </sc-if>
+    </div>
+  </sc-if>
+  <sc-if value="{{conVoce}}" hint-placeholder-val="{{ true }}">
+    <div style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: .08em; color: #46606f">{{introVoce}}</span>
+        <span style="font-size: 14px"><b>{{voce}}</b> <span style="font-size: 13px; color: #46606f">{{dettaglio}}</span></span>
+      </span>
+      <span style="display: flex; gap: 6px">
+        <sc-if value="{{decide}}" hint-placeholder-val="{{ true }}">
+          <span role="img" aria-label="È questa: collega il movimento a questa voce" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #ffffff; border: 2px solid #0b7a33; border-radius: 6px; font-size: 22px; font-weight: 700; color: #0b7a33">✓</span>
         </sc-if>
-      </div>
-    </sc-if>
-  </div>
+        <sc-if value="{{conNuova}}" hint-placeholder-val="{{ true }}">
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="È nuova" hint-size="110px,44px"></dc-import>
+        </sc-if>
+      </span>
+    </div>
+  </sc-if>
+  <sc-if value="{{scartata}}" hint-placeholder-val="{{ false }}"><span style="grid-column: span 2"></span></sc-if>
   <b style="text-align: right; font-size: 15px; font-variant-numeric: tabular-nums">{{importo}}</b>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"stato":{"editor":"enum","options":["nuova","da controllare","duplicata","da decidere","scartata"],"default":"duplicata"},"data":{"editor":"text","default":"27/10/2026"},"testo":{"editor":"text","default":"Da MERIGO GIANLUCA TRN 0329…IT per acconto annuale BONIFICO SEPA"},"voce":{"editor":"text","default":"Merigo Elena"},"dettaglio":{"editor":"text","default":"27/10/2026 · Quota annuale · ricevuta n. 212"},"importo":{"editor":"text","default":"+ 120,00 €"},"rifiutabile":{"editor":"boolean","default":true},"$preview":{"width":1100,"height":110}}'>
-// COSTRUITA (ImportaBanca.tsx, `.sg-banca-riga`; docs/design-canvas/importa-banca-righe): una riga del file della banca nell'anteprima «Le righe del file». Griglia 150px 96px 1fr 120px, filetto 1px `line-soft`, stato in parole con `Badge` tag:
-// nuova = verde, da controllare e da decidere = giallo, duplicata = neutro, scartata = rosso. Sotto il testo del file, per la duplicata, il blocco della voce gia' presente (fondo `surface-2`, barra 4px `dim`):
-// «E' la duplicata di» voce, data · cassa · tipo e numero. `rifiutabile` aggiunge la X rossa (bottone 44×44, bordo 2px `rosso-testo`, «Non e' questo: entra come movimento nuovo»), solo quando l'abbinamento l'ha fatto l'anteprima
-// e non quando la riga era gia' importata di prima. Da decidere: il blocco dice «Potrebbe essere la voce» e il tasto e' la spunta verde 44×44 (`verde-testo`, «E' questa: collega il movimento a questa voce»). Scartata: niente blocco, il motivo sta nel testo.
-// Sul telefono (<768px) la griglia diventa stato · data · importo in alto e il testo su tutta la larghezza sotto.
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["nuova","da controllare","duplicata","da decidere","scartata"],"default":"nuova"},"data":{"editor":"text","default":"27/10/2026"},"testo":{"editor":"text","default":"Da BIANCHI ANNA per quota annuale BONIFICO SEPA"},"tipologia":{"editor":"text","default":"Quota annuale"},"persona":{"editor":"enum","options":["proposta","confermata","manca","più schede","nessuna"],"default":"proposta"},"nome":{"editor":"text","default":"Anna Bianchi"},"voce":{"editor":"text","default":"Merigo Elena"},"dettaglio":{"editor":"text","default":"27/10/2026 · Quota annuale · ricevuta n. 212"},"importo":{"editor":"text","default":"+ 120,00 €"},"rifiutabile":{"editor":"boolean","default":true},"$preview":{"width":1100,"height":100}}'>
+// COSTRUITA (ImportaBanca.tsx, `.sg-banca-riga`; docs/design-canvas/importa-banca-pagina): una riga del file della banca nella pagina piena «Importa dalla banca». Griglia 110 / 90 / 1fr (almeno 200) / 200 / 220 / 104, gap 16, centrata, alta almeno 76, filetto 1px `line-soft`.
+// Stato in parole con `Badge` tag: nuova = verde, da controllare e da decidere = giallo, duplicata = neutro, scartata = rosso. Nuova e da controllare: TIPOLOGIA (select `sg-campo`, le voci del tipo) e PERSONA, solo se la voce la vuole (quota, corsi):
+// proposta = nome + spunta verde 44×44 («È questa: collega il movimento a …») + «Cambia»; confermata = nome + «Cambia»; manca = «Manca la persona» (`giallo-testo`) + «Cerca»; più schede = «N schede possibili» + «Scegli».
+// Duplicata: al posto di tipologia e persona «GIÀ SCRITTA COME» voce · data · cassa · tipo, e «È nuova» solo se `rifiutabile`. Da decidere: «POTREBBE ESSERE» con la spunta verde, e «È nuova». Scartata: niente, il motivo sta nel testo.
+// Sotto i 1400px la griglia diventa: lo stato da solo in alto, sotto data e importo, poi il resto su tutta la larghezza.
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const stato = p.stato || 'duplicata';
+    const stato = p.stato || 'nuova';
     const tono = { 'nuova': 'verde', 'da controllare': 'giallo', 'duplicata': 'neutro', 'da decidere': 'giallo', 'scartata': 'rosso' }[stato];
-    const conVoce = stato === 'duplicata' || stato === 'da decidere';
+    const entra = stato === 'nuova' || stato === 'da controllare';
     const decide = stato === 'da decidere';
-    const rifiutabile = p.rifiutabile !== false;
+    const per = p.persona || 'proposta';
+    const nome = p.nome ?? '';
     return {
       tono, stato: stato.toUpperCase(), data: p.data ?? '', testo: p.testo ?? '', importo: p.importo ?? '',
-      conVoce, introVoce: decide ? 'Potrebbe essere la voce' : 'È la duplicata di', voce: p.voce ?? '', dettaglio: p.dettaglio ?? '',
-      conTasto: decide || rifiutabile,
-      coloreTasto: decide ? '#0b7a33' : '#b81d1d', segnoTasto: decide ? '✓' : '✕',
-      ariaTasto: decide ? 'È questa: collega il movimento a questa voce' : 'Non è questo: entra come movimento nuovo',
+      entra, tipologia: p.tipologia ?? '', conPersona: per !== 'nessuna',
+      persona: per === 'manca' ? 'Manca la persona' : per === 'più schede' ? '3 schede possibili' : nome,
+      colorePersona: per === 'manca' || per === 'più schede' ? '#8f6a00' : '#0d2a3d',
+      conSpunta: per === 'proposta', tastoPersona: per === 'manca' ? 'Cerca' : per === 'più schede' ? 'Scegli' : 'Cambia',
+      conVoce: stato === 'duplicata' || decide, decide, conNuova: decide || p.rifiutabile !== false,
+      introVoce: decide ? 'POTREBBE ESSERE' : 'GIÀ SCRITTA COME', voce: p.voce ?? '', dettaglio: p.dettaglio ?? '',
+      scartata: stato === 'scartata',
     };
   }
 }

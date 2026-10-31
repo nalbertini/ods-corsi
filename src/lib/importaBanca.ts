@@ -1,8 +1,9 @@
-import { giornoChiuso, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento } from './contabilita'
+import { cosaNonVaCambioVoce, giornoChiuso, pacchetti, vuolePersonaRiga, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento, type VoceContabile } from './contabilita'
 import { STRUTTURA_CF } from './codiceFiscale'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { nomeDallaCausale } from './movimentiPersona'
 import type { ComeAbbinato } from './abbinaMovimenti'
+import type { SuggerimentoMovimento } from './suggerimentoMovimento'
 
 /**
  * La «Lista movimenti» di BancoPosta (CSV scaricato dall'home banking), letta nel browser e pronta per
@@ -182,15 +183,89 @@ const STATI_DEL_FILTRO: Record<FiltroRigheBanca, StatoRigaBanca[]> = {
   scartate: ['scartata'],
 }
 
-export const filtraRighe = (righe: RigaAnteprima[], filtro: FiltroRigheBanca): RigaAnteprima[] => righe.filter((r) => STATI_DEL_FILTRO[filtro].includes(r.stato))
+export type SegnoBanca = 'entrambe' | 'entrate' | 'uscite'
 
-export const contaRighe = (righe: RigaAnteprima[]) => ({
-  tutte: righe.length,
-  nuove: filtraRighe(righe, 'nuove').length,
-  duplicate: filtraRighe(righe, 'duplicate').length,
-  daDecidere: filtraRighe(righe, 'da-decidere').length,
-  scartate: filtraRighe(righe, 'scartate').length,
+/** Con un segno le scartate non si vedono: non sono movimenti, non hanno segno. */
+const delSegno = (r: RigaAnteprima, segno: SegnoBanca): boolean =>
+  segno === 'entrambe' || r.movimento?.tipo === (segno === 'entrate' ? 'entrata' : 'uscita')
+
+export const filtraRighe = (righe: RigaAnteprima[], filtro: FiltroRigheBanca, segno: SegnoBanca = 'entrambe'): RigaAnteprima[] =>
+  righe.filter((r) => STATI_DEL_FILTRO[filtro].includes(r.stato) && delSegno(r, segno))
+
+export const contaRighe = (righe: RigaAnteprima[], segno: SegnoBanca = 'entrambe') => ({
+  tutte: filtraRighe(righe, 'tutte', segno).length,
+  nuove: filtraRighe(righe, 'nuove', segno).length,
+  duplicate: filtraRighe(righe, 'duplicate', segno).length,
+  daDecidere: filtraRighe(righe, 'da-decidere', segno).length,
+  scartate: filtraRighe(righe, 'scartate', segno).length,
 })
+
+/** Una riga del file com'è appena importata: un movimento a mano del conto, in «Da classificare». Serve alle regole della voce prima di scrivere. */
+export const rigaComeMovimento = (mv: MovimentoBanca, contoId: string): RigaMovimento => ({
+  id: mv.chiave, origine: 'movimento', tipo: mv.tipo, data: mv.data, importo: mv.importo, descrizione: mv.descrizione,
+  voce: VOCE_DA_CLASSIFICARE, cassaId: contoId, annullato: false, origineImport: mv.chiave,
+})
+
+/** La voce (e per una quota o un corso la persona) scelta per una riga prima di importarla. */
+export interface SceltaVoceBanca {
+  voceId: string
+  personaId?: string
+  /** Solo per mostrarla: il database tiene l'id. */
+  nomePersona?: string
+}
+
+/** Cosa non va in una scelta, con le parole di `cambia_voce_movimenti`: la riga come sarà una volta importata. */
+export const cosaNonVaSceltaBanca = (mv: MovimentoBanca, scelta: SceltaVoceBanca, voci: VoceContabile[], contoId: string): string | null =>
+  cosaNonVaCambioVoce([mv.chiave], [rigaComeMovimento(mv, contoId)], voci, scelta.voceId, scelta.personaId)
+
+/** La riga vuole una persona con questa voce? (Quota o corsi su un'entrata.) */
+export const sceltaVuolePersona = (mv: MovimentoBanca, voce: VoceContabile | undefined, contoId: string): boolean =>
+  !!voce && vuolePersonaRiga(rigaComeMovimento(mv, contoId), voce.nome)
+
+/** La scelta che parte dal suggerimento: la voce, e la persona solo se è preselezionata. */
+export function sceltaProposta(sug: SuggerimentoMovimento | null): SceltaVoceBanca | null {
+  if (!sug?.voce) return null
+  return sug.preselezionato ? { voceId: sug.voce.voceId, personaId: sug.preselezionato } : { voceId: sug.voce.voceId }
+}
+
+/**
+ * Cosa si scrive per ogni riga che entra: la scelta della segreteria, se no la voce suggerita. La persona
+ * proposta non entra mai da sola: vale solo dopo il ✓, che la mette fra le scelte a mano.
+ */
+export function scelteDaScrivere(
+  entrano: Pick<MovimentoBanca, 'chiave'>[], aMano: Record<string, SceltaVoceBanca>, proposte: Record<string, SuggerimentoMovimento | null>,
+): Record<string, SceltaVoceBanca> {
+  return Object.fromEntries(entrano.flatMap(({ chiave }) => {
+    if (aMano[chiave]) return [[chiave, aMano[chiave]]]
+    const p = sceltaProposta(proposte[chiave] ?? null)
+    return p ? [[chiave, { voceId: p.voceId }]] : []
+  }))
+}
+
+/**
+ * Dopo l'importazione: a quali movimenti scritti (ritrovati dalla chiave, `origine_import`) cambiare la voce.
+ * Le righe con la persona vanno una per volta (il database lo vuole); le altre a lotti per voce. Una scelta che
+ * non va, o una riga che non si ritrova, resta in «Da classificare»: l'importazione non si ferma per questo.
+ */
+export function pianoDiClassificazione(
+  entrano: MovimentoBanca[], scelte: Record<string, SceltaVoceBanca>, scritti: Pick<MovimentoManuale, 'id' | 'origineImport' | 'annullatoIl'>[], voci: VoceContabile[], contoId: string,
+): { lotti: { ids: string[]; voceId: string; personaId?: string }[]; restano: number } {
+  // Un annullato con la stessa chiave non è il movimento appena scritto.
+  const perChiave = new Map(scritti.filter((x) => x.origineImport && !x.annullatoIl).map((x) => [x.origineImport, x.id]))
+  const conPersona: { ids: string[]; voceId: string; personaId?: string }[] = []
+  const perVoce = new Map<string, string[]>()
+  let restano = 0
+  for (const mv of entrano) {
+    const scelta = scelte[mv.chiave]
+    const id = perChiave.get(mv.chiave)
+    const voce = voci.find((v) => v.id === scelta?.voceId)
+    if (!scelta || !id || !voce || voce.nome === VOCE_DA_CLASSIFICARE || cosaNonVaSceltaBanca(mv, scelta, voci, contoId)) { restano++; continue }
+    if (sceltaVuolePersona(mv, voce, contoId)) conPersona.push({ ids: [id], voceId: voce.id, personaId: scelta.personaId })
+    else perVoce.set(voce.id, [...(perVoce.get(voce.id) ?? []), id])
+  }
+  const aLotti = [...perVoce].flatMap(([voceId, ids]) => pacchetti(ids).map((p) => ({ ids: p, voceId })))
+  return { lotti: [...aLotti, ...conPersona], restano }
+}
 
 /**
  * Cosa succederebbe importando, senza scrivere niente. `righe` sono i movimenti già in elenco, `scelte` le

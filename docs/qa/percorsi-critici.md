@@ -62,7 +62,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Scheda del personale (schede e «Altro») | segreteria | accesso tolto o persona eliminata per sbaglio, dati visti da chi non deve | `prova:schede-personale`, `prova:ruoli`, `prova:segreteria`, `prova:pericolo`, `disattiva-chiude-iscrizioni.sql`, `elimina-istruttore.sql` | sì |
 | Ruolo «amministrazione» | amministrazione, segreteria | persone viste da chi tiene solo i conti | `prova:menu`, `prova:ruoli`, `prova:pagamenti`, `prova:segreteria`, `amministrazione.sql`, `rls.sql`, `elimina-istruttore.sql` | sì |
 | Contabilità (movimenti, chiusure, voci, prima nota) | amministrazione | residuo che non torna, giorno chiuso riscritto | `prova:contabilita`, `prova:indirizzi`, `prova:banco`, `prova:avvisi-segreteria`, `prova:segreteria`, `prova:chiusura-pdf`, `prova:importa-prima-nota`, `prova:pericolo`, `chiusura-cassa.sql`, `contabilita.sql`, `rls.sql`, `importa-prima-nota.sql`, `cambia-voce.sql`, `prova:gare` | sì |
-| Importa dalla banca | amministrazione | movimento perso o scritto due volte | `prova:importa-banca`, `prova:importazioni`, `prova:abbina-movimenti`, `importa-banca.sql`, `importa-prima-nota.sql`, `importazioni.sql`, `abbina-movimenti.sql` | sì |
+| Importa dalla banca | amministrazione | movimento perso o scritto due volte, voce o persona sbagliata | `prova:importa-banca`, `prova:importazioni`, `prova:abbina-movimenti`, `importa-banca.sql`, `importa-prima-nota.sql`, `importazioni.sql`, `abbina-movimenti.sql`, `cambia-voce.sql` | sì |
 | Quadratura del Conto Corrente con l'estratto BancoPosta | amministrazione (scrive e verifica), segreteria (non la vede) | saldo sbagliato, mese «verificato» che non torna, saldo visto da chi non deve | `prova:quadratura`, `prova:importa-banca`, `quadratura-banca.sql` | sì, da fare |
 | Importazioni: Satispay e banca sullo stesso movimento a mano | amministrazione | stesso incasso contato due volte, o perso | `prova:importazioni`, `prova:satispay-scarico`, `prova:importa-banca`, `importazioni.sql`, `satispay-scarico.sql`, `importa-banca.sql` | sì |
 | Voci da classificare in IMPORTAZIONI | amministrazione | voce persa dalla lista, totale sbagliato | `prova:importazioni`, `prova:suggerimento-movimento` | sì, da fare |
@@ -195,8 +195,9 @@ quando arriva la prova.
 - Suggerimento da classificare: il caricamento in `Contabilita.tsx` (listino
   assente → solo importo escluso; nessun abbinato → ricerca per nome) sta nel
   `.tsx`; nessuna prova, solo collaudo a mano.
-- Importa dalla banca: filtri e righe di `ImportaBanca.tsx` (chip, X rossa,
-  «È questa») stanno nel `.tsx`: solo collaudo a mano.
+- Importa dalla banca: le righe di `ImportaBanca.tsx` (chip, «È nuova», ✓
+  della persona) e il giro di `cambiaVoceMovimenti` dopo l'importazione:
+  solo collaudo a mano. Il piano e le scelte hanno le loro prove.
 - Suggerimento da classificare: `ImportaBanca.tsx` (al massimo trenta
   richieste; «Conferma quelli che sembrano giusti» scrive) sta nel `.tsx`:
   solo collaudo a mano.

@@ -390,6 +390,15 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
     if (await lasciare()) setAperto(null)
   }
 
+  // L'importazione è una pagina intera: il file ha decine di righe, ognuna con la sua voce e la sua persona.
+  if (scrivo === 'banca') {
+    return (
+      <SchedaPiena etichetta="Importa dalla banca" torna="I movimenti" onTorna={() => void tornaDalModulo()}>
+        <ImportaBanca d={d} casse={casse} voci={voci} righe={righe} fai={fai} onRileggi={onCambiato} onVedi={() => { chiudi(); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', voce: 'Da classificare' }) }} />
+      </SchedaPiena>
+    )
+  }
+
   if (scrivo) {
     return (
       <InVista>
@@ -399,9 +408,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
             ← I movimenti
           </button>
         </div>
-        {scrivo === 'banca' ? (
-          <ImportaBanca d={d} casse={casse} righe={righe} fai={fai} onRileggi={onCambiato} onVedi={() => { chiudi(); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', voce: 'Da classificare' }) }} />
-        ) : scrivo === 'movimento' ? (
+        {scrivo === 'movimento' ? (
           <NuovoMovimento d={d} voci={voci} casse={casse} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
         ) : (
           <NuovoGiroconto d={d} casse={casse} voci={voci} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
