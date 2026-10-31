@@ -16,7 +16,7 @@ select pg_temp.atteso('le funzioni che chiama anon',
   (select string_agg(p.proname, ', ' order by p.proname) from pg_proc p
     where p.pronamespace = 'public'::regnamespace and has_function_privilege('anon', p.oid, 'execute')),
   -- controlla_richiesta, da_claude e porta_di_claude (77-claude-dalla-porta.sql): PostgREST le chiama prima di ogni richiesta, anche di chi non ha fatto l'accesso; non leggono dati.
-  'controlla_richiesta, corsi_aperti, da_claude, invia_iscrizione, invia_ordine_vestiario, iscrizioni_regole, listino, mesi_presenze_pubblici, orari_aperti, orari_sito, porta_di_claude, puo_caricare, sito_menu_pubblico, sito_pagine_pubbliche, sito_redirect_pubblici, vestiario');
+  'controlla_richiesta, corsi_aperti, da_claude, invia_iscrizione, invia_ordine_vestiario, iscrizioni_regole, listino, mesi_presenze_pubblici, metodi_spenti, orari_aperti, orari_sito, porta_di_claude, puo_caricare, sito_menu_pubblico, sito_pagine_pubbliche, sito_redirect_pubblici, vestiario');
 -- Ogni funzione dice dove cerca le tabelle: se no le cerca nel search_path di
 -- chi la chiama, che se lo può cambiare (l'avviso di Supabase).
 select pg_temp.atteso('le funzioni senza search_path',
