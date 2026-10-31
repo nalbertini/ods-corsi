@@ -13,9 +13,8 @@
 -- anche una funzione nuova che se ne dimenticasse.
 --
 -- Chi può fare cosa: niente di nuovo; la funzione del trigger non si chiama
--- da fuori. Un pagamento già in attesa prima di spegnere resta com'è (la
--- funzione che lo ritrova lo ridà, ma per pagarlo serve comunque la Edge
--- Function, che lo ferma), e i pagamenti arrivati si scrivono lo stesso.
+-- da fuori. Un pagamento già in attesa prima di spegnere resta com'è, e
+-- quando arriva si scrive lo stesso: il trigger guarda solo gli insert.
 --
 -- Si lancia dopo `126-metodi-pagamento.sql`. Non chiede di rilanciare
 -- `06-iscrizioni.sql`. Finché non c'è, il rifiuto lo fa solo la Edge
@@ -26,7 +25,7 @@ create or replace function pagamento_metodo_acceso() returns trigger
   language plpgsql security definer set search_path = public, pg_temp as $$
 begin
   if new.circuito = any (metodi_spenti()) then
-    -- Come SATISPAY_SPENTO e CARTA_SPENTA (src/lib/satispay.ts), ma anche per chi paga una quota dall'area iscritti.
+    -- Più generico di SATISPAY_SPENTO e CARTA_SPENTA (src/lib/satispay.ts), di proposito: vale anche per la quota dall'area iscritti.
     if new.circuito = 'carta' then
       raise exception 'La carta per ora non è attiva: paga in palestra o col bonifico' using errcode = '22023';
     end if;
