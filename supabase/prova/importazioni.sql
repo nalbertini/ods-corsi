@@ -1,5 +1,5 @@
--- La sezione IMPORTAZIONI (114-importazioni.sql): i pagamenti Satispay «forse già scritti a mano» si decidono
--- a gruppi (`satispay_decidi_gruppo`), «Non è questo» scollega un pagamento da un movimento a mano
+-- La sezione IMPORTAZIONI (114-importazioni.sql, cambiata da 132-satispay-solo-chi-ha-pagato.sql): i pagamenti Satispay
+-- «forse già scritti a mano» non si decidono più (`satispay_decidi_gruppo` rifiuta), «Non è questo» scollega un pagamento da un movimento a mano
 -- (`satispay_scollega`), i candidati non includono i movimenti già presi o annullati (`satispay_scarico_stato`), e i
 -- movimenti della banca coperti da uno a mano si salvano (`banca_coperti`, `banca_segna_coperti`) per rivederli, con
 -- «Non è questo» anche lì (`banca_non_e_questo`). Solo l'amministrazione.
@@ -152,6 +152,30 @@ grant execute on function atteso(text, text, text), chi(text), tenta(text), esit
   id_cassa(text), pag(text, text, text, int, text, text), sal(jsonb[]), app(boolean), conti(jsonb), a_mano(text, int, text, text), pulisci(),
   esito_di(text), mov_di(text), n_mov(), n_mov_di(text), oggi_roma(), impronta(), candidati_di(text) to anon, authenticated, service_role;
 
+-- Un movimento della cassa Satispay come c'era prima del 132, che non ne lascia scrivere di nuovi: il trigger (se c'è) si spegne il tempo di scriverlo.
+create or replace function vecchio(d text, i int, descr text default 'Vecchio', sid text default null) returns uuid
+  language plpgsql security definer set search_path = public as $f$
+declare nuovo uuid; cte boolean := exists (select 1 from pg_trigger where tgname = 'movimenti_cassa_satispay_chiusa');
+begin
+  if cte then alter table movimenti disable trigger movimenti_cassa_satispay_chiusa; end if;
+  insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, satispay_id)
+  values ('entrata', d::date, i, (select id from voci_contabili where nome = 'Corsi e altri pagamenti' and tipo = 'entrata'), id_cassa('Satispay'), descr, sid)
+  returning id into nuovo;
+  if cte then alter table movimenti enable trigger movimenti_cassa_satispay_chiusa; end if;
+  return nuovo;
+end $f$;
+-- Un pagamento già collegato a mano a un movimento (come l'ha lasciato il 114): esito a_mano, il movimento col segno.
+create or replace function collegato(sid text, d text, i int, quando text) returns uuid language plpgsql security definer set search_path = public as $f$
+declare m uuid;
+begin
+  insert into satispay_negozio (satispay_id, tipo, stato, importo, quando, chi, esito, motivo)
+    values (sid, 'TO_BUSINESS', 'ACCEPTED', i, quando::timestamptz, 'Mario', 'a_mano', 'forse_doppione');
+  m := vecchio(d, i, 'Bonifico di Mario');
+  update movimenti set satispay_id = sid where id = m;
+  update satispay_negozio set movimento_id = m where satispay_id = sid;
+  return m;
+end $f$;
+grant execute on function vecchio(text, int, text, text), collegato(text, text, int, text) to authenticated, service_role;
 -- Le chiavi con cui si presentano chi decide (Ada: amministrazione) e chi no.
 create or replace function ada() returns text language sql immutable as $$ select '22222222-2222-2222-2222-222222222222' $$;
 create or replace function chiusura(cassa text, giorno text) returns void language sql security definer set search_path = public as $$
@@ -165,21 +189,16 @@ begin
 end $$;
 
 \echo ''
-\echo '--- 1. i candidati non includono i movimenti già presi o annullati (satispay_scarico_stato) ---'
+\echo '--- 1. lo stato non propone più candidati: niente da decidere, anche con righe vecchie in tabella ---'
 select pulisci();
-select a_mano('2026-10-14', 1250, 'Satispay', 'Primo') as m1 \gset
-select a_mano('2026-10-14', 1250, 'Satispay', 'Secondo') as m2 \gset
-select a_mano('2026-10-14', 1250, 'Satispay', 'Terzo') as m3 \gset
-select sal(pag('D1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) as _;
-select conti(app(true)) as _;
-select atteso('D1 è da decidere con tre candidati',
-  come_vedo(ada(), 'authenticated', 'select jsonb_array_length(satispay_scarico_stato()->''da_decidere''->0->''candidati'')::text'), '3');
--- Un altro pagamento prende il primo; il terzo viene annullato.
-update movimenti set satispay_id = 'ALTRO' where id = :'m1';
-update movimenti set annullato_il = now() where id = :'m3';
-select atteso('un movimento col segno di un altro pagamento o annullato non è più candidato',
-  come_vedo(ada(), 'authenticated',
-    'select string_agg(c->>''id'', '','') from jsonb_array_elements(satispay_scarico_stato()->''da_decidere''->0->''candidati'') c'), :'m2');
+select vecchio('2026-10-14', 1250, 'Primo') as m1 \gset
+select vecchio('2026-10-14', 1250, 'Secondo') as m2 \gset
+insert into satispay_negozio (satispay_id, tipo, stato, importo, quando, chi, esito, motivo, candidati)
+  values ('D1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario', 'da_decidere', 'forse_doppione', array[:'m1', :'m2']::uuid[]);
+select atteso('D1 è da decidere in tabella, con due candidati…', esito_di('D1') || ' ' || candidati_di('D1'),
+  'da_decidere/forse_doppione ' || (select string_agg(x, ',' order by x) from unnest(array[:'m1', :'m2']::text[]) x));
+select atteso('…ma lo stato non lo mostra: da_decidere è vuoto',
+  come_vedo(ada(), 'authenticated', 'select satispay_scarico_stato()->>''da_decidere'''), '[]');
 
 \echo ''
 \echo '--- 2. 114-importazioni.sql è stato lanciato ---'
@@ -191,107 +210,69 @@ select (to_regprocedure('public.satispay_decidi_gruppo(jsonb)') is not null
 select atteso('ci sono satispay_decidi_gruppo, satispay_scollega, banca_segna_coperti, banca_non_e_questo e banca_coperti', :'c114', 'true');
 
 \echo ''
-\echo '--- 3. satispay_decidi_gruppo: tutte le scelte o nessuna ---'
+\echo '--- 3. satispay_decidi_gruppo rifiuta, in qualunque forma, e non cambia niente ---'
 select pulisci();
-select a_mano('2026-10-14', 1250, 'Satispay', 'Primo') as m1 \gset
-select a_mano('2026-10-14', 1250, 'Satispay', 'Secondo') as m2 \gset
-select sal(pag('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T09:00:00Z', 'Mario'), pag('P2', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T11:00:00Z', 'Mario')) as _;
-select conti(app(true)) as _;
-select atteso('P1 e P2 sono da decidere', esito_di('P1') || ' ' || esito_di('P2'), 'da_decidere/forse_doppione da_decidere/forse_doppione');
--- Lo stesso movimento per due pagamenti: niente.
-select atteso('lo stesso movimento scelto per due pagamenti: errore',
+select vecchio('2026-10-14', 1250, 'Primo') as m1 \gset
+select vecchio('2026-10-14', 1250, 'Secondo') as m2 \gset
+insert into satispay_negozio (satispay_id, tipo, stato, importo, quando, chi, esito, motivo)
+  values ('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T09:00:00Z', 'Mario', 'da_decidere', 'forse_doppione'),
+         ('P2', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T11:00:00Z', 'Mario', 'da_decidere', 'forse_doppione');
+select impronta() as prima \gset
+select atteso('un movimento a mano a testa: rifiutato',
   come(ada(), 'authenticated', format('select satispay_decidi_gruppo(%L::jsonb)',
-    jsonb_build_array(jsonb_build_object('satispayId', 'P1', 'scelta', 'a_mano', 'movimentoId', :'m1'), jsonb_build_object('satispayId', 'P2', 'scelta', 'a_mano', 'movimentoId', :'m1')))),
-  '22023 Lo stesso movimento è scelto per due pagamenti');
-select atteso('…e non è cambiato niente', esito_di('P1') || ' ' || esito_di('P2') || ' ' || (select count(*)::text from movimenti where satispay_id is not null), 'da_decidere/forse_doppione da_decidere/forse_doppione 0');
--- Una scelta fallisce (giorno chiuso, «scrivi»): anche la prima, già buona, non si applica.
+    jsonb_build_array(jsonb_build_object('satispayId', 'P1', 'scelta', 'a_mano', 'movimentoId', :'m1'), jsonb_build_object('satispayId', 'P2', 'scelta', 'a_mano', 'movimentoId', :'m2')))),
+  '22023 Satispay non si decide più: i soldi arrivano col versamento in banca. Ricarica la pagina');
+select atteso('«oggi» per tutti e due: rifiutato', come(ada(), 'authenticated', format('select satispay_decidi_gruppo(%L::jsonb)',
+    jsonb_build_array(jsonb_build_object('satispayId', 'P1', 'scelta', 'oggi'), jsonb_build_object('satispayId', 'P2', 'scelta', 'oggi')))), '22023 Satispay non si decide più: i soldi arrivano col versamento in banca. Ricarica la pagina');
 select chiusura('Satispay', '2026-10-15') as _;
-select atteso('«scrivi» in un giorno chiuso ferma tutto il gruppo',
-  come(ada(), 'authenticated', format('select satispay_decidi_gruppo(%L::jsonb)',
-    jsonb_build_array(jsonb_build_object('satispayId', 'P1', 'scelta', 'a_mano', 'movimentoId', :'m1'), jsonb_build_object('satispayId', 'P2', 'scelta', 'scrivi')))),
-  '22023 Quel giorno la cassa è chiusa: scrivilo oggi');
-select atteso('…il primo pagamento è ancora da decidere e il movimento senza segno',
-  esito_di('P1') || ' ' || esito_di('P2') || ' ' || (select count(*)::text from movimenti where satispay_id is not null) || ' ' || n_mov(), 'da_decidere/forse_doppione da_decidere/forse_doppione 0 2');
-select atteso('«oggi» per tutti e due, nello stesso giorno chiuso: due movimenti con la data di oggi, firmati da chi ha deciso',
-  come(ada(), 'authenticated', format('select satispay_decidi_gruppo(%L::jsonb)',
-    jsonb_build_array(jsonb_build_object('satispayId', 'P1', 'scelta', 'oggi'), jsonb_build_object('satispayId', 'P2', 'scelta', 'oggi')))), 'ok');
-select atteso('…P1 e P2 scritti', mov_di('P1') || ' ' || mov_di('P2'),
-  'entrata|' || oggi_roma() || '|1250|Satispay|Da classificare|Satispay · Mario|aaaaaaaa-0000-0000-0000-000000000002 entrata|' || oggi_roma() || '|1250|Satispay|Da classificare|Satispay · Mario|aaaaaaaa-0000-0000-0000-000000000002');
-select atteso('…esito scritto', esito_di('P1') || ' ' || esito_di('P2'), 'scritto/forse_doppione scritto/forse_doppione');
-
-select pulisci();
-select a_mano('2026-10-14', 1250, 'Satispay', 'Primo') as m1 \gset
-select a_mano('2026-10-14', 1250, 'Satispay', 'Secondo') as m2 \gset
-select sal(pag('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T09:00:00Z', 'Mario'), pag('P2', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T11:00:00Z', 'Mario')) as _;
-select conti(app(true)) as _;
-select atteso('un movimento a mano a testa: tutti e due a_mano',
-  come(ada(), 'authenticated', format('select satispay_decidi_gruppo(%L::jsonb)',
-    jsonb_build_array(jsonb_build_object('satispayId', 'P1', 'scelta', 'a_mano', 'movimentoId', :'m1'), jsonb_build_object('satispayId', 'P2', 'scelta', 'a_mano', 'movimentoId', :'m2')))), 'ok');
-select atteso('…esiti e segni', esito_di('P1') || ' ' || esito_di('P2') || ' ' || (select satispay_id from movimenti where id = :'m1') || (select satispay_id from movimenti where id = :'m2'),
-  'a_mano/forse_doppione a_mano/forse_doppione P1P2');
-select atteso('un gruppo già deciso: errore', come(ada(), 'authenticated', $$select satispay_decidi_gruppo('[{"satispayId": "P1", "scelta": "fuori"}]'::jsonb)$$), '22023 Questo pagamento è già deciso');
-select atteso('un pagamento che non c''è', come(ada(), 'authenticated', $$select satispay_decidi_gruppo('[{"satispayId": "XX", "scelta": "fuori"}]'::jsonb)$$), 'P0002 Il pagamento non c’è');
-select atteso('una scelta che non si capisce', come(ada(), 'authenticated', $$select satispay_decidi_gruppo('[{"satispayId": "P1", "scelta": "boh"}]'::jsonb)$$), '22023…');
-select atteso('una lista che non è una lista', left(come(ada(), 'authenticated', $$select satispay_decidi_gruppo('{}'::jsonb)$$), 5), '22023');
+select atteso('«scrivi» in un giorno chiuso: rifiutato lo stesso, col solito messaggio',
+  come(ada(), 'authenticated', $$select satispay_decidi_gruppo('[{"satispayId": "P1", "scelta": "scrivi"}]'::jsonb)$$), '22023 Satispay non si decide più: i soldi arrivano col versamento in banca. Ricarica la pagina');
+select atteso('«fuori»', come(ada(), 'authenticated', $$select satispay_decidi_gruppo('[{"satispayId": "P1", "scelta": "fuori"}]'::jsonb)$$), '22023 Satispay non si decide più: i soldi arrivano col versamento in banca. Ricarica la pagina');
+select atteso('un pagamento che non c''è: rifiutato con lo stesso messaggio, non «non c''è»', come(ada(), 'authenticated', $$select satispay_decidi_gruppo('[{"satispayId": "XX", "scelta": "fuori"}]'::jsonb)$$), '22023 Satispay non si decide più: i soldi arrivano col versamento in banca. Ricarica la pagina');
+select atteso('una lista che non è una lista', come(ada(), 'authenticated', $$select satispay_decidi_gruppo('{}'::jsonb)$$), '22023 Satispay non si decide più: i soldi arrivano col versamento in banca. Ricarica la pagina');
+select atteso('…e non è cambiato niente: movimenti, esiti, segni', impronta(), :'prima');
 
 \echo ''
-\echo '--- 4. satispay_scollega: «Non è questo» ---'
+\echo '--- 4. satispay_scollega: «Non è questo» scioglie un collegamento già fatto, il pagamento va nel versamento ---'
 select pulisci();
-select a_mano('2026-10-14', 1250, 'Satispay', 'Bonifico di Mario') as m1 \gset
-select sal(pag('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) as _;
-select conti(app(true)) as _;
-select a_mano('2026-10-14', 1250, 'Satispay', 'Un altro bonifico') as m2 \gset
-select atteso('P1 si era preso da solo il movimento a mano', esito_di('P1') || ' ' || n_mov_di('P1'), 'a_mano/- 1');
+select collegato('P1', '2026-10-14', 1250, '2026-10-14T10:00:00Z') as m1 \gset
+select vecchio('2026-10-14', 1250, 'Un altro bonifico') as m2 \gset
+select atteso('P1 era collegato a mano', esito_di('P1') || ' ' || n_mov_di('P1'), 'a_mano/forse_doppione 1');
 select atteso('«Non è questo»: ok', come(ada(), 'authenticated', $$select satispay_scollega('P1')$$), 'ok');
-select atteso('…il pagamento torna da decidere, forse doppione, senza movimento',
-  esito_di('P1') || ' ' || (select (movimento_id is null)::text from satispay_negozio where satispay_id = 'P1'), 'da_decidere/forse_doppione true');
+select atteso('…il pagamento va fuori, nel versamento (non torna da decidere), senza movimento',
+  esito_di('P1') || ' ' || (select (movimento_id is null)::text from satispay_negozio where satispay_id = 'P1'), 'fuori/nel_versamento true');
 select atteso('…il movimento a mano resta com''era, senza segno',
   (select concat_ws('|', descrizione, coalesce(satispay_id, 'senza segno'), (annullato_il is null)::text) from movimenti where id = :'m1'), 'Bonifico di Mario|senza segno|true');
-select atteso('…i candidati si ricalcolano: lo stesso movimento torna candidato, insieme all''altro',
-  candidati_di('P1'), (select string_agg(x, ',' order by x) from unnest(array[:'m1', :'m2']::text[]) x));
-select atteso('…e lo stato li mostra', come_vedo(ada(), 'authenticated', 'select jsonb_array_length(satispay_scarico_stato()->''da_decidere''->0->''candidati'')::text'), '2');
--- Conto Corrente non è mai candidato: né un'entrata uguale lì, né il movimento scollegato se sta lì.
-select pulisci();
-select a_mano('2026-10-14', 1250, 'Satispay', 'Bonifico di Mario') as m1 \gset
-select sal(pag('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) as _;
-select conti(app(true)) as _;
-select a_mano('2026-10-14', 1250, 'Satispay', 'Un altro bonifico') as m2 \gset
-select a_mano('2026-10-14', 1250, 'Conto Corrente', 'In banca') as _;
-select atteso('«Non è questo»: i candidati ricalcolati sono solo della cassa Satispay',
-  come(ada(), 'authenticated', $$select satispay_scollega('P1')$$) || ' ' || candidati_di('P1'),
-  'ok ' || (select string_agg(x, ',' order by x) from unnest(array[:'m1', :'m2']::text[]) x));
-select pulisci();
-select a_mano('2026-10-14', 1250, 'Satispay', 'Bonifico di Mario') as m1 \gset
-select sal(pag('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) as _;
-select conti(app(true)) as _;
-update movimenti set cassa_id = id_cassa('Conto Corrente') where id = :'m1';
-select a_mano('2026-10-14', 1250, 'Satispay', 'Uno di Satispay') as m2 \gset
-select atteso('…anche se il movimento scollegato stava nel Conto Corrente: non torna candidato',
-  come(ada(), 'authenticated', $$select satispay_scollega('P1')$$) || ' ' || candidati_di('P1'), 'ok ' || :'m2');
-select atteso('un pagamento già da decidere non si scollega', come(ada(), 'authenticated', $$select satispay_scollega('P1')$$), '22023 Questo pagamento non è collegato a un movimento a mano');
+select atteso('…niente candidati, niente da decidere', candidati_di('P1') || ' ' || come_vedo(ada(), 'authenticated', 'select satispay_scarico_stato()->>''da_decidere'''), 'nessuno []');
+select atteso('…e lo scarico di notte non lo riprende', conti(app(true)) || ' ' || esito_di('P1') || ' ' || n_mov_di('P1'), '0/0/0/0/0/0 fuori/nel_versamento 0');
+select atteso('un pagamento già scollegato non si scollega', come(ada(), 'authenticated', $$select satispay_scollega('P1')$$), '22023 Questo pagamento non è collegato a un movimento a mano');
 select atteso('un pagamento che non c''è', come(ada(), 'authenticated', $$select satispay_scollega('XX')$$), 'P0002 Il pagamento non c’è');
+
+-- Il movimento stava nel Conto Corrente (spostato a mano): si scioglie lo stesso.
+select pulisci();
+select collegato('P1', '2026-10-14', 1250, '2026-10-14T10:00:00Z') as m1 \gset
+update movimenti set cassa_id = id_cassa('Conto Corrente') where id = :'m1';
+select atteso('anche se il movimento sta nel Conto Corrente: si scioglie, il pagamento va nel versamento',
+  come(ada(), 'authenticated', $$select satispay_scollega('P1')$$) || ' ' || esito_di('P1'), 'ok fuori/nel_versamento');
 
 select pulisci();
 select sal(pag('P3', 'TO_BUSINESS', 'ACCEPTED', 300, '2026-10-14T10:00:00Z', 'Sara')) as _;
 select conti(app(true)) as _;
-select atteso('uno scritto da noi non si scollega', come(ada(), 'authenticated', $$select satispay_scollega('P3')$$), '22023 Questo pagamento non è collegato a un movimento a mano');
-select atteso('…e il suo movimento resta', esito_di('P3') || ' ' || n_mov_di('P3'), 'scritto/- 1');
+select atteso('uno fuori nel versamento non si scollega', come(ada(), 'authenticated', $$select satispay_scollega('P3')$$), '22023 Questo pagamento non è collegato a un movimento a mano');
+select atteso('…e resta com''è', esito_di('P3') || ' ' || n_mov_di('P3'), 'fuori/nel_versamento 0');
 
 select pulisci();
-select a_mano('2026-10-14', 1250, 'Satispay', 'Bonifico di Mario') as m1 \gset
-select sal(pag('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) as _;
-select conti(app(true)) as _;
+select collegato('P1', '2026-10-14', 1250, '2026-10-14T10:00:00Z') as m1 \gset
 select chiusura('Conto Corrente', '2026-10-31') as _;
 select atteso('la chiusura di un''altra cassa non conta: si scollega',
   come(ada(), 'authenticated', $$select satispay_scollega('P1')$$), 'ok');
+select atteso('…e va nel versamento, senza passare da «da decidere»', esito_di('P1'), 'fuori/nel_versamento');
 select pulisci();
-select a_mano('2026-10-14', 1250, 'Satispay', 'Bonifico di Mario') as m1 \gset
-select sal(pag('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) as _;
-select conti(app(true)) as _;
+select collegato('P1', '2026-10-14', 1250, '2026-10-14T10:00:00Z') as m1 \gset
 select chiusura('Satispay', '2026-10-15') as _;
 select atteso('la cassa del movimento è chiusa quel giorno: il collegamento resta',
   come(ada(), 'authenticated', $$select satispay_scollega('P1')$$), '22023 Quel giorno la cassa è chiusa: il collegamento resta');
-select atteso('…il pagamento è ancora a_mano e il movimento ha ancora il segno', esito_di('P1') || ' ' || n_mov_di('P1'), 'a_mano/- 1');
+select atteso('…il pagamento è ancora a_mano e il movimento ha ancora il segno', esito_di('P1') || ' ' || n_mov_di('P1'), 'a_mano/forse_doppione 1');
 
 \echo ''
 \echo '--- 5. chi può: solo l''amministrazione ---'
@@ -305,7 +286,7 @@ select atteso('tablet: non decide a gruppi', left(come('99999999-9999-9999-9999-
 select atteso('tablet: non scollega', left(come('99999999-9999-9999-9999-999999999999', 'authenticated', $$select satispay_scollega('P1')$$), 5), '42501');
 select atteso('anon: non decide a gruppi', left(come('', 'anon', $$select satispay_decidi_gruppo('[]'::jsonb)$$), 5), '42501');
 select atteso('anon: non scollega', left(come('', 'anon', $$select satispay_scollega('P1')$$), 5), '42501');
-select atteso('…dopo tutti questi no P1 è ancora collegato', esito_di('P1') || ' ' || n_mov_di('P1'), 'a_mano/- 1');
+select atteso('…dopo tutti questi no P1 è ancora collegato', esito_di('P1') || ' ' || n_mov_di('P1'), 'a_mano/forse_doppione 1');
 
 \echo ''
 \echo '--- 6. banca: i coperti si salvano per rivederli ---'
@@ -387,7 +368,7 @@ select a_mano('2026-10-14', 1250, 'Conto Corrente', 'Bonifico di Mario') as m1 \
 select atteso('la banca copre m1', copre('banca:k1', :'m1') || ' ' || chiave_di(:'m1'), 'ok banca:k1');
 select sal(pag('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'Mario')) as _;
 select conti(app(true)) as _;
-select atteso('lo scarico lo scrive nuovo, non lo collega a m1', esito_di('P1') || ' ' || coalesce((select satispay_id from movimenti where id = :'m1'), 'senza segno'), 'scritto/- senza segno');
+select atteso('lo scarico non lo collega a m1 e non scrive niente', esito_di('P1') || ' ' || coalesce((select satispay_id from movimenti where id = :'m1'), 'senza segno') || ' ' || n_mov(), 'fuori/nel_versamento senza segno 1');
 
 -- La banca copre un candidato dopo che il pagamento è finito «da decidere».
 select pulisci(); select pulisci_banca();
@@ -399,17 +380,16 @@ select sal(pag('P1', 'TO_BUSINESS', 'ACCEPTED', 1250, '2026-10-14T10:00:00Z', 'M
 -- e le guardie contro la banca restano.
 update satispay_negozio set esito = 'da_decidere', motivo = 'forse_doppione', candidati = array[:'m1', :'m2', :'m3']::uuid[] where satispay_id = 'P1';
 select copre('banca:k1', :'m1') as _;
-select atteso('fra i candidati da decidere m1 non c''è più',
-  come_vedo(ada(), 'authenticated', 'select string_agg(c->>''descrizione'', '','') from jsonb_array_elements(satispay_scarico_stato()->''da_decidere''->0->''candidati'') c'), 'Secondo,Terzo');
-select atteso('sceglierlo lo stesso (pagina vecchia): errore',
+select atteso('sceglierlo lo stesso (pagina vecchia): errore, Satispay non si decide più',
   come(ada(), 'authenticated', format('select satispay_decidi_gruppo(%L::jsonb)', jsonb_build_array(jsonb_build_object('satispayId', 'P1', 'scelta', 'a_mano', 'movimentoId', :'m1')))),
-  '22023 Quel movimento è già coperto da un movimento della banca: ricarica la pagina');
-select atteso('…e P1 è ancora da decidere', esito_di('P1'), 'da_decidere/forse_doppione');
+  '22023 Satispay non si decide più: i soldi arrivano col versamento in banca. Ricarica la pagina');
+select atteso('…e P1 è ancora com''era', esito_di('P1'), 'da_decidere/forse_doppione');
 select atteso('anche dritto sulla tabella, un movimento non ha tutti e due i segni',
   left(esito(format('update movimenti set satispay_id = %L where id = %L', 'P1', :'m1')), 5), '23514');
 
--- Il movimento è già di Satispay: la riga della banca non lo copre, entra nuova.
-select come(ada(), 'authenticated', format('select satispay_decidi_gruppo(%L::jsonb)', jsonb_build_array(jsonb_build_object('satispayId', 'P1', 'scelta', 'a_mano', 'movimentoId', :'m2')))) as _;
+-- Il movimento è già di Satispay (collegato prima del 132): la riga della banca non lo copre, entra nuova.
+update movimenti set satispay_id = 'P1' where id = :'m2';
+update satispay_negozio set esito = 'a_mano', movimento_id = :'m2', candidati = null where satispay_id = 'P1';
 select atteso('un movimento già di Satispay non si copre: la riga entra nuova', copre('banca:k2', :'m2') || ' ' || stato_banca('banca:k2') || ' ' || chiave_di(:'m2'), 'ok 0 coperto, 1 scritto nessuna');
 select atteso('…nel Conto Corrente, da classificare',
   (select concat_ws('|', m.tipo, m.data, m.importo, c.nome, v.nome, m.descrizione) from movimenti m join casse c on c.id = m.cassa_id join voci_contabili v on v.id = m.voce_id where m.origine_import = 'banca:k2'),

@@ -32,7 +32,7 @@ import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sito
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
 import { cartaPerPersona, cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
-import { applicaScarico, daDecidere, decidiGruppo, decidiScarico, NOME_CASSA_SATISPAY, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
+import { applicaScarico, NOME_CASSA_SATISPAY, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
@@ -70,6 +70,7 @@ import {
   VOCE_CORSI,
   VOCE_DIFFERENZA,
   VOCE_GARE,
+  VOCE_INCASSI_SATISPAY,
   contantiInGiornoChiuso,
   VOCE_QUOTA,
   type Cassa,
@@ -79,7 +80,7 @@ import { conti as contiRicevuta, cosaNonVa, enteDa, intestatarioDa, pulisciIntes
 import { vociCorsiDi } from './corsiDaPagare'
 import { mandateOggi, SOGLIA_MAIL_GIORNO, TETTO_PER_RICEVUTA } from './ricevuteEmail'
 
-/** I pagamenti d'esempio del negozio negli ultimi giorni, come li darebbe Satispay: uno annullato, un rimborso e uno da decidere. */
+/** I pagamenti d'esempio del negozio negli ultimi giorni, come li darebbe Satispay: uno annullato e un rimborso. */
 function negozioDiProva(): PagamentoNegozio[] {
   const fa = (giorni: number, ora: number) => new Date(Date.now() - giorni * 86_400_000).toISOString().slice(0, 10) + `T${String(ora).padStart(2, '0')}:15:00Z`
   return [
@@ -89,8 +90,6 @@ function negozioDiProva(): PagamentoNegozio[] {
     { satispayId: 'negozio-4', tipo: 'TO_BUSINESS', stato: 'ACCEPTED', importo: 1500, quando: fa(3, 17), chi: 'Verdi Anna' },
     { satispayId: 'negozio-5', tipo: 'REFUND_TO_BUSINESS', stato: 'ACCEPTED', importo: 1200, quando: fa(2, 10), chi: 'Rossi Marta' },
     { satispayId: 'negozio-6', tipo: 'TO_BUSINESS', stato: 'ACCEPTED', importo: 800, quando: fa(1, 18), chi: 'Neri Paolo' },
-    // Già messo da parte da uno scarico di prima: in prova si vede l'avviso giallo dei casi da decidere.
-    { satispayId: 'negozio-7', tipo: 'TO_BUSINESS', stato: 'ACCEPTED', importo: 2000, quando: fa(6, 11), chi: 'Gialli Sara', esito: 'da_decidere', motivo: 'giorno_chiuso' },
   ]
 }
 
@@ -176,7 +175,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
         ['voce-commissioni', 'Commissioni bancarie', 'uscita'],
       ] as const
     ).filter(([, nome, tipo]) => !voci.some((v) => v.tipo === tipo && v.nome.trim().toLowerCase() === nome.toLowerCase()))
-    return [...voci, ...mancano.map(([id, nome, tipo]): VoceContabile => ({ id, nome, tipo, diSistema: false, attiva: true }))]
+    const conScarico = [...voci, ...mancano.map(([id, nome, tipo]): VoceContabile => ({ id, nome, tipo, diSistema: false, attiva: true }))]
+    // Come 132: il versamento di Satispay ha la sua voce di sistema; una fatta a mano prima lo diventa.
+    const incassi = (v: VoceContabile) => v.tipo === 'entrata' && v.nome.trim().toLowerCase() === VOCE_INCASSI_SATISPAY.toLowerCase()
+    return conScarico.some(incassi)
+      ? conScarico.map((v) => (incassi(v) ? { ...v, diSistema: true, attiva: true } : v))
+      : [...conScarico, { id: 'voce-incassi-satispay', nome: VOCE_INCASSI_SATISPAY, tipo: 'entrata', diSistema: true, attiva: true }]
   }
   const cassePartenza = (): Cassa[] => {
     const casse = a().casse ?? [
@@ -1985,9 +1989,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async statoScaricoSatispay() {
-      const { movimenti, voci, casse } = contabilita()
-      const stato = a().satispayScarico ?? { primoFatto: false, ultimo: null, errore: null }
-      return { ...stato, daDecidere: daDecidere({ negozio: a().satispayNegozio ?? [], movimenti, voci, casse }) }
+      return a().satispayScarico ?? { primoFatto: false, ultimo: null, errore: null }
     },
 
     async scaricaSatispay(anteprima) {
@@ -2016,22 +2018,6 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return r.conti
     },
 
-    async decidiSatispay(satispayId, scelta, movimentoId) {
-      const { movimenti, voci, casse, chiusure } = contabilita()
-      const r = decidiScarico({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, satispayId, scelta, movimentoId)
-      a().satispayNegozio = r.negozio
-      a().movimenti = r.movimenti
-      salva()
-    },
-
-    async decidiGruppoSatispay(scelte) {
-      const { movimenti, voci, casse, chiusure } = contabilita()
-      const r = decidiGruppo({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, scelte)
-      a().satispayNegozio = r.negozio
-      a().movimenti = r.movimenti
-      salva()
-    },
-
     async scollegaSatispay(satispayId) {
       const { movimenti, voci, casse, chiusure } = contabilita()
       const r = scollegaScarico({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, satispayId)
@@ -2041,7 +2027,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async negozioSatispay() {
-      // Pochi pagamenti d'esempio: il mese lo sceglie `righeEntrato`.
+      // Pochi pagamenti d'esempio: il mese lo sceglie `chiHaPagato`.
       return a().satispayNegozio ?? []
     },
 

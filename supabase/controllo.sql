@@ -554,13 +554,15 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%')),
   ('116-satispay-separato.sql', 'Satispay separato dal Conto Corrente: cassa dal 2025, candidati solo in Satispay',
     exists (select 1 from casse where nome = 'Satispay' and dal <= date '2025-01-01')
-    and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%from casse where nome = ''Satispay''%')
-    and exists (select 1 from dentro where nome = 'satispay_scollega' and corpo like '%c.nome = ''Satispay''%')),
+    -- Il 132 riscrive queste funzioni senza candidati: vale anche il suo corpo.
+    and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and (corpo like '%from casse where nome = ''Satispay''%' or corpo like '%nel_versamento%'))
+    and exists (select 1 from dentro where nome = 'satispay_scollega' and (corpo like '%c.nome = ''Satispay''%' or corpo like '%nel_versamento%'))),
   ('114-importazioni.sql', 'IMPORTAZIONI: gruppi Satispay, «Non è questo», movimenti della banca già scritti',
     to_regclass('public.banca_coperti') is not null
     and exists (select 1 from dentro where nome = 'banca_non_e_questo')
-    and exists (select 1 from dentro where nome = 'satispay_scarico_stato' and corpo like '%m.banca_chiave is null%')
-    and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%m.banca_chiave is null%')),
+    -- Dal 132 Satispay non collega più movimenti: niente da tenere lontano dalla banca.
+    and exists (select 1 from dentro where nome = 'satispay_scarico_stato' and (corpo like '%m.banca_chiave is null%' or corpo like '%''da_decidere'', ''[]''::jsonb%'))
+    and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and (corpo like '%m.banca_chiave is null%' or corpo like '%nel_versamento%'))),
   ('112-sito-accessibilita-agid.sql', 'la traccia della Dichiarazione di accessibilità ha le parti AgID (norma, data di redazione, tempo di risposta, segnalazione)',
     not exists (select 1 from sito_pagine
                  where slug = 'dichiarazione-accessibilita' and pubblicato is null
@@ -622,6 +624,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_trigger where tgname = 'pagamenti_satispay_metodo_acceso' and tgrelid = 'public.pagamenti_satispay'::regclass)),
   ('131-quadratura-nel-database.sql', 'un mese della banca si verifica solo se torna, e torna da verificare se cambia il mese prima',
     exists (select 1 from dentro where nome = 'saldo_banca_regole' and corpo like '%Da classificare%')
-    and exists (select 1 from pg_trigger where tgname = 'saldo_banca_mese_dopo'))
+    and exists (select 1 from pg_trigger where tgname = 'saldo_banca_mese_dopo')),
+  ('132-satispay-solo-chi-ha-pagato.sql', 'lo scarico Satispay dice solo chi ha pagato: niente movimenti, la cassa Satispay chiusa',
+    exists (select 1 from pg_trigger where tgname = 'movimenti_cassa_satispay_chiusa' and not tgisinternal)
+    and exists (select 1 from dentro where nome = 'satispay_negozio_applica' and corpo like '%nel_versamento%')
+    and exists (select 1 from dentro where nome = 'satispay_scarico_avvisa' and corpo like '%errore is null%')
+    and exists (select 1 from voci_contabili where nome = 'Incassi Satispay'))
 ) as x(file, cosa, c)
 order by file, cosa;

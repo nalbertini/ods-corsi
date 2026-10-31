@@ -237,7 +237,7 @@ console.log('\n5. in CONTABILITÀ: il lordo, nella cassa Satispay (dal 1° ottob
     { id: 'v-corsi', nome: 'Corsi e altri pagamenti', tipo: 'entrata', diSistema: true, attiva: true },
   ]
   const entrate = (righe) => righe.map((r) => [r.tipo, r.data, r.importo, r.cassaId, r.annullato])
-  ok('un Satispay pagato è un’entrata nella cassa Satispay', prova(() => entrate(c.elencoMovimenti([], [], [], casse, [], voci, [pagato]))), [['entrata', '2026-10-20', 23000, 'c3', false]])
+  ok('un Satispay pagato non è un’entrata: i soldi sono nel versamento in banca', prova(() => entrate(c.elencoMovimenti([], [], [], casse, [], voci, [pagato]))), [])
   ok('in attesa e non andati non entrano', prova(() => c.elencoMovimenti([], [], [], casse, [], voci, [inAttesa, nonAndato]).length), 0)
   ok('senza Satispay l’elenco è quello di prima', prova(() => c.elencoMovimenti([], [], [], casse, [], voci).length), 0)
   const ricevuta = {
@@ -247,7 +247,7 @@ console.log('\n5. in CONTABILITÀ: il lordo, nella cassa Satispay (dal 1° ottob
     anticipo: 0, totale: 23000, pagato: 23000, creataIl: '2026-10-20T10:00:00Z',
   }
   const elenco = prova(() => c.elencoMovimenti([ricevuta], [], [], casse, [], voci, [inRicevuta]))
-  ok('lo stesso pagamento già in ricevuta: una sola entrata, quella della ricevuta', prova(() => elenco.map((r) => [r.origine, r.importo, r.cassaId])), [['ricevuta', 23000, 'c3']])
+  ok('lo stesso pagamento già in ricevuta: nessuna entrata, né dal modulo né dalla ricevuta', prova(() => elenco.map((r) => [r.origine, r.importo, r.cassaId])), [])
 }
 
 console.log('\n6. la firma delle chiamate a Satispay')

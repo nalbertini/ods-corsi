@@ -337,22 +337,9 @@ export function Segreteria({
       vivo = false
     }
   }, [d, voce, giroConte])
-  // I pagamenti Satispay da decidere: senza il 96 lo stato non c'è, e il segno resta a zero.
-  const [daDecidere, setDaDecidere] = useState(0)
-  useEffect(() => {
-    if (!d || !puo(chi, 'contabilita')) return
-    let vivo = true
-    d.statoScaricoSatispay().then(
-      (s) => vivo && setDaDecidere(s?.daDecidere.length ?? 0),
-      () => vivo && setDaDecidere(0),
-    )
-    return () => {
-      vivo = false
-    }
-  }, [d, voce, giroConte])
   // Il numero sul tasto MENU del telefono: la somma dei segni del menu. Giallo,
   // come in DA FARE: sono cose che aspettano una risposta, non guai.
-  const daFare = richiesteNuove + daConfermare + daRispondere + daDecidere + (conSegnalate ? segnalateDaVedere : 0)
+  const daFare = richiesteNuove + daConfermare + daRispondere + (conSegnalate ? segnalateDaVedere : 0)
 
   const puoCercare = !!d && conSegreteria
   // Alla chiusura il fuoco torna all'elemento che l'aveva prima di ⌘K.
@@ -470,7 +457,6 @@ export function Segreteria({
             presenze: { n: conSegnalate ? segnalateDaVedere : 0, detto: 'segnalate da vedere' },
             segnalazioni: { n: daRispondere, detto: 'da rispondere' },
             vestiario: { n: daSaldare, detto: 'ordini da saldare' },
-            importazioni: { n: daDecidere, detto: 'pagamenti da decidere' },
           }}
           cerca={d && conSegreteria && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
           link={
@@ -543,7 +529,6 @@ export function Segreteria({
                       {id === 'istruttori' && segno(daConfermare, 'da confermare')}
                       {id === 'segnalazioni' && segno(daRispondere, 'da rispondere')}
                       {id === 'vestiario' && segno(daSaldare, 'ordini da saldare')}
-                      {id === 'importazioni' && segno(daDecidere, 'pagamenti da decidere')}
                     </button>
                   )
                 })}

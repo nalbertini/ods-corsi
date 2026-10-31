@@ -34,7 +34,7 @@ export type Avviso =
   | { tipo: 'richiesta'; arrivataIl: string; pagamento: Pagamento; persone: PersonaAvviso[] }
   | { tipo: 'pagamento'; richiestaId: string; nome: string; cognome: string; corso: string; importo: number; pagatoIl: string; arrivataIl: string }
   | { tipo: 'pagamento_senza_richiesta'; nome: string; cognome: string; email: string; corso: string; importo: number; pagatoIl: string }
-  /** Uno scarico Satispay in CONTABILITÀ che ha scritto qualcosa, lasciato pagamenti da decidere o non è riuscito. */
+  /** Uno scarico Satispay non riuscito. Gli avvisi di prima del 132 hanno anche incassi, rimborsi e daDecidere. */
   | { tipo: 'satispay_scarico'; quando: string; incassi: number; rimborsi: number; daDecidere: number; errore: string | null }
 
 const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
@@ -100,20 +100,14 @@ export function testoAvviso(a: Avviso, app: string): { oggetto: string; testo: s
     link = `${app}#richieste/${encodeURIComponent(a.richiestaId)}`
     tasto = 'Apri la richiesta'
   } else if (a.tipo === 'satispay_scarico') {
+    // Dal 132 lo scarico non scrive niente e l'avviso parte solo se non è riuscito; uno di prima ancora in coda dice dove guardare.
     const q = quando(a.quando)
-    const scritti = a.incassi + a.rimborsi
-    const tanti = (n: number, uno: string, piu: string) => `${n} ${n === 1 ? uno : piu}`
-    if (a.errore) {
-      oggetto = 'Scarico Satispay non riuscito'
-      frasi = [`Lo scarico di ${q.giorno} alle ${q.ora} si è fermato.`, riga(a.errore)]
-    } else {
-      oggetto = ['Scarico Satispay', scritti ? `${tanti(scritti, 'movimento', 'movimenti')} in CONTABILITÀ` : '', a.daDecidere ? `${a.daDecidere} da decidere` : ''].filter(Boolean).join(' · ')
-      frasi = []
-      if (scritti) frasi.push(`Lo scarico di ${q.giorno} alle ${q.ora} ha scritto ${tanti(a.incassi, 'incasso', 'incassi')} e ${tanti(a.rimborsi, 'rimborso', 'rimborsi')} in CONTABILITÀ, sulla voce «Da classificare».`)
-      if (a.daDecidere) frasi.push(`${a.daDecidere === 1 ? '1 pagamento è' : `${a.daDecidere} pagamenti sono`} da decidere: li trovi in CONTABILITÀ → MOVIMENTI.`)
-    }
-    link = `${app}#contabilita`
-    tasto = 'Apri CONTABILITÀ'
+    oggetto = a.errore ? 'Scarico Satispay non riuscito' : 'Scarico Satispay'
+    frasi = a.errore
+      ? [`Lo scarico di ${q.giorno} alle ${q.ora} si è fermato.`, riga(a.errore)]
+      : [`Lo scarico di ${q.giorno} alle ${q.ora} è fatto: chi ha pagato lo trovi in IMPORTAZIONI.`]
+    link = `${app}#importazioni`
+    tasto = 'Apri IMPORTAZIONI'
   } else {
     const pagato = quando(a.pagatoIl)
     oggetto = `Pagamento Satispay senza richiesta · ${euro(a.importo)} · ${chi(a)}`

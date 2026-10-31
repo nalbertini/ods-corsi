@@ -295,7 +295,7 @@ console.log('\n8. in CONTABILITÀ: cassa Carta, l’incasso pieno, una volta sol
   ok('una carta pagata è un’entrata piena nella cassa Carta (la commissione entra al versamento, a mano)',
     prova(() => entrate(c.elencoMovimenti([], [], [], casse, [], voci, [carta]))), [['entrata', '2026-10-20', 23000, 'c4', false]])
   ok('in attesa e non andate non entrano', prova(() => c.elencoMovimenti([], [], [], casse, [], voci, [cartaInAttesa, cartaNonAndata]).length), 0)
-  ok('Satispay e carta, ognuna nella sua cassa', prova(() => entrate(c.elencoMovimenti([], [], [], casse, [], voci, [satispay, carta])).map((r) => r[3]).sort()), ['c3', 'c4'])
+  ok('Satispay non entra (i soldi sono nel versamento in banca), la carta sì nella sua cassa', prova(() => entrate(c.elencoMovimenti([], [], [], casse, [], voci, [satispay, carta])).map((r) => r[3]).sort()), ['c4'])
   const ricevuta = {
     id: 'ric1', anno: 2026, numero: 7, data: '2026-10-20', personaId: 'p-Bianchi', ente: c.ENTE_PREDEFINITO,
     intestatario: { nome: 'Paolo', cognome: 'Bianchi' },

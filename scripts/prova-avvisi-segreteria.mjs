@@ -177,18 +177,13 @@ console.log('\n3. i pagamenti Satispay')
 }
 
 
-console.log('\n3bis. lo scarico dei pagamenti Satispay in CONTABILITÀ')
+console.log('\n3bis. lo scarico dei pagamenti Satispay: l\'avviso solo se non è riuscito')
 {
   const scarico = (x) => testoAvviso({ tipo: 'satispay_scarico', quando: '2026-10-21T08:30:00Z', incassi: 0, rimborsi: 0, daDecidere: 0, errore: null, ...x }, APP)
   const t = scarico({ incassi: 3, rimborsi: 1, daDecidere: 2 })
-  ok('l\'oggetto: quanti movimenti, quanti da decidere', t?.oggetto, 'Scarico Satispay · 4 movimenti in CONTABILITÀ · 2 da decidere')
-  ok('dice incassi e rimborsi, dove sono finiti', testo(t).includes('Lo scarico di oggi alle 10.30 ha scritto 3 incassi e 1 rimborso in CONTABILITÀ, sulla voce «Da classificare».'), true)
-  ok('dice cosa fare dei da decidere', testo(t).includes('2 pagamenti sono da decidere: li trovi in CONTABILITÀ → MOVIMENTI.'), true)
-  ok('il link apre CONTABILITÀ', [testo(t).includes(`${APP}#contabilita`), html(t).includes('Apri CONTABILITÀ')], [true, true])
-  const uno = scarico({ incassi: 1 })
-  ok('un movimento solo, niente da decidere', [uno?.oggetto, testo(uno).includes('da decidere')], ['Scarico Satispay · 1 movimento in CONTABILITÀ', false])
-  const solo = scarico({ daDecidere: 1 })
-  ok('solo da decidere', [solo?.oggetto, testo(solo).includes('1 pagamento è da decidere')], ['Scarico Satispay · 1 da decidere', true])
+  ok('uno di prima del 132, ancora in coda: niente movimenti né da decidere', [t?.oggetto, testo(t).includes('CONTABILITÀ'), testo(t).includes('da decidere')], ['Scarico Satispay', false, false])
+  ok('dice dove guardare chi ha pagato', testo(t).includes('Lo scarico di oggi alle 10.30 è fatto: chi ha pagato lo trovi in IMPORTAZIONI.'), true)
+  ok('il link apre IMPORTAZIONI', [testo(t).includes(`${APP}#importazioni`), html(t).includes('Apri IMPORTAZIONI')], [true, true])
   const no = scarico({ errore: 'Satispay non risponde: lo scarico riprova da solo stanotte' })
   ok('non riuscito: l\'oggetto lo dice', no?.oggetto, 'Scarico Satispay non riuscito')
   ok('e il motivo, già scritto per chi usa l\'app', testo(no).includes('Satispay non risponde: lo scarico riprova da solo stanotte'), true)
@@ -350,9 +345,9 @@ console.log('\n12. la cornice HTML: ogni avviso, a mano i valori di oggi, e quel
     ['pagamento_senza_richiesta', { tipo: 'pagamento_senza_richiesta', nome: 'Laura', cognome: 'Bianchi', email: 'laura.bianchi@esempio.it', corso: 'Pilates', importo: 12000, pagatoIl: '2026-10-21T15:05:00Z' }, 'Pagamento Satispay senza richiesta · 120,00 € · Laura Bianchi',
       `Laura Bianchi ha pagato 120,00 € con Satispay oggi alle 17.05 per Pilates, ma dopo un’ora la richiesta non è ancora arrivata.\nEmail lasciata: laura.bianchi@esempio.it\nDa chiamare: forse si è fermata a metà del modulo, o i soldi vanno restituiti.\n\nApri CONTABILITÀ: ${APP}#contabilita`,
       'Email lasciata: laura.bianchi@esempio.it', `${APP}#contabilita`, 'Apri CONTABILITÀ'],
-    ['satispay_scarico', { tipo: 'satispay_scarico', quando: '2026-10-21T08:30:00Z', incassi: 3, rimborsi: 1, daDecidere: 2, errore: null }, 'Scarico Satispay · 4 movimenti in CONTABILITÀ · 2 da decidere',
-      `Lo scarico di oggi alle 10.30 ha scritto 3 incassi e 1 rimborso in CONTABILITÀ, sulla voce «Da classificare».\n2 pagamenti sono da decidere: li trovi in CONTABILITÀ → MOVIMENTI.\n\nApri CONTABILITÀ: ${APP}#contabilita`,
-      '2 pagamenti sono da decidere', `${APP}#contabilita`, 'Apri CONTABILITÀ'],
+    ['satispay_scarico', { tipo: 'satispay_scarico', quando: '2026-10-21T08:30:00Z', incassi: 0, rimborsi: 0, daDecidere: 0, errore: 'Satispay non risponde: lo scarico riprova da solo stanotte' }, 'Scarico Satispay non riuscito',
+      `Lo scarico di oggi alle 10.30 si è fermato.\nSatispay non risponde: lo scarico riprova da solo stanotte\n\nApri IMPORTAZIONI: ${APP}#importazioni`,
+      'Satispay non risponde', `${APP}#importazioni`, 'Apri IMPORTAZIONI'],
   ]
   for (const [tipo, avviso, oggetto, testoVoluto, pezzoCorpo, link, etichetta] of casi) {
     const t = testoAvviso(avviso, APP)

@@ -1,7 +1,9 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { elencoMovimenti, giornoChiuso, NOME_CASSA_CONTO, oggiARoma, type Cassa, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento, type VoceContabile } from '../../lib/contabilita'
-import { candidatiInOrdine, dettoNuovo, gruppiDaDecidere, nomeSimile, riepilogoEntrato, riepilogoGruppo, righeEntrato, type GruppoDaDecidere, type RigaEntrato, type ScelteInCorso } from '../../lib/satispayScarico'
+import { elencoMovimenti, giornoChiuso, NOME_CASSA_CONTO, oggiARoma, type Cassa, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento } from '../../lib/contabilita'
+import { chiHaPagato, contiChiHaPagato, filtraChiHaPagato } from '../../lib/satispayScarico'
+import { righeDaRicevute, righeDirette, type RigaPagamento } from '../../lib/pagamenti'
+import type { PagamentoSatispay } from '../../lib/satispay'
 import { entratoBanca, ultimaImportazione } from '../../lib/importaBanca'
 import { daClassificare, FONTI_DA_CLASSIFICARE, vistaDaClassificare, type FonteDaClassificare } from '../../lib/daClassificare'
 import { dataRicevuta, euro } from '../../lib/ricevute'
@@ -15,11 +17,7 @@ type Fai = ReturnType<typeof useAvviso>['fai']
 type Fonte = 'satispay' | 'banca'
 
 const soldi = (c: number) => `${euro(c)} €`
-const giornoLungo = (data: string) => `${new Date(`${data}T12:00:00`).toLocaleDateString('it-IT', { weekday: 'long' })} ${dataRicevuta(data)}`
 const quando = (iso: string) => new Date(iso).toLocaleString('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-// Sui chip il nome della persona basta: «Cliente» è uguale in tutte le descrizioni scritte a mano.
-const nomeChip = (descrizione: string) => descrizione.replace(/^Cliente /, '')
-const pagamenti = (n: number) => (n === 1 ? '1 pagamento' : `${n} pagamenti`)
 const riquadroFonte = { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: '12px 18px', padding: '14px 18px' } as const
 /** Le righe di «Da classificare» che si vedono per prime: con lo storico sono centinaia. */
 const RIGHE_DA_CLASSIFICARE = 20
@@ -36,8 +34,8 @@ function mesi(oggi: string): Array<[string, string]> {
 }
 
 /**
- * IMPORTAZIONI, in I CONTI: quel che arriva da Satispay e dalla banca, quando è arrivato, cosa resta da decidere
- * «Da classificare» (tutto quel che è in contabilità senza una voce vera) e «Cosa è entrato» per ricontrollare un mese.
+ * IMPORTAZIONI, in I CONTI: quel che arriva dalla banca e chi ha pagato con Satispay, «Da classificare» (tutto quel
+ * che è in contabilità senza una voce vera) e «Cosa è entrato» per ricontrollare un mese.
  * Le regole sono in `satispayScarico.ts`, `importaBanca.ts` e `daClassificare.ts`.
  */
 export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassifica: (movimentoId: string) => void }) {
@@ -48,7 +46,8 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
   // Come in MOVIMENTI: l'anteprima della banca abbina anche gli incassi degli iscritti.
   const incassi = useCarica(async () => {
     const [ricevute, diretti, satispay] = await Promise.all([d.ricevute(), d.pagamentiDiretti(), d.pagamentiSatispay()])
-    return { ricevute, diretti, satispay }
+    const chi = [...diretti.map((x) => x.personaId), ...satispay.flatMap((x) => (x.personaId ? [x.personaId] : []))]
+    return { ricevute, diretti, satispay, nomi: chi.length ? await d.nomiPersone(chi) : [] }
   }, [d])
   const stato = useCarica(() => d.statoScaricoSatispay(), [d])
   const { avviso, fai } = useAvviso()
@@ -68,16 +67,18 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
     : []
   const s = stato.dato
   const ultima = ultimaImportazione(righe)
-  const gruppi = s ? gruppiDaDecidere(s.daDecidere) : []
-  const casi = s?.daDecidere.length ?? 0
+  // Le righe di PAGAMENTI col nome di chi ha pagato: «Chi ha pagato» riconosce i pagamenti Satispay da lì.
+  const nomi = new Map((incassi.dato?.nomi ?? []).map((p) => [p.id, `${p.cognome} ${p.nome}`.trim()]))
+  const pagamentiIscritti = [...righeDaRicevute(incassi.dato?.ricevute ?? []), ...righeDirette(incassi.dato?.diretti ?? [], (id) => nomi.get(id) ?? '—')]
   const da = daClassificare(righe)
   const pagina = vistaDaClassificare(da.righe, fonteVista, quante)
   const nVoci = da.righe.length === 1 ? '1 voce' : `${da.righe.length} voci`
 
   if (vista === 'satispay' || vista === 'banca') {
     return (
-      <SchedaPiena etichetta="Cosa è entrato" torna="Le importazioni" onTorna={() => setVista(null)}>
-        <Entrato d={d} fonte={vista} onFonte={setVista} casse={casse.dato ?? []} voci={voci.dato ?? []} manuali={manuali.dato ?? []} chiusure={chiusure.dato ?? []} righe={righe} fai={fai} onCambiato={rileggi} />
+      <SchedaPiena etichetta={vista === 'satispay' ? 'Chi ha pagato' : 'Cosa è entrato'} torna="Le importazioni" onTorna={() => setVista(null)}>
+        <Entrato d={d} fonte={vista} onFonte={setVista} casse={casse.dato ?? []} manuali={manuali.dato ?? []} chiusure={chiusure.dato ?? []} righe={righe}
+          pagamenti={pagamentiIscritti} modulo={incassi.dato?.satispay ?? []} fai={fai} onCambiato={rileggi} />
         {avviso}
       </SchedaPiena>
     )
@@ -85,25 +86,23 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <Testa titolo="IMPORTAZIONI" sotto="Quello che arriva da Satispay e dalla banca: da dove, quando, e cosa resta da decidere." />
+      <Testa titolo="IMPORTAZIONI" sotto="Quello che arriva dalla banca, e chi ha pagato con Satispay." />
       {guaio && <Guaio testo={guaio} />}
       <section aria-label="Satispay" className="sg-riquadro" style={riquadroFonte}>
         <div className="stack" style={{ gap: 2, flex: '999 1 420px', minWidth: 0 }}>
-          <span className="sg-etichetta">SATISPAY</span>
+          <span className="sg-etichetta">SATISPAY · CHI HA PAGATO</span>
           {/* Senza il 96 lo scarico non c'è: lo si dice, e la banca funziona lo stesso. */}
           {!s ? (
             <span style={{ fontSize: 15 }}>{stato.guaio ?? 'Lo scarico da Satispay non è ancora attivo.'}</span>
           ) : (
-            <span style={{ fontSize: 15 }}>
-              {s.ultimo ? `Ultimo scarico il ${quando(s.ultimo)}. ` : 'Il primo scarico non è ancora fatto. '}
-              {casi ? <b>{casi === 1 ? '1 da decidere.' : `${casi} da decidere.`}</b> : 'Niente da decidere.'}
-            </span>
+            <span style={{ fontSize: 15 }}>{s.ultimo ? `Ultimo scarico il ${quando(s.ultimo)}.` : 'Il primo scarico non è ancora fatto.'}</span>
           )}
+          <span className="sg-sotto">Non entrano in contabilità: i soldi arrivano in banca col versamento «Da Satispay Europe S.A.», già al netto della commissione.</span>
           {s?.errore && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>L’ultimo scarico non è riuscito: {s.errore}</span>}
         </div>
         {s && (
           <>
-            <button type="button" className="sg-btn sg-btn-linea" disabled={!pronto} onClick={() => setVista('satispay')}>Cosa è entrato</button>
+            <button type="button" className="sg-btn sg-btn-linea" disabled={!pronto} onClick={() => setVista('satispay')}>Chi ha pagato</button>
             {s.primoFatto ? (
               <Tasto onClick={() => void fai(() => d.scaricaSatispay(false), 'Scarico Satispay fatto', rileggi)}>Scarica ora</Tasto>
             ) : (
@@ -124,20 +123,6 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
         <button type="button" className="sg-btn sg-btn-linea" disabled={!pronto} onClick={() => setVista('banca')}>Cosa è entrato</button>
         <Tasto tono="pieno" disabled={!pronto} onClick={() => setVista('importa')}>Importa un file</Tasto>
       </section>
-
-      {s && (
-        <section aria-label="Da decidere" className="stack" style={{ gap: 14, paddingTop: 6 }}>
-          <div className="row" style={{ flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
-            <h2 className="sg-riquadro-titolo" style={{ margin: 0 }}>
-              {casi ? `DA DECIDERE · ${pagamenti(casi).toUpperCase()}${gruppi.length > 1 ? ` IN ${gruppi.length} GRUPPI` : ''}` : 'DA DECIDERE'}
-            </h2>
-            <span className="sg-sotto">{casi ? 'Finché non decidi, non entrano in contabilità.' : 'Niente da decidere: quel che è arrivato è entrato.'}</span>
-          </div>
-          {gruppi.map((g) => (
-            <Gruppo key={g.pagamenti.map((p) => p.satispayId).join(',')} d={d} g={g} fai={fai} onFatto={rileggi} />
-          ))}
-        </section>
-      )}
 
       {pronto && (
         <section aria-label="Da classificare" className="stack" style={{ gap: 14, paddingTop: 6 }}>
@@ -210,153 +195,18 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
   )
 }
 
-/** Un gruppo da decidere: i pagamenti dello stesso giorno e importo, con una conferma sola. */
-function Gruppo({ d, g, fai, onFatto }: { d: DatiSegreteria; g: GruppoDaDecidere; fai: Fai; onFatto: () => void }) {
-  const [inCorso, setInCorso] = useState<ScelteInCorso>({})
-  const n = g.pagamenti.length
-  const segno = g.tipo === 'TO_BUSINESS' ? '+' : '−'
-  const fonte = g.tipo === 'TO_BUSINESS' ? 'Satispay' : 'Rimborso Satispay'
-  const decidi = (scelta: 'oggi' | 'fuori', fatto: string) =>
-    void fai(() => d.decidiGruppoSatispay(g.pagamenti.map((p) => ({ satispayId: p.satispayId, scelta }))), fatto, onFatto)
-
-  if (g.motivo === 'giorno_chiuso') {
-    return (
-      <Riquadro etichetta="CASSA GIÀ CHIUSA QUEL GIORNO" titolo={`${n === 1 ? `1 pagamento ${fonte}` : `${n} pagamenti ${fonte}`} di ${giornoLungo(g.data)}`}>
-        <span style={{ fontSize: 15 }}>La cassa di quel giorno è già chiusa: scriverli lì cambierebbe una chiusura fatta. Puoi registrarli oggi, o lasciarli fuori.</span>
-        <div className="stack" style={{ gap: 6 }}>
-          {g.pagamenti.map((p) => (
-            <div key={p.satispayId} className="row" style={{ gap: 12, justifyContent: 'space-between', fontSize: 15 }}>
-              <span>{fonte}{p.chi ? ` · ${p.chi}` : ''}</span>
-              <b className="num">{segno}{soldi(p.importo)}</b>
-            </div>
-          ))}
-        </div>
-        <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => decidi('oggi', 'Registrati con la data di oggi')}>
-            {n === 1 ? 'Registralo oggi' : 'Registrali oggi'}, {dataRicevuta(oggiARoma()).slice(0, 5)}
-          </button>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => decidi('fuori', 'Lasciati fuori')}>{n === 1 ? 'Lascialo fuori' : 'Lasciali fuori'}</button>
-        </div>
-      </Riquadro>
-    )
-  }
-
-  const riep = riepilogoGruppo(g, inCorso)
-  const nCand = g.candidati.length
-  const scegli = (id: string, v: ScelteInCorso[string]) =>
-    setInCorso((x) => {
-      const prima = x[id]
-      // Un secondo clic sulla stessa scelta la toglie: niente si sceglie da solo.
-      if (prima?.scelta === v.scelta && prima.movimentoId === v.movimentoId) {
-        const { [id]: _, ...resto } = x
-        return resto
-      }
-      return { ...x, [id]: v }
-    })
-  const dubbi = riep.collegati.filter((c) => !c.simile)
-  return (
-    <Riquadro etichetta="FORSE GIÀ SCRITTI A MANO" titolo={`${pagamenti(n)} ${fonte} da ${soldi(g.importo)} · ${nCand === 1 ? '1 movimento' : `${nCand} movimenti`} a mano da ${soldi(g.importo)}`}>
-      <span style={{ fontSize: 15 }}>Pagati {giornoLungo(g.data)}. Per ognuno dimmi se è già scritto a mano o se è un {dettoNuovo(g.tipo, 1).scelta.toLowerCase()}.</span>
-      <div className="stack" style={{ gap: 6, padding: '10px 14px', background: 'var(--fondo-2, transparent)', border: '1px solid var(--line-soft)', borderRadius: 8 }}>
-        <span className="sg-etichetta">GIÀ SCRITTI A MANO QUEL GIORNO</span>
-        {g.candidati.map((m) => (
-          <div key={m.id} className="row" style={{ gap: 12, flexWrap: 'wrap', justifyContent: 'space-between', fontSize: 14 }}>
-            <span style={{ flex: 1, minWidth: 0 }}><b>{m.descrizione}</b>{m.voce ? ` · ${m.voce}` : ''}</span>
-            <span className="sg-sotto">{m.cassa}</span>
-            <span className="num">{segno}{soldi(m.importo)}</span>
-          </div>
-        ))}
-      </div>
-      {g.pagamenti.map((p) => {
-        const s = inCorso[p.satispayId]
-        const simili = g.candidati.filter((m) => nomeSimile(p.chi ?? '', m.descrizione))
-        const altrui = p.candidati.filter((m) => riep.presi[m.id] && riep.presi[m.id] !== p.satispayId)
-        return (
-          <div key={p.satispayId} className="stack" style={{ gap: 8, paddingTop: 10, borderTop: '1px solid var(--line-soft)' }}>
-            <div className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 15 }}>
-                <b>{fonte}{p.chi ? ` · ${p.chi}` : ''}</b>
-                {simili.length > 0 && <span className="sg-tag" style={{ marginLeft: 8 }}>NOME SIMILE: {simili.map((m) => m.descrizione).join(', ')}</span>}
-              </span>
-              <b className="num">{segno}{soldi(p.importo)}</b>
-            </div>
-            <div className="row" role="group" aria-label={`Cosa è il pagamento di ${p.chi ?? 'Satispay'}`} style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-              <span className="sg-sotto">È già scritto per</span>
-              {candidatiInOrdine(p.chi, p.candidati).map((m) => {
-                const preso = riep.presi[m.id]
-                return (
-                  <Chip key={m.id} acceso={s?.scelta === 'a_mano' && s.movimentoId === m.id}
-                    disabled={!!preso && preso !== p.satispayId}
-                    etichetta={`${m.descrizione}${preso && preso !== p.satispayId ? ', già scelto per un altro pagamento' : ''}`}
-                    onClick={() => scegli(p.satispayId, { scelta: 'a_mano', movimentoId: m.id })}>
-                    {nomeChip(m.descrizione)}
-                  </Chip>
-                )
-              })}
-              <span className="sg-sotto">oppure</span>
-              <Chip acceso={s?.scelta === 'scrivi'} onClick={() => scegli(p.satispayId, { scelta: 'scrivi' })}>{dettoNuovo(g.tipo, 1).scelta}</Chip>
-            </div>
-            {altrui.length > 0 && <span className="sg-sotto">{altrui.map((m) => nomeChip(m.descrizione)).join(', ')} {altrui.length === 1 ? 'è' : 'sono'} già di un altro pagamento.</span>}
-          </div>
-        )
-      })}
-      <div className="stack" style={{ gap: 4, paddingTop: 10, borderTop: '1px solid var(--line-soft)', fontSize: 14 }} aria-live="polite">
-        {riep.scelte === null ? (
-          <span>Scegli per ogni pagamento: {riep.mancano === 1 ? 'ne manca 1' : `ne mancano ${riep.mancano}`}.</span>
-        ) : (
-          <>
-            {riep.collegati.length > 0 && (
-              <span>Collego {riep.collegati.map((c) => `${c.chi || 'Satispay'} a «${c.descrizione}»`).join(', ')}: restano i movimenti a mano, con la loro persona e la loro voce.</span>
-            )}
-            {dubbi.map((c) => (
-              <span key={c.descrizione} style={{ color: 'var(--giallo-testo)' }}>Controlla {c.chi || 'Satispay'}: il nome non somiglia a «{c.descrizione}».</span>
-            ))}
-            {riep.nuovi.conteggio > 0 && (
-              <span>Registro {dettoNuovo(g.tipo, riep.nuovi.conteggio).conto}: {soldi(riep.nuovi.importo)} {dettoNuovo(g.tipo, riep.nuovi.conteggio).verso} in contabilità.</span>
-            )}
-          </>
-        )}
-      </div>
-      <div className="row">
-        <button type="button" className="sg-btn sg-btn-pieno" disabled={riep.scelte === null}
-          onClick={() => { if (riep.scelte) { const scelte = riep.scelte; void fai(() => d.decidiGruppoSatispay(scelte), 'Pagamenti decisi', onFatto) } }}>
-          Conferma: {riep.collegati.length} {riep.collegati.length === 1 ? 'collegato' : 'collegati'}, {riep.nuovi.conteggio} {riep.nuovi.conteggio === 1 ? 'nuovo' : 'nuovi'}
-        </button>
-      </div>
-    </Riquadro>
-  )
-}
-
-function Riquadro({ etichetta, titolo, children }: { etichetta: string; titolo: string; children: ReactNode }) {
-  return (
-    <section aria-label={titolo} className="sg-riquadro" style={{ gap: 12, borderColor: 'var(--giallo-testo)' }}>
-      <div className="row" style={{ justifyContent: 'space-between', gap: 12 }}>
-        <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>{etichetta}</span>
-        <span className="sg-etichetta">SATISPAY</span>
-      </div>
-      <b style={{ fontSize: 17 }}>{titolo}</b>
-      {children}
-    </section>
-  )
-}
-
-const COME: Record<RigaEntrato['esito'], string> = {
-  // Per «scritto» vale `dettoNuovo`, che distingue incassi e rimborsi.
-  scritto: 'Scritto',
-  a_mano: 'Collegato',
-  modulo: 'Dal modulo di iscrizione',
-  pagamenti: 'Già fra gli incassi degli iscritti',
-  fuori: 'Lasciato fuori',
-  da_decidere: 'Da decidere',
-}
-
-/** «Cosa è entrato» in un mese, da Satispay o dalla banca: ogni riga e dove è finita, con «Non è questo» per gli abbinamenti. */
-function Entrato({ d, fonte, onFonte, casse, voci, manuali, chiusure, righe, fai, onCambiato }: {
-  d: DatiSegreteria; fonte: Fonte; onFonte: (f: Fonte) => void; casse: Cassa[]; voci: VoceContabile[]; manuali: MovimentoManuale[]
-  chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void
+/**
+ * Un mese da Satispay o dalla banca. Satispay: «Chi ha pagato», in sola lettura, perché i soldi sono nei versamenti
+ * della banca. Banca: ogni movimento importato e dove è finito. «Non è questo» scioglie gli abbinamenti.
+ */
+function Entrato({ d, fonte, onFonte, casse, manuali, chiusure, righe, pagamenti, modulo, fai, onCambiato }: {
+  d: DatiSegreteria; fonte: Fonte; onFonte: (f: Fonte) => void; casse: Cassa[]; manuali: MovimentoManuale[]
+  chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; pagamenti: RigaPagamento[]; modulo: PagamentoSatispay[]; fai: Fai; onCambiato: () => void
 }) {
   const oggi = oggiARoma()
   const [mese, setMese] = useState(oggi.slice(0, 7))
+  const [cerca, setCerca] = useState('')
+  const [soloNon, setSoloNon] = useState(false)
   const negozio = useCarica(() => (fonte === 'satispay' ? d.negozioSatispay(mese) : Promise.resolve([])), [d, fonte, mese])
   // In un oggetto: senza il 114 `bancaCoperti` dà null, che non si deve confondere con «sto leggendo».
   const coperti = useCarica(async () => ({ righe: fonte === 'banca' ? await d.bancaCoperti() : [] }), [d, fonte])
@@ -374,54 +224,68 @@ function Entrato({ d, fonte, onFonte, casse, voci, manuali, chiusure, righe, fai
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <Testa titolo="COSA È ENTRATO" sotto={fonte === 'satispay' ? `Da Satispay, ${nomeMese}: ogni pagamento scaricato e dove è finito.` : `Dalla banca, ${nomeMese}: ogni movimento importato e dove è finito.`} />
+      <Testa titolo={fonte === 'satispay' ? 'CHI HA PAGATO' : 'COSA È ENTRATO'} sotto={fonte === 'satispay'
+        ? `Da Satispay, ${nomeMese}: ogni pagamento scaricato e a chi è stato riconosciuto. I soldi sono nei versamenti della banca.`
+        : `Dalla banca, ${nomeMese}: ogni movimento importato e dove è finito.`} />
       <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <Chip acceso={fonte === 'satispay'} onClick={() => onFonte('satispay')}>Satispay</Chip>
         <Chip acceso={fonte === 'banca'} onClick={() => onFonte('banca')}>Banca</Chip>
         <Campo id="entrato-mese" etichetta="Mese">
-          <select id="entrato-mese" value={mese} onChange={(e) => setMese(e.target.value)}>
+          <select id="entrato-mese" className="sg-campo" value={mese} onChange={(e) => setMese(e.target.value)}>
             {mesi(oggi).map(([m, nome]) => <option key={m} value={m}>{nome}</option>)}
           </select>
         </Campo>
+        {fonte === 'satispay' && (
+          <>
+            <Campo id="entrato-cerca" etichetta="Cerca">
+              <input id="entrato-cerca" className="sg-campo" type="search" value={cerca} placeholder="Nome o importo" onChange={(e) => setCerca(e.target.value)} />
+            </Campo>
+            <Chip acceso={soloNon} onClick={() => setSoloNon((x) => !x)}>Solo non riconosciuti</Chip>
+          </>
+        )}
       </div>
       {fonte === 'satispay' ? (
         negozio.guaio ? <Guaio testo={negozio.guaio} /> : !negozio.dato ? <p className="sg-sotto">Sto leggendo i pagamenti…</p> : (() => {
-          const dati = { negozio: negozio.dato, movimenti: manuali, voci, casse }
-          const r = riepilogoEntrato(dati, mese)
-          const elenco = righeEntrato(dati, mese)
-          const incassi = elenco.filter((x) => x.tipo === 'TO_BUSINESS').length
-          const rimborsi = elenco.length - incassi
+          const tutte = chiHaPagato({ negozio: negozio.dato, movimenti: manuali, pagamenti, modulo }, mese)
+          const c = contiChiHaPagato(tutte)
+          const viste = filtraChiHaPagato(tutte, cerca, soloNon)
           return (
             <>
               <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
-                <Numero titolo="ENTRATO DA SATISPAY" valore={soldi(r.entrato)} sotto={`${incassi === 1 ? '1 incasso' : `${incassi} incassi`} · ${rimborsi === 1 ? '1 rimborso' : `${rimborsi} rimborsi`}`} />
-                <Numero titolo="SECONDO SATISPAY" valore={soldi(r.secondoSatispay)} allarme={r.entrato !== r.secondoSatispay}
-                  sotto={r.entrato === r.secondoSatispay ? 'il totale del mese nel negozio: torna' : `il totale del mese nel negozio: mancano ${soldi(r.secondoSatispay - r.entrato)}, guarda Da decidere`} />
-                <Numero titolo="DI CUI GIÀ A MANO" valore={soldi(r.aMano.importo)} sotto={r.aMano.conteggio === 1 ? '1 collegato a un movimento già scritto' : `${r.aMano.conteggio} collegati a un movimento già scritto`} />
+                <Numero titolo="PAGATO CON SATISPAY" valore={c.totale === 0 ? soldi(0) : `${c.totale < 0 ? '−' : '+'}${soldi(Math.abs(c.totale))}`}
+                  sotto={`${c.pagamenti === 1 ? '1 pagamento' : `${c.pagamenti} pagamenti`} · ${c.rimborsi === 1 ? '1 rimborso' : `${c.rimborsi} rimborsi`}`} />
+                <Numero titolo="RICONOSCIUTI" valore={`${c.riconosciuti} su ${c.pagamenti}`} sotto="in una ricevuta, nei pagamenti o dal modulo" />
+                <Numero titolo="NON RICONOSCIUTI" valore={String(c.nonRiconosciuti)} allarme={c.nonRiconosciuti > 0} sotto="nessuna ricevuta né pagamento con quel nome" />
               </div>
-              <div role="table" aria-label="Pagamenti Satispay del mese" className="sg-tabella">
-                <div className="sg-tabella-corpo">
-                  {elenco.length === 0 && <div role="row"><p role="cell" className="sg-sotto" style={{ padding: '12px 14px' }}>Nessun pagamento Satispay entrato in {nomeMese}.</p></div>}
-                  {elenco.map((x) => {
-                    const m = x.movimento ? manuali.find((y) => y.id === x.movimento?.id) : undefined
+              <div role="table" aria-label="Chi ha pagato con Satispay nel mese" className="sg-tabella">
+                <div role="row" className="row sg-lista-testa" style={rigaTabella}>
+                  <span role="columnheader" className="sg-etichetta" style={{ minWidth: 80 }}>DATA</span>
+                  <span role="columnheader" className="sg-etichetta" style={{ flex: '1 1 160px' }}>CHI</span>
+                  <span role="columnheader" className="sg-etichetta" style={{ minWidth: 90 }}>IMPORTO</span>
+                  <span role="columnheader" className="sg-etichetta" style={{ flex: '2 1 220px' }}>COME È RICONOSCIUTO</span>
+                  <span role="columnheader" style={{ minWidth: 120 }} />
+                </div>
+                <div role="rowgroup" className="sg-tabella-corpo">
+                  {viste.length === 0 && <div role="row"><p role="cell" className="sg-sotto" style={{ padding: '12px 14px' }}>{tutte.length ? 'Nessun pagamento con questa ricerca.' : `Nessun pagamento Satispay in ${nomeMese}.`}</p></div>}
+                  {viste.map((x) => {
+                    const m = x.movimentoId ? manuali.find((y) => y.id === x.movimentoId) : undefined
                     const chiuso = !!m && giornoChiuso(chiusure, [m.cassaId], m.data)
-                    const chi = `Satispay${x.chi ? ` · ${x.chi}` : ''}`
+                    const chi = x.chi ?? 'Satispay'
                     return (
                       <div key={x.satispayId} role="row" className="row" style={rigaTabella}>
                         <span role="cell" style={{ fontSize: 13, color: 'var(--sec)', minWidth: 80 }}>{dataRicevuta(x.data)}</span>
-                        <span role="cell" className="stack" style={{ flex: '1 1 220px', minWidth: 0, gap: 2 }}>
-                          <b style={{ fontSize: 15 }}>{x.esito === 'a_mano' && x.movimento ? x.movimento.descrizione : chi}</b>
-                          <span className="sg-sotto">{x.esito === 'a_mano' ? `Collegato a ${chi}` : x.esito === 'scritto' ? dettoNuovo(x.tipo, 1).scelta : COME[x.esito]}</span>
-                        </span>
-                        <span role="cell" className="sg-sotto" style={{ minWidth: 120 }}>{x.voce ?? (x.esito === 'scritto' ? 'Da classificare' : '')}</span>
-                        <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, color: x.tipo === 'TO_BUSINESS' ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}>
+                        <b role="cell" style={{ fontSize: 15, flex: '1 1 160px', minWidth: 0 }}>{chi}</b>
+                        <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, minWidth: 90, color: x.tipo === 'TO_BUSINESS' ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}>
                           {x.tipo === 'TO_BUSINESS' ? '+' : '−'}{soldi(x.importo)}
                         </span>
+                        <span role="cell" style={{ flex: '2 1 220px', minWidth: 0, fontSize: 14, color: x.come === 'non_riconosciuto' ? 'var(--giallo-testo)' : 'var(--sec)', fontWeight: x.come === 'non_riconosciuto' ? 700 : undefined }}>
+                          {x.detto}
+                        </span>
                         <span role="cell" style={{ minWidth: 120, textAlign: 'right' }}>
-                          {x.esito === 'a_mano' && !chiuso && (
+                          {m && !chiuso && (
                             <button type="button" className="sg-btn sg-btn-linea" onClick={() => void nonEQuesto(
-                              `Tolgo il collegamento fra «${x.movimento?.descrizione}» e il pagamento ${chi}? Il movimento a mano torna normale, e il pagamento torna in Da decidere.`,
-                              () => d.scollegaSatispay(x.satispayId), 'Collegamento tolto: il pagamento è in Da decidere')}>
+                              `Tolgo il collegamento fra «${m.descrizione}» e il pagamento Satispay di ${chi}? Il movimento a mano torna normale; il pagamento resta nel versamento della banca.`,
+                              () => d.scollegaSatispay(x.satispayId), 'Collegamento tolto')}>
                               Non è questo
                             </button>
                           )}
@@ -430,6 +294,9 @@ function Entrato({ d, fonte, onFonte, casse, voci, manuali, chiusure, righe, fai
                     )
                   })}
                 </div>
+                {viste.length < tutte.length && (
+                  <div role="row" style={{ padding: '10px 14px', textAlign: 'right' }}><span role="cell" className="sg-sotto">ne vedi {viste.length} su {tutte.length}</span></div>
+                )}
               </div>
             </>
           )
@@ -476,9 +343,15 @@ function Entrato({ d, fonte, onFonte, casse, voci, manuali, chiusure, righe, fai
           </>
         )
       })()}
-      <p className="sg-sotto">
-        «Non è questo» toglie il collegamento: il movimento a mano torna normale{fonte === 'satispay' ? ', non più legato a Satispay, e il pagamento torna in Da decidere' : ', e quello della banca entra come movimento nuovo'}. Non si può nei giorni con la cassa già chiusa. Un incasso nuovo sbagliato si annulla come ogni altro movimento, da MOVIMENTI.
-      </p>
+      {fonte === 'satispay' ? (
+        <p className="sg-sotto">
+          Sola lettura: da qui non si scrive niente in contabilità. «Non riconosciuto» vuol dire che Satispay l’ha incassato ma nessuna ricevuta o pagamento lo copre: la quota si segna dalla scheda della persona.
+        </p>
+      ) : (
+        <p className="sg-sotto">
+          «Non è questo» toglie l’abbinamento: il movimento a mano torna normale, e quello della banca entra come movimento nuovo. Non si può nei giorni con la cassa già chiusa.
+        </p>
+      )}
     </div>
   )
 }

@@ -150,6 +150,18 @@ ok('senza listino resta la quota e il resto è fuori listino', prova(() => [m.su
 ok('la voce spenta non si propone', prova(() => m.suggerisciMovimento(riga({ descrizione: 'Satispay · Elisa M.', importo: 5000 }), [], voci.map((v) => (v.id === 'vq' ? { ...v, attiva: false } : v)), elisa, listino).voce), null)
 ok('persona proposta ma voce spenta: non si conferma', prova(() => m.confermaDi(m.suggerisciMovimento(riga({ descrizione: 'Satispay · Elisa M.', importo: 5000 }), [], voci.map((v) => (v.id === 'vq' ? { ...v, attiva: false } : v)), elisa, listino), null)), null)
 
+console.log('\n4c. il versamento di Satispay va su «Incassi Satispay» (132), senza persona')
+{
+  const conSatispay = [...voci, { id: 'vs', nome: 'Incassi Satispay', tipo: 'entrata', diSistema: true, attiva: true }]
+  const p = [P('s', 'Europe', 'Satispay')]
+  const su = (d, v = conSatispay) => prova(() => { const x = m.suggerisciMovimento(riga({ descrizione: d, importo: 23750 }), [], v, p); return x && [x.caso, x.voce?.nome ?? null, x.persona, x.candidati.length] })
+  ok('«Da Satispay Europe S.A.»: la voce, nessuna persona', su('Da Satispay Europe S.A. accredito'), ['C', 'Incassi Satispay', 'nessuna-senza-persona', 0])
+  ok('anche scritto in maiuscolo', su('BONIFICO DA SATISPAY EUROPE SA'), ['C', 'Incassi Satispay', 'nessuna-senza-persona', 0])
+  ok('senza la voce (archivio di prima): nessuna voce, ma nemmeno una persona', su('Da Satispay Europe S.A.', voci), ['D', null, 'nessuna-senza-persona', 0])
+  ok('un pagamento «Satispay · nome» resta di una persona', prova(() => m.suggerisciMovimento(riga({ descrizione: 'Satispay · Elisa M.' }), [], conSatispay, [P('a', 'Elisa', 'Mosca')]).persona), 'candidati')
+  ok('un\'uscita verso Satispay Europe no', prova(() => m.suggerisciMovimento(riga({ tipo: 'uscita', descrizione: 'Satispay Europe commissioni' }), [], conSatispay, []).voce), null)
+}
+
 console.log('\n5. quando il blocco non c\'è')
 for (const [cosa, r] of [
   ['voce già vera', riga({ voce: 'Gare' })],

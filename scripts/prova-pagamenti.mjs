@@ -357,8 +357,7 @@ console.log('\n15. dove entra in contabilità (doveEntraInContabilita(metodo, vo
   ok('80,00 € POS «Annuale Judo adulti»', dove('POS', 'Annuale Judo adulti'), 'Entra in CONTABILITÀ: Conto Corrente · Corsi e altri pagamenti')
   ok('«  contanti » e «QUOTA ASSOCIATIVA »: maiuscole e spazi non contano', dove('  contanti ', 'QUOTA ASSOCIATIVA '), 'Entra in CONTABILITÀ: Cassa Contanti · Quota associativa')
   ok('Bonifico: Conto Corrente', dove('Bonifico', 'Quota associativa'), 'Entra in CONTABILITÀ: Conto Corrente · Quota associativa')
-  ok('Satispay a settembre: Conto Corrente', dove('Satispay', 'ALTRO'), 'Entra in CONTABILITÀ: Conto Corrente · Corsi e altri pagamenti')
-  ok('Satispay dal 1° ottobre 2026: cassa Satispay', dove('Satispay', 'ALTRO', '2026-10-01'), 'Entra in CONTABILITÀ: Satispay · Corsi e altri pagamenti')
+  ok('Satispay, a settembre o dopo, qualunque voce: non entra, i soldi sono nel versamento in banca', [dove('Satispay', 'ALTRO'), dove(' SATISPAY ', 'Quota associativa', '2026-10-01'), dove('Satispay', 'ALTRO', '2025-03-01')], Array(3).fill('Non entra in CONTABILITÀ: i soldi arrivano col versamento di Satispay in banca'))
   ok('«Quota + ottobre» non è la quota associativa', dove('Contanti', 'Quota + ottobre'), 'Entra in CONTABILITÀ: Cassa Contanti · Corsi e altri pagamenti')
   // Dice le stesse cose dei movimenti di CONTABILITÀ (`incassiDerivati`): se una cambia, l'altra la segue.
   const casse = { contanti: m.NOME_CASSA_CONTANTI, conto: m.NOME_CASSA_CONTO, satispay: m.NOME_CASSA_SATISPAY }
@@ -366,7 +365,7 @@ console.log('\n15. dove entra in contabilità (doveEntraInContabilita(metodo, vo
   for (const metodo of [...m.METODI_A_MANO, 'contanti', ' CONTANTI ', 'pos'])
     for (const voce of ['Quota associativa', 'QUOTA ASSOCIATIVA', ' quota associativa ', 'Quota + ottobre', 'Annuale Judo adulti', 'ALTRO']) {
       for (const data of ['2026-09-30', '2026-10-01']) {
-        const voluto = `Entra in CONTABILITÀ: ${casse[m.cassaDelMetodo(metodo, data)]} · ${m.voceDiSistema(voce)}`
+        const voluto = metodo.trim().toLowerCase() === 'satispay' ? 'Non entra in CONTABILITÀ: i soldi arrivano col versamento di Satispay in banca' : `Entra in CONTABILITÀ: ${casse[m.cassaDelMetodo(metodo, data)]} · ${m.voceDiSistema(voce)}`
         if (dove(metodo, voce, data) !== voluto) diverse.push(`${metodo}/${voce}/${data}`)
       }
     }

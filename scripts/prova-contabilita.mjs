@@ -67,12 +67,15 @@ console.log('\n2. la cassa e la voce di un incasso')
   ok('Contanti va in Cassa Contanti', prova(() => m.cassaDelMetodo('Contanti', '2026-09-30')), 'contanti')
   ok('…senza badare a maiuscole e spazi', prova(() => [m.cassaDelMetodo('contanti ', '2026-09-30'), m.cassaDelMetodo(' CONTANTI', '2026-10-05')]), ['contanti', 'contanti'])
   ok('l\'Assegno va sul conto', prova(() => m.cassaDelMetodo('Assegno', '2026-10-05')), 'conto')
-  ok('tutto il resto sul conto', prova(() => ['Bonifico', 'POS', 'Satispay', ''].map((x) => m.cassaDelMetodo(x, '2026-09-30'))), ['conto', 'conto', 'conto', 'conto'])
+  ok('tutto il resto sul conto', prova(() => ['Bonifico', 'POS', ''].map((x) => m.cassaDelMetodo(x, '2026-09-30'))), ['conto', 'conto', 'conto'])
   // Con la carta dal modulo di iscrizione (115-carta.sql) la cassa è sua: era sul conto solo finché non c'era.
   ok('Carta: cassa Carta, senza badare a maiuscole e spazi', prova(() => [m.cassaDelMetodo('Carta', '2026-10-20'), m.cassaDelMetodo(' carta ', '2026-10-20'), m.cassaDelMetodo('Carta', '2026-09-30')]), ['carta', 'carta', 'carta'])
   ok('la cassa Carta si chiama Carta', prova(() => m.NOME_CASSA_CARTA), 'Carta')
-  // Dal 1° ottobre 2026 Satispay è una cassa a sé (97-satispay-scarico.sql): ci vanno anche i pagamenti di PAGAMENTI.
-  ok('Satispay dal 1° ottobre 2026: cassa Satispay', prova(() => [m.cassaDelMetodo('Satispay', '2026-10-01'), m.cassaDelMetodo(' SATISPAY ', '2026-11-15')]), ['satispay', 'satispay'])
+  // I soldi Satispay sono quelli del versamento in banca (132): ricevute e pagamenti con quel metodo non entrano in CONTABILITÀ.
+  ok('un pagamento Satispay, di qualunque data, non produce incassi', prova(() => {
+    const rg = (id, data, metodo) => ({ id, data, importo: 2500, metodo, voce: 'ANNUALE', chi: 'Rossi Giulia', annullato: false })
+    return m.incassiDerivati(['2026-09-30', '2026-10-01', '2026-11-15', '2025-03-01'].flatMap((d) => [rg(`a${d}`, d, 'Satispay'), rg(`b${d}`, d, ' SATISPAY ')]), casse)
+  }), [])
   ok('…gli altri metodi non cambiano', prova(() => ['Contanti', 'POS', 'Bonifico'].map((x) => m.cassaDelMetodo(x, '2026-10-05'))), ['contanti', 'conto', 'conto'])
   ok('la quota associativa, comunque sia scritta', prova(() => ['QUOTA ASSOCIATIVA', 'Quota associativa', 'quota associativa ', '  Quota Associativa'].map((x) => m.voceDiSistema(x))), Array(4).fill('Quota associativa'))
   ok('le gare hanno la loro voce, comunque scritta', prova(() => ['Gare', 'GARE', ' gare '].map((x) => m.voceDiSistema(x))), Array(3).fill('Gare'))
@@ -121,26 +124,24 @@ console.log('\n3. gli incassi degli iscritti si ricavano, non si copiano')
     [['pagamento', 'entrata', '2026-10-25', 9000, 'Rossi Giulia', 'senza ricevuta', 'Gare', 'c1', false]])
   const conSatispay = [...casse, { id: 'c3', nome: 'Satispay', saldoIniziale: 0, dal: '2026-10-01' }]
   const sat = (data) => ({ ...diretto(`s-${data}`, 'p-Rossi', data, 2500), metodo: 'Satispay' })
-  ok('un pagamento Satispay del 30 settembre: Conto Corrente; dell\'1 ottobre: cassa Satispay',
-    prova(() => m.incassiDerivati(m.righeDirette([sat('2026-09-30'), sat('2026-10-01')], nomeDi), conSatispay).map((r) => r.cassaId)), ['c2', 'c3'])
+  ok('un pagamento a mano Satispay, del 30 settembre o dell\'1 ottobre: nessuna riga, e contanti e bonifico sì',
+    prova(() => m.incassiDerivati(m.righeDirette([sat('2026-09-30'), sat('2026-10-01'), { ...sat('2026-10-02'), metodo: 'Contanti' }, { ...sat('2026-10-03'), metodo: 'Bonifico' }], nomeDi), conSatispay).map((r) => r.cassaId)), ['c1', 'c2'])
   ok('gli incassi non hanno una seconda cassa', prova(() => derivati.map((r) => r.cassaAId ?? null)), [null, null, null])
   ok('l\'id è stabile: due volte lo stesso', prova(() => m.incassiDerivati(righe, casse).map((r) => r.id)), prova(() => derivati.map((r) => r.id)))
   ok('…e diverso per ogni pagamento', prova(() => new Set(derivati.map((r) => r.id)).size), 3)
   ok('…e non dipende dall\'ordine in cui arrivano', prova(() => Object.fromEntries(m.incassiDerivati([...righe].reverse(), casse).map((r) => [r.importo, r.id]))), prova(() => Object.fromEntries(derivati.map((r) => [r.importo, r.id]))))
-  ok('la riga dice il numero della ricevuta, o che manca; Satispay senza richiesta non è «senza ricevuta»',
+  ok('la riga dice il numero della ricevuta, o che manca',
     prova(() => m.incassiDerivati([
       { id: 's1', data: '2026-10-02', importo: 100, metodo: 'POS', voce: 'ANNUALE', chi: 'Rossi Giulia', annullato: false, ricevuta: { id: 'r9', anno: 2026, numero: 7 } },
       { id: 's2', data: '2026-10-02', importo: 100, metodo: 'Contanti', voce: 'ANNUALE', chi: 'Rossi Giulia', annullato: false },
-      { id: 's3', data: '2026-10-02', importo: 100, metodo: 'Satispay', voce: 'ANNUALE', chi: 'Rossi Giulia', annullato: false, senzaRichiesta: true },
     ], casse).map((r) => r.sotto)),
-    ['ANNUALE · ricevuta 7/2026', 'ANNUALE · senza ricevuta', 'ANNUALE'])
+    ['ANNUALE · ricevuta 7/2026', 'ANNUALE · senza ricevuta'])
   ok('la riga non ripete quel che dicono le colonne: né il metodo (c\'è la cassa) né la voce di sistema (c\'è sotto il nome)',
     prova(() => m.incassiDerivati([
       { id: 'q1', data: '2026-10-02', importo: 5000, metodo: 'Bonifico', voce: 'QUOTA ASSOCIATIVA', chi: 'Rossi Giulia', annullato: false, ricevuta: { id: 'r1', anno: 2026, numero: 308 } },
       { id: 'q2', data: '2026-10-02', importo: 5000, metodo: 'Contanti', voce: 'Quota associativa', chi: 'Rossi Giulia', annullato: false },
-      { id: 'q3', data: '2026-10-02', importo: 5000, metodo: 'Satispay', voce: 'Quota associativa', chi: 'Rossi Giulia', annullato: false, senzaRichiesta: true },
     ], casse).map((r) => r.sotto ?? null)),
-    ['ricevuta 308/2026', 'senza ricevuta', null])
+    ['ricevuta 308/2026', 'senza ricevuta'])
   ok('l\'anticipo non è un incasso', prova(() => m.incassiDerivati(m.righeDaRicevute([ricevuta(30, 'Giulia', 'Rossi', [voce('Corso', 8000, [pag('2026-10-02', 3000)])], { anticipo: 1000 })]), casse).map((r) => r.importo)), [3000])
   ok('«pagato fino al» non è un incasso: una voce con le date e nessun pagamento non dà righe',
     prova(() => m.incassiDerivati(m.righeDaRicevute([ricevuta(31, 'Giulia', 'Rossi', [voce('Corso', 8000, [], 1, { dal: '2026-09-01', al: '2027-07-31' })], { anticipo: 8000 })]), casse)), [])
@@ -343,6 +344,8 @@ console.log('\n10. cosa non va in un movimento (gli stessi rifiuti del database)
     ['nota di 301 lettere', { nota: 'n'.repeat(301) }, 'La nota è troppo lunga: al massimo 300 caratteri'],
   ]
   for (const [cosa, cambio, messaggio] of mancano) ok(cosa, di(cambio), messaggio)
+  const conSatispay = [...casse, { id: 'c3', nome: 'Satispay', saldoIniziale: 0 }]
+  ok('la cassa Satispay è chiusa', prova(() => m.cosaNonVaMovimento({ ...buono, cassaId: 'c3' }, voci, conSatispay, oggi)), 'La cassa Satispay è chiusa: i soldi di Satispay arrivano col versamento in Conto Corrente')
 }
 
 console.log('\n11. cosa non va in un giroconto')
@@ -367,6 +370,10 @@ console.log('\n11. cosa non va in un giroconto')
     ['nota di 301 lettere', { nota: 'n'.repeat(301) }, 'La nota è troppo lunga: al massimo 300 caratteri'],
   ]
   for (const [cosa, cambio, messaggio] of mancano) ok(cosa, di(cambio), messaggio)
+  const conSatispay = [...casse, { id: 'c3', nome: 'Satispay', saldoIniziale: 0 }]
+  const sat = (cambio) => prova(() => m.cosaNonVaGiroconto({ ...buono, ...cambio }, conSatispay, oggi))
+  ok('niente giroconto verso la cassa Satispay', sat({ aCassaId: 'c3' }), 'La cassa Satispay è chiusa: i soldi di Satispay arrivano col versamento in Conto Corrente')
+  ok('niente giroconto dalla cassa Satispay', sat({ daCassaId: 'c3' }), 'La cassa Satispay è chiusa: i soldi di Satispay arrivano col versamento in Conto Corrente')
 }
 
 console.log('\n12. cosa non va in una voce')
@@ -837,10 +844,9 @@ console.log('\n30. il riepilogo prima di registrare un movimento o un giroconto'
 console.log('\n31. Contabilita.tsx scrive solo dopo il sì del riepilogo')
 {
   const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
-  // registraMovimento due volte: il movimento a mano e la commissione Satispay, che parte col sì del giroconto.
-  for (const [chiamata, riepiloghi] of [['registraMovimento', ['riepilogoMovimento', 'riepilogoGiroconto']], ['registraGiroconto', ['riepilogoGiroconto']]]) {
+  for (const [chiamata, riepiloghi] of [['registraMovimento', ['riepilogoMovimento']], ['registraGiroconto', ['riepilogoGiroconto']]]) {
     const posti = [...tsx.matchAll(new RegExp(`${chiamata}\\(`, 'g'))].map((x) => x.index)
-    ok(`${riepiloghi.length === 1 ? 'una sola chiamata' : 'due chiamate'} a ${chiamata}`, posti.length, riepiloghi.length)
+    ok(`una sola chiamata a ${chiamata}`, posti.length, riepiloghi.length)
     posti.forEach((i, n) => {
       const inizi = [...tsx.slice(0, i).matchAll(/onClick=\{|=\s*async\b/g)]
       const gestore = tsx.slice(inizi.at(-1)?.index ?? 0, i)
@@ -1113,16 +1119,16 @@ console.log('\n40. la colonna PERSONA mostra l\'iscritto anche per gli incassi; 
   // 1.
   ok('una ricevuta con la scheda p1: la riga dell\'incasso ha personaId p1', ric?.personaId, 'p1')
   ok('un pagamento a mano: la riga ha la persona del pagamento', dir?.personaId, 'p2')
-  ok('un Satispay con la scheda: la riga ha la sua persona', sat?.personaId, 'p3')
+  ok('un pagamento Satispay del modulo, con la scheda: nessuna riga (i soldi sono nel versamento in banca)', sat ?? null, null)
   ok('incassiDerivati copia la persona della riga di PAGAMENTI', prova(() => m.incassiDerivati(m.righeDaRicevute([conP1]), casse).map((r) => r.personaId)), ['p1'])
   // 2.
   ok('una ricevuta senza scheda: nessuna persona', ricSenza?.personaId ?? null, null)
-  ok('un Satispay senza scheda: nessuna persona', satSenza?.personaId ?? null, null)
+  ok('…e senza scheda nemmeno', satSenza ?? null, null)
   // 3.
-  ok('un incasso con la persona non è cambiabile: nessuna casella, quindi né Collega né Scollega', [ric, dir, sat].map((r) => prova(() => m.cambiabile(r))), [false, false, false])
+  ok('un incasso con la persona non è cambiabile: nessuna casella, quindi né Collega né Scollega', [ric, dir].map((r) => prova(() => m.cambiabile(r))), [false, false])
   ok('…e non si collega: non viene dal vecchio programma', prova(() => persona.cosaNonVaCollegato(ric)), 'Il movimento del 20/09/2026 (Rossi Giulia) non viene dal vecchio programma: non si collega')
   // 4.
-  ok('la descrizione resta il nome della ricevuta', [ric?.descrizione, dir?.descrizione, sat?.descrizione], ['Rossi Giulia', "D'Amico Zoë", 'Neri Luca'])
+  ok('la descrizione resta il nome della ricevuta', [ric?.descrizione, dir?.descrizione], ['Rossi Giulia', "D'Amico Zoë"])
   ok('cercando «rossi giulia» la si trova', prova(() => m.filtraMovimenti(elenco, { testo: 'rossi giulia' }).map((r) => r.id)), [`incasso:${conP1.id}:0:0`])
   ok('cercando la voce («quota») si trova l\'incasso, che la voce non la ripete più sotto', prova(() => m.filtraMovimenti(elenco, { testo: 'quota' }).some((r) => r.id === `incasso:${conP1.id}:0:0`)), true)
   // 5.
@@ -1155,7 +1161,7 @@ console.log('\n90. gli incassi per i conti della chat, senza nomi')
   ok('una riga per pagamento: la rata conta nel giorno del suo pagamento', prova(() => senza.map((r) => [r.tipo, r.data, r.importo, r.voce, r.cassaId, r.annullato])), prova(() => conNomi.map((r) => [r.tipo, r.data, r.importo, r.voce, r.cassaId, r.annullato])))
   ok('gli stessi residui delle casse degli incassi con i nomi', prova(() => m.residui(casse, senza)), prova(() => m.residui(casse, conNomi)))
   ok('gli stessi totali per voce', prova(() => m.perVoce(senza)), prova(() => m.perVoce(conNomi)))
-  ok('ogni riga ha un id suo', prova(() => [new Set(senza.map((r) => r.id)).size, senza.length]), [5, 5])
+  ok('ogni riga ha un id suo', prova(() => [new Set(senza.map((r) => r.id)).size, senza.length]), [4, 4])
   ok('nessun testo contiene un nome', prova(() => (Array.isArray(senza) && senza.length ? JSON.stringify(senza).match(/Rossi|Luca|Bianchi|Giulia/g) : 'nessuna riga')), null)
   ok('non sono movimenti a mano: lo storico importato si riconosce ancora (sovrapposizione del bilancio)', prova(() => senza.every((r) => r.origine !== 'movimento')), true)
 }

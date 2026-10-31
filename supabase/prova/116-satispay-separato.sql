@@ -1,7 +1,7 @@
--- 116-satispay-separato.sql: Satispay e Conto Corrente si gestiscono separati. Lo scarico scrive ogni pagamento
--- Satispay nella cassa Satispay (che parte dal 1 gennaio 2025), e i «forse già scritti a mano» sono solo le entrate a mano
--- di quella cassa. Qui si prova il file dei dati: i pagamenti a_mano legati a un movimento del Conto Corrente si
--- scollegano, i forse_doppione tornano senza esito, e il prossimo satispay_negozio_applica li rivaluta. Gli stessi casi
+-- 116-satispay-separato.sql: Satispay e Conto Corrente si gestiscono separati. Il file sistema i dati; la regola
+-- dello scarico è poi quella di 132-satispay-solo-chi-ha-pagato.sql (la cassa Satispay è chiusa, niente movimenti
+-- nuovi), che si rilancia subito dopo ogni 116: il 116 rimetterebbe le funzioni di prima. Qui si prova il file dei dati: i pagamenti a_mano legati a un movimento del Conto Corrente si
+-- scollegano, i forse_doppione tornano senza esito, e il prossimo satispay_negozio_applica li manda fuori, nel versamento. Gli stessi casi
 -- delle regole (applica, scollega) stanno in satispay-scarico.sql e importazioni.sql, e in scripts/prova-*.mjs.
 -- Parte dallo schema da sé. Rilancia 116-satispay-separato.sql sui dati seminati: da solo, dopo lo schema, è già passato
 -- su un database vuoto (come prova_base), qui lo si vede sui dati veri.
@@ -113,6 +113,18 @@ create or replace function a_mano(d text, i int, cassa text, descr text default 
   insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione)
   values ('entrata', d::date, i, (select id from voci_contabili where nome = 'Corsi e altri pagamenti' and tipo = 'entrata'), id_cassa(cassa), descr)
   returning id $$;
+-- Un movimento della cassa Satispay come c'era prima del 132, che non ne lascia scrivere di nuovi: il trigger (se c'è) si spegne il tempo di scriverlo.
+create or replace function vecchio(d text, i int, descr text default 'Vecchio') returns uuid
+  language plpgsql security definer set search_path = public as $f$
+declare nuovo uuid; cte boolean := exists (select 1 from pg_trigger where tgname = 'movimenti_cassa_satispay_chiusa');
+begin
+  if cte then alter table movimenti disable trigger movimenti_cassa_satispay_chiusa; end if;
+  insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione)
+  values ('entrata', d::date, i, (select id from voci_contabili where nome = 'Corsi e altri pagamenti' and tipo = 'entrata'), id_cassa('Satispay'), descr)
+  returning id into nuovo;
+  if cte then alter table movimenti enable trigger movimenti_cassa_satispay_chiusa; end if;
+  return nuovo;
+end $f$;
 -- Si riparte da zero (come postgres, che l'RLS non ferma): niente pagamenti, movimenti, chiusure.
 create or replace function pulisci() returns void language plpgsql security definer set search_path = public as $$
 begin
@@ -146,7 +158,7 @@ create or replace function candidati_di(sid text) returns text language sql secu
   select coalesce((select string_agg(x::text, ',' order by x::text) from satispay_negozio n, unnest(n.candidati) x where n.satispay_id = sid), 'nessuno') $$;
 
 grant execute on function atteso(text, text, text), chi(text), tenta(text), esito(text), servizio(text), come(text, text, text), come_vedo(text, text, text), come_leggo(text, text, text),
-  id_cassa(text), pag(text, text, text, int, text, text), sal(jsonb[]), app(boolean), conti(jsonb), a_mano(text, int, text, text), pulisci(),
+  id_cassa(text), pag(text, text, text, int, text, text), sal(jsonb[]), app(boolean), conti(jsonb), a_mano(text, int, text, text), vecchio(text, int, text), pulisci(),
   esito_di(text), mov_di(text), n_mov(), n_mov_di(text), oggi_roma(), impronta(), candidati_di(text) to anon, authenticated, service_role;
 
 
@@ -160,7 +172,7 @@ update casse set dal = '2026-10-01' where nome = 'Satispay';
 select a_mano('2026-08-31', 5000, 'Conto Corrente', 'Bonifico 1') as c1 \gset
 select a_mano('2026-08-31', 5000, 'Conto Corrente', 'Bonifico 2') as c2 \gset
 select a_mano('2026-08-31', 5000, 'Conto Corrente', 'Scritto da noi') as c3 \gset
-select a_mano('2026-09-02', 700, 'Satispay', 'Bonifico in Satispay') as s1 \gset
+select vecchio('2026-09-02', 700, 'Bonifico in Satispay') as s1 \gset
 select a_mano('2026-09-03', 800, 'Conto Corrente', 'Chiuso') as c4 \gset
 insert into satispay_negozio (satispay_id, tipo, stato, importo, quando, chi, esito, motivo, candidati, movimento_id) values
   ('AM', 'TO_BUSINESS', 'ACCEPTED', 5000, '2026-08-31T10:00:00Z', 'Reale', 'a_mano', null, null, :'c1'),
@@ -174,6 +186,7 @@ update movimenti set satispay_id = 'AS' where id = :'s1';
 select atteso('prima del 116: AM è a_mano su un movimento del Conto Corrente', esito_di('AM') || ' ' || n_mov_di('AM'), 'a_mano/- 1');
 
 \i supabase/116-satispay-separato.sql
+\i supabase/132-satispay-solo-chi-ha-pagato.sql
 
 select atteso('la cassa Satispay parte dal 1 gennaio 2025', (select dal::text from casse where nome = 'Satispay'), '2025-01-01');
 select atteso('un a_mano su un movimento del Conto Corrente è senza esito, motivo, candidati e movimento',
@@ -188,23 +201,26 @@ select atteso('uno scritto nel Conto Corrente resta com''è, col suo movimento e
   esito_di('SC') || ' ' || n_mov_di('SC') || ' ' || (select movimento_id::text from satispay_negozio where satispay_id = 'SC'), 'scritto/- 1 ' || :'c3');
 select atteso('un a_mano su un movimento della cassa Satispay resta a_mano, col segno', esito_di('AS') || ' ' || n_mov_di('AS'), 'a_mano/- 1');
 select atteso('un da_decidere/giorno_chiuso resta com''è', esito_di('GC'), 'da_decidere/giorno_chiuso');
--- Il prossimo giro li rivaluta con la regola nuova: sono di agosto, in Satispay, senza candidati nel Conto Corrente.
-select atteso('il giro dopo il 116 li rivaluta: AM e DD entrano in Satispay',
+-- Il prossimo giro li rivaluta con la regola nuova: sono nel versamento in banca, niente movimento in Satispay.
+select atteso('il giro dopo il 116 li rivaluta: AM e DD sono incassi nel versamento',
   app(true)->>'incassi', '2');
-select atteso('…AM è scritto in cassa Satispay', esito_di('AM') || ' ' || mov_di('AM'), 'scritto/- entrata|2026-08-31|5000|Satispay|Da classificare|Satispay · Reale|nessuno');
+select atteso('…AM è fuori, nel versamento, e nessun movimento ha il suo segno', esito_di('AM') || ' ' || mov_di('AM'), 'fuori/nel_versamento nessuno');
+select atteso('…DD lo stesso, non da decidere', esito_di('DD'), 'fuori/nel_versamento');
 select atteso('…e i bonifici del Conto Corrente senza segno', (select count(*)::text from movimenti m join casse c on c.id = m.cassa_id where c.nome = 'Conto Corrente' and m.satispay_id is null), '3');
 
 \echo ''
 \echo '--- 116. i dati: un «Non è questo» deciso in cassa Satispay resta deciso ---'
 select pulisci();
-select a_mano('2026-10-20', 900, 'Satispay', 'Scritto da noi') as s2 \gset
+select vecchio('2026-10-20', 900, 'Scritto da noi') as s2 \gset
 -- Come lo lascia satispay_scollega: da decidere, col solo movimento in Satispay come candidato.
 insert into satispay_negozio (satispay_id, tipo, stato, importo, quando, chi, esito, motivo, candidati, movimento_id) values
   ('NQ', 'TO_BUSINESS', 'ACCEPTED', 900, '2026-10-20T10:00:00Z', 'Ugo', 'da_decidere', 'forse_doppione', array[:'s2']::uuid[], null);
 \i supabase/116-satispay-separato.sql
+\i supabase/132-satispay-solo-chi-ha-pagato.sql
 \i supabase/116-satispay-separato.sql
+\i supabase/132-satispay-solo-chi-ha-pagato.sql
 select atteso('il 116, anche due volte, non tocca un da_decidere coi candidati in Satispay',
   (select concat_ws('|', esito, motivo, candidati::text) from satispay_negozio where satispay_id = 'NQ'),
   'da_decidere|forse_doppione|{' || :'s2' || '}');
 select app(true);
-select atteso('…e il giro dopo non lo ricollega al movimento', esito_di('NQ') || ' ' || n_mov_di('NQ'), 'da_decidere/forse_doppione 0');
+select atteso('…e il giro dopo non lo ricollega al movimento (non è più da decidere, ma in tabella resta com''è)', esito_di('NQ') || ' ' || n_mov_di('NQ'), 'da_decidere/forse_doppione 0');

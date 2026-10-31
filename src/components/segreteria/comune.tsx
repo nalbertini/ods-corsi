@@ -815,9 +815,9 @@ export function FiltroMenu({ id, nome, value, opzioni, onChange }: { id: string;
 
 /**
  * Le azioni secondarie di una schermata in un menu solo («Altre azioni ▾»). Si chiude con un clic su una voce,
- * fuori dal menu o con Esc. `lista` dà l'elemento dove altri componenti possono portare le loro voci (createPortal).
+ * fuori dal menu o con Esc.
  */
-export function MenuAzioni({ etichetta, children, onLista }: { etichetta: string; children: ReactNode; onLista?: (el: HTMLElement | null) => void }) {
+export function MenuAzioni({ etichetta, children }: { etichetta: string; children: ReactNode }) {
   const dettagli = useRef<HTMLDetailsElement>(null)
   useEffect(() => {
     const chiudi = () => { if (dettagli.current) dettagli.current.open = false }
@@ -836,7 +836,7 @@ export function MenuAzioni({ etichetta, children, onLista }: { etichetta: string
   return (
     <details ref={dettagli} className="sg-menu-azioni" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.open = false }}>
       <summary className="sg-btn sg-btn-linea">{etichetta} <span aria-hidden="true">▾</span></summary>
-      <div className="sg-menu-azioni-lista" role="menu" ref={onLista}>{children}</div>
+      <div className="sg-menu-azioni-lista" role="menu">{children}</div>
     </details>
   )
 }

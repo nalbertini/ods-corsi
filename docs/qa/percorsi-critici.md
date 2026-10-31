@@ -42,7 +42,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Satispay dal modulo di iscrizione | genitore, segreteria, amministrazione | importo diverso dal listino, pagato perso o doppio | `prova:satispay`, `prova:edge`, `satispay.sql` | sì |
 | Satispay: prima paghi, poi mandi | genitore, segreteria, amministrazione | soldi presi e richiesta che non arriva | `prova:satispay`, `satispay.sql` | sì |
 | Carta dal modulo di iscrizione (PayPal) | genitore, segreteria, amministrazione | soldi senza richiesta, pagato due volte, importo sbagliato, dati della carta | `prova:pagamento-carta`, `prova:paypal-cattura`, `prova:satispay`, `prova:csp`, `prova:contabilita`, `carta.sql`, `satispay.sql`, `contabilita.sql` | sì |
-| Scarico automatico Satispay in CONTABILITÀ | amministrazione, segreteria | incasso nella cassa sbagliata, doppio o perso | `prova:satispay-scarico`, `prova:importazioni`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:segreteria`, `satispay-scarico.sql`, `importazioni.sql`, `116-satispay-separato.sql`, `avvisi-scarico-satispay.sql`, `update-con-where.sql` | sì |
+| Satispay: chi ha pagato, l'incasso è il versamento | amministrazione, segreteria | incasso contato due volte, pagamento non riconosciuto che nessuno vede | `prova:satispay-scarico`, `prova:suggerimento-movimento`, `prova:importazioni`, `prova:importa-banca`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:pagamenti`, `prova:segreteria`, `satispay-scarico.sql`, `importazioni.sql`, `116-satispay-separato.sql`, `avvisi-scarico-satispay.sql`, `chiusura-cassa.sql`, `contabilita.sql`, `update-con-where.sql` | sì |
 | Tessere | segreteria | non tesserato che frequenta, tessera alla persona sbagliata | `prova:tessere`, `prova:cosa-manca`, `prova:indirizzi`, `prova:filtri-iscritti`, `prova:menu`, `tessere.sql` | sì |
 | Ordini di vestiario | genitore, segreteria | ordine perso, totale sbagliato | `prova:vestiario`, `vestiario.sql`, `rls.sql` | sì |
 | Gare: chi ci va, certificato | segreteria, istruttore, iscritto | certificato scaduto alla gara visto come valido; atleta sbagliato | `prova:gare`, `gare.sql` | sì, da fare |
@@ -117,8 +117,6 @@ Regole che si possono rompere senza che una prova cada. Si toglie la riga
 quando arriva la prova.
 
 - Annuale a rate: il tetto di 3 rate (`troppe`) si dice ma non blocca l'emissione, e `emetti_ricevuta` non ha la regola; nessuna prova SQL.
-- **GRAVE** — Stesso movimento a mano per un pagamento Satispay e per una riga
-  della banca: nessuna prova lo impedisce, né in app né nel database.
 - Quadratura: `revoke` su `saldo_banca_chi_verifica()` (123) senza prova: nessun
   controllo che anon e authenticated non abbiano EXECUTE (DA FARE).
 - COMPENSI (`Compensi.tsx`): il doppio clic su «C'era», «Non c'era» e «Segna
@@ -153,7 +151,9 @@ quando arriva la prova.
 - Ricerca: Esc di `useDialogo`; un corso disattivato (`c.attivo`) nei
   risultati.
 - Vestiario: la metà Supabase (`vestiarioDati.ts`).
-- Scarico Satispay: i casi DA DECIDERE e `statoScarico`.
+- Chi ha pagato (IMPORTAZIONI): la tabella, il tasto «Non è questo» e il tasto
+  che apre la vista stanno nel `.tsx`; le scelte e i testi hanno le loro prove,
+  il clic no. Solo collaudo a mano.
 - `banca_segna_coperti`: la stessa chiave con un altro `conId` non si
   aggiorna (`on conflict do nothing`), e nessuna prova lo tiene.
 - Listino: `saldoEntro`, e `some` al posto di `every` sull'annuale.
