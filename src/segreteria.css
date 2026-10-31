@@ -1284,13 +1284,17 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-schede-impostazioni > button { gap: 8px; }
 .sg-schede-impostazioni svg { flex: none; }
 
-/* «Importa dalla banca»: una riga del file ha stato, data, testo e importo; la voce già presente sta sotto il testo. */
-.sg-banca-riga { display: grid; grid-template-columns: 150px 96px minmax(0, 1fr) 120px; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
-.sg-banca-testa { padding: 6px 0; border-bottom: 2px solid var(--text); }
-.sg-banca-voce { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; padding: 8px 8px 8px 12px; background: var(--surface-2); border-left: 4px solid var(--dim); }
-@media (max-width: 767px) {
+/* «Importa dalla banca»: una riga del file ha stato, data, testo, tipologia, persona e importo; la voce già presente prende il posto di tipologia e persona. */
+.sg-banca-riga { display: grid; grid-template-columns: 150px 90px minmax(160px, 1fr) 200px 220px 104px; gap: 16px; align-items: center; min-height: 76px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+.sg-banca-testa { min-height: 0; padding: 6px 0; border-bottom: 2px solid var(--text); }
+.sg-banca-oltre { grid-column: span 2; }
+.sg-banca-aperta { grid-column: 1 / -1; }
+/* Col menu accanto, sotto i 1400px il testo della banca non ci sta: la riga va in colonna. */
+@media (max-width: 1399px) {
   .sg-banca-testa { display: none; }
-  .sg-banca-riga { grid-template-columns: auto minmax(0, 1fr) auto; }
+  /* Lo stato da solo in alto («DA CONTROLLARE» è lungo), sotto data e importo, poi il resto. */
+  .sg-banca-riga { grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; }
+  .sg-banca-riga > :first-child { grid-column: 1 / -1; justify-self: start; }
   .sg-banca-riga > :nth-child(2) { text-align: left; }
-  .sg-banca-riga > :nth-child(3) { grid-column: 1 / -1; order: 3; }
+  .sg-banca-riga > :not(:nth-child(-n+2)):not(.sg-banca-importo) { grid-column: 1 / -1; order: 3; }
 }

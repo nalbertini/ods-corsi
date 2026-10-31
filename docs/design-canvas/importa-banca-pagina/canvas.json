@@ -1,0 +1,41 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Importa dalla banca · pagina intera"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · il popup attuale (confronto)",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Pagina.dc.html",
+   "title": "Proposta · pagina intera, segno, tipologia e persona",
+   "x": 0,
+   "y": 1200,
+   "page": "page-1"
+  },
+  {
+   "file": "Telefono.dc.html",
+   "title": "Proposta · la riga a 390px",
+   "x": 1520,
+   "y": 1200,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1440,
+   "text": "Importa dalla banca in una pagina intera: segno, tipologia e persona per riga"
+  }
+ ]
+}
