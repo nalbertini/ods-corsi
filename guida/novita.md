@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.229.2 — 31 ottobre 2026
+
+### Risolto
+
+- Un mese verificato col conto della banca torna da verificare se cambia qualcosa prima
+
 ## 0.229.1 — 31 ottobre 2026
 
 ### Risolto
