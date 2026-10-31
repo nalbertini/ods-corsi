@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.230.4 — 31 ottobre 2026
+
+### Risolto
+
+- In CONTABILITÀ non compaiono più Satispay e Carta a saldo zero
+
 ## 0.230.3 — 31 ottobre 2026
 
 ### Risolto
