@@ -201,6 +201,10 @@ far tornare.
 La cassa **Satispay** è chiusa: non prende movimenti nuovi, né giroconti. Quel che c'era
 dentro resta visibile, e si annulla come ogni movimento.
 
+Nei saldi in cima a CONTABILITÀ le casse **Satispay** e **Carta** non compaiono finché sono
+a zero: i loro soldi sono sul Conto Corrente. Se dentro c'è qualcosa, tornano, così il
+**Totale** si spiega.
+
 Chi ha pagato con Satispay (nome, importo, giorno, se l'app lo riconosce fra gli iscritti)
 lo dice lo scarico, ogni notte, in [IMPORTAZIONI → Chi ha pagato](importazioni.md#chi-ha-pagato).
 Se lo scarico non riesce arriva un'email agli indirizzi degli avvisi (IMPOSTAZIONI → GLI

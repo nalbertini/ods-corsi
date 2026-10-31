@@ -50,6 +50,7 @@ import {
   serveConfermaDifferenza,
   SOGLIA_DIFFERENZA,
   totaleResidui,
+  casseDeiSaldi,
   type Cassa,
   type ChiusuraCassa,
   type FiltriElenco,
@@ -435,7 +436,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
         azioni,
       )}
       <div className="sg-saldi" role="group" aria-label="Saldi delle casse">
-        {casse.map((c) => {
+        {casseDeiSaldi(casse, conti).map((c) => {
           const r = conti.find((x) => x.cassaId === c.id)
           return <Saldo key={c.id} nome={c.nome} icona={iconaCassa(c.nome)} valore={soldiConSegno(r?.residuo ?? 0)} sotto={[`entrate ${soldi(r?.entrate ?? 0)}`, `uscite ${soldi(r?.uscite ?? 0)}`]} />
         })}
