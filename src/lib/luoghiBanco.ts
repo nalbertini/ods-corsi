@@ -53,6 +53,7 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
       { voce: 'statistiche', nome: 'STATISTICHE' },
       { voce: 'segnalazioni', nome: 'SEGNALAZIONI' },
       { voce: 'sito', nome: 'SITO' },
+      { voce: 'verbali', nome: 'VERBALI' },
       { voce: 'regole', nome: 'IMPOSTAZIONI' },
     ],
   },
@@ -83,6 +84,7 @@ const FRASI_PALESTRA: Partial<Record<Voce, string>> = {
   statistiche: 'Come va la palestra, mese per mese: chi viene, quando, in quali corsi, quanto entra.',
   segnalazioni: 'Cosa non va nell’app o cosa serve: si scrive qui, la risposta arriva sotto.',
   sito: 'Le pagine del sito della palestra, il menu, il footer e le immagini.',
+  verbali: 'Le riunioni dei soci e del direttivo: si scrivono, si firmano e si ritrovano per anno e argomento.',
   regole: 'Le scelte che spettano alla palestra, non al programma.',
 }
 

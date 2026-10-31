@@ -108,6 +108,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | DAL SITO ALLE RICHIESTE in STATISTICHE | segreteria | numero sbagliato in silenzio | `prova:fila-sito` | no |
 | Avvisi per email alla segreteria | segreteria | richiesta o pagamento che non si vede arrivare | `prova:avvisi-segreteria`, `prova:cornice-mail`, `prova:ricevute-email`, `avvisi-segreteria.sql` | sì |
 | COME SI PAGA in REGOLE | segreteria, chi si iscrive, iscritto | metodo spento ancora offerto, o pagamento fatto che sparisce | `prova:metodi-pagamento`, `prova:impostazioni`, `prova:edge`, `metodi-pagamento.sql` | sì, da fare |
+| Verbali delle riunioni (firma, rettifica, PDF) | segreteria, direttivo | verbale firmato cambiato, PDF perso, numero doppio, dati visti da chi non deve | `prova:verbali`, `verbali.sql` | sì, da fare |
 | Sollecito su WhatsApp | segreteria, famiglia | importo sbagliato chiesto, messaggio al minore | `prova:scheda-iscritto`, `prova:sollecito`, `prova:filtri-iscritti`, `solleciti.sql` | sì |
 
 ## Scoperti

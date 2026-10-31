@@ -38,10 +38,10 @@ ok('titoli e voci, nell\'ordine', Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.t
   ['Iscritti e soldi', [['iscritti', 'Iscritti']]],
   ['Corsi e orari', [['settimana', 'Settimana'], ['corsi', 'Corsi'], ['gare', 'Gare'], ['listino', 'Listino']]],
   ['Istruttori', [['istruttori', 'Presenze istruttori'], ['compensi', 'Compensi'], ['personale', 'Istruttori e accessi']]],
-  ['Il resto', [['statistiche', 'Statistiche'], ['vestiario', 'Vestiario'], ['segnalazioni', 'Segnalazioni'], ['sito', 'Sito']]],
+  ['Il resto', [['statistiche', 'Statistiche'], ['vestiario', 'Vestiario'], ['segnalazioni', 'Segnalazioni'], ['sito', 'Sito'], ['verbali', 'Verbali']]],
 ])
-const ID16 = 'dafare settimana richieste presenze iscritti corsi gare istruttori compensi personale statistiche listino vestiario segnalazioni sito'.split(' ')
-ok('le 15 voci (senza TESSERE e PAGAMENTI, unite in ISCRITTI e CONTABILITÀ) ci sono, una volta sola',
+const ID16 = 'dafare settimana richieste presenze iscritti corsi gare istruttori compensi personale statistiche listino vestiario segnalazioni sito verbali'.split(' ')
+ok('le 16 voci (senza TESSERE e PAGAMENTI, unite in ISCRITTI e CONTABILITÀ) ci sono, una volta sola',
   Array.isArray(GRUPPI) ? GRUPPI.flatMap((g) => g.voci.map(([id]) => id)).sort() : GRUPPI, [...ID16].sort())
 ok('solo «Il resto» è secondario',
   Array.isArray(GRUPPI) ? GRUPPI.filter((g) => g.secondario === true).map((g) => g.titolo) : GRUPPI, ['Il resto'])
@@ -118,7 +118,7 @@ ok('LUOGHI: i cinque luoghi con le loro voci', (luoghi.LUOGHI ?? []).map((l) => 
   ['persone', ['iscritti', 'richieste', 'istruttori', 'compensi', 'personale']],
   ['corsi', ['corsi', 'gare']],
   ['soldi', ['contabilita', 'importazioni', 'listino', 'vestiario']],
-  ['palestra', ['statistiche', 'segnalazioni', 'sito', 'regole']],
+  ['palestra', ['statistiche', 'segnalazioni', 'sito', 'verbali', 'regole']],
 ])
 
 console.log('\nLe schede di PRESENZE sotto il titolo')

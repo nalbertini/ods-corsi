@@ -4,9 +4,9 @@
 
 Le scelte che spettano alla palestra, non al programma.
 
-La pagina ha nove schede, una per gruppo, ognuna con la sua icona davanti al nome, e se ne
+La pagina ha dieci schede, una per gruppo, ognuna con la sua icona davanti al nome, e se ne
 vede una alla volta: **LA STAGIONE** (quella che si apre), **LE SALE E I TABLET**, **GLI
-ESERCIZI**, **LE RICEVUTE**, **COME SI PAGA**, **GLI AVVISI**, **DATI E
+ESERCIZI**, **LE RICEVUTE**, **COME SI PAGA**, **GLI AVVISI**, **I VERBALI**, **DATI E
 PRIVACY**, **IMPORTA** (la [guida](importa.md)) e, in fondo, **QUESTO COMPUTER**. Le spiegazioni
 lunghe di un riquadro stanno dietro **COME FUNZIONA?**: si tocca per aprirle; i numeri e gli
 avvisi restano sempre in vista.
@@ -162,6 +162,12 @@ Nell'email solo nomi, corsi e importi: mai note, codice fiscale, data di
 nascita, documenti. Al più 50 avvisi al giorno, perché la casella manda anche
 le ricevute alle famiglie: quelli in più non partono, e
 [Richieste online](richieste.md) lo dice.
+
+## I verbali
+
+Qui si sceglie chi può fare da **segretario** nei [verbali](verbali.md): si spuntano le
+persone dell'elenco, e solo loro compaiono nella scelta del segretario quando si scrive un
+verbale. Ogni tocco salva subito, senza un tasto.
 
 ## Importa
 

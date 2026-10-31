@@ -610,6 +610,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%chiave_pag%')),
   ('126-metodi-pagamento.sql', 'i metodi di pagamento che la segreteria spegne (REGOLE → COME SI PAGA)',
     exists (select 1 from information_schema.columns where table_name = 'impostazioni' and column_name = 'metodi_spenti')
-    and to_regprocedure('public.metodi_spenti()') is not null)
+    and to_regprocedure('public.metodi_spenti()') is not null),
+  ('127-verbali.sql', 'i verbali delle riunioni (VERBALI)',
+    to_regclass('public.verbali') is not null
+    and to_regprocedure('public.firma_verbale(uuid,date)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

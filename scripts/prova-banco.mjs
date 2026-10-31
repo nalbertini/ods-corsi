@@ -133,7 +133,7 @@ titolo('luoghi del Banco')
   ok('CORSI', voci('corsi'), [['corsi', 'CORSI'], ['gare', 'GARE']])
   // CONTABILITÀ è il primo: l'estratto conto è dove si apre di più.
   ok('SOLDI', voci('soldi'), [['contabilita', 'CONTABILITÀ'], ['importazioni', 'IMPORTAZIONI'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
-  ok('PALESTRA', voci('palestra'), [['statistiche', 'STATISTICHE'], ['segnalazioni', 'SEGNALAZIONI'], ['sito', 'SITO'], ['regole', 'IMPOSTAZIONI']])
+  ok('PALESTRA', voci('palestra'), [['statistiche', 'STATISTICHE'], ['segnalazioni', 'SEGNALAZIONI'], ['sito', 'SITO'], ['verbali', 'VERBALI'], ['regole', 'IMPOSTAZIONI']])
 
   // Chi ha solo l'amministrazione vede solo i luoghi con le sue voci, e dentro solo quelle.
   const nomi = (luoghi) => luoghi.map((l) => [l.id, l.voci.map((v) => v.voce)])
@@ -167,10 +167,10 @@ titolo('luoghi del Banco')
   // Le tessere di LA PALESTRA nascono dalle voci del luogo: se ne cambia una, cambiano insieme.
   const tessere = (n) => m.luoghi.tesserePalestra?.(n) ?? []
   ok('le tessere sono le voci di PALESTRA, in ordine', tessere(0).map((t) => [t.voce, t.titolo]), voci('palestra'))
-  ok('ogni tessera ha la sua frase', tessere(0).map((t) => t.frase.length > 0), [true, true, true, true])
-  ok('nessuna segnalazione da rispondere: nessuno stato', tessere(0).map((t) => t.stato ?? null), [null, null, null, null])
-  ok('1 da rispondere', tessere(1).map((t) => t.stato ?? null), [null, '1 da rispondere', null, null])
-  ok('3 da rispondere, solo su SEGNALAZIONI', tessere(3).map((t) => t.stato ?? null), [null, '3 da rispondere', null, null])
+  ok('ogni tessera ha la sua frase', tessere(0).map((t) => t.frase.length > 0), [true, true, true, true, true])
+  ok('nessuna segnalazione da rispondere: nessuno stato', tessere(0).map((t) => t.stato ?? null), [null, null, null, null, null])
+  ok('1 da rispondere', tessere(1).map((t) => t.stato ?? null), [null, '1 da rispondere', null, null, null])
+  ok('3 da rispondere, solo su SEGNALAZIONI', tessere(3).map((t) => t.stato ?? null), [null, '3 da rispondere', null, null, null])
   ok('segnalate sta in OGGI (è una scheda di PRESENZE)', luogoDi('segnalate'), 'oggi')
   ok('voceInLista: segnalate evidenzia presenze', voceInLista('segnalate'), 'presenze')
   for (const v of VOCI) if (v !== 'segnalate') ok(`voceInLista(${v}) è se stessa`, voceInLista(v), v)

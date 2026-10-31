@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: SEGNA COME FIRMATO (si carica il PDF della scansione firmata; da lì il verbale non si cambia più) e SOSTITUISCI IL PDF FIRMATO (per quando si è caricato quello sbagliato: serve il motivo, il PDF vecchio resta nella storia). Gli avvisi rossi non bloccano: si firma dopo aver spuntato «Ho controllato, è proprio così». -->
+<div style="display:flex;gap:32px;align-items:flex-start;padding:28px;width:1480px;min-height:900px">
+<div style="display:flex;flex-direction:column;gap:14px;width:720px;padding:28px;background:#ffffff;border:1px solid #cfe6f4;border-radius:6px">
+  <span style="font-size:12px;font-weight:700;letter-spacing:0.2em;color:#8f6a00">PROPOSTA · SEGNA COME FIRMATO</span>
+  <h2 style="margin:0;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;letter-spacing:0.04em;line-height:1;font-size:28px">SEGNA n.2-2026 COME FIRMATO</h2>
+  <span style="font-size:14px;line-height:1.4;color:#46606f">Dopo averlo segnato, il testo e i dati non si cambiano più. Si può solo scrivere una rettifica o sostituire il PDF.</span>
+  <dc-import name="CaricaFile" tema="sito" label="PDF DEL VERBALE FIRMATO" file="verbale-2-2026-firmato.pdf" hint-size="100%,72px"></dc-import>
+  <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="FIRMATO IL" valore="30/03/2026"  hint-size="100%,72px"></dc-import>
+  <span style="font-size:14px;line-height:1.4;color:#46606f">Prima di firmare, controlla:</span>
+  <div style="display:flex;gap:10px;padding:12px 14px;border:1px solid #b81d1d;border-left:6px solid #b81d1d;border-radius:6px;background:#ffffff"><span style="font-size:15px;line-height:1.4;color:#b81d1d;font-weight:600">I presenti con le deleghe (124) sono più degli aventi diritto (90).</span></div>
+  <div style="display:flex;gap:10px;padding:12px 14px;border:1px solid #b81d1d;border-left:6px solid #b81d1d;border-radius:6px;background:#ffffff"><span style="font-size:15px;line-height:1.4;color:#b81d1d;font-weight:600">Ci sono due delibere sul bilancio 2025.</span></div>
+  <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="spunta" etichetta="Ho controllato, è proprio così" scelto="true" hint-size="100%,56px"></dc-import>
+  <div style="display:flex;gap:8px;justify-content:flex-end"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Lascia stare" hint-size="150px,56px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="principale" label="Segna come firmato" hint-size="230px,56px"></dc-import></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;width:680px;padding:28px;background:#ffffff;border:1px solid #cfe6f4;border-radius:6px">
+  <span style="font-size:12px;font-weight:700;letter-spacing:0.2em;color:#8f6a00">PROPOSTA · SOSTITUISCI IL PDF FIRMATO</span>
+  <h2 style="margin:0;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;letter-spacing:0.04em;line-height:1;font-size:28px">SOSTITUISCI IL PDF DI n.2-2026</h2>
+  <span style="font-size:14px;line-height:1.4;color:#46606f">Il verbale resta firmato. Il PDF che c'è adesso (caricato il 30 marzo 2026) non si perde: resta nella storia, e non è più quello che si apre.</span>
+  <dc-import name="CaricaFile" tema="sito" label="NUOVO PDF FIRMATO" file="verbale-2-2026-scansione-buona.pdf" hint-size="100%,72px"></dc-import>
+  <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="PERCHÉ LO SOSTITUISCI · OBBLIGATORIO" valore="Scansione storta, mancava la seconda pagina" tipo="area" hint-size="100%,110px"></dc-import>
+  <div style="display:flex;gap:8px;justify-content:flex-end"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Lascia stare" hint-size="150px,56px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="principale" label="Sostituisci il PDF" hint-size="230px,56px"></dc-import></div>
+  <span style="font-size:12px;font-weight:700;letter-spacing:0.2em;color:#8f6a00">PROPOSTA · LE PAROLE, SPIEGATE SULLA SCHERMATA</span>
+  <div style="display:flex;flex-direction:column;gap:10px;padding:16px;background:#ffffff;border:1px solid #cfe6f4;border-radius:6px"><span style="font-size:12px;font-weight:700;letter-spacing:0.2em;color:#46606f">CHE COSA VUOL DIRE</span><div style="display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.4"><span><b>Aventi diritto</b>: i soci maggiorenni che possono votare. Scrivi il numero come sul foglio firme.</span><span><b>Presa d'atto</b>: i soci vengono informati, senza voto.</span><span><b>Come si è votato</b>: scegli all'unanimità, a maggioranza, alzata di mano, per scrutinio, oppure scrivi tu.</span><span><b>Copia con i nomi coperti</b>: la versione da dare fuori, senza i dati delle persone.</span><span><b>Rettificato</b>: il verbale resta firmato e ha sopra una correzione datata; si vede nell'elenco col segno RETTIFICATO.</span></div></div>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1480,"height":900}}'>class Component extends DCLogic { renderVals() { return {}; } }</script>
+</body>
+</html>

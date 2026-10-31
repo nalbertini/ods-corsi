@@ -72,6 +72,7 @@ export const GRUPPI_MENU: GruppoMenu[] = [
       ['vestiario', 'Vestiario'],
       ['segnalazioni', 'Segnalazioni'],
       ['sito', 'Sito'],
+      ['verbali', 'Verbali'],
     ],
   },
 ]
@@ -191,5 +192,6 @@ const GUIDE: Record<Exclude<Voce, 'contabilita' | 'importazioni'>, string> = {
   regole: 'segreteria/regole',
   segnalazioni: 'segreteria/segnalazioni',
   sito: 'segreteria/sito',
+  verbali: 'segreteria/verbali',
   palestra: 'segreteria/il-banco',
 }
