@@ -1582,6 +1582,8 @@ export function statoPerElenco(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'p
     : t.tono !== 'verde' ? { tono: t.tono, parola: t.inElenco ?? t.parola }
     // Senza la data di nascita non si sa se fra poco servirà: da guardare, anche se è valido.
     : !p.natoIl ? { tono: 'giallo', parola: 'Senza data' }
+    // Il file del vecchio programma è da archiviare: lo dice la colonna, non un tag sotto il nome.
+    : certificatoDaStampare(p.certificato) ? { tono: 'giallo', parola: 'Da archiviare' }
     : { tono: 'verde', parola: 'In regola' }
   const come = pagamentoDi(p, oggi)
   const quota: Segno = { tono: timbroQuota(come).tono, parola: PAROLA_QUOTA[come.come] }

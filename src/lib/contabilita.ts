@@ -620,13 +620,16 @@ export const tipoMovimento = (r: Pick<RigaMovimento, 'origine' | 'tipo'>): { nom
   : r.origine !== 'movimento' ? { nome: 'Incasso iscritto', icona: 'tessera' }
   : { nome: r.tipo === 'entrata' ? 'Entrata' : 'Uscita', icona: 'banconota' }
 
-/** Da dove viene una riga, per il tag nell'elenco e nel movimento aperto: tutti i movimenti si correggono allo stesso modo, qualunque sia l'origine. */
-export const originiMovimento = (r: Pick<RigaMovimento, 'origine' | 'origineImport' | 'satispayId' | 'dallaChat'>): string =>
+/**
+ * Da dove viene una riga, per la nota nell'elenco e nel movimento aperto: tutti i movimenti si correggono allo stesso modo, qualunque sia l'origine.
+ * `null` per quel che nasce qui (incassi degli iscritti, movimenti scritti a mano): è quasi ogni riga, e dirlo ogni volta era rumore.
+ */
+export const originiMovimento = (r: Pick<RigaMovimento, 'origine' | 'origineImport' | 'satispayId' | 'dallaChat'>): string | null =>
   r.origineImport?.startsWith('banca:') ? 'Dalla banca'
   : r.origineImport?.startsWith('prima-nota:') ? 'Dallo storico'
   : r.satispayId ? 'Da Satispay'
   : r.dallaChat ? 'Dalla chat'
-  : 'Dal gestionale'
+  : null
 
 /** Un'uscita dalla banca che ha ancora solo la scritta grezza («Distinta: …»): del destinatario non si sa niente. */
 export const mancaDestinatario = (r: Pick<RigaMovimento, 'origine' | 'tipo' | 'origineImport' | 'satispayId' | 'descrizione'>): boolean =>

@@ -14,7 +14,7 @@ import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaInizial
 import { ICONE_SCHEDA_ISCRITTO } from '../Icons'
 import { ImportaTessere, TessereDellaPersona } from './Tessere'
 import { lette } from '../../lib/letture'
-import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni, messaggio, Proposta, Riga, SchedaPiena, Stato, Testa, useAvviso, useCarica, useOrdina, Tasto } from './comune'
+import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni, messaggio, Proposta, Riga, SchedaPiena, Stato, SegnoStato, Testa, useAvviso, useCarica, useOrdina, Tasto } from './comune'
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
 import type { Ricercata } from '../../lib/ricerca'
@@ -70,11 +70,7 @@ function SegnoElenco({ s }: { s: Segno }) {
         ✓
       </span>
     )
-  return (
-    <span className="sg-segno-elenco" data-tono={s.tono} title={s.parola}>
-      <span className="sg-segno-parola">{s.parola}</span>
-    </span>
-  )
+  return <SegnoStato tono={s.tono} parola={s.parola} />
 }
 
 /** Sul telefono le colonne sono strette: CERTIFICATO e QUOTA diventano un'icona, 30 GIORNI «30 GG». */
@@ -444,7 +440,7 @@ export function Iscritti({
           titolo="ISCRITTI"
           // Senza certificato e da pagare li dicono i chip, coi loro conti.
           sotto={corsiScaduti ? `${nScaduti === 1 ? 'Un iscritto ha' : `${nScaduti} iscritti hanno`} un corso scaduto o pagato in parte.` : minorenni ? sottoMinorenni : `${attiveOra.length} persone attive${inScadenza ? ` · ${inScadenza === 1 ? 'un certificato' : `${inScadenza} certificati`} in scadenza` : ''}.${
-            nFilePrima === 1 ? ' Un certificato non archiviato.' : nFilePrima ? ` ${nFilePrima} certificati non archiviati.` : ''
+            nFilePrima === 1 ? ' Un certificato da archiviare.' : nFilePrima ? ` ${nFilePrima} certificati da archiviare.` : ''
           }`}
         >
           {conTessereLette && (
@@ -452,9 +448,9 @@ export function Iscritti({
               Importa tessere
             </Tasto>
           )}
-          <button type="button" className="sg-btn sg-btn-pieno" onClick={onNuovo}>
-            + Nuovo iscritto
-          </button>
+          <Tasto tono="pieno" icona="aggiungi" onClick={onNuovo}>
+            Nuovo iscritto
+          </Tasto>
         </Testa>
 
         {/* Filtri ed elenco compaiono insieme, a letture finite: se arrivano uno alla volta, ognuno sposta l'altro. */}
@@ -553,6 +549,7 @@ export function Iscritti({
         ) : (
         <>
         {sollecitare && perSollecito.guaio && <Guaio titolo="WHATSAPP" testo={`La colonna dei solleciti non si è letta: ${perSollecito.guaio}`} />}
+        <div className="sg-elenco">
         <div role="table" aria-label="Iscritti" className="sg-tabella">
           <div role="row" className="sg-lista-testa sg-riga-iscritto sg-riga-iscritti" data-sollecito={sollecitare || undefined}>
             {colonna('nome', 'NOME', { icona: 'persona' })}
@@ -593,8 +590,8 @@ export function Iscritti({
                       {p.cognome} {p.nome}
                     </button>
                     {minorenneP(p) && <SegnoIscritto icona="bambino" parola="Minorenne" />}
-                    {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>{TESTI_FILTRI['file-di-prima']}</span>}
-                    {p.genitoreNonIscritto && <span className="num sg-tag" style={{ marginLeft: 8 }}>Genitore non iscritto</span>}
+                    {/* «Da archiviare» lo dice la colonna CERTIFICATO: qui resta solo chi non è un iscritto. */}
+                    {p.genitoreNonIscritto && <span style={{ marginLeft: 8 }}><SegnoStato tono="nota" parola="Genitore non iscritto" /></span>}
                     {/* Sotto i 1000 px la colonna FAMIGLIA non c'è: la famiglia va sotto il nome. */}
                     {fam && (
                       <span className="sg-sotto-nome">
@@ -639,11 +636,12 @@ export function Iscritti({
               )
             })}
           </div>
-          <span className="sg-sotto" style={{ fontSize: 12, padding: '10px 14px 0' }}>
+          <span className="sg-sotto" style={{ fontSize: 12, padding: '10px 14px' }}>
             {trovati.length === tutti.length ? `${tutti.length} in elenco` : `${trovati.length} di ${tutti.length}`}
             {' · '}
             30 GIORNI: presenze su lezioni avute, senza i giustificati
           </span>
+        </div>
         </div>
         </>
         )}
@@ -884,7 +882,7 @@ function Scheda({
             <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
               {`${p.cognome} ${p.nome}`.toUpperCase()}
             </h2>
-            {p.genitoreNonIscritto && <span className="num sg-tag">Genitore non iscritto</span>}
+            {p.genitoreNonIscritto && <SegnoStato tono="nota" parola="Genitore non iscritto" />}
           </div>
           <span style={{ fontSize: 13, color: 'var(--dim)' }}>
             {soloGenitore
@@ -1676,7 +1674,7 @@ function NucleoFamiliare({
           dettaglio={`È nel nucleo di ${titolare ? `${titolare.cognome} ${titolare.nome}` : 'un genitore'}, genitore non iscritto. Ora può avere un nucleo suo o restare qui: per le ricevute nuove, chiedi a chi intestarle.`}
           bordo="2px solid var(--line)"
         >
-          <span className="num sg-tag" data-tipo="aspetta">18 anni</span>
+          <SegnoStato tono="giallo" parola="18 anni" />
         </Proposta>
       )}
       {fratelli.map((f) => (
@@ -2031,7 +2029,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
       </Stato>
       {x.senzaNascita && <span className="sg-sotto">{x.senzaNascita}</span>}
       {x.cancellaIl && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Il file si cancella da solo il {dataLunga(x.cancellaIl)}, 30 giorni dopo la scadenza.</span>}
-      {c.vecchio && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Certificato non archiviato (caricato prima della nuova gestione): si apre con APRI come gli altri.</span>}
+      {c.vecchio && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Certificato da archiviare (caricato prima della nuova gestione): si apre con APRI come gli altri.</span>}
 
       {c.inAttesaIl && !gesto && (
         <div className="stack" style={{ gap: 10, padding: 14, background: 'var(--surface)', border: '2px solid var(--line)', borderLeft: '4px solid var(--giallo)' }}>

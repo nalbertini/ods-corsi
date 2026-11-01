@@ -521,6 +521,9 @@ console.log('\n7. la sessione sul dispositivo: la chiave e le tre sessioni di pr
   ok('senza data di nascita e certificato in scadenza: resta «Scade il gg/mm», che dice di più', stato(persona({ natoIl: undefined, certificato: { scade: fra(10), conFile: true } })).certificato, segno('giallo', `Scade il ${corta(fra(10))}`))
   ok('senza data di nascita e certificato che manca: vince il rosso «Manca»', stato(persona({ natoIl: undefined, certificato: { conFile: false } })).certificato, segno('rosso', 'Manca'))
   ok('senza data di nascita e certificato scaduto: vince il rosso «Scaduto»', stato(persona({ natoIl: undefined, certificato: { scade: fra(-1), conFile: false } })).certificato, segno('rosso', 'Scaduto'))
+  // Il file di prima va archiviato: è lo stato giallo della colonna, non più un tag sotto il nome che allunga la riga.
+  ok('valido col file di prima da archiviare: giallo «Da archiviare»', stato(persona({ certificato: { scade: fra(100), conFile: true, vecchio: true } })).certificato, segno('giallo', 'Da archiviare'))
+  ok('scaduto col file di prima: vince il rosso «Scaduto»', stato(persona({ certificato: { scade: fra(-1), conFile: true, vecchio: true } })).certificato, segno('rosso', 'Scaduto'))
 
   console.log('\nELENCO: la colonna QUOTA (la quota, poi la tessera)')
   ok('certificato valido, quota pagata, nessuna tessera: verde e verde', stato(persona()), { certificato: segno('verde', 'In regola'), quota: [segno('verde', 'In regola')] })

@@ -32,7 +32,7 @@ export const TESTI_FILTRI: Record<IdFiltro, string> = {
   'senza-tessera': 'Senza tessera',
   'senza-corso': 'Tesserati senza corso',
   'senza-documento': 'Senza documento',
-  'file-di-prima': 'Non archiviato',
+  'file-di-prima': 'Da archiviare',
   doppioni: 'Possibili doppioni',
   'pagato-prima': 'Pagato nel vecchio programma',
   'corsi-scaduti': 'Corsi scaduti',
