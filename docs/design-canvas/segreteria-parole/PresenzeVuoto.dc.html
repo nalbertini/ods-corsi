@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA, PRESENZE in un mese senza righe. Oggi «Scarica CSV» è spento e non dice niente. Il tasto resta spento al suo posto (la testata
+     non salta) e sotto, a destra, una riga 13px dim dice perché. Stessa cosa in STATISTICHE, che ha lo stesso tasto. Sopra: com'è oggi. -->
+<div style="display: flex; flex-direction: column; gap: 28px; width: 1100px; padding: 28px 36px">
+  <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #46606f">OGGI</div>
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+    <dc-import name="TestataPagina" titolo="PRESENZE" sotto="Chi si sta perdendo, quali appelli mancano, chi c'era lezione per lezione." link="Statistiche del mese" secondaria="" primaria="" hint-size="800px,60px"></dc-import>
+    <dc-import name="Bottone" label="Scarica CSV" icona="scarica" variante="linea" contesto="segreteria" alto="44px" disabled="{{ true }}" hint-size="auto,44px"></dc-import>
+  </div>
+  <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #46606f">PROPOSTA</div>
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+    <dc-import name="TestataPagina" titolo="PRESENZE" sotto="Chi si sta perdendo, quali appelli mancano, chi c'era lezione per lezione." link="Statistiche del mese" secondaria="" primaria="" hint-size="800px,60px"></dc-import>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px">
+      <dc-import name="Bottone" label="Scarica CSV" icona="scarica" variante="linea" contesto="segreteria" alto="44px" disabled="{{ true }}" hint-size="auto,44px"></dc-import>
+      <span style="font-size: 13px; color: #46606f; white-space: nowrap">Nessuna presenza a novembre: niente da scaricare.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

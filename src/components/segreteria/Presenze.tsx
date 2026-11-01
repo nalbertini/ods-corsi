@@ -5,7 +5,7 @@ import type { Destinazione, Voce } from './Segreteria'
 import { FiltroMenu, Guaio, SegnoStato, Testa, useCarica, Tasto } from './comune'
 import { Titoletto } from '../ds'
 import { Icona } from '../Icons'
-import { csvRegistro } from '../../lib/presenzeCsv'
+import { csvRegistro, nienteDaScaricare } from '../../lib/presenzeCsv'
 import { mesi } from '../../lib/ore'
 import { accorcia, chiSiStaPerdendo, conAppello, DI_FILA, GIORNI_RECENTI } from '../../lib/frequenza'
 
@@ -76,9 +76,13 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
           </>
         }
       >
-        <Tasto icona="scarica" disabled={!righe.length} onClick={() => scaricaCsv(righe, p.nome)}>
-          Scarica CSV
-        </Tasto>
+        {/* Spento, il tasto resta al suo posto e la riga sotto dice perché: così non si cerca il guasto. */}
+        <span className="sg-tasto-perche">
+          <Tasto icona="scarica" disabled={!righe.length} aria-describedby={righe.length ? undefined : 'csv-perche'} onClick={() => scaricaCsv(righe, p.nome)}>
+            Scarica CSV
+          </Tasto>
+          {!righe.length && <span id="csv-perche" className="sg-sotto">{nienteDaScaricare('presenze', p.nome, !!corso)}</span>}
+        </span>
       </Testa>
       {schede}
 

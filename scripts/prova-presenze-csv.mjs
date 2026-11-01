@@ -46,6 +46,17 @@ ok('l\'intestazione e una riga, col punto e virgola', righe([riga([p('Rossi', 'L
 ok('un nome che comincia per «=» non è una formula', righe([riga([p('Rossi', '=HYPERLINK("http://x";"clic")')])])[1].includes(';"\'=HYPERLINK'), true)
 ok('nemmeno per + - @', righe([riga([p('+1', '@x'), p('-cmd', 'a')])]).slice(1).map((x) => x.split(';').slice(5, 7)), [["'+1", "'@x"], ["'-cmd", 'a']])
 ok('una lezione annullata lo dice', righe([riga([p('Rossi', 'Luca', null)], 'annullata')])[1].endsWith(';lezione annullata'), true)
+console.log('\nScarica CSV spento: la riga sotto dice perché')
+{
+  // Il tasto resta, spento; la frase dice che il periodo scelto è vuoto, così non si cerca il guasto.
+  const perche = (...a) => (typeof m.nienteDaScaricare === 'function' ? m.nienteDaScaricare(...a) : 'manca nienteDaScaricare')
+  ok('un mese, tutti i corsi', perche('presenze', 'Novembre 2026', false), 'Nessuna presenza a novembre 2026: niente da scaricare.')
+  ok('un mese, un corso scelto', perche('presenze', 'Ottobre 2026', true), 'Nessuna presenza a ottobre 2026 per questo corso: niente da scaricare.')
+  ok('gli ultimi 30 giorni', perche('presenze', 'Ultimi 30 giorni', false), 'Nessuna presenza negli ultimi 30 giorni: niente da scaricare.')
+  ok('STATISTICHE, gli ultimi 3 mesi', perche('lezioni', 'Ultimi 3 mesi', false), 'Nessuna lezione negli ultimi 3 mesi: niente da scaricare.')
+  ok('STATISTICHE, da settembre, un corso', perche('lezioni', 'Da settembre', true), 'Nessuna lezione da settembre per questo corso: niente da scaricare.')
+}
+
 if (guai) {
   console.log(`\n${guai} da correggere`)
   process.exit(1)

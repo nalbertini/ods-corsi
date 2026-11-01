@@ -2013,10 +2013,16 @@ a.sg-voce { text-decoration: none; }
 .sg-testa { display: flex; align-items: flex-start; gap: 12px; flex-wrap: nowrap; }
 /* Le azioni stanno in un blocco a destra, in alto col titolo: non si stringono e non vanno a capo una per una. */
 .sg-testa-azioni { display: flex; align-items: flex-start; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+/* Un tasto spento della testata con la riga che dice perché, allineata a destra sotto il tasto. */
+.sg-tasto-perche { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.sg-tasto-perche .sg-sotto { margin: 0; font-size: 13px; white-space: nowrap; }
 .sg-testa .sg-btn { min-height: 44px; }
 @media (max-width: 1000px) {
   .sg-testa { flex-wrap: wrap; }
   .sg-testa-azioni { flex-basis: 100%; }
+  /* Le azioni passano sotto il titolo, a sinistra: la riga del perché le segue, e va a capo sul telefono. */
+  .sg-tasto-perche { align-items: flex-start; }
+  .sg-tasto-perche .sg-sotto { white-space: normal; }
 }
 .sg-titolo { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }
 /* Il titolo prende il fuoco solo per non perderlo (BUTTA I CAMBI): non si preme, niente contorno. */
@@ -2637,17 +2643,5 @@ label.sg-btn { cursor: pointer; }
 .sg-segno-elenco[data-tono='nota'] { color: var(--dim); font-weight: 400; }
 .sg-segno-elenco[data-tono='nota']::before { display: none; }
 .sg-segno-elenco[data-tono='spento'] { color: var(--dim); }
-/* Nell'elenco ISCRITTI sul telefono i segni sono compatti, ✕ rosso, … giallo, – nota: la forma dice lo stato anche senza il colore;
- * la parola resta per chi legge lo schermo, nel title e nella scheda. */
-@media (max-width: 767px) {
-  .sg-riga-iscritti .sg-segno-parola { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .sg-riga-iscritti .sg-segno-elenco { gap: 0; position: relative; }
-  .sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before, .sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before {
-    width: auto; height: auto; border-radius: 0; background: none; font-size: 15px; font-weight: 700; line-height: 1;
-  }
-  .sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before { content: '✕' / ''; color: var(--rosso-testo); }
-  .sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before { content: '…' / ''; color: var(--giallo-testo); }
-  .sg-riga-iscritti .sg-segno-elenco[data-tono='nota']::after { content: '–' / ''; }
-}
 /* Il link dentro una frase resta testo: l'eccezione «in linea» di WCAG 2.5.8. */
 .sg-sotto .sg-link { display: inline; min-height: 0; font-size: inherit; }

@@ -338,7 +338,7 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       n: conti.certificatiDaStampare,
       titolo: (n) => uno(n, TESTI_DA_FARE['file-di-prima'].singolare, TESTI_DA_FARE['file-di-prima'].plurale),
       sotto: 'Caricati nell’app prima della nuova gestione: si aprono dalla scheda come gli altri, e si cancellano da soli 30 giorni dopo la scadenza.',
-      aPosto: 'certificati non archiviati',
+      aPosto: 'certificati da archiviare',
       voce: 'iscritti',
       dove: { filtro: 'file-di-prima' },
     },
@@ -423,7 +423,7 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
             <span key={c.chiave}>
               {i > 0 && ' · '}
               <button type="button" className="sg-link" onClick={() => onVai(c.voce, c.dove)}>
-                {/* In mezzo alla frase: «18 certificati non archiviati», senza l'iniziale maiuscola del titolo di riga. */}
+                {/* In mezzo alla frase: «18 certificati da archiviare», senza l'iniziale maiuscola del titolo di riga. */}
                 {c.n} {c.titolo(c.n!).toLowerCase()}
               </button>
             </span>

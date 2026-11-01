@@ -271,4 +271,18 @@ ok('originiMovimento (lib/contabilita.ts) non ritorna «Dal gestionale»', /Dal 
   ok('Presenze: «Scarica CSV» sta nella testata', !!testa && /Scarica CSV/.test(testa.testo), true)
 }
 
+// --- Al telefono ISCRITTI dice certificato e quota a parole (segreteria-parole/) ---
+{
+  const tel = bloccoMedia('(max-width: 767px)')
+  ok('Iscritti al telefono: niente più ✕ … – al posto delle parole', /sg-riga-iscritti[^{]*\{[^}]*content:\s*'[✕…–]'/.test(tel), false)
+  ok('Iscritti al telefono: la parola del segno non si nasconde', /sg-riga-iscritti \.sg-segno-parola/.test(tel), false)
+  ok('Iscritti: le parole sotto il nome stanno in .sg-stato-telefono, fatte con paroleTelefono', [/className="sg-stato-telefono"/.test(pagine.Iscritti), /paroleTelefono\(/.test(pagine.Iscritti)], [true, true])
+  ok('.sg-stato-telefono si vede solo al telefono', [/display:\s*none/.test(regole('.sg-stato-telefono')), /\.sg-stato-telefono\s*\{[^}]*display:\s*flex/.test(tel)], [true, true])
+  ok('Iscritti al telefono: due colonne, NOME e 30 GG', /grid-template-columns:\s*minmax\(0, 1fr\) 64px;/.test(tel), true)
+  // Subito dopo il tasto, la riga del perché (il tag del tasto ha `=>` dentro: si parte dalla chiusura).
+  const dopoIlTasto = /Scarica CSV\s*<\/Tasto>\s*\{![a-z]+\.length && <span[^>]*>\{nienteDaScaricare\(/
+  ok('Presenze: sotto «Scarica CSV» spento c’è il perché', dopoIlTasto.test(pagine.Presenze), true)
+  ok('Statistiche: sotto «Scarica CSV» spento c’è il perché', dopoIlTasto.test(leggi(D + 'Statistiche.tsx')), true)
+}
+
 process.exit(fallite ? 1 : 0)

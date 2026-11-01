@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA A, ISCRITTI al telefono, copiata da PaginaTelefono.dc.html. Le due colonne strette (icona certificato, icona quota) spariscono:
+     sotto il nome, le parole intere di SegnoStato, con la cosa di cui parlano («Manca il certificato», «Quota da pagare»), perché qui non
+     c'è più la testata a dirlo. Se è tutto a posto, un solo «In regola» verde. La griglia diventa NOME | 30 GG; la riga si alza (da 50 a ~62px). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #eef5fa">
+  <dc-import name="Testata" luogo="GESTIONE" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 14px; padding: 20px 16px">
+    <dc-import name="TestataPagina" titolo="ISCRITTI" sotto="162 persone attive. 14 certificati da archiviare." secondaria="" primaria="" hint-size="100%,70px"></dc-import>
+    <div style="display: flex; align-items: center; height: 44px; padding: 0 14px; background: #fff; border: 2px solid #14709f; border-radius: 6px; font-size: 15px; color: #46606f">Cerca per nome o email</div>
+    <div style="display: flex; flex-direction: column; background: #fff; border: 1px solid #cfe6f4; border-radius: 6px; overflow: hidden">
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; padding: 12px 14px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #46606f"><span>NOME ⌃</span><span style="text-align: right">30 GG</span></div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid #e3eef6">
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Barbieri Alessandro</span>
+          <div style="display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px"><dc-import name="SegnoStato" parola="Certificato da archiviare" tono="giallo" hint-size="auto,22px"></dc-import></div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+          <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #0d2a3d">8/8</span>
+          <span style="display: block; width: 48px; height: 4px; border-radius: 2px; background: #cfe6f4"><span style="display: block; width: 100%; height: 4px; border-radius: 2px; background: #0d2a3d"></span></span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid #e3eef6">
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Barbieri Aurora</span>
+          <div style="display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px"><dc-import name="SegnoStato" parola="Certificato da archiviare" tono="giallo" hint-size="auto,22px"></dc-import></div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+          <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #0d2a3d">12/12</span>
+          <span style="display: block; width: 48px; height: 4px; border-radius: 2px; background: #cfe6f4"><span style="display: block; width: 100%; height: 4px; border-radius: 2px; background: #0d2a3d"></span></span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid #e3eef6">
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Barbieri Beatrice</span>
+          <div style="display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px"><dc-import name="SegnoStato" parola="Manca il certificato" tono="rosso" hint-size="auto,22px"></dc-import></div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+          <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #b81d1d">0/4</span>
+          <span style="display: block; width: 48px; height: 4px; border-radius: 2px; background: #cfe6f4"><span style="display: block; width: 0%; height: 4px; border-radius: 2px; background: #0d2a3d"></span></span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid #e3eef6">
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Bianchi Luca</span>
+          <div style="display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px"><dc-import name="SegnoStato" parola="Certificato scaduto" tono="rosso" hint-size="auto,22px"></dc-import><dc-import name="SegnoStato" parola="Quota da pagare" tono="rosso" hint-size="auto,22px"></dc-import></div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+          <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #8f6a00">2/8</span>
+          <span style="display: block; width: 48px; height: 4px; border-radius: 2px; background: #cfe6f4"><span style="display: block; width: 25%; height: 4px; border-radius: 2px; background: #0d2a3d"></span></span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid #e3eef6">
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Colombo Sara</span>
+          <div style="display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px"><dc-import name="SegnoStato" parola="In regola" tono="verde" hint-size="auto,22px"></dc-import></div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+          <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #0d2a3d">6/8</span>
+          <span style="display: block; width: 48px; height: 4px; border-radius: 2px; background: #cfe6f4"><span style="display: block; width: 75%; height: 4px; border-radius: 2px; background: #0d2a3d"></span></span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid #e3eef6">
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Conti Marco</span>
+          <div style="display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px"><dc-import name="SegnoStato" parola="Quota pagata in parte" tono="giallo" hint-size="auto,22px"></dc-import><dc-import name="SegnoStato" parola="Tessera da fare" tono="giallo" hint-size="auto,22px"></dc-import></div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+          <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #0d2a3d">5/8</span>
+          <span style="display: block; width: 48px; height: 4px; border-radius: 2px; background: #cfe6f4"><span style="display: block; width: 62%; height: 4px; border-radius: 2px; background: #0d2a3d"></span></span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

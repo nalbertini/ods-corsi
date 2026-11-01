@@ -23,3 +23,14 @@ export const csvRegistro = (righe: RigaRegistro[]) =>
       ]),
     ),
   ])
+
+/**
+ * La riga sotto «Scarica CSV» spento: il periodo scelto è vuoto, e lo si
+ * dice, così non si cerca il guasto. Il periodo arriva col nome del menu:
+ * «Ottobre 2026», «Ultimi 30 giorni», «Ultimi 3 mesi», «Da settembre».
+ */
+export function nienteDaScaricare(cosa: 'presenze' | 'lezioni', periodo: string, conCorso: boolean) {
+  const minuscolo = periodo.charAt(0).toLowerCase() + periodo.slice(1)
+  const quando = /^ultimi /i.test(periodo) ? `negli ${minuscolo}` : /^da /i.test(periodo) ? minuscolo : `a ${minuscolo}`
+  return `${cosa === 'presenze' ? 'Nessuna presenza' : 'Nessuna lezione'} ${quando}${conCorso ? ' per questo corso' : ''}: niente da scaricare.`
+}

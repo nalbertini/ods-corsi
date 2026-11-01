@@ -4,7 +4,7 @@ import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
+import { avvisiGesto, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -61,7 +61,7 @@ function CampoEmail({ prefisso, email, guaio: errore, onEmail }: { prefisso: str
 
 /**
  * Un segno delle colonne CERTIFICATO e QUOTA: il pallino del colore e la parola. Il verde è un ✓ solo, la nota
- * (Non serve) una frase grigia. Sul telefono resta il pallino: la parola la legge chi usa lo schermo e il title.
+ * (Non serve) una frase grigia. Sul telefono le colonne non ci sono: le parole intere vanno sotto il nome.
  */
 function SegnoElenco({ s }: { s: Segno }) {
   if (s.tono === 'verde')
@@ -73,18 +73,12 @@ function SegnoElenco({ s }: { s: Segno }) {
   return <SegnoStato tono={s.tono} parola={s.parola} />
 }
 
-/** Sul telefono le colonne sono strette: CERTIFICATO e QUOTA diventano un'icona, 30 GIORNI «30 GG». */
-function TestaStretta({ parola, corta }: { parola: string; corta?: string }) {
+/** Sul telefono la colonna è stretta: 30 GIORNI diventa «30 GG». */
+function TestaStretta({ parola, corta }: { parola: string; corta: string }) {
   return (
     <>
       <span className="sg-testa-larga">{parola}</span>
-      {corta ? (
-        <span className="sg-testa-stretta">{corta}</span>
-      ) : (
-        <span className="sg-testa-stretta">
-          <Icona nome={parola === 'QUOTA' ? 'quota' : 'certificato'} etichetta={parola} />
-        </span>
-      )}
+      <span className="sg-testa-stretta">{corta}</span>
     </>
   )
 }
@@ -554,8 +548,8 @@ export function Iscritti({
           <div role="row" className="sg-lista-testa sg-riga-iscritto sg-riga-iscritti" data-sollecito={sollecitare || undefined}>
             {colonna('nome', 'NOME', { icona: 'persona' })}
             <span role="columnheader" className="sg-etichetta">FAMIGLIA</span>
-            {colonna('certificato', <TestaStretta parola="CERTIFICATO" />, { numeri: true, icona: 'certificato' })}
-            {colonna('quota', <TestaStretta parola="QUOTA" />, { numeri: true, icona: 'quota' })}
+            {colonna('certificato', 'CERTIFICATO', { numeri: true, icona: 'certificato' })}
+            {colonna('quota', 'QUOTA', { numeri: true, icona: 'quota' })}
             {colonna('corsi', 'CORSI', { icona: 'corso' })}
             {colonna('contatto', 'CONTATTO', { icona: 'telefono' })}
             {colonna('frequenza', <TestaStretta parola="30 GIORNI" corta="30 GG" />, { numeri: true, destra: true, icona: 'calendario' })}
@@ -592,6 +586,12 @@ export function Iscritti({
                     {minorenneP(p) && <SegnoIscritto icona="bambino" parola="Minorenne" />}
                     {/* «Da archiviare» lo dice la colonna CERTIFICATO: qui resta solo chi non è un iscritto. */}
                     {p.genitoreNonIscritto && <span style={{ marginLeft: 8 }}><SegnoStato tono="nota" parola="Genitore non iscritto" /></span>}
+                    {/* Sul telefono le colonne CERTIFICATO e QUOTA non ci sono: le parole intere vanno sotto il nome. */}
+                    <span className="sg-stato-telefono">
+                      {paroleTelefono(stato).map((s) => (
+                        <SegnoStato key={s.parola} tono={s.tono} parola={s.parola} />
+                      ))}
+                    </span>
                     {/* Sotto i 1000 px la colonna FAMIGLIA non c'è: la famiglia va sotto il nome. */}
                     {fam && (
                       <span className="sg-sotto-nome">
