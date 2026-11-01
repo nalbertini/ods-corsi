@@ -45,7 +45,7 @@ const VOLUTI = {
   pagare: ['Iscritto da pagare', 'Iscritti da pagare'],
   corsi: ['Iscritto con un corso scaduto', 'Iscritti con un corso scaduto'],
   listino: ['Corso con un prezzo mancante', 'Corsi con un prezzo mancante'],
-  'file-di-prima': ['Certificato non archiviato', 'Certificati non archiviati'],
+  'file-di-prima': ['Certificato da archiviare', 'Certificati da archiviare'],
   'documenti-stampa': ['Richiesta con documenti da stampare', 'Richieste con documenti da stampare'],
 }
 

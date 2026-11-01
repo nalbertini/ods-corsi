@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<span style="display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: {{peso}}; color: {{testo}}; white-space: nowrap"><sc-if value="{{conPallino}}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="display: inline-block; width: 8px; height: 8px; border-radius: 4px; background: {{pallino}}; flex-shrink: 0"></span></sc-if>{{parola}}</span>
+</x-dc>
+<script data-dc-script data-props='{"parola":{"editor":"text","default":"Da archiviare"},"tono":{"editor":"enum","options":["rosso","giallo","verde","spento","nota"],"default":"giallo"},"$preview":{"width":200,"height":24}}'>
+// COSTRUITO «segreteria in ordine» (../segreteria-ordine/): `SegnoStato` di comune.tsx, `.sg-segno-elenco` di styles.css. L'unica forma dello stato
+// nelle righe di ISCRITTI, CONTABILITÀ e PRESENZE: pallino di 8px + parola, Inter 14px 500, maiuscole normali, mai a capo. Pallino e parola hanno lo
+// stesso colore (`Tono` di src/lib/segreteria.ts): rosso `rosso-testo` (manca, scaduto, annullato), giallo `giallo-testo` (da archiviare, omonimi),
+// verde `verde-testo` (collegato, iscritto), spento `dim` (senza scheda, non in uso); nota `dim` 400 senza pallino («Sistema»).
+// Sul telefono, nella tabella ISCRITTI, le parole restano intere e vanno sotto il nome, con la cosa di cui parlano («Manca il certificato»,
+// «Quota da pagare»: `paroleTelefono` di src/lib/segreteria.ts; ../segreteria-parole/).
+// Istruttori e Compensi hanno ancora i badge pieni: PR successive. I vecchi nomi (guaio, avviso, fatto, neutro) restano per i canvas di prima.
+const TONI = {
+  rosso: ['#b81d1d', '#b81d1d'], giallo: ['#8f6a00', '#8f6a00'], verde: ['#0b7a33', '#0b7a33'], spento: ['#46606f', '#46606f'], nota: ['', '#46606f'],
+};
+TONI.guaio = TONI.rosso; TONI.avviso = TONI.giallo; TONI.fatto = TONI.verde; TONI.neutro = TONI.spento;
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const [pallino, testo] = TONI[p.tono] || TONI.spento;
+    return { parola: p.parola || '', pallino, testo, conPallino: !!pallino, peso: p.tono === 'nota' ? 400 : 500 };
+  }
+}
+</script>
+</body>
+</html>

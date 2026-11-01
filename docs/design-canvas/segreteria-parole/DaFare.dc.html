@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA, la riga di DA FARE dei file del vecchio programma: stesse parole del filtro e della colonna di ISCRITTI («Da archiviare»). -->
+<div style="display: flex; flex-direction: column; gap: 16px; width: 1000px; padding: 28px 36px">
+  <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #46606f">OGGI</div>
+  <dc-import name="RigaDaFare" n="14" titolo="Certificati non archiviati" sotto="Caricati nell’app prima della nuova gestione: si aprono dalla scheda come gli altri, e si cancellano da soli 30 giorni dopo la scadenza." tasto="Vedi tutti" livello="presto" colonne="1" hint-size="100%,100px"></dc-import>
+  <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #46606f">PROPOSTA</div>
+  <dc-import name="RigaDaFare" n="14" titolo="Certificati da archiviare" sotto="Caricati nell’app prima della nuova gestione: si aprono dalla scheda come gli altri, e si cancellano da soli 30 giorni dopo la scadenza." tasto="Vedi tutti" livello="presto" colonne="1" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

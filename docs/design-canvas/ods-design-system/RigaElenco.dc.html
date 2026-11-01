@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto 90px 24px; gap: 16px; align-items: center; width: 100%; min-height: 56px; padding: 6px 16px; background: #ffffff; border-top: 1px solid #cfe6f4; color: #0d2a3d">
+  <div style="min-width: 0">
+    <div style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{titolo}}</div>
+    <div style="font-size: 13px; color: #46606f; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{sotto}}</div>
+  </div>
+  <span><sc-if value="{{conStato}}" hint-placeholder-val="{{ false }}"><dc-import name="SegnoStato" parola="{{stato}}" tono="{{tonoStato}}" hint-size="auto,20px"></dc-import></sc-if></span>
+  <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; color: {{coloreCifra}}; white-space: nowrap">{{cifra}}</span>
+  <span aria-hidden="true" style="display: flex; justify-content: flex-end"><dc-import name="Icona" nome="avanti" misura="18" colore="#46606f" hint-size="18px,18px"></dc-import></span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"Leone Alessandro"},"sotto":{"editor":"text","default":"Lotta 3 · l’ultima volta lunedì 28 settembre"},"stato":{"editor":"text","default":""},"tonoStato":{"editor":"text","default":"neutro"},"cifra":{"editor":"text","default":"18 assenze"},"tonoCifra":{"editor":"enum","options":["guaio","avviso","fatto","normale"],"default":"guaio"},"$preview":{"width":1000,"height":56}}'>
+// COSTRUITO «segreteria in ordine» (../segreteria-ordine/): `RigaElenco` di Presenze.tsx, `.sg-riga-elenco` di segreteria.css. La riga di un elenco
+// di PRESENZE che apre qualcosa (CHI SI STA PERDENDO, APPELLI MANCANTI, il registro), al posto del riquadro per riga col tasto ripetuto. Tutta la riga
+// si clicca (il ::after di `.sg-riga-elenco-apri` la copre; un link dentro, il tel:, resta sopra e si tocca da solo), la freccia `avanti` `dim` a destra.
+// Alta almeno 56px, padding 6px 16px, filetto `line-soft` sopra, fondo `bg` al passaggio, contorno di 3px col fuoco. Titolo 15px 600 e riga sotto 13px
+// `dim` tagliati con «…»; facoltativi uno stato (SegnoStato) e una cifra 15px 700 con la sua parola («18 assenze»), `rosso-testo` se guaio, `verde-testo` se fatto.
+// L'elenco intorno (`.sg-elenco`) ha la testata con titolo e conto; APPELLI MANCANTI ha il bordo sinistro rosso di 4px.
+const CIFRA = { guaio: '#b81d1d', avviso: '#8f6a00', fatto: '#0b7a33', normale: '#0d2a3d' };
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { conStato: !!p.stato, coloreCifra: CIFRA[p.tonoCifra] || CIFRA.normale };
+  }
+}
+</script>
+</body>
+</html>

@@ -382,13 +382,9 @@
 .sg-famiglia-titolare { padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; text-align: left; overflow-wrap: anywhere; min-height: 24px; }
 .sg-famiglia-titolare:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .sg-stato-elenco { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 6px 0; min-width: 0; }
-.sg-segno-elenco { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
-.sg-segno-elenco::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
-.sg-segno-elenco[data-tono='rosso']::before { background: var(--rosso-testo); }
-.sg-segno-elenco[data-tono='giallo']::before { background: var(--giallo-testo); }
-.sg-segno-elenco[data-tono='nota'] { color: var(--dim); font-weight: 400; }
-.sg-segno-elenco[data-tono='nota']::before { display: none; }
-.sg-segno-elenco[data-tono='spento'] { color: var(--dim); }
+/* Accanto alla descrizione di un movimento: gli stati uno dopo l'altro, staccati dal testo. */
+.sg-stati-riga { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; margin-left: 10px; vertical-align: middle; }
+.sg-stati-riga:empty { display: none; }
 .sg-segno-ok { font-size: 18px; line-height: 1; color: var(--verde-testo); }
 .sg-cella-corsi { font-size: 13px; color: var(--sec); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Col filtro Corsi scaduti si legge tutto quel che è da sollecitare: niente puntini. */
@@ -398,6 +394,7 @@
 .sg-cella-contatto[data-manca] { color: var(--rosso-testo); }
 .sg-icona-contatto { display: inline-flex; margin-right: 6px; vertical-align: -2px; color: var(--dim); }
 .sg-testa-stretta { display: none; }
+.sg-stato-telefono { display: none; }
 .sg-cella-frequenza { font-size: 16px; font-weight: 700; text-align: right; color: var(--text); }
 .sg-cella-frequenza[data-poco] { color: var(--giallo-testo); }
 .sg-barra-frequenza { display: block; max-width: 56px; height: 5px; margin: 5px 0 0 auto; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
@@ -435,7 +432,9 @@
 /* Chi ha scelto delle righe: il conto e il tasto restano in vista in fondo allo schermo, mentre si scorre. */
 .sg-barra-scelta { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; background: var(--surface); border: 2px solid var(--giallo); }
 /* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */
-.sg-sotto-movimento { display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere; }
+/* Al computer voce e dettaglio stanno su una riga, tagliata con «…»: la riga resta di due righe di testo, il resto è nel dettaglio. */
+.sg-sotto-movimento { display: block; font-size: 13px; color: var(--sec); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sg-sotto-extra::before { content: ' · '; }
 .sg-solo-telefono { display: none; }
 /* Le casse a scelta multipla: l'elenco si apre sotto il tasto. */
 .sg-filtro-casse { position: relative; }
@@ -449,6 +448,9 @@
   .sg-riga-movimento > :not(:first-child):not(:nth-child(3)) { display: none; }
   .sg-solo-telefono { display: inline; }
   .sg-lista-testa.sg-riga-movimento { display: none; }
+  /* Senza le colonne il sotto porta tipo, importo e cassa: in colonna, una cosa per riga. */
+  .sg-sotto-movimento { display: flex; flex-direction: column; white-space: normal; overflow-wrap: anywhere; }
+  .sg-sotto-extra::before { content: none; }
 }
 /* L'avviso dello storico nella scheda: giallo di avviso, bordo da 2px come gli altri riquadri. */
 .sg-avviso-storico { padding: 12px 14px; border: 2px solid var(--giallo-testo); background: var(--surface); font-size: 14px; line-height: 1.45; }
@@ -633,19 +635,35 @@
 .sg-numero[data-allarme='true'] { border-color: var(--rosso); }
 .sg-registro > summary { cursor: pointer; list-style: none; }
 .sg-registro > summary::-webkit-details-marker { display: none; }
-.sg-registro[open] > summary { border-color: var(--text); }
-.sg-registro-nomi { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px 12px; border: 2px solid var(--line); border-top: 0; }
+.sg-registro-nomi { display: flex; flex-direction: column; gap: 4px; padding: 4px 16px 14px; }
 /* Barra di un valore solo, una tinta sola: la barra dice quanto, il numero accanto lo dice esatto. */
 .sg-barra-binario { position: relative; height: 14px; background: var(--surface-2); }
 .sg-barra-pieno { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blu); border-radius: 0 4px 4px 0; }
 
-/* Le sezioni lunghe di PRESENZE: chiuse, col titolo e il conto in vista; il segno a destra dice se si apre o si chiude. */
-.sg-chiudibile > summary { display: flex; align-items: center; gap: 14px; min-height: 44px; cursor: pointer; list-style: none; }
-.sg-chiudibile > summary::-webkit-details-marker { display: none; }
-.sg-chiudibile > summary::after { content: '⌄'; font-size: 18px; color: var(--dim); }
-.sg-chiudibile[open] > summary::after { content: '⌃'; }
-.sg-chiudibile[open] > summary { margin-bottom: 10px; }
-.sg-chiudibile[data-allarme='true'] { box-shadow: inset 4px 0 0 var(--rosso); }
+/* Le sezioni di PRESENZE: un riquadro solo, titolo e conto in testa; chiuse quelle lunghe, col segno a destra che dice se si apre. */
+.sg-elenco-testa { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 14px; flex-wrap: wrap; min-height: 44px; padding: 14px 16px 10px; }
+.sg-elenco-testa > :first-child { flex: 1 1 auto; }
+.sg-elenco[data-allarme='true'] { border-left: 4px solid var(--rosso); }
+details.sg-elenco > summary { cursor: pointer; list-style: none; }
+details.sg-elenco > summary::-webkit-details-marker { display: none; }
+details.sg-elenco > summary::after { content: '⌄'; font-size: 18px; color: var(--dim); }
+details.sg-elenco[open] > summary::after { content: '⌃'; }
+.sg-elenco-vuoto, .sg-elenco-piede, .sg-elenco-giorno { display: block; margin: 0; padding: 8px 16px 12px; }
+.sg-elenco-giorno { padding-top: 14px; padding-bottom: 6px; }
+/* Una riga, un tocco: tutta la riga apre (il ::after del tasto la copre), i link dentro restano sopra e si toccano da soli. */
+.sg-riga-elenco { position: relative; display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 6px 16px; border-top: 1px solid var(--line-soft); }
+.sg-riga-elenco:hover { background: var(--bg); }
+.sg-riga-elenco:focus-within { outline: 3px solid var(--text); outline-offset: -3px; }
+.sg-riga-elenco-apri { display: flex; flex-direction: column; flex: 1; min-width: 0; padding: 0; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.sg-riga-elenco-apri::after { content: ''; position: absolute; inset: 0; }
+.sg-riga-elenco-apri:focus-visible { outline: none; }
+.sg-riga-elenco-titolo { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sg-riga-elenco-sotto { font-size: 13px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sg-riga-elenco-cifra { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sg-riga-elenco a, .sg-riga-elenco button:not(.sg-riga-elenco-apri) { position: relative; z-index: 1; }
+.sg-riga-elenco-segue { display: inline-flex; color: var(--dim); }
+summary.sg-riga-elenco { cursor: pointer; list-style: none; }
+summary.sg-riga-elenco::-webkit-details-marker { display: none; }
 
 /* Le statistiche: colonne mese per mese, giorni e ore, tabelle dei corsi. */
 .sg-stat-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
@@ -875,23 +893,13 @@
   .sg-riga-iscritti .sg-cella-sollecito-testa { display: none; }
   .sg-sotto-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
 }
-/* Sul telefono i segni sono compatti, ✕ rosso, … giallo, – nota: la forma dice lo stato anche senza il colore;
- * la parola resta per chi legge lo schermo, nel title e nella scheda. */
+/* Sul telefono CERTIFICATO e QUOTA non ci stanno: le parole intere vanno sotto il nome (`sg-stato-telefono`), e restano NOME e 30 GG. */
 @media (max-width: 767px) {
-  .sg-riga-iscritti .sg-stato-elenco { flex-direction: row; gap: 6px; }
-  .sg-riga-iscritti .sg-segno-parola { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .sg-riga-iscritti .sg-segno-elenco { gap: 0; position: relative; }
-  .sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before, .sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before {
-    width: auto; height: auto; border-radius: 0; background: none; font-size: 15px; font-weight: 700; line-height: 1;
-  }
-  .sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before { content: '✕' / ''; color: var(--rosso-testo); }
-  .sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before { content: '…' / ''; color: var(--giallo-testo); }
-  .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 56px 56px 48px; }
-  .sg-riga-iscritti .sg-stato-elenco { justify-content: center; }
-  .sg-lista-testa.sg-riga-iscritti > :nth-child(3), .sg-lista-testa.sg-riga-iscritti > :nth-child(4) { justify-self: center; }
+  .sg-riga-iscritti > :nth-child(3), .sg-riga-iscritti > :nth-child(4) { display: none; }
+  .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 64px; }
   .sg-riga-iscritti .sg-testa-larga { display: none; }
   .sg-riga-iscritti .sg-testa-stretta { display: inline; }
-  .sg-riga-iscritti .sg-segno-elenco[data-tono='nota']::after { content: '–' / ''; }
+  .sg-stato-telefono { display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px; margin-top: 4px; }
 }
 /* VESTIARIO in segreteria: cinque numeri, la tabella degli ordini con le sue colonne, le righe da correggere. */
 .sg-numeri[data-cinque] { grid-template-columns: repeat(5, minmax(0, 1fr)); }

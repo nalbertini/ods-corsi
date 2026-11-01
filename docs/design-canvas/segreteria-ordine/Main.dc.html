@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    h2 { font-family: 'Big Shoulders Display', Inter, sans-serif; font-weight: 800; font-size: 24px; margin: 0 0 6px; }
+    p { margin: 0 0 14px; font-size: 14px; line-height: 1.5; color: #46606f; max-width: 820px; }
+    section { background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px; padding: 22px 24px; }
+    li { margin-bottom: 6px; }
+  </style>
+</helmet>
+<!-- NOTE della proposta «segreteria in ordine». -->
+<div style="display: flex; flex-direction: column; gap: 22px; width: 1000px; padding: 32px">
+  <section>
+    <h2>SEGRETERIA IN ORDINE</h2>
+    <p>Oggi ogni pagina del gestionale ha la sua grammatica: tasti di quattro altezze, schede che sembrano tasti spenti, fasce di contatori ripetute, righe di comandi impilate sopra l'elenco, stati scritti in tre modi. La proposta fissa una grammatica sola e la applica a Iscritti, Contabilità e Presenze. Le altre pagine seguono in PR piccole.</p>
+    <ul style="font-size: 14px; line-height: 1.5; padding-left: 20px; margin: 0">
+      <li><b>Testata unica</b>: titolo, una frase, azioni a destra. Un solo tasto giallo per pagina.</li>
+      <li><b>Contatori solo in DA FARE</b>: nelle pagine i numeri stanno nei bollini del menu e nella frase sotto il titolo.</li>
+      <li><b>Schede sottolineate</b> con la barra gialla, non riquadri maiuscoli.</li>
+      <li><b>Una barra filtri</b> alta 44px, una riga di stato sotto.</li>
+      <li><b>Uno stato</b>: pallino e parola, quattro toni.</li>
+      <li><b>Righe che si aprono tutte</b>, altezza fissa, niente tasti ripetuti.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>DUBBI DELLA SEGRETERIA E RISPOSTE</h2>
+    <ul style="font-size: 14px; line-height: 1.5; padding-left: 20px; margin: 0">
+      <li>«Gli appelli non fatti devono restare contati»: APPELLI MANCANTI ha il numero nel titolo, col filetto rosso.</li>
+      <li>«Statistiche deve restare a portata»: è un link in coda alla frase di PRESENZE.</li>
+      <li>«Non archiviato deve restare giallo»: diventa lo stato giallo «Da archiviare» nella colonna CERTIFICATO.</li>
+      <li>«Le righe non si allungano»: ISCRITTI resta a 50px, MOVIMENTI va a 60px fissi (oggi da 56 a 92px).</li>
+      <li>«Il + sempre con la parola»: sì, in tutti i tasti.</li>
+      <li>«Le azioni frequenti di riga a un tocco»: la riga intera apre la scheda, dove stanno; vedi la domanda aperta.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>DA DECIDERE</h2>
+    <ul style="font-size: 14px; line-height: 1.5; padding-left: 20px; margin: 0">
+      <li>Il badge «Dal gestionale» in MOVIMENTI: la proposta lo toglie, perché il TIPO «Incasso iscritto» dice già la stessa cosa.</li>
+      <li>«Altre azioni» di CONTABILITÀ resta com'è oggi (Collega i casi sicuri, Importa dalla banca, Giroconto, Esporta CSV): cambia solo che sta nella testata, a linea, accanto al giallo.</li>
+      <li>I saldi delle casse restano in MOVIMENTI, più bassi: sono contenuto, non contatori.</li>
+    </ul>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>

@@ -20,6 +20,6 @@ export const TESTI_DA_FARE: Record<ChiaveDaFare, { singolare: string; plurale: s
   pagare: { singolare: 'Iscritto da pagare', plurale: 'Iscritti da pagare' },
   corsi: { singolare: 'Iscritto con un corso scaduto', plurale: 'Iscritti con un corso scaduto' },
   listino: { singolare: 'Corso con un prezzo mancante', plurale: 'Corsi con un prezzo mancante' },
-  'file-di-prima': { singolare: 'Certificato non archiviato', plurale: 'Certificati non archiviati' },
+  'file-di-prima': { singolare: 'Certificato da archiviare', plurale: 'Certificati da archiviare' },
   'documenti-stampa': { singolare: 'Richiesta con documenti da stampare', plurale: 'Richieste con documenti da stampare' },
 }

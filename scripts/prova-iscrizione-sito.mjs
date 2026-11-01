@@ -271,7 +271,48 @@ const senzaSalti = (r) => (/--cond:\s*'Big Shoulders Display', 'Arial Narrow'/.t
 // La finestra del movimento aperto è a colonna unica (testata, suggerimento a due colonne, piede): `.sg-movimento-colonne` e le sue regole sono tolte di proposito.
 const movimentoAColonnaUnica = (r) => r.selettori.some((x) => /sg-movimento-colonne/.test(x))
 const schedaGaraRivista = (r) => r.selettori.some((x) => /sg-riga-atleta-gara/.test(x))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !senzaSalti(r) && !schedaGaraRivista(r) && !movimentoAColonnaUnica(r) && !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !rigaBancaConVoce(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !temiTolti(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !statCorsoAlto(r) && !iscrittiFamiglia(r) && !listinoLargo(r) && !finestraLarga(r) && !schedeTabletConIcona(r) && !iconeDappertutto(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// La segreteria in ordine (`prova:segreteria-ordine`): le schede sono linguette sottolineate, `.sg-link` e `.sg-ordina` sono alti 44px
+// da sé (niente più ::after che allarga il tocco), la testata tiene i tasti a destra, il segno dello stato è a 14px e sta in styles.css,
+// le sezioni di PRESENZE sono `.sg-elenco` (`.sg-chiudibile` tolta) e i presenti del registro stanno nella riga, senza un bordo loro.
+// Una per una, le regole di prima che cambiano: un'altra regola con gli stessi selettori, se sparisce, fa ancora cadere la prova.
+const SEGRETERIA_IN_ORDINE = new Set([
+  // Al computer il sotto di un movimento sta su una riga, tagliato con «…» (`prova:segreteria-ordine`).
+  ".sg-sotto-movimento{display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere;}",
+  ".scheda{min-height: 40px; background: var(--surface); border: 2px solid var(--line); font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim);}",
+  ".scheda[data-on='true']{background: var(--surface-2); border-color: var(--text); color: var(--text);}",
+  ".sg-link{font-size: 13px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; text-align: left;}",
+  ".sg-link,.sg-ordina{position: relative;}",
+  ".sg-link::after,.sg-ordina::after{content: ''; position: absolute; inset: -13px -6px;}",
+  ".sg-chi > .sg-link::after{content: none;}",
+  ".sg-ordina::after{inset: -13px 0;}",
+  ".sg-testa{display: flex; align-items: center; gap: 12px; flex-wrap: wrap;}",
+  ".sg-filtro-menu-valore{font-weight: 600; max-width: 220px; overflow: hidden; text-overflow: ellipsis;}",
+  ".sg-ordina{display: inline-flex; align-items: center; min-height: 24px; gap: 4px; white-space: nowrap; font: inherit; letter-spacing: inherit; color: inherit; text-align: inherit;}",
+  ".sg-chiudibile > summary > .sg-riga-titolo{flex: 1;}",
+  ".sg-lista-testa.sg-riga-iscritti .sg-ordina::after{inset: -13px -8px;}",
+  ".sg-segno-elenco{display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap;}",
+  ".sg-registro[open] > summary{border-color: var(--text);}",
+  ".sg-registro-nomi{display: flex; flex-direction: column; gap: 4px; padding: 10px 14px 12px; border: 2px solid var(--line); border-top: 0;}",
+  ".sg-chiudibile > summary{display: flex; align-items: center; gap: 14px; min-height: 44px; cursor: pointer; list-style: none;}",
+  ".sg-chiudibile > summary::-webkit-details-marker{display: none;}",
+  ".sg-chiudibile > summary::after{content: '⌄'; font-size: 18px; color: var(--dim);}",
+  ".sg-chiudibile[open] > summary::after{content: '⌃';}",
+  ".sg-chiudibile[open] > summary{margin-bottom: 10px;}",
+  ".sg-chiudibile[data-allarme='true']{box-shadow: inset 4px 0 0 var(--rosso);}",
+])
+const segreteriaInOrdine = (r) => SEGRETERIA_IN_ORDINE.has(chiaveR(r))
+// Al telefono ISCRITTI dice certificato e quota a parole intere sotto il nome (`prova:segreteria-ordine`): i segni compatti ✕ … – e le celle dello stato in colonna sono tolti di proposito.
+const PAROLE_AL_TELEFONO = new Set([
+  ".sg-riga-iscritti .sg-stato-elenco{flex-direction: row; gap: 6px;}",
+  ".sg-riga-iscritti .sg-segno-parola{position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;}",
+  ".sg-riga-iscritti .sg-segno-elenco{gap: 0; position: relative;}",
+  ".sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before,.sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before{width: auto; height: auto; border-radius: 0; background: none; font-size: 15px; font-weight: 700; line-height: 1;}",
+  ".sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before{content: '✕' / ''; color: var(--rosso-testo);}",
+  ".sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before{content: '…' / ''; color: var(--giallo-testo);}",
+  ".sg-riga-iscritti .sg-stato-elenco{justify-content: center;}",
+  ".sg-riga-iscritti .sg-segno-elenco[data-tono='nota']::after{content: '–' / '';}",
+])
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !segreteriaInOrdine(r) && !PAROLE_AL_TELEFONO.has(chiaveR(r)) && !senzaSalti(r) && !schedaGaraRivista(r) && !movimentoAColonnaUnica(r) && !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !rigaBancaConVoce(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !temiTolti(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !statCorsoAlto(r) && !iscrittiFamiglia(r) && !listinoLargo(r) && !finestraLarga(r) && !schedeTabletConIcona(r) && !iconeDappertutto(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

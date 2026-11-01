@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: 44px 104px minmax(0, 1fr) 150px 170px 120px 120px; gap: 14px; align-items: center; width: 100%; min-height: 60px; padding: 8px 18px; background: {{fondo}}; border-bottom: 1px solid #cfe6f4; color: #0d2a3d">
+  <span style="width: 20px; height: 20px; border: 2px solid #14709f; border-radius: 4px; background: #ffffff"></span>
+  <span style="font-size: 14px; font-variant-numeric: tabular-nums">{{data}}</span>
+  <div style="min-width: 0">
+    <div style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"><b style="font-weight: 600; text-decoration: underline; text-decoration-color: #cfe6f4; text-underline-offset: 3px">{{nome}}</b></div>
+    <div style="font-size: 13px; color: #46606f; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{voce}} · {{dettaglio}}</div>
+  </div>
+  <span style="display: flex; gap: 8px; align-items: center; font-size: 14px; white-space: nowrap; overflow: hidden"><dc-import name="Icona" nome="{{iconaTipo}}" misura="18" colore="#46606f" hint-size="18px,18px"></dc-import>{{tipo}}</span>
+  <span style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{cassa}}</span>
+  <span style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; color: #0b7a33; white-space: nowrap">{{entrata}}</span>
+  <span style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; color: #0d2a3d; white-space: nowrap">{{uscita}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"data":{"editor":"text","default":"23/09/2026"},"nome":{"editor":"text","default":"Barbieri Beatrice"},"voce":{"editor":"text","default":"Quota associativa"},"dettaglio":{"editor":"text","default":"ricevuta 118/2026"},"tipo":{"editor":"text","default":"Incasso iscritto"},"iconaTipo":{"editor":"text","default":"ricevuta"},"cassa":{"editor":"text","default":"Conto Corrente"},"entrata":{"editor":"text","default":"+ 50,00 €"},"uscita":{"editor":"text","default":""},"fondo":{"editor":"text","default":"#ffffff"},"$preview":{"width":1100,"height":60}}'>
+// COSTRUITO in parte «segreteria in ordine» (../segreteria-ordine/): la riga di MOVIMENTI (`.sg-riga-movimento` di segreteria.css, Contabilita.tsx).
+// Entrato: il badge «Dal gestionale» non c'e' piu' (lo dice gia' il TIPO «Incasso iscritto»); gli stati della riga (Annullato, Collegato, Omonimi,
+// Senza scheda, Da collegare) sono SegnoStato in fila dopo la descrizione (`.sg-stati-riga`, gap 4px 12px); importi 15px 600 tabellari, entrate `verde-testo`.
+// Al computer (sopra i 1200px) il nome sta sulla prima riga e voce · dettaglio sulla seconda, tagliata con «…» (`.sg-sotto-movimento`): la riga resta di due righe di testo. Non entrata l'altezza fissa: la riga è alta quanto le due righe (min-height 60px qui).
+</script>
+</body>
+</html>

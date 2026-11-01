@@ -4,6 +4,7 @@ import { comePaga, contaCertificati, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { csv } from '../../lib/vestiario'
+import { nienteDaScaricare } from '../../lib/presenzeCsv'
 import { Colonne, Guaio, Riga, Testa, useCarica, useOrdina, Tasto } from './comune'
 import { Numero } from './Presenze'
 import { StatisticheSito } from './StatisticheSito'
@@ -144,6 +145,7 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
   const convertiti = [...personeProva.values()].filter(Boolean).length
 
   const nomePeriodo = PERIODI.find((x) => x[0] === periodo)![1]
+  const perche = nienteDaScaricare('lezioni', nomePeriodo, !!corso, { arrivato: stat.dato !== null && !stat.guaio, righe: lezioni.length })
   const nomeCorso = corso ? corsi.find((c) => c[0] === corso)?.[1] : undefined
 
   return (
@@ -173,9 +175,13 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
             </option>
           ))}
         </select>
-        <Tasto disabled={!lezioni.length} onClick={() => scaricaCsv(lezioni, `${nomeCorso ?? 'tutti'} ${nomePeriodo}`)}>
-          Scarica CSV
-        </Tasto>
+        {/* Spento, il tasto resta al suo posto e la riga sotto dice perché, come in PRESENZE. */}
+        <span className="sg-tasto-perche">
+          <Tasto disabled={!lezioni.length} aria-describedby={perche ? 'csv-perche' : undefined} onClick={() => scaricaCsv(lezioni, `${nomeCorso ?? 'tutti'} ${nomePeriodo}`)}>
+            Scarica CSV
+          </Tasto>
+          {perche && <span id="csv-perche" className="sg-sotto">{perche}</span>}
+        </span>
       </Testa>
 
       {stat.guaio && <Guaio testo={stat.guaio} />}
