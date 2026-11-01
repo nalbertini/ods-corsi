@@ -1,4 +1,4 @@
--- Un movimento di entrata collegato a una persona si assegna a quota e corsi (134-assegna-movimento.sql):
+-- Un movimento di entrata collegato a una persona si assegna a quota e corsi (135-assegna-movimento.sql):
 --   · `assegna_movimento(movimento, righe)` (amministrazione) scrive una riga di `pagamenti_diretti` per voce, con
 --     `movimento_id`, metodo Bonifico e la data del movimento: o tutte o nessuna; ammessa anche in un giorno chiuso;
 --   · rifiuta: movimento annullato, uscita, senza persona, su un'altra voce, in Cassa Contanti; persona fuori dal nucleo
@@ -18,7 +18,7 @@
 --   · il previsto delle casse non cambia in nessun passaggio, nemmeno in un giorno chiuso.
 -- Le stesse regole di src/lib/assegna.ts e della modalità prova, provate da scripts/prova-assegna-movimento.mjs
 -- (stessi casi, stessi messaggi).
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 134-assegna-movimento.sql. Nomi tutti inventati.
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 135-assegna-movimento.sql. Nomi tutti inventati.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 

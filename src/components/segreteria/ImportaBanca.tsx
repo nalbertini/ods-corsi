@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { NOME_CASSA_CONTO, oggiARoma, vociOfferte, type Cassa, type RigaMovimento, type VoceContabile } from '../../lib/contabilita'
-import { anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, leggiBanca, MASSIMO_PER_IMPORTAZIONE, pianoDiClassificazione, rigaComeMovimento, sceltaProposta, sceltaVuolePersona, scelteDaScrivere, ultimaImportazione, type FiltroRigheBanca, type LetturaBanca, type MovimentoBanca, type SceltaVoceBanca, type SegnoBanca, type StatoRigaBanca } from '../../lib/importaBanca'
+import { anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, leggiBanca, MASSIMO_PER_IMPORTAZIONE, pianoDiClassificazione, rigaComeMovimento, sceltaProposta, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type FiltroRigheBanca, type LetturaBanca, type MovimentoBanca, type SceltaVoceBanca, type SegnoBanca, type StatoRigaBanca } from '../../lib/importaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import type { PersonaPerNome } from '../../lib/movimentiPersona'
 import { parolaDelMovimento, suggerisciMovimento, type SuggerimentoMovimento } from '../../lib/suggerimentoMovimento'
@@ -11,7 +11,7 @@ import { CampoPersona, SchedaCandidata } from './CollegaPersona'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { Icona } from '../Icons'
 import type { NomeIcona } from '../../lib/icone'
-import { chiedi, Segmenti, Tag, type useAvviso, Tasto, useBozza } from './comune'
+import { chiedi, Guaio, Segmenti, Tag, type useAvviso, Tasto, useBozza, useCarica } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 
@@ -41,7 +41,11 @@ function TastoIcona({ icona, nome, onClick }: { icona: NomeIcona; nome: string; 
  * niente si scriva, si decidono i casi dubbi, si sceglie la voce (e per quote e corsi la persona) e
  * solo dopo «Sì, importa» i movimenti vanno nel Conto Corrente. Le regole sono in `src/lib/importaBanca.ts`.
  */
-export function ImportaBanca({ d, casse, voci, righe, fai, onRileggi, onVedi }: { d: DatiSegreteria; casse: Cassa[]; voci: VoceContabile[]; righe: RigaMovimento[]; fai: Fai; onRileggi: () => void; onVedi: () => void }) {
+export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onVedi }: { d: DatiSegreteria; casse: Cassa[]; voci: VoceContabile[]; righe: RigaMovimento[]; fai: Fai; onRileggi: () => void; onVedi: () => void }) {
+  // Le ricevute e i pagamenti a mano già coperti da una riga della banca non si propongono di nuovo
+  // (prima del 114 la tabella non esiste: `bancaCoperti` dà null, e nell'oggetto non si confonde con «sto leggendo»).
+  const coperti = useCarica(async () => ({ righe: await d.bancaCoperti() }), [d, tutte])
+  const righe = useMemo(() => (coperti.dato ? segnaIncassiCoperti(tutte, coperti.dato.righe ?? []) : null), [tutte, coperti.dato])
   const [lettura, setLettura] = useState<LetturaBanca | null>(null)
   const [scelte, setScelte] = useState<Record<string, string>>({})
   const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null } | null>(null)
@@ -54,11 +58,11 @@ export function ImportaBanca({ d, casse, voci, righe, fai, onRileggi, onVedi }: 
   const [pagatori, setPagatori] = useState<Record<string, PersonaPerNome[]>>({})
   const listino = useListino()
   const conto = casse.find((c) => c.nome === NOME_CASSA_CONTO)
-  const ultima = useMemo(() => ultimaImportazione(righe), [righe])
+  const ultima = useMemo(() => ultimaImportazione(tutte), [tutte])
   // Chi ha pagato lo dice il database (nome intero o genitore nel testo): una volta per movimento, poi si riordina.
   const [perGenitore, setPerGenitore] = useState<Record<string, string[]>>({})
   const chiesti = useRef(new Set<string>())
-  const prima = useMemo(() => (lettura && conto ? anteprimaBanca(lettura, righe, conto.id, oggiARoma(), scelte) : null), [lettura, righe, conto, scelte])
+  const prima = useMemo(() => (lettura && conto && righe ? anteprimaBanca(lettura, righe, conto.id, oggiARoma(), scelte) : null), [lettura, righe, conto, scelte])
   useEffect(() => {
     // Ogni domanda consuma il tetto di ricerche del database (60 in 10 minuti, diviso col suggerimento in CONTABILITÀ): al massimo trenta per file, fra le due.
     for (const { movimento: m, candidati } of prima?.daDecidere ?? []) {
@@ -81,11 +85,11 @@ export function ImportaBanca({ d, casse, voci, righe, fai, onRileggi, onVedi }: 
         .catch(() => undefined)
     }
   }, [d, prima, conto])
-  const a = useMemo(() => (lettura && conto ? anteprimaBanca(lettura, righe, conto.id, oggiARoma(), scelte, perGenitore) : null), [lettura, righe, conto, scelte, perGenitore])
+  const a = useMemo(() => (lettura && conto && righe ? anteprimaBanca(lettura, righe, conto.id, oggiARoma(), scelte, perGenitore) : null), [lettura, righe, conto, scelte, perGenitore])
 
   const proposte = useMemo(() => {
     const fuori: Record<string, SuggerimentoMovimento | null> = {}
-    if (!a || !conto) return fuori
+    if (!a || !conto || !righe) return fuori
     for (const m of a.entrano) {
       const riga = rigaComeMovimento(m, conto.id)
       const parola = parolaDelMovimento(riga)
@@ -226,6 +230,8 @@ export function ImportaBanca({ d, casse, voci, righe, fai, onRileggi, onVedi }: 
           <span style={{ fontSize: 15 }}>{lettura.scartate[0]?.motivo ?? 'Non trovo movimenti nel file.'} Non è stato scritto niente.</span>
         </div>
       )}
+
+      {lettura && !nonLeggibile && coperti.guaio && <Guaio testo={coperti.guaio} />}
 
       {a && lettura && !nonLeggibile && (
         <>

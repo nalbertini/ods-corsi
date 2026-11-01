@@ -632,8 +632,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from voci_contabili where nome = 'Incassi Satispay')),
   ('133-verbali-semplici.sql', 'un verbale si firma col solo PDF firmato, senza ore, luogo, presidente e presenti',
     exists (select 1 from dentro where nome = 'firma_verbale' and corpo like '%Per firmare serve il PDF%' and corpo not like '%ora d’inizio%')),
+  ('134-banca-coperti-incassi.sql', 'un bonifico della banca già in una ricevuta o in un pagamento a mano resta coperto da quello, senza fermare l''import',
+    exists (select 1 from information_schema.columns where table_name = 'banca_coperti' and column_name = 'con_id' and data_type = 'text')
+    and exists (select 1 from dentro where nome = 'banca_segna_coperti' and corpo like '%incasso:diretto:%'))
   -- Rifà `annulla_movimento` (60) e `annulla_ricevuta` (89): rilanciando quelli, il controllo torna «manca».
-  ('134-assegna-movimento.sql', 'il bonifico collegato si assegna a quota e corsi, e da lì la ricevuta, senza contare due volte i soldi',
+  ('135-assegna-movimento.sql', 'il bonifico collegato si assegna a quota e corsi, e da lì la ricevuta, senza contare due volte i soldi',
     to_regprocedure('public.assegna_movimento(uuid,jsonb)') is not null
     and to_regprocedure('public.emetti_ricevuta_da_movimento(jsonb,uuid)') is not null
     and to_regprocedure('public.abbina_ricevuta_movimento(uuid,uuid)') is not null

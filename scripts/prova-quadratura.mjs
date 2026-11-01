@@ -89,7 +89,7 @@ const carica = async (contenuto) => {
   }
 }
 const q = await carica("export * from './src/lib/quadraturaBanca'")
-const ib = await carica("export { GIORNI_DI_DIFFERENZA } from './src/lib/importaBanca'")
+const ib = await carica("export { GIORNI_DI_DIFFERENZA, segnaIncassiCoperti } from './src/lib/importaBanca'")
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -477,6 +477,21 @@ console.log('22. il modulo del saldo: cosa si salva e quale campo è sbagliato')
   const nonTorna = leggi({ finale: '125,00' })
   ok('i numeri che non tornano fra loro: errore, nessun campo in particolare', [nonTorna?.saldo, msg(nonTorna?.errore), nonTorna?.campi], [null, 'string', []])
   ok('un mese non ancora cominciato: errore', msg(leggi({}, '2026-09-30')?.errore), 'string')
+}
+
+console.log('23. un bonifico già in una ricevuta: la riga della banca coperta si abbina a quell’incasso')
+{
+  // Il bonifico arriva 10 giorni dopo la ricevuta: per data non si abbinerebbe, per chiave sì.
+  const incassi = [
+    mv('incasso:r1:0:0', 'entrata', '2026-10-05', 5000, { origine: 'ricevuta' }),
+    mv('incasso:r2:0:0', 'entrata', '2026-10-20', 5000, { origine: 'ricevuta' }),
+  ]
+  const coperti = [{ chiave: 'banca:r1', data: '2026-10-15', tipo: 'entrata', importo: 5000, descrizione: 'Bonifico', conId: 'incasso:r1:0:0', conDescrizione: 'Ricevuta 1' }]
+  const righe = prova(() => ib.segnaIncassiCoperti(incassi, coperti))
+  ok('segnaIncassiCoperti mette la chiave della banca sull’incasso coperto, e solo su quello', righe?.map?.((r) => [r.id, r.bancaChiave]), [['incasso:r1:0:0', 'banca:r1'], ['incasso:r2:0:0', undefined]])
+  const r = quadra(base({ righe: Array.isArray(righe) ? righe : [], banca: [bn('r1', 'entrata', '2026-10-15', 5000)], saldo: sb('2026-10', 10000, 5000, 0, 15000) }))
+  ok('si abbina per chiave, a 10 giorni di distanza', r.abbinate?.map((x) => [x.app.id, x.banca.chiave]), [['incasso:r1:0:0', 'banca:r1']])
+  ok('…e non conta due volte: in banca non resta niente da spiegare', r.soloBanca?.length, 0)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

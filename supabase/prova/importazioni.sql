@@ -300,7 +300,7 @@ select jsonb_build_array(
 select atteso('l''amministrazione salva due coperti', come(ada(), 'authenticated', format('select banca_segna_coperti(%L::jsonb)', :'righe')), 'ok');
 select atteso('…sono due', (select count(*)::text from banca_coperti), '2');
 select atteso('…con i dati della banca e del movimento a mano',
-  (select concat_ws('|', data, tipo, importo, descrizione, (con_id = :'c1'::uuid)::text, con_descrizione) from banca_coperti where chiave = 'banca:20261003:abc:0'),
+  (select concat_ws('|', data, tipo, importo, descrizione, (con_id = :'c1')::text, con_descrizione) from banca_coperti where chiave = 'banca:20261003:abc:0'),
   '2026-10-03|entrata|12000|Da Luca Verdi saldo corso BONIFICO|true|Saldo corso Luca');
 select atteso('rilanciata con le stesse righe: non duplica', come(ada(), 'authenticated', format('select banca_segna_coperti(%L::jsonb)', :'righe')) || ' ' || (select count(*)::text from banca_coperti), 'ok 2');
 select atteso('una riga senza chiave: no', left(come(ada(), 'authenticated', $$select banca_segna_coperti('[{"data": "2026-10-03", "tipo": "entrata", "importo": 100, "descrizione": "x"}]'::jsonb)$$), 5), '22023');
@@ -404,3 +404,103 @@ select atteso('rilanciata una riga già scritta nuova: non la riscrive', copre('
 
 -- «Non è questo» toglie il segno della banca: il movimento a mano torna libero.
 select atteso('«Non è questo» sulla banca', come(ada(), 'authenticated', $$select banca_non_e_questo('banca:k1')$$) || ' ' || chiave_di(:'m1') || ' ' || stato_banca('banca:k1'), 'ok nessuna 0 coperto, 1 scritto');
+
+\echo ''
+\echo '--- 9. banca: una riga coperta da una ricevuta o da un pagamento a mano (incasso:…) ---'
+-- Gli id come li fa incassiDerivati (src/lib/contabilita.ts): incasso:<ricevuta>:<voce>:<pagamento> e incasso:diretto:<pagamento>.
+select pulisci(); select pulisci_banca();
+update casse set dal = '2026-09-01' where nome = 'Conto Corrente';
+create or replace function ricevuta_con(metodo text, importo int, annullata boolean default false) returns uuid
+  language sql security definer set search_path = public as $$
+  insert into ricevute (anno, numero, data, persona_id, ente, intestatario, voci, totale, pagato, anticipo, annullata_il)
+  values (2026, (select coalesce(max(numero), 0) + 1 from ricevute where anno = 2026), '2026-10-14', 'aaaaaaaa-0000-0000-0000-000000000007', '{}', '{"nome": "Luca", "cognome": "Rossi"}',
+    jsonb_build_array(jsonb_build_object('descrizione', 'ALTRO', 'quantita', 1, 'prezzo', importo,
+      'pagamenti', jsonb_build_array(jsonb_build_object('data', '2026-10-14', 'importo', importo, 'metodo', metodo)))),
+    importo, importo, 0, case when annullata then now() end)
+  returning id $$;
+create or replace function diretto_con(metodo text, importo int, annullato boolean default false) returns uuid
+  language sql security definer set search_path = public as $$
+  insert into pagamenti_diretti (persona_id, data, importo, metodo, voce, annullato_il)
+  values ('aaaaaaaa-0000-0000-0000-000000000007', '2026-10-14', importo, metodo, 'ALTRO', case when annullato then now() end)
+  returning id $$;
+grant execute on function ricevuta_con(text, int, boolean), diretto_con(text, int, boolean) to authenticated;
+-- Una riga della banca coperta da quell'incasso (entrata del 14 ottobre).
+create or replace function copre_incasso(chiave text, con text, importo int default 12000, tipo text default 'entrata') returns text language sql as $$
+  select come(ada(), 'authenticated', format('select banca_segna_coperti(%L::jsonb)', jsonb_build_array(jsonb_build_object(
+    'chiave', chiave, 'data', '2026-10-14', 'tipo', tipo, 'importo', importo, 'descrizione', 'Da Mario BONIFICO', 'conId', con, 'conDescrizione', 'incasso')))) $$;
+create or replace function n_mov_tutti() returns text language sql security definer set search_path = public as $$
+  select count(*)::text from movimenti $$;
+grant execute on function copre_incasso(text, text, int, text), n_mov_tutti() to authenticated;
+
+select ricevuta_con('Bonifico', 12000) as r1 \gset
+select diretto_con('pos', 12000) as d1 \gset
+select 'incasso:' || :'r1' || ':0:0' as i_r1 \gset
+select 'incasso:diretto:' || :'d1' as i_d1 \gset
+
+select atteso('ricevuta in bonifico: la riga della banca la copre', copre_incasso('banca:i1', :'i_r1') || ' ' || stato_banca('banca:i1'), 'ok 1 coperto, 0 scritto');
+select atteso('…il coperto ha l''id dell''incasso come con_id e nessun movimento è nato',
+  (select con_id from banca_coperti where chiave = 'banca:i1') || ' ' || n_mov_tutti(), :'i_r1' || ' 0');
+select atteso('pagamento a mano in POS: la riga della banca lo copre', copre_incasso('banca:i2', :'i_d1') || ' ' || stato_banca('banca:i2'), 'ok 1 coperto, 0 scritto');
+select atteso('…con_id = l''id dell''incasso, ancora nessun movimento', (select con_id from banca_coperti where chiave = 'banca:i2') || ' ' || n_mov_tutti(), :'i_d1' || ' 0');
+select atteso('lo stesso movimento a mano di prima non è toccato: i coperti restano due', (select count(*)::text from banca_coperti), '2');
+
+select atteso('rilanciata con le stesse righe: non cambia niente',
+  copre_incasso('banca:i1', :'i_r1') || ' ' || copre_incasso('banca:i2', :'i_d1') || ' ' || (select count(*)::text from banca_coperti) || ' ' || n_mov_tutti(), 'ok ok 2 0');
+
+-- Un incasso copre una riga sola.
+select atteso('una seconda riga della banca sullo stesso incasso: entra «Da classificare»',
+  copre_incasso('banca:i3', :'i_r1') || ' ' || stato_banca('banca:i3'), 'ok 0 coperto, 1 scritto');
+select atteso('…nel Conto Corrente',
+  (select concat_ws('|', m.tipo, m.importo, c.nome, v.nome) from movimenti m join casse c on c.id = m.cassa_id join voci_contabili v on v.id = m.voce_id where m.origine_import = 'banca:i3'),
+  'entrata|12000|Conto Corrente|Da classificare');
+
+-- Se l'incasso non regge la riga entra «Da classificare», come per un movimento a mano.
+select ricevuta_con('Bonifico', 12000, true) as r_ann \gset
+select diretto_con('POS', 12000, true) as d_ann \gset
+select ricevuta_con('Contanti', 12000) as r_cont \gset
+select ricevuta_con('Carta', 12000) as r_carta \gset
+select ricevuta_con('Satispay', 12000) as r_sat \gset
+select diretto_con('Contanti', 12000) as d_cont \gset
+select ricevuta_con('Assegno', 5000) as r_ass \gset
+select atteso('ricevuta annullata: entra «Da classificare»', copre_incasso('banca:n1', 'incasso:' || :'r_ann' || ':0:0') || ' ' || stato_banca('banca:n1'), 'ok 0 coperto, 1 scritto');
+select atteso('pagamento a mano annullato: entra «Da classificare»', copre_incasso('banca:n2', 'incasso:diretto:' || :'d_ann') || ' ' || stato_banca('banca:n2'), 'ok 0 coperto, 1 scritto');
+select atteso('importo diverso: entra «Da classificare»', copre_incasso('banca:n3', 'incasso:' || :'r_ass' || ':0:0', 12000) || ' ' || stato_banca('banca:n3'), 'ok 0 coperto, 1 scritto');
+select atteso('…anche per il pagamento a mano', copre_incasso('banca:n4', :'i_d1', 12001) || ' ' || stato_banca('banca:n4'), 'ok 0 coperto, 1 scritto');
+select atteso('ricevuta in contanti: entra «Da classificare»', copre_incasso('banca:n5', 'incasso:' || :'r_cont' || ':0:0') || ' ' || stato_banca('banca:n5'), 'ok 0 coperto, 1 scritto');
+select atteso('pagamento a mano in contanti: entra «Da classificare»', copre_incasso('banca:n6', 'incasso:diretto:' || :'d_cont') || ' ' || stato_banca('banca:n6'), 'ok 0 coperto, 1 scritto');
+select atteso('ricevuta con la carta: entra «Da classificare»', copre_incasso('banca:n7', 'incasso:' || :'r_carta' || ':0:0') || ' ' || stato_banca('banca:n7'), 'ok 0 coperto, 1 scritto');
+select diretto_con('Carta', 12000) as d_carta \gset
+select diretto_con('Satispay', 12000) as d_sat \gset
+select atteso('pagamento a mano con la carta: entra «Da classificare»', copre_incasso('banca:n13', 'incasso:diretto:' || :'d_carta') || ' ' || stato_banca('banca:n13'), 'ok 0 coperto, 1 scritto');
+select atteso('pagamento a mano con Satispay: entra «Da classificare»', copre_incasso('banca:n14', 'incasso:diretto:' || :'d_sat') || ' ' || stato_banca('banca:n14'), 'ok 0 coperto, 1 scritto');
+select atteso('ricevuta con Satispay: entra «Da classificare»', copre_incasso('banca:n8', 'incasso:' || :'r_sat' || ':0:0') || ' ' || stato_banca('banca:n8'), 'ok 0 coperto, 1 scritto');
+select ricevuta_con('Bonifico', 12000) as r_usc \gset
+select diretto_con('Bonifico', 12000) as d_usc \gset
+select atteso('un''uscita della banca sull''id di una ricevuta: entra «Da classificare»', copre_incasso('banca:u1', 'incasso:' || :'r_usc' || ':0:0', 12000, 'uscita') || ' ' || stato_banca('banca:u1'), 'ok 0 coperto, 1 scritto');
+select atteso('un''uscita della banca sull''id di un pagamento a mano: entra «Da classificare»', copre_incasso('banca:u2', 'incasso:diretto:' || :'d_usc', 12000, 'uscita') || ' ' || stato_banca('banca:u2'), 'ok 0 coperto, 1 scritto');
+select atteso('ricevuta che non c''è: entra «Da classificare»', copre_incasso('banca:n9', 'incasso:aaaaaaaa-9999-0000-0000-000000000000:0:0') || ' ' || stato_banca('banca:n9'), 'ok 0 coperto, 1 scritto');
+select atteso('pagamento a mano che non c''è: entra «Da classificare»', copre_incasso('banca:n10', 'incasso:diretto:aaaaaaaa-9999-0000-0000-000000000000') || ' ' || stato_banca('banca:n10'), 'ok 0 coperto, 1 scritto');
+select atteso('voce o pagamento della ricevuta che non ci sono: entra «Da classificare»',
+  copre_incasso('banca:n11', 'incasso:' || :'r1' || ':0:5') || ' ' || copre_incasso('banca:n12', 'incasso:' || :'r1' || ':3:0') || ' ' || stato_banca('banca:n11') || ' ' || stato_banca('banca:n12'),
+  'ok ok 0 coperto, 1 scritto 0 coperto, 1 scritto');
+
+-- Un conId che non è un uuid né un incasso: errore chiaro, e non entra niente.
+select (select count(*) from banca_coperti) as c0, (select count(*) from movimenti) as m0 \gset
+select atteso('conId «pippo»: errore 22023', left(copre_incasso('banca:p1', 'pippo'), 5), '22023');
+select atteso('conId «incasso:pippo»: errore 22023', left(copre_incasso('banca:p2', 'incasso:pippo'), 5), '22023');
+select atteso('…e non entra niente', (select count(*) from banca_coperti)::text || ' ' || (select count(*) from movimenti)::text, :'c0' || ' ' || :'m0');
+
+-- Gli stessi permessi dei coperti da un movimento a mano.
+select atteso('la segreteria semplice non copre con un incasso', left(come('11111111-1111-1111-1111-111111111111', 'authenticated', format('select banca_segna_coperti(%L::jsonb)', jsonb_build_array(jsonb_build_object('chiave', 'banca:x1', 'data', '2026-10-14', 'tipo', 'entrata', 'importo', 12000, 'descrizione', 'x', 'conId', :'i_r1', 'conDescrizione', 'x')))), 5), '42501');
+
+\echo ''
+\echo '--- 10. banca_non_e_questo su un coperto da incasso ---'
+select atteso('«Non è questo»: ok', come(ada(), 'authenticated', $$select banca_non_e_questo('banca:i1')$$), 'ok');
+select atteso('…la riga entra «Da classificare» nel Conto Corrente',
+  (select concat_ws('|', m.tipo, m.data, m.importo, c.nome, v.nome) from movimenti m join casse c on c.id = m.cassa_id join voci_contabili v on v.id = m.voce_id where m.origine_import = 'banca:i1'),
+  'entrata|2026-10-14|12000|Conto Corrente|Da classificare');
+select atteso('…esce dai coperti', stato_banca('banca:i1'), '0 coperto, 1 scritto');
+select atteso('…la ricevuta è intatta',
+  (select (annullata_il is null)::text || ' ' || pagato::text from ricevute where id = :'r1'), 'true 12000');
+select atteso('«Non è questo» sul pagamento a mano: ok', come(ada(), 'authenticated', $$select banca_non_e_questo('banca:i2')$$) || ' ' || stato_banca('banca:i2'), 'ok 0 coperto, 1 scritto');
+select atteso('…il pagamento è intatto', (select (annullato_il is null)::text || ' ' || importo::text from pagamenti_diretti where id = :'d1'), 'true 12000');

@@ -913,7 +913,7 @@ export interface DatiSegreteria {
   verificaMeseBanca(q: QuadraturaDaVerificare, impronta: string): Promise<void>
   /**
    * Assegna un'entrata collegata a una persona a quota e corsi, anche dei fratelli del nucleo: ogni riga diventa un
-   * pagamento a mano col movimento (`assegna_movimento` in `134-assegna-movimento.sql`). Tutte o nessuna.
+   * pagamento a mano col movimento (`assegna_movimento` in `135-assegna-movimento.sql`). Tutte o nessuna.
    */
   assegnaMovimento(movimentoId: string, righe: RigaAssegnata[]): Promise<void>
   /** La ricevuta di una persona dai soldi che le sono assegnati sul movimento, tali e quali; le sue assegnazioni si annullano insieme. */

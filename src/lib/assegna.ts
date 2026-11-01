@@ -1,7 +1,7 @@
 // Un'entrata collegata a una persona (il bonifico) si assegna a quota e corsi, anche dei fratelli del nucleo, come saldo
 // o parziale: ogni pezzo è una riga di PAGAMENTI col `movimentoId` del movimento. Dal movimento si fa poi la ricevuta,
 // una per persona. In CONTABILITÀ quei soldi restano una volta sola, nel movimento: `incassiDerivati` salta le righe
-// col movimento. Le stesse regole sono in `supabase/134-assegna-movimento.sql`, e per la modalità prova in
+// col movimento. Le stesse regole sono in `supabase/135-assegna-movimento.sql`, e per la modalità prova in
 // `segreteriaProva.ts`.
 import { NOME_CASSA_CONTANTI, VOCE_CORSI, VOCE_QUOTA, type Cassa, type MovimentoManuale, type VoceContabile } from './contabilita'
 import type { PagamentoDiretto } from './pagamenti'
@@ -40,7 +40,7 @@ export interface RigaAssegnata {
   importo: number
 }
 
-/** Un'assegnazione diventa ricevuta solo dal movimento (il trigger `assegnazione_solo_dal_movimento`, 134). */
+/** Un'assegnazione diventa ricevuta solo dal movimento (il trigger `assegnazione_solo_dal_movimento`, 135). */
 export const SOLO_DAL_MOVIMENTO = 'Questi soldi vengono da un bonifico: la ricevuta si fa dal movimento, in CONTABILITÀ.'
 
 const delMovimento = (movimentoId: string) => (x: { movimentoId?: string }) => x.movimentoId === movimentoId
@@ -52,7 +52,7 @@ export function assegnato(movimentoId: string, diretti: PagamentoDiretto[], rice
   return righe + inRicevuta
 }
 
-/** Le parole del trigger `movimento_assegnato_resta` (134) quando si cambia chi o cosa a un movimento con soldi assegnati. */
+/** Le parole del trigger `movimento_assegnato_resta` (135) quando si cambia chi o cosa a un movimento con soldi assegnati. */
 export const MOVIMENTO_ASSEGNATO = 'Il movimento ha dei soldi assegnati: annulla prima ricevute e assegnazioni.'
 
 /**
@@ -333,7 +333,7 @@ export function vociDaMovimento(sue: PagamentoDiretto[], dataMovimento: string, 
 }
 
 /**
- * Lo stesso rifiuto di `emetti_ricevuta_da_movimento` (134): nella ricevuta il bonifico entra così com'è, tutto
+ * Lo stesso rifiuto di `emetti_ricevuta_da_movimento` (135): nella ricevuta il bonifico entra così com'è, tutto
  * Bonifico, alla data del movimento, per quel che è assegnato alla persona. Un pagamento senza data è del giorno della
  * ricevuta, come in `emetti_ricevuta`.
  */

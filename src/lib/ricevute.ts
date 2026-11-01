@@ -121,7 +121,7 @@ export interface Ricevuta extends Omit<DatiRicevuta, 'numero'> {
   pagato: number
   creataIl: string
   annullataIl?: string
-  /** Fatta dal bonifico, o abbinata a lui (`134-assegna-movimento.sql`): i soldi sono in quel movimento. */
+  /** Fatta dal bonifico, o abbinata a lui (`135-assegna-movimento.sql`): i soldi sono in quel movimento. */
   movimentoId?: string
 }
 

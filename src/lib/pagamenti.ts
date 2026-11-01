@@ -33,7 +33,7 @@ export interface PagamentoDiretto {
    * Il pagamento la tiene: una ricevuta con quella chiave non entra finché lui è attivo (128-ricevuta-pagamento-perso.sql).
    */
   chiaveRicevuta?: string
-  /** Un pezzo di un bonifico assegnato a quota o corsi (`134-assegna-movimento.sql`): i soldi sono nel movimento. */
+  /** Un pezzo di un bonifico assegnato a quota o corsi (`135-assegna-movimento.sql`): i soldi sono nel movimento. */
   movimentoId?: string
 }
 
