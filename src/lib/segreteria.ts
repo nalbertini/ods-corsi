@@ -913,9 +913,10 @@ export interface DatiSegreteria {
   verificaMeseBanca(q: QuadraturaDaVerificare, impronta: string): Promise<void>
   /**
    * Assegna un'entrata collegata a una persona a quota e corsi, anche dei fratelli del nucleo: ogni riga diventa un
-   * pagamento a mano col movimento (`assegna_movimento` in `135-assegna-movimento.sql`). Tutte o nessuna.
+   * pagamento a mano col movimento (`assegna_movimento` in `135-assegna-movimento.sql`). Tutte o nessuna. Con la
+   * `chiave` dell'apertura del dialogo, ripetuta dopo una rete caduta non scrive di nuovo (`136-assegna-una-volta.sql`).
    */
-  assegnaMovimento(movimentoId: string, righe: RigaAssegnata[]): Promise<void>
+  assegnaMovimento(movimentoId: string, righe: RigaAssegnata[], chiave?: string): Promise<void>
   /** La ricevuta di una persona dai soldi che le sono assegnati sul movimento, tali e quali; le sue assegnazioni si annullano insieme. */
   emettiRicevutaDaMovimento(dati: DatiRicevuta, movimentoId: string): Promise<Ricevuta>
   /** «Collegati prima»: una ricevuta fatta a parte prima di questo cambio diventa del movimento, che così non si conta due volte. */

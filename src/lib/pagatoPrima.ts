@@ -17,6 +17,10 @@ export interface IncassoPrima {
   data: string
   importo: number
   voce: string
+  /** Il movimento da cui viene (`136-assegna-una-volta.sql`); senza, l'incasso conta come prima. */
+  movimentoId?: string
+  /** Quanto del movimento è già assegnato, in centesimi: righe attive più pagato delle ricevute attive. */
+  assegnato?: number
 }
 
 /** Perché una persona sta fra quelli da guardare a mano, senza casella: lo decide la segreteria dalla scheda. */
@@ -60,7 +64,8 @@ const riga = (p: PersonaSeg, i: IncassoPrima, oggi: string, extra: Pick<RigaPaga
 export function pagatoNelVecchio(persone: PersonaSeg[], incassi: IncassoPrima[], oggi: string): PagatoNelVecchio {
   // La stagione di oggi, come la calcola il database (`incassi_vecchio_programma`): agosto è già della nuova.
   const stagione = stagioneDi(oggi)
-  const dentro = incassi.filter((i) => i.data >= stagione.dal && i.data <= stagione.al)
+  // Un incasso assegnato anche solo in parte la segreteria l'ha già messo su qualcuno: non lo si segna una seconda volta.
+  const dentro = incassi.filter((i) => i.data >= stagione.dal && i.data <= stagione.al && !(i.movimentoId && (i.assegnato ?? 0) > 0))
   const perId = new Map(persone.map((p) => [p.id, p]))
   const quota: RigaPagatoPrima[] = []
   const daGuardare: RigaPagatoPrima[] = []

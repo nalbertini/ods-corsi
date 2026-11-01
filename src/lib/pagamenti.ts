@@ -26,6 +26,8 @@ export interface PagamentoDiretto {
   nota?: string
   creatoIl: string
   annullatoIl?: string
+  /** La chiave dell'apertura di ASSEGNA che l'ha scritto (`136-assegna-una-volta.sql`): ripetuta, non si riscrive. */
+  chiave?: string
   /** La ricevuta in cui è finito (`89-pagamento-diventa-ricevuta.sql`): annullato, ma non perso. */
   ricevutaId?: string
   /**

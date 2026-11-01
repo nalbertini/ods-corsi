@@ -204,7 +204,8 @@ console.log('\n3b. Il tetto della quota: una persona, una stagione, 50 € (cosa
   ok('due righe nuove, 30 + 30 €: contano insieme, mancano 50 €', await va([nuova('mario', 'Quota associativa 2026/27', 3000), nuova('mario', 'Quota associativa 2026/27', 3000)]), TETTO('50,00 €'))
   ok('la voce è «Quota associativa…»: anche in minuscolo', await va([nuova('mario', 'quota associativa 2026/27', 6000)]), TETTO('50,00 €'))
   ok('un corso non ha il tetto (qui è dell’app)', await va([nuova('mario', 'Annuale Judo Kids', 80000)]), null)
-  ok('senza tetto nel listino (0 o niente): nessun limite', [await va([nuova('mario', 'Quota associativa 2026/27', 99900)], [], [], '2026-10-15', 0), await va([nuova('mario', 'Quota associativa 2026/27', 99900)], [], [], '2026-10-15', undefined)], [null, null])
+  // Il secondo caso chiama la funzione senza tetto: `va(…, undefined)` userebbe il tetto di default di `va`.
+  ok('senza tetto nel listino (0 o niente): nessun limite', [await va([nuova('mario', 'Quota associativa 2026/27', 99900)], [], [], '2026-10-15', 0), await prova(() => cosaNonVaQuota([nuova('mario', 'Quota associativa 2026/27', 99900)], '2026-10-15', [], []))], [null, null])
 
   console.log('  3b-2. Cosa conta')
   ok('un’assegnazione annullata non conta', await va([nuova('mario', 'Quota associativa 2026/27', 5000)], [qDir('d1', 'mario', 3000, { annullatoIl: '2026-10-16T10:00:00Z' })]), null)

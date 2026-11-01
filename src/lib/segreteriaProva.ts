@@ -44,7 +44,7 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { abbinaMovimento, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
-import { assegnato, conAssegnazioni, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaRicevutaDaMovimento, daAssegnare, personeDelNucleo, SOLO_DAL_MOVIMENTO } from './assegna'
+import { assegnato, conAssegnazioni, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, personeDelNucleo, SOLO_DAL_MOVIMENTO } from './assegna'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, giaNelPagamento, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
@@ -1696,8 +1696,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return id
     },
 
-    async assegnaMovimento(movimentoId, righe) {
-      // Come `assegna_movimento` (135): il movimento, poi chi, poi i soldi; tutto o niente.
+    async assegnaMovimento(movimentoId, righe, chiave) {
+      // Come `assegna_movimento` (135 e 136): la chiave, il movimento, poi chi, poi i soldi e la quota; tutto o niente.
+      const k = chiave?.trim().toLowerCase() || undefined
+      const gia = k ? (a().pagamentiDiretti ?? []).find((d) => d.chiave === k) : undefined
+      if (gia?.movimentoId === movimentoId) return
+      if (gia) throw new Error('Questa assegnazione è già stata fatta su un altro bonifico: chiudi la finestra e riaprila.')
       const { casse, voci, movimenti } = contabilita()
       const m = movimenti.find((x) => x.id === movimentoId)
       if (!m) throw new Error('Il movimento non c’è più: ricarica la pagina.')
@@ -1713,10 +1717,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
         const titolare = persona(titolareId)
         throw new Error(`${chi ? `${chi.cognome} ${chi.nome}` : 'Questa persona'} non è nella famiglia di ${titolare.cognome} ${titolare.nome}: il bonifico si assegna solo a chi è nel suo nucleo.`)
       }
+      // In prova il listino c'è sempre (quello predefinito, se non è salvato): il tetto della quota anche.
+      const { listino } = await this.listino()
       const nonVa = cosaNonVaAssegnazione(righe, daAssegnare(m, a().pagamentiDiretti ?? [], a().ricevute ?? []), [])
+        ?? cosaNonVaQuota(righe, m.data, a().pagamentiDiretti ?? [], a().ricevute ?? [], Math.round(listino.quota * 100))
       if (nonVa) throw new Error(nonVa)
       const creatoIl = new Date().toISOString()
-      const nuove: PagamentoDiretto[] = righe.map((r) => ({ id: `pd-${unico()}`, personaId: r.personaId, data: m.data, importo: r.importo, metodo: 'Bonifico', voce: r.voce.trim(), movimentoId, creatoIl }))
+      const nuove: PagamentoDiretto[] = righe.map((r) => ({ id: `pd-${unico()}`, personaId: r.personaId, data: m.data, importo: r.importo, metodo: 'Bonifico', voce: r.voce.trim(), movimentoId, creatoIl, ...(k ? { chiave: k } : {}) }))
       a().pagamentiDiretti = [...(a().pagamentiDiretti ?? []), ...nuove]
       salva()
     },
