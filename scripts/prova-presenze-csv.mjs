@@ -9,7 +9,7 @@
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({
-  stdin: { contents: "export * from './src/lib/presenzeCsv'", resolveDir: '.', loader: 'ts' },
+  stdin: { contents: "export * from './src/lib/presenzeCsv'; export { mesi } from './src/lib/ore'", resolveDir: '.', loader: 'ts' },
   bundle: true,
   format: 'esm',
   platform: 'node',
@@ -50,16 +50,24 @@ console.log('\nScarica CSV spento: la riga sotto dice perché')
 {
   // Il tasto resta, spento; la frase dice che il periodo scelto è vuoto, così non si cerca il guasto.
   const perche = (...a) => (typeof m.nienteDaScaricare === 'function' ? m.nienteDaScaricare(...a) : 'manca nienteDaScaricare')
-  ok('un mese, tutti i corsi', perche('presenze', 'Novembre 2026', false, { arrivato: true, righe: 0 }), 'Nessuna presenza a novembre 2026: niente da scaricare.')
-  ok('un mese, un corso scelto', perche('presenze', 'Ottobre 2026', true, { arrivato: true, righe: 0 }), 'Nessuna presenza a ottobre 2026 per questo corso: niente da scaricare.')
-  ok('gli ultimi 30 giorni', perche('presenze', 'Ultimi 30 giorni', false, { arrivato: true, righe: 0 }), 'Nessuna presenza negli ultimi 30 giorni: niente da scaricare.')
-  ok('STATISTICHE, gli ultimi 3 mesi', perche('lezioni', 'Ultimi 3 mesi', false, { arrivato: true, righe: 0 }), 'Nessuna lezione negli ultimi 3 mesi: niente da scaricare.')
-  ok('STATISTICHE, da settembre, un corso', perche('lezioni', 'Da settembre', true, { arrivato: true, righe: 0 }), 'Nessuna lezione da settembre per questo corso: niente da scaricare.')
+  // Il «quando» lo porta il periodo, già scritto: la frase non lo ricava dall'etichetta del menu.
+  ok('un mese, tutti i corsi', perche('presenze', 'a novembre 2026', false, { arrivato: true, righe: 0 }), 'Nessuna presenza a novembre 2026: niente da scaricare.')
+  ok('un mese, un corso scelto', perche('presenze', 'a ottobre 2026', true, { arrivato: true, righe: 0 }), 'Nessuna presenza a ottobre 2026 per questo corso: niente da scaricare.')
+  ok('gli ultimi 30 giorni', perche('presenze', 'negli ultimi 30 giorni', false, { arrivato: true, righe: 0 }), 'Nessuna presenza negli ultimi 30 giorni: niente da scaricare.')
+  ok('STATISTICHE, gli ultimi 3 mesi', perche('lezioni', 'negli ultimi 3 mesi', false, { arrivato: true, righe: 0 }), 'Nessuna lezione negli ultimi 3 mesi: niente da scaricare.')
+  ok('STATISTICHE, da settembre, un corso', perche('lezioni', 'da settembre', true, { arrivato: true, righe: 0 }), 'Nessuna lezione da settembre per questo corso: niente da scaricare.')
+  ok('un «quando» qualsiasi passa com\'è, senza indovinare la grammatica', perche('presenze', 'nel periodo scelto', false, { arrivato: true, righe: 0 }), 'Nessuna presenza nel periodo scelto: niente da scaricare.')
   // Mentre carica, o se la lettura non è riuscita, il periodo non è vuoto: non si sa. Niente frase, il Guaio sopra dice cosa fare.
-  ok('mentre carica: niente frase', perche('presenze', 'Novembre 2026', false, { arrivato: false, righe: 0 }), '')
-  ok('lettura non riuscita: niente frase', perche('lezioni', 'Ultimi 3 mesi', false, { arrivato: false, righe: 0 }), '')
-  ok('con qualcosa da scaricare: niente frase', perche('presenze', 'Novembre 2026', false, { arrivato: true, righe: 3 }), '')
-  ok('arrivato e vuoto: la frase', perche('presenze', 'Novembre 2026', false, { arrivato: true, righe: 0 }), 'Nessuna presenza a novembre 2026: niente da scaricare.')
+  ok('mentre carica: niente frase', perche('presenze', 'a novembre 2026', false, { arrivato: false, righe: 0 }), '')
+  ok('lettura non riuscita: niente frase', perche('lezioni', 'negli ultimi 3 mesi', false, { arrivato: false, righe: 0 }), '')
+  ok('con qualcosa da scaricare: niente frase', perche('presenze', 'a novembre 2026', false, { arrivato: true, righe: 3 }), '')
+  ok('arrivato e vuoto: la frase', perche('presenze', 'a novembre 2026', false, { arrivato: true, righe: 0 }), 'Nessuna presenza a novembre 2026: niente da scaricare.')
+  // I mesi del menu di PRESENZE portano il loro «quando»: «ad» davanti ad aprile e agosto.
+  const quando = prova(() => m.mesi().map((x) => [x.nome, x.quando]))
+  // Scritti a mano, non ricavati con la stessa regola del codice: se no la prova conferma il codice con se stesso.
+  const ATTESO = { Gennaio: 'a gennaio', Febbraio: 'a febbraio', Marzo: 'a marzo', Aprile: 'ad aprile', Maggio: 'a maggio', Giugno: 'a giugno', Luglio: 'a luglio', Agosto: 'ad agosto', Settembre: 'a settembre', Ottobre: 'a ottobre', Novembre: 'a novembre', Dicembre: 'a dicembre' }
+  ok('ogni mese ha il suo quando, in minuscolo', Array.isArray(quando) ? quando.filter(([n, q]) => { const [mese, anno] = n.split(' '); return q !== `${ATTESO[mese]} ${anno}` }) : quando, [])
+  ok('«ad aprile», «ad agosto»: c\'è uno dei due nei dodici mesi', Array.isArray(quando) && quando.some(([, q]) => /^ad (aprile|agosto) /.test(q)), true)
 }
 
 if (guai) {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import type { DatiSegreteria, LezioneStat, PersonaSeg, ProvaSeg } from '../../lib/segreteria'
 import { comePaga, contaCertificati, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
@@ -19,11 +19,12 @@ const GIORNI = [1, 2, 3, 4, 5, 6, 0]
 const GIORNI_CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
 
 type Periodo = 'tre' | 'sei' | 'dodici' | 'stagione'
-const PERIODI: Array<[Periodo, string]> = [
-  ['tre', 'Ultimi 3 mesi'],
-  ['sei', 'Ultimi 6 mesi'],
-  ['dodici', 'Ultimi 12 mesi'],
-  ['stagione', 'Da settembre'],
+/** `quando` è come il periodo entra in una frase («Nessuna lezione negli ultimi 3 mesi»): l'etichetta del menu non basta a dirlo. */
+const PERIODI: Array<{ id: Periodo; nome: string; quando: string }> = [
+  { id: 'tre', nome: 'Ultimi 3 mesi', quando: 'negli ultimi 3 mesi' },
+  { id: 'sei', nome: 'Ultimi 6 mesi', quando: 'negli ultimi 6 mesi' },
+  { id: 'dodici', nome: 'Ultimi 12 mesi', quando: 'negli ultimi 12 mesi' },
+  { id: 'stagione', nome: 'Da settembre', quando: 'da settembre' },
 ]
 
 /** Dal primo del mese, così ogni colonna è un mese intero; fino a oggi. */
@@ -144,8 +145,12 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
   const personeProva = new Map(provati.map((x) => [x.personaId, x.iscritto]))
   const convertiti = [...personeProva.values()].filter(Boolean).length
 
-  const nomePeriodo = PERIODI.find((x) => x[0] === periodo)![1]
-  const perche = nienteDaScaricare('lezioni', nomePeriodo, !!corso, { arrivato: stat.dato !== null && !stat.guaio, righe: lezioni.length })
+  // Un id per pagina: due pagine aperte insieme non si rubano la frase.
+  const idPerche = useId()
+  // Periodo è chiuso sugli id di PERIODI: il ! non nasconde un caso che può succedere.
+  const scelto = PERIODI.find((x) => x.id === periodo)!
+  const nomePeriodo = scelto.nome
+  const perche = nienteDaScaricare('lezioni', scelto.quando, !!corso, { arrivato: stat.dato !== null && !stat.guaio, righe: lezioni.length })
   const nomeCorso = corso ? corsi.find((c) => c[0] === corso)?.[1] : undefined
 
   return (
@@ -155,7 +160,7 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
           Periodo
         </label>
         <select id="periodo-s" className="sg-campo" value={periodo} onChange={(e) => setPeriodo(e.target.value as Periodo)}>
-          {PERIODI.map(([id, nome]) => (
+          {PERIODI.map(({ id, nome }) => (
             <option key={id} value={id}>
               {nome}
             </option>
@@ -177,10 +182,10 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
         </select>
         {/* Spento, il tasto resta al suo posto e la riga sotto dice perché, come in PRESENZE. */}
         <span className="sg-tasto-perche">
-          <Tasto disabled={!lezioni.length} aria-describedby={perche ? 'csv-perche' : undefined} onClick={() => scaricaCsv(lezioni, `${nomeCorso ?? 'tutti'} ${nomePeriodo}`)}>
+          <Tasto disabled={!lezioni.length} aria-describedby={perche ? idPerche : undefined} onClick={() => scaricaCsv(lezioni, `${nomeCorso ?? 'tutti'} ${nomePeriodo}`)}>
             Scarica CSV
           </Tasto>
-          {perche && <span id="csv-perche" className="sg-sotto">{perche}</span>}
+          {perche && <span id={idPerche} className="sg-sotto">{perche}</span>}
         </span>
       </Testa>
 

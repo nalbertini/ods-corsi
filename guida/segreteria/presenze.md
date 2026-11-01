@@ -28,7 +28,9 @@ tutta, dove c'è la **›** a destra: non c'è un tasto per riga. Le sezioni lun
 (PROVE e il registro) sono chiuse e si aprono con un tocco sul titolo.
 
 - **CHI SI STA PERDENDO** — chi ha **tre o più assenze di fila** negli ultimi
-  due mesi, con i corsi e l'ultima volta che è venuto. Se sono più di cinque
+  60 giorni, con i corsi e l'ultima volta che è venuto. Non segue il mese
+  scelto nel filtro, perché le assenze di fila non si fermano al primo del
+  mese: lo dice anche il sottotitolo. Se sono più di cinque
   si vedono le prime e **Mostra tutti** apre il resto. La riga apre la sua
   scheda in [Iscritti](iscritti.md). È la lista di chi chiamare.
 - **APPELLI MANCANTI** — le lezioni passate senza appello. Quando ce n'è

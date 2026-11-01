@@ -549,7 +549,11 @@ console.log('\n7. la sessione sul dispositivo: la chiave e le tre sessioni di pr
   {
     // Al telefono le colonne CERTIFICATO e QUOTA non ci stanno: le parole
     // vanno sotto il nome e devono dire da sole di cosa parlano.
-    const tel = (p, righe = []) => (typeof E.paroleTelefono === 'function' ? E.paroleTelefono(stato(p, righe)) : 'manca paroleTelefono')
+    // paroleTelefono legge la persona, come statoPerElenco: i guai si decidono in un posto solo, non dalle parole corte.
+    const telefono = (p, righe = []) => { try { return E.paroleTelefono(p, oggi, righe) } catch (e) { return `paroleTelefono: ${e.message}` } }
+    const tel = (p, righe = []) => { const x = telefono(p, righe); return Array.isArray(x?.parole) ? x.parole : 'paroleTelefono non dà { parole, altri }' }
+    const altri = (p, righe = []) => { const x = telefono(p, righe); return typeof x?.altri === 'string' ? x.altri : 'paroleTelefono non dà { parole, altri }' }
+    const nomi = (x) => (Array.isArray(x) ? x.map((s) => s.parola) : x)
     const parole = (p, righe) => { const x = tel(p, righe); return Array.isArray(x) ? x.map((s) => s.parola) : x }
     ok('tutto a posto: un verde «In regola» e basta', tel(persona()), [segno('verde', 'In regola')])
     ok('certificato che manca: «Manca il certificato», rosso', tel(cert(undefined)), [segno('rosso', 'Manca il certificato')])
@@ -569,16 +573,30 @@ console.log('\n7. la sessione sul dispositivo: la chiave e le tre sessioni di pr
     ok('archiviato: «Archiviato» spento e basta', tel(persona({ attiva: false, certificato: { conFile: false }, quote: [] })), [segno('spento', 'Archiviato')])
     ok('sotto i 6 anni col certificato scaduto: «Non serve» non si dice', tel(persona({ natoIl: '2021-03-10', certificato: { scade: fra(-1), conFile: false } })), [segno('verde', 'In regola')])
     ok('tessera che manca: «Tessera da fare», giallo', tel(persona(), [tessera('manca')]), [segno('giallo', 'Tessera da fare')])
-    // Un segno nuovo nella colonna non deve sparire, o cambiare colore, al telefono.
+    // Due parole al massimo, prima i rossi; il resto è «+N» e si legge nella scheda: le righe restano alte uguali.
+    ok('due guai: tutti e due, niente «+N»', altri(persona({ certificato: { conFile: false }, quote: [] })), '')
+    ok('tre guai: i primi due e «+1 altro»', [tel(persona({ certificato: { conFile: false }, quote: [] }), [tessera('manca')]), altri(persona({ certificato: { conFile: false }, quote: [] }), [tessera('manca')])],
+      [[segno('rosso', 'Manca il certificato'), segno('rosso', 'Quota da pagare')], '+1 altro'])
+    ok('quattro guai: «+2 altri»', altri(persona({ certificato: { scade: fra(-1), conFile: false }, quote: [] }), [tessera('scaduta', fra(-5)), tessera('manca', undefined, 'CSEN')]), '+2 altri')
+    ok('prima i rossi: la quota da pagare passa davanti al certificato in scadenza', nomi(tel(persona({ certificato: { scade: fra(10), conFile: true }, quote: [] }))),
+      ['Quota da pagare', `Certificato: scade il ${corta(fra(10))}`])
+    ok('tre gialli e un rosso: il rosso davanti, poi il primo giallo, «+2 altri»',
+      [nomi(tel(persona({ natoIl: undefined, certificato: { scade: fra(10), conFile: true }, quote: [{ ...pagata, mancano: 2000 }] }), [tessera('scaduta', fra(-5)), tessera('manca', undefined, 'CSEN')])),
+        altri(persona({ natoIl: undefined, certificato: { scade: fra(10), conFile: true }, quote: [{ ...pagata, mancano: 2000 }] }), [tessera('scaduta', fra(-5)), tessera('manca', undefined, 'CSEN')])],
+      [['Tessera scaduta', `Certificato: scade il ${corta(fra(10))}`], '+2 altri'])
+    ok('tutto a posto e archiviato: niente «+N»', [altri(persona()), altri(persona({ attiva: false, certificato: { conFile: false }, quote: [] }), [tessera('manca')])], ['', ''])
+    // Un segno nuovo nella colonna non deve sparire, o cambiare colore, al telefono: quelli che non si vedono li conta «+N».
     const casi = [
       persona(), cert(undefined), cert(fra(-1)), cert(oggi), cert(fra(10)), persona({ natoIl: undefined }), persona({ quote: [] }),
       persona({ certificato: { scade: fra(100), conFile: true, vecchio: true } }), persona({ quote: [{ ...pagata, mancano: 2000 }] }),
       persona({ certificato: { conFile: false }, quote: [] }), persona({ natoIl: '2021-03-10', certificato: { scade: fra(-1), conFile: false } }),
     ]
-    const toniGuai = (x) => x.filter((s) => s.tono === 'rosso' || s.tono === 'giallo').map((s) => s.tono)
-    ok('i guai al telefono sono quelli delle colonne, stesso numero e stessi colori',
-      casi.map((p) => toniGuai(tel(p, [tessera('manca')]))),
-      casi.map((p) => { const x = stato(p, [tessera('manca')]); return toniGuai([x.certificato, ...x.quota]) }))
+    const toniGuai = (x) => (Array.isArray(x) ? x.filter((s) => s.tono === 'rosso' || s.tono === 'giallo').map((s) => s.tono) : [x])
+    const prima = (t) => (t === 'rosso' ? 0 : 1)
+    const contati = (x) => Number(/^\+(\d+) /.exec(x)?.[1] ?? 0)
+    ok('i guai al telefono sono quelli delle colonne: i primi due per colore, e gli altri contati',
+      casi.map((p) => [...toniGuai(tel(p, [tessera('manca')])), contati(altri(p, [tessera('manca')]))]),
+      casi.map((p) => { const x = stato(p, [tessera('manca')]); const t = toniGuai([x.certificato, ...x.quota]).sort((a, b) => prima(a) - prima(b)); return [...t.slice(0, 2), Math.max(0, t.length - 2)] }))
   }
 
   console.log('\nELENCO: «In regola?» com’era, per la ricerca')

@@ -1574,7 +1574,58 @@ export interface Segno {
   parola: string
 }
 
-const PAROLA_QUOTA: Record<ComePaga, string> = { pagato: 'In regola', da_pagare: 'Da pagare', scaduto: 'Scaduta', in_parte: 'In parte' }
+const PAROLA_QUOTA: Record<ComePaga, [corta: string, intera: string]> = {
+  pagato: ['In regola', 'In regola'],
+  da_pagare: ['Da pagare', 'Quota da pagare'],
+  scaduto: ['Scaduta', 'Quota scaduta'],
+  in_parte: ['In parte', 'Quota pagata in parte'],
+}
+
+/** Un segno con la parola corta della colonna e quella intera che al telefono, senza la testata sopra, dice da sola di cosa parla. */
+type VoceSegno = Segno & { intera: string }
+
+const voce = (tono: Segno['tono'], parola: string, intera = parola): VoceSegno => ({ tono, parola, intera })
+
+/**
+ * Le voci di certificato, quota e tessere di una persona, decise una volta
+ * sola per l'elenco e per il telefono: le due letture cambiano le parole,
+ * non i guai. Chi è archiviato non ne ha.
+ */
+function vociDi(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string, righe: RigaIncrocio[]): { certificato: VoceSegno; quota: VoceSegno[] } {
+  if (!p.attiva) return { certificato: voce('spento', 'Archiviato'), quota: [] }
+  const stato = statoCertificato(p, oggi)
+  const t = timbroCertificato(p.certificato, oggi, p.natoIl)
+  const certificato: VoceSegno =
+    stato === 'manca' ? voce('rosso', 'Manca', 'Manca il certificato')
+    : stato === 'scaduto' ? voce('rosso', 'Scaduto', 'Certificato scaduto')
+    : stato === 'non_serve' && t.tono !== 'verde' ? voce('nota', 'Non serve')
+    : t.tono !== 'verde' ? voceCertificato(t.tono, t.inElenco ?? t.parola)
+    // Senza la data di nascita non si sa se fra poco servirà: da guardare, anche se è valido.
+    : !p.natoIl ? voce('giallo', 'Senza data', 'Manca la data di nascita')
+    // Il file del vecchio programma è da archiviare: lo dice la colonna, non un tag sotto il nome.
+    : certificatoDaStampare(p.certificato) ? voce('giallo', 'Da archiviare', 'Certificato da archiviare')
+    : voce('verde', 'In regola')
+  const come = pagamentoDi(p, oggi)
+  const [corta, intera] = PAROLA_QUOTA[come.come]
+  const quota = voce(timbroQuota(come).tono, corta, intera)
+  const tessere: VoceSegno[] = []
+  for (const r of righe) {
+    if (r.esito === 'non_iscritto') continue
+    // In elenco la tessera che manca è da fare, non un rosso: chi entra in sala non lo blocca.
+    const s = r.esito === 'manca' ? { tono: 'giallo' as const, parola: 'Tessera da fare' } : parolaTessera(r.esito, r.tesseraAl)
+    // «Tessera scaduta», «Tessera da fare»: la parola dice già di cosa parla.
+    if (s && !tessere.some((x) => x.parola === s.parola)) tessere.push(voce(s.tono, s.parola))
+  }
+  const guai = [quota, ...tessere].filter((s) => s.tono !== 'verde')
+  return { certificato, quota: guai.length ? guai : [quota] }
+}
+
+/** «Scade il 12/11» del timbro diventa «Certificato: scade il 12/11»; una parola che dice già «certificato» resta com'è. */
+function voceCertificato(tono: Segno['tono'], parola: string): VoceSegno {
+  return voce(tono, parola, /certificato/i.test(parola) ? parola : `Certificato: ${parola.charAt(0).toLowerCase()}${parola.slice(1)}`)
+}
+
+const soloSegno = ({ tono, parola }: VoceSegno): Segno => ({ tono, parola })
 
 /**
  * Le colonne CERTIFICATO e QUOTA dell'elenco ISCRITTI: parole corte, la
@@ -1583,64 +1634,31 @@ const PAROLA_QUOTA: Record<ComePaga, string> = { pagato: 'In regola', da_pagare:
  * qui (la scheda lo dice): la quota è pagata. Chi è archiviato non ha guai.
  */
 export function statoPerElenco(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string, righe: RigaIncrocio[]): { certificato: Segno; quota: Segno[] } {
-  if (!p.attiva) return { certificato: { tono: 'spento', parola: 'Archiviato' }, quota: [] }
-  const stato = statoCertificato(p, oggi)
-  const t = timbroCertificato(p.certificato, oggi, p.natoIl)
-  const certificato: Segno =
-    stato === 'manca' ? { tono: 'rosso', parola: 'Manca' }
-    : stato === 'scaduto' ? { tono: 'rosso', parola: 'Scaduto' }
-    : stato === 'non_serve' && t.tono !== 'verde' ? { tono: 'nota', parola: 'Non serve' }
-    : t.tono !== 'verde' ? { tono: t.tono, parola: t.inElenco ?? t.parola }
-    // Senza la data di nascita non si sa se fra poco servirà: da guardare, anche se è valido.
-    : !p.natoIl ? { tono: 'giallo', parola: 'Senza data' }
-    // Il file del vecchio programma è da archiviare: lo dice la colonna, non un tag sotto il nome.
-    : certificatoDaStampare(p.certificato) ? { tono: 'giallo', parola: 'Da archiviare' }
-    : { tono: 'verde', parola: 'In regola' }
-  const come = pagamentoDi(p, oggi)
-  const quota: Segno = { tono: timbroQuota(come).tono, parola: PAROLA_QUOTA[come.come] }
-  const tessere: Segno[] = []
-  for (const r of righe) {
-    if (r.esito === 'non_iscritto') continue
-    // In elenco la tessera che manca è da fare, non un rosso: chi entra in sala non lo blocca.
-    const s = r.esito === 'manca' ? { tono: 'giallo' as const, parola: 'Tessera da fare' } : parolaTessera(r.esito, r.tesseraAl)
-    if (s && !tessere.some((x) => x.parola === s.parola)) tessere.push(s)
-  }
-  const guai = [quota, ...tessere].filter((s) => s.tono !== 'verde')
-  return { certificato, quota: guai.length ? guai : [quota] }
+  const v = vociDi(p, oggi, righe)
+  return { certificato: soloSegno(v.certificato), quota: v.quota.map(soloSegno) }
 }
 
-/** Le parole corte delle colonne che al telefono, fuori dalla colonna, non dicono più di cosa parlano. */
-const PAROLA_INTERA: Record<string, string> = {
-  Manca: 'Manca il certificato',
-  Scaduto: 'Certificato scaduto',
-  'Da archiviare': 'Certificato da archiviare',
-  'Senza data': 'Manca la data di nascita',
-  'Da pagare': 'Quota da pagare',
-  Scaduta: 'Quota scaduta',
-  'In parte': 'Quota pagata in parte',
-}
+/** Quante parole sotto il nome al telefono: con tre o più la riga andrebbe a capo e l'elenco non si scorre più a colpo d'occhio. */
+const PAROLE_AL_TELEFONO = 2
 
 /**
  * ISCRITTI al telefono: le colonne CERTIFICATO e QUOTA non ci stanno, e le
  * parole vanno sotto il nome. Senza la testata sopra devono dire da sole di
- * cosa parlano, e si vedono solo i guai: un verde solo se non c'è altro.
- * «Non serve» (sotto i 6 anni) non è un guaio e non si dice.
+ * cosa parlano, e si vedono solo i guai, prima i rossi: i primi due, poi
+ * «+1 altro» o «+N altri», che si leggono nella scheda. Un verde solo se non
+ * c'è altro. «Non serve» (sotto i 6 anni) non è un guaio e non si dice.
  */
-export function paroleTelefono(stato: { certificato: Segno; quota: Segno[] }): Segno[] {
-  if (stato.certificato.tono === 'spento') return [stato.certificato]
-  const guaio = (s: Segno) => s.tono === 'rosso' || s.tono === 'giallo'
-  const intera = (s: Segno, di: string): Segno => {
-    const fissa = PAROLA_INTERA[s.parola]
-    if (fissa) return { tono: s.tono, parola: fissa }
-    // «Tessera scaduta», «Manca il certificato»: la parola dice già di cosa parla.
-    if (/certificato|tessera/i.test(s.parola)) return s
-    return { tono: s.tono, parola: `${di}: ${s.parola.charAt(0).toLowerCase()}${s.parola.slice(1)}` }
-  }
-  const guai = [
-    ...[stato.certificato].filter(guaio).map((s) => intera(s, 'Certificato')),
-    ...stato.quota.filter(guaio).map((s) => intera(s, 'Quota')),
-  ]
-  return guai.length ? guai : [{ tono: 'verde', parola: 'In regola' }]
+export function paroleTelefono(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string, righe: RigaIncrocio[]): { parole: Segno[]; altri: string } {
+  const v = vociDi(p, oggi, righe)
+  if (v.certificato.tono === 'spento') return { parole: [soloSegno(v.certificato)], altri: '' }
+  const guai = [v.certificato, ...v.quota]
+    .filter((s) => s.tono === 'rosso' || s.tono === 'giallo')
+    // sort è stabile: fra due rossi resta l'ordine certificato, quota, tessere.
+    .sort((a, b) => Number(b.tono === 'rosso') - Number(a.tono === 'rosso'))
+    .map((s): Segno => ({ tono: s.tono, parola: s.intera }))
+  if (!guai.length) return { parole: [{ tono: 'verde', parola: 'In regola' }], altri: '' }
+  const resto = guai.length - PAROLE_AL_TELEFONO
+  return { parole: guai.slice(0, PAROLE_AL_TELEFONO), altri: resto <= 0 ? '' : resto === 1 ? '+1 altro' : `+${resto} altri` }
 }
 
 /** Una riga del tab ISCRITTI di un corso: chi è, da quando, e le parole di certificato e quota. */

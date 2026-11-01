@@ -18,7 +18,10 @@ export function mesi() {
   const oggi = new Date()
   return Array.from({ length: 12 }, (_, i) => {
     const d = new Date(oggi.getFullYear(), oggi.getMonth() - i, 1)
-    return { chiave: `${d.getFullYear()}-${d.getMonth()}`, da: d, a: new Date(d.getFullYear(), d.getMonth() + 1, 0), nome: `${MESI[d.getMonth()]} ${d.getFullYear()}` }
+    const nome = `${MESI[d.getMonth()]} ${d.getFullYear()}`
+    // «ad aprile», «ad agosto»: la frase sotto «Scarica CSV» (nienteDaScaricare) lo usa così com'è.
+    const quando = `${nome.startsWith('A') ? 'ad' : 'a'} ${nome.toLowerCase()}`
+    return { chiave: `${d.getFullYear()}-${d.getMonth()}`, da: d, a: new Date(d.getFullYear(), d.getMonth() + 1, 0), nome, quando }
   })
 }
 

@@ -69,6 +69,12 @@ export const DI_FILA = 3
 /** Quanti giorni indietro guarda «chi si sta perdendo»: più del mese, perché la fila non si ferma al primo. */
 export const GIORNI_RECENTI = 60
 
+/**
+ * Il sottotitolo di CHI SI STA PERDENDO: dice da quanto guarda, perché la
+ * lista non segue il filtro del mese (la fila di assenze non si ferma al primo).
+ */
+export const sottoPersi = () => `${DI_FILA} assenze di fila o più, negli ultimi ${GIORNI_RECENTI} giorni`
+
 export const conAppello = (r: Pick<RigaRegistro, 'appello'>) => r.appello.some((p) => p.stato !== null)
 
 /** Presenti su lezioni dovute: i giustificati non contano né sopra né sotto. */
