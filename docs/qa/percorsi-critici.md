@@ -36,7 +36,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Ricevuta da un pagamento a mano | segreteria, amministrazione | incasso contato due volte o perso | `prova:pagamenti`, `prova:satispay`, `pagamento-una-volta.sql`, `pagamento-diventa-ricevuta.sql`, `ricevuta-pagamento-perso.sql` | sì |
 | Contanti di un giorno di cassa chiusa | segreteria, amministrazione | chiusura rotta senza che nessuno lo sappia | `prova:contabilita`, `prova:pagamenti`, `ricevuta-cassa-chiusa.sql` | sì |
 | Ricevute e pagamenti | segreteria, amministrazione | quota o ricevuta sbagliata, ricevuta doppia | `prova:ricevuta`, `prova:segreteria`, `prova:pagamenti`, `prova:satispay`, `prova:righe-dovute`, `ricevute.sql`, `satispay.sql` | sì |
-| Bonifico collegato assegnato a quota e corsi | amministrazione, segreteria | bonifico contato due volte, quota pagata che resta da pagare, soldi persi | `prova:assegna-movimento`, `prova:pagamenti`, `prova:ricevuta`, `assegna-movimento.sql` | sì |
+| Bonifico collegato assegnato a quota e corsi | amministrazione, segreteria | bonifico contato due volte, quota sopra il listino, soldi persi | `prova:assegna-movimento`, `prova:pagamenti`, `prova:ricevuta`, `prova:pagato-prima`, `assegna-movimento.sql`, `pagato-vecchio-programma.sql` | sì |
 | Corsi da pagare | segreteria | corso scaduto che non si vede, sollecito a chi ha pagato | `prova:dafare`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `prova:conteggi-dovuti`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:scheda`, `prova:sollecito`, `prova:tessere` | sì |
 | Annuale a rate (la quota non è una rata) | segreteria, amministrazione | quota contata come rata, annuale scaduto non visto, versamento doppio | `prova:ricevuta`, `prova:corsi-da-pagare`, `prova:righe-dovute` | sì |
 | Ricevuta per email alla famiglia | segreteria, amministrazione, famiglie | ricevuta all'indirizzo sbagliato o annullata che parte | `prova:ricevute-email`, `prova:edge`, `prova:cornice-mail`, `prova:avvisi-segreteria`, `ricevute-email.sql` | sì |
@@ -138,6 +138,12 @@ quando arriva la prova.
   email: nessuna prova.
 - Saldo Satispay: `least`/`greatest`, `ricevuta_id is null`, `utente_id`, le
   date `dal`/`al` si possono togliere senza che una prova cada.
+- Chiave del bonifico assegnato: la chiave per apertura sta in `AssegnaMovimento.tsx`
+  (`useRef`); se si rifà a ogni render, il tentativo ripetuto scrive due volte.
+  Nessuna prova: solo collaudo a mano (rete caduta, riprova).
+- Tetto della quota nell'app: la schermata controlla con `dovutiDi`, non con
+  `cosaNonVaQuota` (che in app non si chiama, solo nella modalità prova): nessuna
+  prova che le due dicano lo stesso.
 - Compensi: `tenuti` in `anagraficaDi` (IBAN e province), `cosaNonVaLettera`,
   `lettereDellaScheda` con `sostituitaIl`, il tetto di 100.000 € in
   `paga_compensi`, `bastaUno` in `segreteriaSupabase.ts`.

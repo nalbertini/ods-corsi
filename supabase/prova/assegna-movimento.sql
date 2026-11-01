@@ -18,7 +18,9 @@
 --   · il previsto delle casse non cambia in nessun passaggio, nemmeno in un giorno chiuso.
 -- Le stesse regole di src/lib/assegna.ts e della modalità prova, provate da scripts/prova-assegna-movimento.mjs
 -- (stessi casi, stessi messaggi).
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 135-assegna-movimento.sql. Nomi tutti inventati.
+--   · 136-assegna-una-volta.sql: la chiave dell'assegnazione (ripetuta non conta due volte, su un altro bonifico è un
+--     errore) e il tetto della quota per persona e stagione (sezioni 13, 14 e 15).
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 136-assegna-una-volta.sql. Nomi tutti inventati.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -485,6 +487,183 @@ select atteso('…e il pagamento a mano resta annullato: se no i 120 € contere
   (select (annullato_il is not null)::text from pagamenti_diretti where id = :'pd12'::uuid), 'true');
 select atteso('il movimento della banca è annullato', (select (annullato_il is not null)::text from movimenti where descrizione = 'Banca 12'), 'true');
 select atteso('…il bonifico di Dario è ancora suo', (select persona_id::text from movimenti where descrizione = 'Bonifico 12 persona'), pid(19)::text);
+
+\echo ''
+\echo '--- 13. la chiave: ripetere l''assegnazione dopo una rete caduta non la conta due volte (136-assegna-una-volta.sql) ---'
+-- Ogni apertura del dialogo ha una chiave, dentro ogni riga come campo `chiave`. Stessa chiave sullo stesso bonifico: si
+-- scrive la prima volta e basta, anche se le righe sono diventate ricevuta; su un altro bonifico è un errore.
+insert into persone (id, nome, cognome, ruolo, attiva) select pid(n), 'Prova', 'Tetto ' || n, 'iscritto', true from generate_series(20, 30) n;
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, persona_id)
+select 'entrata', d::date, imp, id_voce(v, 'entrata'), id_cassa('Conto Corrente'), descr, pid(p)
+from (values
+  ('2026-10-15', 10000, 'Corsi e altri pagamenti', 'Chiave A', 20),
+  ('2026-10-15', 10000, 'Corsi e altri pagamenti', 'Chiave B', 20),
+  ('2026-10-15', 6000, 'Corsi e altri pagamenti', 'Chiave C', 21),
+  ('2026-10-15', 3000, 'Quota associativa', 'Quota 30', 22),
+  ('2026-10-15', 3000, 'Quota associativa', 'Quota 25', 22),
+  ('2026-10-15', 5000, 'Quota associativa', 'Quota 2025', 22),
+  ('2026-07-31', 5000, 'Quota associativa', 'Quota luglio', 23),
+  ('2026-08-01', 3000, 'Quota associativa', 'Quota agosto A', 23),
+  ('2026-08-01', 3000, 'Quota associativa', 'Quota agosto B', 23),
+  ('2026-10-15', 9000, 'Quota associativa', 'Quota doppia', 24),
+  ('2026-10-15', 3000, 'Quota associativa', 'Quota ricevuta', 25),
+  ('2026-10-15', 3000, 'Quota associativa', 'Quota dopo ricevuta', 25),
+  ('2026-10-15', 3000, 'Quota associativa', 'Quota ricevuta a parte', 26),
+  ('2026-10-15', 20000, 'Quota associativa', 'Quota senza listino', 27),
+  ('2026-10-15', 80000, 'Corsi e altri pagamenti', 'Corso grande', 28),
+  ('2026-10-15', 5000, 'Quota associativa', 'Quota ritentata', 29),
+  ('2026-10-15', 3000, 'Quota associativa', 'Quota guardia', 30),
+  ('2026-10-15', 3000, 'Quota associativa', 'Quota guardia due', 30),
+  ('2026-10-15', 10000, 'Quota associativa', 'Quota nucleo', 10)
+) t(d, imp, v, descr, p);
+create or replace function rigak(p int, voce text, importo int, chiave text) returns jsonb language sql immutable as $$
+  select jsonb_build_object('persona_id', pid(p), 'voce', voce, 'importo', importo, 'chiave', chiave) $$;
+-- La voce di quota di una ricevuta, come la scrive `vociDaMovimento`: col prezzo del listino e la stagione.
+create or replace function vq(importo int) returns jsonb language sql immutable as $$
+  select vr('QUOTA ASSOCIATIVA', 5000, bon(importo)) || jsonb_build_object('dal', '2026-09-01', 'al', '2027-07-31') $$;
+grant execute on function rigak(int, text, int, text), vq(int) to anon, authenticated;
+\set K1 '99999999-0000-4000-8000-000000000001'
+\set K2 '99999999-0000-4000-8000-000000000002'
+\set K3 '99999999-0000-4000-8000-000000000003'
+\set K4 '99999999-0000-4000-8000-000000000004'
+\set K5 '99999999-0000-4000-8000-000000000005'
+\set ALTRO_BONIFICO '''22023 Questa assegnazione è già stata fatta su un altro bonifico: chiudi la finestra e riaprila.'''
+\set TETTO50 '''22023 Alla quota mancano 50,00 €: metti 50,00 € o meno, il resto rimane da assegnare.'''
+\set TETTO20 '''22023 Alla quota mancano 20,00 €: metti 20,00 € o meno, il resto rimane da assegnare.'''
+\set TETTO10 '''22023 Alla quota mancano 10,00 €: metti 10,00 € o meno, il resto rimane da assegnare.'''
+\set TETTO0 '''22023 Alla quota mancano 0,00 €: metti 0,00 € o meno, il resto rimane da assegnare.'''
+
+select chi(:ADA);
+set role authenticated;
+select atteso('40 € con la sua chiave: si assegna', ass('Chiave A', jsonb_build_array(rigak(20, 'Annuale Judo Kids', 4000, :'K1'))), 'nessun errore');
+select atteso('…la stessa chiave ripetuta (la rete è caduta): nessun errore', ass('Chiave A', jsonb_build_array(rigak(20, 'Annuale Judo Kids', 4000, :'K1'))), 'nessun errore');
+select atteso('…una riga sola, non due', quante_attive('Chiave A')::text, '1');
+select atteso('…restano 60 € da assegnare', resta('Chiave A'), '6000');
+select atteso('con la stessa chiave vale la prima scrittura, le righe non si confrontano: nessun errore',
+  ass('Chiave A', jsonb_build_array(rigak(20, 'Trimestre Danza', 5000, :'K1'))), 'nessun errore');
+select atteso('…e la riga è ancora quella di prima', attive('Chiave A'), 'bbbbbbbb-0000-0000-0000-000000000020|Annuale Judo Kids|4000|2026-10-15|Bonifico');
+select atteso('la stessa chiave su un altro bonifico: rifiutata', ass('Chiave B', jsonb_build_array(rigak(20, 'Annuale Judo Kids', 4000, :'K1'))), :ALTRO_BONIFICO);
+select atteso('…e nell''altro bonifico non è stato scritto niente', quante_attive('Chiave B')::text, '0');
+select atteso('una chiave diversa è un''assegnazione nuova', ass('Chiave A', jsonb_build_array(rigak(20, 'Annuale Judo Kids', 3000, :'K2'))), 'nessun errore');
+select atteso('…senza chiave anche, come nel 135', ass('Chiave A', jsonb_build_array(riga(20, 'Annuale Judo Kids', 2000))), 'nessun errore');
+select atteso('…e senza chiave ripetuta si scrive due volte, come nel 135', ass('Chiave B', jsonb_build_array(riga(20, 'Annuale Judo Kids', 1000))) || '/' || ass('Chiave B', jsonb_build_array(riga(20, 'Annuale Judo Kids', 1000))),
+  'nessun errore/nessun errore');
+select atteso('…le righe del bonifico A sono 3, quelle di B 2', quante_attive('Chiave A') || '/' || quante_attive('Chiave B'), '3/2');
+select atteso('…restano 10 € da assegnare su A', resta('Chiave A'), '1000');
+-- Un''assegnazione con più righe: la chiave è su tutte, ripetuta non ne scrive altre.
+select atteso('due righe con la stessa chiave su un bonifico nuovo', ass('Chiave B', jsonb_build_array(rigak(20, 'Annuale Judo Kids', 1000, :'K3'), rigak(20, 'Trimestre Danza', 1500, :'K3'))), 'nessun errore');
+select atteso('…ripetute: nessun errore e nessuna riga in più', ass('Chiave B', jsonb_build_array(rigak(20, 'Annuale Judo Kids', 1000, :'K3'), rigak(20, 'Trimestre Danza', 1500, :'K3')))
+  || '/' || quante_attive('Chiave B'), 'nessun errore/4');
+reset role;
+
+-- Dopo la ricevuta le righe sono annullate (col ricevuta_id): ripetere con la stessa chiave non deve riscrivere niente.
+select chi(:ADA);
+set role authenticated;
+select atteso('60 € a Lia con la chiave', ass('Chiave C', jsonb_build_array(rigak(21, 'Annuale Judo Kids', 6000, :'K4'))), 'nessun errore');
+reset role;
+select chi(:ANNA);
+set role authenticated;
+select quante_ricevute() as r_chiave \gset
+select da_mov(dati(21, jsonb_build_array(vr('ANNUALE JUDO KIDS', 6000, bon(6000)))), 'Chiave C') as rchiave \gset
+select atteso('la ricevuta dal movimento: le righe sono annullate e legate a lei', annullate('Chiave C', 21), '1 annullate, 1 legate');
+reset role;
+select chi(:ADA);
+set role authenticated;
+select atteso('la stessa chiave dopo la ricevuta: nessun errore', ass('Chiave C', jsonb_build_array(rigak(21, 'Annuale Judo Kids', 6000, :'K4'))), 'nessun errore');
+select atteso('…nessuna riga attiva in più', quante_attive('Chiave C')::text, '0');
+select atteso('…le righe annullate sono ancora una', annullate('Chiave C', 21), '1 annullate, 1 legate');
+select atteso('…i soldi sono una volta, nella ricevuta', resta('Chiave C'), '0');
+select atteso('…nessuna ricevuta nuova', (quante_ricevute() - :r_chiave - 1)::text, '0');
+select atteso('la stessa chiave, dopo la ricevuta, su un altro bonifico: rifiutata', ass('Chiave B', jsonb_build_array(rigak(20, 'Annuale Judo Kids', 1000, :'K4'))), :ALTRO_BONIFICO);
+reset role;
+
+\echo ''
+\echo '--- 14. il tetto della quota: per persona e stagione, quanto costa la quota nel listino ---'
+-- Prima senza listino: nessun tetto (come oggi). Un listino senza la quota è come vuoto.
+select chi(:ADA);
+set role authenticated;
+select atteso('senza listino salvato: 80 € di quota passano', ass('Quota senza listino', jsonb_build_array(riga(27, 'Quota associativa 2026/27', 8000))), 'nessun errore');
+reset role;
+update impostazioni set listino = '{}'::jsonb;
+set role authenticated;
+select atteso('con un listino senza la quota: nessun tetto nemmeno qui', ass('Quota senza listino', jsonb_build_array(riga(27, 'Quota associativa 2026/27', 8000))), 'nessun errore');
+reset role;
+-- La quota del listino è in euro: 50 vuol dire 5.000 centesimi.
+update impostazioni set listino = jsonb_build_object('quota', 50);
+select chi(:ADA);
+set role authenticated;
+select atteso('30 € di quota assegnati', ass('Quota 30', jsonb_build_array(riga(22, 'Quota associativa 2026/27', 3000))), 'nessun errore');
+select atteso('altri 25 € sulla quota: 55 € su 50, mancano 20 €', ass('Quota 25', jsonb_build_array(riga(22, 'Quota associativa 2026/27', 2500))), :TETTO20);
+select atteso('…nessuna riga scritta', quante_attive('Quota 25')::text, '0');
+select atteso('altri 20 € passano: la quota è piena', ass('Quota 25', jsonb_build_array(riga(22, 'Quota associativa 2026/27', 2000))), 'nessun errore');
+select atteso('…poi anche 5 € in più no, e scrivere «QUOTA» in maiuscolo non cambia niente',
+  ass('Quota 25', jsonb_build_array(riga(22, 'QUOTA ASSOCIATIVA 2026/27', 500))), :TETTO0);
+select atteso('la quota di un''altra stagione (detta nel nome) è un altro conto: 50 € passano', ass('Quota 2025', jsonb_build_array(riga(22, 'Quota associativa 2025/26', 5000))), 'nessun errore');
+select atteso('i corsi restano col tetto dell''app: 800 € su un annuale passano', ass('Corso grande', jsonb_build_array(riga(28, 'Annuale Judo Kids', 80000))), 'nessun errore');
+-- Le righe nuove della stessa chiamata contano.
+select atteso('due righe di quota nella stessa chiamata: 30 + 30 € su 50, mancano 50 €',
+  ass('Quota doppia', jsonb_build_array(riga(24, 'Quota associativa 2026/27', 3000), riga(24, 'Quota associativa 2026/27', 3000))), :TETTO50);
+select atteso('…nessuna riga scritta', quante_attive('Quota doppia')::text, '0');
+select atteso('50 € in una riga sola passano', ass('Quota doppia', jsonb_build_array(riga(24, 'Quota associativa 2026/27', 5000))), 'nessun errore');
+-- Il tetto è per persona: due fratelli, 50 € a testa.
+select atteso('Luca e Sofia, 50 € di quota a testa nello stesso bonifico: passano',
+  ass('Quota nucleo', jsonb_build_array(riga(11, 'Quota associativa 2026/27', 5000), riga(12, 'Quota associativa 2026/27', 5000))), 'nessun errore');
+-- La stagione, se il nome non la dice, è quella della data del movimento: il 1° agosto comincia la nuova.
+select atteso('«Quota associativa» senza stagione il 31 luglio: 50 € della stagione 2025/26', ass('Quota luglio', jsonb_build_array(riga(23, 'Quota associativa', 5000))), 'nessun errore');
+select atteso('…il 1° agosto è la stagione 2026/27: 30 € passano anche se la 2025/26 è piena', ass('Quota agosto A', jsonb_build_array(riga(23, 'Quota associativa', 3000))), 'nessun errore');
+select atteso('…altri 30 € il 1° agosto: mancano 20 €', ass('Quota agosto B', jsonb_build_array(riga(23, 'Quota associativa', 3000))), :TETTO20);
+select atteso('…20 € passano', ass('Quota agosto B', jsonb_build_array(riga(23, 'Quota associativa', 2000))), 'nessun errore');
+reset role;
+
+\echo ''
+\echo '--- 15. il tetto conta anche le ricevute: una volta sola, e quelle annullate no ---'
+select chi(:ADA);
+set role authenticated;
+select atteso('30 € di quota assegnati a Ilaria', ass('Quota ricevuta', jsonb_build_array(riga(25, 'Quota associativa 2026/27', 3000))), 'nessun errore');
+reset role;
+select chi(:ANNA);
+set role authenticated;
+select da_mov(dati(25, jsonb_build_array(vq(3000))), 'Quota ricevuta') as rq25 \gset
+select atteso('…diventano la ricevuta (quota 2026/27, pagati 30 €)', com_ricevuta(:'rq25'), 'bbbbbbbb-0000-0000-0000-000000000025|Quota ricevuta|3000|false');
+reset role;
+select chi(:ADA);
+set role authenticated;
+select atteso('30 € di quota nella ricevuta attiva, altri 25 €: mancano 20 €', ass('Quota dopo ricevuta', jsonb_build_array(riga(25, 'Quota associativa 2026/27', 2500))), :TETTO20);
+select atteso('…nessuna riga scritta', quante_attive('Quota dopo ricevuta')::text, '0');
+select annulla_ricevuta(:'rq25'::uuid);
+select atteso('con la ricevuta annullata i 30 € non contano più: 25 € passano', ass('Quota dopo ricevuta', jsonb_build_array(riga(25, 'Quota associativa 2026/27', 2500))), 'nessun errore');
+-- Le righe annullate perché diventate ricevuta contano tramite la ricevuta, non due volte: 30 + 20 = 50, non 60 + 20.
+select atteso('30 € di quota assegnati a Mia', ass('Quota guardia', jsonb_build_array(riga(30, 'Quota associativa 2026/27', 3000))), 'nessun errore');
+reset role;
+select chi(:ANNA);
+set role authenticated;
+select da_mov(dati(30, jsonb_build_array(vq(3000))), 'Quota guardia') as rq30 \gset
+reset role;
+select chi(:ADA);
+set role authenticated;
+select atteso('…la riga è annullata e i 30 € sono nella ricevuta: altri 20 € passano (non si contano due volte)',
+  ass('Quota guardia due', jsonb_build_array(riga(30, 'Quota associativa 2026/27', 2000))), 'nessun errore');
+select atteso('…e 25 € no: mancano 0 € (30 + 20 già messi)', ass('Quota guardia due', jsonb_build_array(riga(30, 'Quota associativa 2026/27', 500))), :TETTO0);
+reset role;
+-- Una ricevuta fatta a parte (non da un bonifico) conta lo stesso.
+select chi(:ANNA);
+set role authenticated;
+select vecchia(dati(26, jsonb_build_array(vq(4000)))) as rq26 \gset
+reset role;
+select chi(:ADA);
+set role authenticated;
+select atteso('40 € di quota in una ricevuta a parte, altri 20 €: mancano 10 €', ass('Quota ricevuta a parte', jsonb_build_array(riga(26, 'Quota associativa 2026/27', 2000))), :TETTO10);
+select atteso('…10 € passano', ass('Quota ricevuta a parte', jsonb_build_array(riga(26, 'Quota associativa 2026/27', 1000))), 'nessun errore');
+-- Il tentativo ripetuto che riempie la quota non deve cadere sul tetto: la chiave viene prima.
+select atteso('50 € di quota con la chiave: passano', ass('Quota ritentata', jsonb_build_array(rigak(29, 'Quota associativa 2026/27', 5000, :'K5'))), 'nessun errore');
+select atteso('…la stessa chiamata ripetuta (la quota è già piena) non è un errore', ass('Quota ritentata', jsonb_build_array(rigak(29, 'Quota associativa 2026/27', 5000, :'K5'))), 'nessun errore');
+select atteso('…e la riga è una sola', quante_attive('Quota ritentata')::text, '1');
+reset role;
+-- Le persone si bloccano in ordine e con «for no key update»: «for update» si incrocia con la chiave esterna di
+-- `pagamenti_diretti` (una scrittura su un'altra persona del nucleo che aspetta e una che blocca: stallo).
+select atteso('blocca le persone in ordine, for no key update',
+  (select (prosrc ~* 'order by p\.id for no key update' and prosrc !~* 'order by p\.id for update')::text
+   from pg_proc where proname = 'assegna_movimento' and pronamespace = 'public'::regnamespace), 'true');
 
 \echo ''
 \echo 'TUTTO A POSTO'

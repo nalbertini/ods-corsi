@@ -634,7 +634,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'firma_verbale' and corpo like '%Per firmare serve il PDF%' and corpo not like '%ora d’inizio%')),
   ('134-banca-coperti-incassi.sql', 'un bonifico della banca già in una ricevuta o in un pagamento a mano resta coperto da quello, senza fermare l''import',
     exists (select 1 from information_schema.columns where table_name = 'banca_coperti' and column_name = 'con_id' and data_type = 'text')
-    and exists (select 1 from dentro where nome = 'banca_segna_coperti' and corpo like '%incasso:diretto:%'))
+    and exists (select 1 from dentro where nome = 'banca_segna_coperti' and corpo like '%incasso:diretto:%')),
   -- Rifà `annulla_movimento` (60) e `annulla_ricevuta` (89): rilanciando quelli, il controllo torna «manca».
   ('135-assegna-movimento.sql', 'il bonifico collegato si assegna a quota e corsi, e da lì la ricevuta, senza contare due volte i soldi',
     to_regprocedure('public.assegna_movimento(uuid,jsonb)') is not null
@@ -644,6 +644,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'annulla_ricevuta' and corpo like '%movimento_id is null%')
     and exists (select 1 from dentro where nome = 'annulla_ricevuta' and corpo like '%select x.movimento_id from ricevute x%')
     and exists (select 1 from pg_trigger where tgname = 'assegnazione_solo_dal_movimento')
-    and exists (select 1 from pg_trigger where tgname = 'movimento_assegnato_resta'))
+    and exists (select 1 from pg_trigger where tgname = 'movimento_assegnato_resta')),
+  -- Rifà `assegna_movimento` (135) e `incassi_vecchio_programma` (71): rilanciando quelli, il controllo torna «manca».
+  ('136-assegna-una-volta.sql', 'un bonifico assegnato non si scrive due volte, la quota non supera il listino, e il vecchio programma lo sa',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'pagamenti_diretti' and column_name = 'chiave')
+    and exists (select 1 from dentro where nome = 'assegna_movimento' and corpo like '%Alla quota mancano%' and corpo like '%x.chiave = k%')
+    and coalesce((select pg_get_function_result(to_regprocedure('public.incassi_vecchio_programma()'))), '') like '%assegnato%')
 ) as x(file, cosa, c)
 order by file, cosa;

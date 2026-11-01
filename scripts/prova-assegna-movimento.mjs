@@ -25,10 +25,10 @@ globalThis.localStorage = {
 }
 globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
 
-const impacchetta = async (contents) => {
+const impacchetta = async (contents, platform = 'node') => {
   const { outputFiles } = await build({
     stdin: { contents, resolveDir: '.', loader: 'ts' },
-    bundle: true, format: 'esm', platform: 'node', write: false, logLevel: 'silent', define: { 'import.meta.env': '{}' },
+    bundle: true, format: 'esm', platform, write: false, logLevel: 'silent', define: { 'import.meta.env': '{}' },
   })
   return import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 }
@@ -77,6 +77,7 @@ const vociDaMovimento = lib('vociDaMovimento')
 const cosaNonVaRicevutaDaMovimento = lib('cosaNonVaRicevutaDaMovimento')
 const bonificiDaAssegnare = lib('bonificiDaAssegnare')
 const euroAssegna = lib('euroAssegna')
+const cosaNonVaQuota = lib('cosaNonVaQuota')
 
 const B = await impacchetta(`
   export { elencoMovimenti, totali, previstoCassa, residui, incassiDerivati, righeMovimenti } from './src/lib/contabilita'
@@ -87,6 +88,8 @@ const B = await impacchetta(`
   export { righeDaRicevute, righeDirette } from './src/lib/pagamenti'
   export { fraseQuota } from './src/lib/schedeIscritto'
 `)
+// A parte e per il browser: la segreteria del database tira dentro sanitize-html, che per «node» chiede `require`.
+const S = await impacchetta("export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'", 'browser')
 
 // ---- i dati ----------------------------------------------------------------
 const CONTI = { id: 'conto', nome: 'Conto Corrente', saldoIniziale: 0 }
@@ -181,6 +184,47 @@ console.log('\n3. Quando un’assegnazione non va (src/lib)')
   ok('un importo a zero o negativo no', prova(() => cosaNonVaAssegnazione([riga('Annuale Kickboxing', 0)], 40000, dovuti)), 'Metti su ogni voce un importo maggiore di zero.')
   ok('…né negativo', prova(() => cosaNonVaAssegnazione([riga('Annuale Kickboxing', -100)], 40000, dovuti)), 'Metti su ogni voce un importo maggiore di zero.')
   ok('nessuna riga: niente da scrivere', prova(() => cosaNonVaAssegnazione([], 40000, dovuti)), 'Metti almeno un importo su una voce.')
+}
+
+console.log('\n3b. Il tetto della quota: una persona, una stagione, 50 € (cosaNonVaQuota)')
+{
+  // Le stesse parole di `assegna_movimento` (136-assegna-una-volta.sql). Somma: assegnazioni attive alla quota della
+  // stagione + pagato delle ricevute attive con la quota della stagione + righe nuove; limite = quota del listino.
+  const nuova = (personaId, voce, importo) => ({ personaId, voce, importo })
+  const TETTO = (x) => `Alla quota mancano ${x}: metti ${x} o meno, il resto rimane da assegnare.`
+  const va = (righe, diretti = [], ricevute = [], data = '2026-10-15', tetto = 5000) => prova(() => cosaNonVaQuota(righe, data, diretti, ricevute, tetto))
+  const qDir = (id, personaId, importo, o = {}) => diretto(id, personaId, importo, 'Quota associativa 2026/27', { movimentoId: 'm-vecchio', ...o })
+  const qRic = (id, personaId, pagato, o = {}, v = {}) => ricevuta(id, personaId, [voceRic('QUOTA ASSOCIATIVA', 5000, pagato, { dal: '2026-09-01', al: '2027-07-31', ...v })], o)
+
+  ok('30 € già assegnati alla quota + 25 €: mancano 20 €', await va([nuova('mario', 'Quota associativa 2026/27', 2500)], [qDir('d1', 'mario', 3000)]), TETTO('20,00 €'))
+  ok('…20 € passano', await va([nuova('mario', 'Quota associativa 2026/27', 2000)], [qDir('d1', 'mario', 3000)]), null)
+  ok('la quota intera in una volta passa', await va([nuova('mario', 'Quota associativa 2026/27', 5000)]), null)
+  ok('50,01 € no', await va([nuova('mario', 'Quota associativa 2026/27', 5001)]), TETTO('50,00 €'))
+  ok('quota già piena (50 €): altri 5 € no, «mancano 0,00 €»', await va([nuova('mario', 'Quota associativa 2026/27', 500)], [qDir('d1', 'mario', 5000)]), TETTO('0,00 €'))
+  ok('due righe nuove, 30 + 30 €: contano insieme, mancano 50 €', await va([nuova('mario', 'Quota associativa 2026/27', 3000), nuova('mario', 'Quota associativa 2026/27', 3000)]), TETTO('50,00 €'))
+  ok('la voce è «Quota associativa…»: anche in minuscolo', await va([nuova('mario', 'quota associativa 2026/27', 6000)]), TETTO('50,00 €'))
+  ok('un corso non ha il tetto (qui è dell’app)', await va([nuova('mario', 'Annuale Judo Kids', 80000)]), null)
+  // Il secondo caso chiama la funzione senza tetto: `va(…, undefined)` userebbe il tetto di default di `va`.
+  ok('senza tetto nel listino (0 o niente): nessun limite', [await va([nuova('mario', 'Quota associativa 2026/27', 99900)], [], [], '2026-10-15', 0), await prova(() => cosaNonVaQuota([nuova('mario', 'Quota associativa 2026/27', 99900)], '2026-10-15', [], []))], [null, null])
+
+  console.log('  3b-2. Cosa conta')
+  ok('un’assegnazione annullata non conta', await va([nuova('mario', 'Quota associativa 2026/27', 5000)], [qDir('d1', 'mario', 3000, { annullatoIl: '2026-10-16T10:00:00Z' })]), null)
+  ok('una ricevuta annullata non conta', await va([nuova('mario', 'Quota associativa 2026/27', 5000)], [], [qRic('r1', 'mario', 3000, { annullataIl: '2026-10-16T10:00:00Z' })]), null)
+  ok('una ricevuta attiva conta per quel che è stato pagato: 30 € + 25 € → mancano 20 €', await va([nuova('mario', 'Quota associativa 2026/27', 2500)], [], [qRic('r1', 'mario', 3000)]), TETTO('20,00 €'))
+  ok('…e solo per il pagato, non per il prezzo (30 € di 50): 20 € passano', await va([nuova('mario', 'Quota associativa 2026/27', 2000)], [], [qRic('r1', 'mario', 3000)]), null)
+  ok('assegnazione annullata perché diventata ricevuta: conta una volta sola (30 €, non 60)', await va([nuova('mario', 'Quota associativa 2026/27', 2000)], [qDir('d1', 'mario', 3000, { annullatoIl: '2026-10-16T10:00:00Z', ricevutaId: 'r1' })], [qRic('r1', 'mario', 3000)]), null)
+  ok('…e 25 € no', await va([nuova('mario', 'Quota associativa 2026/27', 2500)], [qDir('d1', 'mario', 3000, { annullatoIl: '2026-10-16T10:00:00Z', ricevutaId: 'r1' })], [qRic('r1', 'mario', 3000)]), TETTO('20,00 €'))
+  ok('la ricevuta di un’altra persona non conta', await va([nuova('mario', 'Quota associativa 2026/27', 5000)], [], [qRic('r1', 'luca', 3000)]), null)
+  ok('l’assegnazione di un’altra persona non conta (fratelli: 50 € a testa)', await va([nuova('mario', 'Quota associativa 2026/27', 5000), nuova('luca', 'Quota associativa 2026/27', 5000)], [qDir('d1', 'sofia', 5000)]), null)
+  ok('una ricevuta per un corso non conta', await va([nuova('mario', 'Quota associativa 2026/27', 5000)], [], [ricevuta('r1', 'mario', [voceRic('ANNUALE JUDO KIDS', 42000, 42000, { dal: '2026-09-01', al: '2027-06-30' })])]), null)
+  ok('una ricevuta della quota di un’altra stagione (2025/26) non conta', await va([nuova('mario', 'Quota associativa 2026/27', 5000)], [], [qRic('r1', 'mario', 5000, {}, { dal: '2025-09-01', al: '2026-07-31' })]), null)
+
+  console.log('  3b-3. La stagione: dal nome della voce, se no dalla data del movimento')
+  ok('«2025/26» nel nome: un’altra stagione, il tetto riparte (50 € passano)', await va([nuova('mario', 'Quota associativa 2025/26', 5000)], [qDir('d1', 'mario', 5000)]), null)
+  ok('…e conta con le sue: 30 € già alla 2025/26 + 25 € → mancano 20 €', await va([nuova('mario', 'Quota associativa 2025/26', 2500)], [qDir('d1', 'mario', 3000, { voce: 'Quota associativa 2025/26', data: '2026-02-01' })]), TETTO('20,00 €'))
+  ok('senza stagione nel nome, bonifico del 31 luglio: è la 2025/26, con 50 € già alla 2026/27 passa', await va([nuova('mario', 'Quota associativa', 5000)], [qDir('d1', 'mario', 5000)], [], '2026-07-31'), null)
+  ok('…bonifico del 1° agosto: è la 2026/27, e con 30 € già assegnati il 1° agosto mancano 20 €', await va([nuova('mario', 'Quota associativa', 3000)], [qDir('d1', 'mario', 3000, { voce: 'Quota associativa', data: '2026-08-01' })], [], '2026-08-01'), TETTO('20,00 €'))
+  ok('…e il 31 luglio con 30 € già assegnati il 1° agosto: un’altra stagione, passa', await va([nuova('mario', 'Quota associativa', 3000)], [qDir('d1', 'mario', 3000, { voce: 'Quota associativa', data: '2026-08-01' })], [], '2026-07-31'), null)
 }
 
 console.log('\n4. Quali movimenti si assegnano, e a chi')
@@ -500,7 +544,8 @@ try {
   await s.annullaRicevuta(rBuona.id)
   ok('una ricevuta annullata: no', await errore(() => s.abbinaRicevutaMovimento(mB, rBuona.id)), 'La ricevuta è annullata.')
   const rOk = await ricevutaVecchia(anna, 12000, '2026-09-03')
-  await s.assegnaMovimento(mB, [riga(anna, 'Quota associativa 2026/27', 2000)])
+  // Su un corso e non sulla quota: Anna ha già in ricevuta (abbinata) 120 € di quota, e con il tetto di 50 € la quota non ne prende altri.
+  await s.assegnaMovimento(mB, [riga(anna, 'Annuale Judo Kids', 2000)])
   ok('un movimento che ha già dei soldi assegnati: no', await errore(() => s.abbinaRicevutaMovimento(mB, rOk.id)), 'Il bonifico ha già dei soldi assegnati: annulla prima le ricevute e le assegnazioni.')
   ok('un movimento che non si assegna (contanti): no', await errore(() => s.abbinaRicevutaMovimento(contanti, rOk.id)), 'I contanti non si assegnano da qui: registra il pagamento in PAGAMENTI.')
   // Dopo l'abbinamento la ricevuta è del movimento: annullarla lo libera, come per quelle fatte dal movimento.
@@ -532,7 +577,8 @@ try {
   console.log('  9l. Un bonifico con soldi assegnati non cambia persona né voce, e non si annulla con l’importazione')
   const ASSEGNATO = 'Il movimento ha dei soldi assegnati: annulla prima ricevute e assegnazioni.'
   const mL = await bonifico(5000, pietro.id)
-  await s.assegnaMovimento(mL, [riga(pietro, 'Quota associativa 2026/27', 2000)])
+  // Su un corso: la quota di Pietro (50 €) è per il bonifico della banca più sotto, e il tetto non ne ammette due.
+  await s.assegnaMovimento(mL, [riga(pietro, 'Annuale Judo Kids', 2000)])
   ok('collegarlo a un’altra persona: no', await errore(() => s.collegaMovimentiPersona([mL], anna.id)), ASSEGNATO)
   ok('scollegarlo: no', await errore(() => s.scollegaMovimentiPersona([mL])), ASSEGNATO)
   ok('…la persona è quella di prima', (await s.movimenti()).find((x) => x.id === mL)?.personaId, pietro.id)
@@ -550,6 +596,86 @@ try {
   await s.assegnaMovimento(mB9.id, [riga(pietro, 'Quota associativa 2026/27', 3000)])
   ok('senza ricevuta l’importazione si annulla', await errore(() => s.annullaImportazioneBanca(mB9.creatoIl)), 'nessun errore')
   ok('…e le assegnazioni vanno via col movimento', (await attive(mB9.id)).length, 0)
+
+  console.log('  9m. Una rete che cade e si riprova: la chiave dell’apertura, come nel database (136-assegna-una-volta.sql)')
+  {
+    const [p1, p2] = lista.slice(7, 9)
+    const ALTRO_BONIFICO = 'Questa assegnazione è già stata fatta su un altro bonifico: chiudi la finestra e riaprila.'
+    const KA = 'cccccccc-1111-4111-8111-aaaaaaaaaaaa', KB = 'cccccccc-1111-4111-8111-bbbbbbbbbbbb', KC = 'cccccccc-1111-4111-8111-cccccccccccc'
+    const mC = await bonifico(10000, p1.id)
+    ok('la prima volta con la chiave: si scrive', await errore(() => s.assegnaMovimento(mC, [riga(p1, 'Annuale Judo Kids', 4000)], KA)), 'nessun errore')
+    ok('la stessa chiave ripetuta (la risposta si era persa): nessun errore', await errore(() => s.assegnaMovimento(mC, [riga(p1, 'Annuale Judo Kids', 4000)], KA)), 'nessun errore')
+    ok('…una riga sola, non due', (await attive(mC)).length, 1)
+    ok('…restano 60 € da assegnare, non 20', await resta(mC), 6000)
+    ok('con la stessa chiave vale la prima scrittura, le righe non si confrontano: nessun errore', await errore(() => s.assegnaMovimento(mC, [riga(p1, 'Trimestre Danza', 3000)], KA)), 'nessun errore')
+    ok('…e la riga è ancora quella di prima', (await attive(mC)).map((x) => [x.voce, x.importo]), [['Annuale Judo Kids', 4000]])
+    const mD = await bonifico(10000, p1.id)
+    ok('la stessa chiave su un altro bonifico: rifiutata', await errore(() => s.assegnaMovimento(mD, [riga(p1, 'Annuale Judo Kids', 4000)], KA)), ALTRO_BONIFICO)
+    ok('…e sull’altro bonifico non scrive niente', (await attive(mD)).length, 0)
+    ok('una chiave diversa è un’assegnazione nuova', await errore(() => s.assegnaMovimento(mC, [riga(p1, 'Trimestre Danza', 1000)], KB)), 'nessun errore')
+    ok('senza chiave è un’assegnazione nuova', await errore(() => s.assegnaMovimento(mC, [riga(p1, 'Trimestre Danza', 1000)])), 'nessun errore')
+    ok('…tre assegnazioni: 40 + 10 + 10 €, restano 40 €', [(await attive(mC)).length, await resta(mC)], [3, 4000])
+
+    const mE = await bonifico(6000, p2.id)
+    await s.assegnaMovimento(mE, [riga(p2, 'Annuale Judo Kids', 6000)], KC)
+    const rE = await s.emettiRicevutaDaMovimento(datiRicevuta(p2, [vr('ANNUALE JUDO KIDS', 6000)]), mE)
+    ok('la ricevuta dal movimento: le righe sono annullate', (await attive(mE)).length, 0)
+    ok('la stessa chiave dopo la ricevuta: nessun errore', await errore(() => s.assegnaMovimento(mE, [riga(p2, 'Annuale Judo Kids', 6000)], KC)), 'nessun errore')
+    ok('…nessuna riga attiva in più', (await attive(mE)).length, 0)
+    ok('…i soldi sono una volta, nella ricevuta', await resta(mE), 0)
+    ok('la stessa chiave, dopo la ricevuta, su un altro bonifico: rifiutata', await errore(() => s.assegnaMovimento(mD, [riga(p1, 'Annuale Judo Kids', 1000)], KC)), ALTRO_BONIFICO)
+    await s.annullaRicevuta(rE.id)
+  }
+
+  console.log('  9n. Il tetto della quota: 50 € a persona e stagione, anche con le ricevute')
+  {
+    const [p3, p4] = lista.slice(9, 11)
+    const TETTO = (x) => `Alla quota mancano ${x}: metti ${x} o meno, il resto rimane da assegnare.`
+    const QUOTA_VOCE = 'Quota associativa 2026/27'
+    const mQ = await bonifico(10000, p3.id)
+    ok('30 € alla quota: passano', await errore(() => s.assegnaMovimento(mQ, [riga(p3, QUOTA_VOCE, 3000)])), 'nessun errore')
+    ok('altri 25 €: 55 € su 50, mancano 20 €', await errore(() => s.assegnaMovimento(mQ, [riga(p3, QUOTA_VOCE, 2500)])), TETTO('20,00 €'))
+    ok('…e non ha scritto niente', (await attive(mQ)).length, 1)
+    ok('altri 20 €: passano', await errore(() => s.assegnaMovimento(mQ, [riga(p3, QUOTA_VOCE, 2000)])), 'nessun errore')
+    ok('…poi anche 5 € in più no: mancano 0 €', await errore(() => s.assegnaMovimento(mQ, [riga(p3, QUOTA_VOCE, 500)])), TETTO('0,00 €'))
+    ok('un corso sullo stesso bonifico passa: il tetto è della quota', await errore(() => s.assegnaMovimento(mQ, [riga(p3, 'Annuale Judo Kids', 5000)])), 'nessun errore')
+    const mQ2 = await bonifico(6000, p4.id)
+    ok('due righe di quota nella stessa chiamata: 30 + 30 € su 50, mancano 50 €', await errore(() => s.assegnaMovimento(mQ2, [riga(p4, QUOTA_VOCE, 3000), riga(p4, QUOTA_VOCE, 3000)])), TETTO('50,00 €'))
+    ok('…e non scrive nessuna delle due', (await attive(mQ2)).length, 0)
+
+    // 30 € di quota già in una ricevuta (fatta dal movimento): contano una volta, non due.
+    const mR = await bonifico(3000, p4.id)
+    await s.assegnaMovimento(mR, [riga(p4, QUOTA_VOCE, 3000)])
+    const quotaRic = vr('QUOTA ASSOCIATIVA', 5000, { dal: '2026-09-01', al: '2027-07-31', pagamenti: [{ data: '2026-10-15', importo: 3000, metodo: 'Bonifico' }] })
+    const rQ = await s.emettiRicevutaDaMovimento(datiRicevuta(p4, [quotaRic]), mR)
+    const mS = await bonifico(10000, p4.id)
+    ok('30 € di quota nella ricevuta attiva, altri 25 €: mancano 20 €', await errore(() => s.assegnaMovimento(mS, [riga(p4, QUOTA_VOCE, 2500)])), TETTO('20,00 €'))
+    ok('…20 € passano: i 30 € delle righe diventate ricevuta non si contano due volte', await errore(() => s.assegnaMovimento(mS, [riga(p4, QUOTA_VOCE, 2000)])), 'nessun errore')
+    ok('…e altri 5 € no: mancano 0 €', await errore(() => s.assegnaMovimento(mS, [riga(p4, QUOTA_VOCE, 500)])), TETTO('0,00 €'))
+    await s.annullaRicevuta(rQ.id)
+    ok('annullata la ricevuta, i 30 € non contano più: altri 25 € passano (20 + 25 = 45)', await errore(() => s.assegnaMovimento(mS, [riga(p4, QUOTA_VOCE, 2500)])), 'nessun errore')
+  }
+
+  console.log('  9o. «Pagato nel vecchio programma» in prova: l’incasso dice da quale movimento viene e quanto ne è assegnato')
+  {
+    // Una persona non ancora usata nelle sezioni prima (le prime undici lo sono), o l'ultima se l'elenco è corto.
+    const p5 = lista[11] ?? lista[lista.length - 1]
+    // Il 1° agosto della stagione di oggi: `pagatoPrima` della prova guarda la stagione del giorno vero.
+    const adesso = new Date()
+    const inizio = `${adesso.getMonth() >= 7 ? adesso.getFullYear() : adesso.getFullYear() - 1}-08-01`
+    // Lo storico entra «Da classificare», poi passa sulla quota con la persona: come lo sistema la segreteria.
+    await s.importaMovimentiBanca([{ chiave: 'prima-nota:9001', data: inizio, cassa: 'conto', tipo: 'entrata', importo: 5000, descrizione: 'Bonifico quota', voce: 'Da classificare' }])
+    const mV = (await s.movimenti()).find((x) => x.origineImport === 'prima-nota:9001')
+    const voceQuota = (await s.voci()).find((v) => v.nome === 'Quota associativa' && v.tipo === 'entrata')
+    await s.cambiaVoceMovimenti([mV.id], voceQuota.id)
+    await s.collegaMovimentiPersona([mV.id], p5.id)
+    const incasso = async () => (await s.pagatoPrima()).elenco.find((i) => i.personaId === p5.id)
+    const prima = await incasso()
+    ok('non assegnato: c’è, col movimento e 0 assegnato', prima && [prima.movimentoId, prima.assegnato], [mV.id, 0])
+    await s.assegnaMovimento(mV.id, [riga(p5, 'Annuale Judo Kids', 2000)])
+    const dopo = await incasso()
+    ok('assegnati 20 €: assegnato 2.000 centesimi, come `movimento_assegnato`', dopo && [dopo.movimentoId, dopo.assegnato], [mV.id, 2000])
+  }
 } catch (e) {
   // Una funzione che non c'è ancora ferma la sezione: si conta come un guaio, non come un errore della prova.
   guai++
@@ -576,6 +702,21 @@ console.log('\n10. Nella scheda della persona: i bonifici con soldi da assegnare
   ok('…né i contanti, né le altre voci, né lo storico delle stagioni passate, né quelli già tutti assegnati', b?.some?.((x) => ['s3', 's4', 's6', 's7'].includes(x.movimentoId)), false)
   ok('…ogni riga porta l’importo del bonifico', b?.find?.((x) => x.movimentoId === 's1')?.importo, 42000)
   ok('nessun bonifico: niente', prova(() => bonificiDaAssegnare([], [], [], '2026-10-20')), [])
+}
+
+console.log('\n11. Verso il database: la chiave dell’apertura dentro ogni riga')
+{
+  const KEY = 'dddddddd-2222-4222-8222-dddddddddddd'
+  const chiamate = []
+  const db = { rpc: async (nome, args) => { chiamate.push([nome, args]); return { data: null, error: null } } }
+  const righe2 = [{ personaId: 'p1', voce: ' Quota associativa 2026/27 ', importo: 3000 }, { personaId: 'p1', voce: 'Annuale Judo Kids', importo: 2000 }]
+  const manda = async (...args) => { chiamate.length = 0; const e = await errore(() => S.creaSegreteriaSupabase(db).assegnaMovimento('m1', righe2, ...args)); return [e, chiamate[0]] }
+  const [e1, c1] = await manda(KEY)
+  ok('con la chiave: assegna_movimento(movimento, righe) e la chiave in ogni riga, come «chiave»', [e1, c1?.[0], c1?.[1]?.movimento, c1?.[1]?.righe],
+    ['nessun errore', 'assegna_movimento', 'm1', [{ persona_id: 'p1', voce: 'Quota associativa 2026/27', importo: 3000, chiave: KEY }, { persona_id: 'p1', voce: 'Annuale Judo Kids', importo: 2000, chiave: KEY }]])
+  const [e2, c2] = await manda()
+  ok('senza chiave: nessun campo «chiave» nelle righe (come prima)', [e2, c2?.[1]?.righe], ['nessun errore', [{ persona_id: 'p1', voce: 'Quota associativa 2026/27', importo: 3000 }, { persona_id: 'p1', voce: 'Annuale Judo Kids', importo: 2000 }]])
+  ok('gli argomenti della funzione sono solo movimento e righe: la firma (uuid, jsonb) non cambia', Object.keys(c1?.[1] ?? {}), ['movimento', 'righe'])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

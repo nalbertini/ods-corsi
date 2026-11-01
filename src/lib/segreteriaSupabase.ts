@@ -28,7 +28,7 @@ import { funzioneAssente, type Abbinato } from './abbinaMovimenti'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
 import { cartaPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
-import { conAssegnazioni } from './assegna'
+import { conAssegnazioni, type RigaAssegnata } from './assegna'
 import type { ContiScarico, PagamentoNegozio } from './satispayScarico'
 import type { CopertoBanca } from './importaBanca'
 import { cosaNonVaSaldoBanca, cosaNonVaVerifica, mancaSaldoBanca, SENZA_SALDO_BANCA, type SaldoBanca } from './quadraturaBanca'
@@ -1069,8 +1069,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Senza 71-pagato-vecchio-programma.sql: nessun incasso, e lo si dice (il filtro non si offre).
       if (mancaPagatoPrima(r.error)) return { elenco: [], manca: true }
       return {
-        elenco: (ok(r) as unknown as Array<{ persona_id: string | null; data: string; importo: number; voce: string }>).map(
-          (x): IncassoPrima => ({ personaId: x.persona_id, data: x.data, importo: x.importo, voce: x.voce }),
+        // Senza 136-assegna-una-volta.sql mancano movimento_id e assegnato: l'incasso conta come prima.
+        elenco: (ok(r) as unknown as Array<{ persona_id: string | null; data: string; importo: number; voce: string; movimento_id?: string; assegnato?: number }>).map(
+          (x): IncassoPrima => ({
+            personaId: x.persona_id, data: x.data, importo: x.importo, voce: x.voce,
+            ...(x.movimento_id ? { movimentoId: x.movimento_id, assegnato: x.assegnato ?? 0 } : {}),
+          }),
         ),
       }
     },
@@ -1569,8 +1573,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return ricevuta(riga)
     },
 
-    async assegnaMovimento(movimentoId, righe) {
-      ok(await db.rpc('assegna_movimento', { movimento: movimentoId, righe: righe.map((r) => ({ persona_id: r.personaId, voce: r.voce.trim(), importo: r.importo })) }))
+    async assegnaMovimento(movimentoId, righe, chiave) {
+      // La chiave in ogni riga e non come argomento: la firma `(uuid, jsonb)` resta quella del 135, e un database
+      // senza il 136 la ignora.
+      const riga = (r: RigaAssegnata) => ({ persona_id: r.personaId, voce: r.voce.trim(), importo: r.importo, ...(chiave ? { chiave } : {}) })
+      ok(await db.rpc('assegna_movimento', { movimento: movimentoId, righe: righe.map(riga) }))
     },
 
     async emettiRicevutaDaMovimento(r, movimentoId) {

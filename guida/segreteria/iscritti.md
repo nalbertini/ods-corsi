@@ -51,7 +51,9 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 - **Pagato nel vecchio programma** col numero — solo finché ce ne sono: chi è
   attivo, ha un incasso del vecchio programma nella stagione (dal 1° agosto al
   31 luglio; collegato alla sua
-  scheda in CONTABILITÀ › MOVIMENTI) e nell'app risulta ancora da pagare. Sotto la
+  scheda in CONTABILITÀ › MOVIMENTI) e nell'app risulta ancora da pagare. Un
+  incasso già assegnato con **ASSEGNA**, anche solo in parte, non conta più: chi
+  lo ha non compare per quell'incasso. Sotto la
   riga di stato c'è chi **ha pagato la quota** e chi **ha pagato solo corsi**; ogni
   riga dice quale incasso è (data, importo, voce). Le righe con la casella si
   segnano insieme: scegli, premi **Segna N come pagate senza ricevuta dell'app**,

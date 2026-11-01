@@ -1,6 +1,6 @@
 // Il bonifico collegato a una persona, in CONTABILITÀ: a cosa va (quota, corsi, anche dei fratelli), come saldo o
 // parziale, e dal bonifico la ricevuta, una per persona. Le regole stanno in `src/lib/assegna.ts`: qui si mostrano.
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   abbinamentiProposti,
   conAssegnazioni,
@@ -177,6 +177,8 @@ function DialogoAssegna({ d, m, resta, diretti, anagrafe, oggi, fai, onChiudi, o
     Object.fromEntries(proponiRipartizione(resta, dovuti).righe.map((r) => [chiaveDi(r), euro(r.importo)])),
   )
   useBozza(true, 'L’assegnazione')
+  // Una chiave per apertura: se la rete cade dopo la scrittura e si riprova, il database non assegna due volte.
+  const chiave = useRef(crypto.randomUUID())
   const [scrivendo, setScrivendo] = useState(false)
 
   const letti = dovuti.map((v) => ({ v, testo: valori[chiaveDi(v)] ?? '', cent: (valori[chiaveDi(v)] ?? '').trim() ? centesimi(valori[chiaveDi(v)] ?? '') : 0 }))
@@ -190,7 +192,7 @@ function DialogoAssegna({ d, m, resta, diretti, anagrafe, oggi, fai, onChiudi, o
   const assegna = (conRicevuta: boolean) => {
     if (guaio || scrivendo) return
     setScrivendo(true)
-    void fai(() => d.assegnaMovimento(m.id, righe), conRicevuta ? undefined : 'Bonifico assegnato', () => onFatto(conRicevuta)).finally(() => setScrivendo(false))
+    void fai(() => d.assegnaMovimento(m.id, righe, chiave.current), conRicevuta ? undefined : 'Bonifico assegnato', () => onFatto(conRicevuta)).finally(() => setScrivendo(false))
   }
   const lasciaStare = async () => {
     if (await chiedi('Lasciare stare l’assegnazione? Il bonifico resta da assegnare.', 'Sì, lascia stare', { no: 'No, resto' })) onChiudi()

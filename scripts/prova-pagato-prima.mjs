@@ -225,5 +225,63 @@ console.log('\n7. la modalità prova ha dati inventati: una persona con storico 
   }
 }
 
+console.log('\n8. un incasso con soldi già assegnati (135-assegna-movimento.sql) non conta più')
+{
+  // `movimentoId` e `assegnato` (centesimi) li rende `incassi_vecchio_programma()`: assegnato = righe attive di
+  // pagamenti_diretti + pagato delle ricevute attive di quel movimento. Senza `movimentoId` si comporta come prima.
+  const incA = (personaId, data, importo, assegnato, voce = QUOTA, movimentoId = 'm-' + personaId + '-' + data) => ({ personaId, data, importo, voce, movimentoId, assegnato })
+  const A = persona('a', 'Anna', 'Alfa')
+  const B = persona('b', 'Bruno', 'Beta')
+  const quotaDi = async (persone, incassi) => ids(await gruppi(persone, incassi), 'quota')
+  const guardareDi = async (persone, incassi) => ids(await gruppi(persone, incassi), 'daGuardare')
+
+  ok('controllo: senza assegnato, 50 € di quota la mettono in quota', await quotaDi([A], [incA('a', '2026-09-28', 5000, 0)]), ['a'])
+  ok('50 € di quota interamente assegnati: non è da segnare', await quotaDi([A], [incA('a', '2026-09-28', 5000, 5000)]), [])
+  ok('…né da guardare', await guardareDi([A], [incA('a', '2026-09-28', 5000, 5000)]), [])
+  ok('assegnati solo in parte (20 € su 50): basta per toglierlo dalla quota', await quotaDi([A], [incA('a', '2026-09-28', 5000, 2000)]), [])
+  ok('…e non diventa da guardare', await guardareDi([A], [incA('a', '2026-09-28', 5000, 2000)]), [])
+  ok('assegnato 0: torna a contare (assegnazione o ricevuta annullata)', await quotaDi([A], [incA('a', '2026-09-28', 5000, 0)]), ['a'])
+  ok('sotto-quota (30 €) assegnata: non è da guardare', await guardareDi([A], [incA('a', '2026-09-28', 3000, 3000)]), [])
+  ok('sotto-quota (30 €) non assegnata: da guardare, come prima', await guardareDi([A], [incA('a', '2026-09-28', 3000, 0)]), ['a'])
+  ok('solo corsi (310 €) con una parte assegnata: non è da guardare', await guardareDi([A], [incA('a', '2026-09-28', 31000, 10000, CORSI)]), [])
+  ok('solo corsi non assegnati: da guardare, come prima', await guardareDi([A], [incA('a', '2026-09-28', 31000, 0, CORSI)]), ['a'])
+  ok('assegnato a un\'altra persona o voce non cambia niente: conta solo che ci siano soldi assegnati', (await gruppi([A, B], [incA('a', '2026-09-28', 5000, 5000)])).quota, [])
+
+  // Il bonifico del genitore assegnato al figlio: né il genitore né il figlio vanno segnati o guardati.
+  const genitore = persona('g', 'Gina', 'Gamma')
+  const figlio = persona('f', 'Fabio', 'Gamma', { nucleo: 'g' })
+  const delGenitore = (assegnato) => [incA('g', '2026-09-28', 5000, assegnato)]
+  ok('controllo: quota del genitore non assegnata: genitore in quota, figlio da guardare per «altra-persona»',
+    [await quotaDi([genitore, figlio], delGenitore(0)), await guardareDi([genitore, figlio], delGenitore(0))], [['g'], ['f']])
+  ok('quota del genitore assegnata al figlio: né il genitore né il figlio',
+    [await quotaDi([genitore, figlio], delGenitore(5000)), await guardareDi([genitore, figlio], delGenitore(5000))], [[], []])
+
+  // Due incassi della stessa persona: quello libero la fa comparire ancora, e la riga è la sua.
+  const due = [incA('a', '2026-09-20', 5000, 5000, QUOTA, 'm-assegnato'), incA('a', '2026-10-02', 5000, 0, QUOTA, 'm-libero')]
+  const gDue = await gruppi([A], due)
+  ok('un secondo incasso non assegnato la fa comparire ancora in quota', ids(gDue, 'quota'), ['a'])
+  ok('…con la riga di quello libero (il 2 ottobre), non dell\'assegnato', gDue.quota?.map((r) => r.data), ['2026-10-02'])
+
+  // Senza movimento_id (storico non collegato a un movimento, o la lettura senza i campi nuovi): come oggi.
+  ok('senza movimentoId, anche con un assegnato: come oggi (in quota)', await quotaDi([A], [{ personaId: 'a', data: '2026-09-28', importo: 5000, voce: QUOTA, assegnato: 5000 }]), ['a'])
+  ok('senza movimentoId né assegnato: come oggi', await quotaDi([A], [inc('a', '2026-09-28', 5000)]), ['a'])
+  ok('i non collegati si contano come prima', (await gruppi([A], [incA(null, '2026-09-28', 5000, 0)])).nonCollegati, 1)
+}
+
+console.log('\n9. la lettura del database porta movimento_id e assegnato')
+{
+  const righe = [
+    { persona_id: 'p1', data: '2026-09-28', importo: 5000, voce: QUOTA, movimento_id: 'm1', assegnato: 2000 },
+    { persona_id: null, data: '2026-09-29', importo: 12500, voce: CORSI, movimento_id: 'm2', assegnato: 0 },
+  ]
+  const r = await prova(() => m.creaSegreteriaSupabase({ rpc: async (nome) => (nome === 'incassi_vecchio_programma' ? { data: righe, error: null } : { data: null, error: { message: 'rpc inattesa ' + nome } }) }).pagatoPrima())
+  ok('movimentoId e assegnato arrivano all\'app, personaId vuoto se non collegato', r, {
+    elenco: [
+      { personaId: 'p1', data: '2026-09-28', importo: 5000, voce: QUOTA, movimentoId: 'm1', assegnato: 2000 },
+      { personaId: null, data: '2026-09-29', importo: 12500, voce: CORSI, movimentoId: 'm2', assegnato: 0 },
+    ],
+  })
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

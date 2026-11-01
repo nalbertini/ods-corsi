@@ -156,3 +156,77 @@ select md5(coalesce(string_agg(m::text, '|' order by m.id), '')) as prima from m
 select lettura('11111111-1111-1111-1111-111111111111') is not null as l \gset
 select atteso('i movimenti sono gli stessi dopo la lettura', (select md5(coalesce(string_agg(m::text, '|' order by m.id), '')) from movimenti m), :'prima');
 select atteso('la funzione non scrive: è stabile (stable), non volatile', (select provolatile::text from pg_proc where proname = 'incassi_vecchio_programma'), 's');
+
+\echo ''
+\echo '--- 5. soldi già assegnati: un incasso assegnato (a un\'altra voce, in parte, a un altro del nucleo) non conta più ---'
+-- Il bonifico importato del vecchio programma può essere assegnato anche in app (135-assegna-movimento.sql): se
+-- contasse ancora, la persona risulterebbe «da guardare» o «da segnare» per soldi già dati. La lettura rende per
+-- ogni incasso `movimento_id` e `assegnato` (righe attive di pagamenti_diretti + pagato delle ricevute attive);
+-- che farne lo decide l'app (src/lib/pagatoPrima.ts, `pagatoNelVecchio`).
+insert into persone (id, nome, cognome, ruolo, attiva, nucleo) values (pid(6), 'Teo', 'Ferri', 'iscritto', true, pid(4));
+create or replace function id_mov(n int) returns uuid language sql stable security definer set search_path = public as $$
+  select id from movimenti where descrizione = 'Cliente prova ' || n $$;
+-- Come lettura(), ma per ogni incasso «numero del cliente prova:assegnato». Se la colonna manca dà l'errore come testo,
+-- così la prova fallisce con un «atteso» e non si ferma.
+create or replace function lettura_ass(u text) returns text language plpgsql as $$
+begin
+  return come(u, $q$select coalesce(string_agg(coalesce(nm.n::text, '?') || ':' || i.assegnato, ' ' order by nm.n), 'niente')
+    from incassi_vecchio_programma() i left join (select n, id_mov(n) as id from generate_series(1, 14) n) nm on nm.id = i.movimento_id$q$);
+exception when others then return sqlstate || ' ' || sqlerrm;
+end $$;
+-- Assegna a mano (l'amministrazione): una riga sola di un movimento, per voce e persona.
+create or replace function assegna_a(n int, persona uuid, voce text, importo int) returns text language plpgsql as $$
+begin
+  perform set_config('prova.utente', '22222222-2222-2222-2222-222222222222', false);
+  set role authenticated;
+  begin
+    perform assegna_movimento(id_mov(n), jsonb_build_array(jsonb_build_object('persona_id', persona, 'voce', voce, 'importo', importo)));
+  exception when others then reset role; return sqlstate || ' ' || sqlerrm;
+  end;
+  reset role;
+  return 'ok';
+end $$;
+grant execute on function id_mov(int), lettura_ass(text), assegna_a(int, uuid, text, int) to anon, authenticated;
+
+select atteso('la lettura rende anche movimento_id e assegnato; nessun incasso è ancora assegnato',
+  lettura_ass('11111111-1111-1111-1111-111111111111'), '1:0 2:0 3:0 4:0 5:0 13:0 14:0');
+select atteso('il tipo che rende: persona, data, importo, voce, movimento, assegnato',
+  pg_get_function_result('incassi_vecchio_programma'::regproc),
+  'TABLE(persona_id uuid, data date, importo integer, voce text, movimento_id uuid, assegnato integer)');
+
+select atteso('Clio: 50 € del bonifico assegnati a un corso', assegna_a(1, pid(1), 'Annuale Judo Kids', 5000), 'ok');
+select atteso('Elia: 100 € assegnati su 310', assegna_a(2, pid(2), 'Mensile Judo', 10000), 'ok');
+select atteso('Teo, del nucleo di Paolo: la quota da 50 € del bonifico di Paolo', assegna_a(4, pid(6), 'Quota associativa 2026/27', 5000), 'ok');
+select atteso('ogni incasso porta quanto è stato assegnato, a chiunque e a qualunque voce',
+  lettura_ass('11111111-1111-1111-1111-111111111111'), '1:5000 2:10000 3:0 4:5000 5:0 13:0 14:0');
+
+select atteso('Marta: 30 € di quota assegnati', assegna_a(3, pid(3), 'Quota associativa 2026/27', 3000), 'ok');
+select atteso('…e l''incasso lo dice', lettura_ass('11111111-1111-1111-1111-111111111111'), '1:5000 2:10000 3:3000 4:5000 5:0 13:0 14:0');
+
+-- La ricevuta di quei soldi: il pagato si conta una volta sola, non due.
+select chi_ricevuta.r as ricevuta_marta from (select come('22222222-2222-2222-2222-222222222222', format(
+  $f$select emetti_ricevuta_da_movimento(%L, %L)->>'id'$f$,
+  jsonb_build_object('persona_id', pid(3), 'data', (inizio() + 13)::text,
+    'intestatario', jsonb_build_object('nome', 'Marta', 'cognome', 'Esposito'),
+    'voci', jsonb_build_array(jsonb_build_object('descrizione', 'QUOTA ASSOCIATIVA', 'quantita', 1, 'prezzo', 5000,
+      'pagamenti', jsonb_build_array(jsonb_build_object('data', (inizio() + 13)::text, 'importo', 3000, 'metodo', 'Bonifico'))))),
+  id_mov(3))) as r) chi_ricevuta \gset
+select atteso('la ricevuta di Marta è stata fatta', (:'ricevuta_marta' is not null and :'ricevuta_marta' <> '')::text, 'true');
+select atteso('diventata ricevuta, i 30 € contano una volta (3000, non 6000)',
+  lettura_ass('11111111-1111-1111-1111-111111111111'), '1:5000 2:10000 3:3000 4:5000 5:0 13:0 14:0');
+select come('22222222-2222-2222-2222-222222222222', format('select annulla_ricevuta(%L)::text', :'ricevuta_marta'));
+select atteso('annullata la ricevuta, l''incasso torna a contare (assegnato 0)',
+  lettura_ass('11111111-1111-1111-1111-111111111111'), '1:5000 2:10000 3:0 4:5000 5:0 13:0 14:0');
+update pagamenti_diretti set annullato_il = now() where movimento_id = id_mov(1) and annullato_il is null;
+select atteso('annullata l''assegnazione, l''incasso torna a contare',
+  lettura_ass('11111111-1111-1111-1111-111111111111'), '1:0 2:10000 3:0 4:5000 5:0 13:0 14:0');
+
+\echo ''
+\echo '--- 6. chi può e che funzione è, con le colonne nuove ---'
+select atteso('i nuovi campi li vede solo la segreteria, come prima',
+  matrice('select movimento_id, assegnato from incassi_vecchio_programma()'),
+  'anna:ok ada:42501 sandro:ok ivo:42501 maura:42501 luca:42501 senza:42501 tablet:42501 anon:42501');
+select atteso('authenticated la chiama, anon no (permessi)',
+  (select has_function_privilege('authenticated', p.oid, 'execute')::text || '/' || has_function_privilege('anon', p.oid, 'execute')::text
+   from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'incassi_vecchio_programma'), 'true/false');
+select atteso('è ancora sola lettura (stable)', (select provolatile::text from pg_proc where proname = 'incassi_vecchio_programma'), 's');

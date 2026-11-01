@@ -1,7 +1,7 @@
 // Un'entrata collegata a una persona (il bonifico) si assegna a quota e corsi, anche dei fratelli del nucleo, come saldo
 // o parziale: ogni pezzo è una riga di PAGAMENTI col `movimentoId` del movimento. Dal movimento si fa poi la ricevuta,
 // una per persona. In CONTABILITÀ quei soldi restano una volta sola, nel movimento: `incassiDerivati` salta le righe
-// col movimento. Le stesse regole sono in `supabase/135-assegna-movimento.sql`, e per la modalità prova in
+// col movimento. Le stesse regole sono in `supabase/135-assegna-movimento.sql` e `136-assegna-una-volta.sql`, e per la modalità prova in
 // `segreteriaProva.ts`.
 import { NOME_CASSA_CONTANTI, VOCE_CORSI, VOCE_QUOTA, type Cassa, type MovimentoManuale, type VoceContabile } from './contabilita'
 import type { PagamentoDiretto } from './pagamenti'
@@ -113,6 +113,40 @@ export function cosaNonVaAssegnazione(righe: RigaAssegnata[], importo: number, d
   }
   const totale = righe.reduce((s, r) => s + r.importo, 0)
   if (totale > importo) return `Hai assegnato ${euroAssegna(totale - importo)} più del bonifico: togli da una voce.`
+  return null
+}
+
+/**
+ * Il tetto della quota (136-assegna-una-volta.sql), o null: per persona e stagione, le righe nuove sulla quota più
+ * quel che la quota ha già (assegnazioni attive e pagato delle ricevute attive) non passano `tetto`, il prezzo della
+ * quota nel listino in centesimi; senza tetto, nessun limite. Le assegnazioni diventate ricevuta sono annullate e
+ * contano tramite la ricevuta, una volta sola. La stagione è quella del nome della voce, se no della data: `data` del
+ * movimento per le righe nuove, del pagamento, il `dal` della voce della ricevuta o la sua data. Il tetto dei corsi è
+ * in `cosaNonVaAssegnazione`.
+ */
+export function cosaNonVaQuota(righe: RigaAssegnata[], data: string, diretti: PagamentoDiretto[], ricevute: Ricevuta[], tetto?: number): string | null {
+  if (!tetto || tetto <= 0) return null
+  const gruppi = new Map<string, { personaId: string; stagione: number; nuovo: number }>()
+  for (const r of righe.filter((x) => eQuota(x.voce))) {
+    const stagione = annoQuota(r.voce, data)
+    const g = gruppi.get(`${r.personaId}|${stagione}`) ?? { personaId: r.personaId, stagione, nuovo: 0 }
+    g.nuovo += r.importo
+    gruppi.set(`${r.personaId}|${stagione}`, g)
+  }
+  for (const g of gruppi.values()) {
+    const assegnati = diretti
+      .filter((d) => !d.annullatoIl && d.personaId === g.personaId && eQuota(d.voce) && annoQuota(d.voce, d.data) === g.stagione)
+      .reduce((s, d) => s + d.importo, 0)
+    const inRicevuta = ricevute
+      .filter((r) => !r.annullataIl && r.personaId === g.personaId)
+      .flatMap((r) => r.voci.filter((v) => eQuota(v.descrizione) && annoQuota(v.descrizione, v.dal || r.data) === g.stagione))
+      .reduce((s, v) => s + v.pagamenti.reduce((t, p) => t + p.importo, 0), 0)
+    const gia = assegnati + inRicevuta
+    if (gia + g.nuovo > tetto) {
+      const manca = euroAssegna(Math.max(0, tetto - gia))
+      return `Alla quota mancano ${manca}: metti ${manca} o meno, il resto rimane da assegnare.`
+    }
+  }
   return null
 }
 
@@ -309,6 +343,9 @@ const stagioneQuota = (voce: string, giorno: string) => {
   const detta = voce.match(/(\d{4})\/\d{2}/)?.[1]
   return stagioneDi(detta ? `${detta}-09-01` : giorno).quota
 }
+
+/** L'anno in cui comincia la stagione di una quota, come `stagione_quota` del database (136). */
+const annoQuota = (voce: string, giorno: string) => Number(stagioneQuota(voce, giorno).dal.slice(0, 4))
 
 /**
  * Le voci della ricevuta fatta dal bonifico, per una persona: una per voce assegnata, pagata col bonifico alla sua
