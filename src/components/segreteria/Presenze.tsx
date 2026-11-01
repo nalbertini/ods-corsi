@@ -5,7 +5,7 @@ import type { Destinazione, Voce } from './Segreteria'
 import { FiltroMenu, Guaio, SegnoStato, Testa, useCarica, Tasto } from './comune'
 import { Titoletto } from '../ds'
 import { Icona } from '../Icons'
-import { csvRegistro } from '../../lib/presenzeCsv'
+import { csvRegistro, nienteDaScaricare } from '../../lib/presenzeCsv'
 import { mesi } from '../../lib/ore'
 import { accorcia, chiSiStaPerdendo, conAppello, DI_FILA, GIORNI_RECENTI } from '../../lib/frequenza'
 
@@ -54,6 +54,7 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
 
   const tutte = registro.dato ?? []
   const righe = tutte.filter((r) => !corso || r.corsoId === corso)
+  const perche = nienteDaScaricare('presenze', p.nome, !!corso, { arrivato: arrivato && !registro.guaio, righe: righe.length })
   const svolte = righe.filter((r) => r.stato !== 'annullata')
   const fatte = svolte.filter(conAppello)
   const mancanti = svolte.filter((r) => !conAppello(r)).sort((a, b) => b.inizio.localeCompare(a.inizio))
@@ -76,9 +77,13 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
           </>
         }
       >
-        <Tasto icona="scarica" disabled={!righe.length} onClick={() => scaricaCsv(righe, p.nome)}>
-          Scarica CSV
-        </Tasto>
+        {/* Spento, il tasto resta al suo posto e la riga sotto dice perché: così non si cerca il guasto. */}
+        <span className="sg-tasto-perche">
+          <Tasto icona="scarica" disabled={!righe.length} aria-describedby={perche ? 'csv-perche' : undefined} onClick={() => scaricaCsv(righe, p.nome)}>
+            Scarica CSV
+          </Tasto>
+          {perche && <span id="csv-perche" className="sg-sotto">{perche}</span>}
+        </span>
       </Testa>
       {schede}
 

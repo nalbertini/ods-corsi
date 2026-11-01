@@ -20,7 +20,8 @@
 // nelle righe di ISCRITTI, CONTABILITÀ e PRESENZE: pallino di 8px + parola, Inter 14px 500, maiuscole normali, mai a capo. Pallino e parola hanno lo
 // stesso colore (`Tono` di src/lib/segreteria.ts): rosso `rosso-testo` (manca, scaduto, annullato), giallo `giallo-testo` (da archiviare, omonimi),
 // verde `verde-testo` (collegato, iscritto), spento `dim` (senza scheda, non in uso); nota `dim` 400 senza pallino («Sistema»).
-// Sul telefono, nella tabella ISCRITTI, il segno si stringe a ✕ / … / – e la parola resta per chi legge lo schermo (non riprodotto qui).
+// Sul telefono, nella tabella ISCRITTI, le parole restano intere e vanno sotto il nome, con la cosa di cui parlano («Manca il certificato»,
+// «Quota da pagare»: `paroleTelefono` di src/lib/segreteria.ts; ../segreteria-parole/).
 // Istruttori e Compensi hanno ancora i badge pieni: PR successive. I vecchi nomi (guaio, avviso, fatto, neutro) restano per i canvas di prima.
 const TONI = {
   rosso: ['#b81d1d', '#b81d1d'], giallo: ['#8f6a00', '#8f6a00'], verde: ['#0b7a33', '#0b7a33'], spento: ['#46606f', '#46606f'], nota: ['', '#46606f'],

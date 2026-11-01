@@ -54,7 +54,7 @@ e la coda del banco. Il filtro, e
   modulo d'iscrizione, chi li sceglie trova il prezzo da confermare. Sotto
   c'è cosa manca a chi; **Vedi tutti** apre il listino, e lì
   **Va bene senza prezzo** toglie un corso anche da qui.
-- **Certificati non archiviati** (file caricati prima della nuova gestione: si
+- **Certificati da archiviare** (file caricati prima della nuova gestione: si
   aprono dalla scheda come gli altri e si cancellano da soli) e **richieste
   con documenti da stampare** (il documento d'identità arrivato col modulo):
   il documento si stampa, si mette nella cartellina e si cancella. Il

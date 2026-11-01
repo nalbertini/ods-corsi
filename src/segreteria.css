@@ -394,6 +394,7 @@
 .sg-cella-contatto[data-manca] { color: var(--rosso-testo); }
 .sg-icona-contatto { display: inline-flex; margin-right: 6px; vertical-align: -2px; color: var(--dim); }
 .sg-testa-stretta { display: none; }
+.sg-stato-telefono { display: none; }
 .sg-cella-frequenza { font-size: 16px; font-weight: 700; text-align: right; color: var(--text); }
 .sg-cella-frequenza[data-poco] { color: var(--giallo-testo); }
 .sg-barra-frequenza { display: block; max-width: 56px; height: 5px; margin: 5px 0 0 auto; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
@@ -892,15 +893,13 @@ summary.sg-riga-elenco::-webkit-details-marker { display: none; }
   .sg-riga-iscritti .sg-cella-sollecito-testa { display: none; }
   .sg-sotto-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
 }
-/* Sul telefono i segni sono compatti, ✕ rosso, … giallo, – nota: la forma dice lo stato anche senza il colore;
- * la parola resta per chi legge lo schermo, nel title e nella scheda. */
+/* Sul telefono CERTIFICATO e QUOTA non ci stanno: le parole intere vanno sotto il nome (`sg-stato-telefono`), e restano NOME e 30 GG. */
 @media (max-width: 767px) {
-  .sg-riga-iscritti .sg-stato-elenco { flex-direction: row; gap: 6px; }
-  .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 56px 56px 48px; }
-  .sg-riga-iscritti .sg-stato-elenco { justify-content: center; }
-  .sg-lista-testa.sg-riga-iscritti > :nth-child(3), .sg-lista-testa.sg-riga-iscritti > :nth-child(4) { justify-self: center; }
+  .sg-riga-iscritti > :nth-child(3), .sg-riga-iscritti > :nth-child(4) { display: none; }
+  .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 64px; }
   .sg-riga-iscritti .sg-testa-larga { display: none; }
   .sg-riga-iscritti .sg-testa-stretta { display: inline; }
+  .sg-stato-telefono { display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px; margin-top: 4px; }
 }
 /* VESTIARIO in segreteria: cinque numeri, la tabella degli ordini con le sue colonne, le righe da correggere. */
 .sg-numeri[data-cinque] { grid-template-columns: repeat(5, minmax(0, 1fr)); }

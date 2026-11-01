@@ -1598,6 +1598,40 @@ export function statoPerElenco(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'p
   return { certificato, quota: guai.length ? guai : [quota] }
 }
 
+/** Le parole corte delle colonne che al telefono, fuori dalla colonna, non dicono più di cosa parlano. */
+const PAROLA_INTERA: Record<string, string> = {
+  Manca: 'Manca il certificato',
+  Scaduto: 'Certificato scaduto',
+  'Da archiviare': 'Certificato da archiviare',
+  'Senza data': 'Manca la data di nascita',
+  'Da pagare': 'Quota da pagare',
+  Scaduta: 'Quota scaduta',
+  'In parte': 'Quota pagata in parte',
+}
+
+/**
+ * ISCRITTI al telefono: le colonne CERTIFICATO e QUOTA non ci stanno, e le
+ * parole vanno sotto il nome. Senza la testata sopra devono dire da sole di
+ * cosa parlano, e si vedono solo i guai: un verde solo se non c'è altro.
+ * «Non serve» (sotto i 6 anni) non è un guaio e non si dice.
+ */
+export function paroleTelefono(stato: { certificato: Segno; quota: Segno[] }): Segno[] {
+  if (stato.certificato.tono === 'spento') return [stato.certificato]
+  const guaio = (s: Segno) => s.tono === 'rosso' || s.tono === 'giallo'
+  const intera = (s: Segno, di: string): Segno => {
+    const fissa = PAROLA_INTERA[s.parola]
+    if (fissa) return { tono: s.tono, parola: fissa }
+    // «Tessera scaduta», «Manca il certificato»: la parola dice già di cosa parla.
+    if (/certificato|tessera/i.test(s.parola)) return s
+    return { tono: s.tono, parola: `${di}: ${s.parola.charAt(0).toLowerCase()}${s.parola.slice(1)}` }
+  }
+  const guai = [
+    ...[stato.certificato].filter(guaio).map((s) => intera(s, 'Certificato')),
+    ...stato.quota.filter(guaio).map((s) => intera(s, 'Quota')),
+  ]
+  return guai.length ? guai : [{ tono: 'verde', parola: 'In regola' }]
+}
+
 /** Una riga del tab ISCRITTI di un corso: chi è, da quando, e le parole di certificato e quota. */
 export interface RigaIscrittoCorso {
   persona: PersonaSeg
