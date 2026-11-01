@@ -1200,10 +1200,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // I bonifici assegnati (134-assegna-movimento.sql) contano in quota e corsi come una ricevuta. Prima del file la
       // colonna non c'è: nessuna assegnazione, come prima.
       const assegnate = await tutteLeRighe((prima, ultima) => db.from('pagamenti_diretti').select(CAMPI_DIRETTO).not('movimento_id', 'is', null).is('annullato_il', null).order('id').range(prima, ultima))
-      // Solo la colonna che manca vale «nessuna assegnazione»: un altro errore non si tace, se no la quota sembrerebbe
-      // da pagare anche quando il bonifico l'ha saldata.
+      // Solo la colonna o la tabella che mancano (54-pagamenti-diretti.sql non lanciato) valgono «nessuna assegnazione»:
+      // un altro errore non si tace, se no la quota sembrerebbe da pagare anche quando il bonifico l'ha saldata.
       // `as`: le colonne sono quelle di `CAMPI_DIRETTO`.
-      const diretti = assegnate.error?.code === '42703' ? [] : (ok(assegnate) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)
+      const diretti = ['42703', '42P01', 'PGRST205'].includes(assegnate.error?.code ?? '') ? [] : (ok(assegnate) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)
       const { listino } = diretti.length ? await this.listino() : { listino: LISTINO_PREDEFINITO }
       const oggi = oggiARoma()
       return righe.map((r): PersonaSeg => {
