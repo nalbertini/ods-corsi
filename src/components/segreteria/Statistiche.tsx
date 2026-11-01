@@ -145,6 +145,7 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
   const convertiti = [...personeProva.values()].filter(Boolean).length
 
   const nomePeriodo = PERIODI.find((x) => x[0] === periodo)![1]
+  const perche = nienteDaScaricare('lezioni', nomePeriodo, !!corso, { arrivato: stat.dato !== null && !stat.guaio, righe: lezioni.length })
   const nomeCorso = corso ? corsi.find((c) => c[0] === corso)?.[1] : undefined
 
   return (
@@ -176,10 +177,10 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
         </select>
         {/* Spento, il tasto resta al suo posto e la riga sotto dice perché, come in PRESENZE. */}
         <span className="sg-tasto-perche">
-          <Tasto disabled={!lezioni.length} aria-describedby={lezioni.length ? undefined : 'csv-perche-s'} onClick={() => scaricaCsv(lezioni, `${nomeCorso ?? 'tutti'} ${nomePeriodo}`)}>
+          <Tasto disabled={!lezioni.length} aria-describedby={perche ? 'csv-perche' : undefined} onClick={() => scaricaCsv(lezioni, `${nomeCorso ?? 'tutti'} ${nomePeriodo}`)}>
             Scarica CSV
           </Tasto>
-          {!lezioni.length && <span id="csv-perche-s" className="sg-sotto">{nienteDaScaricare('lezioni', nomePeriodo, !!corso)}</span>}
+          {perche && <span id="csv-perche" className="sg-sotto">{perche}</span>}
         </span>
       </Testa>
 

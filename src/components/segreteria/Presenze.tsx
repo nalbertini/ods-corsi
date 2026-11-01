@@ -54,6 +54,7 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
 
   const tutte = registro.dato ?? []
   const righe = tutte.filter((r) => !corso || r.corsoId === corso)
+  const perche = nienteDaScaricare('presenze', p.nome, !!corso, { arrivato: arrivato && !registro.guaio, righe: righe.length })
   const svolte = righe.filter((r) => r.stato !== 'annullata')
   const fatte = svolte.filter(conAppello)
   const mancanti = svolte.filter((r) => !conAppello(r)).sort((a, b) => b.inizio.localeCompare(a.inizio))
@@ -78,10 +79,10 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
       >
         {/* Spento, il tasto resta al suo posto e la riga sotto dice perché: così non si cerca il guasto. */}
         <span className="sg-tasto-perche">
-          <Tasto icona="scarica" disabled={!righe.length} aria-describedby={righe.length ? undefined : 'csv-perche'} onClick={() => scaricaCsv(righe, p.nome)}>
+          <Tasto icona="scarica" disabled={!righe.length} aria-describedby={perche ? 'csv-perche' : undefined} onClick={() => scaricaCsv(righe, p.nome)}>
             Scarica CSV
           </Tasto>
-          {!righe.length && <span id="csv-perche" className="sg-sotto">{nienteDaScaricare('presenze', p.nome, !!corso)}</span>}
+          {perche && <span id="csv-perche" className="sg-sotto">{perche}</span>}
         </span>
       </Testa>
       {schede}

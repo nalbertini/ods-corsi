@@ -111,7 +111,8 @@ Chi è archiviato ha **Archiviato** in grigio e la quota vuota.
 Sul telefono le colonne sono NOME e 30 GG. Certificato e quota vanno sotto il
 nome, a parole intere che dicono di cosa parlano: **Manca il certificato**,
 **Certificato scaduto**, **Certificato da archiviare**, **Quota da pagare**,
-**Quota pagata in parte**, **Tessera scaduta**. Si vedono solo le cose da
+**Quota pagata in parte**, **Tessera scaduta**, **Manca la data di nascita**,
+**Certificato: scade il 12/11**. Si vedono solo le cose da
 fare; se è tutto a posto c'è un solo **In regola** verde. Anche la famiglia va
 sotto il nome, pure sul tablet in verticale. Sul telefono l'elenco non si
 ordina per certificato o quota: si usano i filtri. Sul tablet in verticale ci sono le parole, ma

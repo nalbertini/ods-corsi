@@ -567,6 +567,18 @@ console.log('\n7. la sessione sul dispositivo: la chiave e le tre sessioni di pr
     ok('certificato che manca e quota da pagare: prima il certificato, niente verdi', tel(persona({ certificato: { conFile: false }, quote: [] })), [segno('rosso', 'Manca il certificato'), segno('rosso', 'Quota da pagare')])
     ok('certificato a posto e quota da pagare: solo la quota', parole(persona({ quote: [] })), ['Quota da pagare'])
     ok('archiviato: «Archiviato» spento e basta', tel(persona({ attiva: false, certificato: { conFile: false }, quote: [] })), [segno('spento', 'Archiviato')])
+    ok('sotto i 6 anni col certificato scaduto: «Non serve» non si dice', tel(persona({ natoIl: '2021-03-10', certificato: { scade: fra(-1), conFile: false } })), [segno('verde', 'In regola')])
+    ok('tessera che manca: «Tessera da fare», giallo', tel(persona(), [tessera('manca')]), [segno('giallo', 'Tessera da fare')])
+    // Un segno nuovo nella colonna non deve sparire, o cambiare colore, al telefono.
+    const casi = [
+      persona(), cert(undefined), cert(fra(-1)), cert(oggi), cert(fra(10)), persona({ natoIl: undefined }), persona({ quote: [] }),
+      persona({ certificato: { scade: fra(100), conFile: true, vecchio: true } }), persona({ quote: [{ ...pagata, mancano: 2000 }] }),
+      persona({ certificato: { conFile: false }, quote: [] }), persona({ natoIl: '2021-03-10', certificato: { scade: fra(-1), conFile: false } }),
+    ]
+    const toniGuai = (x) => x.filter((s) => s.tono === 'rosso' || s.tono === 'giallo').map((s) => s.tono)
+    ok('i guai al telefono sono quelli delle colonne, stesso numero e stessi colori',
+      casi.map((p) => toniGuai(tel(p, [tessera('manca')]))),
+      casi.map((p) => { const x = stato(p, [tessera('manca')]); return toniGuai([x.certificato, ...x.quota]) }))
   }
 
   console.log('\nELENCO: «In regola?» com’era, per la ricerca')
