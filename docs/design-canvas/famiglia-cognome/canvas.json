@@ -1,0 +1,87 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Famiglia col cognome in ISCRITTI · proposta"
+  },
+  {
+   "id": "page-2",
+   "name": "Libreria"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Proposta.dc.html",
+   "title": "Proposta · titolare in pastiglia celeste",
+   "x": 1520,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Inchiostro.dc.html",
+   "title": "Variante · titolare in pastiglia d’inchiostro",
+   "x": 3040,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Menu.dc.html",
+   "title": "Menu",
+   "x": 0,
+   "y": 0,
+   "page": "page-2"
+  },
+  {
+   "file": "Bottone.dc.html",
+   "title": "Bottone",
+   "x": 0,
+   "y": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "TestataTabella.dc.html",
+   "title": "TestataTabella",
+   "x": 0,
+   "y": 600,
+   "page": "page-2"
+  },
+  {
+   "file": "RigaIscritto.dc.html",
+   "title": "RigaIscritto",
+   "x": 0,
+   "y": 800,
+   "page": "page-2"
+  },
+  {
+   "file": "Badge.dc.html",
+   "title": "Badge",
+   "x": 0,
+   "y": 1000,
+   "page": "page-2"
+  },
+  {
+   "file": "FiltriIscritti.dc.html",
+   "title": "FiltriIscritti",
+   "x": 0,
+   "y": 1200,
+   "page": "page-2"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 4480,
+   "text": "ISCRITTI: la famiglia col cognome del titolare, anche sul titolare"
+  }
+ ]
+}

@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, famigliaDi, FILTRI_VISIBILI, fraseMinorenni, inFamiglia, haConto, ID_FILTRI, passaChip, senzaNascita, TESTI_FILTRI, titolariDi, type ChipConto, type ContestoFiltri, type Famiglia, type IdFiltro } from '../../lib/filtriIscritti'
+import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, famigliaDi, FILTRI_VISIBILI, fraseMinorenni, inFamiglia, haConto, ID_FILTRI, nomeFamiglia, passaChip, senzaNascita, TESTI_FILTRI, titolariDi, type ChipConto, type ContestoFiltri, type Famiglia, type IdFiltro } from '../../lib/filtriIscritti'
 import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
@@ -99,10 +99,20 @@ function SegnoIscritto({ icona, parola }: { icona: keyof typeof ICONE_ISCRITTI; 
   )
 }
 
-/** La famiglia nella riga: la casa, e per un familiare il nome del titolare, che apre la sua scheda. */
-function CellaFamiglia({ f, onApri }: { f: Famiglia | null; onApri: (id: string) => void }) {
+/** La famiglia nella riga: il cognome del titolare su tutto il nucleo; sul titolare in pastiglia, sui familiari apre la sua scheda. */
+function CellaFamiglia({ p, f, onApri }: { p: PersonaSeg; f: Famiglia | null; onApri: (id: string) => void }) {
   if (!f) return null
-  if (f.tipo === 'titolare') return <SegnoIscritto icona="casa" parola="Titolare di una famiglia" />
+  const n = nomeFamiglia(p, f)
+  if (f.tipo === 'titolare')
+    return (
+      <span className="sg-famiglia-pastiglia" title={n?.title}>
+        {/* La parola che prima diceva la casa da sola: chi legge lo schermo sente «Titolare della famiglia» prima del cognome. */}
+        <span role="img" aria-label="Titolare della famiglia">
+          <ICONE_ISCRITTI.casa size={14} />
+        </span>
+        {n?.cognome}
+      </span>
+    )
   const t = f.titolare
   return (
     <>
@@ -111,13 +121,14 @@ function CellaFamiglia({ f, onApri }: { f: Famiglia | null; onApri: (id: string)
         <button
           type="button"
           className="sg-famiglia-titolare"
+          title={n?.title}
           onClick={(e) => {
             // Il click è per il titolare, non per la riga.
             e.stopPropagation()
             onApri(t.id)
           }}
         >
-          {t.cognome} {t.nome}
+          {n?.cognome}
         </button>
       ) : (
         'Famiglia'
@@ -595,12 +606,12 @@ export function Iscritti({
                     {/* Sotto i 1000 px la colonna FAMIGLIA non c'è: la famiglia va sotto il nome. */}
                     {fam && (
                       <span className="sg-sotto-nome">
-                        <span className="sg-cella-famiglia"><CellaFamiglia f={fam} onApri={apriTitolare} /></span>
+                        <span className="sg-cella-famiglia"><CellaFamiglia p={p} f={fam} onApri={apriTitolare} /></span>
                       </span>
                     )}
                   </span>
                   <span role="cell" className="sg-cella-famiglia">
-                    <CellaFamiglia f={fam} onApri={apriTitolare} />
+                    <CellaFamiglia p={p} f={fam} onApri={apriTitolare} />
                   </span>
                   <span role="cell" className="sg-stato-elenco">
                     <SegnoElenco s={stato.certificato} />

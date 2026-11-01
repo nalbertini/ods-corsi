@@ -143,6 +143,15 @@ export function famigliaDi(p: PersonaSeg, perId: ReadonlyMap<string, PersonaSeg>
   return p.nucleo ? { tipo: 'membro', titolare: perId.get(p.nucleo) } : null
 }
 
+/** La famiglia si legge col cognome del titolare, uguale su tutte le righe del nucleo, anche quando un figlio ne ha un altro; il nome intero sta nel title. */
+export function nomeFamiglia(p: PersonaSeg, f: Famiglia | null): { cognome: string; title: string } | null {
+  const t = f?.tipo === 'titolare' ? p : f?.titolare
+  if (!t) return null
+  const cognome = t.cognome.trim() || t.nome
+  const intero = [t.cognome.trim(), t.nome].filter(Boolean).join(' ')
+  return { cognome, title: f?.tipo === 'titolare' ? `Titolare della famiglia ${cognome}` : `Famiglia di ${intero}` }
+}
+
 /** La cella CORSI: i primi due e «+N», così la riga resta di un rigo; col filtro Corsi scaduti si vede tutto da sollecitare. */
 export function cellaCorsi(nomi: string[], conScaduti: boolean): { visibili: string[]; altri: number; title: string } {
   const visibili = conScaduti || nomi.length <= 2 ? nomi : nomi.slice(0, 2)

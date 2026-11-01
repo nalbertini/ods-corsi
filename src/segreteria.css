@@ -380,6 +380,7 @@
 .sg-cella-famiglia { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: var(--sec); }
 .sg-cella-famiglia .sg-segno-iscritto { margin-left: 0; }
 .sg-famiglia-titolare { padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; text-align: left; overflow-wrap: anywhere; min-height: 24px; }
+.sg-famiglia-pastiglia { display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text); font-weight: 700; overflow-wrap: anywhere; }
 .sg-famiglia-titolare:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .sg-stato-elenco { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 6px 0; min-width: 0; }
 /* Accanto alla descrizione di un movimento: gli stati uno dopo l'altro, staccati dal testo. */
