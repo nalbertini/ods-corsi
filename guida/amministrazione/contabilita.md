@@ -15,7 +15,7 @@ Giroconto, Entrata, Uscita), **CASSA**, **ENTRATE** e **USCITE**, con le righe d
 recente. Accanto al titolo CONTABILITÀ, e solo in questa scheda, c'è **Nuovo movimento**
 e il menu **Altre azioni**: **Collega i casi sicuri**, **Giroconto** ed **Esporta CSV**.
 
-Ogni riga dice da dove viene, con un tag accanto al nome: **Dal gestionale** (incassi degli iscritti e movimenti scritti qui), **Dalla banca**, **Dallo storico**, **Da Satispay**, **Dalla chat**. Voce, descrizione e nota di un movimento si correggono allo stesso modo, qualunque sia l'origine.
+Una riga che non è scritta qui dice da dove viene, accanto al nome: **Dalla banca**, **Dallo storico**, **Da Satispay**, **Dalla chat**. Gli incassi degli iscritti e i movimenti scritti qui non hanno segno. Voce, descrizione e nota di un movimento si correggono allo stesso modo, qualunque sia l'origine.
 
 L'elenco unisce due cose:
 

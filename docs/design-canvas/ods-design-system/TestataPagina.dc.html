@@ -14,12 +14,12 @@
     body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; width: 100%; color: #0d2a3d">
-  <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
-    <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">{{titolo}}</h1>
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; width: 100%; color: #0d2a3d">
+  <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1">
+    <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">{{titolo}}</h1>
     <span style="font-size: 14px; color: #46606f; line-height: 1.4">{{sotto}}<sc-if value="{{conLink}}" hint-placeholder-val="{{ false }}"> <span style="color: #14709f; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap">{{link}} →</span></sc-if></span>
   </div>
-  <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+  <div style="display: flex; align-items: flex-start; gap: 8px; flex-shrink: 0; flex-wrap: wrap">
     <sc-if value="{{conAltro}}" hint-placeholder-val="{{ false }}">
       <div style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 2px solid #14709f; border-radius: 6px; font-size: 16px; font-weight: 600; color: #0d2a3d; white-space: nowrap">{{altro}} <span aria-hidden="true" style="font-size: 12px">▾</span></div>
     </sc-if>
@@ -33,11 +33,12 @@
 </div>
 </x-dc>
 <script data-dc-script data-props='{"titolo":{"editor":"text","default":"ISCRITTI"},"sotto":{"editor":"text","default":"162 persone attive."},"link":{"editor":"text","default":""},"altro":{"editor":"text","default":""},"secondaria":{"editor":"text","default":"Importa tessere"},"iconaSecondaria":{"editor":"text","default":"carica"},"primaria":{"editor":"text","default":"Nuovo iscritto"},"iconaPrimaria":{"editor":"text","default":"aggiungi"},"$preview":{"width":1100,"height":80}}'>
-// PROPOSTA «segreteria in ordine» (../segreteria-ordine/): la testata unica di una pagina di segreteria (`Testa` di comune.tsx, `.sg-testa`).
-// Sempre la stessa forma: a sinistra il titolo (Big Shoulders 800 34px, come PaginaSito) e la frase sotto (14px `dim`); a destra, allineate in alto, le azioni,
+// COSTRUITO «segreteria in ordine» (../segreteria-ordine/): la testata unica di una pagina di segreteria (`Testa` di comune.tsx, `.sg-testa`, `.sg-titolo`).
+// Sempre la stessa forma: a sinistra il titolo (Big Shoulders 700 34px, `ob`) e la frase sotto (`.sg-sotto`, `dim`); a destra, in `.sg-testa-azioni` allineate in alto, le azioni,
 // tutte alte 44px: prima «Altre azioni ▾» (MenuAzioni) se c'e', poi una a linea, ultima la sola principale gialla. Al massimo una principale e una a linea:
 // il resto va in «Altre azioni». Un rimando a un'altra pagina non e' un tasto: e' `link`, testo blu sottolineato in coda alla frase (Presenze → Statistiche).
-// Sotto i 1000px le azioni vanno sotto il titolo (non riprodotto qui).
+// Il link e' `.sg-link` dentro `.sg-sotto` (in linea, alto quanto il testo). Le icone sono quelle di `Tasto` (`iconaAzione`).
+// Sotto i 1000px le azioni vanno sotto il titolo, a tutta riga (non riprodotto qui).
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
