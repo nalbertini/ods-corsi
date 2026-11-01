@@ -141,9 +141,6 @@ quando arriva la prova.
 - Chiave del bonifico assegnato: la chiave per apertura sta in `AssegnaMovimento.tsx`
   (`useRef`); se si rifà a ogni render, il tentativo ripetuto scrive due volte.
   Nessuna prova: solo collaudo a mano (rete caduta, riprova).
-- Tetto della quota nell'app: la schermata controlla con `dovutiDi`, non con
-  `cosaNonVaQuota` (che in app non si chiama, solo nella modalità prova): nessuna
-  prova che le due dicano lo stesso.
 - Compensi: `tenuti` in `anagraficaDi` (IBAN e province), `cosaNonVaLettera`,
   `lettereDellaScheda` con `sostituitaIl`, il tetto di 100.000 € in
   `paga_compensi`, `bastaUno` in `segreteriaSupabase.ts`.
