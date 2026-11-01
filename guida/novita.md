@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.234.2 — 1 novembre 2026
+
+### Risolto
+
+- Un bonifico assegnato non si conta due volte e non supera la quota
+
 ## 0.234.1 — 1 novembre 2026
 
 ### Risolto
