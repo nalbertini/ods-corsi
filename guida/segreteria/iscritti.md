@@ -84,10 +84,12 @@ persone sono attive e quanti certificati sono in scadenza; con **Corsi scaduti**
 acceso, quanti iscritti hanno un corso da sollecitare; con **Minorenni**, quanti
 minorenni ci sono.
 
-Dopo il nome, il bambino dice che è minorenne. La colonna **FAMIGLIA** ha la
-casa per chi ha registrato un nucleo familiare; per chi ci è dentro, la casa e
-il nome del titolare: toccalo e si apre la sua scheda. Tenendoci sopra il mouse
-si legge cosa vuol dire l'icona. Chi non ha segni è adulto e senza famiglia
+Dopo il nome, il bambino dice che è minorenne. La colonna **FAMIGLIA** dice la
+famiglia col cognome del titolare, lo stesso su tutte le righe del nucleo anche
+quando un figlio ha un altro cognome. Sul titolare il cognome sta in una
+pastiglia celeste con la casa; per chi è nel nucleo ci sono la casa e il
+cognome: toccalo e si apre la scheda del titolare. Tenendoci sopra il mouse si
+legge il nome intero del titolare. Chi non ha segni è adulto e senza famiglia
 registrata (o non ha la data di nascita).
 
 Due colonne dicono in un colpo d'occhio cosa manca, ciascuna per conto suo. Un
