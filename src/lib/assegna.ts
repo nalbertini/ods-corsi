@@ -134,20 +134,28 @@ export function cosaNonVaQuota(righe: RigaAssegnata[], data: string, diretti: Pa
     gruppi.set(`${r.personaId}|${stagione}`, g)
   }
   for (const g of gruppi.values()) {
-    const assegnati = diretti
-      .filter((d) => !d.annullatoIl && d.personaId === g.personaId && eQuota(d.voce) && annoQuota(d.voce, d.data) === g.stagione)
-      .reduce((s, d) => s + d.importo, 0)
-    const inRicevuta = ricevute
-      .filter((r) => !r.annullataIl && r.personaId === g.personaId)
-      .flatMap((r) => r.voci.filter((v) => eQuota(v.descrizione) && annoQuota(v.descrizione, v.dal || r.data) === g.stagione))
-      .reduce((s, v) => s + v.pagamenti.reduce((t, p) => t + p.importo, 0), 0)
-    const gia = assegnati + inRicevuta
+    const gia = giaSullaQuota(g.personaId, g.stagione, diretti, ricevute)
     if (gia + g.nuovo > tetto) {
       const manca = euroAssegna(Math.max(0, tetto - gia))
       return `Alla quota mancano ${manca}: metti ${manca} o meno, il resto rimane da assegnare.`
     }
   }
   return null
+}
+
+/**
+ * Quel che la quota di una persona ha già in una stagione, come lo conta il database (136): le assegnazioni attive e il
+ * pagato delle ricevute attive. Lo usano il tetto (`cosaNonVaQuota`) e quel che il dialogo dice che manca (`dovutiDi`).
+ */
+function giaSullaQuota(personaId: string, stagione: number, diretti: PagamentoDiretto[], ricevute: Ricevuta[]): number {
+  const assegnati = diretti
+    .filter((d) => !d.annullatoIl && d.personaId === personaId && eQuota(d.voce) && annoQuota(d.voce, d.data) === stagione)
+    .reduce((s, d) => s + d.importo, 0)
+  const inRicevuta = ricevute
+    .filter((r) => !r.annullataIl && r.personaId === personaId)
+    .flatMap((r) => r.voci.filter((v) => eQuota(v.descrizione) && annoQuota(v.descrizione, v.dal || r.data) === stagione))
+    .reduce((s, v) => s + v.pagamenti.reduce((t, p) => t + p.importo, 0), 0)
+  return assegnati + inRicevuta
 }
 
 /**
@@ -315,14 +323,19 @@ export function conAssegnazioni<P extends Pick<PersonaSeg, 'id' | 'quote' | 'voc
 
 /**
  * Le cose ancora da pagare di una persona, per la ripartizione: la quota (intera, o quel che manca) e i corsi in cui è
- * iscritta (l'annuale del listino, o quel che manca di quello che ha).
+ * iscritta (l'annuale del listino, o quel che manca di quello che ha). Alla quota non manca mai più di quel che il
+ * tetto del database (`cosaNonVaQuota`) lascia mettere: una ricevuta fatta a un prezzo più alto del listino di adesso
+ * direbbe di più, e il dialogo proporrebbe un importo che poi si rifiuta.
  */
-export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, oggi: string): VoceDovuta[] {
+export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }): VoceDovuta[] {
   const stagione = stagioneDi(oggi)
   const fuori: VoceDovuta[] = []
   const q = pagamentoDi(p, oggi)
   const quota = Math.round(listino.quota * 100)
-  const mancaQuota = q.come === 'pagato' ? 0 : q.come === 'in_parte' && q.mancano !== undefined ? q.mancano : quota
+  const perLaScheda = q.come === 'pagato' ? 0 : q.come === 'in_parte' && q.mancano !== undefined ? q.mancano : quota
+  // Senza quota nel listino il database non ha tetto: vale quel che dice la scheda.
+  const perIlTetto = quota > 0 ? Math.max(0, quota - giaSullaQuota(p.id, Number(stagione.quota.dal.slice(0, 4)), gia.diretti, gia.ricevute)) : perLaScheda
+  const mancaQuota = Math.min(perLaScheda, perIlTetto)
   if (mancaQuota > 0) fuori.push({ personaId: p.id, voce: `${VOCE_QUOTA} ${nomeStagione(stagione.quota.dal)}`, tipo: 'quota', dal: stagione.quota.dal, manca: mancaQuota })
   for (const s of statoCorsi(p, corsi, listino, oggi) ?? []) {
     if (!['in_parte', 'da_pagare', 'scaduto'].includes(s.come)) continue

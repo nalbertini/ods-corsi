@@ -157,21 +157,21 @@ export function AssegnaMovimento({ d, m, diretti, ricevute, fai, avvisa, onFatto
         </div>
       )}
       {assegnando && anagrafe.dato && (
-        <DialogoAssegna d={d} m={m} resta={resta} diretti={diretti} anagrafe={anagrafe.dato} oggi={oggi} fai={fai} onChiudi={() => setAssegnando(false)} onFatto={(si) => void dopoAssegna(si)} />
+        <DialogoAssegna d={d} m={m} resta={resta} diretti={diretti} ricevute={ricevute} anagrafe={anagrafe.dato} oggi={oggi} fai={fai} onChiudi={() => setAssegnando(false)} onFatto={(si) => void dopoAssegna(si)} />
       )}
     </div>
   )
 }
 
 /** ASSEGNA IL BONIFICO: le cose da pagare del nucleo, già ripartite, da correggere a mano. */
-function DialogoAssegna({ d, m, resta, diretti, anagrafe, oggi, fai, onChiudi, onFatto }: { d: DatiSegreteria; m: Movimento; resta: number; diretti: PagamentoDiretto[]; anagrafe: Anagrafe; oggi: string; fai: Fai; onChiudi: () => void; onFatto: (conRicevuta: boolean) => void }) {
+function DialogoAssegna({ d, m, resta, diretti, ricevute, anagrafe, oggi, fai, onChiudi, onFatto }: { d: DatiSegreteria; m: Movimento; resta: number; diretti: PagamentoDiretto[]; ricevute: Ricevuta[]; anagrafe: Anagrafe; oggi: string; fai: Fai; onChiudi: () => void; onFatto: (conRicevuta: boolean) => void }) {
   const titolare = m.personaId ?? ''
   const chi = personeDelNucleo(titolare, anagrafe.persone)
     .map((id) => anagrafe.persone.find((p) => p.id === id))
     .filter((p): p is PersonaSeg => !!p)
   const dovuti = useMemo(
-    () => chi.flatMap((p) => dovutiDi(conAssegnazioni(p, diretti, anagrafe.listino, oggi), anagrafe.corsi, anagrafe.listino, oggi)),
-    [chi.map((p) => p.id).join(), diretti, anagrafe, oggi],
+    () => chi.flatMap((p) => dovutiDi(conAssegnazioni(p, diretti, anagrafe.listino, oggi), anagrafe.corsi, anagrafe.listino, oggi, { diretti, ricevute })),
+    [chi.map((p) => p.id).join(), diretti, ricevute, anagrafe, oggi],
   )
   const [valori, setValori] = useState<Record<string, string>>(() =>
     Object.fromEntries(proponiRipartizione(resta, dovuti).righe.map((r) => [chiaveDi(r), euro(r.importo)])),

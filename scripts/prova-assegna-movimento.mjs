@@ -78,6 +78,7 @@ const cosaNonVaRicevutaDaMovimento = lib('cosaNonVaRicevutaDaMovimento')
 const bonificiDaAssegnare = lib('bonificiDaAssegnare')
 const euroAssegna = lib('euroAssegna')
 const cosaNonVaQuota = lib('cosaNonVaQuota')
+const dovutiDi = lib('dovutiDi')
 
 const B = await impacchetta(`
   export { elencoMovimenti, totali, previstoCassa, residui, incassiDerivati, righeMovimenti } from './src/lib/contabilita'
@@ -225,6 +226,27 @@ console.log('\n3b. Il tetto della quota: una persona, una stagione, 50 € (cosa
   ok('senza stagione nel nome, bonifico del 31 luglio: è la 2025/26, con 50 € già alla 2026/27 passa', await va([nuova('mario', 'Quota associativa', 5000)], [qDir('d1', 'mario', 5000)], [], '2026-07-31'), null)
   ok('…bonifico del 1° agosto: è la 2026/27, e con 30 € già assegnati il 1° agosto mancano 20 €', await va([nuova('mario', 'Quota associativa', 3000)], [qDir('d1', 'mario', 3000, { voce: 'Quota associativa', data: '2026-08-01' })], [], '2026-08-01'), TETTO('20,00 €'))
   ok('…e il 31 luglio con 30 € già assegnati il 1° agosto: un’altra stagione, passa', await va([nuova('mario', 'Quota associativa', 3000)], [qDir('d1', 'mario', 3000, { voce: 'Quota associativa', data: '2026-08-01' })], [], '2026-07-31'), null)
+}
+
+console.log('\n3c. Lo schermo e il database dicono la stessa cosa sulla quota (dovutiDi contro cosaNonVaQuota)')
+{
+  // Quel che il dialogo dice che manca alla quota non passa mai il tetto del database: se no propone, e lascia
+  // confermare, un importo che `assegna_movimento` rifiuta. Il tetto è il prezzo del listino di adesso; la ricevuta può
+  // essere stata fatta a un altro prezzo.
+  const oggi = '2026-10-20'
+  const listino = { quota: 50, saldoEntro: '2026-08-31', offerte: [], corsi: [], senzaPrezzoVaBene: [] }
+  const persona = (mancano) => ({ id: 'mario', attiva: true, certificato: { scade: '2027-09-01', conFile: false }, documento: true, pagamento: { stato: 'da_pagare' }, natoIl: '2000-01-01', iscrizioni: [], quote: [{ anno: 2026, numero: 7, dal: '2026-09-01', al: '2027-07-31', mancano }] })
+  const conPrezzo = (prezzo, pagato) => [ricevuta('r7', 'mario', [voceRic('QUOTA ASSOCIATIVA', prezzo, pagato, { dal: '2026-09-01', al: '2027-07-31' })], { numero: 7 })]
+  const manca = (p, ricevute, diretti = []) => prova(() => dovutiDi(p, [], listino, oggi, { diretti, ricevute }).find((d) => d.tipo === 'quota')?.manca ?? 0)
+  const riga = (importo) => [{ personaId: 'mario', voce: 'Quota associativa 2026/27', importo }]
+  const db = (importo, ricevute, diretti = []) => prova(() => cosaNonVaQuota(riga(importo), oggi, diretti, ricevute, 5000))
+
+  // Ricevuta fatta a 60 € (pagati 30): la ricevuta dice «mancano 30», il database, col listino a 50, ne accetta 20.
+  ok('ricevuta a 60 € con 30 pagati, listino a 50 €: mancano 20 €, non 30', await manca(persona(3000), conPrezzo(6000, 3000)), 2000)
+  ok('…e quei 20 € il database li accetta', await db(2000, conPrezzo(6000, 3000)), null)
+  // Ricevuta fatta a 40 € (pagati 30): il database accetterebbe 20, ma la quota di quella ricevuta è chiusa a 10.
+  ok('ricevuta a 40 € con 30 pagati: restano 10 €, quel che dice la ricevuta', await manca(persona(1000), conPrezzo(4000, 3000)), 1000)
+  ok('nessuna ricevuta: la quota intera del listino', await manca({ ...persona(0), quote: [] }, []), 5000)
 }
 
 console.log('\n4. Quali movimenti si assegnano, e a chi')
