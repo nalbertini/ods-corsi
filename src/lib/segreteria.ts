@@ -1582,20 +1582,20 @@ const PAROLA_QUOTA: Record<ComePaga, [corta: string, intera: string]> = {
 }
 
 /** Un segno con la parola corta della colonna e quella intera che al telefono, senza la testata sopra, dice da sola di cosa parla. */
-type Voce = Segno & { intera: string }
+type VoceSegno = Segno & { intera: string }
 
-const voce = (tono: Segno['tono'], parola: string, intera = parola): Voce => ({ tono, parola, intera })
+const voce = (tono: Segno['tono'], parola: string, intera = parola): VoceSegno => ({ tono, parola, intera })
 
 /**
  * Le voci di certificato, quota e tessere di una persona, decise una volta
  * sola per l'elenco e per il telefono: le due letture cambiano le parole,
  * non i guai. Chi è archiviato non ne ha.
  */
-function vociDi(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string, righe: RigaIncrocio[]): { certificato: Voce; quota: Voce[] } {
+function vociDi(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string, righe: RigaIncrocio[]): { certificato: VoceSegno; quota: VoceSegno[] } {
   if (!p.attiva) return { certificato: voce('spento', 'Archiviato'), quota: [] }
   const stato = statoCertificato(p, oggi)
   const t = timbroCertificato(p.certificato, oggi, p.natoIl)
-  const certificato: Voce =
+  const certificato: VoceSegno =
     stato === 'manca' ? voce('rosso', 'Manca', 'Manca il certificato')
     : stato === 'scaduto' ? voce('rosso', 'Scaduto', 'Certificato scaduto')
     : stato === 'non_serve' && t.tono !== 'verde' ? voce('nota', 'Non serve')
@@ -1608,7 +1608,7 @@ function vociDi(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'qu
   const come = pagamentoDi(p, oggi)
   const [corta, intera] = PAROLA_QUOTA[come.come]
   const quota = voce(timbroQuota(come).tono, corta, intera)
-  const tessere: Voce[] = []
+  const tessere: VoceSegno[] = []
   for (const r of righe) {
     if (r.esito === 'non_iscritto') continue
     // In elenco la tessera che manca è da fare, non un rosso: chi entra in sala non lo blocca.
@@ -1621,11 +1621,11 @@ function vociDi(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'qu
 }
 
 /** «Scade il 12/11» del timbro diventa «Certificato: scade il 12/11»; una parola che dice già «certificato» resta com'è. */
-function voceCertificato(tono: Segno['tono'], parola: string): Voce {
+function voceCertificato(tono: Segno['tono'], parola: string): VoceSegno {
   return voce(tono, parola, /certificato/i.test(parola) ? parola : `Certificato: ${parola.charAt(0).toLowerCase()}${parola.slice(1)}`)
 }
 
-const soloSegno = ({ tono, parola }: Voce): Segno => ({ tono, parola })
+const soloSegno = ({ tono, parola }: VoceSegno): Segno => ({ tono, parola })
 
 /**
  * Le colonne CERTIFICATO e QUOTA dell'elenco ISCRITTI: parole corte, la

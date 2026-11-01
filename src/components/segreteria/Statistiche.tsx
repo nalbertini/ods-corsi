@@ -147,7 +147,8 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
 
   // Un id per pagina: due pagine aperte insieme non si rubano la frase.
   const idPerche = useId()
-  const scelto = PERIODI.find((x) => x.id === periodo) ?? PERIODI[0]
+  // Periodo è chiuso sugli id di PERIODI: il ! non nasconde un caso che può succedere.
+  const scelto = PERIODI.find((x) => x.id === periodo)!
   const nomePeriodo = scelto.nome
   const perche = nienteDaScaricare('lezioni', scelto.quando, !!corso, { arrivato: stat.dato !== null && !stat.guaio, righe: lezioni.length })
   const nomeCorso = corso ? corsi.find((c) => c[0] === corso)?.[1] : undefined

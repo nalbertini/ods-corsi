@@ -64,7 +64,9 @@ console.log('\nScarica CSV spento: la riga sotto dice perché')
   ok('arrivato e vuoto: la frase', perche('presenze', 'a novembre 2026', false, { arrivato: true, righe: 0 }), 'Nessuna presenza a novembre 2026: niente da scaricare.')
   // I mesi del menu di PRESENZE portano il loro «quando»: «ad» davanti ad aprile e agosto.
   const quando = prova(() => m.mesi().map((x) => [x.nome, x.quando]))
-  ok('ogni mese ha il suo quando, in minuscolo', Array.isArray(quando) && quando.every(([n, q]) => q === `${/^A/.test(n) ? 'ad' : 'a'} ${n.toLowerCase()}`), true)
+  // Scritti a mano, non ricavati con la stessa regola del codice: se no la prova conferma il codice con se stesso.
+  const ATTESO = { Gennaio: 'a gennaio', Febbraio: 'a febbraio', Marzo: 'a marzo', Aprile: 'ad aprile', Maggio: 'a maggio', Giugno: 'a giugno', Luglio: 'a luglio', Agosto: 'ad agosto', Settembre: 'a settembre', Ottobre: 'a ottobre', Novembre: 'a novembre', Dicembre: 'a dicembre' }
+  ok('ogni mese ha il suo quando, in minuscolo', Array.isArray(quando) ? quando.filter(([n, q]) => { const [mese, anno] = n.split(' '); return q !== `${ATTESO[mese]} ${anno}` }) : quando, [])
   ok('«ad aprile», «ad agosto»: c\'è uno dei due nei dodici mesi', Array.isArray(quando) && quando.some(([, q]) => /^ad (aprile|agosto) /.test(q)), true)
 }
 
