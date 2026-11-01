@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.233.0 — 1 novembre 2026
+
+### Novità
+
+- Dal bonifico collegato alla ricevuta, come saldo o parziale dell'iscrizione, senza contare due volte i soldi
+
 ## 0.232.2 — 1 novembre 2026
 
 ### Risolto
