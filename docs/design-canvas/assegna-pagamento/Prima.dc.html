@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .pr { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    .nota { font-size: 14px; color: #46606f; line-height: 1.4; }
+    .fin { display: flex; flex-direction: column; gap: 14px; padding: 20px 28px 22px; background: #fff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; }
+    .tit { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; line-height: 1.05; }
+    .r { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; align-items: baseline; }
+    .r .et { width: 130px; flex-shrink: 0; }
+    .r span:last-child { font-size: 15px; }
+    .link { color: #14709f; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    .err { font-size: 14px; color: #b81d1d; }
+    .col { display: flex; flex-direction: column; gap: 10px; }
+    .chi { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid #cfe6f4; background: #fff; }
+    .chi h4 { margin: 0; font-size: 16px; font-weight: 700; }
+    .v { display: grid; grid-template-columns: 1fr 150px 150px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid #cfe6f4; }
+    .v b { font-size: 15px; }
+    .v small { display: block; font-size: 13px; color: #46606f; margin-top: 2px; }
+    .imp { font-size: 16px; font-weight: 600; padding: 9px 12px; border: 0; border-bottom: 2px solid #14709f; background: #eef5fa; text-align: right; }
+    .imp.vuoto { color: #46606f; font-weight: 400; }
+    .tot { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 16px; background: #e6eef3; font-size: 15px; }
+    .tot b { font-size: 17px; }
+    .giallo { background: #fcf6e6; border-left: 6px solid #f4c31b; padding: 12px 16px; font-size: 14px; line-height: 1.4; }
+    .riga { display: grid; grid-template-columns: 110px 1fr 150px 150px 170px; gap: 14px; align-items: center; padding: 12px 16px; background: #fff; border-bottom: 1px solid #cfe6f4; font-size: 15px; }
+    .riga small { display: block; font-size: 13px; color: #46606f; }
+    .ver { color: #0b7a33; font-weight: 600; }
+  </style>
+</helmet>
+<!-- I movimenti collegati a una persona prima di questo cambio. Se la persona ha una ricevuta valida con lo stesso importo entro 30 giorni, l'app propone l'abbinamento (Suggerito): tu confermi, e l'Incasso iscritto doppio sparisce. -->
+
+<div style="display: flex; gap: 32px; width: 1680px; padding: 28px 36px 36px; align-items: flex-start">
+<div class="col" style="width: 900px"><span class="pr">PROPOSTA · DA ASSEGNARE, IN CIMA: COLLEGATI PRIMA</span>
+<section class="fin"><span class="et">COLLEGATI PRIMA · 2 HANNO GIÀ UNA RICEVUTA</span>
+<span class="nota">Questi bonifici erano collegati alla persona, e la ricevuta è stata fatta a parte: in contabilità oggi contano due volte. Abbinali e restano una volta sola.</span>
+<div>
+<div class="riga" style="grid-template-columns:110px 1fr 1fr 120px 170px"><span>02/09/2026</span><div><b>Verdi Anna</b><small>Bonifico Verdi Paolo · 120,00 €</small></div><div><b>Ricevuta n. 201/2026</b><small>05/09/2026 · quota e trimestre Yoga · 120,00 €</small></div><dc-import name="Badge" tipo="tag" label="STESSO IMPORTO" tono="verde" hint-size="120px,30px"></dc-import><dc-import name="Bottone" tema="sito" label="Abbina" variante="pieno" contesto="segreteria" hint-size="120px,48px"></dc-import></div>
+<div class="riga" style="grid-template-columns:110px 1fr 1fr 120px 170px"><span>18/09/2026</span><div><b>Gallo Pietro</b><small>Bonifico Gallo Pietro · 50,00 €</small></div><div><b>Ricevuta n. 233/2026</b><small>18/09/2026 · quota associativa 2026/27 · 50,00 €</small></div><dc-import name="Badge" tipo="tag" label="STESSO GIORNO" tono="verde" hint-size="120px,30px"></dc-import><dc-import name="Bottone" tema="sito" label="Abbina" variante="pieno" contesto="segreteria" hint-size="120px,48px"></dc-import></div>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><dc-import name="Bottone" tema="sito" label="Abbina tutti e 2" variante="linea" contesto="segreteria" hint-size="200px,48px"></dc-import></div>
+<span class="nota">«Non è questa» lascia il bonifico fra quelli da assegnare. Una ricevuta si abbina a un bonifico solo se gli importi sono uguali.</span></section></div>
+
+<div class="col" style="width: 640px"><span class="pr">PROPOSTA · DOPO L'ABBINAMENTO</span>
+<section class="fin"><span class="et">IL MOVIMENTO</span><span class="tit">Bonifico Verdi Paolo</span>
+<div><div class="r"><span class="et">PERSONA</span><span><b>Verdi Anna</b> &nbsp;<a class="link">Apri la scheda ›</a></span></div><div class="r"><span class="et">DATA</span><span>02/09/2026</span></div><div class="r"><span class="et">IMPORTO</span><span>120,00 €</span></div><div class="r"><span class="et">RICEVUTA</span><span><b>N. 201/2026</b> · quota 2026/27 50,00 € (saldo), trimestre Yoga 70,00 € (saldo)</span></div></div>
+<span class="nota">Il pagamento della ricevuta 201 ora punta a questo bonifico: in MOVIMENTI sparisce l'«Incasso iscritto» da 120 € della ricevuta, e il saldo del Conto Corrente scende di 120 € al numero vero.</span></section>
+<span class="nota">Nei giorni con la cassa già chiusa l'abbinamento si fa lo stesso: tocca solo l'incasso derivato dalla ricevuta, non i movimenti contati in quella chiusura.</span></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1680,"height":820}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .pr { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    .nota { font-size: 14px; color: #46606f; line-height: 1.4; }
+    .fin { display: flex; flex-direction: column; gap: 14px; padding: 20px 28px 22px; background: #fff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; }
+    .tit { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; line-height: 1.05; }
+    .r { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; align-items: baseline; }
+    .r .et { width: 130px; flex-shrink: 0; }
+    .r span:last-child { font-size: 15px; }
+    .link { color: #14709f; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    .err { font-size: 14px; color: #b81d1d; }
+    .col { display: flex; flex-direction: column; gap: 10px; }
+    .chi { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid #cfe6f4; background: #fff; }
+    .chi h4 { margin: 0; font-size: 16px; font-weight: 700; }
+    .v { display: grid; grid-template-columns: 1fr 150px 150px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid #cfe6f4; }
+    .v b { font-size: 15px; }
+    .v small { display: block; font-size: 13px; color: #46606f; margin-top: 2px; }
+    .imp { font-size: 16px; font-weight: 600; padding: 9px 12px; border: 0; border-bottom: 2px solid #14709f; background: #eef5fa; text-align: right; }
+    .imp.vuoto { color: #46606f; font-weight: 400; }
+    .tot { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 16px; background: #e6eef3; font-size: 15px; }
+    .tot b { font-size: 17px; }
+    .giallo { background: #fcf6e6; border-left: 6px solid #f4c31b; padding: 12px 16px; font-size: 14px; line-height: 1.4; }
+    .riga { display: grid; grid-template-columns: 110px 1fr 150px 150px 170px; gap: 14px; align-items: center; padding: 12px 16px; background: #fff; border-bottom: 1px solid #cfe6f4; font-size: 15px; }
+    .riga small { display: block; font-size: 13px; color: #46606f; }
+    .ver { color: #0b7a33; font-weight: 600; }
+  </style>
+</helmet>
+<!-- CONTABILITÀ → DA ASSEGNARE (scheda nuova accanto a MOVIMENTI) e la scheda della persona in ISCRITTI, con il numero di quel che è collegato e non assegnato. -->
+
+<div style="display: flex; gap: 32px; width: 1680px; padding: 28px 36px 36px; align-items: flex-start">
+<div class="col" style="width: 900px"><span class="pr">PROPOSTA · CONTABILITÀ → DA ASSEGNARE</span>
+<section class="fin"><span class="et">DA ASSEGNARE · 3 ENTRATE · 560,00 €</span>
+<span class="nota">Le entrate collegate a una persona che non sono ancora su una quota o un corso, tutte o in parte. Dalla più vecchia.</span>
+<div>
+<div class="riga"><span>03/10/2026</span><div><b>Bianchi Marco</b><small>Bonifico Bianchi M. · avanzano dopo la quota</small></div><span>Conto Corrente</span><span><b>20,00 €</b><small>di 70,00 €</small></span><dc-import name="Bottone" tema="sito" label="Assegna" variante="pieno" contesto="segreteria" hint-size="120px,48px"></dc-import></div>
+<div class="riga"><span>15/10/2026</span><div><b>Verdi Anna</b><small>Bonifico Verdi Paolo · Importa banca</small></div><span>Conto Corrente</span><span><b>420,00 €</b><small>tutto</small></span><dc-import name="Bottone" tema="sito" label="Assegna" variante="pieno" contesto="segreteria" hint-size="120px,48px"></dc-import></div>
+<div class="riga"><span>12/09/2025</span><div><b>Neri Chiara</b><small>Storico 2025 · quota</small></div><span>Cassa Contanti</span><span><b>120,00 €</b><small>tutto</small></span><dc-import name="Bottone" tema="sito" label="Assegna" variante="pieno" contesto="segreteria" hint-size="120px,48px"></dc-import></div>
+</div>
+<span class="nota">Lo storico si assegna uno per uno: «Collega i casi sicuri» continua a collegare solo la persona.</span></section>
+<span class="nota">Il numero 3 sta anche sulla scheda DA ASSEGNARE e in CosaManca della segreteria, come le altre cose da fare.</span></div>
+
+<div class="col" style="width: 640px"><span class="pr">PROPOSTA · NELLA SCHEDA DELLA PERSONA</span>
+<section class="fin" style="border-top-color:#14709f;border-color:#cfe6f4"><span class="et">BIANCHI MARCO · QUOTA E PAGAMENTI</span>
+<div class="giallo"><b>20,00 € da assegnare</b> dal bonifico del 03/10/2026. <a class="link">Assegna ›</a></div>
+<dc-import name="RigaPagamento" tema="sito" tipo="ricevuta" titolo="N. 298/2026 · 04 ottobre 2026" sotto="QUOTA ASSOCIATIVA 2026/27 · SALDO" importo="50,00 €" tag="DAL BONIFICO DEL 03/10" tagTono="neutro" tasti="PDF|ANNULLA RICEVUTA" hint-size="100%,120px"></dc-import>
+<dc-import name="RigaPagamento" tema="sito" tipo="pagamento" titolo="15 ottobre 2026 · Conto Corrente" sotto="ANNUALE JUDO KIDS · PARZIALE, MANCANO 200,00 €" importo="220,00 €" tag="ASSEGNATO · SENZA RICEVUTA" tagTono="giallo" tasti="FAI LA RICEVUTA|APRI IN CONTABILITÀ" hint-size="100%,120px"></dc-import>
+<span class="nota">Un bonifico assegnato conta nel «da pagare» anche senza ricevuta, una volta sola. «Fai la ricevuta» apre il modulo col pagamento già scritto.</span></section></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1680,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

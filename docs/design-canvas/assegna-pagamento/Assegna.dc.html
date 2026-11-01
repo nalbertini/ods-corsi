@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .pr { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    .nota { font-size: 14px; color: #46606f; line-height: 1.4; }
+    .fin { display: flex; flex-direction: column; gap: 14px; padding: 20px 28px 22px; background: #fff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; }
+    .tit { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; line-height: 1.05; }
+    .r { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; align-items: baseline; }
+    .r .et { width: 130px; flex-shrink: 0; }
+    .r span:last-child { font-size: 15px; }
+    .link { color: #14709f; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    .err { font-size: 14px; color: #b81d1d; }
+    .col { display: flex; flex-direction: column; gap: 10px; }
+    .chi { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid #cfe6f4; background: #fff; }
+    .chi h4 { margin: 0; font-size: 16px; font-weight: 700; }
+    .v { display: grid; grid-template-columns: 1fr 150px 150px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid #cfe6f4; }
+    .v b { font-size: 15px; }
+    .v small { display: block; font-size: 13px; color: #46606f; margin-top: 2px; }
+    .imp { font-size: 16px; font-weight: 600; padding: 9px 12px; border: 0; border-bottom: 2px solid #14709f; background: #eef5fa; text-align: right; }
+    .imp.vuoto { color: #46606f; font-weight: 400; }
+    .tot { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 16px; background: #e6eef3; font-size: 15px; }
+    .tot b { font-size: 17px; }
+    .giallo { background: #fcf6e6; border-left: 6px solid #f4c31b; padding: 12px 16px; font-size: 14px; line-height: 1.4; }
+    .riga { display: grid; grid-template-columns: 110px 1fr 150px 150px 170px; gap: 14px; align-items: center; padding: 12px 16px; background: #fff; border-bottom: 1px solid #cfe6f4; font-size: 15px; }
+    .riga small { display: block; font-size: 13px; color: #46606f; }
+    .ver { color: #0b7a33; font-weight: 600; }
+  </style>
+</helmet>
+<!-- La finestra «Assegna a quota e corsi», aperta dal movimento. Mostra la persona collegata e il suo nucleo, con le voci ancora da pagare dalle iscrizioni e dal listino. -->
+
+<div style="display: flex; gap: 32px; width: 1680px; padding: 28px 36px 36px; align-items: flex-start">
+<div class="col" style="width: 780px"><span class="pr">PROPOSTA · UN BONIFICO PER DUE FRATELLI</span>
+<section class="fin"><span class="et">ASSEGNA IL BONIFICO</span><span class="tit">600,00 € · Rossi Mario · 15/10/2026</span>
+<span class="nota">Ho già diviso così: prima le quote, poi i corsi, dal più vecchio. Cambia gli importi se il genitore ha detto altro. <a class="link">Svuota tutto</a></span>
+<div class="chi"><h4>Rossi Luca <span class="nota">· collegato al bonifico</span></h4>
+<div class="v"><div><b>Quota associativa 2026/27</b><small>manca 50,00 €</small></div><div class="imp">50,00 €</div><div><dc-import name="Badge" tipo="tag" label="SALDO" tono="verde" hint-size="120px,30px"></dc-import></div></div>
+<div class="v"><div><b>Annuale Judo Kids</b><small>dal 01/09/2026 al 30/06/2027 · manca 420,00 €</small></div><div class="imp">420,00 €</div><div><dc-import name="Badge" tipo="tag" label="SALDO" tono="verde" hint-size="120px,30px"></dc-import></div></div></div>
+<div class="chi"><h4>Rossi Sofia <span class="nota">· stessa famiglia</span></h4>
+<div class="v"><div><b>Quota associativa 2026/27</b><small>manca 50,00 €</small></div><div class="imp">50,00 €</div><div><dc-import name="Badge" tipo="tag" label="SALDO" tono="verde" hint-size="120px,30px"></dc-import></div></div>
+<div class="v"><div><b>Trimestre Danza moderna</b><small>ottobre, novembre, dicembre · manca 150,00 €</small></div><div class="imp">80,00 €</div><div><dc-import name="Badge" tipo="tag" label="PARZIALE" tono="giallo" hint-size="120px,30px"></dc-import></div></div>
+<span class="nota">Resteranno 70,00 € sul trimestre: si vedono nella scheda di Sofia.</span></div>
+<div class="tot"><span>Assegnati <b>600,00 €</b> di 600,00 €</span><span>Da assegnare <b>0,00 €</b></span></div>
+<div><div class="r"><span class="et">RICEVUTE</span><span>2, una per persona: Rossi Luca 470,00 €, Rossi Sofia 130,00 € · intestate a Rossi Mario</span></div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><dc-import name="Bottone" tema="sito" label="Assegna e fai le 2 ricevute" variante="pieno" contesto="segreteria" hint-size="270px,48px"></dc-import><dc-import name="Bottone" tema="sito" label="Assegna senza ricevuta" variante="linea" contesto="segreteria" hint-size="240px,48px"></dc-import><dc-import name="Bottone" tema="sito" label="Lascia stare" variante="linea" contesto="segreteria" hint-size="140px,48px"></dc-import></div></section>
+<span class="nota">Una persona si aggiunge con «+ Un'altra persona della famiglia»; le voci sono quelle delle iscrizioni attive, coi nomi del listino. Un importo non supera mai quello che manca alla voce.</span></div>
+
+<div class="col" style="width: 720px"><span class="pr">PROPOSTA · NE AVANZA, E UN PARZIALE SULLA QUOTA</span>
+<section class="fin"><span class="et">ASSEGNA IL BONIFICO</span><span class="tit">70,00 € · Bianchi Marco · 03/10/2026</span>
+<div class="chi"><h4>Bianchi Marco</h4>
+<div class="v"><div><b>Quota associativa 2026/27</b><small>manca 50,00 €</small></div><div class="imp">50,00 €</div><div><dc-import name="Badge" tipo="tag" label="SALDO" tono="verde" hint-size="120px,30px"></dc-import></div></div>
+<div class="v"><div><b>Annuale Kickboxing</b><small>dal 01/09/2026 al 30/06/2027 · manca 0,00 €</small></div><div class="imp vuoto">0,00 €</div><div><dc-import name="Badge" tipo="tag" label="PAGATO" tono="spento" hint-size="120px,30px"></dc-import></div></div></div>
+<div class="tot"><span>Assegnati <b>50,00 €</b> di 70,00 €</span><span>Da assegnare <b style="color:#8f6a00">20,00 €</b></span></div>
+<div class="giallo">I 20,00 € che avanzano restano da assegnare: li trovi in CONTABILITÀ → DA ASSEGNARE e nella scheda di Marco, finché non li metti su un'altra voce.</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><dc-import name="Bottone" tema="sito" label="Assegna e fai la ricevuta" variante="pieno" contesto="segreteria" hint-size="250px,48px"></dc-import><dc-import name="Bottone" tema="sito" label="Lascia stare" variante="linea" contesto="segreteria" hint-size="140px,48px"></dc-import></div></section>
+
+<span class="et" style="margin-top:18px">PROPOSTA · COSA DICE SE NON VA</span>
+<section class="fin" style="border-top-color:#b81d1d">
+<div class="v"><div><b>Quota associativa 2026/27</b><small>manca 50,00 €</small></div><div class="imp">60,00 €</div><div></div></div>
+<span class="err">Alla quota mancano 50,00 €: metti 50,00 € o meno, il resto rimane da assegnare.</span>
+<div class="tot"><span>Assegnati <b style="color:#b81d1d">650,00 €</b> di 600,00 €</span><span>Da assegnare <b>−50,00 €</b></span></div>
+<span class="err">Hai assegnato 50,00 € più del bonifico: togli da una voce.</span>
+<span class="nota">Con un parziale la quota resta «non in regola» finché non è pagata tutta. Sull'annuale un parziale conta come una rata: oltre la terza, «Hai già 3 rate su questo annuale».</span></section></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1680,"height":1180}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
