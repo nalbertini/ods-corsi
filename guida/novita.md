@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.234.0 — 1 novembre 2026
+
+### Novità
+
+- In ISCRITTI la famiglia si legge col cognome del titolare, evidenziato sul titolare
+
 ## 0.233.0 — 1 novembre 2026
 
 ### Novità
