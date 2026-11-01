@@ -76,7 +76,7 @@ import { fraseDallaChat } from '../../lib/collega'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { ImportaBanca } from './ImportaBanca'
-import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica, Tasto, TestaColonna } from './comune'
+import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, SegnoStato, suCarta, Testa, useAvviso, useBozza, useCarica, Tasto, TestaColonna } from './comune'
 import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri, SchedaCandidata } from './CollegaPersona'
 import { useListino } from '../Costi'
@@ -429,9 +429,9 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
             <button type="button" role="menuitem" onClick={() => void apri('giroconto')}>Giroconto</button>
             <button type="button" role="menuitem" disabled={!trovate.length} onClick={() => scaricaCsv(`movimenti-${oggi}.csv`, csvMovimenti(trovate, casse))}>Esporta CSV</button>
           </MenuAzioni>
-          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void apri('movimento')}>
+          <Tasto tono="pieno" icona="aggiungi" onClick={() => void apri('movimento')}>
             Nuovo movimento
-          </button>
+          </Tasto>
         </>,
         azioni,
       )}
@@ -578,17 +578,20 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{dataRicevuta(r.data)}</span>
                 <span role="cell" style={{ fontSize: 15, fontWeight: 600, textDecoration: r.annullato ? 'line-through' : undefined }}>
                   <button type="button" className="sg-riga-apri">{r.descrizione}</button>
-                  <span className="num sg-tag" style={{ marginLeft: 8 }}>{originiMovimento(r)}</span>
-                  {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
-                  {/* Lo stato del collegamento alla persona sta accanto alla descrizione: la colonna PERSONA non c'è più. */}
-                  {r.personaId && collegatoAMano(r) && <span className="num sg-tag" data-tipo="fatto" style={{ marginLeft: 8 }}>Collegato</span>}
-                  {!r.personaId && esiti[r.id] === 'omonimi' && <span className="num sg-tag" data-tipo="aspetta" style={{ marginLeft: 8 }}>Omonimi</span>}
-                  {!r.personaId && esiti[r.id] === 'nessuna' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Senza scheda</span>}
-                  {!r.personaId && esiti[r.id] === 'sicuro' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Da collegare</span>}
+                  {/* Gli stati stanno accanto alla descrizione, pallino e parola come in ogni elenco. */}
+                  <span className="sg-stati-riga">
+                    {originiMovimento(r) && <SegnoStato tono="nota" parola={originiMovimento(r) ?? ''} />}
+                    {r.annullato && <SegnoStato tono="rosso" parola="Annullato" />}
+                    {/* Lo stato del collegamento alla persona sta accanto alla descrizione: la colonna PERSONA non c'è più. */}
+                    {r.personaId && collegatoAMano(r) && <SegnoStato tono="verde" parola="Collegato" />}
+                    {!r.personaId && esiti[r.id] === 'omonimi' && <SegnoStato tono="giallo" parola="Omonimi" />}
+                    {!r.personaId && esiti[r.id] === 'nessuna' && <SegnoStato tono="spento" parola="Senza scheda" />}
+                    {!r.personaId && esiti[r.id] === 'sicuro' && <SegnoStato tono="spento" parola="Da collegare" />}
+                  </span>
                   <span className="sg-sotto-movimento">
                     <span className="sg-solo-telefono">{[tipoMovimento(r).nome, r.tipo === 'giroconto' ? '' : `${r.tipo === 'entrata' ? '+ ' : '− '}${soldi(r.importo)}`, dataRicevuta(r.data), r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)].filter(Boolean).join(' · ')}</span>
                     <span>{lineaVoce(r, r.personaId ? nomiPersone.get(r.personaId) ?? (collegatoAMano(r) ? 'Persona collegata' : '') : '')}</span>
-                    {r.sotto && <span>{r.sotto}</span>}
+                    {r.sotto && <span className="sg-sotto-extra">{r.sotto}</span>}
                   </span>
                 </span>
                 <span role="cell" className="sg-cella-icona">
@@ -1005,7 +1008,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
         <div className="stack" style={{ gap: 6, minWidth: 0 }}>
           <div className="row" style={{ gap: 10, alignItems: 'center' }}>
             <span className="sg-etichetta">{manuale ? 'IL MOVIMENTO' : 'INCASSO DI UN ISCRITTO'}</span>
-            <span className="num sg-tag">{originiMovimento(riga)}</span>
+            {originiMovimento(riga) && <SegnoStato tono="nota" parola={originiMovimento(riga) ?? ''} />}
           </div>
           <span className="sg-riquadro-titolo ob">{riga.descrizione}</span>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap', paddingTop: 6 }}>
@@ -1133,7 +1136,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
       )}
       {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={() => setCollegando(false)} />}
       {!manuale && <span className="sg-sotto">Si cambia nella scheda della persona, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
-      {manuale && riga.annullato && <span className="sg-sotto"><span className="num sg-tag" data-tipo="manca">Annullato</span> Resta in elenco e non si conta più.</span>}
+      {manuale && riga.annullato && <span className="sg-sotto"><SegnoStato tono="rosso" parola="Annullato" /> Resta in elenco e non si conta più.</span>}
       {manuale && !giro && (traccia.guaio || (traccia.dato?.length ?? 0) > 0) && (
         <div className="stack" style={{ gap: 6 }}>
           <span className="sg-etichetta">COSA È CAMBIATO</span>
@@ -1185,9 +1188,9 @@ function Voci({ d, voci, chiusure, righe, fai, onCambiato }: { d: DatiSegreteria
           <span className="sg-etichetta">PER CORREGGERE UN GIORNO CHIUSO</span>
           <span style={{ fontSize: 15 }}>Dopo la chiusura della cassa uno sbaglio si corregge con un movimento che ha una voce di rettifica: ne manca una {mancano.length === 2 ? 'di entrata e una di uscita' : `di ${mancano[0] === 'entrata' ? 'entrata' : 'uscita'}`}.</span>
           <div>
-            <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void fai(async () => { for (const tipo of mancano) await d.salvaVoce({ nome: 'Rettifica', tipo }) }, 'Voce «Rettifica» creata', onCambiato)}>
+            <Tasto tono="pieno" icona="aggiungi" onClick={() => void fai(async () => { for (const tipo of mancano) await d.salvaVoce({ nome: 'Rettifica', tipo }) }, 'Voce «Rettifica» creata', onCambiato)}>
               Crea la voce «rettifica»
-            </button>
+            </Tasto>
           </div>
         </section>
       )}
@@ -1214,8 +1217,8 @@ function ColonnaVoci({ d, tipo, titolo, voci, usate, fai, onCambiato }: { d: Dat
         <div key={v.id} className="sg-voce-elenco" style={{ opacity: v.attiva ? 1 : 0.55 }}>
           <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>
             {v.nome}
-            {v.diSistema && <span className="num sg-tag" style={{ marginLeft: 8 }}>Sistema</span>}
-            {!v.attiva && <span className="num sg-tag" style={{ marginLeft: 8 }}>Non in uso</span>}
+            {v.diSistema && <span style={{ marginLeft: 8 }}><SegnoStato tono="nota" parola="Sistema" /></span>}
+            {!v.attiva && <span style={{ marginLeft: 8 }}><SegnoStato tono="spento" parola="Non in uso" /></span>}
           </span>
           <span style={{ fontSize: 13, color: 'var(--dim)' }}>{v.diSistema ? (v.nome === VOCE_DIFFERENZA ? 'scritta dalla chiusura di cassa' : 'incassi degli iscritti') : usate(v) ? `${usate(v)} ${usate(v) === 1 ? 'movimento' : 'movimenti'}` : 'mai usata'}</span>
           {!v.diSistema && (
@@ -1247,9 +1250,9 @@ function ColonnaVoci({ d, tipo, titolo, voci, usate, fai, onCambiato }: { d: Dat
       >
         <label htmlFor={`nuova-voce-${tipo}`} className="vh">Nome della nuova voce di {tipo}</label>
         <input id={`nuova-voce-${tipo}`} className="sg-campo grow" placeholder="Nome della voce" maxLength={60} value={nome} onChange={(e) => setNome(e.target.value)} aria-invalid={!!guaio || undefined} />
-        <button type="submit" className="sg-btn sg-btn-linea" disabled={!nome.trim() || !!guaio}>
+        <Tasto type="submit" icona="aggiungi" disabled={!nome.trim() || !!guaio}>
           Nuova voce
-        </button>
+        </Tasto>
       </form>
       {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
     </section>
@@ -1725,7 +1728,7 @@ function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: {
         <div key={k.id} className="row" style={{ gap: 14, padding: '10px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'center', flexWrap: 'wrap', color: k.annullataIl ? 'var(--dim)' : undefined }}>
           <span style={{ fontSize: 15, fontWeight: 600, minWidth: 190, whiteSpace: 'nowrap' }}>
             {dataRicevuta(k.dal)} → {dataRicevuta(k.data)}
-            {k.annullataIl && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullata</span>}
+            {k.annullataIl && <span style={{ marginLeft: 8 }}><SegnoStato tono="rosso" parola="Annullata" /></span>}
           </span>
           <span style={{ fontSize: 14, color: 'var(--sec)', flex: 1, minWidth: 220 }}>
             Contati {soldi(k.contato)} · {differenzaInParole(k.differenza)} · {k.chiusaDa ?? '—'}, {dataRicevuta(giornoRoma(k.chiusaIl))}

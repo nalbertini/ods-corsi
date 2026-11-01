@@ -1,8 +1,10 @@
-import { type ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import type { DatiSegreteria, ProvaSeg, RigaRegistro } from '../../lib/segreteria'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
-import { Guaio, Riga, Testa, useCarica, Tasto } from './comune'
+import { FiltroMenu, Guaio, SegnoStato, Testa, useCarica, Tasto } from './comune'
+import { Titoletto } from '../ds'
+import { Icona } from '../Icons'
 import { csvRegistro } from '../../lib/presenzeCsv'
 import { mesi } from '../../lib/ore'
 import { accorcia, chiSiStaPerdendo, conAppello, DI_FILA, GIORNI_RECENTI } from '../../lib/frequenza'
@@ -23,8 +25,8 @@ function scaricaCsv(righe: RigaRegistro[], nome: string) {
  * il registro del mese lezione per lezione, con i nomi.
  *
  * Tutto si conta dagli appelli fatti: una lezione passata senza appello non
- * dice che non è venuto nessuno, dice che nessuno ha segnato, e sta nel suo
- * riquadro invece di abbassare le medie.
+ * dice che non è venuto nessuno, dice che nessuno ha segnato, e sta nella sua
+ * sezione invece di abbassare le medie.
  */
 export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void; senzaAppello?: boolean; schede?: ReactNode }) {
   // In cima, gli ultimi 30 giorni: quelli che conta DA FARE, a cavallo di due mesi.
@@ -41,7 +43,7 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
   const registro = useCarica(() => d.registro(p.da, p.a), [d, p])
   // Arrivati da DA FARE per gli appelli che mancano: la pagina si apre lì,
   // quando il registro è arrivato e sopra c'è già tutto quello che lo precede.
-  const appelli = useRef<HTMLDetailsElement>(null)
+  const appelli = useRef<HTMLElement>(null)
   const arrivato = registro.dato !== null
   useEffect(() => {
     if (senzaAppello && arrivato) appelli.current?.scrollIntoView({ block: 'start' })
@@ -62,91 +64,86 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
 
   return (
     <>
-      <Testa titolo="PRESENZE" sotto="Chi si sta perdendo, quali appelli mancano, chi c'era lezione per lezione.">
-        <label htmlFor="periodo" className="vh">
-          Periodo
-        </label>
-        <select id="periodo" className="sg-campo" value={periodo} onChange={(e) => {
-            // Un corso scelto che nel mese nuovo non c'è sparirebbe dal menu
-            // pur continuando a filtrare: si riparte da tutti.
-            setPeriodo(e.target.value)
-            setCorso('')
-          }}>
-          {periodi.map((x) => (
-            <option key={x.chiave} value={x.chiave}>
-              {x.nome}
-            </option>
-          ))}
-        </select>
-        <label htmlFor="corso-p" className="vh">
-          Corso
-        </label>
-        <select id="corso-p" className="sg-campo" value={corso} onChange={(e) => setCorso(e.target.value)}>
-          <option value="">Tutti i corsi</option>
-          {corsi.map(([id, nome]) => (
-            <option key={id} value={id}>
-              {nome}
-            </option>
-          ))}
-        </select>
-        <Tasto disabled={!righe.length} onClick={() => scaricaCsv(righe, p.nome)}>
+      <Testa
+        titolo="PRESENZE"
+        sotto={
+          <>
+            Chi si sta perdendo, quali appelli mancano, chi c'era lezione per lezione.{' '}
+            {/* Le barre per corso e i numeri del mese stanno già in STATISTICHE: un rimando nella frase, non un tasto in più. */}
+            <button type="button" className="sg-link" onClick={() => onVai('statistiche')}>
+              Statistiche del mese
+            </button>
+          </>
+        }
+      >
+        <Tasto icona="scarica" disabled={!righe.length} onClick={() => scaricaCsv(righe, p.nome)}>
           Scarica CSV
         </Tasto>
       </Testa>
       {schede}
 
+      <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+        {/* Il mese in corso viene per primo: è quello da cui si parte, e la ✕ del filtro ci torna. */}
+        <FiltroMenu
+          id="periodo"
+          nome="Mese"
+          value={periodo}
+          opzioni={[periodi[1], periodi[0], ...periodi.slice(2)].map((x) => [x.chiave, x.nome] as const)}
+          onChange={(v) => {
+            // Un corso scelto che nel mese nuovo non c'è sparirebbe dal menu
+            // pur continuando a filtrare: si riparte da tutti.
+            setPeriodo(v)
+            setCorso('')
+          }}
+        />
+        <FiltroMenu id="corso-p" nome="Corso" value={corso} opzioni={[['', 'Tutti'], ...corsi]} onChange={setCorso} />
+      </div>
+
       {registro.guaio && <Guaio testo={registro.guaio} />}
 
-      {/* Le barre per corso e i numeri del mese stanno già in STATISTICHE. */}
-      <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => onVai('statistiche')}>
-        Com'è andato il mese: presenze per corso e per giorno → Statistiche
-      </button>
-
       <div className="stack" style={{ gap: 20 }}>
-          <section aria-label="Chi si sta perdendo" className="sg-riquadro">
-            <Riga titolo={`CHI SI STA PERDENDO · ${persi.length}`}>
-              <span style={{ fontSize: 12, color: 'var(--dim)' }}>{DI_FILA} assenze di fila o più</span>
-            </Riga>
-            {recenti.dato !== null && persi.length === 0 && <span style={{ fontSize: 14, color: 'var(--verde-testo)' }}>Nessuno: chi è iscritto viene.</span>}
+          <section aria-label="Chi si sta perdendo" className="sg-elenco">
+            <div className="sg-elenco-testa">
+              <Titoletto dentro conto={persi.length}>CHI SI STA PERDENDO</Titoletto>
+              <span className="sg-sotto">{DI_FILA} assenze di fila o più</span>
+            </div>
+            {recenti.dato !== null && persi.length === 0 && <p className="sg-elenco-vuoto" style={{ color: 'var(--verde-testo)' }}>Nessuno: chi è iscritto viene.</p>}
             {primiPersi.map((x) => (
-              <div key={x.id} className="sg-voce-elenco">
-                <span className="stack grow" style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: 15, fontWeight: 600 }}>{x.nome}</span>
-                  <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-                    {x.corsi.join(', ')} · {x.ultima ? `l'ultima volta ${giornoPerEsteso(chiaveGiorno(new Date(x.ultima)))}` : 'mai negli ultimi due mesi'}
-                  </span>
-                </span>
-                <span className="num" style={{ fontSize: 18, fontWeight: 700, color: 'var(--rosso-testo)' }}>{x.fila}</span>
-                <button type="button" className="num sg-chip" onClick={() => onVai('iscritti', { persona: x.id })}>
-                  Apri la scheda
-                </button>
-              </div>
+              <RigaElenco
+                key={x.id}
+                titolo={x.nome}
+                sotto={`${x.corsi.join(', ')} · ${x.ultima ? `l'ultima volta ${giornoPerEsteso(chiaveGiorno(new Date(x.ultima)))}` : 'mai negli ultimi due mesi'}`}
+                onApri={() => onVai('iscritti', { persona: x.id })}
+              >
+                <span className="num sg-riga-elenco-cifra" style={{ color: 'var(--rosso-testo)' }}>{x.fila} assenze</span>
+              </RigaElenco>
             ))}
             {(restanoPersi > 0 || tuttiPersi) && (
-              <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} aria-expanded={tuttiPersi} onClick={() => setTuttiPersi(!tuttiPersi)}>
-                {tuttiPersi ? 'Mostra meno' : `Mostra tutti i ${persi.length} (altri ${restanoPersi})`}
-              </button>
+              <div className="sg-elenco-piede">
+                <Tasto aria-expanded={tuttiPersi} onClick={() => setTuttiPersi(!tuttiPersi)}>
+                  {tuttiPersi ? 'Mostra meno' : `Mostra tutti i ${persi.length} (altri ${restanoPersi})`}
+                </Tasto>
+              </div>
             )}
           </section>
 
-          <Chiudibile rif={appelli} titolo={`APPELLI MANCANTI${mancanti.length ? ` · ${mancanti.length}` : ''}`} aperta={mancanti.length > 0 || !!senzaAppello} allarme={mancanti.length > 0}>
-            {registro.dato !== null && mancanti.length === 0 && <span style={{ fontSize: 14, color: 'var(--verde-testo)' }}>Nessuno: tutte le lezioni passate hanno l'appello.</span>}
+          <section ref={appelli} aria-label="Appelli mancanti" className="sg-elenco" data-allarme={mancanti.length > 0}>
+            <div className="sg-elenco-testa">
+              <Titoletto dentro conto={mancanti.length}>APPELLI MANCANTI</Titoletto>
+            </div>
+            {registro.dato !== null && mancanti.length === 0 && <p className="sg-elenco-vuoto" style={{ color: 'var(--verde-testo)' }}>Nessuno: tutte le lezioni passate hanno l'appello.</p>}
             {mancanti.slice(0, 30).map((r) => (
-              <div key={r.sessioneId} className="sg-voce-elenco" style={{ borderColor: 'var(--rosso)' }}>
-                <span className="stack grow" style={{ minWidth: 0 }}>
-                  <span className="ob" style={{ fontSize: 15, fontWeight: 700 }}>{r.corso.toUpperCase()}</span>
-                  <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-                    {giornoPerEsteso(chiaveGiorno(new Date(r.inizio)))} · {oraDi(r.inizio)}
-                    {r.istruttori ? ` · ${r.istruttori}` : ''}
-                  </span>
-                </span>
-                <button type="button" className="num sg-chip" onClick={() => onVai('settimana', { lezione: { id: r.sessioneId, inizio: r.inizio } })}>
-                  Fai l’appello ora
-                </button>
-              </div>
+              <RigaElenco
+                key={r.sessioneId}
+                titolo={`${r.corso} · ${giornoPerEsteso(chiaveGiorno(new Date(r.inizio)))}, ${oraDi(r.inizio)}`}
+                sotto={r.istruttori ? `Istruttore: ${r.istruttori}` : 'Nessun istruttore segnato'}
+                onApri={() => onVai('settimana', { lezione: { id: r.sessioneId, inizio: r.inizio } })}
+              >
+                <SegnoStato tono="rosso" parola="Appello non fatto" />
+              </RigaElenco>
             ))}
-            {mancanti.length > 30 && <span className="sg-sotto">…e altre {mancanti.length - 30}.</span>}
-          </Chiudibile>
+            {mancanti.length > 30 && <p className="sg-elenco-vuoto">…e altre {mancanti.length - 30}.</p>}
+          </section>
 
           <Prove prove={prove} corso={corso} onVai={onVai} />
 
@@ -159,22 +156,37 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
 const PRIMI_PERSI = 5
 
 /**
- * Una sezione lunga chiusa, con il titolo e il conto in vista: si apre da sola
- * solo quando c'è qualcosa da fare (`aperta`). `<details>` perché la tastiera e
- * chi legge lo schermo lo sanno già usare.
+ * Una riga d'elenco che apre qualcosa: tutta la riga si clicca (il tasto la copre), la › dice che si apre.
+ * Prende il posto della voce a riquadro con un tasto di riga ripetuto su ogni voce. `children` sono lo
+ * stato o la cifra a destra; un link vero dentro (il telefono) resta sopra il tasto e si preme da solo.
  */
-function Chiudibile({ titolo, nota, aperta, allarme, rif, children }: { titolo: string; nota?: string; aperta?: boolean; allarme?: boolean; rif?: RefObject<HTMLDetailsElement>; children: ReactNode }) {
-  // Lo stato è qui perché `open` controllato da React rimetterebbe a posto ogni apertura o chiusura a mano.
-  const [apertoOra, setApertoOra] = useState(!!aperta)
-  useEffect(() => setApertoOra(!!aperta), [aperta])
+function RigaElenco({ titolo, sotto, onApri, children }: { titolo: string; sotto: string; onApri: () => void; children?: ReactNode }) {
   return (
-    <details ref={rif} className="sg-riquadro sg-chiudibile" data-allarme={!!allarme} open={apertoOra} onToggle={(e) => setApertoOra(e.currentTarget.open)}>
-      <summary>
-        <Riga titolo={titolo}>{nota && <span style={{ fontSize: 12, color: 'var(--dim)' }}>{nota}</span>}</Riga>
+    <div className="sg-riga-elenco">
+      <button type="button" className="sg-riga-elenco-apri" onClick={onApri}>
+        <span className="sg-riga-elenco-titolo">{titolo}</span>
+        <span className="sg-riga-elenco-sotto">{sotto}</span>
+      </button>
+      {children}
+      <span className="sg-riga-elenco-segue" aria-hidden="true">
+        <Icona nome="avanti" />
+      </span>
+    </div>
+  )
+}
+
+/**
+ * Una sezione lunga chiusa, con il titolo e il conto in vista. `<details>`
+ * perché la tastiera e chi legge lo schermo lo sanno già usare.
+ */
+function SezioneChiusa({ titolo, conto, nota, children }: { titolo: string; conto?: number; nota?: string; children: ReactNode }) {
+  return (
+    <details className="sg-elenco">
+      <summary className="sg-elenco-testa">
+        <Titoletto dentro conto={conto}>{titolo}</Titoletto>
+        {nota && <span className="sg-sotto">{nota}</span>}
       </summary>
-      <div className="stack" style={{ gap: 10 }}>
-        {children}
-      </div>
+      {children}
     </details>
   )
 }
@@ -195,28 +207,28 @@ function Registro({ righe, caricato, onVai }: { righe: RigaRegistro[]; caricato:
     giorni.set(g, [...(giorni.get(g) ?? []), r])
   }
   return (
-    <Chiudibile titolo="REGISTRO DEL MESE" nota={caricato ? `${righe.length} ${righe.length === 1 ? 'lezione' : 'lezioni'} con l'appello, chi c'era lezione per lezione` : 'chi c\'era, lezione per lezione'}>
-      {caricato && righe.length === 0 && <span className="sg-sotto">Nessun appello fatto in questo periodo.</span>}
+    <SezioneChiusa titolo="REGISTRO DEL MESE" conto={caricato ? righe.length : undefined} nota={caricato ? `${righe.length === 1 ? 'lezione' : 'lezioni'} con l'appello, chi c'era lezione per lezione` : 'chi c\'era, lezione per lezione'}>
+      {caricato && righe.length === 0 && <p className="sg-elenco-vuoto">Nessun appello fatto in questo periodo.</p>}
       {[...giorni.entries()].map(([g, lezioni]) => (
-        <div key={g} className="stack" style={{ gap: 6 }}>
-          <span className="sg-etichetta" style={{ letterSpacing: '0.16em' }}>{giornoPerEsteso(g).toUpperCase()}</span>
+        <div key={g}>
+          <span className="sg-etichetta sg-elenco-giorno">{giornoPerEsteso(g).toUpperCase()}</span>
           {lezioni.map((r) => {
             const presenti = r.appello.filter((p) => p.stato === 'presente').sort(PER_ORDINE)
             const altri = r.appello.filter((p) => p.stato !== 'presente').sort(PER_ORDINE)
             const dovute = r.appello.filter((p) => p.stato !== 'giustificato').length
             return (
               <details key={r.sessioneId} className="sg-registro">
-                <summary className="sg-voce-elenco">
-                  <span className="stack grow" style={{ minWidth: 0 }}>
-                    <span className="ob" style={{ fontSize: 15, fontWeight: 700 }}>{r.corso.toUpperCase()}</span>
-                    <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+                <summary className="sg-riga-elenco">
+                  <span className="sg-riga-elenco-apri">
+                    <span className="sg-riga-elenco-titolo">{r.corso}</span>
+                    <span className="sg-riga-elenco-sotto">
                       {oraDi(r.inizio)}
                       {r.sala ? ` · ${r.sala}` : ''}
                       {r.istruttori ? ` · ${r.istruttori}` : ''}
                     </span>
                   </span>
-                  <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--verde-testo)', whiteSpace: 'nowrap' }}>
-                    {presenti.length}/{dovute}
+                  <span className="num sg-riga-elenco-cifra" style={{ color: 'var(--verde-testo)' }}>
+                    {presenti.length}/{dovute} presenti
                   </span>
                 </summary>
                 <div className="sg-registro-nomi">
@@ -246,7 +258,7 @@ function Registro({ righe, caricato, onVai }: { righe: RigaRegistro[]; caricato:
           })}
         </div>
       ))}
-    </Chiudibile>
+    </SezioneChiusa>
   )
 }
 
@@ -260,38 +272,32 @@ function Prove({ prove, corso, onVai }: { prove: { dato: ProvaSeg[] | null; guai
   const qui = corso ? tutte.filter((x) => x.corsoId === corso) : tutte
   const persone = new Set(qui.map((x) => x.personaId)).size
   return (
-    <Chiudibile
+    <SezioneChiusa
       titolo="PROVE"
-      nota={prove.dato ? `${persone} ${persone === 1 ? 'persona' : 'persone'} in ${qui.length} ${qui.length === 1 ? 'lezione' : 'lezioni'}` : 'chi è venuto a provare'}
+      conto={prove.dato ? persone : undefined}
+      nota={prove.dato ? `${persone === 1 ? 'persona' : 'persone'} in ${qui.length} ${qui.length === 1 ? 'lezione' : 'lezioni'}` : 'chi è venuto a provare'}
     >
       {prove.guaio && <Guaio testo={prove.guaio} />}
-      {prove.dato !== null && qui.length === 0 && <span className="sg-sotto">Nessuno è venuto a provare in questo periodo.</span>}
+      {prove.dato !== null && qui.length === 0 && <p className="sg-elenco-vuoto">Nessuno è venuto a provare in questo periodo.</p>}
       {qui.slice(0, 40).map((x) => (
-        <div key={`${x.sessioneId}:${x.personaId}`} className="sg-voce-elenco">
-          <span className="stack grow" style={{ minWidth: 0 }}>
-            <span style={{ fontSize: 15, fontWeight: 600 }}>
-              {x.cognome} {x.nome}
-            </span>
-            <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-              {x.corso} · {giornoPerEsteso(chiaveGiorno(new Date(x.inizio)))} · {oraDi(x.inizio)}
-              {x.da ? ` · aggiunta da ${x.da}` : ''}
-            </span>
-          </span>
+        <RigaElenco
+          key={`${x.sessioneId}:${x.personaId}`}
+          titolo={`${x.cognome} ${x.nome}`}
+          sotto={`${x.corso} · ${giornoPerEsteso(chiaveGiorno(new Date(x.inizio)))} · ${oraDi(x.inizio)}${x.da ? ` · aggiunta da ${x.da}` : ''}`}
+          onApri={() => onVai('iscritti', { persona: x.personaId })}
+        >
+          {x.iscritto && <SegnoStato tono="verde" parola="Iscritto" />}
           {x.telefono ? (
-            <a className="num" style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }} href={`tel:${x.telefono.replace(/[^\d+]/g, '')}`}>
+            <a className="num sg-riga-elenco-cifra" href={`tel:${x.telefono.replace(/[^\d+]/g, '')}`}>
               {x.telefono}
             </a>
           ) : (
-            <span style={{ fontSize: 12, color: 'var(--faint)' }}>senza telefono</span>
+            <span className="sg-riga-elenco-sotto">senza telefono</span>
           )}
-          {x.iscritto && <span className="num sg-chip" style={{ color: 'var(--verde-testo)', borderColor: 'var(--verde)', display: 'inline-flex', alignItems: 'center' }}>Iscritto</span>}
-          <button type="button" className="num sg-chip" onClick={() => onVai('iscritti', { persona: x.personaId })}>
-            Apri la scheda
-          </button>
-        </div>
+        </RigaElenco>
       ))}
-      {qui.length > 40 && <span className="sg-sotto">…e altre {qui.length - 40}.</span>}
-    </Chiudibile>
+      {qui.length > 40 && <p className="sg-elenco-vuoto">…e altre {qui.length - 40}.</p>}
+    </SezioneChiusa>
   )
 }
 

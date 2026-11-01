@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA PRESENZE, copiata da PaginaSito.dc.html. Oggi sopra l'elenco ci sono quattro righe di comandi (contatori, Scarica CSV, schede, il tasto lungo verso
+     Statistiche). Diventano: la testata (titolo, frase col link «Statistiche del mese» in coda, a destra «Scarica CSV» a linea), le Linguette (Il mese,
+     Segnalate col bollino 2), una barra con mese e corso, poi le sezioni. Le righe di CHI SI STA PERDENDO sono RigaElenco: tutta la riga apre la scheda,
+     niente piu' «Apri la scheda» ripetuto; il numero ha la sua parola («18 assenze»). APPELLI MANCANTI dice il suo numero nel titolo (12), al posto della fascia. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="PRESENZE" numeri="RICHIESTE ONLINE:3, PRESENZE:2, PRESENZE ISTRUTTORI:10" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <dc-import name="TestataPagina" titolo="PRESENZE" sotto="Chi si sta perdendo, quali appelli mancano, chi c'era lezione per lezione." link="Statistiche del mese" secondaria="Scarica CSV" iconaSecondaria="scarica" primaria="" hint-size="100%,60px"></dc-import>
+    <dc-import name="Linguette" schede="calendario:Il mese|segnalazione:Segnalate" accesa="1" numeri="2:2:r" hint-size="100%,46px"></dc-import>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px">
+      <dc-import name="FiltroMenu" nome="Mese" valore="Ottobre 2026" hint-size="200px,44px"></dc-import>
+      <dc-import name="FiltroMenu" nome="Corso" valore="Tutti" hint-size="160px,44px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px; overflow: hidden">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 16px 10px">
+        <dc-import name="Titoletto" label="CHI SI STA PERDENDO" conto="5" hint-size="300px,24px"></dc-import>
+        <span style="font-size: 13px; color: #46606f">3 assenze di fila o più</span>
+      </div>
+      <dc-import name="RigaElenco" titolo="Leone Alessandro" sotto="Lotta 3 · l’ultima volta lunedì 28 settembre" cifra="18 assenze" tonoCifra="guaio" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaElenco" titolo="Romano Riccardo" sotto="Judo 3 · mai negli ultimi due mesi" cifra="14 assenze" tonoCifra="guaio" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaElenco" titolo="Leone Lorenzo" sotto="Lotta 3 · l’ultima volta lunedì 19 ottobre" cifra="6 assenze" tonoCifra="guaio" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaElenco" titolo="Barbieri Beatrice" sotto="Prepugilistica · mai negli ultimi due mesi" cifra="5 assenze" tonoCifra="guaio" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaElenco" titolo="Cattaneo Alessandro" sotto="Aikido 2 · l’ultima volta giovedì 15 ottobre" cifra="3 assenze" tonoCifra="avviso" hint-size="100%,56px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #cfe6f4; border-left: 4px solid #e4292a; border-radius: 6px; overflow: hidden">
+      <div style="padding: 14px 16px 10px">
+        <dc-import name="Titoletto" label="APPELLI MANCANTI" conto="12" hint-size="300px,24px"></dc-import>
+      </div>
+      <dc-import name="RigaElenco" titolo="Judo 3 · lunedì 26 ottobre, 18:30" sotto="Istruttore: Ferri Giulia" stato="Appello non fatto" tonoStato="guaio" cifra="" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaElenco" titolo="Lotta 3 · venerdì 23 ottobre, 19:00" sotto="Istruttore: Leone Marco" stato="Appello non fatto" tonoStato="guaio" cifra="" hint-size="100%,56px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

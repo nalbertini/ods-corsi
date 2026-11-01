@@ -45,7 +45,7 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   sono contate**).
 - **Famiglie** — chi ha registrato un [nucleo familiare](#il-nucleo-familiare)
   e chi ci è dentro.
-- **Non archiviato** — solo finché ce ne sono: chi ha un file di certificato
+- **Da archiviare** — solo finché ce ne sono: chi ha un file di certificato
   caricato prima della nuova gestione (senza data di caricamento). Quelli
   nuovi non ci sono mai.
 - **Pagato nel vecchio programma** col numero — solo finché ce ne sono: chi è
@@ -300,8 +300,10 @@ scheda è disattivata, nessuno.
   senza certificato valido.
 - **Un certificato non archiviato** (file caricato quando il certificato
   stava su carta) si apre con **Apri** come gli altri, e la scheda lo dice in
-  giallo; in elenco c'è **Non archiviato** accanto al nome (il filtro
-  **Non archiviato** li mostra tutti, finché ce ne sono). Si cancella
+  giallo; in elenco la colonna CERTIFICATO dice **Da archiviare** in giallo (il filtro
+  **Da archiviare** li mostra tutti, finché ce ne sono). Se il certificato manca,
+  è scaduto o sta per scadere, la colonna dice quello, che è più urgente, ma il
+  filtro la persona la mostra lo stesso: il file è sempre da archiviare. Si cancella
   da solo come gli altri, o con **Togli**.
 - **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
   minore, quella del genitore): **IN SEGRETERIA** o **DA PORTARE**. **La copia è in segreteria** lo segna; **Non c'è più** la toglie senza

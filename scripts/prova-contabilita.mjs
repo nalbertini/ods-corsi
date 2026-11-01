@@ -1440,7 +1440,8 @@ console.log('\n98. il tipo di un movimento ha una colonna sua, e la riga non rip
 console.log('\n99. ogni riga dice da dove viene')
 {
   const da = (r) => prova(() => m.originiMovimento(r))
-  ok('un incasso di un iscritto e un movimento scritto qui', [da({ origine: 'ricevuta' }), da({ origine: 'pagamento' }), da({ origine: 'movimento' })], ['Dal gestionale', 'Dal gestionale', 'Dal gestionale'])
+  // Quel che nasce qui non porta nessuna scritta: «Dal gestionale» su quasi ogni riga era rumore (deciso dall'utente).
+  ok('un incasso di un iscritto e un movimento scritto qui: nessuna origine da dire', [da({ origine: 'ricevuta' }), da({ origine: 'pagamento' }), da({ origine: 'movimento' })], [null, null, null])
   ok('dalla banca, dallo storico, da Satispay, dalla chat', [da({ origine: 'movimento', origineImport: 'banca:x' }), da({ origine: 'movimento', origineImport: 'prima-nota:3' }), da({ origine: 'movimento', satispayId: 's1' }), da({ origine: 'movimento', dallaChat: true })], ['Dalla banca', 'Dallo storico', 'Da Satispay', 'Dalla chat'])
 }
 

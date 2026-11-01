@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA ISCRITTI, copiata da PaginaSito.dc.html. Cambia: niente fascia dei contatori (resta in DA FARE, i numeri stanno nei bollini del menu);
+     la testata unica (TestataPagina): «Importa tessere» a linea con l'icona, «Nuovo iscritto» giallo con l'icona aggiungi, alti 44px e allineati in alto;
+     «Non archiviato» non e' piu' un badge sotto il nome che allunga la riga: e' lo stato giallo «Da archiviare» nella colonna CERTIFICATO. Righe tutte alte 50px. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="ISCRITTI" numeri="RICHIESTE ONLINE:3, PRESENZE:2, PRESENZE ISTRUTTORI:10" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <dc-import name="TestataPagina" titolo="ISCRITTI" sotto="162 persone attive. 14 certificati da archiviare." secondaria="Importa tessere" iconaSecondaria="carica" primaria="Nuovo iscritto" iconaPrimaria="aggiungi" hint-size="100%,60px"></dc-import>
+    <dc-import name="FiltriIscritti" corsiScaduti="{{ true }}" minorenni="{{ true }}" famiglie="{{ true }}" attivi="" conti="SENZA CERTIFICATO VALIDO:42|DA PAGARE:33|CORSI SCADUTI:33|NON IN REGOLA:60|MINORENNI:3" hint-size="100%,110px"></dc-import>
+    <div style="display: flex; flex-direction: column">
+      <dc-import name="TestataTabella" colonne="NOME|FAMIGLIA|CERTIFICATO|QUOTA|CORSI|30 GIORNI" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 80px" ordinata="NOME" frecce="icona" hint-size="100%,40px"></dc-import>
+      <dc-import name="RigaIscritto" nome="Barbieri Alessandro" corsi="Giocomotricità" contatto="" bollini="Senza data:giallo" quota="ok:ok" frequenza="9/9" proposta="{{ true }}" colonnaFamiglia="{{ true }}" famiglia="" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" nome="Barbieri Beatrice" corsi="Prepugilistica" contatto="" bollini="Manca:rosso" quota="ok:ok" frequenza="0/4" poco="{{ true }}" proposta="{{ true }}" colonnaFamiglia="{{ true }}" famiglia="" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" nome="Barbieri Riccardo" corsi="Pesistica e Mobility" contatto="" bollini="Scaduto:rosso" quota="ok:ok" frequenza="11/12" proposta="{{ true }}" colonnaFamiglia="{{ true }}" famiglia="" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" nome="Bellini Andrea" corsi="Judo 2" contatto="" bollini="ok:ok" quota="ok:ok" frequenza="7/13" proposta="{{ true }}" colonnaFamiglia="{{ true }}" famiglia="titolare" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" nome="Bellini Emma" corsi="Aikido 3" contatto="" bollini="Senza data:giallo" quota="In parte:giallo" frequenza="8/8" proposta="{{ true }}" colonnaFamiglia="{{ true }}" famiglia="Bellini Andrea" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" nome="Bianchi Andrea" corsi="Judo 3" contatto="" bollini="ok:ok" quota="ok:ok" frequenza="12/13" proposta="{{ true }}" colonnaFamiglia="{{ true }}" famiglia="titolare" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" nome="Bianchi Gabriele" corsi="Pesistica e Mobility" contatto="" bollini="Da archiviare:giallo" quota="ok:ok" frequenza="9/12" proposta="{{ true }}" colonnaFamiglia="{{ true }}" famiglia="Bianchi Andrea" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" nome="Bruno Elena" corsi="Judo adulti" contatto="" bollini="ok:ok" quota="Da pagare:rosso" frequenza="2/7" poco="{{ true }}" proposta="{{ true }}" colonnaFamiglia="{{ true }}" famiglia="" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 80px" hint-size="100%,50px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

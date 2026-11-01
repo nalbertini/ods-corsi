@@ -402,8 +402,20 @@ export function Testa({ titolo, sotto, children }: { titolo: string; sotto: Reac
         </h1>
         <span className="sg-sotto">{sotto}</span>
       </div>
-      {children}
+      <div className="sg-testa-azioni">{children}</div>
     </div>
+  )
+}
+
+/**
+ * Lo stato di una riga, uguale in ogni elenco: il pallino del colore e la parola, mai a capo. Prende il posto dei
+ * badge pieni a maiuscolo spaziato, che in una lista lunga gridavano tutti insieme.
+ */
+export function SegnoStato({ tono, parola, title }: { tono: Tono | 'nota'; parola: string; title?: string }) {
+  return (
+    <span className="sg-segno-elenco" data-tono={tono} title={title ?? parola}>
+      <span className="sg-segno-parola">{parola}</span>
+    </span>
   )
 }
 

@@ -37,7 +37,7 @@ console.log('\nI testi')
 ok('un testo per ognuno dei 16 filtri', m.TESTI_FILTRI ?? mancante, {
   'senza-email': 'Solo senza email', poco: 'Vengono poco', certificato: 'Senza certificato valido',
   scadenza: 'Certificato in scadenza', arrivo: 'Compiono 6 anni', pagare: 'Da pagare', fuori: 'Non in regola',
-  'senza-tessera': 'Senza tessera', 'senza-corso': 'Tesserati senza corso', 'senza-documento': 'Senza documento', 'file-di-prima': 'Non archiviato',
+  'senza-tessera': 'Senza tessera', 'senza-corso': 'Tesserati senza corso', 'senza-documento': 'Senza documento', 'file-di-prima': 'Da archiviare',
   doppioni: 'Possibili doppioni', 'pagato-prima': 'Pagato nel vecchio programma', 'corsi-scaduti': 'Corsi scaduti',
   minorenni: 'Minorenni', famiglie: 'Famiglie',
 })
@@ -141,7 +141,9 @@ console.log('\nIscritti.tsx li prende da src/lib')
   ok('importa da filtriIscritti', tsx.includes("lib/filtriIscritti'"), true)
   const vecchi = ['SOLO SENZA EMAIL', 'VENGONO POCO', 'SENZA CERTIFICATO VALIDO', 'CERTIFICATO IN SCADENZA', 'COMPIONO 6 ANNI', 'NON IN REGOLA', 'SENZA TESSERA', 'SENZA DOCUMENTO', 'NON ARCHIVIATO', '+ NUOVO ISCRITTO']
   ok('niente più i testi dei filtri in maiuscolo, né «+ NUOVO ISCRITTO»', vecchi.filter((x) => tsx.includes(x)), [])
-  ok('«+ Nuovo iscritto» e le etichette di colonna «CERTIFICATO» e «QUOTA»', ['+ Nuovo iscritto', 'CERTIFICATO', 'QUOTA'].filter((x) => !tsx.includes(x)), [])
+  // Il «+» a mano è diventato l'icona aggiungi (grammatica dei tasti, prova-segreteria-ordine).
+  ok('«Nuovo iscritto» e le etichette di colonna «CERTIFICATO» e «QUOTA»', ['Nuovo iscritto', 'CERTIFICATO', 'QUOTA'].filter((x) => !tsx.includes(x)), [])
+  ok('«Nuovo iscritto» senza «+» scritto a mano', tsx.includes('+ Nuovo iscritto'), false)
   ok('la colonna «IN REGOLA?» non c\'è più', tsx.includes('IN REGOLA?'), false)
   ok('il conto di un chip si legge solo per i cinque chip sempre in vista', typeof m.haConto === 'function' ? m.ID_FILTRI.filter(m.haConto) : 'manca haConto', ['certificato', 'pagare', 'corsi-scaduti', 'fuori', 'minorenni'])
 }

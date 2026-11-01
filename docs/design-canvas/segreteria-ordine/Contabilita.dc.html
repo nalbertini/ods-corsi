@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA CONTABILITÀ → MOVIMENTI, copiata da PaginaSito.dc.html. Cambia: niente fascia dei contatori; le azioni salgono nella testata, a destra
+     («Altre azioni ▾» a linea, «Nuovo movimento» giallo con l'icona), invece di una riga loro fra titolo e schede; le schede sono Linguette (sottolineate,
+     non piu' riquadri maiuscoli spaziati che sembrano tasti spenti); i saldi delle casse restano (sono il contenuto della pagina), piu' bassi;
+     la barra dei filtri e' una: periodo, ricerca, i menu, poi a destra Elenco / Per voce; le righe sono RigaMovimentoCompatta, alte 60px tutte uguali,
+     senza il badge «Dal gestionale» (lo dice gia' il tipo «Incasso iscritto»). -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="CONTABILITÀ" numeri="RICHIESTE ONLINE:3, PRESENZE:2, PRESENZE ISTRUTTORI:10" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <dc-import name="TestataPagina" titolo="CONTABILITÀ" sotto="Le entrate e le uscite della palestra, nelle sue casse. Gli incassi degli iscritti ci sono già: si correggono nella scheda della persona." altro="Altre azioni" secondaria="" primaria="Nuovo movimento" iconaPrimaria="aggiungi" hint-size="100%,60px"></dc-import>
+    <dc-import name="Linguette" schede="movimenti:Movimenti|bilancio:Bilancio|segnalibro:Voci|banca:Casse" accesa="1" hint-size="100%,46px"></dc-import>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px">
+      <div style="padding: 12px 18px; border-right: 1px solid #cfe6f4"><div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">CASSA CONTANTI</div><div style="font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px">19.120,00 €</div><div style="font-size: 13px; color: #46606f">entrate 19.120,00 € · uscite 0,00 €</div></div>
+      <div style="padding: 12px 18px; border-right: 1px solid #cfe6f4"><div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">CONTO CORRENTE</div><div style="font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px">48.355,00 €</div><div style="font-size: 13px; color: #46606f">entrate 48.355,00 € · uscite 0,00 €</div></div>
+      <div style="padding: 12px 18px"><div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">TOTALE</div><div style="font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px">67.475,00 €</div><div style="font-size: 13px; color: #46606f">saldi iniziali compresi</div></div>
+    </div>
+    <div style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px; overflow: hidden">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid #cfe6f4">
+        <div style="display: flex; align-items: center; width: 280px; min-height: 44px; padding: 0 12px; border: 2px solid #14709f; border-radius: 6px; font-size: 15px; color: #46606f">Cerca nella descrizione</div>
+        <dc-import name="Segmenti" voci="Ottobre 2026|Mese scorso|Tutto l’anno|Tutto" scelta="Tutto l’anno" hint-size="420px,44px"></dc-import>
+        <dc-import name="FiltroMenu" nome="Tipo" valore="Tutti" hint-size="110px,44px"></dc-import>
+        <dc-import name="FiltroMenu" nome="Casse" valore="Tutte" hint-size="120px,44px"></dc-import>
+        <span style="color: #14709f; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; padding: 0 6px">Altri filtri (3) ▾</span>
+        <span style="flex: 1"></span>
+        <dc-import name="Segmenti" voci="Elenco|Per voce" scelta="Elenco" hint-size="200px,44px"></dc-import>
+      </div>
+      <div role="status" style="display: flex; flex-wrap: wrap; align-items: center; gap: 18px; padding: 10px 18px; background: #eef5fa; font-size: 14px; color: #46606f; border-bottom: 1px solid #cfe6f4">
+        <b style="color: #0d2a3d">278 movimenti</b><span style="flex: 1"></span>
+        <span>Saldo iniziale <b style="color: #0d2a3d">300,00 €</b></span><span>Entrate <b style="color: #0b7a33">+ 67.175,00 €</b></span><span>Uscite <b style="color: #0d2a3d">– 0,00 €</b></span><span>Saldo finale <b style="color: #0d2a3d">67.475,00 €</b></span>
+      </div>
+      <dc-import name="TestataTabella" colonne="|DATA|DESCRIZIONE|TIPO|CASSA|ENTRATE|USCITE" griglia="24px 96px minmax(0, 1fr) 170px 160px 120px 120px" ordinata="DATA" verso="giu" frecce="icona" hint-size="100%,40px"></dc-import>
+      <dc-import name="RigaMovimentoCompatta" data="23/09/2026" nome="Barbieri Beatrice" voce="Quota associativa" dettaglio="ricevuta 118/2026" tipo="Incasso iscritto" cassa="Conto Corrente" entrata="+ 50,00 €" hint-size="100%,60px"></dc-import>
+      <dc-import name="RigaMovimentoCompatta" data="23/09/2026" nome="Barbieri Beatrice" voce="Corsi e altri pagamenti" dettaglio="Annuale Prepugilistica · ricevuta 118/2026" tipo="Incasso iscritto" cassa="Conto Corrente" entrata="+ 340,00 €" hint-size="100%,60px"></dc-import>
+      <dc-import name="RigaMovimentoCompatta" data="23/09/2026" nome="Bianchi Andrea" voce="Quota associativa" dettaglio="ricevuta 24/2026" tipo="Incasso iscritto" cassa="Conto Corrente" entrata="+ 50,00 €" hint-size="100%,60px"></dc-import>
+      <dc-import name="RigaMovimentoCompatta" data="22/09/2026" nome="Bianchi Andrea" voce="Corsi e altri pagamenti" dettaglio="Annuale Judo 3 · ricevuta 24/2026" tipo="Incasso iscritto" cassa="Cassa Contanti" entrata="+ 420,00 €" hint-size="100%,60px"></dc-import>
+      <dc-import name="RigaMovimentoCompatta" data="21/09/2026" nome="Bellini Andrea" voce="Quota associativa" dettaglio="ricevuta 23/2026" tipo="Incasso iscritto" cassa="Conto Corrente" entrata="+ 50,00 €" hint-size="100%,60px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>
