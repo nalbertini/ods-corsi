@@ -163,10 +163,11 @@ export const doveEntraInContabilita = (metodo: string, voce: string, data: strin
  * Gli incassi degli iscritti come movimenti di entrata, uno per pagamento. Sono
  * le righe di PAGAMENTI (`righeDaRicevute`, `righeDirette`): `pagato fino al` e
  * l'anticipo non ci sono, e un annullo resta, segnato annullato. Satispay no: è già nel versamento della banca.
+ * Nemmeno i soldi di un bonifico assegnato (o della sua ricevuta): sono già nel movimento.
  */
 export function incassiDerivati(righe: RigaPagamento[], casse: Cassa[]): RigaMovimento[] {
   const cassa = (nome: string) => casse.find((c) => c.nome === nome)?.id ?? ''
-  return righe.filter((r) => cassaDelMetodo(r.metodo, r.data) !== 'satispay').map((r) => ({
+  return righe.filter((r) => !r.movimentoId && cassaDelMetodo(r.metodo, r.data) !== 'satispay').map((r) => ({
     id: `incasso:${r.id}`,
     origine: r.ricevuta ? 'ricevuta' : 'pagamento',
     tipo: 'entrata',

@@ -16,6 +16,7 @@ import type { Esercizio } from '../../timer/src/lib/esercizi'
 import type { Disciplina } from '../../timer/src/lib/discipline'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
+import type { RigaAssegnata } from './assegna'
 import { euro, mancanoDatiSocio } from './ricevute'
 import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
@@ -910,6 +911,15 @@ export interface DatiSegreteria {
   scriviSaldoBanca(s: SaldoBanca): Promise<void>
   /** Segna verificato il mese della quadratura, se `cosaNonVaVerifica` lo permette, con l'impronta dei suoi movimenti: chi verifica lo scrive il database. */
   verificaMeseBanca(q: QuadraturaDaVerificare, impronta: string): Promise<void>
+  /**
+   * Assegna un'entrata collegata a una persona a quota e corsi, anche dei fratelli del nucleo: ogni riga diventa un
+   * pagamento a mano col movimento (`assegna_movimento` in `135-assegna-movimento.sql`). Tutte o nessuna.
+   */
+  assegnaMovimento(movimentoId: string, righe: RigaAssegnata[]): Promise<void>
+  /** La ricevuta di una persona dai soldi che le sono assegnati sul movimento, tali e quali; le sue assegnazioni si annullano insieme. */
+  emettiRicevutaDaMovimento(dati: DatiRicevuta, movimentoId: string): Promise<Ricevuta>
+  /** «Collegati prima»: una ricevuta fatta a parte prima di questo cambio diventa del movimento, che così non si conta due volte. */
+  abbinaRicevutaMovimento(movimentoId: string, ricevutaId: string): Promise<void>
   /** Registra un pagamento fatto a mano, senza ricevuta. */
   registraPagamentoDiretto(d: DatiPagamentoDiretto): Promise<PagamentoDiretto>
   /** Lo annulla: resta in elenco, segnato annullato. */
@@ -1342,7 +1352,8 @@ export interface StatoPaga {
 export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay' | 'saldo'>, oggi: string): StatoPaga {
   const quote = p.quote ?? []
   const valgono = quote.filter((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
-  const numero = (q: QuotaRicevuta) => `${q.numero}/${q.anno}`
+  // Numero 0: la quota assegnata da un bonifico senza ricevuta (`quoteConAssegnazioni`), che un numero non ce l'ha.
+  const numero = (q: QuotaRicevuta) => (q.numero ? `${q.numero}/${q.anno}` : undefined)
   const pagata = valgono.filter((q) => q.mancano === 0).sort((a, b) => (b.al ?? '9999').localeCompare(a.al ?? '9999'))[0]
   if (pagata) return { come: 'pagato', fonte: 'ricevuta', fino: pagata.al, ricevuta: numero(pagata) }
 
@@ -1596,6 +1607,40 @@ export function statoPerElenco(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'p
   }
   const guai = [quota, ...tessere].filter((s) => s.tono !== 'verde')
   return { certificato, quota: guai.length ? guai : [quota] }
+}
+
+/** Le parole corte delle colonne che al telefono, fuori dalla colonna, non dicono più di cosa parlano. */
+const PAROLA_INTERA: Record<string, string> = {
+  Manca: 'Manca il certificato',
+  Scaduto: 'Certificato scaduto',
+  'Da archiviare': 'Certificato da archiviare',
+  'Senza data': 'Manca la data di nascita',
+  'Da pagare': 'Quota da pagare',
+  Scaduta: 'Quota scaduta',
+  'In parte': 'Quota pagata in parte',
+}
+
+/**
+ * ISCRITTI al telefono: le colonne CERTIFICATO e QUOTA non ci stanno, e le
+ * parole vanno sotto il nome. Senza la testata sopra devono dire da sole di
+ * cosa parlano, e si vedono solo i guai: un verde solo se non c'è altro.
+ * «Non serve» (sotto i 6 anni) non è un guaio e non si dice.
+ */
+export function paroleTelefono(stato: { certificato: Segno; quota: Segno[] }): Segno[] {
+  if (stato.certificato.tono === 'spento') return [stato.certificato]
+  const guaio = (s: Segno) => s.tono === 'rosso' || s.tono === 'giallo'
+  const intera = (s: Segno, di: string): Segno => {
+    const fissa = PAROLA_INTERA[s.parola]
+    if (fissa) return { tono: s.tono, parola: fissa }
+    // «Tessera scaduta», «Manca il certificato»: la parola dice già di cosa parla.
+    if (/certificato|tessera/i.test(s.parola)) return s
+    return { tono: s.tono, parola: `${di}: ${s.parola.charAt(0).toLowerCase()}${s.parola.slice(1)}` }
+  }
+  const guai = [
+    ...[stato.certificato].filter(guaio).map((s) => intera(s, 'Certificato')),
+    ...stato.quota.filter(guaio).map((s) => intera(s, 'Quota')),
+  ]
+  return guai.length ? guai : [{ tono: 'verde', parola: 'In regola' }]
 }
 
 /** Una riga del tab ISCRITTI di un corso: chi è, da quando, e le parole di certificato e quota. */

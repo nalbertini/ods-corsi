@@ -13,7 +13,7 @@ questo sta in un riquadro a parte e non abbassa le medie.
 
 - **Mese**: il mese da guardare, o gli **ultimi 30 giorni** (quelli di DA FARE, anche a cavallo di due mesi). Si parte dal mese in corso, e la ✕ accanto al filtro ci torna;
 - **Corso**: tutti, o un corso solo;
-- **Scarica CSV** — il registro del periodo in un file che si apre con Excel. Un nome che comincia per `=`, `+`, `-` o `@` esce col segno ' davanti, così Excel lo legge come testo e non lo calcola; vale anche per gli altri fogli (istruttori, statistiche, ore del mese).
+- **Scarica CSV** — il registro del periodo in un file che si apre con Excel. Un nome che comincia per `=`, `+`, `-` o `@` esce col segno ' davanti, così Excel lo legge come testo e non lo calcola; vale anche per gli altri fogli (istruttori, statistiche, ore del mese). Se nel periodo, o nel corso scelto, non c'è niente, il tasto è spento e sotto c'è scritto perché, per esempio «Nessuna presenza a novembre 2026: niente da scaricare». Mentre il registro arriva, o se non si riesce a leggerlo, la frase non c'è: sopra c'è l'avviso che dice cosa fare.
 
 ## Com'è andato il mese
 

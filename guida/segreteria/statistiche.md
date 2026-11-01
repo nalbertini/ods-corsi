@@ -18,7 +18,8 @@ medie: si conta a parte.
   un mese intero; il mese in corso è tratteggiato, perché non è finito;
 - **Tutti i corsi**, o un corso solo: vale per tutto, tranne gli incassi;
 - **Scarica CSV** — una riga per lezione, con iscritti, presenti, assenti,
-  giustificati e prove, da aprire con Excel.
+  giustificati e prove, da aprire con Excel. Se nel periodo non c'è nessuna
+  lezione, il tasto è spento e sotto c'è scritto perché.
 
 ## I quattro numeri
 

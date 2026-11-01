@@ -301,7 +301,18 @@ const SEGRETERIA_IN_ORDINE = new Set([
   ".sg-chiudibile[data-allarme='true']{box-shadow: inset 4px 0 0 var(--rosso);}",
 ])
 const segreteriaInOrdine = (r) => SEGRETERIA_IN_ORDINE.has(chiaveR(r))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !segreteriaInOrdine(r) && !senzaSalti(r) && !schedaGaraRivista(r) && !movimentoAColonnaUnica(r) && !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !rigaBancaConVoce(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !temiTolti(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !statCorsoAlto(r) && !iscrittiFamiglia(r) && !listinoLargo(r) && !finestraLarga(r) && !schedeTabletConIcona(r) && !iconeDappertutto(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// Al telefono ISCRITTI dice certificato e quota a parole intere sotto il nome (`prova:segreteria-ordine`): i segni compatti ✕ … – e le celle dello stato in colonna sono tolti di proposito.
+const PAROLE_AL_TELEFONO = new Set([
+  ".sg-riga-iscritti .sg-stato-elenco{flex-direction: row; gap: 6px;}",
+  ".sg-riga-iscritti .sg-segno-parola{position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;}",
+  ".sg-riga-iscritti .sg-segno-elenco{gap: 0; position: relative;}",
+  ".sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before,.sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before{width: auto; height: auto; border-radius: 0; background: none; font-size: 15px; font-weight: 700; line-height: 1;}",
+  ".sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before{content: '✕' / ''; color: var(--rosso-testo);}",
+  ".sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before{content: '…' / ''; color: var(--giallo-testo);}",
+  ".sg-riga-iscritti .sg-stato-elenco{justify-content: center;}",
+  ".sg-riga-iscritti .sg-segno-elenco[data-tono='nota']::after{content: '–' / '';}",
+])
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !segreteriaInOrdine(r) && !PAROLE_AL_TELEFONO.has(chiaveR(r)) && !senzaSalti(r) && !schedaGaraRivista(r) && !movimentoAColonnaUnica(r) && !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !rigaBancaConVoce(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !temiTolti(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !statCorsoAlto(r) && !iscrittiFamiglia(r) && !listinoLargo(r) && !finestraLarga(r) && !schedeTabletConIcona(r) && !iconeDappertutto(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

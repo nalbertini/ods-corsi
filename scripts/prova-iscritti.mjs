@@ -545,6 +545,42 @@ console.log('\n7. la sessione sul dispositivo: la chiave e le tre sessioni di pr
   ok('archiviato con tutto a posto: niente verde', stato(persona({ attiva: false })), { certificato: segno('spento', 'Archiviato'), quota: [] })
   ok('archiviato con la tessera che manca: quota vuota lo stesso', stato(persona({ attiva: false }), [tessera('manca')]).quota, [])
 
+  console.log('\nELENCO al telefono: certificato e quota a parole intere sotto il nome')
+  {
+    // Al telefono le colonne CERTIFICATO e QUOTA non ci stanno: le parole
+    // vanno sotto il nome e devono dire da sole di cosa parlano.
+    const tel = (p, righe = []) => (typeof E.paroleTelefono === 'function' ? E.paroleTelefono(stato(p, righe)) : 'manca paroleTelefono')
+    const parole = (p, righe) => { const x = tel(p, righe); return Array.isArray(x) ? x.map((s) => s.parola) : x }
+    ok('tutto a posto: un verde «In regola» e basta', tel(persona()), [segno('verde', 'In regola')])
+    ok('certificato che manca: «Manca il certificato», rosso', tel(cert(undefined)), [segno('rosso', 'Manca il certificato')])
+    ok('certificato scaduto: «Certificato scaduto»', parole(cert(fra(-1))), ['Certificato scaduto'])
+    ok('scade oggi: «Certificato: scade oggi»', parole(cert(oggi)), ['Certificato: scade oggi'])
+    ok('in scadenza: «Certificato: scade il gg/mm»', parole(cert(fra(10))), [`Certificato: scade il ${corta(fra(10))}`])
+    ok('compie 6 anni: «Certificato: serve dal gg/mm»', parole(persona({ natoIl: '2020-10-10', certificato: { conFile: false } })), ['Certificato: serve dal 10/10'])
+    ok('file di prima: «Certificato da archiviare», giallo', tel(persona({ certificato: { scade: fra(100), conFile: true, vecchio: true } })), [segno('giallo', 'Certificato da archiviare')])
+    ok('senza data di nascita: «Manca la data di nascita»', parole(persona({ natoIl: undefined })), ['Manca la data di nascita'])
+    ok('sotto i 6 anni senza certificato: niente da dire, «In regola»', tel(persona({ natoIl: '2021-03-10', certificato: { conFile: false } })), [segno('verde', 'In regola')])
+    ok('quota da pagare: «Quota da pagare»', parole(persona({ quote: [] })), ['Quota da pagare'])
+    ok('quota scaduta: «Quota scaduta»', parole(persona({ quote: [{ ...pagata, dal: '2025-09-01', al: fra(-1) }] })), ['Quota scaduta'])
+    ok('pagata in parte: «Quota pagata in parte»', parole(persona({ quote: [{ ...pagata, mancano: 2000 }] })), ['Quota pagata in parte'])
+    ok('la tessera dice già di cosa parla: resta com’è', parole(persona(), [tessera('scaduta', fra(-5))]), ['Tessera scaduta'])
+    ok('certificato che manca e quota da pagare: prima il certificato, niente verdi', tel(persona({ certificato: { conFile: false }, quote: [] })), [segno('rosso', 'Manca il certificato'), segno('rosso', 'Quota da pagare')])
+    ok('certificato a posto e quota da pagare: solo la quota', parole(persona({ quote: [] })), ['Quota da pagare'])
+    ok('archiviato: «Archiviato» spento e basta', tel(persona({ attiva: false, certificato: { conFile: false }, quote: [] })), [segno('spento', 'Archiviato')])
+    ok('sotto i 6 anni col certificato scaduto: «Non serve» non si dice', tel(persona({ natoIl: '2021-03-10', certificato: { scade: fra(-1), conFile: false } })), [segno('verde', 'In regola')])
+    ok('tessera che manca: «Tessera da fare», giallo', tel(persona(), [tessera('manca')]), [segno('giallo', 'Tessera da fare')])
+    // Un segno nuovo nella colonna non deve sparire, o cambiare colore, al telefono.
+    const casi = [
+      persona(), cert(undefined), cert(fra(-1)), cert(oggi), cert(fra(10)), persona({ natoIl: undefined }), persona({ quote: [] }),
+      persona({ certificato: { scade: fra(100), conFile: true, vecchio: true } }), persona({ quote: [{ ...pagata, mancano: 2000 }] }),
+      persona({ certificato: { conFile: false }, quote: [] }), persona({ natoIl: '2021-03-10', certificato: { scade: fra(-1), conFile: false } }),
+    ]
+    const toniGuai = (x) => x.filter((s) => s.tono === 'rosso' || s.tono === 'giallo').map((s) => s.tono)
+    ok('i guai al telefono sono quelli delle colonne, stesso numero e stessi colori',
+      casi.map((p) => toniGuai(tel(p, [tessera('manca')]))),
+      casi.map((p) => { const x = stato(p, [tessera('manca')]); return toniGuai([x.certificato, ...x.quota]) }))
+  }
+
   console.log('\nELENCO: «In regola?» com’era, per la ricerca')
   ok('paroleInRegola: tutto a posto è ancora «In regola», e basta', E.paroleInRegola(persona(), oggi), [{ tono: 'verde', parola: 'In regola' }])
   ok('paroleInRegola: certificato che manca e quota da pagare, come prima', E.paroleInRegola(persona({ certificato: { conFile: false }, quote: [] }), oggi).map((x) => x.parola), ['Manca il certificato', 'Da pagare'])

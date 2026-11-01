@@ -44,6 +44,7 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { abbinaMovimento, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
+import { assegnato, conAssegnazioni, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaRicevutaDaMovimento, daAssegnare, personeDelNucleo, SOLO_DAL_MOVIMENTO } from './assegna'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, giaNelPagamento, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
@@ -791,6 +792,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const conSaldo = saldoPerPersona(pagamentiSatispayProva())
       const corsiSatispay = satispayCorsiPerPersona(pagamentiSatispayProva())
       const quotaSatispay = satispayQuotaPerPersona(pagamentiSatispayProva())
+      // Come in Supabase: i bonifici assegnati contano in quota e corsi come una ricevuta.
+      const { listino } = await this.listino()
+      const oggi = oggiARoma()
       return a()
         .persone.filter((p) => p.ruolo === 'iscritto')
         .map(
@@ -820,6 +824,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             ...(p.genitoreNonIscritto && { genitoreNonIscritto: true }),
           }),
         )
+        .map((p) => conAssegnazioni(p, a().pagamentiDiretti ?? [], listino, oggi))
     },
 
     async frequenze() {
@@ -1439,6 +1444,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
         if (pd.personaId !== dati.personaId) throw new Error('Il pagamento a mano è di un’altra persona')
         const no = cosaNonVaDaPagamento(dati.voci, dati.data, pd)
         if (no) throw new Error(no)
+        // Come il trigger `assegnazione_solo_dal_movimento` (135): da qui la ricevuta non punterebbe al bonifico.
+        if (pd.movimentoId) throw new Error(SOLO_DAL_MOVIMENTO)
       }
       // Come `emetti_ricevuta_satispay`, prima della ricevuta: un pagamento arrivato, una ricevuta sola, gli stessi soldi.
       if (sp) {
@@ -1489,9 +1496,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const r = (a().ricevute ?? []).find((x) => x.id === id)
       if (!r || r.annullataIl) throw new Error('Ricevuta inesistente o già annullata')
       a().ricevute = (a().ricevute ?? []).map((x) => (x.id === id ? { ...x, annullataIl: new Date().toISOString() } : x))
-      // Come `annulla_ricevuta` (89): il pagamento a mano che era diventato questa ricevuta torna com'era.
+      // Come `annulla_ricevuta` (89): il pagamento a mano che era diventato questa ricevuta torna com'era. Un'assegnazione
+      // del movimento no (135): i suoi soldi tornano da assegnare, e si riassegnano da capo.
+      // Una ricevuta del movimento non ridà neanche il pagamento a mano abbinato prima: quei soldi sono già nel bonifico.
       a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => {
-        if (y.ricevutaId !== id) return y
+        if (y.ricevutaId !== id || y.movimentoId || r.movimentoId) return y
         const { annullatoIl: _annullato, ricevutaId: _ricevuta, ...comEra } = y
         return comEra
       })
@@ -1687,6 +1696,77 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return id
     },
 
+    async assegnaMovimento(movimentoId, righe) {
+      // Come `assegna_movimento` (135): il movimento, poi chi, poi i soldi; tutto o niente.
+      const { casse, voci, movimenti } = contabilita()
+      const m = movimenti.find((x) => x.id === movimentoId)
+      if (!m) throw new Error('Il movimento non c’è più: ricarica la pagina.')
+      const no = cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggiARoma())
+      if (no) throw new Error(no)
+      // `cosaNonVaMovimentoDaAssegnare` ha già detto «collegalo a una persona»: qui serve solo a TypeScript.
+      const titolareId = m.personaId
+      if (!titolareId) throw new Error('Collega prima il movimento a una persona.')
+      const nucleo = personeDelNucleo(titolareId, a().persone)
+      const fuori = righe.find((r) => !nucleo.includes(r.personaId))
+      if (fuori) {
+        const chi = a().persone.find((p) => p.id === fuori.personaId)
+        const titolare = persona(titolareId)
+        throw new Error(`${chi ? `${chi.cognome} ${chi.nome}` : 'Questa persona'} non è nella famiglia di ${titolare.cognome} ${titolare.nome}: il bonifico si assegna solo a chi è nel suo nucleo.`)
+      }
+      const nonVa = cosaNonVaAssegnazione(righe, daAssegnare(m, a().pagamentiDiretti ?? [], a().ricevute ?? []), [])
+      if (nonVa) throw new Error(nonVa)
+      const creatoIl = new Date().toISOString()
+      const nuove: PagamentoDiretto[] = righe.map((r) => ({ id: `pd-${unico()}`, personaId: r.personaId, data: m.data, importo: r.importo, metodo: 'Bonifico', voce: r.voce.trim(), movimentoId, creatoIl }))
+      a().pagamentiDiretti = [...(a().pagamentiDiretti ?? []), ...nuove]
+      salva()
+    },
+
+    async emettiRicevutaDaMovimento(dati, movimentoId) {
+      // Come `emetti_ricevuta_da_movimento` (135): prima la chiave, così ripetuta dopo una rete caduta dà la stessa.
+      const chiave = dati.chiave?.trim().toLowerCase() || undefined
+      // Gli stessi due rifiuti di `emettiRicevuta`: la chiave di un'altra persona, o di una ricevuta annullata.
+      const gia = chiave ? (a().ricevute ?? []).find((x) => x.chiave === chiave) : undefined
+      if (gia && gia.personaId !== dati.personaId) throw new Error('Questa ricevuta è già stata fatta per un’altra persona: chiudi il modulo e riaprilo')
+      if (gia?.annullataIl) throw new Error(`La ricevuta n. ${gia.numero}/${gia.anno} fatta da questo modulo è stata annullata: chiudi il modulo e riaprilo per farne un’altra`)
+      if (gia && gia.movimentoId === movimentoId) return gia
+      if (gia) throw new Error(`La ricevuta n. ${gia.numero}/${gia.anno} fatta da questo modulo non è di questo bonifico: chiudi il modulo e riaprilo`)
+      const { casse, voci, movimenti } = contabilita()
+      const m = movimenti.find((x) => x.id === movimentoId)
+      if (!m) throw new Error('Il movimento non c’è più: ricarica la pagina.')
+      const no = cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggiARoma())
+      if (no) throw new Error(no)
+      const sue = (a().pagamentiDiretti ?? []).filter((x) => x.movimentoId === movimentoId && x.personaId === dati.personaId && !x.annullatoIl)
+      if (!sue.length) throw new Error('Non c’è niente di assegnato a questa persona su questo bonifico.')
+      // Il bonifico entra tale e quale: tutto Bonifico, alla data del movimento, per quel che è assegnato a lei.
+      const nonVa = cosaNonVaRicevutaDaMovimento(dati.voci, dati.data, m.data, sue)
+      if (nonVa) throw new Error(nonVa)
+      const nuova = { ...(await this.emettiRicevuta(dati)), movimentoId }
+      a().ricevute = (a().ricevute ?? []).map((x) => (x.id === nuova.id ? nuova : x))
+      const ids = new Set(sue.map((x) => x.id))
+      const quando = new Date().toISOString()
+      a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => (ids.has(y.id) ? { ...y, annullatoIl: quando, ricevutaId: nuova.id } : y))
+      salva()
+      return nuova
+    },
+
+    async abbinaRicevutaMovimento(movimentoId, ricevutaId) {
+      // Come `abbina_ricevuta_movimento` (135): «Collegati prima», la ricevuta già fatta a parte diventa del movimento.
+      const { casse, voci, movimenti } = contabilita()
+      const m = movimenti.find((x) => x.id === movimentoId)
+      if (!m) throw new Error('Il movimento non c’è più: ricarica la pagina.')
+      const no = cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggiARoma())
+      if (no) throw new Error(no)
+      const r = (a().ricevute ?? []).find((x) => x.id === ricevutaId)
+      if (!r) throw new Error('La ricevuta non c’è più: ricarica la pagina.')
+      const nonVa = cosaNonVaAbbinamento(m, r)
+      if (nonVa) throw new Error(nonVa)
+      if (r.movimentoId === movimentoId) return
+      if (assegnato(movimentoId, a().pagamentiDiretti ?? [], a().ricevute ?? []) > 0)
+        throw new Error('Il bonifico ha già dei soldi assegnati: annulla prima le ricevute e le assegnazioni.')
+      a().ricevute = (a().ricevute ?? []).map((x) => (x.id === ricevutaId ? { ...x, movimentoId } : x))
+      salva()
+    },
+
     async registraGiroconto(d) {
       const { casse, chiusure } = contabilita()
       const no = cosaNonVaGiroconto(d, casse, oggiARoma(), chiusure)
@@ -1705,9 +1785,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const m = contabilita().movimenti.find((x) => x.id === id)
       if (!m) throw new Error('Il movimento non c’è')
       if (m.annullatoIl) throw new Error('Il movimento è già annullato')
+      // Come `annulla_movimento` (135): i soldi di una ricevuta fatta dal movimento sparirebbero dai conti.
+      const ricevuta = (a().ricevute ?? []).filter((r) => r.movimentoId === id && !r.annullataIl).sort((x, y) => x.anno - y.anno || x.numero - y.numero)[0]
+      if (ricevuta) throw new Error(`Annulla prima la ricevuta n. ${ricevuta.numero}/${ricevuta.anno}`)
       const chiuso = cosaNonVaAnnulloMovimento(righeMovimenti([], [m], contabilita().voci)[0], contabilita().chiusure)
       if (chiuso) throw new Error(chiuso)
-      a().movimenti = contabilita().movimenti.map((x) => (x.id === id ? { ...x, annullatoIl: new Date().toISOString() } : x))
+      const quando = new Date().toISOString()
+      a().movimenti = contabilita().movimenti.map((x) => (x.id === id ? { ...x, annullatoIl: quando } : x))
+      // Le assegnazioni senza ricevuta vanno via col movimento: senza i soldi, la quota non è pagata.
+      a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => (y.movimentoId === id && !y.annullatoIl ? { ...y, annullatoIl: quando } : y))
       // Come il trigger `compensi_tornano`: il pagamento annullato rimette le sue ricevute da pagare.
       a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((r) => (r.movimentoId === id ? { ...r, movimentoId: null, pagataIl: null } : r))
       salva()
@@ -1736,9 +1822,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async annullaImportazioneBanca(creatoIl) {
       const lotto = (m: { origineImport?: string; annullatoIl?: string; creatoIl: string }) => !!m.origineImport?.startsWith(PREFISSO_CHIAVE_BANCA) && !m.annullatoIl && m.creatoIl === creatoIl
-      const n = contabilita().movimenti.filter(lotto).length
+      const ids = contabilita().movimenti.filter(lotto).map((m) => m.id)
+      const n = ids.length
+      // Come il trigger `movimento_assegnato_resta` (135): con una ricevuta attiva no; le assegnazioni si annullano col movimento.
+      const no = cosaNonVaAnnullaLotto(ids, a().ricevute ?? [])
+      if (no) throw new Error(no)
       const quando = new Date().toISOString()
+      const dentro = new Set(ids)
       a().movimenti = contabilita().movimenti.map((m) => (lotto(m) ? { ...m, annullatoIl: quando } : m))
+      a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => (y.movimentoId && dentro.has(y.movimentoId) && !y.annullatoIl ? { ...y, annullatoIl: quando } : y))
       salva()
       return n
     },
@@ -1752,6 +1844,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
       // Come il database: la persona conta solo per un movimento a mano che arriva su una quota o un corso.
       const aMano = movimenti.filter((x) => scelti.has(x.id) && x.voceId !== voceId && vuolePersona(x.tipo, arrivo?.nome) && !x.origineImport?.startsWith('prima-nota:'))
       if (aMano.length && !a().persone.some((p) => p.id === personaId)) throw new Error(SCEGLI_LA_PERSONA)
+      // Come `movimento_assegnato_resta` (135): un movimento con soldi assegnati non cambia persona, né va su una voce
+      // dove non si assegna.
+      const tocca = movimenti
+        .filter((x) => scelti.has(x.id) && x.voceId !== voceId)
+        .filter((x) => !vuolePersona(x.tipo, arrivo?.nome) || aMano.some((y) => y.id === x.id && y.personaId !== personaId))
+        .map((x) => x.id)
+      const assegnati = cosaNonVaCambioMovimento(tocca, a().pagamentiDiretti ?? [], a().ricevute ?? [])
+      if (assegnati) throw new Error(assegnati)
       const quando = new Date().toISOString()
       const cambiVoce = [...(a().cambiVoce ?? [])]
       let cambiati = 0
@@ -1810,6 +1910,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
         const no = cosaNonVaCollegato(r)
         if (no) throw new Error(no)
       }
+      const assegnati = cosaNonVaCambioMovimento(scelte.filter((r) => r.personaId !== persona).map((r) => r.id), a().pagamentiDiretti ?? [], a().ricevute ?? [])
+      if (assegnati) throw new Error(assegnati)
       let collegati = 0
       let giaCosi = 0
       for (const r of scelte) {
@@ -1827,9 +1929,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const elenco = [...new Set(ids)].sort()
       if (!elenco.length) throw new Error('Scegli almeno un movimento')
       if (elenco.length > LIMITE_CAMBIO_VOCE) throw new Error(`Troppi movimenti in una volta: al massimo ${LIMITE_CAMBIO_VOCE}`)
+      const scelte = righeScelte(elenco)
+      const assegnati = cosaNonVaCambioMovimento(scelte.filter((r) => r.personaId).map((r) => r.id), a().pagamentiDiretti ?? [], a().ricevute ?? [])
+      if (assegnati) throw new Error(assegnati)
       let scollegati = 0
       let giaSenza = 0
-      for (const r of righeScelte(elenco)) {
+      for (const r of scelte) {
         if (!r.personaId) giaSenza++
         else {
           scriviCollegamento(r.id, undefined)
@@ -1849,6 +1954,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
         const ultima = [...tracce].reverse().find((t) => t.movimentoId === r.id)
         return !!ultima && ultima.lotto === lotto && ultima.dopo === r.personaId
       })
+      const assegnati = cosaNonVaCambioMovimento(daTogliere.map((r) => r.id), a().pagamentiDiretti ?? [], a().ricevute ?? [])
+      if (assegnati) throw new Error(assegnati)
       for (const r of daTogliere) scriviCollegamento(r.id, undefined)
       salva()
       return { tolti: daTogliere.length }
@@ -2039,7 +2146,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const conto = contabilita().casse.find((c) => c.nome === NOME_CASSA_CONTO)
       if (!conto) throw new Error('Manca la cassa Conto Corrente')
       // Come `banca_segna_coperti`: le righe il cui abbinamento non regge entrano come un import normale.
-      const r = segnaCoperti(contabilita().movimenti, a().bancaCoperti ?? [], righe, conto.id)
+      const { casse, movimenti, voci } = contabilita()
+      const incassi = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci, pagamentiSatispayProva()).filter((x) => x.id.startsWith('incasso:'))
+      const r = segnaCoperti(movimenti, a().bancaCoperti ?? [], righe, conto.id, incassi)
       // Le righe nuove si scrivono prima: se una non va, i segni sui movimenti a mano non restano a metà.
       if (r.daScrivere.length) await this.importaMovimentiBanca(r.daScrivere)
       const segni = new Map(r.movimenti.filter((m) => m.bancaChiave).map((m) => [m.id, m.bancaChiave]))

@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .riq { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
+    .avviso { box-shadow: inset 4px 0 0 #8f6a00; }
+    .link { font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+    .pericolo { color: #b81d1d; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .riga { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 12px; width: 640px">
+  <div class="riq">
+    <span class="et">ASSEGNATO A</span>
+    <div class="riga"><span style="flex: 1 1 240px">Rossi Luca <span class="sotto">· Quota associativa 2026/27</span></span><span class="num">50,00 €</span><span>Ricevuta n. 312/2026</span><span class="link">PDF</span></div>
+    <div class="riga"><span style="flex: 1 1 240px">Rossi Sofia <span class="sotto">· Trimestre Danza moderna</span></span><span class="num">80,00 €</span><dc-import name="Badge" tipo="tag" label="Senza ricevuta" tono="giallo" hint-size="140px,28px"></dc-import></div>
+    <div><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Fai la ricevuta" hint-size="170px,48px"></dc-import></div>
+  </div>
+  <div class="riq avviso">
+    <span class="et" style="color: #8f6a00">DA ASSEGNARE: 20,00 €</span>
+    <span style="font-size: 14px">Di’ a cosa va: la quota, un annuale, un trimestre. Finché non lo dici, non conta come pagato.</span>
+    <div><dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Assegna a quota e corsi" hint-size="240px,48px"></dc-import></div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":640,"height":360}}'>
+// COSTRUITA: AssegnaMovimento di src/components/segreteria/AssegnaMovimento.tsx (../assegna-pagamento/), nella finestra del movimento
+// di CONTABILITÀ sotto la riga PERSONA (RigaPersonaMovimento), solo per le entrate su Quota associativa e Corsi e altri pagamenti collegate,
+// non sui contanti né sullo storico delle stagioni passate. ASSEGNATO A: una riga per assegnazione (persona · voce, importo, la ricevuta
+// col link PDF o il tag Senza ricevuta); «Fai la ricevuta» (con più persone senza ricevuta: «Fai la ricevuta di <nome>»).
+// DA ASSEGNARE: .sg-riquadro[data-avviso] con la barra gialla scura, solo se resta qualcosa. La ricevuta si apre come SchedaPiena «Ricevuta di <nome>».
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

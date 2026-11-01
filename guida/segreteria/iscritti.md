@@ -110,10 +110,14 @@ pallino colorato davanti alla parola: rosso manca, giallo aspetta. Il ✓ verde 
 
 Chi è archiviato ha **Archiviato** in grigio e la quota vuota.
 
-Sul telefono le colonne sono NOME, CERTIFICATO, QUOTA e 30 GG (la famiglia
-va sotto il nome, anche sul tablet in verticale), e i segni
-sono brevi: **✕** rosso, **…** giallo, **✓** in regola, **–** non serve; la
-parola si legge nella scheda. Sul tablet in verticale ci sono le parole, ma
+Sul telefono le colonne sono NOME e 30 GG. Certificato e quota vanno sotto il
+nome, a parole intere che dicono di cosa parlano: **Manca il certificato**,
+**Certificato scaduto**, **Certificato da archiviare**, **Quota da pagare**,
+**Quota pagata in parte**, **Tessera scaduta**, **Manca la data di nascita**,
+**Certificato: scade il 12/11**. Si vedono solo le cose da
+fare; se è tutto a posto c'è un solo **In regola** verde. Anche la famiglia va
+sotto il nome, pure sul tablet in verticale. Sul telefono l'elenco non si
+ordina per certificato o quota: si usano i filtri. Sul tablet in verticale ci sono le parole, ma
 non CORSI e CONTATTO. Corsi e contatto si leggono nella scheda. Su un computer
 con lo schermo piccolo, col menu di lato, non c'è CONTATTO.
 
@@ -221,8 +225,11 @@ Poi la scheda è divisa in quattro schede, e se ne vede una alla volta. Ogni lin
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
 - **QUOTA E PAGAMENTI** — la quota e i pagamenti. **+ FAI LA RICEVUTA** sta accanto a **QUOTA**, **+ AGGIUNGI INCASSO** accanto a **PAGAMENTI**: non serve scorrere tutte le ricevute. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
   corsi che l'amministrazione ha scritto in CONTABILITÀ con questa persona stanno in **SCRITTI IN
-  CONTABILITÀ**, col tag **Scritto in contabilità**: non sono ricevute (niente numero né PDF), non si
-  sommano e non toccano quello che resta da pagare. Se la quota la vuoi contata, la ricevuta si fa qui.
+  CONTABILITÀ**, col tag **Scritto in contabilità**: non sono ricevute (niente numero né PDF) e non si
+  sommano. Un bonifico su quota o corsi conta per quello che resta da pagare solo quando l'amministrazione
+  lo **assegna** dal movimento (vedi [Assegnare un bonifico](../amministrazione/contabilita.md#assegnare-un-bonifico-a-quota-e-corsi)):
+  finché non lo fa, un riquadro giallo dice quanto è **da assegnare**, con **Assegna ›**. Un pagamento
+  assegnato senza ricevuta ha **Assegnato · senza ricevuta**: la ricevuta si fa dal movimento, non da qui.
   **Apri in contabilità** apre il movimento, per chi vede CONTABILITÀ. In fondo, se
   l'amministrazione ha collegato alla persona dei pagamenti del vecchio programma, c'è il blocco **DAL VECCHIO
   PROGRAMMA**: è lo storico, a parte. Non è nei pagamenti qui sopra e non conta per «quota pagata»: se la persona
@@ -300,7 +307,7 @@ scheda è disattivata, nessuno.
   serve, si carica di nuovo. **Sotto i 6 anni** il certificato non si chiede:
   il riquadro dice **NON SERVE**, e chi ha meno di 6 anni non conta fra chi è
   senza certificato valido.
-- **Un certificato non archiviato** (file caricato quando il certificato
+- **Un certificato da archiviare** (file caricato quando il certificato
   stava su carta) si apre con **Apri** come gli altri, e la scheda lo dice in
   giallo; in elenco la colonna CERTIFICATO dice **Da archiviare** in giallo (il filtro
   **Da archiviare** li mostra tutti, finché ce ne sono). Se il certificato manca,

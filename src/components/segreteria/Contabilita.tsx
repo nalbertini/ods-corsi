@@ -53,6 +53,7 @@ import {
   casseDeiSaldi,
   type Cassa,
   type ChiusuraCassa,
+  type MovimentoManuale,
   type FiltriElenco,
   type IconaConti,
   iconaCassa,
@@ -76,7 +77,7 @@ import { fraseDallaChat } from '../../lib/collega'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { ImportaBanca } from './ImportaBanca'
-import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, SegnoStato, suCarta, Testa, useAvviso, useBozza, useCarica, Tasto, TestaColonna } from './comune'
+import { Campo, chiedi, DITO, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, SegnoStato, suCarta, Testa, useAvviso, useBozza, useCarica, Tasto, TestaColonna } from './comune'
 import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri, SchedaCandidata } from './CollegaPersona'
 import { useListino } from '../Costi'
@@ -85,17 +86,24 @@ import { corsiConImporto } from '../../lib/abbinaMovimenti'
 import { Bilancio } from './Bilancio'
 import { rigaDaSistemare } from '../../lib/bilancio'
 import { firmato, leggiSaldoBanca, type CampoSaldoBanca, cosaNonVaVerifica, improntaMese, meseInLettere, mesePrima, quadratura, riepilogoDifferenza, righeBanca, saldoInizialeProposto, segniDelConto, SENZA_SALDO_BANCA, type Quadratura, type RigaApp, type SaldoBanca, type StatoQuadratura } from '../../lib/quadraturaBanca'
+import { segnaIncassiCoperti } from '../../lib/importaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import { NOME_CASSA_SATISPAY } from '../../lib/satispayScarico'
+import { cosaNonVaMovimentoDaAssegnare } from '../../lib/assegna'
+import type { PagamentoDiretto } from '../../lib/pagamenti'
+import type { Ricevuta } from '../../lib/ricevute'
+import { AssegnaMovimento, DaAssegnare } from './AssegnaMovimento'
 
-type Scheda = 'movimenti' | 'bilancio' | 'voci' | 'casse'
+type Scheda = 'movimenti' | 'da_assegnare' | 'bilancio' | 'voci' | 'casse'
 const SCHEDE: readonly (readonly [Scheda, string])[] = [
   ['movimenti', 'Movimenti'],
+  ['da_assegnare', 'Da assegnare'],
   ['bilancio', 'Bilancio'],
   ['voci', 'Voci'],
   ['casse', 'Casse'],
 ]
 type Fai = ReturnType<typeof useAvviso>['fai']
+type Avvisa = ReturnType<typeof useAvviso>['avvisa']
 
 /**
  * CONTABILITÀ, per chi cura i conti (`59-contabilita.sql`): i movimenti con i
@@ -117,7 +125,7 @@ export function Contabilita({ d, movimento, onPersona, onImportazioni }: { d: Da
     const chi = [...diretti.map((x) => x.personaId), ...satispay.flatMap((x) => (x.personaId ? [x.personaId] : []))]
     return { ricevute, diretti, satispay, nomi: chi.length ? await d.nomiPersone(chi) : [] }
   }, [d])
-  const { avviso, fai } = useAvviso()
+  const { avviso, fai, avvisa } = useAvviso()
   // Le azioni di MOVIMENTI stanno nella testata della pagina, accanto al titolo: il posto lo dà qui, i tasti li mette Movimenti.
   const [azioni, setAzioni] = useState<HTMLElement | null>(null)
   // «Apri ›» dal conto con la banca: un oggetto nuovo a ogni clic, così lo stesso movimento si riapre.
@@ -131,6 +139,8 @@ export function Contabilita({ d, movimento, onPersona, onImportazioni }: { d: Da
     void voci.ricarica()
     void manuali.ricarica()
     void chiusure.ricarica()
+    // Assegnare un bonifico cambia i pagamenti degli iscritti: si rileggono anche quelli.
+    void incassi.ricarica()
   }
   const dateChiusure = chiusure.dato ?? []
 
@@ -187,7 +197,8 @@ export function Contabilita({ d, movimento, onPersona, onImportazioni }: { d: Da
       {/* Le schede si nascondono, non si smontano: filtri e bozze restano dove sono. */}
       {pronto && (
         <>
-          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} movimento={movimento} apriRiga={apri} onPersona={onPersona} /></div>
+          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} avvisa={avvisa} onCambiato={rileggi} movimento={movimento} apriRiga={apri} onPersona={onPersona} manuali={manuali.dato ?? []} diretti={incassi.dato?.diretti ?? []} ricevute={incassi.dato?.ricevute ?? []} /></div>
+          <div hidden={scheda !== 'da_assegnare'}><DaAssegnare d={d} manuali={manuali.dato ?? []} diretti={incassi.dato?.diretti ?? []} ricevute={incassi.dato?.ricevute ?? []} casse={casse.dato ?? []} voci={voci.dato ?? []} fai={fai} onCambiato={rileggi} onApri={(id) => { setApri({ id }); setScheda('movimenti') }} /></div>
           <div hidden={scheda !== 'bilancio'}><Bilancio d={d} casse={casse.dato ?? []} righe={elenco} oggi={oggiARoma()} fai={fai} /></div>
           <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
           <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} chiusure={dateChiusure} guaioChiusure={chiusure.guaio ?? undefined} righe={elenco} fai={fai} onCambiato={rileggi} onApri={(id) => { setApri({ id }); setScheda('movimenti') }} onImportazioni={onImportazioni} /></div>
@@ -259,7 +270,7 @@ function FiltroCasse({ casse, scelte, onChange }: { casse: Cassa[]; scelte: stri
   )
 }
 
-function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, movimento, apriRiga, onPersona }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; movimento?: string; apriRiga?: { id: string } | null; onPersona?: (personaId: string) => void }) {
+function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCambiato, movimento, apriRiga, onPersona, manuali, diretti, ricevute }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; avvisa: Avvisa; onCambiato: () => void; movimento?: string; apriRiga?: { id: string } | null; onPersona?: (personaId: string) => void; manuali: MovimentoManuale[]; diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }) {
   const oggi = oggiARoma()
   const [f, setF] = useState<FiltriElenco>(FILTRI_INIZIALI)
   const { testo, periodo, tipo, voce, persona, annullati } = f
@@ -448,7 +459,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
       {collegando === 'mano' && sceltiRighe.length > 0 && <InVista><CollegaAPersona d={d} righe={sceltiRighe} fai={fai} onFatto={collegamentoFatto} onChiudi={chiudiCollega} /></InVista>}
       {aperto && (
         <SchedaPiena key={aperto.id} etichetta={`Movimento: ${aperto.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
-          <MovimentoAperto d={d} voci={voci} righe={righe} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} nomePersona={aperto.personaId ? nomiPersone.get(aperto.personaId) : undefined} fai={fai} onChiudi={() => void torna()} onFatto={() => { fatto(); void esitiLetti.ricarica() }} onPersona={onPersona} />
+          <MovimentoAperto d={d} voci={voci} righe={righe} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} nomePersona={aperto.personaId ? nomiPersone.get(aperto.personaId) : undefined} fai={fai} avvisa={avvisa} casse={casse} manuali={manuali} diretti={diretti} ricevute={ricevute} onChiudi={() => void torna()} onFatto={() => { fatto(); void esitiLetti.ricarica() }} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onPersona={onPersona} />
         </SchedaPiena>
       )}
 
@@ -934,10 +945,13 @@ function NuovoGiroconto({ d, casse, chiusure, fai, onFatto, onChiudi }: { d: Dat
 
 /** Un movimento aperto dall'elenco: a mano si annulla e se ne correggono descrizione e nota; un incasso degli iscritti si guarda e basta. */
 // Un link che si tocca col dito: alto 44px, come «mostra tutte» nei previsti.
-const DITO = { fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center' } as const
 
-function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePersona, fai, onChiudi, onFatto, onPersona }: { d: DatiSegreteria; voci: VoceContabile[]; righe: RigaMovimento[]; riga: RigaMovimento; chiusure: ChiusuraCassa[]; cassa: string; cassaA: string; nomePersona?: string; fai: Fai; onChiudi: () => void; onFatto: () => void; onPersona?: (personaId: string) => void }) {
+function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePersona, fai, avvisa, casse, manuali, diretti, ricevute, onChiudi, onFatto, onRileggi, onPersona }: { d: DatiSegreteria; voci: VoceContabile[]; righe: RigaMovimento[]; riga: RigaMovimento; chiusure: ChiusuraCassa[]; cassa: string; cassaA: string; nomePersona?: string; fai: Fai; avvisa: Avvisa; casse: Cassa[]; manuali: MovimentoManuale[]; diretti: PagamentoDiretto[]; ricevute: Ricevuta[]; onChiudi: () => void; onFatto: () => void; onRileggi: () => void; onPersona?: (personaId: string) => void }) {
   const manuale = riga.origine === 'movimento'
+  // Un bonifico collegato su quota o corsi si assegna da qui; con una ricevuta fatta da lì, si annulla prima quella.
+  const comeManuale = manuale ? manuali.find((m) => m.id === riga.id) : undefined
+  const daAssegnareQui = comeManuale && cosaNonVaMovimentoDaAssegnare(comeManuale, casse, voci, oggiARoma()) === null ? comeManuale : undefined
+  const ricevutaDelMovimento = manuale ? ricevute.find((r) => r.movimentoId === riga.id && !r.annullataIl) : undefined
   const giro = riga.tipo === 'giroconto'
   const chiuso = cosaNonVaAnnulloMovimento(riga, chiusure)
   const dallaChat = fraseDallaChat(riga)
@@ -990,7 +1004,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
   const annulla = async () => {
     if (chiedendo) return
     setChiedendo(true)
-    const domanda = `Annullare «${riga.descrizione}» da ${soldi(riga.importo)} del ${dataRicevuta(riga.data)}? Resta in elenco, annullato, e non si conta più.`
+    const domanda = `Annullare «${riga.descrizione}» da ${soldi(riga.importo)} del ${dataRicevuta(riga.data)}? Resta in elenco, annullato, e non si conta più.${diretti.some((x) => x.movimentoId === riga.id && !x.annullatoIl) ? ' Anche quel che è assegnato si annulla: quei pagamenti tornano da fare.' : ''}`
     const si = await chiedi(domanda, 'Sì, annulla il movimento', { no: 'No, lascialo', pericolo: true })
     setChiedendo(false)
     if (!si) return
@@ -1135,6 +1149,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
         </div>
       )}
       {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={() => setCollegando(false)} />}
+      {daAssegnareQui && !collegando && <AssegnaMovimento d={d} m={daAssegnareQui} diretti={diretti} ricevute={ricevute} fai={fai} avvisa={avvisa} onFatto={onFatto} onRileggi={onRileggi} />}
       {!manuale && <span className="sg-sotto">Si cambia nella scheda della persona, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
       {manuale && riga.annullato && <span className="sg-sotto"><SegnoStato tono="rosso" parola="Annullato" /> Resta in elenco e non si conta più.</span>}
       {manuale && !giro && (traccia.guaio || (traccia.dato?.length ?? 0) > 0) && (
@@ -1160,7 +1175,10 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           </div>
         )}
         <div className="sg-movimento-gruppo">
-          {manuale && !riga.annullato && !chiuso && (
+          {manuale && !riga.annullato && !chiuso && ricevutaDelMovimento && (
+            <span className="sg-sotto">Annulla prima la ricevuta n. {ricevutaDelMovimento.numero}/{ricevutaDelMovimento.anno}: poi si annulla il movimento.</span>
+          )}
+          {manuale && !riga.annullato && !chiuso && !ricevutaDelMovimento && (
             <Tasto tono="rosso" disabled={chiedendo} onClick={() => void annulla()}>
               Annulla il movimento
             </Tasto>
@@ -1332,9 +1350,11 @@ function useBanca(d: DatiSegreteria, casse: Cassa[], righe: RigaMovimento[]) {
     const saldi = letti.dato?.saldi
     if (!conto || !saldi) return null
     const banca = righeBanca(righe, letti.dato?.coperti ?? null)
+    // Una ricevuta o un pagamento a mano coperto da una riga della banca si abbina a quella, come un movimento a mano.
+    const conCoperti = segnaIncassiCoperti(righe, letti.dato?.coperti ?? [])
     const fatte = new Map<string, Quadratura>()
     const di = (mese: string) => {
-      const q = fatte.get(mese) ?? quadratura({ mese, oggi, contoId: conto.id, casse, righe, banca, saldo: saldi.find((s) => s.mese === mese) ?? null, saldoPrima: saldi.find((s) => s.mese === mesePrima(mese)) ?? null })
+      const q = fatte.get(mese) ?? quadratura({ mese, oggi, contoId: conto.id, casse, righe: conCoperti, banca, saldo: saldi.find((s) => s.mese === mese) ?? null, saldoPrima: saldi.find((s) => s.mese === mesePrima(mese)) ?? null })
       fatte.set(mese, q)
       return q
     }

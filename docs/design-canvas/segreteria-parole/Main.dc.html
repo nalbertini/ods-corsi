@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    h2 { font-family: 'Big Shoulders Display', Inter, sans-serif; font-weight: 800; font-size: 24px; margin: 0 0 6px; }
+    section { background: #fff; border: 1px solid #cfe6f4; border-radius: 6px; padding: 22px 24px; }
+    li { margin-bottom: 6px; }
+  </style>
+</helmet>
+<!-- NOTE della proposta «segreteria a parole»: i tre punti DA VALUTARE rimasti dalla PR «segreteria in ordine». -->
+<div style="display: flex; flex-direction: column; gap: 22px; width: 1000px; padding: 32px">
+  <section>
+    <h2>TRE COSE DA DIRE A PAROLE</h2>
+    <ul style="font-size: 14px; line-height: 1.5; padding-left: 20px; margin: 0">
+      <li><b>ISCRITTI al telefono.</b> Oggi certificato e quota sono due colonne con un'icona in testa e ✕ … ✓ nelle righe: la segreteria ha detto «ci vogliono le parole, o almeno una legenda». Proposta A: le parole intere sotto il nome, colonne NOME | 30 GG. Proposta B: segni e legenda.</li>
+      <li><b>Scarica CSV spento.</b> In PRESENZE (e in STATISTICHE) un mese senza righe spegne il tasto senza dire perché. Proposta: il tasto resta spento e sotto c'è il perché.</li>
+      <li><b>DA FARE.</b> La riga diventa «Certificati da archiviare», come il filtro e la colonna di ISCRITTI.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>DA DECIDERE</h2>
+    <ul style="font-size: 14px; line-height: 1.5; padding-left: 20px; margin: 0">
+      <li>Telefono: A (parole sotto il nome, la riga si alza di circa 12px) o B (legenda, righe come oggi).</li>
+      <li>Al telefono non si ordina più per certificato o quota: per trovarli restano i filtri (Senza certificato valido, Da pagare, Da archiviare).</li>
+    </ul>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>
