@@ -301,7 +301,9 @@ scheda è disattivata, nessuno.
 - **Un certificato non archiviato** (file caricato quando il certificato
   stava su carta) si apre con **Apri** come gli altri, e la scheda lo dice in
   giallo; in elenco la colonna CERTIFICATO dice **Da archiviare** in giallo (il filtro
-  **Da archiviare** li mostra tutti, finché ce ne sono). Si cancella
+  **Da archiviare** li mostra tutti, finché ce ne sono). Se il certificato manca,
+  è scaduto o sta per scadere, la colonna dice quello, che è più urgente, ma il
+  filtro la persona la mostra lo stesso: il file è sempre da archiviare. Si cancella
   da solo come gli altri, o con **Togli**.
 - **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
   minore, quella del genitore): **IN SEGRETERIA** o **DA PORTARE**. **La copia è in segreteria** lo segna; **Non c'è più** la toglie senza

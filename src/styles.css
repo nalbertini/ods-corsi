@@ -1995,12 +1995,10 @@ a.sg-voce { text-decoration: none; }
 .sg-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 .sg-link:hover { color: var(--text); }
 /* Nel conto con la banca i link sono i tasti delle righe: grandi da toccare. */
-.sg-banca /* Link e intestazioni che ordinano sono bersagli da 44 veri, col mouse e col dito. */
-.sg-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; }
+.sg-banca .sg-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; }
 /* In fondo al menu i link (Riparti dall'orario vero, Esci) sono bersagli veri
    da 44, uno sotto l'altro: allargati a mano, col dito, si sovrapponevano. */
-.sg-chi > /* Link e intestazioni che ordinano sono bersagli da 44 veri, col mouse e col dito. */
-.sg-link { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; }
+.sg-chi > .sg-link { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; }
 
 .sg-corpo {
   flex-grow: 1; min-width: 0; overflow-y: auto;
@@ -2011,11 +2009,13 @@ a.sg-voce { text-decoration: none; }
 .sg-corpo-sala { padding: 0; gap: 0; }
 .sg-corpo-sala > .faccia-corsi, .sg-corpo-sala > .faccia-timer { flex: 1; height: auto; min-height: 0; }
 .sg-corpo-sala .sala-due { max-width: none; }
-.sg-testa { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+/* Sopra i 1000px non va a capo: il testo si stringe e le azioni restano a destra anche con una frase lunga sotto il titolo. */
+.sg-testa { display: flex; align-items: flex-start; gap: 12px; flex-wrap: nowrap; }
 /* Le azioni stanno in un blocco a destra, in alto col titolo: non si stringono e non vanno a capo una per una. */
 .sg-testa-azioni { display: flex; align-items: flex-start; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
 .sg-testa .sg-btn { min-height: 44px; }
 @media (max-width: 1000px) {
+  .sg-testa { flex-wrap: wrap; }
   .sg-testa-azioni { flex-basis: 100%; }
 }
 .sg-titolo { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }
@@ -2513,8 +2513,7 @@ label.sg-btn { cursor: pointer; }
    --------------------------------------------------------------------------- */
 .sg[data-aspetto='banco'] { flex-direction: column; }
 .sg[data-aspetto='banco'] > .sg-corpo { padding-top: 24px; }
-.bn-alto > /* Link e intestazioni che ordinano sono bersagli da 44 veri, col mouse e col dito. */
-.sg-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; }
+.bn-alto > .sg-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; }
 .bn-voce[aria-current='page'] .sg-tag { outline: 2px solid var(--bg); }
 .bn-sale .sg-etichetta { padding: 0 12px; letter-spacing: 0.24em; }
 .bn-blocco-testa .num { font-size: 14px; font-weight: 500; color: var(--dim); }

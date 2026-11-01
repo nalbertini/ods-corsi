@@ -17,8 +17,8 @@
   <span style="width: 20px; height: 20px; border: 2px solid #14709f; border-radius: 4px; background: #ffffff"></span>
   <span style="font-size: 14px; font-variant-numeric: tabular-nums">{{data}}</span>
   <div style="min-width: 0">
-    <div style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"><b style="font-weight: 600; text-decoration: underline; text-decoration-color: #cfe6f4; text-underline-offset: 3px">{{nome}}</b><span style="color: #46606f"> · </span>{{voce}}</div>
-    <div style="font-size: 13px; color: #46606f; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{dettaglio}}</div>
+    <div style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"><b style="font-weight: 600; text-decoration: underline; text-decoration-color: #cfe6f4; text-underline-offset: 3px">{{nome}}</b></div>
+    <div style="font-size: 13px; color: #46606f; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{voce}} · {{dettaglio}}</div>
   </div>
   <span style="display: flex; gap: 8px; align-items: center; font-size: 14px; white-space: nowrap; overflow: hidden"><dc-import name="Icona" nome="{{iconaTipo}}" misura="18" colore="#46606f" hint-size="18px,18px"></dc-import>{{tipo}}</span>
   <span style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{cassa}}</span>
@@ -30,7 +30,7 @@
 // COSTRUITO in parte «segreteria in ordine» (../segreteria-ordine/): la riga di MOVIMENTI (`.sg-riga-movimento` di segreteria.css, Contabilita.tsx).
 // Entrato: il badge «Dal gestionale» non c'e' piu' (lo dice gia' il TIPO «Incasso iscritto»); gli stati della riga (Annullato, Collegato, Omonimi,
 // Senza scheda, Da collegare) sono SegnoStato in fila dopo la descrizione (`.sg-stati-riga`, gap 4px 12px); importi 15px 600 tabellari, entrate `verde-testo`.
-// Non entrato: l'altezza fissa di 60px col taglio a «…». Vince il costruito: la descrizione va a capo e la riga cresce (qui min-height 60px).
+// Al computer (sopra i 1200px) il nome sta sulla prima riga e voce · dettaglio sulla seconda, tagliata con «…» (`.sg-sotto-movimento`): la riga resta di due righe di testo. Non entrata l'altezza fissa: la riga è alta quanto le due righe (min-height 60px qui).
 </script>
 </body>
 </html>

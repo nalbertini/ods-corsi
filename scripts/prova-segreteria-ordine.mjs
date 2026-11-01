@@ -174,6 +174,10 @@ for (const [nome, src] of Object.entries(tutte)) {
   ok('.sg-testa-azioni allinea le azioni in alto, senza ridursi (flex-shrink: 0)', /align-items:\s*flex-start/.test(regole('.sg-testa-azioni')) && /flex-shrink:\s*0/.test(regole('.sg-testa-azioni')), true)
   ok('.sg-testa allinea titolo e azioni in alto (non al centro)', /align-items:\s*flex-start/.test(regole('.sg-testa')), true)
   const stretto = bloccoMedia('(max-width: 1000px)')
+  // Sopra i 1000px la testata non va a capo: con una frase lunga sotto il titolo (Contabilità) il blocco del
+  // testo si prendeva tutta la riga e le azioni finivano sotto, mentre in Iscritti e Presenze stavano a destra.
+  ok('sopra i 1000px la testata non va a capo (flex-wrap: nowrap): le azioni restano a destra', /flex-wrap:\s*nowrap/.test(regole('.sg-testa')), true)
+  ok('sotto i 1000px la testata può andare a capo (flex-wrap: wrap)', /\.sg-testa\s*\{[^}]*flex-wrap:\s*wrap/.test(stretto), true)
   ok('sotto i 1000px la testata porta le azioni sotto il titolo', /\.sg-testa-azioni\s*\{[^}]*(flex-basis:\s*100%|width:\s*100%)/.test(stretto) || /\.sg-testa\s*\{[^}]*flex-direction:\s*column/.test(stretto), true)
   for (const [nome, src] of Object.entries(pagine)) {
     for (const t of tagDi(src, 'Testa')) {
@@ -233,6 +237,14 @@ ok('Presenze ha i filtri come FiltroMenu (Mese, Corso), non <select> nudi', [/<F
 }
 
 // 11. Liste in .sg-elenco, mai una riquadro per riga.
+// Le righe dei movimenti al computer stanno in due righe di testo: il nome e, sotto, voce e dettaglio
+// su una riga sola tagliata con «…» (il resto è nel dettaglio). Andavano a capo su 3-4 righe.
+{
+  const sotto = regole('.sg-sotto-movimento')
+  ok('il sotto del movimento, al computer, sta su una riga (white-space: nowrap)', /white-space:\s*nowrap/.test(sotto), true)
+  ok('il sotto del movimento, al computer, si taglia con «…» (text-overflow: ellipsis)', /text-overflow:\s*ellipsis/.test(sotto) && /overflow:\s*hidden/.test(sotto), true)
+  ok('sotto i 1200px il sotto del movimento torna in colonna', /\.sg-sotto-movimento\s*\{[^}]*flex-direction:\s*column/.test(bloccoMedia('(max-width: 1200px)')), true)
+}
 for (const nome of ['Iscritti', 'Contabilita', 'Presenze']) {
   ok(`${nome}: la lista sta in un contenitore .sg-elenco`, /className="sg-elenco[ "]/.test(pagine[nome]), true)
 }

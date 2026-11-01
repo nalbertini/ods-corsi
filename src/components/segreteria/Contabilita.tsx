@@ -591,7 +591,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                   <span className="sg-sotto-movimento">
                     <span className="sg-solo-telefono">{[tipoMovimento(r).nome, r.tipo === 'giroconto' ? '' : `${r.tipo === 'entrata' ? '+ ' : '− '}${soldi(r.importo)}`, dataRicevuta(r.data), r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)].filter(Boolean).join(' · ')}</span>
                     <span>{lineaVoce(r, r.personaId ? nomiPersone.get(r.personaId) ?? (collegatoAMano(r) ? 'Persona collegata' : '') : '')}</span>
-                    {r.sotto && <span>{r.sotto}</span>}
+                    {r.sotto && <span className="sg-sotto-extra">{r.sotto}</span>}
                   </span>
                 </span>
                 <span role="cell" className="sg-cella-icona">

@@ -431,7 +431,9 @@
 /* Chi ha scelto delle righe: il conto e il tasto restano in vista in fondo allo schermo, mentre si scorre. */
 .sg-barra-scelta { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; background: var(--surface); border: 2px solid var(--giallo); }
 /* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */
-.sg-sotto-movimento { display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere; }
+/* Al computer voce e dettaglio stanno su una riga, tagliata con «…»: la riga resta di due righe di testo, il resto è nel dettaglio. */
+.sg-sotto-movimento { display: block; font-size: 13px; color: var(--sec); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sg-sotto-extra::before { content: ' · '; }
 .sg-solo-telefono { display: none; }
 /* Le casse a scelta multipla: l'elenco si apre sotto il tasto. */
 .sg-filtro-casse { position: relative; }
@@ -445,6 +447,9 @@
   .sg-riga-movimento > :not(:first-child):not(:nth-child(3)) { display: none; }
   .sg-solo-telefono { display: inline; }
   .sg-lista-testa.sg-riga-movimento { display: none; }
+  /* Senza le colonne il sotto porta tipo, importo e cassa: in colonna, una cosa per riga. */
+  .sg-sotto-movimento { display: flex; flex-direction: column; white-space: normal; overflow-wrap: anywhere; }
+  .sg-sotto-extra::before { content: none; }
 }
 /* L'avviso dello storico nella scheda: giallo di avviso, bordo da 2px come gli altri riquadri. */
 .sg-avviso-storico { padding: 12px 14px; border: 2px solid var(--giallo-testo); background: var(--surface); font-size: 14px; line-height: 1.45; }

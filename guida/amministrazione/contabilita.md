@@ -16,6 +16,7 @@ recente. Accanto al titolo CONTABILITÀ, e solo in questa scheda, c'è **Nuovo m
 e il menu **Altre azioni**: **Collega i casi sicuri**, **Giroconto** ed **Esporta CSV**.
 
 Una riga che non è scritta qui dice da dove viene, accanto al nome: **Dalla banca**, **Dallo storico**, **Da Satispay**, **Dalla chat**. Gli incassi degli iscritti e i movimenti scritti qui non hanno segno. Voce, descrizione e nota di un movimento si correggono allo stesso modo, qualunque sia l'origine.
+Al computer ogni riga sta in due righe di testo: sopra il nome, sotto la voce e il resto, tagliati con «…» quando non ci stanno; tutto si legge aprendo il movimento.
 
 L'elenco unisce due cose:
 
