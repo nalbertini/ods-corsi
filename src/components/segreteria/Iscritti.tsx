@@ -994,6 +994,7 @@ function Scheda({
           fai={fai}
           avvisa={avvisa}
           daPagamento={daPagamento ?? undefined}
+          onMovimento={onMovimento}
           // Un pagamento a mano già registrato (FANNE LA RICEVUTA): niente da riprendere, resta nello storico com'era.
           onDaPagamento={daPagamento ? undefined : (x) => setDaPagamento(x)}
           onLasciaStare={() => {
@@ -1165,7 +1166,7 @@ function Scheda({
       <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={vista !== 'quota'}>
         <div id="sez-quota" className="stack" style={{ gap: 24, minWidth: 0 }}>
             <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} statiCorsi={statiCorsi} fai={fai} onCambiato={onCambiato} onNuova={() => setPagando(true)} />
-            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onCambiato={onCambiato} contabilita={contabilita} riprendi={riprendi ?? undefined} onRicevuta={(x) => {
+            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} onMovimento={onMovimento} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onCambiato={onCambiato} contabilita={contabilita} riprendi={riprendi ?? undefined} onRicevuta={(x) => {
               setRiprendi(null)
               setDaPagamento(x)
               setPagando(true)

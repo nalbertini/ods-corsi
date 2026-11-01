@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .riq { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
+    .avviso { box-shadow: inset 4px 0 0 #8f6a00; }
+    .link { font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+    .pericolo { color: #b81d1d; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .riga { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 16px; width: 760px; padding: 20px 24px; background: #ffffff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d">
+  <span class="et">ASSEGNA IL BONIFICO DEL 15/10/2026</span>
+  <span class="sotto">Il bonifico è di 600,00 €, da assegnare 600,00 €. Ogni importo diventa un pagamento della persona: un saldo se copre quel che manca, se no un parziale.</span>
+  <div class="riq">
+    <span class="et">ROSSI LUCA · COLLEGATO AL BONIFICO</span>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-size: 15px; flex: 1 1 200px">Quota associativa 2026/27 <span class="sotto">· manca 50,00 €</span></span><span class="campo">50,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-size: 15px; flex: 1 1 200px">Annuale Judo Kids <span class="sotto">· manca 420,00 €</span></span><span class="campo">420,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
+  </div>
+  <div class="riq">
+    <span class="et">ROSSI SOFIA · STESSA FAMIGLIA</span>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-size: 15px; flex: 1 1 200px">Quota associativa 2026/27 <span class="sotto">· manca 50,00 €</span></span><span class="campo">50,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-size: 15px; flex: 1 1 200px">Trimestre Danza moderna <span class="sotto">· manca 150,00 €</span></span><span class="campo">80,00</span><dc-import name="Badge" tipo="tag" label="Parziale" tono="giallo" hint-size="100px,28px"></dc-import></div>
+      <span class="sotto">Resteranno 70,00 € su «Trimestre Danza moderna»: si vedono nella scheda di Sofia.</span>
+    </div>
+  </div>
+  <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline"><span class="num" style="font-size: 15px">Assegnati 600,00 € di 600,00 € · Da assegnare 0,00 €</span><span class="link pericolo">Svuota tutto</span></div>
+  <span class="sotto">RICEVUTE 2, una per persona: intestate a Rossi Luca, Rossi Sofia.</span>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap">
+    <dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Assegna e fai le 2 ricevute" hint-size="270px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" variante="linea" label="Assegna senza ricevuta" hint-size="240px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" variante="linea" label="Lascia stare" hint-size="140px,48px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":760,"height":720}}'>
+// COSTRUITA: DialogoAssegna di src/components/segreteria/AssegnaMovimento.tsx (../assegna-pagamento/), aperto da «Assegna a quota e corsi»
+// nella finestra del movimento. Nell'app è una SchedaPiena (torna «Il movimento»); qui solo il contenuto.
+// Un riquadro .sg-riquadro per persona del nucleo (etichetta NOME · collegato al bonifico / stessa famiglia), una riga per cosa da pagare:
+// voce · manca, campo .sg-campo largo 110px (aria-invalid oltre quel che manca), tag Saldo (fatto) o Parziale (aspetta) e sotto «Resteranno…».
+// Proposta: prima le quote, poi i corsi dal più vecchio (proponiRipartizione). Errore in --rosso-testo 14px, role=alert, sopra i tasti:
+// «Alla quota mancano 50,00 €: metti 50,00 € o meno, il resto rimane da assegnare.» / «Hai assegnato N € più del bonifico: togli da una voce.».
+// Se avanza: riquadro giallo «Restano N € da assegnare: li trovi nella scheda «Da assegnare» di CONTABILITÀ.». Con una persona sola il tasto è «Assegna e fai la ricevuta».
+// Niente «+ Un'altra persona della famiglia» della proposta: il nucleo c'è già tutto. «Svuota tutto» è un sg-link sg-pericolo alto 44px (DITO).
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -182,6 +182,7 @@ export const ICONE_TABLET = {
 /** Le icone delle linguette delle barre a schede della segreteria (Contabilità, il corso, Presenze): le stesse del menu e dei conti. */
 export const ICONE_SCHEDE = {
   movimenti: ICONE_CONTI.frecce,
+  da_assegnare: ICONE_CONTI.persone,
   bilancio: ICONE_MENU.statistiche,
   voci: ICONE_MENU.listino,
   casse: ICONE_CONTI.banconota,

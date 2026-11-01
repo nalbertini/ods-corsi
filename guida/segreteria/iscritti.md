@@ -223,8 +223,11 @@ Poi la scheda è divisa in quattro schede, e se ne vede una alla volta. Ogni lin
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
 - **QUOTA E PAGAMENTI** — la quota e i pagamenti. **+ FAI LA RICEVUTA** sta accanto a **QUOTA**, **+ AGGIUNGI INCASSO** accanto a **PAGAMENTI**: non serve scorrere tutte le ricevute. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
   corsi che l'amministrazione ha scritto in CONTABILITÀ con questa persona stanno in **SCRITTI IN
-  CONTABILITÀ**, col tag **Scritto in contabilità**: non sono ricevute (niente numero né PDF), non si
-  sommano e non toccano quello che resta da pagare. Se la quota la vuoi contata, la ricevuta si fa qui.
+  CONTABILITÀ**, col tag **Scritto in contabilità**: non sono ricevute (niente numero né PDF) e non si
+  sommano. Un bonifico su quota o corsi conta per quello che resta da pagare solo quando l'amministrazione
+  lo **assegna** dal movimento (vedi [Assegnare un bonifico](../amministrazione/contabilita.md#assegnare-un-bonifico-a-quota-e-corsi)):
+  finché non lo fa, un riquadro giallo dice quanto è **da assegnare**, con **Assegna ›**. Un pagamento
+  assegnato senza ricevuta ha **Assegnato · senza ricevuta**: la ricevuta si fa dal movimento, non da qui.
   **Apri in contabilità** apre il movimento, per chi vede CONTABILITÀ. In fondo, se
   l'amministrazione ha collegato alla persona dei pagamenti del vecchio programma, c'è il blocco **DAL VECCHIO
   PROGRAMMA**: è lo storico, a parte. Non è nei pagamenti qui sopra e non conta per «quota pagata»: se la persona

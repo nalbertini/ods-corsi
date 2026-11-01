@@ -28,10 +28,11 @@ import { funzioneAssente, type Abbinato } from './abbinaMovimenti'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
 import { cartaPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
+import { conAssegnazioni } from './assegna'
 import type { ContiScarico, PagamentoNegozio } from './satispayScarico'
 import type { CopertoBanca } from './importaBanca'
 import { cosaNonVaSaldoBanca, cosaNonVaVerifica, mancaSaldoBanca, SENZA_SALDO_BANCA, type SaldoBanca } from './quadraturaBanca'
-import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type DatiRicevuta, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { vociCorsiDi } from './corsiDaPagare'
 import { motivoDaErrore, type InvioRicevuta } from './ricevuteEmail'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
@@ -94,9 +95,12 @@ interface RigaPagamentoDiretto {
   annullato_il: string | null
   /** Con 89-pagamento-diventa-ricevuta.sql; prima la colonna non c'è. */
   ricevuta_id?: string | null
+  /** Con 135-assegna-movimento.sql: la riga è un pezzo di un movimento assegnato, i soldi li conta già lui. */
+  movimento_id?: string | null
 }
 const CAMPI_DIRETTO_PRIMA = 'id, persona_id, data, importo, metodo, voce, nota, creato_il, annullato_il'
-const CAMPI_DIRETTO = `${CAMPI_DIRETTO_PRIMA}, ricevuta_id`
+const CAMPI_DIRETTO_89 = `${CAMPI_DIRETTO_PRIMA}, ricevuta_id`
+const CAMPI_DIRETTO = `${CAMPI_DIRETTO_89}, movimento_id`
 const pagamentoDiretto = (r: RigaPagamentoDiretto): PagamentoDiretto => ({
   id: r.id,
   personaId: r.persona_id,
@@ -108,6 +112,7 @@ const pagamentoDiretto = (r: RigaPagamentoDiretto): PagamentoDiretto => ({
   creatoIl: r.creato_il,
   annullatoIl: r.annullato_il ?? undefined,
   ricevutaId: r.ricevuta_id ?? undefined,
+  ...(r.movimento_id ? { movimentoId: r.movimento_id } : {}),
 })
 
 /** Una riga di `ricevute` (16-ricevute.sql): le voci sono il JSON che scrive `emetti_ricevuta`. */
@@ -126,8 +131,11 @@ interface RigaRicevuta {
   note: string | null
   creata_il: string
   annullata_il: string | null
+  /** Con 135-assegna-movimento.sql: la ricevuta è di un bonifico già in contabilità. */
+  movimento_id?: string | null
 }
 const CAMPI_RICEVUTA = 'id, anno, numero, data, persona_id, ente, intestatario, voci, totale, pagato, anticipo, note, creata_il, annullata_il'
+const CAMPI_RICEVUTA_135 = `${CAMPI_RICEVUTA}, movimento_id`
 
 const ricevuta = (r: RigaRicevuta): Ricevuta => ({
   id: r.id,
@@ -144,7 +152,26 @@ const ricevuta = (r: RigaRicevuta): Ricevuta => ({
   note: r.note ?? undefined,
   creataIl: r.creata_il,
   annullataIl: r.annullata_il ?? undefined,
+  ...(r.movimento_id ? { movimentoId: r.movimento_id } : {}),
 })
+
+/** I dati di una ricevuta come li vuole `emetti_ricevuta` (16) e chi la chiama dopo: controllati qui, come in prova. */
+function datiPerEmettere(r: DatiRicevuta) {
+  const dati = { ...r, intestatario: pulisciIntestatario(r.intestatario) }
+  const no = cosaNonVa(dati, oggiARoma())
+  if (no) throw new Error(no)
+  return {
+    data: dati.data,
+    persona_id: dati.personaId ?? null,
+    numero: dati.numero ?? null,
+    ente: dati.ente,
+    intestatario: dati.intestatario,
+    voci: dati.voci,
+    anticipo: dati.anticipo,
+    note: dati.note?.trim() || null,
+    chiave: dati.chiave ?? null,
+  }
+}
 
 type Scheda = {
   certificato_scade: string | null
@@ -401,6 +428,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // Prima di /ricevuta_compenso/, che la contiene.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /compenso_extra/.test(e.message ?? '')) return new Error(MANCA_EXTRA)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevuta_compenso/.test(e.message ?? '')) return new Error(MANCA_COMPENSI)
+  // Prima di /ricevut/ e /pagamento_diretto/: assegnare un movimento arriva con 135-assegna-movimento.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /assegna_movimento|ricevuta_da_movimento|ricevuta_movimento/.test(e.message ?? ''))
+    return new Error('ASSEGNA non è ancora attivo sul database: va lanciato 135-assegna-movimento.sql')
   // Prima di /ricevut/: la ricevuta dal pagamento a mano arriva dopo, con 89-pagamento-diventa-ricevuta.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /emetti_ricevuta_da_pagamento/.test(e.message ?? ''))
     return new Error('FANNE LA RICEVUTA non è ancora attivo sul database: va lanciato 89-pagamento-diventa-ricevuta.sql')
@@ -1167,6 +1197,15 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const conSaldo = saldoPerPersona(arrivati)
       const corsiSatispay = satispayCorsiPerPersona(arrivati)
       const quotaSatispay = satispayQuotaPerPersona(arrivati)
+      // I bonifici assegnati (135-assegna-movimento.sql) contano in quota e corsi come una ricevuta. Prima del file la
+      // colonna non c'è: nessuna assegnazione, come prima.
+      const assegnate = await tutteLeRighe((prima, ultima) => db.from('pagamenti_diretti').select(CAMPI_DIRETTO).not('movimento_id', 'is', null).is('annullato_il', null).order('id').range(prima, ultima))
+      // Solo la colonna o la tabella che mancano (54-pagamenti-diretti.sql non lanciato) valgono «nessuna assegnazione»:
+      // un altro errore non si tace, se no la quota sembrerebbe da pagare anche quando il bonifico l'ha saldata.
+      // `as`: le colonne sono quelle di `CAMPI_DIRETTO`.
+      const diretti = ['42703', '42P01', 'PGRST205'].includes(assegnate.error?.code ?? '') ? [] : (ok(assegnate) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)
+      const { listino } = diretti.length ? await this.listino() : { listino: LISTINO_PREDEFINITO }
+      const oggi = oggiARoma()
       return righe.map((r): PersonaSeg => {
         // Una a una con la persona: PostgREST la dà come oggetto, ma meglio non contarci.
         const s = Array.isArray(r.schede_iscritti) ? r.schede_iscritti[0] : r.schede_iscritti
@@ -1201,7 +1240,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           satispayCorsi: corsiSatispay.get(r.id),
           natoIl: natiIl.get(r.id),
         }
-      })
+      }).map((p) => conAssegnazioni(p, diretti, listino, oggi))
     },
 
     async frequenze() {
@@ -1374,8 +1413,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
     async ricevute(personaId) {
       // Tutte, come in prova: un tetto qui accorciava l'elenco senza dirlo.
-      const leggi = (prima: number, ultima: number) => {
-        const q = db.from('ricevute').select(CAMPI_RICEVUTA)
+      const leggi = (campi: string) => (prima: number, ultima: number) => {
+        const q = db.from('ricevute').select(campi)
         return (personaId ? q.eq('persona_id', personaId) : q)
           .order('data', { ascending: false })
           .order('anno', { ascending: false })
@@ -1383,7 +1422,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           .order('id')
           .range(prima, ultima)
       }
-      const righe = ok(await tutteLeRighe(leggi)) as unknown as RigaRicevuta[]
+      let risposta = await tutteLeRighe(leggi(CAMPI_RICEVUTA_135))
+      // Prima di 135-assegna-movimento.sql `movimento_id` non c'è: le ricevute si leggono lo stesso, senza.
+      if (risposta.error?.code === '42703') risposta = await tutteLeRighe(leggi(CAMPI_RICEVUTA))
+      // `as`: le colonne lette sono quelle di RigaRicevuta.
+      const righe = ok(risposta) as unknown as RigaRicevuta[]
       return righe.map(ricevuta)
     },
 
@@ -1517,26 +1560,26 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async emettiRicevuta(r, satispayId, pagamentoId) {
       // Da un pagamento a mano o da un Satispay: gli stessi soldi in una ricevuta sola, mai due fonti insieme.
       if (satispayId && pagamentoId) throw new Error('Una ricevuta si fa da un pagamento a mano o da un Satispay, non da tutti e due: chiudi il modulo e riaprilo')
-      const dati = { ...r, intestatario: pulisciIntestatario(r.intestatario) }
-      const no = cosaNonVa(dati, oggiARoma())
-      if (no) throw new Error(no)
       const riga = ok(
         await db.rpc(pagamentoId ? 'emetti_ricevuta_da_pagamento' : satispayId ? 'emetti_ricevuta_satispay' : 'emetti_ricevuta', {
           ...(pagamentoId ? { pagamento: pagamentoId } : satispayId ? { pagamento: satispayId } : {}),
-          dati: {
-            data: dati.data,
-            persona_id: dati.personaId ?? null,
-            numero: dati.numero ?? null,
-            ente: dati.ente,
-            intestatario: dati.intestatario,
-            voci: dati.voci,
-            anticipo: dati.anticipo,
-            note: dati.note?.trim() || null,
-            chiave: dati.chiave ?? null,
-          },
+          dati: datiPerEmettere(r),
         }),
       ) as RigaRicevuta
       return ricevuta(riga)
+    },
+
+    async assegnaMovimento(movimentoId, righe) {
+      ok(await db.rpc('assegna_movimento', { movimento: movimentoId, righe: righe.map((r) => ({ persona_id: r.personaId, voce: r.voce.trim(), importo: r.importo })) }))
+    },
+
+    async emettiRicevutaDaMovimento(r, movimentoId) {
+      // `as`: la funzione rende la riga di `ricevute` con `movimento_id`.
+      return ricevuta(ok(await db.rpc('emetti_ricevuta_da_movimento', { dati: datiPerEmettere(r), movimento: movimentoId })) as RigaRicevuta)
+    },
+
+    async abbinaRicevutaMovimento(movimentoId, ricevutaId) {
+      ok(await db.rpc('abbina_ricevuta_movimento', { movimento: movimentoId, ricevuta: ricevutaId }))
     },
 
     async annullaRicevuta(id) {
@@ -1678,7 +1721,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         return (personaId ? q.eq('persona_id', personaId) : q).order('data', { ascending: false }).order('creato_il', { ascending: false }).order('id').range(prima, ultima)
       }
       let righe = await tutteLeRighe(leggi(CAMPI_DIRETTO))
-      // Prima di 89-pagamento-diventa-ricevuta.sql `ricevuta_id` non c'è: lo storico si legge lo stesso, senza.
+      // Prima di 135-assegna-movimento.sql `movimento_id` non c'è, prima di 89-pagamento-diventa-ricevuta.sql nemmeno
+      // `ricevuta_id`: lo storico si legge lo stesso, senza.
+      if (righe.error?.code === '42703') righe = await tutteLeRighe(leggi(CAMPI_DIRETTO_89))
       if (righe.error?.code === '42703') righe = await tutteLeRighe(leggi(CAMPI_DIRETTO_PRIMA))
       // `as`: Supabase tipa la riga a modo suo, la forma è quella di `CAMPI_DIRETTO`.
       return (ok(righe) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)

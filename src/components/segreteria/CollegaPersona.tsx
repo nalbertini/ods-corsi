@@ -3,6 +3,8 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { LIMITE_CAMBIO_VOCE, pacchetti, type RigaMovimento } from '../../lib/contabilita'
 import { collegaTuttiISicuri, cosaNonVaCollegato, dividiStorico, type CandidatoPersona, type VoceStorico } from '../../lib/movimentiPersona'
 import { dataRicevuta, euro } from '../../lib/ricevute'
+import { bonificiDaAssegnare, euroAssegna } from '../../lib/assegna'
+import { oggiARoma } from '../../lib/contabilita'
 import { chiedi, dataLunga, Guaio, messaggio, useCarica, type useAvviso } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -287,9 +289,35 @@ export function StoricoPersona({ d, personaId, onMovimento }: { d: DatiSegreteri
   const st = useCarica(() => d.storicoPersona(personaId), [d, personaId])
   const [tutte, setTutte] = useState(false)
   const { inContabilita, vecchioProgramma: righe } = dividiStorico(st.dato ?? [])
+  // Pagamenti e ricevute di tutti (un bonifico si divide anche sui fratelli) si leggono solo se c'è un bonifico che può
+  // averne bisogno: le schede senza bonifici non pagano la lettura.
+  const oggi = oggiARoma()
+  const candidati = bonificiDaAssegnare(st.dato ?? [], [], [], oggi).map((b) => b.movimentoId).join()
+  const conti = useCarica(
+    () => (candidati ? Promise.all([d.pagamentiDiretti(), d.ricevute()]) : Promise.resolve(null)),
+    [d, candidati],
+  )
+  const daAssegnare = conti.dato ? bonificiDaAssegnare(st.dato ?? [], conti.dato[0], conti.dato[1], oggi) : []
   if (st.guaio) return <span className="sg-sotto" role="status">Lo storico dal vecchio programma non si legge: {st.guaio}</span>
   return (
     <>
+      {conti.guaio && (
+        <span className="sg-sotto" role="status">
+          Non si riesce a controllare se ci sono bonifici da assegnare: {conti.guaio}
+        </span>
+      )}
+      {daAssegnare.length > 0 && (
+        <div className="sg-riquadro" data-avviso="true" role="note">
+          {daAssegnare.map((x) => (
+            <span key={x.movimentoId} className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap', fontSize: 14 }}>
+              <span className="grow"><b className="num">{euroAssegna(x.daAssegnare)}</b> da assegnare dal bonifico del {dataRicevuta(x.data)}: finché non dici a cosa va, non conta come pagato.</span>
+              {onMovimento && (
+                <button type="button" className="num sg-chip" onClick={() => onMovimento(x.movimentoId)}>Assegna ›</button>
+              )}
+            </span>
+          ))}
+        </div>
+      )}
       {inContabilita.length > 0 && (
         <section className="stack" style={{ gap: 8 }} aria-label="Scritti in contabilità">
           <span className="sg-etichetta" style={{ fontSize: 13, letterSpacing: '0.2em' }}>SCRITTI IN CONTABILITÀ · {inContabilita.length}</span>
@@ -310,7 +338,7 @@ export function StoricoPersona({ d, personaId, onMovimento }: { d: DatiSegreteri
               )}
             </div>
           ))}
-          <span className="sg-sotto">Non è una ricevuta: senza numero, senza PDF, e non tocca quello che resta da pagare. Se la quota la vuoi contata, la ricevuta si fa in PAGAMENTI.</span>
+          <span className="sg-sotto">Non è una ricevuta. Un bonifico su quota o corsi conta per quello che resta da pagare solo quando lo assegni, dal movimento («Apri in contabilità»): da lì si fa anche la ricevuta.</span>
         </section>
       )}
       {righe.length > 0 && <StoricoVecchio righe={righe} tutte={tutte} onTutte={() => setTutte(!tutte)} />}

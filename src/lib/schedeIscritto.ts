@@ -52,12 +52,12 @@ export function fraseQuota(s: StatoPaga): string {
   const fino = s.fino ? dataLunga(s.fino) : ''
   if (s.come === 'pagato')
     return s.fonte === 'ricevuta'
-      ? `Pagata${fino ? ` fino al ${fino}` : ''} · ricevuta ${s.ricevuta}.`
+      ? `Pagata${fino ? ` fino al ${fino}` : ''}${s.ricevuta ? ` · ricevuta ${s.ricevuta}` : ''}.`
       : s.fonte === 'satispay'
         ? `Pagata con Satispay dal modulo (${soldi(s.importo ?? 0)}): manca la ricevuta, con PAGATO CON «Satispay».`
         : `Pagata fuori dall’app${fino ? `, fino al ${fino}` : ''}.`
   if (s.come === 'in_parte')
-    return s.fonte === 'ricevuta' ? `Mancano ${euro(s.mancano ?? 0)} € della quota · ricevuta ${s.ricevuta}.` : `Pagata in parte fuori dall’app${fino ? `, fino al ${fino}` : ''}.`
+    return s.fonte === 'ricevuta' ? `Mancano ${euro(s.mancano ?? 0)} € della quota${s.ricevuta ? ` · ricevuta ${s.ricevuta}` : ''}.` : `Pagata in parte fuori dall’app${fino ? `, fino al ${fino}` : ''}.`
   return s.come === 'scaduto' ? `Valeva fino al ${fino}: è da pagare di nuovo.` : 'Nessuna ricevuta con la quota di questa stagione.'
 }
 
