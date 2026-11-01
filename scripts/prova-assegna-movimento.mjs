@@ -655,6 +655,27 @@ try {
     await s.annullaRicevuta(rQ.id)
     ok('annullata la ricevuta, i 30 € non contano più: altri 25 € passano (20 + 25 = 45)', await errore(() => s.assegnaMovimento(mS, [riga(p4, QUOTA_VOCE, 2500)])), 'nessun errore')
   }
+
+  console.log('  9o. «Pagato nel vecchio programma» in prova: l’incasso dice da quale movimento viene e quanto ne è assegnato')
+  {
+    // Una persona non ancora usata nelle sezioni prima (le prime undici lo sono), o l'ultima se l'elenco è corto.
+    const p5 = lista[11] ?? lista[lista.length - 1]
+    // Il 1° agosto della stagione di oggi: `pagatoPrima` della prova guarda la stagione del giorno vero.
+    const adesso = new Date()
+    const inizio = `${adesso.getMonth() >= 7 ? adesso.getFullYear() : adesso.getFullYear() - 1}-08-01`
+    // Lo storico entra «Da classificare», poi passa sulla quota con la persona: come lo sistema la segreteria.
+    await s.importaMovimentiBanca([{ chiave: 'prima-nota:9001', data: inizio, cassa: 'conto', tipo: 'entrata', importo: 5000, descrizione: 'Bonifico quota', voce: 'Da classificare' }])
+    const mV = (await s.movimenti()).find((x) => x.origineImport === 'prima-nota:9001')
+    const voceQuota = (await s.voci()).find((v) => v.nome === 'Quota associativa' && v.tipo === 'entrata')
+    await s.cambiaVoceMovimenti([mV.id], voceQuota.id)
+    await s.collegaMovimentiPersona([mV.id], p5.id)
+    const incasso = async () => (await s.pagatoPrima()).elenco.find((i) => i.personaId === p5.id)
+    const prima = await incasso()
+    ok('non assegnato: c’è, col movimento e 0 assegnato', prima && [prima.movimentoId, prima.assegnato], [mV.id, 0])
+    await s.assegnaMovimento(mV.id, [riga(p5, 'Annuale Judo Kids', 2000)])
+    const dopo = await incasso()
+    ok('assegnati 20 €: assegnato 2.000 centesimi, come `movimento_assegnato`', dopo && [dopo.movimentoId, dopo.assegnato], [mV.id, 2000])
+  }
 } catch (e) {
   // Una funzione che non c'è ancora ferma la sezione: si conta come un guaio, non come un errore della prova.
   guai++

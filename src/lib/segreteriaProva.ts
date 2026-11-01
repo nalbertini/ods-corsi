@@ -740,7 +740,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const { movimenti, voci } = contabilita()
       const veri: IncassoPrima[] = movimenti
         .filter((x) => x.tipo === 'entrata' && !x.annullatoIl && x.origineImport?.startsWith('prima-nota:') && x.data >= stagioneDi(chiaveGiorno(new Date())).dal && x.data <= stagioneDi(chiaveGiorno(new Date())).al)
-        .map((x) => ({ personaId: x.personaId ?? null, data: x.data, importo: x.importo, voce: voci.find((v) => v.id === x.voceId)?.nome ?? '' }))
+        .map((x) => ({
+          personaId: x.personaId ?? null, data: x.data, importo: x.importo, voce: voci.find((v) => v.id === x.voceId)?.nome ?? '',
+          // Come `incassi_vecchio_programma` del 136: un incasso assegnato anche in parte esce dal filtro.
+          movimentoId: x.id, assegnato: assegnato(x.id, a().pagamentiDiretti ?? [], a().ricevute ?? []),
+        }))
         .filter((x) => x.voce === VOCE_QUOTA || x.voce === VOCE_CORSI)
       if (veri.length) return { elenco: veri }
       const [intera, sotto, corsi] = a()
