@@ -631,6 +631,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'satispay_scarico_avvisa' and corpo like '%errore is null%')
     and exists (select 1 from voci_contabili where nome = 'Incassi Satispay')),
   ('133-verbali-semplici.sql', 'un verbale si firma col solo PDF firmato, senza ore, luogo, presidente e presenti',
-    exists (select 1 from dentro where nome = 'firma_verbale' and corpo like '%Per firmare serve il PDF%' and corpo not like '%ora d’inizio%'))
+    exists (select 1 from dentro where nome = 'firma_verbale' and corpo like '%Per firmare serve il PDF%' and corpo not like '%ora d’inizio%')),
+  ('134-banca-coperti-incassi.sql', 'un bonifico della banca già in una ricevuta o in un pagamento a mano resta coperto da quello, senza fermare l''import',
+    exists (select 1 from information_schema.columns where table_name = 'banca_coperti' and column_name = 'con_id' and data_type = 'text')
+    and exists (select 1 from dentro where nome = 'banca_segna_coperti' and corpo like '%incasso:diretto:%'))
 ) as x(file, cosa, c)
 order by file, cosa;

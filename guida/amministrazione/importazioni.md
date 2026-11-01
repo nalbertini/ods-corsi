@@ -67,10 +67,10 @@ nel versamento della banca.
 ## Cosa è entrato
 
 Il riepilogo di un mese dalla banca: due numeri, **Importati nuovi** (scritti dal file) e
-**Già scritti a mano** (abbinati a un movimento già scritto, entrate o uscite), poi una riga
-per movimento.
+**Già scritti a mano** (abbinati a un movimento già scritto, entrate o uscite, o a una
+ricevuta o a un pagamento a mano in bonifico o POS), poi una riga per movimento.
 
-**Non è questo**, su una riga abbinata a un movimento a mano, toglie l'abbinamento: il
-movimento della banca entra come un import normale, nel Conto Corrente, da classificare,
-e quello a mano resta com'era. Nei giorni in cui la cassa è già chiusa **Non è questo**
+**Non è questo**, su una riga abbinata a un movimento a mano, a una ricevuta o a un
+pagamento a mano, toglie l'abbinamento: il movimento della banca entra come un import
+normale, nel Conto Corrente, da classificare, e quello a mano (o la ricevuta) resta com'era. Nei giorni in cui la cassa è già chiusa **Non è questo**
 non c'è: l'abbinamento è già nei conti di quella chiusura.

@@ -85,6 +85,7 @@ import { corsiConImporto } from '../../lib/abbinaMovimenti'
 import { Bilancio } from './Bilancio'
 import { rigaDaSistemare } from '../../lib/bilancio'
 import { firmato, leggiSaldoBanca, type CampoSaldoBanca, cosaNonVaVerifica, improntaMese, meseInLettere, mesePrima, quadratura, riepilogoDifferenza, righeBanca, saldoInizialeProposto, segniDelConto, SENZA_SALDO_BANCA, type Quadratura, type RigaApp, type SaldoBanca, type StatoQuadratura } from '../../lib/quadraturaBanca'
+import { segnaIncassiCoperti } from '../../lib/importaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import { NOME_CASSA_SATISPAY } from '../../lib/satispayScarico'
 
@@ -1332,9 +1333,11 @@ function useBanca(d: DatiSegreteria, casse: Cassa[], righe: RigaMovimento[]) {
     const saldi = letti.dato?.saldi
     if (!conto || !saldi) return null
     const banca = righeBanca(righe, letti.dato?.coperti ?? null)
+    // Una ricevuta o un pagamento a mano coperto da una riga della banca si abbina a quella, come un movimento a mano.
+    const conCoperti = segnaIncassiCoperti(righe, letti.dato?.coperti ?? [])
     const fatte = new Map<string, Quadratura>()
     const di = (mese: string) => {
-      const q = fatte.get(mese) ?? quadratura({ mese, oggi, contoId: conto.id, casse, righe, banca, saldo: saldi.find((s) => s.mese === mese) ?? null, saldoPrima: saldi.find((s) => s.mese === mesePrima(mese)) ?? null })
+      const q = fatte.get(mese) ?? quadratura({ mese, oggi, contoId: conto.id, casse, righe: conCoperti, banca, saldo: saldi.find((s) => s.mese === mese) ?? null, saldoPrima: saldi.find((s) => s.mese === mesePrima(mese)) ?? null })
       fatte.set(mese, q)
       return q
     }

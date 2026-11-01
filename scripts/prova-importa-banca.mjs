@@ -413,5 +413,59 @@ console.log('\n12. La voce e la persona di ogni riga, scelte prima di importare'
   })
 }
 
+console.log('\n13. un bonifico o un POS già registrato con una ricevuta o un pagamento a mano è coperto')
+{
+  // Gli id come li fa `incassiDerivati`: `incasso:<ricevuta>:<voce>:<pagamento>` e `incasso:diretto:<pagamento>`.
+  const RIC = 'incasso:11111111-1111-1111-1111-111111111111:0:0'
+  const DIR = 'incasso:diretto:22222222-2222-2222-2222-222222222222'
+  const inc = (o) => riga({ id: RIC, origine: 'ricevuta', tipo: 'entrata', data: '2026-10-03', importo: 12000, descrizione: 'Luca Verdi', voce: 'Corsi e altri pagamenti', ...o })
+  const R7 = mv[1].chiave // «Da Luca Verdi saldo corso»: entrata di 120,00 del 3 ottobre
+
+  for (const [nome, i] of [['ricevuta', inc()], ['pagamento a mano', inc({ id: DIR, origine: 'pagamento' })]]) {
+    const a = anteprima([i])
+    const cop = prova(() => m.copertiDaSalvare(a))
+    ok(`${nome}: la riga della banca è coperta dall'incasso, con il suo id come conId`, prova(() => [a.coperti.map((c) => [c.movimento.riga, c.con.id]), cop.map((c) => c.conId)]), [[[7, i.id]], [i.id]])
+    ok(`${nome}: non va fra i dati per importa_prima_nota`, prova(() => m.datiImportBanca(a).some((d) => d.chiave === R7)), false)
+    const s = prova(() => m.segnaCoperti([], [], cop, 'conto', [i]))
+    ok(`${nome}: segnaCoperti la mette nei coperti, senza scrivere niente`, prova(() => [s.coperti.map((c) => c.conId), s.daScrivere.length, s.movimenti.length]), [[i.id], 0, 0])
+    // Rileggendo lo stesso file l'incasso porta la chiave della banca: la riga è già importata.
+    const dopo = prova(() => m.anteprimaBanca(L, m.segnaIncassiCoperti([i], s.coperti), 'conto', OGGI))
+    ok(`${nome}: rileggendo il file la riga è «già importata»`, prova(() => [dopo.giaImportati.map((x) => x.riga).includes(7), dopo.coperti.length, dopo.entrano.some((x) => x.riga === 7)]), [true, 0, false])
+    ok(`${nome}: …e segnaCoperti non cambia niente`, prova(() => { const t = m.segnaCoperti([], s.coperti, cop, 'conto', [i]); return [t.coperti.length, t.daScrivere.length] }), [1, 0])
+    ok(`${nome}: segnaIncassiCoperti mette bancaChiave solo all'incasso coperto`, prova(() => m.segnaIncassiCoperti([i, inc({ id: 'incasso:altro:0:0' }), riga({ id: 'mano' })], s.coperti).map((r) => r.bancaChiave ?? null)), [R7, null, null])
+    ok(`${nome}: «Non è questo»: la riga entra in «Da classificare» e lascia i coperti`, prova(() => { const t = m.nonEQuestoBanca(s.coperti, R7, [], 'conto'); return [t.scrivi.chiave, t.scrivi.voce, t.scrivi.cassa, t.coperti.length] }), [R7, 'Da classificare', 'conto', 0])
+    ok(`${nome}: …in un giorno chiuso no`, prova(() => m.nonEQuestoBanca(s.coperti, R7, [{ id: 'k', cassaId: 'conto', dal: '2026-09-01', data: '2026-10-04', previsto: 0, contato: 0, differenza: 0, chiusaIl: '2026-10-05' }], 'conto')), 'ERRORE: Quel giorno la cassa è chiusa: il collegamento resta')
+    ok(`${nome}: «Cosa è entrato» la conta fra i coperti, una volta sola`, prova(() => { const e = m.entratoBanca([i], s.coperti, '2026-10'); return [e.coperti, e.nuovi.conteggio, e.righe.length] }), [{ conteggio: 1, importo: 12000 }, 0, 1])
+  }
+
+  // Un incasso copre una riga sola: la seconda uguale entra nuova, anche in un file letto dopo.
+  const due = m.leggiBanca(piccolo(mov('03/10/2026', '', '120,00', 'Da Luca Verdi saldo corso', 'ACCREDITO'), mov('03/10/2026', '', '120,00', 'Da Luca Verdi saldo corso', 'ACCREDITO')))
+  ok('due righe uguali della banca e un incasso: una coperta, una nuova', prova(() => { const a = m.anteprimaBanca(due, [inc()], 'conto', OGGI); return [a.coperti.length, a.entrano.length] }), [1, 1])
+  ok('incasso già coperto dalla prima riga: la seconda, uguale, entra nuova', prova(() => {
+    const k0 = due.movimenti[0].chiave
+    const coperto = { chiave: k0, data: '2026-10-03', tipo: 'entrata', importo: 12000, descrizione: 'x', conId: RIC, conDescrizione: 'Luca Verdi' }
+    const a = m.anteprimaBanca(due, m.segnaIncassiCoperti([inc()], [coperto]), 'conto', OGGI)
+    return [a.giaImportati.map((x) => x.chiave), a.coperti.length, a.entrano.map((x) => x.chiave)]
+  }), [[due.movimenti[0].chiave], 0, [due.movimenti[1].chiave]])
+
+  // Guardie: un incasso annullato o di un'altra cassa non copre.
+  ok('incasso annullato: la riga entra nuova', prova(() => [anteprima([inc({ annullato: true })]).entrano.some((x) => x.riga === 7), anteprima([inc({ annullato: true })]).coperti.length]), [true, 0])
+  ok('incasso nei contanti: la riga entra nuova', prova(() => anteprima([inc({ cassaId: 'contanti' })]).entrano.some((x) => x.riga === 7)), true)
+  ok('incasso con la carta o Satispay (la sua cassa): la riga entra nuova', prova(() => ['carta', 'satispay'].map((c) => anteprima([inc({ cassaId: c })]).entrano.some((x) => x.riga === 7))), [true, true])
+
+  // segnaCoperti ricontrolla: se l'incasso non regge, la riga entra in «Da classificare».
+  const cop = (o) => ({ chiave: R7, data: '2026-10-03', tipo: 'entrata', importo: 12000, descrizione: 'Da Luca Verdi saldo corso', conId: RIC, conDescrizione: 'Luca Verdi', ...o })
+  const nonRegge = (cosa, incassi, coperto = cop(), gia = []) =>
+    ok(cosa, prova(() => { const s = m.segnaCoperti([], gia, [coperto], 'conto', incassi); return [s.coperti.length - gia.length, s.daScrivere.map((d) => [d.chiave, d.voce])] }), [0, [[coperto.chiave, 'Da classificare']]])
+  nonRegge('segnaCoperti: incasso assente → «Da classificare»', [])
+  nonRegge('…incasso annullato', [inc({ annullato: true })])
+  nonRegge('…importo diverso', [inc({ importo: 12001 })])
+  nonRegge('…altra cassa (contanti)', [inc({ cassaId: 'contanti' })])
+  nonRegge('…altra cassa (carta)', [inc({ cassaId: 'carta' })])
+  nonRegge('…un\'uscita', [inc({ tipo: 'uscita' })])
+  nonRegge('…già coperto da un\'altra riga della banca', [inc()], cop({ chiave: 'banca:20261003:zzz:0' }), [cop({ chiave: 'banca:20261003:yyy:0' })])
+  nonRegge('…senza il parametro degli incassi', undefined)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
