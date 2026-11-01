@@ -2039,7 +2039,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const conto = contabilita().casse.find((c) => c.nome === NOME_CASSA_CONTO)
       if (!conto) throw new Error('Manca la cassa Conto Corrente')
       // Come `banca_segna_coperti`: le righe il cui abbinamento non regge entrano come un import normale.
-      const r = segnaCoperti(contabilita().movimenti, a().bancaCoperti ?? [], righe, conto.id)
+      const { casse, movimenti, voci } = contabilita()
+      const incassi = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci, pagamentiSatispayProva()).filter((x) => x.id.startsWith('incasso:'))
+      const r = segnaCoperti(movimenti, a().bancaCoperti ?? [], righe, conto.id, incassi)
       // Le righe nuove si scrivono prima: se una non va, i segni sui movimenti a mano non restano a metà.
       if (r.daScrivere.length) await this.importaMovimentiBanca(r.daScrivere)
       const segni = new Map(r.movimenti.filter((m) => m.bancaChiave).map((m) => [m.id, m.bancaChiave]))

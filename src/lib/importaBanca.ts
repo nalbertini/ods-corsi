@@ -415,16 +415,25 @@ export function copertiDaSalvare(a: AnteprimaBanca): CopertoBanca[] {
 
 /**
  * `banca_segna_coperti` per la modalità prova: ogni riga coperta dà il segno della banca al suo movimento a mano.
- * L'abbinamento si ricontrolla: se il movimento non c'è più, è già di Satispay o di un'altra riga, o non torna,
- * la riga va in `daScrivere` e entra come un import normale. Una riga già vista non cambia niente.
+ * Una riga coperta da un incasso (`incasso:`, una ricevuta o un pagamento a mano) resta solo nei coperti: su
+ * ricevute e pagamenti non si scrive. L'abbinamento si ricontrolla: se il movimento o l'incasso non c'è più, è
+ * già di Satispay o di un'altra riga, o non torna, la riga va in `daScrivere` e entra come un import normale.
+ * Una riga già vista non cambia niente.
  */
-export function segnaCoperti(movimenti: MovimentoManuale[], coperti: CopertoBanca[], righe: CopertoBanca[], contoId: string): { movimenti: MovimentoManuale[]; coperti: CopertoBanca[]; daScrivere: DatoImportBanca[] } {
+export function segnaCoperti(movimenti: MovimentoManuale[], coperti: CopertoBanca[], righe: CopertoBanca[], contoId: string, incassi: RigaMovimento[] = []): { movimenti: MovimentoManuale[]; coperti: CopertoBanca[]; daScrivere: DatoImportBanca[] } {
   const mov = [...movimenti]
   const cop = [...coperti]
   const daScrivere: DatoImportBanca[] = []
   for (const r of righe) {
     if (!r.chiave?.startsWith(PREFISSO_CHIAVE_BANCA)) throw new Error('Un movimento già scritto non ha la chiave della banca')
     if (cop.some((c) => c.chiave === r.chiave) || mov.some((m) => m.origineImport === r.chiave || m.bancaChiave === r.chiave)) continue
+    if (r.conId.startsWith(PREFISSO_INCASSO)) {
+      const regge = r.tipo === 'entrata' && !cop.some((c) => c.conId === r.conId)
+        && incassi.some((x) => x.id === r.conId && x.tipo === 'entrata' && x.importo === r.importo && x.cassaId === contoId && !x.annullato)
+      if (regge) cop.push(r)
+      else daScrivere.push({ chiave: r.chiave, data: r.data, cassa: 'conto', tipo: r.tipo, importo: r.importo, descrizione: r.descrizione, voce: VOCE_DA_CLASSIFICARE })
+      continue
+    }
     const i = mov.findIndex((m) => m.id === r.conId && m.tipo === r.tipo && m.importo === r.importo && m.cassaId === contoId && !m.annullatoIl && !m.satispayId && !m.bancaChiave)
     if (i < 0) {
       daScrivere.push({ chiave: r.chiave, data: r.data, cassa: 'conto', tipo: r.tipo, importo: r.importo, descrizione: r.descrizione, voce: VOCE_DA_CLASSIFICARE })
@@ -434,6 +443,17 @@ export function segnaCoperti(movimenti: MovimentoManuale[], coperti: CopertoBanc
     cop.push(r)
   }
   return { movimenti: mov, coperti: cop, daScrivere }
+}
+
+const PREFISSO_INCASSO = 'incasso:'
+
+/**
+ * Gli incassi (ricevute e pagamenti a mano) coperti da una riga della banca prendono la sua chiave, come i
+ * movimenti a mano: così l'anteprima li vede già importati e non li propone di nuovo, e la quadratura li conta.
+ */
+export function segnaIncassiCoperti(righe: RigaMovimento[], coperti: CopertoBanca[]): RigaMovimento[] {
+  const chiavi = new Map(coperti.filter((c) => c.conId.startsWith(PREFISSO_INCASSO)).map((c) => [c.conId, c.chiave]))
+  return righe.map((r) => (chiavi.has(r.id) ? { ...r, bancaChiave: chiavi.get(r.id) } : r))
 }
 
 /**
