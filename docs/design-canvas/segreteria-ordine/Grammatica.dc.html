@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    h2 { font-family: 'Big Shoulders Display', Inter, sans-serif; font-weight: 800; font-size: 24px; margin: 0 0 6px; }
+    p { margin: 0 0 14px; font-size: 14px; line-height: 1.5; color: #46606f; max-width: 820px; }
+    section { background: #ffffff; border: 1px solid #cfe6f4; border-radius: 6px; padding: 22px 24px; }
+    li { margin-bottom: 6px; }
+  </style>
+</helmet>
+<!-- GRAMMATICA della segreteria: i pezzi che le tre pagine usano, uno accanto all'altro. Tutto nel look sito, alto 44px. -->
+<div style="display: flex; flex-direction: column; gap: 22px; width: 1200px; padding: 32px">
+  <section>
+    <h2>TASTI</h2>
+    <p>Quattro forme e basta. Un solo giallo per testata: l'azione principale della pagina. Il resto è a linea. Il «+» va sempre con la parola. Rosso pieno solo per confermare una cancellazione, rosso a linea per avviarla.</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
+      <dc-import name="Bottone" label="Nuovo iscritto" icona="aggiungi" variante="pieno" contesto="segreteria" alto="44px" hint-size="190px,44px"></dc-import>
+      <dc-import name="Bottone" label="Importa tessere" icona="carica" variante="linea" contesto="segreteria" alto="44px" hint-size="190px,44px"></dc-import>
+      <dc-import name="Bottone" label="Elimina il movimento" icona="elimina" variante="pericolo" contesto="segreteria" alto="44px" hint-size="230px,44px"></dc-import>
+      <dc-import name="Bottone" label="Sì, elimina" variante="rosso" contesto="segreteria" alto="44px" hint-size="150px,44px"></dc-import>
+    </div>
+  </section>
+  <section>
+    <h2>TESTATA DI PAGINA</h2>
+    <p>Titolo e una frase a sinistra, le azioni a destra allineate in alto. Niente più righe di tasti fra il titolo e le schede. Sotto i 1000px le azioni vanno a capo sotto la frase.</p>
+    <dc-import name="TestataPagina" titolo="CONTABILITÀ" sotto="Le entrate e le uscite della palestra, nelle sue casse." altro="Altre azioni" secondaria="" primaria="Nuovo movimento" iconaPrimaria="aggiungi" hint-size="100%,60px"></dc-import>
+  </section>
+  <section>
+    <h2>SCHEDE</h2>
+    <p>Linguette sottolineate, in minuscolo con l'iniziale grande, la scheda accesa ha la barra gialla. Non sembrano più tasti spenti. Un avviso è un bollino accanto al nome.</p>
+    <dc-import name="Linguette" schede="calendario:Il mese|segnalazione:Segnalate" accesa="1" numeri="2:2:r" hint-size="100%,46px"></dc-import>
+  </section>
+  <section>
+    <h2>STATO</h2>
+    <p>Una forma sola per dire com'è una cosa: un pallino e una parola, che non va a capo. Rosso è un guaio, giallo un avviso, verde fatto, grigio neutro.</p>
+    <div style="display: flex; gap: 28px; align-items: center">
+      <dc-import name="SegnoStato" parola="Scaduto" tono="guaio" hint-size="auto,20px"></dc-import>
+      <dc-import name="SegnoStato" parola="Da archiviare" tono="avviso" hint-size="auto,20px"></dc-import>
+      <dc-import name="SegnoStato" parola="Valido" tono="fatto" hint-size="auto,20px"></dc-import>
+      <dc-import name="SegnoStato" parola="Non serve" tono="neutro" hint-size="auto,20px"></dc-import>
+    </div>
+  </section>
+  <section>
+    <h2>FILTRI</h2>
+    <p>Una barra sola, alta 44px: ricerca, periodo, menu. I filtri meno usati in «Altri filtri», col numero di quelli accesi. Il conto dei risultati sta in una riga sotto, che va a capo invece di tagliare.</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <dc-import name="FiltroMenu" nome="Mese" valore="Ottobre 2026" hint-size="200px,44px"></dc-import>
+      <dc-import name="FiltroMenu" nome="Corso" valore="Tutti" hint-size="160px,44px"></dc-import>
+      <dc-import name="Segmenti" voci="Elenco|Per voce" scelta="Elenco" hint-size="200px,44px"></dc-import>
+      <span style="color: #14709f; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; padding: 0 6px">Altri filtri (3) ▾</span>
+    </div>
+  </section>
+  <section>
+    <h2>RIGHE</h2>
+    <p>Tutta la riga apre, la freccia a destra lo dice. Niente «Apri la scheda» o «Cambia» ripetuto in ogni riga. Altezza fissa, testo lungo tagliato con «…».</p>
+    <div style="border: 1px solid #cfe6f4; border-radius: 6px; overflow: hidden">
+      <dc-import name="RigaElenco" titolo="Leone Alessandro" sotto="Lotta 3 · l’ultima volta lunedì 28 settembre" cifra="18 assenze" tonoCifra="guaio" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaElenco" titolo="Judo 3 · lunedì 26 ottobre, 18:30" sotto="Istruttore: Ferri Giulia" stato="Appello non fatto" tonoStato="guaio" cifra="" hint-size="100%,56px"></dc-import>
+    </div>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>

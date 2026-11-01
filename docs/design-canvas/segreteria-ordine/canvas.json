@@ -1,0 +1,13 @@
+{
+ "pages": [{ "id": "page-1", "name": "Segreteria in ordine" }],
+ "artboards": [
+  { "file": "Main.dc.html", "title": "Note · cosa cambia e cosa resta da decidere", "x": 0, "y": 0, "w": 1000, "h": 900, "page": "page-1" },
+  { "file": "Grammatica.dc.html", "title": "Grammatica · tasti, testata, schede, stato, filtri, righe", "x": 1100, "y": 0, "w": 1200, "h": 1500, "page": "page-1" },
+  { "file": "OggiIscritti.dc.html", "title": "Oggi · ISCRITTI", "x": 0, "y": 1600, "w": 1366, "h": 900, "page": "page-1" },
+  { "file": "Iscritti.dc.html", "title": "Proposta · ISCRITTI", "x": 1466, "y": 1600, "w": 1440, "h": 900, "page": "page-1" },
+  { "file": "OggiContabilita.dc.html", "title": "Oggi · CONTABILITÀ → MOVIMENTI", "x": 0, "y": 2600, "w": 1366, "h": 900, "page": "page-1" },
+  { "file": "Contabilita.dc.html", "title": "Proposta · CONTABILITÀ → MOVIMENTI", "x": 1466, "y": 2600, "w": 1440, "h": 900, "page": "page-1" },
+  { "file": "OggiPresenze.dc.html", "title": "Oggi · PRESENZE", "x": 0, "y": 3600, "w": 1366, "h": 900, "page": "page-1" },
+  { "file": "Presenze.dc.html", "title": "Proposta · PRESENZE", "x": 1466, "y": 3600, "w": 1440, "h": 900, "page": "page-1" }
+ ]
+}

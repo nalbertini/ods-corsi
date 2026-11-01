@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<span style="display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 500; color: {{testo}}; white-space: nowrap"><span aria-hidden="true" style="display: inline-block; width: 8px; height: 8px; border-radius: 4px; background: {{pallino}}; flex-shrink: 0"></span>{{parola}}</span>
+</x-dc>
+<script data-dc-script data-props='{"parola":{"editor":"text","default":"Da archiviare"},"tono":{"editor":"enum","options":["guaio","avviso","fatto","neutro"],"default":"avviso"},"$preview":{"width":200,"height":24}}'>
+// PROPOSTA «segreteria in ordine» (../segreteria-ordine/): l'unica forma dello stato in tabelle e righe di segreteria, quella che ISCRITTI usa gia'
+// (`.sg-segno-elenco`): pallino di 8px + parola, Inter 14px 500, maiuscole normali, mai a capo. Toni del segnale unico: guaio (manca, scaduto, non si annulla)
+// pallino `rosso` e parola `rosso-testo`; avviso (aspetta, da fare) `giallo` e `giallo-testo`; fatto `verde` e `verde-testo`; neutro `dim` e `dim`.
+// Sostituisce i badge a contorno dentro le righe («Non archiviato», «Dal gestionale») e i badge pieni maiuscoli (Istruttori, Compensi: PR successive).
+const TONI = {
+  guaio: ['#e4292a', '#b81d1d'], avviso: ['#f4c31b', '#8f6a00'], fatto: ['#12913f', '#0b7a33'], neutro: ['#46606f', '#46606f'],
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const [pallino, testo] = TONI[p.tono] || TONI.neutro;
+    return { parola: p.parola || '', pallino, testo };
+  }
+}
+</script>
+</body>
+</html>

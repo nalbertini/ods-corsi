@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="tablist" style="display: flex; align-items: flex-end; gap: 4px; width: 100%; border-bottom: 2px solid #cfe6f4">
+  <sc-for list="{{voci}}" as="v">
+    <div role="tab" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; margin-bottom: -2px; border-bottom: 3px solid {{v.barra}}; font-size: 15px; font-weight: {{v.peso}}; color: {{v.colore}}; white-space: nowrap">
+      <sc-if value="{{v.conIcona}}" hint-placeholder-val="{{ false }}"><dc-import name="Icona" nome="{{v.icona}}" misura="18" colore="{{v.colore}}" hint-size="18px,18px"></dc-import></sc-if>
+      <span>{{v.nome}}</span>
+      <sc-if value="{{v.conNumero}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: {{v.fondoNumero}}; color: {{v.testoNumero}}; font-size: 12px; font-weight: 700">{{v.numero}}</span></sc-if>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"schede":{"editor":"text","default":"movimenti:Movimenti|bilancio:Bilancio|movimenti:Voci|banca:Casse"},"accesa":{"editor":"text","default":"1"},"numeri":{"editor":"text","default":""},"$preview":{"width":700,"height":50}}'>
+// PROPOSTA «segreteria in ordine» (../segreteria-ordine/): le schede (tab) di una pagina di segreteria, una forma sola per CONTABILITÀ, PRESENZE e il corso
+// (oggi `.scheda` con lo stesso maiuscolo spaziato dei tasti: sembrano tasti spenti). Linguette in fila su un filetto `surface-2` di 2px, Inter 15px:
+// spenta 500 `dim`, accesa 700 `text` con la barra gialla di 3px sotto (il segno non e' solo il colore). Alte 44px, icona di Icona.dc.html (ICONE_SCHEDE).
+// `schede` = "icona:Nome|…", `accesa` = posizione da 1, `numeri` = "posizione:numero:tono" (tono r = rosso, n = neutro): il bollino accanto alla parola
+// (SEGNALATE 2). Nel codice role="tablist" / "tab" / aria-selected, frecce per spostarsi.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const acc = Number(p.accesa || 1);
+    const num = {};
+    String(p.numeri || '').split('|').filter(Boolean).forEach((x) => { const [i, n, t] = x.split(':'); num[Number(i)] = { n, t }; });
+    const voci = String(p.schede || '').split('|').filter(Boolean).map((x, k) => {
+      const [icona, nome] = x.includes(':') ? x.split(':') : ['', x];
+      const on = k + 1 === acc;
+      const nn = num[k + 1];
+      return {
+        nome, icona, conIcona: !!icona, peso: on ? 700 : 500, colore: on ? '#0d2a3d' : '#46606f', barra: on ? '#f4c31b' : 'transparent',
+        conNumero: !!nn, numero: nn ? nn.n : '', fondoNumero: nn && nn.t === 'r' ? '#e4292a' : '#cfe6f4', testoNumero: nn && nn.t === 'r' ? '#ffffff' : '#0d2a3d',
+      };
+    });
+    return { voci };
+  }
+}
+</script>
+</body>
+</html>
