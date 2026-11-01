@@ -901,6 +901,8 @@ summary.sg-riga-elenco::-webkit-details-marker { display: none; }
   .sg-riga-iscritti .sg-testa-larga { display: none; }
   .sg-riga-iscritti .sg-testa-stretta { display: inline; }
   .sg-stato-telefono { display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px; margin-top: 4px; }
+  /* «+2 altri»: grigio come una nota, perché non è un guaio in più ma un rimando alla scheda. */
+  .sg-stato-altri { font-size: 14px; color: var(--dim); white-space: nowrap; }
 }
 /* VESTIARIO in segreteria: cinque numeri, la tabella degli ordini con le sue colonne, le righe da correggere. */
 .sg-numeri[data-cinque] { grid-template-columns: repeat(5, minmax(0, 1fr)); }

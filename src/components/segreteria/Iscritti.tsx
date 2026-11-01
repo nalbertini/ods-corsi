@@ -574,6 +574,7 @@ export function Iscritti({
               const suoi = corsiScaduti ? scopertiDi(p).map(testoCorsoBreve) : suoiCorsi(p).filter((n): n is string => !!n)
               const cella = cellaCorsi(suoi, corsiScaduti)
               const stato = statoPerElenco(p, oggi, tesseraDi(p))
+              const tel = paroleTelefono(p, oggi, tesseraDi(p))
               const barra = percentualeBarra(f)
               const fam = famigliaDiP(p)
               return (
@@ -597,11 +598,12 @@ export function Iscritti({
                     {minorenneP(p) && <SegnoIscritto icona="bambino" parola="Minorenne" />}
                     {/* «Da archiviare» lo dice la colonna CERTIFICATO: qui resta solo chi non è un iscritto. */}
                     {p.genitoreNonIscritto && <span style={{ marginLeft: 8 }}><SegnoStato tono="nota" parola="Genitore non iscritto" /></span>}
-                    {/* Sul telefono le colonne CERTIFICATO e QUOTA non ci sono: le parole intere vanno sotto il nome. */}
+                    {/* Sul telefono le colonne CERTIFICATO e QUOTA non ci sono: le parole intere vanno sotto il nome, due al massimo. */}
                     <span className="sg-stato-telefono">
-                      {paroleTelefono(stato).map((s) => (
+                      {tel.parole.map((s) => (
                         <SegnoStato key={s.parola} tono={s.tono} parola={s.parola} />
                       ))}
+                      {tel.altri && <span className="sg-stato-altri">{tel.altri}</span>}
                     </span>
                     {/* Sotto i 1000 px la colonna FAMIGLIA non c'è: la famiglia va sotto il nome. */}
                     {fam && (

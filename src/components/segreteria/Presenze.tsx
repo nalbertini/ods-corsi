@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { DatiSegreteria, ProvaSeg, RigaRegistro } from '../../lib/segreteria'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
@@ -7,7 +7,7 @@ import { Titoletto } from '../ds'
 import { Icona } from '../Icons'
 import { csvRegistro, nienteDaScaricare } from '../../lib/presenzeCsv'
 import { mesi } from '../../lib/ore'
-import { accorcia, chiSiStaPerdendo, conAppello, DI_FILA, GIORNI_RECENTI } from '../../lib/frequenza'
+import { accorcia, chiSiStaPerdendo, conAppello, GIORNI_RECENTI, sottoPersi } from '../../lib/frequenza'
 
 /** Il registro del mese in un foglio da aprire con Excel: punto e virgola e BOM, come i fogli che si importano. */
 function scaricaCsv(righe: RigaRegistro[], nome: string) {
@@ -32,7 +32,7 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
   // In cima, gli ultimi 30 giorni: quelli che conta DA FARE, a cavallo di due mesi.
   const periodi = useMemo(() => {
     const adesso = new Date()
-    return [{ chiave: '30', da: new Date(adesso.getTime() - 30 * 24 * 60 * 60_000), a: adesso, nome: 'Ultimi 30 giorni' }, ...mesi()]
+    return [{ chiave: '30', da: new Date(adesso.getTime() - 30 * 24 * 60 * 60_000), a: adesso, nome: 'Ultimi 30 giorni', quando: 'negli ultimi 30 giorni' }, ...mesi()]
   }, [])
   const [periodo, setPeriodo] = useState(senzaAppello ? '30' : periodi[1].chiave)
 
@@ -54,7 +54,9 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
 
   const tutte = registro.dato ?? []
   const righe = tutte.filter((r) => !corso || r.corsoId === corso)
-  const perche = nienteDaScaricare('presenze', p.nome, !!corso, { arrivato: arrivato && !registro.guaio, righe: righe.length })
+  // Un id per pagina: due pagine aperte insieme non si rubano la frase.
+  const idPerche = useId()
+  const perche = nienteDaScaricare('presenze', p.quando, !!corso, { arrivato: arrivato && !registro.guaio, righe: righe.length })
   const svolte = righe.filter((r) => r.stato !== 'annullata')
   const fatte = svolte.filter(conAppello)
   const mancanti = svolte.filter((r) => !conAppello(r)).sort((a, b) => b.inizio.localeCompare(a.inizio))
@@ -79,10 +81,10 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
       >
         {/* Spento, il tasto resta al suo posto e la riga sotto dice perché: così non si cerca il guasto. */}
         <span className="sg-tasto-perche">
-          <Tasto icona="scarica" disabled={!righe.length} aria-describedby={perche ? 'csv-perche' : undefined} onClick={() => scaricaCsv(righe, p.nome)}>
+          <Tasto icona="scarica" disabled={!righe.length} aria-describedby={perche ? idPerche : undefined} onClick={() => scaricaCsv(righe, p.nome)}>
             Scarica CSV
           </Tasto>
-          {perche && <span id="csv-perche" className="sg-sotto">{perche}</span>}
+          {perche && <span id={idPerche} className="sg-sotto">{perche}</span>}
         </span>
       </Testa>
       {schede}
@@ -110,7 +112,7 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
           <section aria-label="Chi si sta perdendo" className="sg-elenco">
             <div className="sg-elenco-testa">
               <Titoletto dentro conto={persi.length}>CHI SI STA PERDENDO</Titoletto>
-              <span className="sg-sotto">{DI_FILA} assenze di fila o più</span>
+              <span className="sg-sotto">{sottoPersi()}</span>
             </div>
             {recenti.dato !== null && persi.length === 0 && <p className="sg-elenco-vuoto" style={{ color: 'var(--verde-testo)' }}>Nessuno: chi è iscritto viene.</p>}
             {primiPersi.map((x) => (

@@ -160,5 +160,12 @@ console.log('\n2. chi si sta perdendo')
   ok('elenco vuoto', prova(() => { const a = f.accorcia([], 5, false); return [a.visibili, a.nascoste] }), [[], 0])
 }
 
+console.log('   il sottotitolo di CHI SI STA PERDENDO: dice da quanto guarda, perché non segue il filtro del mese')
+{
+  const sotto = typeof f.sottoPersi === 'function' ? f.sottoPersi() : 'manca sottoPersi'
+  ok('dice le assenze di fila e i giorni', sotto, '3 assenze di fila o più, negli ultimi 60 giorni')
+  ok('i numeri sono quelli della regola, non scritti a mano', sotto, `${f.DI_FILA} assenze di fila o più, negli ultimi ${f.GIORNI_RECENTI} giorni`)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

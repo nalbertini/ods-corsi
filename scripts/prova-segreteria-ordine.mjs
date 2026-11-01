@@ -284,6 +284,17 @@ ok('originiMovimento (lib/contabilita.ts) non ritorna «Dal gestionale»', /Dal 
   const dopoIlTasto = (t) => { const m = /Scarica CSV\s*<\/Tasto>\s*\{(\w+) && <span[^>]*>\{(\w+)\}/.exec(t); return !!m && m[1] === m[2] && new RegExp(`const ${m[1]} = nienteDaScaricare\\(`).test(t) }
   ok('Presenze: sotto «Scarica CSV» spento c’è il perché', dopoIlTasto(pagine.Presenze), true)
   ok('Statistiche: sotto «Scarica CSV» spento c’è il perché', dopoIlTasto(leggi(D + 'Statistiche.tsx')), true)
+  // Un id scritto a mano si ripete se due pagine sono montate insieme: lo dà useId.
+  const idDaUseId = (t) => /aria-describedby=\{perche \? (\w+) : undefined\}/.exec(t)?.[1] ?? null
+  for (const [nome, t] of [['Presenze', pagine.Presenze], ['Statistiche', leggi(D + 'Statistiche.tsx')]]) {
+    const id = idDaUseId(t)
+    ok(`${nome}: l'id della frase sotto il CSV viene da useId`, [!!id, !!id && new RegExp(`const ${id} = useId\\(\\)`).test(t), /id="csv-perche"/.test(t)], [true, true, false])
+    ok(`${nome}: il «quando» della frase lo porta il periodo, non l'etichetta`, /nienteDaScaricare\('\w+', \w+\.quando,/.test(t), true)
+  }
+  ok('Statistiche: ogni periodo del menu ha il suo «quando»', (/const PERIODI[^=]*= \[([\s\S]*?)\n\]/.exec(leggi(D + 'Statistiche.tsx'))?.[1] ?? '').split('\n').filter((r) => r.trim()).every((r) => /quando: '(negli|da) /.test(r)), true)
+  ok('Presenze: gli ultimi 30 giorni hanno il loro «quando»', /nome: 'Ultimi 30 giorni', quando: 'negli ultimi 30 giorni'/.test(pagine.Presenze), true)
+  ok('Presenze: il sottotitolo di CHI SI STA PERDENDO viene da sottoPersi', /<span className="sg-sotto">\{sottoPersi\(\)\}<\/span>/.test(pagine.Presenze), true)
+  ok('Iscritti: dopo le due parole al telefono, «+N» in grigio', /\{tel\.altri && <span className="sg-stato-altri">\{tel\.altri\}<\/span>\}/.test(pagine.Iscritti), true)
 }
 
 process.exit(fallite ? 1 : 0)
