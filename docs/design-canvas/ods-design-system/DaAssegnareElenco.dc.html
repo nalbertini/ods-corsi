@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .riq { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
+    .avviso { box-shadow: inset 4px 0 0 #8f6a00; }
+    .link { font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+    .pericolo { color: #b81d1d; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .riga { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 18px; width: 1000px">
+  <div class="riq">
+    <span class="et">COLLEGATI PRIMA · 2</span>
+    <span style="font-size: 14px">Questi bonifici erano già collegati e la ricevuta l’hai fatta a parte. Se è la stessa, abbinala: così i soldi non si contano due volte.</span>
+    <div class="riga"><span style="flex: 1 1 260px">Bonifico del 03/10/2026 <span class="sotto">· BONIFICO DA BIANCHI MARCO QUOTA</span> → ricevuta n. 298/2026 del 04/10/2026</span><span class="num">50,00 €</span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Abbina" hint-size="110px,48px"></dc-import><span class="link">Non è questa</span></div>
+    <div class="riga"><span style="flex: 1 1 260px">Bonifico del 08/10/2026 <span class="sotto">· BONIFICO VERDI ANNA</span> → ricevuta n. 301/2026 del 09/10/2026</span><span class="num">120,00 €</span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Abbina" hint-size="110px,48px"></dc-import><span class="link">Non è questa</span></div>
+    <div><dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Abbina tutti e 2" hint-size="190px,48px"></dc-import></div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 6px">
+    <span class="et">DA ASSEGNARE · 2 ENTRATE · 620,00 €</span>
+    <div class="riga" style="align-items: baseline"><span class="num" style="width: 90px">15/10/2026</span><span style="flex: 1 1 220px">Rossi Mario <span class="sotto">· BONIFICO ROSSI MARIO JUDO</span></span><span class="sotto">Conto Corrente</span><span class="num">600,00 € · tutto</span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Assegna" hint-size="110px,48px"></dc-import></div>
+    <div class="riga" style="align-items: baseline"><span class="num" style="width: 90px">03/10/2026</span><span style="flex: 1 1 220px">Bianchi Marco <span class="sotto">· BONIFICO BIANCHI MARCO</span></span><span class="sotto">Conto Corrente</span><span class="num">20,00 € di 70,00 €</span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Assegna" hint-size="110px,48px"></dc-import></div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1000,"height":440}}'>
+// COSTRUITA: DaAssegnare di src/components/segreteria/AssegnaMovimento.tsx (../assegna-pagamento/), la scheda DA ASSEGNARE di CONTABILITÀ
+// (fra MOVIMENTI e BILANCIO). COLLEGATI PRIMA solo se ci sono abbinamenti proposti (abbinamentiProposti: stessa persona, stesso importo,
+// tutto Bonifico, entro 30 giorni); «Non è questa» è un sg-link alto 44px; «Abbina tutti e N» solo con più di uno.
+// Elenco: data, persona · descrizione, cassa, «importo · tutto» o «resta di importo», «Assegna» che apre il movimento in MOVIMENTI.
+// Vuoto: «Niente da assegnare: ogni entrata collegata su quota e corsi dice a cosa va.».
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

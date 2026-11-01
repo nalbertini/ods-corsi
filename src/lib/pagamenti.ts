@@ -33,6 +33,8 @@ export interface PagamentoDiretto {
    * Il pagamento la tiene: una ricevuta con quella chiave non entra finché lui è attivo (128-ricevuta-pagamento-perso.sql).
    */
   chiaveRicevuta?: string
+  /** Un pezzo di un bonifico assegnato a quota o corsi (`134-assegna-movimento.sql`): i soldi sono nel movimento. */
+  movimentoId?: string
 }
 
 export type DatiPagamentoDiretto = Omit<PagamentoDiretto, 'id' | 'creatoIl' | 'annullatoIl'> & {
@@ -57,6 +59,8 @@ export interface RigaPagamento {
   /** Satispay pagato in fondo al modulo e la richiesta non è partita: da richiamare o restituire. */
   senzaRichiesta?: boolean
   annullato: boolean
+  /** I soldi sono già in questo movimento di CONTABILITÀ: la riga non fa un altro incasso. */
+  movimentoId?: string
 }
 
 /** Quanti nomi escono cercando chi ha pagato: dice chi è, non scarica l'elenco (`cerca_pagatori`, `55-amministrazione.sql`). */
@@ -233,6 +237,7 @@ export const righeDaRicevute = (ricevute: Ricevuta[]): RigaPagamento[] =>
         chi: nomeIntestatario(r),
         ricevuta: { id: r.id, anno: r.anno, numero: r.numero },
         annullato: !!r.annullataIl,
+        ...(r.movimentoId ? { movimentoId: r.movimentoId } : {}),
       })),
     ),
   )
@@ -249,6 +254,7 @@ export const righeDirette = (diretti: PagamentoDiretto[], nomeDi: (personaId: st
     direttoId: x.id,
     nota: x.nota,
     annullato: !!x.annullatoIl,
+    ...(x.movimentoId ? { movimentoId: x.movimentoId } : {}),
   }))
 
 /** Dal più recente; a pari data, la ricevuta col numero più alto. */

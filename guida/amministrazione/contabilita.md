@@ -4,7 +4,7 @@
 
 Le entrate e le uscite della palestra, in due casse: **Cassa Contanti** e
 **Conto Corrente**. La vede solo chi ha il ruolo di amministrazione: la segreteria
-semplice, gli istruttori e il tablet no. Ha quattro schede, sotto il titolo come in IMPOSTAZIONI: **MOVIMENTI**, **BILANCIO**, **VOCI**, **CASSE**.
+semplice, gli istruttori e il tablet no. Ha cinque schede, sotto il titolo come in IMPOSTAZIONI: **MOVIMENTI**, **DA ASSEGNARE**, **BILANCIO**, **VOCI**, **CASSE**.
 
 ## Movimenti
 
@@ -177,6 +177,44 @@ storico qui, quelle scritte a mano dalla loro finestra (vedi sopra). Non si coll
 Il filtro **Persona** sopra l'elenco ha **Collegati**, **Da decidere** e **Senza scheda**, con il numero
 di ognuno sull'intero storico. **Collegati** conta solo lo storico collegato: gli incassi degli iscritti
 hanno la persona da sé e non ci sono.
+
+### Assegnare un bonifico a quota e corsi
+
+Collegare un'entrata a una persona dice di chi è, non a cosa va: finché non la **assegni**, la quota e i
+corsi restano da pagare. Assegnare dice quanto del bonifico va a ogni cosa da pagare (la quota, un
+annuale, un trimestre), e ogni importo diventa un pagamento della persona: un **saldo** se copre quel
+che manca, se no un **parziale**. Dallo stesso passaggio si fa la ricevuta, senza scrivere un secondo
+movimento: i soldi contano una volta sola.
+
+Si assegnano le **entrate** su «Quota associativa» e «Corsi e altri pagamenti» già collegate a una
+persona, sul **Conto Corrente**. I contanti no: si registrano in PAGAMENTI. Lo storico del vecchio
+programma solo dalla **stagione in corso**: quello delle stagioni passate resta nello storico.
+
+- **Dal movimento**: nella finestra, sotto la persona, il riquadro giallo **DA ASSEGNARE** dice quanto
+  manca. **Assegna a quota e corsi** apre l'elenco delle cose da pagare della persona e del suo
+  **nucleo** (un bonifico solo per due fratelli si divide fra tutti e due), già ripartito: prima la
+  quota, poi i corsi dal più vecchio. Gli importi si correggono a mano; accanto a ognuno il tag **Saldo** o **Parziale**, e sotto
+  quanto resterà. **Svuota tutto** azzera la proposta. Non si assegna più di quel che manca a ogni voce,
+  né più del bonifico.
+- **Assegna e fai la ricevuta** (o **le N ricevute**, una per persona) apre la ricevuta già compilata:
+  la data è quella del bonifico, il modo **Bonifico**. **Assegna senza ricevuta** scrive solo
+  l'assegnazione: la ricevuta si fa dopo, dalla stessa finestra, con **Fai la ricevuta**. Quel che non
+  assegni resta **da assegnare**.
+- Nella finestra, **ASSEGNATO A** elenca a chi e a cosa sono andati i soldi, con la ricevuta (e il
+  **PDF**) o il tag **Senza ricevuta**.
+- La scheda **DA ASSEGNARE** elenca tutte le entrate collegate che hanno ancora soldi senza una voce,
+  col totale; **Assegna** apre il movimento. In cima, **COLLEGATI PRIMA**: i bonifici collegati prima
+  di questo passaggio per cui la ricevuta l'hai già fatta a parte (stessa persona, stesso importo,
+  pagata tutta con bonifico, entro 30 giorni). **Abbina** li lega senza scrivere niente di nuovo, così i
+  soldi non si contano due volte; **Non è questa** la toglie dalla proposta.
+- **Per correggere** si annulla la ricevuta (i soldi tornano da assegnare) e si riassegna. Finché un
+  movimento ha dei soldi assegnati non si scollega, non cambia persona né va su una voce senza persona, e
+  il suo lotto di Importa banca non si annulla: l'app dice cosa annullare prima.
+
+Nella scheda della persona, in **QUOTA E PAGAMENTI**, un bonifico collegato e non assegnato è in giallo
+(«da assegnare dal bonifico del …») con **Assegna ›**; un pagamento assegnato senza ricevuta ha
+**Assegnato · senza ricevuta** e **Apri in contabilità**. Se fai la ricevuta dalla scheda mentre c'è un
+bonifico collegato da assegnare, il modulo lo dice: se è quello, falla dal bonifico.
 
 ### Giroconto
 

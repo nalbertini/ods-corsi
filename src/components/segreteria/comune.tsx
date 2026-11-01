@@ -269,6 +269,9 @@ export function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean, spuntata
 }
 
 /** Il messaggio d'errore di un'operazione, detto in chiaro. */
+/** Un link-tasto alto quanto un dito (44 px), per le azioni sulle righe dei movimenti. */
+export const DITO = { fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center' } as const
+
 export const messaggio = (e: unknown, altrimenti = 'Il server non risponde') => (e instanceof Error && e.message ? e.message : altrimenti)
 
 /**

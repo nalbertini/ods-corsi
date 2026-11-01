@@ -32,9 +32,11 @@ import {
   type IntestatarioRicevuta,
   type Ricevuta,
   type VoceRicevuta,
+  dataRicevuta,
 } from '../../lib/ricevute'
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { chiaveGiorno } from '../../lib/sala'
+import { bonificiDaAssegnare, cosaNonVaRicevutaDaMovimento, euroAssegna, vociDaMovimento } from '../../lib/assegna'
 import { nuovoId } from '../../lib/prove'
 import { avvisoDopoRicevuta, avvisoManda, confermaEmail, daMandare, domandaManda, genitoreDellaMail, restaDopoManda, restaDopoRicevuta, siRiprova, statoPosta, ultimaMandata } from '../../lib/ricevuteEmail'
 import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, suCarta, useAvviso, useBozza, useCarica, Tasto } from './comune'
@@ -63,7 +65,7 @@ const chiediEManda = async (d: DatiSegreteria, r: Ricevuta, email: string | null
 }
 
 /** Il PDF si fa solo quando serve: pdf-lib pesa, e l'elenco non ne ha bisogno. */
-const scarica = async (r: Ricevuta, carta?: Uint8Array) => (await import('../../lib/ricevutaPdf')).scaricaRicevuta(r, nomeFileRicevuta(r), carta)
+export const scarica = async (r: Ricevuta, carta?: Uint8Array) => (await import('../../lib/ricevutaPdf')).scaricaRicevuta(r, nomeFileRicevuta(r), carta)
 
 /**
  * Lo storico dei pagamenti di un iscritto, nella sua scheda: ogni ricevuta con
@@ -81,6 +83,7 @@ export function StoricoIscritto({
   contabilita,
   riprendi,
   onRicevuta,
+  onMovimento,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
@@ -94,6 +97,8 @@ export function StoricoIscritto({
   riprendi?: DatiPagamentoDiretto
   /** Il pagamento a mano diventa una ricevuta: la apre la scheda, già compilata. */
   onRicevuta?: (dati: DatiPagamentoDiretto) => void
+  /** Un pagamento assegnato da un bonifico: la ricevuta si fa dal movimento, in CONTABILITÀ. */
+  onMovimento?: (movimentoId: string) => void
 }) {
   const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
   // La mail delle ricevute: se non si legge, lo storico non ne dice niente, come senza 76-ricevute-email.sql.
@@ -180,8 +185,12 @@ export function StoricoIscritto({
           const suo = riga.x
           const x = righeDirette([suo], () => `${p.cognome} ${p.nome}`)[0]
           // Con un Satispay arrivato la ricevuta va fatta con quei soldi: dal pagamento a mano no, come con «Fai anche la ricevuta».
-          const fanne = !x.annullato && onRicevuta && !p.satispay ? () => onRicevuta(datiDaPagamento(suo, nuovoId())) : undefined
-          return <RigaDelloStorico key={x.id} riga={x} aMano stato={statoDiretto(suo, tutteRicevute)} diventato={!!suo.ricevutaId} onFanne={fanne} onAnnulla={x.annullato ? undefined : () => annullaPagamento(suo)} />
+          // Assegnato da un bonifico: la ricevuta si fa dal movimento (`SOLO_DAL_MOVIMENTO`), qui si porta lì.
+          const dalBonifico = suo.movimentoId
+          const fanne = !x.annullato && onRicevuta && !p.satispay && !dalBonifico ? () => onRicevuta(datiDaPagamento(suo, nuovoId())) : undefined
+          const stato = dalBonifico && !x.annullato ? 'Assegnato · senza ricevuta' : statoDiretto(suo, tutteRicevute)
+          const apri = dalBonifico && !x.annullato && onMovimento ? () => onMovimento(dalBonifico) : undefined
+          return <RigaDelloStorico key={x.id} riga={x} aMano stato={stato} diventato={!!suo.ricevutaId} onFanne={fanne} onApri={apri} onAnnulla={x.annullato ? undefined : () => annullaPagamento(suo)} />
         }
         const r = riga.r
         const manca = r.annullataIl ? 0 : conti(r).netto
@@ -299,7 +308,7 @@ export function StoricoIscritto({
 }
 
 /** Un pagamento nello storico: la data e come, a cosa serve, l'importo. */
-function RigaDelloStorico({ riga, rata, aMano, stato, diventato, onFanne, onAnnulla }: { riga: RigaPagamento; rata?: number; aMano?: boolean; stato?: string; diventato?: boolean; onFanne?: () => void; onAnnulla?: () => void }) {
+function RigaDelloStorico({ riga, rata, aMano, stato, diventato, onFanne, onApri, onAnnulla }: { riga: RigaPagamento; rata?: number; aMano?: boolean; stato?: string; diventato?: boolean; onFanne?: () => void; onApri?: () => void; onAnnulla?: () => void }) {
   const barrato = riga.annullato ? 'line-through' : undefined
   return (
     <div className="sg-voce-elenco sg-pagamento" data-amano={aMano || undefined} data-annullato={riga.annullato || undefined} style={{ flexWrap: 'wrap' }}>
@@ -320,6 +329,11 @@ function RigaDelloStorico({ riga, rata, aMano, stato, diventato, onFanne, onAnnu
       {onFanne && (
         <button type="button" className="num sg-chip" style={{ marginLeft: 'auto' }} onClick={onFanne}>
           Fanne la ricevuta
+        </button>
+      )}
+      {onApri && (
+        <button type="button" className="num sg-chip" style={{ marginLeft: 'auto' }} onClick={onApri}>
+          Apri in contabilità
         </button>
       )}
       {onAnnulla && (
@@ -560,14 +574,23 @@ export function NuovaRicevuta({
   onLasciaStare,
   daPagamento,
   onDaPagamento,
+  daMovimento,
+  onMovimento,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
+  /** APRI IL BONIFICO: il movimento in CONTABILITÀ, per fare la ricevuta da lì. */
+  onMovimento?: (movimentoId: string) => void
   /**
    * Da REGISTRA IL PAGAMENTO, o da FANNE LA RICEVUTA (con `pagamentoId`): una voce sola, già pagata, con la data e il
    * modo del modulo o del pagamento a mano.
    */
   daPagamento?: DatiPagamentoDiretto
+  /**
+   * FAI LA RICEVUTA da un bonifico assegnato (CONTABILITÀ): le voci sono le assegnazioni della persona, pagate con quel
+   * bonifico, nel suo giorno. Data e modo non si cambiano: si cambiano gli importi tornando ad ASSEGNA.
+   */
+  daMovimento?: { movimentoId: string; data: string; sue: PagamentoDiretto[] }
   /** FANNE LA RICEVUTA da un pagamento a mano della persona, scelto in cima alla ricevuta. */
   onDaPagamento?: (dati: DatiPagamentoDiretto) => void
   /** Gli altri del suo nucleo familiare: dalle loro ricevute, lo sconto famiglia. */
@@ -584,7 +607,7 @@ export function NuovaRicevuta({
   // Una per modulo aperto (o quella del pagamento a mano): ripremendo dopo una risposta persa torna la ricevuta già
   // fatta, non ne nasce un'altra.
   const [chiave] = useState(() => daPagamento?.chiaveRicevuta ?? nuovoId())
-  const [data, setData] = useState(daPagamento?.data ?? oggi)
+  const [data, setData] = useState(daMovimento?.data ?? daPagamento?.data ?? oggi)
   const anno = Number(data.slice(0, 4)) || Number(oggi.slice(0, 4))
   const prossimo = useCarica(() => d.prossimoNumero(anno), [d, anno])
   // Fin quando è chiusa la cassa contanti: il rifiuto sotto al modulo, prima di farla. Senza, decide il database.
@@ -609,13 +632,21 @@ export function NuovaRicevuta({
   const [socioAperto, setSocioAperto] = useState(false)
   // Pagata dal modulo con Satispay: quei soldi entrano in questa ricevuta, una volta sola (`emetti_ricevuta_satispay`).
   const satispay = useCarica(() => d.pagamentiSatispay(), [d])
-  const sp = satispayDaUsare(satispay.dato ?? [], p.id)
+  // Dal bonifico i soldi sono quelli: un Satispay arrivato non c'entra.
+  const sp = daMovimento ? undefined : satispayDaUsare(satispay.dato ?? [], p.id)
   // Un metodo spento nel frattempo non resta scelto: vale il primo acceso.
-  const scelte = metodiRicevuta(sp, daPagamento?.metodo, spenti)
+  const scelte = daMovimento ? ['Bonifico'] : metodiRicevuta(sp, daPagamento?.metodo, spenti)
   const metodo = scelte.includes(scelto) ? scelto : scelte[0] ?? ''
   // I pagamenti a mano ancora SENZA RICEVUTA: se sono gli stessi soldi, la ricevuta si fa da lì (se no contano due volte).
-  const diretti = useCarica(() => (daPagamento || sp ? Promise.resolve([]) : d.pagamentiDiretti(p.id)), [d, p.id, !!sp])
-  const senzaRicevuta = (diretti.dato ?? []).filter((x) => !x.annullatoIl)
+  const diretti = useCarica(() => (daPagamento || daMovimento || sp ? Promise.resolve([]) : d.pagamentiDiretti(p.id)), [d, p.id, !!sp])
+  // Quelli assegnati da un bonifico la ricevuta la fanno dal movimento (`SOLO_DAL_MOVIMENTO`).
+  const senzaRicevuta = (diretti.dato ?? []).filter((x) => !x.annullatoIl && !x.movimentoId)
+  // Un bonifico collegato e non ancora assegnato può essere questo pagamento: fatta da qui, i soldi conterebbero due volte
+  // (il movimento e la ricevuta). Si dice, non si blocca: può anche essere un altro pagamento.
+  const bonifici = useCarica(
+    () => (daPagamento || daMovimento ? Promise.resolve([]) : Promise.all([d.storicoPersona(p.id), d.pagamentiDiretti(), d.ricevute()]).then(([st, tutti, ric]) => bonificiDaAssegnare(st, tutti, ric, oggi))),
+    [d, p.id],
+  )
   useEffect(() => {
     // Da un pagamento a mano il modo è quello del modulo: se c'è anche un Satispay, lo dice `cosaNonVaMetodo`.
     if (sp && !daPagamento) setMetodo(metodoDi(sp))
@@ -647,6 +678,11 @@ export function NuovaRicevuta({
     setEnte(e)
     // Da un pagamento a mano: la voce scritta lì, pagata per intero, senza quota e annuali del listino.
     if (daPagamento) return setVoci([{ ...bozzaDa(voceDaPagamento(daPagamento)), pagatoAMano: true }])
+    // Dal bonifico: le voci assegnate, col pagato di quel bonifico (un parziale resta parziale).
+    if (daMovimento)
+      return setVoci(
+        vociDaMovimento(daMovimento.sue, daMovimento.data, l).map((v) => ({ ...bozzaDa(v), pagato: euro(v.pagamenti.reduce((t, x) => t + x.importo, 0)), pagatoAMano: true })),
+      )
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
     metti([
       ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(data || oggi))]),
@@ -688,7 +724,7 @@ export function NuovaRicevuta({
       ? null
       : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined, chiave }
   const guaio =
-    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati, oggi, prossimo.dato ?? undefined) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null) ?? (daPagamento?.pagamentoId ? cosaNonVaDaPagamento(dati.voci, dati.data, daPagamento) : null) ?? contantiInGiornoChiuso(dati.voci.flatMap((v) => v.pagamenti), dati.data, chiusaFino.dato ?? null, daPagamento?.pagamentoId ? daPagamento : undefined)) : null
+    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati, oggi, prossimo.dato ?? undefined) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null) ?? (daPagamento?.pagamentoId ? cosaNonVaDaPagamento(dati.voci, dati.data, daPagamento) : null) ?? (daMovimento ? cosaNonVaRicevutaDaMovimento(dati.voci, dati.data, daMovimento.data, daMovimento.sue) : null) ?? contantiInGiornoChiuso(dati.voci.flatMap((v) => v.pagamenti), dati.data, chiusaFino.dato ?? null, daPagamento?.pagamentoId ? daPagamento : undefined)) : null
   const c = dati ? conti(dati) : null
 
   // Lo sconto famiglia: dove è, o perché non è qui.
@@ -745,7 +781,7 @@ export function NuovaRicevuta({
     if (!si) return
     void fai(
       async () => {
-        const r = await d.emettiRicevuta(dati, conSatispay?.id, daPagamento?.pagamentoId)
+        const r = daMovimento ? await d.emettiRicevutaDaMovimento(dati, daMovimento.movimentoId) : await d.emettiRicevuta(dati, conSatispay?.id, daPagamento?.pagamentoId)
         // Fatta la ricevuta, PDF e mail vanno ognuno per conto suo: se uno non va, l'altro parte lo stesso.
         // Senza carta intestata il PDF non esce: l'avviso dice di riscaricarlo dallo storico, che chiede se stamparlo senza.
         const carta = await cartaSePuoi()
@@ -780,6 +816,32 @@ export function NuovaRicevuta({
           </span>
         </section>
       )}
+      {daMovimento && (
+        <section className="sg-riquadro" aria-label="Dal bonifico">
+          <span className="sg-etichetta">DAL BONIFICO DEL {dataLunga(daMovimento.data).toUpperCase()}</span>
+          <span style={{ fontSize: 15, lineHeight: 1.4 }}>
+            <span className="num">{euro(daMovimento.sue.reduce((t, x) => t + x.importo, 0))} €</span> · Bonifico. Il pagamento viene dal bonifico e qui non si cambia: per cambiare gli importi si torna ad «Assegna».
+          </span>
+        </section>
+      )}
+      {/* Un avviso che non si legge si dice: senza, un bonifico già arrivato si conterebbe due volte. */}
+      {bonifici.guaio && (
+        <span className="sg-sotto" role="status">
+          Non si riesce a controllare se c’è un bonifico collegato da assegnare ({bonifici.guaio}): guarda lo storico della scheda prima di fare la ricevuta.
+        </span>
+      )}
+      {(bonifici.dato ?? []).map((x) => (
+        <section key={x.movimentoId} className="sg-riquadro" data-avviso="true" aria-label="Bonifico da assegnare">
+          <span style={{ fontSize: 15, lineHeight: 1.4 }}>
+            {chi} ha un bonifico del {dataRicevuta(x.data)} da {euroAssegna(x.importo)} collegato e {x.daAssegnare === x.importo ? 'non assegnato' : `con ${euroAssegna(x.daAssegnare)} ancora da assegnare`}. Se è questo pagamento, fai la ricevuta da lì: così non si conta due volte.
+          </span>
+          {onMovimento && (
+            <div>
+              <button type="button" className="num sg-chip" onClick={() => onMovimento(x.movimentoId)}>Apri il bonifico</button>
+            </div>
+          )}
+        </section>
+      ))}
       {onDaPagamento && senzaRicevuta.length > 0 && (
         <section className="sg-riquadro" aria-label="Pagamenti senza ricevuta">
           <span className="sg-etichetta">SENZA RICEVUTA: SONO GLI STESSI SOLDI?</span>
@@ -803,7 +865,7 @@ export function NuovaRicevuta({
 
       <div className="sg-tre">
         <Campo id="rc-data" etichetta="DATA">
-          <input id="rc-data" className="sg-campo" type="date" max={oggi} value={data} onChange={(e) => setData(e.target.value)} />
+          <input id="rc-data" className="sg-campo" type="date" max={oggi} value={data} disabled={!!daMovimento} onChange={(e) => setData(e.target.value)} />
         </Campo>
         <Campo id="rc-numero" etichetta="NUMERO">
           <input
@@ -816,7 +878,7 @@ export function NuovaRicevuta({
           />
         </Campo>
         <Campo id="rc-metodo" etichetta="PAGATO CON">
-          <select id="rc-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
+          <select id="rc-metodo" className="sg-campo" value={metodo} disabled={!!daMovimento} onChange={(e) => setMetodo(e.target.value)}>
             {/* Satispay anche dal pagamento a mano (senza un Satispay arrivato): lì è un modo di pagare come un altro. */}
             {scelte.map((m) => (
               <option key={m}>{m}</option>
