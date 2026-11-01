@@ -531,7 +531,7 @@ grant execute on function rigak(int, text, int, text), vq(int) to anon, authenti
 \set TETTO50 '''22023 Alla quota mancano 50,00 €: metti 50,00 € o meno, il resto rimane da assegnare.'''
 \set TETTO20 '''22023 Alla quota mancano 20,00 €: metti 20,00 € o meno, il resto rimane da assegnare.'''
 \set TETTO10 '''22023 Alla quota mancano 10,00 €: metti 10,00 € o meno, il resto rimane da assegnare.'''
-\set TETTO0 '''22023 Alla quota mancano 0,00 €…'''
+\set TETTO0 '''22023 Alla quota mancano 0,00 €: metti 0,00 € o meno, il resto rimane da assegnare.'''
 
 select chi(:ADA);
 set role authenticated;
@@ -659,6 +659,11 @@ select atteso('50 € di quota con la chiave: passano', ass('Quota ritentata', j
 select atteso('…la stessa chiamata ripetuta (la quota è già piena) non è un errore', ass('Quota ritentata', jsonb_build_array(rigak(29, 'Quota associativa 2026/27', 5000, :'K5'))), 'nessun errore');
 select atteso('…e la riga è una sola', quante_attive('Quota ritentata')::text, '1');
 reset role;
+-- Le persone si bloccano in ordine e con «for no key update»: «for update» si incrocia con la chiave esterna di
+-- `pagamenti_diretti` (una scrittura su un'altra persona del nucleo che aspetta e una che blocca: stallo).
+select atteso('blocca le persone in ordine, for no key update',
+  (select (prosrc ~* 'order by p\.id for no key update' and prosrc !~* 'order by p\.id for update')::text
+   from pg_proc where proname = 'assegna_movimento' and pronamespace = 'public'::regnamespace), 'true');
 
 \echo ''
 \echo 'TUTTO A POSTO'

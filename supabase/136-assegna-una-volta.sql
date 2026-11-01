@@ -107,11 +107,12 @@ begin
     raise exception 'Hai assegnato % più del bonifico: togli da una voce.', euro_assegna(totale - (m.importo - movimento_assegnato(m.id))) using errcode = '22023';
   end if;
   -- Il tetto della quota, per persona e stagione. Le persone in fila (in ordine, per non incrociarsi) con chi assegna
-  -- la loro quota da un altro bonifico nello stesso momento.
+  -- la loro quota da un altro bonifico nello stesso momento. «for no key update» e non «for update»: le scritture di
+  -- `pagamenti_diretti` su quelle persone prendono «for key share», e con «for update» si fermerebbero (stallo).
   select round((listino->>'quota')::numeric * 100)::int into tetto from impostazioni limit 1;
   if coalesce(tetto, 0) > 0 then
     perform 1 from persone p where p.id in (select (x->>'persona_id')::uuid from jsonb_array_elements(righe) x where e_quota(x->>'voce'))
-      order by p.id for update;
+      order by p.id for no key update;
     for g in
       select (x->>'persona_id')::uuid as persona, stagione_quota(x->>'voce', m.data) as stagione, sum((x->>'importo')::int)::int as nuovo
       from jsonb_array_elements(righe) x where e_quota(x->>'voce')
