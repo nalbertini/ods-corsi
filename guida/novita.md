@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.235.1 — 2 novembre 2026
+
+### Risolto
+
+- Gli errori di invito, eliminazione, sito e backup dicono cosa fare, senza il testo tecnico
+
 ## 0.235.0 — 2 novembre 2026
 
 ### Novità
