@@ -484,7 +484,9 @@ vedere che ha pagato basta la scheda della persona: la quota dice quanto manca.
   **Quota e pagamenti**, l'anticipo compare come «Già dato prima · rata 1», i
   pagamenti dell'annuale come «rata 2», «rata 3», e sotto si legge «2 rate
   pagate su 3 · manca 1 rata da 200,00 € entro il 31 dicembre». La quota
-  associativa non è una rata.
+  associativa non è una rata. Una ricevuta che farebbe più di 3 rate (l'anticipo,
+  ogni pagamento dell'annuale e quel che resta da dare) non si fa: si uniscono
+  dei versamenti in uno o si salda l'annuale.
 - Con la **QUOTA ASSOCIATIVA** fra le voci, fatta la ricevuta la quota è
   pagata da sola. Senza, la ricevuta non cambia se è in regola, e sotto lo
   dice.

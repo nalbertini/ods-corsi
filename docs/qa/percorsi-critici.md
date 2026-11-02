@@ -38,7 +38,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Ricevute e pagamenti | segreteria, amministrazione | quota o ricevuta sbagliata, ricevuta doppia | `prova:ricevuta`, `prova:segreteria`, `prova:pagamenti`, `prova:satispay`, `prova:righe-dovute`, `ricevute.sql`, `satispay.sql` | sì |
 | Bonifico collegato assegnato a quota e corsi | amministrazione, segreteria | bonifico contato due volte, quota sopra il listino, soldi persi | `prova:assegna-movimento`, `prova:pagamenti`, `prova:ricevuta`, `prova:pagato-prima`, `assegna-movimento.sql`, `pagato-vecchio-programma.sql` | sì |
 | Corsi da pagare | segreteria | corso scaduto che non si vede, sollecito a chi ha pagato | `prova:dafare`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `prova:conteggi-dovuti`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:scheda`, `prova:sollecito`, `prova:tessere` | sì |
-| Annuale a rate (la quota non è una rata) | segreteria, amministrazione | quota contata come rata, annuale scaduto non visto, versamento doppio | `prova:ricevuta`, `prova:corsi-da-pagare`, `prova:righe-dovute` | sì |
+| Annuale a rate (la quota non è una rata) | segreteria, amministrazione | quota contata come rata, annuale scaduto non visto, versamento doppio | `prova:ricevuta`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `annuale-tre-rate.sql` | sì |
 | Ricevuta per email alla famiglia | segreteria, amministrazione, famiglie | ricevuta all'indirizzo sbagliato o annullata che parte | `prova:ricevute-email`, `prova:edge`, `prova:cornice-mail`, `prova:avvisi-segreteria`, `ricevute-email.sql` | sì |
 | Documenti sulla carta intestata | segreteria, amministrazione, genitore | cifra coperta, voci perse fra le pagine | `prova:carta`, `prova:ricevuta`, `prova:compensi`, `prova:bilancio`, `prova:chiusura-pdf`, `prova:ore` | sì |
 | Satispay dal modulo di iscrizione | genitore, segreteria, amministrazione | importo diverso dal listino, pagato perso o doppio | `prova:satispay`, `prova:edge`, `satispay.sql` | sì |
@@ -119,7 +119,6 @@ prova tiene stanno in «Scoperti», in fondo.
 Regole che si possono rompere senza che una prova cada. Si toglie la riga
 quando arriva la prova.
 
-- Annuale a rate: il tetto di 3 rate (`troppe`) si dice ma non blocca l'emissione, e `emetti_ricevuta` non ha la regola; nessuna prova SQL.
 - Quadratura: `revoke` su `saldo_banca_chi_verifica()` (123) senza prova: nessun
   controllo che anon e authenticated non abbiano EXECUTE (DA FARE).
 - COMPENSI (`Compensi.tsx`): il doppio clic su «C'era», «Non c'era» e «Segna

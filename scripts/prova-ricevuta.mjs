@@ -667,6 +667,73 @@ ok('importi diversi: nessun avviso', doppione({ ...aRate, anticipo: 10000 }), nu
 ok('senza anticipo: nessun avviso', doppione({ ...aRate, anticipo: 0 }), null)
 ok('l’avviso non blocca la ricevuta', m.cosaNonVa(aRate, '2026-10-31'), null)
 
+console.log('Annuale: al massimo 3 rate (le ricevute nuove)')
+// Un rifiuto: il messaggio, o «nessun errore».
+const errore = async (f) => {
+  try {
+    await f()
+    return 'nessun errore'
+  } catch (e) {
+    return e.message
+  }
+}
+const pag = (...importi) => importi.map((importo) => ({ data: '2026-10-28', importo, metodo: 'Bonifico' }))
+// Un annuale da 500 € con questo anticipo e questi pagamenti.
+const annuale = (anticipo, pagamenti) => ({ ...aRate, anticipo, voci: [{ ...aRate.voci[0], pagamenti }] })
+const no = (r) => m.cosaNonVa(r, '2026-10-31')
+const tre = (r) => {
+  const x = no(r)
+  return x === null ? null : [x.includes('3 rate'), x.includes('sarebbero 4')]
+}
+ok('anticipo, 2 pagamenti e il da dare (4 rate): rifiuta, dice «3 rate» e «sarebbero 4»', tre(annuale(5000, pag(10000, 10000))), [true, true])
+ok('anticipo e 2 pagamenti che saldano (3 rate): passa', no(annuale(5000, pag(20000, 25000))), null)
+ok('anticipo e 3 pagamenti che saldano (4 rate): rifiuta', tre(annuale(5000, pag(10000, 15000, 20000))), [true, true])
+ok('3 pagamenti e il da dare (4 rate): rifiuta', tre(annuale(0, pag(10000, 10000, 10000))), [true, true])
+const quota3 = { descrizione: 'Quota associativa', quantita: 1, prezzo: 5000, pagamenti: pag(1000, 1000, 3000) }
+ok('3 pagamenti sulla quota associativa e 1 sull’annuale: la quota non conta, passa', no({ ...aRate, anticipo: 0, voci: [quota3, { ...aRate.voci[0], pagamenti: pag(10000) }] }), null)
+ok('l’annuale pagato in un colpo: passa', no(annuale(0, pag(50000))), null)
+ok('una ricevuta senza annuale con 5 pagamenti: passa', no({ ...aRate, anticipo: 0, voci: [{ descrizione: 'Trimestre Judo adulti', quantita: 1, prezzo: 15000, pagamenti: pag(3000, 3000, 3000, 3000, 3000) }] }), null)
+ok('un pagamento a 0 € come quarto non conta: passa', no(annuale(5000, pag(20000, 25000, 0))), null)
+ok('una ricevuta già emessa con 4 rate: rateAnnuale dice ancora «troppe»', rate(annuale(5000, pag(10000, 10000)), '2026-10-31')?.troppe, true)
+
+// La modalità prova, con gli stessi rifiuti del database (`fai_ricevuta`): nuova e da movimento.
+{
+  const memoria = new Map()
+  globalThis.localStorage = { getItem: (k) => (memoria.has(k) ? memoria.get(k) : null), setItem: (k, v) => memoria.set(k, String(v)), removeItem: (k) => memoria.delete(k) }
+  globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
+  try {
+    const { outputFiles: fuori } = await build({
+      stdin: { contents: "export { creaSegreteriaProva } from './src/lib/segreteriaProva'", resolveDir: '.', loader: 'ts' },
+      bundle: true, format: 'esm', platform: 'node', write: false, logLevel: 'error', define: { 'import.meta.env': '{}' },
+    })
+    const P = await import('data:text/javascript;base64,' + Buffer.from(fuori[0].text).toString('base64'))
+    const s = P.creaSegreteriaProva()
+    const persona = (await s.persone()).find((x) => x.attiva && !x.nucleo)
+    const dati = (voci, o = {}) => ({ data: '2026-10-15', personaId: persona.id, ente: 'ODS', intestatario: { nome: persona.nome, cognome: persona.cognome }, voci, anticipo: 0, ...o })
+    const bon = (...importi) => importi.map((importo) => ({ data: '2026-10-15', importo, metodo: 'Bonifico' }))
+    const annualeKids = (pagamenti) => ({ descrizione: 'Annuale Judo Kids', quantita: 1, prezzo: 42000, pagamenti })
+    const quante = async () => (await s.ricevute()).length
+
+    const prima = await quante()
+    const nuova4 = await errore(() => s.emettiRicevuta(dati([annualeKids(bon(10000, 10000))], { anticipo: 5000 })))
+    ok('modalità prova, nuova con 4 rate: rifiuta con «3 rate» e «sarebbero 4»', [nuova4.includes('3 rate'), nuova4.includes('sarebbero 4')], [true, true])
+    ok('…e non ne nasce nessuna', await quante(), prima)
+    const buona = await s.emettiRicevuta(dati([annualeKids(bon(20000, 22000))], { anticipo: 0 }))
+    ok('…con 3 rate nasce, e il numero è il primo libero (quello del rifiuto non è preso)', buona.numero, Math.max(0, ...(await s.ricevute()).filter((x) => x.anno === 2026 && x.id !== buona.id).map((x) => x.numero)) + 1)
+
+    const mov = await s.registraMovimento({ tipo: 'entrata', data: '2026-10-15', importo: 42000, voceId: 'voce-corsi', cassaId: 'cassa-conto', descrizione: 'Bonifico annuale a rate', personaId: persona.id })
+    await s.assegnaMovimento(mov, [{ personaId: persona.id, voce: 'Annuale Judo Kids', importo: 20000 }])
+    const attive = async () => (await s.pagamentiDiretti()).filter((x) => x.movimentoId === mov && !x.annullatoIl).length
+    const prima2 = await quante()
+    const daMov4 = await errore(() => s.emettiRicevutaDaMovimento(dati([annualeKids(bon(10000, 10000))], { anticipo: 5000 }), mov))
+    ok('modalità prova, da movimento con 4 rate: rifiuta con «3 rate» e «sarebbero 4»', [daMov4.includes('3 rate'), daMov4.includes('sarebbero 4')], [true, true])
+    ok('…nessuna ricevuta, l’assegnazione resta attiva', [await quante(), await attive()], [prima2, 1])
+    ok('…con 3 rate nasce e prende l’assegnazione', [await errore(() => s.emettiRicevutaDaMovimento(dati([annualeKids(bon(10000, 10000))]), mov)), await attive()], ['nessun errore', 0])
+  } catch (e) {
+    ok('modalità prova: si carica e si prova', e.message, 'fatto')
+  }
+}
+
 if (guai) {
   console.log(`\n${guai} cose non tornano`)
   process.exit(1)
