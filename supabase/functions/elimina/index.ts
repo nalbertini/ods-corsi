@@ -55,7 +55,12 @@ Deno.serve(async (req) => {
   const { data: account, error } = await suo.rpc('elimina_istruttore', { persona: corpo.persona })
   if (error) {
     if (error.code === 'PGRST202') return no('Per eliminare un istruttore va lanciato 28-elimina-istruttore.sql: vedi supabase/LEGGIMI.md', 501)
-    return no(error.message, error.code === '42501' ? 403 : 400)
+    // I no di `elimina_istruttore()` (P0001) sono scritti per la segreteria; il resto è testo di Postgres,
+    // anche un 42501, che può venire da un grant.
+    if (error.code === 'P0001') return no(error.message, 400)
+    console.error('elimina_istruttore', error)
+    if (error.code === '42501') return no('Non hai il permesso: serve un accesso da segreteria', 403)
+    return no('La scheda non si è eliminata: riprova fra poco', 500)
   }
   if (!account) return risposta({ account: false })
 
@@ -67,6 +72,9 @@ Deno.serve(async (req) => {
   if (!utente.user || !email(scheda?.email) || email(utente.user.email) !== email(scheda?.email))
     return no('La scheda è eliminata, ma l’account non ha la sua email e non si tocca: se va tolto, da Authentication → Users', 409)
   const { error: e2 } = await admin.auth.admin.deleteUser(account as string)
-  if (e2) return no(`La scheda è eliminata, ma l’account no (${e2.message}): va tolto da Authentication → Users`, 502)
+  if (e2) {
+    console.error('deleteUser', e2)
+    return no('La scheda è eliminata, ma l’account no: va tolto da Authentication → Users', 502)
+  }
   return risposta({ account: true })
 })

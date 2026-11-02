@@ -15,6 +15,7 @@
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { createHash, generateKeyPairSync } from 'node:crypto'
+import { inspect } from 'node:util'
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -37,8 +38,27 @@ const volte = {}
 const finto = {
   createClient(_url, chiave, opzioni) {
     const chi = chiave === SERVIZIO ? 'admin' : 'lui'
+    // `from`, `auth.admin` e `resetPasswordForEmail` rispondono da `risposteDb['<chi>:<nome>']`, come `rpc`.
+    const db = (nome, args) => {
+      chiamate.push({ chi, nome, args })
+      const f = risposteDb[`${chi}:${nome}`]
+      return f ? f(args) : { data: null, error: null }
+    }
+    const tabella = (t) => {
+      const q = { select: () => q, eq: () => q, maybeSingle: async () => db(`from:${t}`) }
+      return q
+    }
     return {
-      auth: { getUser: async (token) => ({ data: { user: utenti[token] ?? null } }) },
+      from: tabella,
+      auth: {
+        getUser: async (token) => ({ data: { user: utenti[token] ?? null } }),
+        resetPasswordForEmail: async (email) => db('resetPasswordForEmail', { email }),
+        admin: {
+          getUserById: async (id) => db('getUserById', { id }),
+          deleteUser: async (id) => db('deleteUser', { id }),
+          inviteUserByEmail: async (email) => db('inviteUserByEmail', { email }),
+        },
+      },
       rpc: async (nome, args) => {
         chiamate.push({ chi, nome, args, sessione: opzioni?.global?.headers?.Authorization })
         const k = `${chi}:${nome}`
@@ -66,7 +86,8 @@ globalThis.fetch = async (url, o = {}) => {
   return { ok: r.stato < 400, status: r.stato, json: async () => r.json, text: async () => JSON.stringify(r.json) }
 }
 const dicono = [console.error]
-console.error = (...a) => errori.push(a.map(String).join(' '))
+// Come il log di Deno: un oggetto si legge per intero, non «[object Object]».
+console.error = (...a) => errori.push(a.map((x) => (typeof x === 'string' ? x : inspect(x))).join(' '))
 
 // --- caricare la funzione col suo ambiente -----------------------------------
 const impacchetta = async (file) => {
@@ -426,6 +447,95 @@ const testoRicevuta = await impacchetta('supabase/functions/ricevuta-email/index
   pronto()
   risposteDb['admin:registra_invio_ricevuta'] = () => ({ data: null, error: { code: 'XX000' } })
   ok('…se non va mai, la mail è partita e lo si dice all\'app', [(await chiama(g, { ricevuta: A, pdf: PDF })).corpo, registrati().length], [{ esito: 'mandata', indirizzo: IND, registrata: false }, 2])
+}
+
+// Un testo grezzo di Postgres o di Supabase: non deve mai arrivare all'app, ma resta nel log del server.
+const GREZZO = 'duplicate key value violates unique constraint persone_pkey'
+const nascosto = (r) => [JSON.stringify(r.corpo).includes(GREZZO), errori.some((e) => e.includes(GREZZO))]
+
+// ===========================================================================
+console.log('\n7. elimina: i no del database passano, il resto no')
+{
+  const g = await carica(await impacchetta('supabase/functions/elimina/index.ts'), ENV)
+  const con = (code, message) => {
+    riparti()
+    risposteDb['lui:elimina_istruttore'] = () => ({ data: null, error: { code, message } })
+    return chiama(g, { persona: A })
+  }
+  ok('un no del database (P0001): 400 col suo testo', await con('P0001', 'Ha già delle presenze: non si elimina'), { stato: 400, corpo: { guaio: 'Ha già delle presenze: non si elimina' } })
+  const PERMESSO = 'Non hai il permesso: serve un accesso da segreteria'
+  ok('senza permesso (42501): 403 col testo della funzione', await con('42501', PERMESSO), { stato: 403, corpo: { guaio: PERMESSO } })
+  const rg = await con('42501', 'permission denied for table persone')
+  ok('un 42501 di un grant: 403 con la stessa frase, il testo grezzo solo nel log', [rg.stato, rg.corpo.guaio, errori.some((e) => e.includes('permission denied'))], [403, PERMESSO, true])
+  const r = await con('23505', GREZZO)
+  ok('un errore inatteso: 500, il testo grezzo solo nel log', [r.stato, ...nascosto(r)], [500, false, true])
+
+  riparti()
+  risposteDb['lui:from:persone'] = () => ({ data: { email: 'a@b.it' }, error: null })
+  risposteDb['lui:elimina_istruttore'] = () => ({ data: 'u9', error: null })
+  risposteDb['admin:getUserById'] = () => ({ data: { user: { id: 'u9', email: 'a@b.it' } }, error: null })
+  risposteDb['admin:deleteUser'] = () => ({ data: null, error: { message: GREZZO } })
+  const r2 = await chiama(g, { persona: A })
+  ok('l\'account non si toglie: 502, il testo grezzo solo nel log', [r2.stato, ...nascosto(r2)], [502, false, true])
+}
+
+// Un token che `daClaude` legge, senza `client_id`: un accesso dall'app.
+const JWT = `x.${Buffer.from(JSON.stringify({ sub: 'u1' })).toString('base64url')}.firma`
+const daSegreteria = () => {
+  riparti()
+  utenti[JWT] = { id: 'u1' }
+  risposteDb['admin:from:persone'] = () => ({ data: { id: 'u1' }, error: null })
+}
+
+// ===========================================================================
+console.log('\n8. invita: mai il testo grezzo di Supabase')
+{
+  const g = await carica(await impacchetta('supabase/functions/invita/index.ts'), ENV)
+  const scheda = { nome: 'Anna', email: 'anna@esempio.it', ruolo: 'istruttore', attiva: true, utente_id: null }
+
+  daSegreteria()
+  let n = 0
+  risposteDb['admin:from:persone'] = () => (++n === 1 ? { data: { id: 'u1' }, error: null } : { data: null, error: { message: GREZZO } })
+  const r = await chiama(g, { persona: A }, { token: JWT })
+  ok('la scheda non si legge: 500, il testo grezzo solo nel log', [r.stato, ...nascosto(r)], [500, false, true])
+
+  daSegreteria()
+  n = 0
+  risposteDb['admin:from:persone'] = () => (++n === 1 ? { data: { id: 'u1' }, error: null } : { data: scheda, error: null })
+  risposteDb['admin:inviteUserByEmail'] = () => ({ data: null, error: { code: 'unexpected_failure', message: GREZZO } })
+  const r2 = await chiama(g, { persona: A }, { token: JWT })
+  ok('l\'invito non parte: 502, il testo grezzo solo nel log', [r2.stato, ...nascosto(r2)], [502, false, true])
+
+  daSegreteria()
+  n = 0
+  risposteDb['admin:from:persone'] = () => (++n === 1 ? { data: { id: 'u1' }, error: null } : { data: scheda, error: null })
+  risposteDb['admin:inviteUserByEmail'] = () => ({ data: null, error: { code: 'over_email_send_rate_limit', message: 'rate limit' } })
+  ok('troppe email: la frase che dice cosa fare', (await chiama(g, { persona: A }, { token: JWT })).corpo.guaio.startsWith('Troppe email'), true)
+}
+
+// ===========================================================================
+console.log('\n9. sito: GitHub che non risponde')
+{
+  const g = await carica(await impacchetta('supabase/functions/sito/index.ts'), { ...ENV, GITHUB_TOKEN: 'gh' })
+  daSegreteria()
+  rispondeRete = () => 'cade'
+  const r = await chiama(g, { azione: 'avvia' }, { token: JWT })
+  ok('la rete cade: 502, «GitHub non risponde» senza il testo grezzo, che resta nel log', [r.stato, r.corpo.guaio.includes('rete giù'), errori.some((e) => e.includes('rete giù'))], [502, false, true])
+}
+
+// ===========================================================================
+console.log('\n10. backup: GitHub che non risponde o risponde male')
+{
+  const g = await carica(await impacchetta('supabase/functions/backup/index.ts'), { ...ENV, GITHUB_TOKEN: 'gh' })
+  daSegreteria()
+  rispondeRete = () => 'cade'
+  const r = await chiama(g, { azione: 'elenco' }, { token: JWT })
+  ok('la rete cade: 502, senza il testo grezzo, che resta nel log', [r.stato, r.corpo.guaio.includes('rete giù'), errori.some((e) => e.includes('rete giù'))], [502, false, true])
+
+  daSegreteria()
+  rispondeRete = () => ({ stato: 500, json: { message: GREZZO } })
+  const r2 = await chiama(g, { azione: 'elenco' }, { token: JWT })
+  ok('GitHub risponde 500: 502 con lo stato, il suo testo solo nel log', [r2.stato, r2.corpo.guaio.includes('500'), ...nascosto(r2)], [502, true, false, true])
 }
 
 console.error = dicono[0]

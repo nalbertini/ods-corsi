@@ -61,8 +61,8 @@ prova tiene stanno in «Scoperti», in fondo.
 | Pagina dell'iscritto a tab | iscritto, titolare di un nucleo | segno di regola falso, nucleo visto da chi non deve | `prova:area-tab`, `prova:iscrizione-sito` | sì |
 | Presenza segnalata dall'iscritto | iscritto, istruttore, segreteria | segnalazione persa o fuori regola che passa | `prova:iscritti`, `prova:area-tab`, `iscritto.sql` | sì |
 | Ricerca universale di segreteria | segreteria | persona non trovata, scheda sbagliata, «in regola» falso | `prova:ricerca`, `prova:indirizzi`, `prova:a11y-segreteria`, `prova:menu` | sì |
-| Accesso e ruoli (PIN, RLS) | tutti | dati visti da chi non deve | `prova:segreteria`, `prova:ruoli`, `prova:banco`, `rls.sql`, `109-privilegi-e-certificati.sql`, `segreteria.sql`, `elimina-istruttore.sql`, `email-unica.sql` | sì |
-| Scheda del personale (schede e «Altro») | segreteria | accesso tolto o persona eliminata per sbaglio, dati visti da chi non deve | `prova:schede-personale`, `prova:ruoli`, `prova:segreteria`, `prova:pericolo`, `disattiva-chiude-iscrizioni.sql`, `elimina-istruttore.sql` | sì |
+| Accesso e ruoli (PIN, RLS) | tutti | dati visti da chi non deve | `prova:segreteria`, `prova:ruoli`, `prova:banco`, `prova:edge`, `rls.sql`, `109-privilegi-e-certificati.sql`, `segreteria.sql`, `elimina-istruttore.sql`, `email-unica.sql` | sì |
+| Scheda del personale (schede e «Altro») | segreteria | accesso tolto o persona eliminata per sbaglio, dati visti da chi non deve | `prova:schede-personale`, `prova:ruoli`, `prova:segreteria`, `prova:pericolo`, `prova:edge`, `disattiva-chiude-iscrizioni.sql`, `elimina-istruttore.sql` | sì |
 | Ruolo «amministrazione» | amministrazione, segreteria | persone viste da chi tiene solo i conti | `prova:menu`, `prova:ruoli`, `prova:pagamenti`, `prova:segreteria`, `amministrazione.sql`, `rls.sql`, `elimina-istruttore.sql` | sì |
 | Contabilità (movimenti, chiusure, voci, prima nota) | amministrazione | residuo che non torna, giorno chiuso riscritto | `prova:contabilita`, `prova:indirizzi`, `prova:banco`, `prova:avvisi-segreteria`, `prova:segreteria`, `prova:chiusura-pdf`, `prova:importa-prima-nota`, `prova:pericolo`, `chiusura-cassa.sql`, `contabilita.sql`, `rls.sql`, `importa-prima-nota.sql`, `cambia-voce.sql`, `prova:gare` | sì |
 | Importa dalla banca | amministrazione | movimento perso o scritto due volte, voce o persona sbagliata | `prova:importa-banca`, `prova:importazioni`, `prova:abbina-movimenti`, `importa-banca.sql`, `importa-prima-nota.sql`, `importazioni.sql`, `abbina-movimenti.sql`, `cambia-voce.sql` | sì |
@@ -96,7 +96,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Aspetto dei tasti del tablet di sala | sala, istruttore | un tasto che si legge come un altro | `prova:look`, `prova:tablet`, `prova:coda`, `prova:musica`, `prova:icone` | sì |
 | Aspetto dell'area iscritti | genitore, iscritto | tasto illeggibile o spento che sembra acceso | `prova:look`, `prova:icone` | sì |
 | Tasti che tolgono in segreteria | segreteria, amministrazione | dati tolti senza conferma | `prova:pericolo`, `prova:scheda-iscritto`, `prova:ricevuta`, `prova:pagamenti`, `prova:certificati`, `prova:vestiario`, `prova:tessere`, `prova:contabilita`, `prova:segreteria`, `disattiva-chiude-iscrizioni.sql` | sì |
-| Sito pubblico: solo quello che è pubblicato | visitatore del sito, segreteria | bozza in pubblico, link `javascript:` | `prova:sito`, `prova:sito-titoli`, `prova:sito-accedi`, `prova:sito-genera`, `prova:sito-immagini`, `prova:sito-pubblica`, `prova:sito-social`, `prova:sito-aspetto`, `prova:sito-tessere`, `prova:sito-collage`, `prova:sito-scala`, `prova:sito-home-nuova`, `prova:sito-home-aspetto`, `prova:sito-corsi-nuova`, `prova:sito-home`, `prova:sito-corso-nuovo`, `prova:sito-corso`, `prova:sito-pezzi`, `prova:sito-orario`, `prova:sito-contatti`, `prova:sito-istruttori`, `prova:sito-fasce`, `sito.sql`, `rls.sql`, `sito-immagini.sql`, `sito-pezzi.sql` | sì |
+| Sito pubblico: solo quello che è pubblicato | visitatore del sito, segreteria | bozza in pubblico, link `javascript:` | `prova:sito`, `prova:edge`, `prova:sito-titoli`, `prova:sito-accedi`, `prova:sito-genera`, `prova:sito-immagini`, `prova:sito-pubblica`, `prova:sito-social`, `prova:sito-aspetto`, `prova:sito-tessere`, `prova:sito-collage`, `prova:sito-scala`, `prova:sito-home-nuova`, `prova:sito-home-aspetto`, `prova:sito-corsi-nuova`, `prova:sito-home`, `prova:sito-corso-nuovo`, `prova:sito-corso`, `prova:sito-pezzi`, `prova:sito-orario`, `prova:sito-contatti`, `prova:sito-istruttori`, `prova:sito-fasce`, `sito.sql`, `rls.sql`, `sito-immagini.sql`, `sito-pezzi.sql` | sì |
 | Chi siamo del sito | visitatore del sito, segreteria | paragrafo perso, regole su un'altra pagina | `prova:sito-chi-siamo-nuova`, `prova:sito-chi-siamo`, `prova:sito-genera`, `prova:sito-home-nuova` | sì |
 | Orario delle pagine corso del sito | visitatore del sito, genitore che sta per iscriversi, segreteria | orario sbagliato o vecchio sul sito | `prova:sito-orario`, `sito-orario.sql` | sì |
 | Invito «Iscriviti» in fondo alle pagine | visitatore del sito, segreteria che scrive le pagine | pulsante che non porta al modulo | `prova:sito-genera`, `prova:sito-pezzi`, `prova:sito-aspetto`, `prova:sito-contatti` | sì |
@@ -159,6 +159,8 @@ quando arriva la prova.
 - `cosaNonVaSegnalata`: «annullata» e «oltre 30 giorni», lato app.
 - Ricerca: Esc di `useDialogo`; un corso disattivato (`c.attivo`) nei
   risultati.
+- Edge Function `satispay`: un 42501 di un grant passa il testo grezzo di
+  Postgres all'app. Nessuna prova.
 - Vestiario: la metà Supabase (`vestiarioDati.ts`).
 - Chi ha pagato (IMPORTAZIONI): la tabella, il tasto «Non è questo» e il tasto
   che apre la vista stanno nel `.tsx`; le scelte e i testi hanno le loro prove,

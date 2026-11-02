@@ -147,7 +147,8 @@ Deno.serve(async (req) => {
 
     return no('Azione sconosciuta', 400)
   } catch (e) {
-    return no(`GitHub non risponde${e instanceof Error && e.message ? `: ${e.message}` : ''}`, 502)
+    console.error('github', e)
+    return no('GitHub non risponde: riprova fra poco', 502)
   }
 })
 
@@ -158,11 +159,7 @@ type Lancio = { status: string; conclusion: string | null; created_at: string; r
 async function detto(r: Response): Promise<string> {
   if (r.status === 401) return 'GitHub non accetta il token: è scaduto o è sbagliato (vedi supabase/LEGGIMI.md, «Il backup»)'
   if (r.status === 403) return 'Il token di GitHub non ha il permesso «Actions: Read and write» su questo repository'
-  let m = ''
-  try {
-    m = ((await r.json()) as { message?: string }).message ?? ''
-  } catch {
-    // Non è JSON: basta lo stato.
-  }
-  return `GitHub ha risposto ${r.status}${m ? `: ${m}` : ''}`
+  // Il testo di GitHub è per chi guarda il log, non per la segreteria.
+  console.error('github', r.status, await r.text().catch(() => ''))
+  return `GitHub ha risposto ${r.status}: riprova fra poco`
 }
