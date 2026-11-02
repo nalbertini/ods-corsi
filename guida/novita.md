@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.234.4 — 2 novembre 2026
+
+### Risolto
+
+- La ricevuta di un trimestre fatto a fine mese ha la data «al» giusta
+
 ## 0.234.3 — 1 novembre 2026
 
 ### Risolto
