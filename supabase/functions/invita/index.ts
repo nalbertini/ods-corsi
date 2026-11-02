@@ -89,7 +89,10 @@ Deno.serve(async (req) => {
     .select('nome, email, ruolo, attiva, utente_id')
     .eq('id', corpo.persona)
     .maybeSingle()
-  if (error) return no(error.message, 500)
+  if (error) {
+    console.error('persone', error)
+    return no('Non riesco a leggere la scheda: riprova fra poco', 500)
+  }
   if (!p || (p.ruolo !== 'istruttore' && p.ruolo !== 'staff' && p.ruolo !== 'amministrazione')) return no('Si invitano solo istruttori, segreteria e amministrazione', 400)
   if (!p.attiva) return no(`${p.nome} è senza accesso: prima va ridato`, 400)
   if (!p.email) return no(`${p.nome} non ha un’email`, 400)
@@ -114,6 +117,7 @@ function detto(e: { message?: string; code?: string; status?: number }): string 
   const m = e.message ?? ''
   if (e.code === 'over_email_send_rate_limit' || e.status === 429 || /rate limit/i.test(m))
     return 'Troppe email in poco tempo: riprova fra un’ora, o si configura un SMTP in Supabase (vedi LEGGIMI)'
-  if (/invalid.*email|email.*invalid/i.test(m)) return 'Supabase dice che l’email non è valida'
-  return `La mail non è partita${m ? `: ${m}` : ''}`
+  if (/invalid.*email|email.*invalid/i.test(m)) return 'Supabase dice che l’email non è valida: correggila nella scheda'
+  console.error('invito', e)
+  return 'La mail non è partita: riprova fra poco'
 }

@@ -105,6 +105,7 @@ Deno.serve(async (req) => {
     if (!d.ok) return no(`GitHub ha risposto ${d.status}`, 502)
     return risposta({ partito: true })
   } catch (e) {
-    return no(`GitHub non risponde${e instanceof Error && e.message ? `: ${e.message}` : ''}`, 502)
+    console.error('github', e)
+    return no('GitHub non risponde: riprova fra poco', 502)
   }
 })
