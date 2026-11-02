@@ -265,6 +265,9 @@ export function cosaNonVa(r: DatiRicevuta, oggi: string, prossimo?: number): str
   if (r.numero !== undefined && prossimo !== undefined && prossimo > 1) return `Il ${r.data.slice(0, 4)} ha già le sue ricevute: lascia vuoto il numero, prende il primo libero`
   const c = conti(r)
   if (c.pagato + r.anticipo > c.totale) return 'Si è pagato più del totale: controlla gli importi'
+  // Le rate contate come nell'avviso dell'elenco; lo stesso conto lo rifà `fai_ricevuta` (137).
+  const rate = rateAnnuale({ ...r, annullataIl: undefined }, oggi)
+  if (rate?.troppe) return `L'annuale si paga in al massimo ${RATE_ANNUALE_MAX} rate: con questi importi sarebbero ${rate.totali}. Unisci dei versamenti o saldalo prima di fare la ricevuta`
   return null
 }
 

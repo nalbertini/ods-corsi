@@ -649,6 +649,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('136-assegna-una-volta.sql', 'un bonifico assegnato non si scrive due volte, la quota non supera il listino, e il vecchio programma lo sa',
     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'pagamenti_diretti' and column_name = 'chiave')
     and exists (select 1 from dentro where nome = 'assegna_movimento' and corpo like '%Alla quota mancano%' and corpo like '%x.chiave = k%')
-    and coalesce((select pg_get_function_result(to_regprocedure('public.incassi_vecchio_programma()'))), '') like '%assegnato%')
+    and coalesce((select pg_get_function_result(to_regprocedure('public.incassi_vecchio_programma()'))), '') like '%assegnato%'),
+  -- Rifà `fai_ricevuta` (93): rilanciando la 93 (o la 92), il controllo torna «manca».
+  ('137-annuale-tre-rate.sql', 'la ricevuta di un annuale non si emette con più di 3 rate',
+    exists (select 1 from dentro where nome = 'fai_ricevuta' and corpo like '%al massimo 3 rate%' and corpo like '%contabilita_oggi%'))
 ) as x(file, cosa, c)
 order by file, cosa;
