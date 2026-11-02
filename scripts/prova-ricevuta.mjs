@@ -107,6 +107,8 @@ ok('Collegno è in provincia di Torino', m.provinciaDalCap('10093'), 'TO')
 ok('Milano no', m.provinciaDalCap('20121'), '')
 ok('il trimestre da ottobre', m.fineTrimestre('2026-10-01'), '2026-12-31')
 ok('il trimestre non va oltre la stagione', m.fineTrimestre('2027-05-10'), '2027-06-30')
+ok('il trimestre dal 30/11 finisce il 28/2, non il 1/3', m.fineTrimestre('2026-11-30'), '2027-02-28')
+ok('il trimestre dal 30/11 di un anno bisestile finisce il 29/2', m.fineTrimestre('2027-11-30'), '2028-02-29')
 
 // La stagione si ricava dalla data della ricevuta, non da un anno scritto fisso: da settembre 2027 è la 2027/28.
 // Agosto è già della stagione che inizia (chi paga ad agosto paga quella); i corsi di luglio e agosto partono dal 1/9.

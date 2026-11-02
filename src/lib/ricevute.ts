@@ -325,7 +325,9 @@ export interface VocePronta {
 /** La fine di un trimestre che parte da `dal`: tre mesi meno un giorno, non oltre i corsi della sua stagione. */
 export function fineTrimestre(dal: string) {
   const [a, m, g] = dal.split('-').map(Number)
-  const x = new Date(Date.UTC(a, m - 1 + 3, g - 1)).toISOString().slice(0, 10)
+  // Il giorno si ferma all'ultimo del mese d'arrivo: dal 30/11 al 28/2, non al 1/3.
+  const ultimo = new Date(Date.UTC(a, m + 3, 0)).getUTCDate()
+  const x = new Date(Date.UTC(a, m - 1 + 3, Math.min(g - 1, ultimo))).toISOString().slice(0, 10)
   const fine = stagioneDi(dal).corsi.al
   return x > fine ? fine : x
 }
