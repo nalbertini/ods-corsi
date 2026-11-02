@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.235.0 — 2 novembre 2026
+
+### Novità
+
+- La ricevuta di un annuale non si emette con più di 3 rate
+
 ## 0.234.4 — 2 novembre 2026
 
 ### Risolto
