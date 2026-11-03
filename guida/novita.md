@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.236.1 — 3 novembre 2026
+
+### Risolto
+
+- In DOVE STANNO LE PERSONE l'anteprima della scheda del corso ha la forma vera e compare solo per le foto che ci stanno
+
 ## 0.236.0 — 3 novembre 2026
 
 ### Novità
