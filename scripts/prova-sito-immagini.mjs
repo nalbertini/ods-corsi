@@ -9,6 +9,7 @@
 // scrive width/height sulle foto che conosce (`DatiSito.immagini`, chiave l'indirizzo pubblico: le misure le
 // legge `dimensioniImmagine` dall'intestazione) e le misure ridotte valgono per ogni foto del testo.
 // ---------------------------------------------------------------------------
+import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
 import * as F from './fixture-home-nuova.mjs'
 
@@ -130,6 +131,33 @@ console.log('\n4. Il pannello col database: la cache di un anno all\'upload')
   const seg = typeof S.creaSegreteriaSupabase === 'function' ? S.creaSegreteriaSupabase(db) : {}
   try { await seg.caricaImmagineSito(new File([new Uint8Array(1000)], 'f.jpg', { type: 'image/jpeg' })) } catch (e) { reg.push(`errore: ${e.message}`) }
   ok('l\'originale entra con la cache di un anno, senza sovrascrivere', reg, [['31536000', false]])
+}
+
+console.log('\nLa scheda con la foto in cima (anteprima di «Dove stanno le persone»)')
+{
+  // Una foto dentro una voce d'elenco diventa la foto in cima alla scheda (`.corso-foto`, sitoLayout.ts):
+  // l'anteprima della scheda si mostra solo per queste foto.
+  const u = 'https://x.supabase.co/storage/v1/object/public/sito/a.jpg'
+  const pag = (bozza, pubblicato = null) => [{ titolo: 'Home', bozza, pubblicato }]
+  const s = (pagine) => (typeof I.inUnaScheda === 'function' ? I.inUnaScheda(u, pagine) : 'manca')
+  const b = u.replace('a.jpg', 'b.jpg')
+  // Come le impagina il sito: una sezione (h2) con un elenco solo di 2–12 voci brevi diventa schede.
+  const corsi = (voce, altre = '<li><strong>Karate</strong>: per tutti</li>') => `<h2>Corsi</h2><ul>${voce}${altre}</ul>`
+  ok('prima foto di una voce d\'elenco: sì', s(pag(corsi(`<li><img src="${u}" alt=""><strong>Judo</strong>: per tutti</li>`))), true)
+  ok('anche solo nel testo pubblicato', s(pag('<p>x</p>', corsi(`<li><strong>Judo</strong> <img src="${u}" alt=""></li>`))), true)
+  ok('foto fuori dagli elenchi: no', s(pag(`<h2>Corsi</h2><p><img src="${u}" alt=""></p><ul><li>Judo</li><li>Karate</li></ul>`)), false)
+  ok('un\'altra foto nell\'elenco: no', s(pag(corsi(`<li><img src="${b}" alt=""></li>`))), false)
+  ok('nessuna pagina: no', s([]), false)
+  ok('seconda foto della voce: no (in cima va solo la prima)', s(pag(corsi(`<li><img src="${b}" alt=""><img src="${u}" alt=""></li>`))), false)
+  ok('pagina senza titoli h2/h3 (resta una colonna): no', s(pag(`<ul><li><img src="${u}" alt="">Judo</li><li>Karate</li></ul>`)), false)
+  ok('due elenchi nella stessa sezione: no', s(pag(corsi(`<li><img src="${u}" alt="">Judo</li>`) + '<ul><li>a</li><li>b</li></ul>')), false)
+  ok('elenco di una voce sola: no', s(pag(corsi(`<li><img src="${u}" alt="">Judo</li>`, ''))), false)
+  ok('voce lunga: no', s(pag(corsi(`<li><img src="${u}" alt="">${'parola '.repeat(40)}</li>`))), false)
+  ok('elenco annidato: no', s(pag(corsi(`<li><img src="${u}" alt="">Judo<ul><li>x</li></ul></li>`))), false)
+  const css = readFileSync('src/segreteria.css', 'utf8')
+  const r = /\.sito-punto-scheda\s*\{[^}]*width:\s*(\d+)px;\s*height:\s*(\d+)px/.exec(css)
+  ok('l\'anteprima della scheda è 295×150', r ? [Number(r[1]), Number(r[2])] : 'manca', [295, 150])
+  ok('la striscia 560×58 non c\'è più', /sito-punto-striscia/.test(css), false)
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

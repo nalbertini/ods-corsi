@@ -15,10 +15,10 @@
 </helmet>
 <!-- COSTRUITO «fuoco delle foto» (storia in ../fuoco-foto/): `DoveStannoLePersone` di src/components/segreteria/ImmaginiSito.tsx, `.sito-punto-*` di src/segreteria.css.
 Si apre da SITO › Immagini, «Dove stanno le persone». A sinistra la foto intera: si trascina il cerchio giallo o si tocca un punto, le frecce lo spostano
-(Maiusc per passi lunghi). A destra i ritagli veri del sito con quel punto (object-position), computer, telefono e la striscia dei corsi. DOVE SI USA:
+(Maiusc per passi lunghi). A destra i ritagli veri del sito con quel punto (object-position), computer, telefono e, solo se il sito la mette in cima a una scheda (`inUnaScheda`), la scheda del corso (295×150). DOVE SI USA:
 una riga per pagina con il tag verde «Segue il punto» (il punto vince anche dove il codice aveva un taglio fisso). Il piede è sticky in fondo al dialogo,
 con una riga sopra: nota, Torna come prima (rimette il punto salvato e torna sulla foto), Annulla, Salva il punto; l'avviso dell'errore sta nel piede.
-Sotto i 900 px una colonna sola: la foto con 24 px di margine (per scorrere col dito), computer e striscia a tutta larghezza, telefono 96×118.
+Sotto i 900 px una colonna sola: la foto con 24 px di margine (per scorrere col dito), computer a tutta larghezza, telefono 96×118, scheda 295×150 (si stringe tenendo la forma).
 Sotto i 600 px Salva a tutta larghezza sopra, Torna e Annulla affiancati sotto. Chiuso il dialogo, il fuoco torna sul pulsante della foto. -->
 <div style="display:flex;justify-content:center;width:1440px;min-height:1000px;padding:40px;background:#46606f">
   <div role="dialog" style="display:flex;flex-direction:column;gap:18px;width:1200px;padding:28px 32px;border-radius:6px;background:#ffffff">
@@ -68,15 +68,14 @@ Sotto i 600 px Salva a tutta larghezza sopra, Torna e Annulla affiancati sotto. 
       </div>
         </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#46606f">STRISCIA DEI CORSI <span style="font-weight:500;letter-spacing:0">· Home, alta 150 px</span></span>
-        <div style="width:560px;height:58px;overflow:hidden;border:2px solid #cfe6f4"><svg viewBox="0 202 1200 125" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%" aria-hidden="true">
+        <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#46606f">SCHEDA DEL CORSO <span style="font-weight:500;letter-spacing:0">· telefono, in cima alla scheda</span></span>
+        <div style="width:295px;height:150px;overflow:hidden;border:2px solid #cfe6f4"><svg viewBox="0 0 1200 610" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%" aria-hidden="true">
   <rect x="0" y="0" width="1200" height="800" fill="#cfe6f4"></rect><rect x="0" y="560" width="1200" height="240" fill="#eef5fa"></rect>
   <rect x="60" y="120" width="220" height="300" fill="#ffffff" opacity="0.6"></rect>
   <g fill="#0d2a3d"><circle cx="680" cy="250" r="42"></circle><rect x="630" y="300" width="100" height="230" rx="18"></rect></g>
   <g fill="#14709f"><circle cx="770" cy="230" r="44"></circle><rect x="718" y="282" width="104" height="250" rx="18"></rect></g>
   <g fill="#46606f"><circle cx="860" cy="255" r="40"></circle><rect x="812" y="303" width="96" height="226" rx="18"></rect></g>
 </svg></div>
-        <span style="font-size:13px;line-height:1.4;color:#8f6a00">La striscia è bassa: qualcosa resta tagliato con qualsiasi punto.</span>
       </div>
       </div>
     </div>

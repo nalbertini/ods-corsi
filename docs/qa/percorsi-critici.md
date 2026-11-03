@@ -174,6 +174,8 @@ quando arriva la prova.
 - Punti delle foto del sito: il pannello «DOVE STANNO LE PERSONE» e «DOVE SI USA»
   (`ImmaginiSito.tsx`) stanno nel `.tsx`; solo collaudo a mano, con pagine che
   usano la foto.
+- Anteprima «SCHEDA DEL CORSO»: la regola `inUnaScheda` (che chiede a `impagina`
+  del sito) ha prova, il collegamento nel `.tsx` no: solo collaudo a mano.
 - Avvisi: 50 richieste finte spengono gli avvisi (scelta dell'utente).
 - Striscia: `useDaFare` e la regola degli appelli («cominciata» o «finita»).
 - Elenco ISCRITTI: la frase col conto dei minorenni e dei senza data, e il

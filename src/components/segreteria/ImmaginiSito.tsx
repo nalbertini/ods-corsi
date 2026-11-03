@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { controllaAlt, MASSIMO_BYTE, pagineCheUsano, pulisciAlt, TIPI_AMMESSI, type ImmagineSito } from '../../lib/sitoImmagini'
+import { controllaAlt, inUnaScheda, MASSIMO_BYTE, pagineCheUsano, pulisciAlt, TIPI_AMMESSI, type ImmagineSito } from '../../lib/sitoImmagini'
 import { puntoDaClic, spostaPunto, type Punto } from '../../lib/sitoFoto'
 import type { PaginaSito } from '../../lib/sitoPagine'
 import { Campo, chiedi, Guaio, Tasto, useAvviso, useCarica, useDialogo } from './comune'
@@ -53,7 +53,7 @@ const posizione = (p: Punto) => `${p.x}% ${p.y}%`
  * Dove stanno le persone in una foto: si trascina (o si tocca) il punto sulla foto intera, o lo si sposta con le frecce,
  * e accanto si vedono i tagli del sito con quel punto. Il punto vale ovunque la foto compare (`sitoFoto.ts`).
  */
-function DoveStannoLePersone({ im, salvato, usata, onSalva, onChiudi }: { im: ImmagineSito; salvato: Punto | undefined; usata: string[]; onSalva: (p: Punto) => Promise<unknown>; onChiudi: () => void }) {
+function DoveStannoLePersone({ im, salvato, usata, scheda, onSalva, onChiudi }: { im: ImmagineSito; salvato: Punto | undefined; usata: string[]; scheda: boolean; onSalva: (p: Punto) => Promise<unknown>; onChiudi: () => void }) {
   const ref = useDialogo<HTMLDivElement>(onChiudi)
   const prima = salvato ?? MEZZO
   const [p, setP] = useState(prima)
@@ -99,8 +99,7 @@ function DoveStannoLePersone({ im, salvato, usata, onSalva, onChiudi }: { im: Im
               {anteprima('COMPUTER', 'foto grande di una pagina', 'sito-punto-computer')}
               {anteprima('TELEFONO', 'la stessa foto', 'sito-punto-telefono')}
             </div>
-            {anteprima('STRISCIA DEI CORSI', 'Home, alta 150 px', 'sito-punto-striscia')}
-            <span className="sg-sotto">La striscia è bassa: qualcosa resta tagliato con qualsiasi punto.</span>
+            {scheda && anteprima('SCHEDA DEL CORSO', 'telefono, in cima alla scheda', 'sito-punto-scheda')}
           </div>
         </div>
         {usata.length > 0 && (
@@ -194,7 +193,7 @@ export function Immagini({ d, pagine }: { d: DatiSegreteria; pagine: PaginaSito[
       {avviso}
       {aperta && (
         <DoveStannoLePersone
-          im={aperta} salvato={punti.dato?.[aperta.nome]} usata={pagineCheUsano(aperta.url, pagine)} onChiudi={() => setAperta(null)}
+          im={aperta} salvato={punti.dato?.[aperta.nome]} usata={pagineCheUsano(aperta.url, pagine)} scheda={inUnaScheda(aperta.url, pagine)} onChiudi={() => setAperta(null)}
           onSalva={async (p) => { await d.salvaPuntoSito(aperta.nome, p); await punti.ricarica() }}
         />
       )}

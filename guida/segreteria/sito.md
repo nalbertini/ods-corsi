@@ -192,8 +192,8 @@ al centro: una testa può restare fuori. Ogni immagine dice **Persone a posto**
 centro**. **DOVE STANNO LE PERSONE** apre la foto intera: trascina il punto (o
 tocca) su chi deve vedersi; anche con la tastiera, le frecce lo spostano di
 poco, con Maiusc di più. Accanto si vede come la taglia il sito sul computer,
-sul telefono e nella striscia dei corsi della Home, che è bassa e qualcosa lo
-taglia sempre. **SALVA IL PUNTO** lo tiene, **TORNA COME PRIMA** rimette quello
+sul telefono e, se la foto è in cima a una scheda (la prima foto di una voce
+in un elenco che il sito fa a schede), nella scheda vista dal telefono. **SALVA IL PUNTO** lo tiene, **TORNA COME PRIMA** rimette quello
 salvato, **ANNULLA** chiude senza cambiare. Il punto vale in ogni pagina dove
 c'è la foto, anche nei riquadri fatti dal sito, e si vede sul sito entro
 qualche minuto. L'anteprima delle pagine nel pannello taglia ancora al centro.
