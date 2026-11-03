@@ -190,7 +190,7 @@
     "prova:a11y-axe": "node scripts/prova-a11y-axe.mjs"
   },
   "dependencies": {
-    "@puckeditor/core": "^0.23.0",
+    "@puckeditor/core": "^0.24.0",
     "@supabase/supabase-js": "^2.117.1",
     "@tiptap/extension-link": "^3.32.0",
     "@tiptap/pm": "^3.32.0",
