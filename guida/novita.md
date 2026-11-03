@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.235.2 — 3 novembre 2026
+
+### Risolto
+
+- Le foto del sito non tagliano più i visi sul telefono
+
 ## 0.235.1 — 2 novembre 2026
 
 ### Risolto
