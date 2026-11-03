@@ -855,6 +855,24 @@
       "w": 640,
       "h": 90,
       "page": "page-2"
+    },
+    {
+      "file": "SchedaImmagineSito.dc.html",
+      "title": "SchedaImmagineSito",
+      "x": 0,
+      "y": 12800,
+      "w": 264,
+      "h": 420,
+      "page": "page-2"
+    },
+    {
+      "file": "DovePersone.dc.html",
+      "title": "DovePersone",
+      "x": 340,
+      "y": 12800,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-2"
     }
   ],
   "annotations": [

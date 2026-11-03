@@ -236,27 +236,18 @@ console.log('\n12. Gli <style>')
   ok('una pagina qualunque: un solo <style>', stili(pagina('<p>x</p>', { slug: 'contatti', titolo: 'C' })).length, 1)
 }
 
-console.log('\n13. I fuochi delle foto')
+console.log('\n13. Niente fuochi nel codice: i punti stanno nel database')
 {
-  const css = (h) => stili_(h)
-  const stili_ = (h) => [...h.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('')
-  const regola = (h, corso, sel) => new RegExp(`\\[data-corso="${corso}"\\][^{}]*${sel.replace(/[.]/g, '\\.')}[^{}]*\\{[^}]*object-position:`).test(css(h))
-  for (const [slug, titolo] of [['judo', 'Judo'], ['lotta', 'Lotta'], ['aikido', 'Aikido']]) {
-    const h = pagina(T(), { slug, titolo })
-    ok(`${slug}: un fuoco per .corso-apertura img, .corso-interna img e .cta-foto img`, ['.corso-apertura img', '.corso-interna img', '.cta-foto img'].map((s) => regola(h, slug, s)), [true, true, true])
+  const css = (h) => [...h.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('')
+  // Il ritaglio di riserva (senza !important, per le foto senza punto) resta; le regole per corso no.
+  for (const [slug, titolo] of [['judo', 'Judo'], ['lotta', 'Lotta'], ['aikido', 'Aikido'], ['preparazione-atletica', 'Preparazione'], ['giocomotricita-e-psicomotricita', 'Giocomotricità']]) {
+    const c = css(pagina(T(), { slug, titolo }))
+    ok(`${slug}: nessuna regola main[data-corso="…"] … {object-position:`, /main\[data-corso="[^"]*"\][^{}]*\{[^}]*object-position:/.test(c), false)
   }
-  // Le aperture che tagliavano i visi (sul telefono, o su tutti e due): [corso, computer, telefono].
-  for (const [slug, d, t] of [['judo', '50% 12%', '50% 12%'], ['lotta', '50% 20%', '70% 0%'], ['preparazione-atletica', '50% 12%', '50% 12%'], ['giocomotricita-e-psicomotricita', '50% 40%', '40% 40%']]) {
-    const c = css(pagina(T(), { slug, titolo: slug }))
-    const reg = (x) => `main[data-corso="${slug}"] .corso-apertura img{object-position:${x}}`
-    const i = c.indexOf(reg(d))
-    const m = c.indexOf('@media (max-width:900px){', i)
-    const j = m < 0 ? -1 : c.indexOf(reg(t), m)
-    ok(`${slug}: apertura ${d} sul computer, ${t} sul telefono`, [i >= 0, j > i], [true, true])
-  }
-  const senza = pagina(T(), { slug: 'yoga', titolo: 'Yoga' })
-  ok('un corso fuori dalla tabella (yoga): nessuna regola di fuoco per lui', css(senza).includes('[data-corso="yoga"]'), false)
-  ok('la pagina di prima non ha regole di fuoco', /\[data-corso=/.test(css(pagina(T({ pul: '' })))), false)
+  ok('il ritaglio di riserva senza !important c’è ancora (.corso-nuovo .corso-apertura img)', /\.corso-nuovo \.corso-apertura img\{[^}]*object-position:[^;}!]+[;}]/.test(css(H)), true)
+  const UUID = '0b9f6c1e-3a4d-4c1b-8e2a-5d7f9a1c2b3e.jpg'
+  const conPunti = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'judo', titolo: 'Judo', descrizione: DESC, testo: T() }, { slug: 'corsi', titolo: 'Corsi', descrizione: '', testo: '<p>c</p>' }], menu: [], rinvii: [], ospitiImmagini: [P], punti: { [UUID]: { x: 30, y: 70 } } })['judo/index.html'] ?? ''
+  ok('la pagina del corso porta il punto della foto', css(conPunti).includes(`img[src*="${UUID}"]{object-position:30% 70%!important}`), true)
 }
 
 console.log('\n14. I nove testi veri di docs/sito')

@@ -181,7 +181,22 @@ pagine resta quello scritto a mano.
 UN'IMMAGINE** prende uno o più file JPEG, PNG o WebP; una foto che pesa più di
 1 MB si rimpicciolisce da sola, una piccola resta com'è (una PNG con la
 trasparenza non la perde). Ogni immagine dice in quali pagine è usata, anche
-nella bozza: finché è usata non si cancella; se non lo è, **Togli** la toglie.
+nella bozza: finché è usata non si cancella; se non lo è, **Togli** la toglie,
+e con lei il punto delle persone.
+
+### Dove stanno le persone
+
+Il sito taglia le foto per farle stare nei riquadri, e senza indicazioni taglia
+al centro: una testa può restare fuori. Ogni immagine dice **Persone a posto**
+(il punto è scelto, e sulla miniatura c'è un puntino giallo) o **Tagliata al
+centro**. **DOVE STANNO LE PERSONE** apre la foto intera: trascina il punto (o
+tocca) su chi deve vedersi; anche con la tastiera, le frecce lo spostano di
+poco, con Maiusc di più. Accanto si vede come la taglia il sito sul computer,
+sul telefono e nella striscia dei corsi della Home, che è bassa e qualcosa lo
+taglia sempre. **SALVA IL PUNTO** lo tiene, **TORNA COME PRIMA** rimette quello
+salvato, **ANNULLA** chiude senza cambiare. Il punto vale in ogni pagina dove
+c'è la foto, anche nei riquadri fatti dal sito, e si vede sul sito entro
+qualche minuto. L'anteprima delle pagine nel pannello taglia ancora al centro.
 
 Per metterne una nel testo, in una pagina tocca **IMMAGINE**: scegli una di
 quelle caricate (o **+ CARICA UN'IMMAGINE NUOVA**, che la sceglie da sola),

@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · togliere una foto che ha un punto scelto: la conferma lo dice, perché sulla foto nuova il punto va rimesso. -->
+<div style="display:flex;justify-content:center;align-items:center;width:700px;height:340px;background:#46606f">
+  <div role="dialog" style="display:flex;flex-direction:column;gap:14px;width:560px;padding:24px 28px;border-radius:6px;background:#ffffff">
+    <span style="font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;font-size:26px;letter-spacing:0.04em;line-height:1">TOGLIERE QUESTA IMMAGINE?</span>
+    <span style="font-size:15px;line-height:1.45">Non si può rimettere: andrà caricata di nuovo. Con lei va via anche il punto delle persone: se carichi una foto al suo posto, il punto va scelto da capo.</span>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <dc-import name="Bottone" label="Lascia stare" variante="linea" contesto="segreteria" hint-size="140px,44px"></dc-import>
+      <dc-import name="Bottone" label="Togli l’immagine" variante="pericolo" contesto="segreteria" hint-size="170px,44px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

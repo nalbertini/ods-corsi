@@ -96,7 +96,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Aspetto dei tasti del tablet di sala | sala, istruttore | un tasto che si legge come un altro | `prova:look`, `prova:tablet`, `prova:coda`, `prova:musica`, `prova:icone` | sì |
 | Aspetto dell'area iscritti | genitore, iscritto | tasto illeggibile o spento che sembra acceso | `prova:look`, `prova:icone` | sì |
 | Tasti che tolgono in segreteria | segreteria, amministrazione | dati tolti senza conferma | `prova:pericolo`, `prova:scheda-iscritto`, `prova:ricevuta`, `prova:pagamenti`, `prova:certificati`, `prova:vestiario`, `prova:tessere`, `prova:contabilita`, `prova:segreteria`, `disattiva-chiude-iscrizioni.sql` | sì |
-| Sito pubblico: solo quello che è pubblicato | visitatore del sito, segreteria | bozza in pubblico, link `javascript:` | `prova:sito`, `prova:edge`, `prova:sito-titoli`, `prova:sito-accedi`, `prova:sito-genera`, `prova:sito-immagini`, `prova:sito-immagini-misure`, `prova:sito-pubblica`, `prova:sito-social`, `prova:sito-aspetto`, `prova:sito-tessere`, `prova:sito-collage`, `prova:sito-scala`, `prova:sito-home-nuova`, `prova:sito-home-aspetto`, `prova:sito-corsi-nuova`, `prova:sito-home`, `prova:sito-corso-nuovo`, `prova:sito-corso`, `prova:sito-pezzi`, `prova:sito-orario`, `prova:sito-contatti`, `prova:sito-istruttori`, `prova:sito-fasce`, `prova:sito-foto`, `sito.sql`, `rls.sql`, `sito-immagini.sql`, `sito-pezzi.sql` | sì |
+| Sito pubblico: solo quello che è pubblicato | visitatore del sito, segreteria | bozza in pubblico, link `javascript:` | `prova:sito`, `prova:edge`, `prova:sito-titoli`, `prova:sito-accedi`, `prova:sito-genera`, `prova:sito-immagini`, `prova:sito-immagini-misure`, `prova:sito-pubblica`, `prova:sito-social`, `prova:sito-aspetto`, `prova:sito-tessere`, `prova:sito-collage`, `prova:sito-scala`, `prova:sito-home-nuova`, `prova:sito-home-aspetto`, `prova:sito-corsi-nuova`, `prova:sito-home`, `prova:sito-corso-nuovo`, `prova:sito-corso`, `prova:sito-pezzi`, `prova:sito-orario`, `prova:sito-contatti`, `prova:sito-istruttori`, `prova:sito-fasce`, `prova:sito-foto`, `sito.sql`, `rls.sql`, `sito-immagini.sql`, `sito-pezzi.sql`, `sito-punti.sql` | sì |
 | Chi siamo del sito | visitatore del sito, segreteria | paragrafo perso, regole su un'altra pagina | `prova:sito-chi-siamo-nuova`, `prova:sito-chi-siamo`, `prova:sito-genera`, `prova:sito-home-nuova` | sì |
 | Orario delle pagine corso del sito | visitatore del sito, genitore che sta per iscriversi, segreteria | orario sbagliato o vecchio sul sito | `prova:sito-orario`, `sito-orario.sql` | sì |
 | Invito «Iscriviti» in fondo alle pagine | visitatore del sito, segreteria che scrive le pagine | pulsante che non porta al modulo | `prova:sito-genera`, `prova:sito-pezzi`, `prova:sito-aspetto`, `prova:sito-contatti` | sì |
@@ -168,6 +168,12 @@ quando arriva la prova.
 - `banca_segna_coperti`: la stessa chiave con un altro `conId` non si
   aggiorna (`on conflict do nothing`), e nessuna prova lo tiene.
 - Listino: `saldoEntro`, e `some` al posto di `every` sull'annuale.
+- Punti delle foto del sito, lato Supabase (`segreteriaSupabase.ts`): `salvaPuntoSito`,
+  `sitoPunti` e il delete del punto in `cancellaImmagineSito` (il suo errore non si
+  legge) non hanno prova: le prove toccano solo la modalità prova.
+- Punti delle foto del sito: il pannello «DOVE STANNO LE PERSONE» e «DOVE SI USA»
+  (`ImmaginiSito.tsx`) stanno nel `.tsx`; solo collaudo a mano, con pagine che
+  usano la foto.
 - Avvisi: 50 richieste finte spengono gli avvisi (scelta dell'utente).
 - Striscia: `useDaFare` e la regola degli appelli («cominciata» o «finita»).
 - Elenco ISCRITTI: la frase col conto dei minorenni e dei senza data, e il

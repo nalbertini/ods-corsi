@@ -34,6 +34,7 @@ import type { Categoria, Segnalazione } from './segnalazioni'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
 import type { PezziPagina } from './sitoPezzi'
 import type { ImmagineSito } from './sitoImmagini'
+import type { Punto } from './sitoFoto'
 import type { OrarioSito } from './sitoOrari'
 import type { LetturaSito } from './sitoStatistiche'
 import type { DaDove } from './provenienza'
@@ -723,7 +724,12 @@ export interface DatiSegreteria {
   sitoImmagini(): Promise<ImmagineSito[]>
   /** Carica un'immagine (JPEG, PNG o WebP; se pesa troppo la rimpicciolisce); il nome lo decide l'app. */
   caricaImmagineSito(file: File): Promise<ImmagineSito>
+  /** Toglie l'immagine e, con lei, il suo punto. */
   cancellaImmagineSito(nome: string): Promise<void>
+  /** Dove stanno le persone in ogni foto del sito, per nome del file (vedi `sitoFoto.ts`). */
+  sitoPunti(): Promise<Record<string, Punto>>
+  /** Salva (o sposta) il punto di una foto; un punto fuori da 0..100 si rifiuta. Il sito lo prende al giro dopo. */
+  salvaPuntoSito(nome: string, punto: Punto): Promise<void>
   /** Gli orari che la pagina «Orari» del sito mostra (`orari_sito()`, vedi `sitoOrari.ts`): in prova, quelli del calendario di prova. */
   orariSito(): Promise<OrarioSito[]>
 

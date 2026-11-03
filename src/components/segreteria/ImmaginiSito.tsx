@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { controllaAlt, MASSIMO_BYTE, pagineCheUsano, pulisciAlt, TIPI_AMMESSI, type ImmagineSito } from '../../lib/sitoImmagini'
+import { puntoDaClic, spostaPunto, type Punto } from '../../lib/sitoFoto'
 import type { PaginaSito } from '../../lib/sitoPagine'
-import { Campo, chiedi, Guaio, useAvviso, useCarica, useDialogo } from './comune'
+import { Campo, chiedi, Guaio, Tasto, useAvviso, useCarica, useDialogo } from './comune'
 
 /**
  * Le immagini delle pagine del sito: la libreria (SITO › IMMAGINI) e il pannello
@@ -45,9 +46,102 @@ function CaricaImmagini({ d, dopo, tratteggiato }: { d: DatiSegreteria; dopo: (n
   )
 }
 
-/** SITO › IMMAGINI: quelle caricate, dove sono usate, e il tasto per toglierle (solo se nessuna pagina le usa). */
+const MEZZO: Punto = { x: 50, y: 50 }
+const posizione = (p: Punto) => `${p.x}% ${p.y}%`
+
+/**
+ * Dove stanno le persone in una foto: si trascina (o si tocca) il punto sulla foto intera, o lo si sposta con le frecce,
+ * e accanto si vedono i tagli del sito con quel punto. Il punto vale ovunque la foto compare (`sitoFoto.ts`).
+ */
+function DoveStannoLePersone({ im, salvato, usata, onSalva, onChiudi }: { im: ImmagineSito; salvato: Punto | undefined; usata: string[]; onSalva: (p: Punto) => Promise<unknown>; onChiudi: () => void }) {
+  const ref = useDialogo<HTMLDivElement>(onChiudi)
+  const prima = salvato ?? MEZZO
+  const [p, setP] = useState(prima)
+  const foto = useRef<HTMLDivElement>(null)
+  const { avviso, fai, lavora } = useAvviso()
+  const tocca = (e: PointerEvent<HTMLDivElement>) => setP(puntoDaClic(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect()))
+  const tasto = (e: KeyboardEvent<HTMLDivElement>) => {
+    const dopo = spostaPunto(p, e.key, e.shiftKey)
+    if (!dopo) return
+    e.preventDefault()
+    setP(dopo)
+  }
+  const anteprima = (etichetta: string, sotto: string, classe: string) => (
+    <div className="stack" style={{ gap: 6 }}>
+      <span className="sg-etichetta">{etichetta} <span className="sg-sotto">· {sotto}</span></span>
+      <img className={`sito-punto-taglio ${classe}`} src={im.url} alt="" style={{ objectPosition: posizione(p) }} />
+    </div>
+  )
+  const cambiato = p.x !== prima.x || p.y !== prima.y
+  return (
+    <>
+      <button type="button" className="sg-velo" tabIndex={-1} aria-label="Annulla" onClick={onChiudi} />
+      <div ref={ref} role="dialog" aria-modal="true" aria-labelledby="sito-punto-titolo" tabIndex={-1} className="sg-dialogo sito-punto">
+        <span id="sito-punto-titolo" style={{ fontFamily: 'var(--cond)', fontStyle: 'oblique 9deg', fontSize: 26, fontWeight: 700, letterSpacing: '0.04em' }}>DOVE STANNO LE PERSONE</span>
+        <span className="sg-sotto">Trascina il punto su chi deve vedersi. Il sito taglia la foto intorno a questo punto, su computer e su telefono.</span>
+        <div className="sito-punto-corpo">
+          <div className="stack" style={{ gap: 8 }}>
+            <div
+              ref={foto} className="sito-punto-foto" tabIndex={0} role="group" aria-label={`Il punto: ${p.x}% da sinistra, ${p.y}% dall’alto`} aria-describedby="sito-punto-tasti"
+              onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); tocca(e) }}
+              onPointerMove={(e) => { if (e.buttons) tocca(e) }}
+              onKeyDown={tasto}
+            >
+              <img src={im.url} alt="" draggable={false} />
+              <span className="sito-punto-riga" style={{ top: `${p.y}%` }} />
+              <span className="sito-punto-colonna" style={{ left: `${p.x}%` }} />
+              <span className="sito-punto-cerchio" style={{ left: `${p.x}%`, top: `${p.y}%` }} />
+            </div>
+            <span id="sito-punto-tasti" className="sg-sotto">Anche con la tastiera: le frecce spostano il punto.</span>
+          </div>
+          <div className="stack" style={{ gap: 16, minWidth: 0 }}>
+            <div className="row" style={{ gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              {anteprima('COMPUTER', 'foto grande di una pagina', 'sito-punto-computer')}
+              {anteprima('TELEFONO', 'la stessa foto', 'sito-punto-telefono')}
+            </div>
+            {anteprima('STRISCIA DEI CORSI', 'Home, alta 150 px', 'sito-punto-striscia')}
+            <span className="sg-sotto">La striscia è bassa: qualcosa resta tagliato con qualsiasi punto.</span>
+          </div>
+        </div>
+        {usata.length > 0 && (
+          <div className="stack" style={{ gap: 2 }}>
+            <span className="sg-etichetta">DOVE SI USA</span>
+            {usata.map((t) => (
+              <div key={t} className="sito-punto-uso">
+                <b>{t}</b>
+                <span className="sg-tag" data-tipo="fatto">Segue il punto</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {/* In fondo e sempre visibile: a telefono la finestra è più alta dello schermo, e l'avviso sta dentro, non sopra Salva. */}
+        <div className="sito-punto-piede">
+          <span className="sg-sotto sito-punto-nota">Si vedrà sul sito entro qualche minuto.</span>
+          {/* Il tasto si spegne appena cliccato: il fuoco torna sulla foto, se no cadrebbe sul fondo della pagina. */}
+          <Tasto className="sito-punto-torna" disabled={!cambiato || lavora} onClick={() => { setP(prima); foto.current?.focus() }}>Torna come prima</Tasto>
+          <Tasto className="sito-punto-annulla" onClick={onChiudi}>Annulla</Tasto>
+          <Tasto className="sito-punto-salva" tono="pieno" disabled={lavora} onClick={() => void fai(() => onSalva(p), 'Punto salvato', onChiudi)}>
+            {lavora ? 'Salvo…' : 'Salva il punto'}
+          </Tasto>
+          {avviso}
+        </div>
+      </div>
+    </>
+  )
+}
+
+/** SITO › IMMAGINI: quelle caricate, dove sono usate, dove stanno le persone, e il tasto per toglierle (solo se nessuna pagina le usa). */
 export function Immagini({ d, pagine }: { d: DatiSegreteria; pagine: PaginaSito[] }) {
   const elenco = useCarica(() => d.sitoImmagini(), [d])
+  const punti = useCarica(() => d.sitoPunti(), [d])
+  const [aperta, setAperta] = useState<ImmagineSito | null>(null)
+  // Chiusa la finestra, il fuoco torna sul tasto della foto da cui era partita: si cerca di nuovo, perché
+  // salvando l'elenco si rilegge e il tasto di prima (quello che ricorda useDialogo) può non esserci più.
+  const ultima = useRef<string | null>(null)
+  useEffect(() => {
+    if (aperta) ultima.current = aperta.nome
+    else if (ultima.current) document.querySelector<HTMLButtonElement>(`[data-punto="${CSS.escape(ultima.current)}"]`)?.focus()
+  }, [aperta])
   const { avviso, fai, lavora } = useAvviso()
   if (elenco.guaio) return <Guaio testo={elenco.guaio} />
   if (!elenco.dato) return <span className="sg-sotto">Leggo le immagini…</span>
@@ -61,23 +155,32 @@ export function Immagini({ d, pagine }: { d: DatiSegreteria; pagine: PaginaSito[
         <span className="sg-riquadro-titolo">Niente foto di persone senza il permesso</span>
         <span className="sg-sotto">Vale soprattutto per i minorenni: serve il consenso scritto di chi è nella foto o dei genitori. Le immagini sono pubbliche: chi conosce l’indirizzo le vede anche se la pagina è nascosta.</span>
       </div>
+      {punti.guaio && <Guaio testo={punti.guaio} />}
       {elenco.dato.length === 0 ? (
         <span className="sg-sotto">Non c’è ancora nessuna immagine.</span>
       ) : (
         <ul className="sito-immagini">
           {elenco.dato.map((im) => {
             const usata = pagineCheUsano(im.url, pagine)
+            const punto = punti.dato?.[im.nome]
             return (
               <li key={im.nome} className="sito-immagine">
-                <img src={im.url} alt="" loading="lazy" />
+                <span className="sito-immagine-miniatura">
+                  <img src={im.url} alt="" loading="lazy" style={{ objectPosition: posizione(punto ?? MEZZO) }} />
+                  {punto && <span className="sito-punto-puntino" style={{ left: `${punto.x}%`, top: `${punto.y}%` }} />}
+                </span>
+                {punti.dato && (punto ? <span className="sg-tag" data-tipo="fatto">Persone a posto</span> : <span className="sg-sotto">Tagliata al centro</span>)}
                 <span className="sg-sotto">{usata.length ? `Usata in: ${usata.join(', ')}` : 'Non è usata in nessuna pagina'}</span>
+                {punti.dato && (
+                  <Tasto data-punto={im.nome} onClick={() => setAperta(im)}>Dove stanno le persone</Tasto>
+                )}
                 {usata.length ? (
                   <span className="sg-tag">In uso: non si cancella</span>
                 ) : (
                   <button type="button" className="sg-chip num sg-pericolo" disabled={lavora}
                     onClick={async () => {
-                      if (!(await chiedi('Togliere questa immagine? Non si può rimettere: andrà caricata di nuovo.', 'Togli l’immagine', { pericolo: true }))) return
-                      void fai(() => d.cancellaImmagineSito(im.nome), 'Immagine tolta', () => elenco.ricarica())
+                      if (!(await chiedi('Togliere questa immagine? Non si può rimettere: andrà caricata di nuovo. Con lei va via anche il punto delle persone: se carichi una foto al suo posto, il punto va scelto da capo.', 'Togli l’immagine', { pericolo: true, no: 'Lascia stare' }))) return
+                      void fai(() => d.cancellaImmagineSito(im.nome), 'Immagine tolta', () => Promise.all([elenco.ricarica(), punti.ricarica()]))
                     }}
                   >
                     Togli
@@ -89,6 +192,12 @@ export function Immagini({ d, pagine }: { d: DatiSegreteria; pagine: PaginaSito[
         </ul>
       )}
       {avviso}
+      {aperta && (
+        <DoveStannoLePersone
+          im={aperta} salvato={punti.dato?.[aperta.nome]} usata={pagineCheUsano(aperta.url, pagine)} onChiudi={() => setAperta(null)}
+          onSalva={async (p) => { await d.salvaPuntoSito(aperta.nome, p); await punti.ricarica() }}
+        />
+      )}
     </div>
   )
 }

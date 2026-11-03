@@ -9,7 +9,7 @@
 //  2. Introduzione: slogan (foto + frase), due tessere «oggi», numeri.
 //  3. Sezioni per forma: pannello con foto (istruttori inchiostro, missione gialla), fila di foto con didascalie,
 //     valori, chiamata finale. Una forma che non torna cade in `sezione` e nessun testo si perde.
-//  4. Gerarchia dei titoli senza salti. 5. Misure e fuochi del CSS.
+//  4. Gerarchia dei titoli senza salti. 5. Misure del CSS e punti delle foto.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { createHash } from 'node:crypto'
@@ -153,7 +153,7 @@ console.log('\n5. Titoli senza salti: h1, poi h2 per le sezioni, h3 per i valori
   ok('ogni foto ha l’alt', conta(m, /<img (?![^>]*alt="[^"]+")/g), 0)
 }
 
-console.log('\n6. Misure e fuochi del CSS')
+console.log('\n6. Misure del CSS e punti delle foto')
 {
   const c = css(pagina(NUOVO))
   const sotto = c.slice(c.indexOf('@media (max-width:900px){', c.indexOf('.chi-siamo-nuova')))
@@ -161,18 +161,10 @@ console.log('\n6. Misure e fuochi del CSS')
   ok('la frase dello slogan è 56px, in equilibrio, e sul telefono si impila', [/\.slogan-frase\{[^}]*font-size:clamp\(44px,3\.89vw,56px\)[^}]*text-wrap:balance/.test(c), /\.slogan-fascia\{[^}]*grid-template-columns:1fr/.test(sotto)], [true, true])
   ok('la fila: 4 colonne, riquadro 420px, sul telefono 2×2 e nessuna foto nascosta', [/\.fila-foto\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/.test(c), /\.fila-foto figure img\{[^}]*height:420px/.test(c), /\.fila-foto\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/.test(sotto), /\.fila-foto[^{]*\{[^}]*display:none/.test(c)], [true, true, true, false])
   ok('il titolo nascosto resta per chi usa lo screen reader', /\.chi-siamo-nuova \.nascosto\{[^}]*clip:rect\(0,0,0,0\)/.test(c), true)
-  const fuochi = {
-    '.slogan-foto img': ['50% 70%', '50% 45%'],
-    '.blocco-foto.inchiostro .blocco-img img': ['50% 25%', '50% 25%'],
-    '.blocco-foto.giallo .blocco-img img': ['50% 50%', '50% 50%'],
-    '.fila-foto figure:nth-child(1) img': ['50% 62%', '50% 62%'],
-    '.fila-foto figure:nth-child(2) img': ['40% 50%', '40% 20%'],
-    '.fila-foto figure:nth-child(3) img': ['50% 90%', '50% 90%'],
-    '.fila-foto figure:nth-child(4) img': ['60% 40%', '60% 40%'],
-  }
-  const regola = (parte, sel, foco) => parte.includes(`.chi-siamo-nuova ${sel}{object-position:${foco}!important}`)
-  ok('fuoco per riquadro, computer', Object.entries(fuochi).filter(([s, f]) => !regola(c.slice(0, c.indexOf('@media', c.indexOf('.chi-siamo-nuova'))), s, f[0])).map(([s]) => s), [])
-  ok('fuoco per riquadro, telefono (dopo, dentro il media)', Object.entries(fuochi).filter(([s, f]) => !regola(sotto, s, f[1])).map(([s]) => s), [])
+  ok('nessuna regola .chi-siamo-nuova … img{object-position:…!important}: i fuochi sono dei punti nel database', /\.chi-siamo-nuova [^{}]*img\{[^}]*object-position:[^}]*!important/.test(c), false)
+  const UUID = '0b9f6c1e-3a4d-4c1b-8e2a-5d7f9a1c2b3e.jpg'
+  const conPunti = css(generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'chi-siamo', titolo: 'Chi siamo', descrizione: 'La frase.', testo: NUOVO }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }], menu: [], rinvii: [], ospitiImmagini: [P], punti: { [UUID]: { x: 20, y: 80 } } })['chi-siamo/index.html'])
+  ok('la Chi siamo porta il punto della foto', conPunti.includes(`img[src*="${UUID}"]{object-position:20% 80%!important}`), true)
   ok('telefono: le due tessere «oggi» tengono i loro colori, i pulsanti dei pannelli e della fila vanno a tutta larghezza, «Gli istruttori» è 56px', [/\.chi-siamo-nuova \.oggi>\.tessera\.chiara\{background:var\(--chiara\);color:var\(--inchiostro\)\}/.test(sotto), /\.chi-siamo-nuova \.oggi>\.tessera\.blu\{background:var\(--blu\);color:#fff\}/.test(sotto), /\.blocco-foto \.pulsante,\.corsi-foto \.pulsante\{width:100%\}/.test(sotto), /\.blocco-foto\.inchiostro h2\{font-size:56px\}/.test(sotto)], [true, true, true, true])
   ok('i bersagli: i pulsanti sono alti 56px', [/\.chi-siamo-nuova \.pulsante\{[^}]*min-height:56px/.test(c)], [true])
   ok('il passo tra sezioni è 96px (64 sul telefono), 48/32 tra foto e tessere', [/\.chi-siamo-nuova \.sezione\{padding-top:96px\}/.test(c), /\.chi-siamo-nuova \.sezione\{padding-top:64px\}/.test(sotto), /\.oggi\{[^}]*margin:48px var\(--margine\) 0/.test(c)], [true, true, true])

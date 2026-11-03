@@ -29,6 +29,7 @@ import { cosaNonVaSaldoBanca, cosaNonVaVerifica, meseDopo, type SaldoBanca } fro
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
 const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
+import { FOTO_NON_DEL_SITO, PUNTO_FUORI, nomeValido, puntoValido } from './sitoFoto'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
 import { cartaPerPersona, cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
@@ -1159,6 +1160,19 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async cancellaImmagineSito(nome) {
       a().sitoImmagini = (a().sitoImmagini ?? []).filter((x) => x.nome !== nome)
+      const { [nome]: _via, ...restano } = a().sitoPunti ?? {}
+      a().sitoPunti = restano
+      salva()
+    },
+
+    async sitoPunti() {
+      return { ...(a().sitoPunti ?? {}) }
+    },
+
+    async salvaPuntoSito(nome, punto) {
+      if (!nomeValido(nome)) throw new Error(FOTO_NON_DEL_SITO)
+      if (!puntoValido(punto)) throw new Error(PUNTO_FUORI)
+      a().sitoPunti = { ...(a().sitoPunti ?? {}), [nome]: { x: punto.x, y: punto.y } }
       salva()
     },
 
