@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { elencoMovimenti, giornoChiuso, NOME_CASSA_CONTO, oggiARoma, type Cassa, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento } from '../../lib/contabilita'
-import { chiHaPagato, contiChiHaPagato, filtraChiHaPagato } from '../../lib/satispayScarico'
+import { chiHaPagato, contiChiHaPagato, filtraChiHaPagato, SCARICO_FERMO, scaricoFermo } from '../../lib/satispayScarico'
 import { righeDaRicevute, righeDirette, type RigaPagamento } from '../../lib/pagamenti'
 import type { PagamentoSatispay } from '../../lib/satispay'
 import { entratoBanca, ultimaImportazione } from '../../lib/importaBanca'
@@ -50,6 +50,7 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
     return { ricevute, diretti, satispay, nomi: chi.length ? await d.nomiPersone(chi) : [] }
   }, [d])
   const stato = useCarica(() => d.statoScaricoSatispay(), [d])
+  const impostazioni = useCarica(() => d.impostazioni(), [d])
   const { avviso, fai } = useAvviso()
   const [vista, setVista] = useState<'primo' | 'importa' | Fonte | null>(null)
   const [fonteVista, setFonteVista] = useState<'' | FonteDaClassificare>('')
@@ -66,6 +67,9 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
     ? elencoMovimenti(incassi.dato?.ricevute ?? [], incassi.dato?.diretti ?? [], [], casse.dato ?? [], manuali.dato ?? [], voci.dato ?? [], incassi.dato?.satispay)
     : []
   const s = stato.dato
+  const fermo = scaricoFermo(impostazioni.dato?.metodiSpenti ?? [])
+  // Finché l'interruttore non è letto, né il rosso né «Scarica ora»: se poi non si legge, vale acceso.
+  const interruttore = !!(impostazioni.dato || impostazioni.guaio)
   const ultima = ultimaImportazione(righe)
   // Le righe di PAGAMENTI col nome di chi ha pagato: «Chi ha pagato» riconosce i pagamenti Satispay da lì.
   const nomi = new Map((incassi.dato?.nomi ?? []).map((p) => [p.id, `${p.cognome} ${p.nome}`.trim()]))
@@ -98,12 +102,14 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
             <span style={{ fontSize: 15 }}>{s.ultimo ? `Ultimo scarico il ${quando(s.ultimo)}.` : 'Il primo scarico non è ancora fatto.'}</span>
           )}
           <span className="sg-sotto">Non entrano in contabilità: i soldi arrivano in banca col versamento «Da Satispay Europe S.A.», già al netto della commissione.</span>
-          {s?.errore && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>L’ultimo scarico non è riuscito: {s.errore}</span>}
+          {/* Spento, l'errore dell'ultimo giro non conta più: resta nel database e lo sostituisce il prossimo scarico vero. */}
+          {s && fermo && <span className="sg-sotto">{SCARICO_FERMO}</span>}
+          {s?.errore && interruttore && !fermo && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>L’ultimo scarico non è riuscito: {s.errore}</span>}
         </div>
         {s && (
           <>
             <button type="button" className="sg-btn sg-btn-linea" disabled={!pronto} onClick={() => setVista('satispay')}>Chi ha pagato</button>
-            {s.primoFatto ? (
+            {fermo || !interruttore ? null : s.primoFatto ? (
               <Tasto onClick={() => void fai(() => d.scaricaSatispay(false), 'Scarico Satispay fatto', rileggi)}>Scarica ora</Tasto>
             ) : (
               <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setVista('primo')}>Guarda il primo scarico</button>

@@ -33,7 +33,7 @@ import { FOTO_NON_DEL_SITO, PUNTO_FUORI, nomeValido, puntoValido } from './sitoF
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
 import { cartaPerPersona, cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
-import { applicaScarico, NOME_CASSA_SATISPAY, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
+import { applicaScarico, NOME_CASSA_SATISPAY, SCARICO_FERMO, scaricoFermo, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
@@ -2125,6 +2125,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async scaricaSatispay(anteprima) {
+      if (scaricoFermo(a().impostazioni?.metodiSpenti ?? [])) throw new Error(SCARICO_FERMO)
       // In prova Satispay non si chiama: il negozio ha pagamenti d'esempio, più quelli pagati col modulo.
       const pagati = pagamentiSatispayProva().filter((p) => p.stato === 'pagato')
       const letti = a().satispayNegozio ?? negozioDiProva()
