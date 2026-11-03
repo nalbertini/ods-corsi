@@ -87,7 +87,7 @@ ok('solo la firma JPEG', mis(new Uint8Array([0xff, 0xd8])), null)
 console.log('\n3. Il sito generato: width e height, misure ridotte in ogni pagina')
 const P = F.P
 const src = (nome) => `${P}${nome}`
-const render = (nome, w) => `${P.replace('/object/public/', '/render/image/public/')}${nome}?width=${w}&quality=75`
+const render = (nome, w) => `${P.replace('/object/public/', '/render/image/public/')}${nome}?width=${w}&quality=75&resize=contain`
 const tagDi = (html, nome) => [...html.matchAll(/<img\b[^>]*>/gi)].map((m) => m[0]).find((t) => t.includes(nome))
 const attr = (tag, a) => tag?.match(new RegExp(`\\s${a}="([^"]*)"`))?.[1]
 const tutteLeFoto = (file) => Object.values(file).flatMap((h) => (typeof h === 'string' ? [...h.matchAll(/<img\b[^>]*>/gi)].map((m) => m[0]) : []))

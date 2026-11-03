@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.235.4 — 3 novembre 2026
+
+### Risolto
+
+- Le foto del sito si vedono intere, senza persone tagliate ai lati
+
+## 0.235.3 — 3 novembre 2026
+
+### Modificato
+
+- L'editor delle pagine del sito si aggiorna all'ultima versione
+
 ## 0.235.2 — 3 novembre 2026
 
 ### Risolto
