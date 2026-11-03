@@ -12,9 +12,9 @@ import {
   type SchedaIscritto,
 } from '../lib/iscritto'
 import type { Segnalata } from '../lib/segnalate'
-import { boxCertificato } from '../lib/certificatoIscritto'
+import { boxCertificato, rigaCertificato } from '../lib/certificatoIscritto'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
-import { comePaga, dalCertificato, pagamentoDi, statoCertificato } from '../lib/segreteria'
+import { comePaga, pagamentoDi, statoCertificato } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { indirizzoPagina } from '../lib/guida'
 import { cartaSePuoi } from '../lib/cartaPdf'
@@ -740,17 +740,9 @@ const data = (g: string) => g.split('-').reverse().join('/')
 
 function InRegola({ scheda, dati, personaId, io, ricevute, onMandato }: { scheda: SchedaIscritto; dati: DatiIscritto; personaId: string; io: string; ricevute: Ricevuta[]; onMandato: () => Promise<void> }) {
   const oggi = chiaveGiorno(new Date())
-  const cert = statoCertificato(scheda, oggi)
   const stato = pagamentoDi(scheda, oggi)
   const paga = stato.come
-  const certTesto = {
-    manca: 'Non risulta: senza, in sala non si entra.',
-    scaduto: `Scaduto il ${data(scheda.certificato.scade ?? '')}.`,
-    in_scadenza: `Vale fino al ${data(scheda.certificato.scade ?? '')}: scade fra poco.`,
-    valido: `Vale fino al ${data(scheda.certificato.scade ?? '')}.`,
-    non_serve: 'Sotto i 6 anni non serve.',
-    in_arrivo: `Dal ${data(dalCertificato(scheda.natoIl ?? ''))}, a 6 anni, serve: portalo in segreteria.`,
-  }[cert]
+  const certRiga = rigaCertificato(scheda, oggi)
   const mandare = boxCertificato(scheda, oggi, scheda.certificatoDaQui ?? false)
   const pagaTesto = {
     da_pagare: 'Non risulta pagata.',
@@ -765,7 +757,7 @@ function InRegola({ scheda, dati, personaId, io, ricevute, onMandato }: { scheda
       <div className="pad mie-schede">
         <Riquadro stretto>
           <Etichetta>CERTIFICATO MEDICO</Etichetta>
-          <Dettaglio tono={tono(cert === 'valido' || cert === 'non_serve', cert === 'in_scadenza' || cert === 'in_arrivo')}>{certTesto}</Dettaglio>
+          <Dettaglio tono={certRiga.tono}>{certRiga.testo}</Dettaglio>
           {mandare.tasto && <MandaCertificato box={mandare} dati={dati} personaId={personaId} onMandato={onMandato} />}
         </Riquadro>
         <Riquadro stretto>
