@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.237.0 — 3 novembre 2026
+
+### Novità
+
+- La segreteria riceve una email quando un iscritto manda il certificato medico
+
 ## 0.236.2 — 3 novembre 2026
 
 ### Risolto
