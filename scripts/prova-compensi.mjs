@@ -256,6 +256,12 @@ console.log('\n1. il compenso del mese: ore confermate per la tariffa, corso per
     conto([presenza('q1', 'C', 'Aikido', new Date(2026, 9, 5, 18, 0), 50, 'confermata')], [], 'C', ottobre, [tariffa('Aikido', 1000)]).righe, [
       { corso: 'Aikido', lezioni: 1, minuti: 50, centesimiOra: 1000, importo: 833 },
     ])
+  // 5 minuti a 22,50 €/h = 1,875 €: il mezzo centesimo si arrotonda in su, dividendo per 60 alla fine (come il database).
+  const mezzo = (min, cent) => conto([presenza('q2', 'C', 'Yoga', new Date(2026, 9, 5, 18, 0), min, 'confermata')], [], 'C', ottobre, [tariffa('Yoga', cent)]).righe?.[0]?.importo
+  ok('5 minuti a 22,50 € l\'ora: 1,88 € (1,875 esatto, arrotondato su)', mezzo(5, 2250), 188)
+  ok('5 minuti a 7,50 € l\'ora: 0,63 € (0,625 esatto)', mezzo(5, 750), 63)
+  // 65/60 × 1650 in virgola mobile fa 1787,4999…: anche l'app perdeva il mezzo centesimo.
+  ok('65 minuti a 16,50 € l\'ora: 17,88 € (17,875 esatto)', mezzo(65, 1650), 1788)
   ok('le tariffe di un altro corso non valgono', conto(presenze, [], 'A', ottobre, [tariffa('Karate', 1500)]).calcolato, 0)
   const z = conto(presenze, [], 'Z', ottobre, [])
   ok('un tecnico senza lezioni: tutto a zero', [z.righe, z.lezioni, z.minuti, z.calcolato, z.daConfermare, z.senzaTariffa], [[], 0, 0, 0, 0, []])
@@ -741,6 +747,11 @@ console.log('\n6. la segreteria di prova: fa, annulla, rifà, spunta firmata')
   ok('un tecnico con ricevute non si elimina, come col database', await errore(() => s.eliminaIstruttore(nuovo)), "Teo Nuovo ha già lavorato nei registri: non si elimina, gli si toglie l'accesso")
   await s.annullaRicevutaCompenso?.(sue.id).catch(() => {})
   ok('nemmeno se la ricevuta è annullata', await errore(() => s.eliminaIstruttore(nuovo)), "Teo Nuovo ha già lavorato nei registri: non si elimina, gli si toglie l'accesso")
+  // Il mezzo centesimo come nel database (`supabase/prova/ricevute-compensi.sql`, § 8).
+  const mezza = (minuti, centesimi, importo, mese) => ({ ...sua, personaId: nuovo, mese, righe: [{ corso: 'Yoga', lezioni: 1, minuti, centesimiOra: centesimi, importo }], calcolato: importo, importo })
+  await prova('5 minuti a 22,50 € l\'ora, importo 1,88 €: la accetta', async () => (await s.faiRicevutaCompenso(mezza(5, 2250, 188, primo(-3)))).importo, 188)
+  ok('5 minuti a 22,50 € l\'ora, importo 1,87 €: no, col messaggio', await errore(() => s.faiRicevutaCompenso(mezza(5, 2250, 187, primo(-4)))), 'Le righe del compenso non sono giuste: rifai la ricevuta dalla pagina COMPENSI')
+  await prova('65 minuti a 16,50 € l\'ora, importo 17,88 €: la accetta', async () => (await s.faiRicevutaCompenso(mezza(65, 1650, 1788, primo(-4)))).importo, 1788)
   await prova('le ricevute dei compensi stanno nei dati della persona che si esportano', async () => (await s.esporta(tecnico.id)).ricevute_compensi?.length, 3)
 }
 

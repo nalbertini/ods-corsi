@@ -285,3 +285,18 @@ select atteso('eliminare Ivo, che ha solo ricevute: no, col messaggio', tenta($$
 reset role;
 select atteso('nemmeno cancellando la riga', tenta($$delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000006'$$), 'NEGATO: …');
 select atteso('e le sue ricevute restano', (select count(*)::text from ricevute_compensi where persona_id = 'aaaaaaaa-0000-0000-0000-000000000006'), '3');
+
+\echo ''
+\echo '--- 8. il mezzo centesimo: si divide per 60 alla fine, come l''app ---'
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('5 minuti a 22,50 € l''ora: 1,87 € no, col messaggio',
+  tenta(ricevuta('aaaaaaaa-0000-0000-0000-000000000005', mese => primo(-11), righe => '[{"corso": "Yoga", "lezioni": 1, "minuti": 5, "centesimi_ora": 2250, "importo": 187}]', calcolato => 187, importo => 187)),
+  'NEGATO: Le righe del compenso non sono giuste: rifai la ricevuta dalla pagina COMPENSI');
+select atteso('5 minuti a 22,50 € l''ora: 1,88 € (1,875 esatto) sì',
+  tenta(ricevuta('aaaaaaaa-0000-0000-0000-000000000005', mese => primo(-11), righe => '[{"corso": "Yoga", "lezioni": 1, "minuti": 5, "centesimi_ora": 2250, "importo": 188}]', calcolato => 188, importo => 188)), 'true');
+select atteso('5 minuti a 7,50 € l''ora: 0,63 € (0,625 esatto) sì',
+  tenta(ricevuta('aaaaaaaa-0000-0000-0000-000000000005', mese => primo(-12), righe => '[{"corso": "Yoga", "lezioni": 1, "minuti": 5, "centesimi_ora": 750, "importo": 63}]', calcolato => 63, importo => 63)), 'true');
+select atteso('65 minuti a 16,50 € l''ora: 17,88 € (17,875 esatto) sì',
+  tenta(ricevuta('aaaaaaaa-0000-0000-0000-000000000005', mese => primo(-13), righe => '[{"corso": "Yoga", "lezioni": 1, "minuti": 65, "centesimi_ora": 1650, "importo": 1788}]', calcolato => 1788, importo => 1788)), 'true');
+reset role;
