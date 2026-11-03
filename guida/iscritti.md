@@ -95,7 +95,9 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   scaduto o scade entro un mese c'è il tasto **MANDA IL CERTIFICATO**: una
   foto o un PDF, al massimo 5 MB. Resta **in attesa di conferma** finché la
   segreteria lo controlla e scrive la scadenza, o lo rifiuta: se lo rifiuta
-  va rimandato. Il file lo vede solo la segreteria: qui c'è solo la data
+  va rimandato. Mentre è in attesa, in cima alla pagina e nel riquadro c'è
+  scritto, in giallo, che **è arrivato** e che la segreteria lo deve
+  confermare: fino ad allora non vale ancora. Il file lo vede solo la segreteria: qui c'è solo la data
   d'invio. Per un minore senza accesso lo manda il titolare.
   Se hai pagato la quota in parte con una ricevuta, sotto c'è **PAGA … €
   CON SATISPAY**: paghi solo quel che manca, la cifra la calcola l'app (non

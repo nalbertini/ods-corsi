@@ -194,10 +194,13 @@ const data = (g: string) => g.split('-').reverse().join('/')
 export function avvisi(s: Pick<SchedaIscritto, 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): Avviso[] {
   const x: Avviso[] = []
   const c = statoCertificato(s, oggi)
-  if (c === 'manca') x.push({ tono: 'guaio', testo: 'Manca il certificato medico: portalo in segreteria prima della prossima lezione.' })
-  if (c === 'scaduto') x.push({ tono: 'guaio', testo: `Il certificato medico è scaduto il ${data(s.certificato.scade!)}: portane uno nuovo in segreteria.` })
-  if (c === 'in_arrivo') x.push({ tono: 'avviso', testo: `Dal ${data(dalCertificato(s.natoIl!))} serve il certificato medico: portalo in segreteria.` }) // `in_arrivo` c'è solo con la data di nascita
-  if (c === 'in_scadenza') x.push({ tono: 'avviso', testo: `Il certificato medico scade il ${data(s.certificato.scade!)}: prenota la visita.` })
+  // Il file mandato non vale finché la segreteria non lo conferma, ma non va detto «portalo»: è già arrivato.
+  const nuovo = s.certificato.inAttesaIl ? 'quello nuovo è arrivato, la segreteria lo deve confermare.' : null
+  if (nuovo && (c === 'manca' || c === 'in_arrivo')) x.push({ tono: 'avviso', testo: 'Il certificato medico è arrivato: la segreteria lo deve confermare.' })
+  else if (c === 'manca') x.push({ tono: 'guaio', testo: 'Manca il certificato medico: portalo in segreteria prima della prossima lezione.' })
+  if (c === 'scaduto') x.push({ tono: nuovo ? 'avviso' : 'guaio', testo: `Il certificato medico è scaduto il ${data(s.certificato.scade!)}: ${nuovo ?? 'portane uno nuovo in segreteria.'}` })
+  if (c === 'in_arrivo' && !nuovo) x.push({ tono: 'avviso', testo: `Dal ${data(dalCertificato(s.natoIl!))} serve il certificato medico: portalo in segreteria.` }) // `in_arrivo` c'è solo con la data di nascita
+  if (c === 'in_scadenza') x.push({ tono: 'avviso', testo: `Il certificato medico scade il ${data(s.certificato.scade!)}: ${nuovo ?? 'prenota la visita.'}` })
   const p = pagamentoDi(s, oggi)
   if (p.come === 'da_pagare') x.push({ tono: 'guaio', testo: 'La quota non risulta pagata: pagala qui sotto o passa in segreteria.' })
   if (p.come === 'in_parte')
