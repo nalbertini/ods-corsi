@@ -7,6 +7,8 @@
  * quali pagine sono usate.
  */
 
+import { impagina } from './sitoLayout'
+
 export const CONTENITORE = 'sito'
 /** Lo stesso limite del contenitore: oltre, lo Storage rifiuta. */
 export const MASSIMO_BYTE = 1_048_576
@@ -52,6 +54,13 @@ export const immaginiNelTesto = (html: string): string[] => [...new Set(sorgenti
 /** I titoli delle pagine che mostrano l'immagine, nella bozza o nel testo pubblicato. */
 export const pagineCheUsano = (url: string, pagine: Array<{ titolo: string; bozza: string; pubblicato: string | null }>): string[] =>
   pagine.filter((p) => immaginiNelTesto(p.bozza).includes(url) || immaginiNelTesto(p.pubblicato ?? '').includes(url)).map((p) => p.titolo)
+
+/**
+ * Vero se in una pagina l'immagine sta in cima a una scheda (`.corso-foto`, solo al telefono). Lo dice l'impaginazione
+ * del sito stessa (sitoGenera.ts impagina solo i testi con un titolo h2 o h3): così le regole delle schede restano in un posto.
+ */
+export const inUnaScheda = (url: string, pagine: Array<{ bozza: string; pubblicato: string | null }>): boolean =>
+  pagine.some((p) => [p.bozza, p.pubblicato ?? ''].some((t) => /<h[23][\s>]/i.test(t) && [...impagina(t).matchAll(/<div class="corso-foto">(<img\b[^>]*>)/g)].some((m) => sorgentiDi(m[1])[0] === url)))
 
 export const urlImmagine = (urlProgetto: string, nome: string): string => `${urlProgetto.replace(/\/+$/, '')}/storage/v1/object/public/${CONTENITORE}/${nome}`
 

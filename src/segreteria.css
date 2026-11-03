@@ -1192,7 +1192,8 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sito-punto-taglio { display: block; max-width: 100%; object-fit: cover; border: 2px solid var(--line); background: var(--surface-2); }
 .sito-punto-computer { width: 380px; height: 148px; }
 .sito-punto-telefono { width: 130px; height: 160px; }
-.sito-punto-striscia { width: 560px; height: 58px; }
+/* La foto in cima a una scheda (`.corso-foto` del sito): alta 150 px, larga quanto la scheda su un telefono di 375. */
+.sito-punto-scheda { width: 295px; height: 150px; }
 .sito-punto-uso { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 6px 0; border-bottom: 1px solid var(--line); }
 .sito-punto-piede { position: sticky; bottom: 0; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: auto; padding: 12px 0 4px; border-top: 2px solid var(--line); background: var(--surface); }
 .sito-punto-nota { flex: 1; }
@@ -1203,7 +1204,8 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sito-punto-foto { margin: 0 24px; }
   .sito-punto-computer { width: 100%; height: auto; aspect-ratio: 380 / 148; }
   .sito-punto-telefono { width: 96px; height: 118px; }
-  .sito-punto-striscia { width: 100%; height: auto; aspect-ratio: 560 / 58; }
+  /* Se il dialogo è più stretto di 295 px la scheda si stringe tenendo la forma, se no il taglio cambierebbe. */
+  .sito-punto-scheda { width: 100%; max-width: 295px; height: auto; aspect-ratio: 295 / 150; }
 }
 /* A telefono: prima Salva, a tutta larghezza; Annulla e Torna affiancati sotto. */
 @media (max-width: 600px) {
