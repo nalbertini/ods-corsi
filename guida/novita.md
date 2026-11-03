@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.237.1 — 3 novembre 2026
+
+### Risolto
+
+- La ricevuta del compenso rifiutata quando l'importo finisce in mezzo centesimo
+
 ## 0.237.0 — 3 novembre 2026
 
 ### Novità
