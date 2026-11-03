@@ -5,7 +5,7 @@
 -- Rifà `fai_ricevuta_compenso` di `96-compensi-extra.sql`, uguale tranne il conto. Chi può fare cosa non cambia.
 -- Si lancia dopo `96-compensi-extra.sql`; rilanciando `80` o `96` va rilanciato anche questo. Non chiede di
 -- rilanciare `06-iscrizioni.sql`. Finché non c'è, le ricevute con un importo che finisce in mezzo centesimo
--- vengono rifiutate come prima. Le ricevute già fatte non cambiano: il controllo è solo nella funzione.
+-- vengono rifiutate come prima. Le ricevute già fatte non cambiano: il controllo è solo nella funzione. Una fatta col conto vecchio su un mezzo centesimo in COMPENSI risulterebbe «non torna»: al 2026-11-03 non ce n'era nessuna.
 
 create or replace function fai_ricevuta_compenso(persona uuid, mese date, righe jsonb, calcolato int, importo int, motivo text, tecnico jsonb, qualifica text, data date)
 returns ricevute_compensi language plpgsql security definer set search_path = public as $$
