@@ -65,6 +65,14 @@ console.log('1. lo scarico gira solo col negozio vero (R12)')
   ok('l\'host che è scritto in una costante', prova(() => s.HOST_VERO), 'authservices.satispay.com')
 }
 
+console.log('\n1b. con Satispay spento in REGOLE → COME SI PAGA lo scarico è fermo')
+{
+  ok('spento: fermo', prova(() => s.scaricoFermo(['satispay'])), true)
+  ok('spento con altri metodi: fermo', prova(() => s.scaricoFermo(['carta', 'satispay'])), true)
+  ok('acceso (o spenta solo la carta): gira', prova(() => [s.scaricoFermo([]), s.scaricoFermo(['carta'])]), [false, false])
+  ok('il riquadro dice dove si riaccende', prova(() => s.SCARICO_FERMO), 'Satispay è spento: lo scarico è fermo. Si riaccende da REGOLE → COME SI PAGA.')
+}
+
 
 console.log('\n2. leggere le pagine di Satispay (R8, R9)')
 {
@@ -293,6 +301,29 @@ console.log('\n7. il segno DA SATISPAY arriva nelle righe dell\'elenco')
   ok('…anche quando Satispay non risponde o i movimenti non si scrivono', fn.includes('await fine(esito.errore)') && fn.includes('await fine(errore)') && fn.includes('await fine(null, conti.data)'), true)
   const guardia = fn.indexOf('if (anteprima) return')
   ok('…ma l\'anteprima no: la guardia viene prima dell\'avviso', guardia > -1 && guardia < fn.indexOf("rpc('satispay_scarico_avvisa'"), true)
+  // Con Satispay spento la funzione si ferma prima di toccare `satispay_scarico` e di chiamare Satispay.
+  const spento = fn.indexOf("rpc('metodi_spenti')")
+  ok('con Satispay spento si ferma prima di leggere lo stato dello scarico', spento > -1 && spento < fn.indexOf(".from('satispay_scarico')"), true)
+  ok('…e risponde col messaggio del riquadro', fn.includes(`'${s.SCARICO_FERMO}'`), true)
+  // La guardia vera: la condizione su 'satispay' e il suo return, prima di ogni lettura e scrittura dello scarico.
+  const guardiaSpento = fn.match(/if \(Array\.isArray\(spenti\) && spenti\.includes\('satispay'\)\) \{\s*return risposta\(\{ guaio: /)
+  ok('…la condizione su \'satispay\' esce subito con il guaio', !!guardiaSpento, true)
+  const dopoGuardia = guardiaSpento ? fn.slice(guardiaSpento.index) : ''
+  ok('…prima di salvare, segnare e avvisare', ["from('satispay_scarico')", "'satispay_negozio_salva'", "'satispay_scarico_segna'", "'satispay_scarico_avvisa'"].every((x) => dopoGuardia.includes(x) && fn.indexOf(x) > guardiaSpento.index), true)
+}
+
+console.log('\n8. in modalità prova lo scarico segue lo stesso interruttore')
+{
+  const memoria = new Map()
+  globalThis.localStorage ??= { getItem: (k) => memoria.get(k) ?? null, setItem: (k, v) => memoria.set(k, String(v)), removeItem: (k) => memoria.delete(k) }
+  globalThis.window ??= { location: { search: '', hash: '' }, addEventListener() {} }
+  const p = await carica("export { creaSegreteriaProva } from './src/lib/segreteriaProva'")
+  const d = p.creaSegreteriaProva?.()
+  await aspetta(() => d.salvaImpostazioni({ metodiSpenti: ['satispay'] }))
+  ok('Satispay spento: «Scarica ora» non scarica', await aspetta(() => d.scaricaSatispay(false)), `ERRORE: ${s.SCARICO_FERMO}`)
+  await aspetta(() => d.salvaImpostazioni({ metodiSpenti: [] }))
+  const acceso = await aspetta(() => d.scaricaSatispay(false))
+  ok('riacceso: scarica come prima', typeof acceso === 'object' && acceso !== null, true)
 }
 
 if (guai) {

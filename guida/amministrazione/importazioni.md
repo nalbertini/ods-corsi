@@ -14,7 +14,10 @@ In cima, un riquadro per fonte:
   contabilità: i soldi arrivano in banca col versamento «Da Satispay Europe S.A.»
   (vedi [Satispay](contabilita.md#satispay)). **Chi ha pagato** apre l'elenco del mese;
   **Scarica ora** fa subito lo scarico (la prima volta c'è invece l'anteprima, **Guarda
-  il primo scarico**).
+  il primo scarico**). Con Satispay spento in **REGOLE → COME SI PAGA** lo scarico è
+  fermo, di notte e a mano: il riquadro lo dice, **Scarica ora** non c'è e **Chi ha
+  pagato** mostra quel che era già stato scaricato. Riaccendendo, lo scarico riparte da
+  dove si era fermato.
 - **Banca · BancoPosta**: l'ultimo file importato, quando e quanti movimenti.
   **Importa un file** apre l'importazione dal file della banca, la stessa di MOVIMENTI
   (vedi [Importare dalla banca](contabilita.md#importare-dalla-banca)). **Cosa è

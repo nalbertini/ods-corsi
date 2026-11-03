@@ -18,6 +18,11 @@ export { NOME_CASSA_SATISPAY }
 export const HOST_VERO = 'authservices.satispay.com'
 export const scaricoPermesso = (host: string): boolean => host.trim().toLowerCase() === HOST_VERO
 
+/** Satispay spento in REGOLE → COME SI PAGA ferma anche lo scarico: l'interruttore è uno solo. */
+export const scaricoFermo = (spenti: readonly string[]): boolean => spenti.includes('satispay')
+// Lo stesso testo è nella Edge Function `satispay-scarico` (lo controlla prova:satispay-scarico).
+export const SCARICO_FERMO = 'Satispay è spento: lo scarico è fermo. Si riaccende da REGOLE → COME SI PAGA.'
+
 // <pagine> — da qui a </pagine> è copiato in supabase/functions/satispay-scarico/pagine.ts (lo controlla prova:satispay-scarico).
 export const ERRORE_SCARICO = 'Satispay non risponde: lo scarico riprova da solo stanotte'
 

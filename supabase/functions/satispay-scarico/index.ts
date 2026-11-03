@@ -95,6 +95,13 @@ Deno.serve(async (req) => {
     return risposta({ guaio: 'L’anteprima la chiede solo l’amministrazione' }, 403)
   }
 
+  // Satispay spento in REGOLE → COME SI PAGA: niente chiamate, niente errore, niente avviso. Se il database non
+  // risponde vale acceso, come nella funzione `satispay`.
+  const { data: spenti } = await admin.rpc('metodi_spenti')
+  if (Array.isArray(spenti) && spenti.includes('satispay')) {
+    return risposta({ guaio: 'Satispay è spento: lo scarico è fermo. Si riaccende da REGOLE → COME SI PAGA.' })
+  }
+
   const { data: stato, error } = await admin.from('satispay_scarico').select('primo_fatto, ripresa, storia_completa').single()
   if (error || !stato) {
     console.error('satispay_scarico', error)
