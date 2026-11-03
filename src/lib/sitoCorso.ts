@@ -31,12 +31,12 @@ const COLORI = ROTAZIONE_CORSO
  */
 type Fuochi = Partial<Record<'apertura' | 'interna' | 'chiusura', [string, string]>>
 const FUOCHI_CORSO: Record<string, Fuochi> = {
-  judo: { apertura: ['50% 12%', '50% 50%'], interna: ['50% 30%', '50% 29%'], chiusura: ['85% 50%', '85% 50%'] },
-  lotta: { apertura: ['50% 20%', '30% 50%'], interna: ['65% 50%', '58% 50%'], chiusura: ['10% 50%', '10% 50%'] },
+  judo: { apertura: ['50% 12%', '50% 12%'], interna: ['50% 30%', '50% 29%'], chiusura: ['85% 50%', '85% 50%'] },
+  lotta: { apertura: ['50% 20%', '70% 0%'], interna: ['65% 50%', '58% 50%'], chiusura: ['10% 50%', '10% 50%'] },
   aikido: { apertura: ['50% 8%', '50% 50%'], interna: ['24% 50%', '33% 50%'], chiusura: ['50% 50%', '50% 45%'] },
-  'preparazione-atletica': { apertura: ['50% 60%', '40% 60%'], interna: ['70% 50%', '80% 50%'], chiusura: ['50% 35%', '50% 35%'] },
+  'preparazione-atletica': { apertura: ['50% 12%', '50% 12%'], interna: ['70% 50%', '80% 50%'], chiusura: ['50% 35%', '50% 35%'] },
   'sollevamenti-pesi': { apertura: ['50% 55%', '60% 50%'], interna: ['45% 50%', '45% 50%'] },
-  'giocomotricita-e-psicomotricita': { apertura: ['50% 0%', '40% 40%'], chiusura: ['50% 50%', '50% 50%'] },
+  'giocomotricita-e-psicomotricita': { apertura: ['50% 40%', '40% 40%'], chiusura: ['50% 50%', '50% 50%'] },
   'avviamento-alle-arti-marziali': { apertura: ['50% 40%', '40% 50%'], interna: ['92% 50%', '90% 50%'], chiusura: ['40% 50%', '40% 50%'] },
 }
 
