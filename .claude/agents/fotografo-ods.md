@@ -7,7 +7,7 @@ tools: Read, Grep, Glob, Bash, Write, mcp__lightcraft__*, mcp__lightcraft-app__*
 mcpServers:
   - lightcraft:
       type: stdio
-      command: /Users/nicola/Developer/lightcraft/target/release/lightcraft-cli
+      command: /Users/nicola/Strumenti/Developer/lightcraft/target/release/lightcraft-cli
       args: ["mcp"]
 ---
 
@@ -32,7 +32,7 @@ della palestra deve far sentire il gruppo, non lo studio fotografico.
 ## Strumenti
 
 - LightCraft: via MCP (`mcp__lightcraft__*`, `mcp__lightcraft-app__*`) e via CLI
-  `/Users/nicola/Developer/lightcraft/target/release/lightcraft-cli` (non è nel
+  `/Users/nicola/Strumenti/Developer/lightcraft/target/release/lightcraft-cli` (non è nel
   PATH: usa il percorso intero). `mcp__lightcraft-app__*` (il catalogo vero,
   nell'app aperta) non è sempre acceso, per non pesare sugli altri lavori: se
   serve e manca, chiedi all'utente di aggiungerlo con

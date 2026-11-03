@@ -107,7 +107,7 @@
     },
     {
       "serverCommand": [
-        "/Users/nicola/Developer/lightcraft/target/release/lightcraft-cli",
+        "/Users/nicola/Strumenti/Developer/lightcraft/target/release/lightcraft-cli",
         "mcp",
         "/Users/nicola/Downloads/2025 2 febbraio 20 officine"
       ]
