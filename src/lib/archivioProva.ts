@@ -6,6 +6,7 @@ import type { Segnalata } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 import type { StatoSito } from './sitoProva'
 import type { ImmagineSito } from './sitoImmagini'
+import type { Punto } from './sitoFoto'
 import type { Cassa, CambioVoce, ChiusuraCassa, MovimentoManuale, VoceContabile } from './contabilita'
 import type { SaldoBanca } from './quadraturaBanca'
 import type { PagamentoNegozio } from './satispayScarico'
@@ -222,6 +223,8 @@ export interface Archivio {
   sito?: StatoSito
   /** Le immagini del sito (vedi `sitoImmagini.ts`); nascono al primo uso. */
   sitoImmagini?: ImmagineSito[]
+  /** Dove stanno le persone nelle foto del sito, per nome del file (vedi `sitoFoto.ts`). */
+  sitoPunti?: Record<string, Punto>
 }
 
 /** Come una riga di `prove` (21-prove.sql). */

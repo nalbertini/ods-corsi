@@ -268,4 +268,4 @@ Orientamento: O orizzontale, V verticale. Testo alternativo scritto come in
 
 ## Il fuoco delle foto
 
-Ogni foto del sito è ritagliata in riquadri di forme diverse. Perché non si taglino teste e mani, `src/lib/sitoFoto.ts` dice per ogni foto dove stanno le persone (`x% y%`). Una foto nuova, prima di metterla in una pagina: guardarla, aggiungere la riga in `FOCI_FOTO` (la prova `prova:sito-foto` ricorda il formato). Senza riga la foto resta col ritaglio del suo riquadro.
+Ogni foto del sito è ritagliata in riquadri di forme diverse. Perché non si taglino teste e mani, per ogni foto si sceglie dove stanno le persone (`x% y%`) in SITO › Immagini, «Dove stanno le persone»: il punto sta nella tabella `sito_punti` (138-sito-punti.sql) e il generatore lo mette nel CSS di ogni pagina (`cssPunti` in `src/lib/sitoFoto.ts`). Senza punto la foto resta col ritaglio del suo riquadro.

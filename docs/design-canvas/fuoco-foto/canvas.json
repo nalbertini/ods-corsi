@@ -1,0 +1,55 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Dove stanno le persone"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Main.dc.html",
+   "title": "Note · da decidere",
+   "x": 0,
+   "y": 0,
+   "w": 1000,
+   "h": 560,
+   "page": "page-1"
+  },
+  {
+   "file": "OggiImmagini.dc.html",
+   "title": "Oggi · SITO › Immagini",
+   "x": 0,
+   "y": 660,
+   "w": 1440,
+   "h": 1000,
+   "page": "page-1"
+  },
+  {
+   "file": "ProponiImmagini.dc.html",
+   "title": "Proposta · SITO › Immagini",
+   "x": 1540,
+   "y": 660,
+   "w": 1440,
+   "h": 1000,
+   "page": "page-1"
+  },
+  {
+   "file": "ProponiPunto.dc.html",
+   "title": "Proposta · Dove stanno le persone",
+   "x": 0,
+   "y": 1760,
+   "w": 1440,
+   "h": 1000,
+   "page": "page-1"
+  },
+  {
+   "file": "ProponiTogli.dc.html",
+   "title": "Proposta · Togliere la foto",
+   "x": 1540,
+   "y": 1760,
+   "w": 700,
+   "h": 340,
+   "page": "page-1"
+  }
+ ]
+}

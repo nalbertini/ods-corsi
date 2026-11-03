@@ -112,20 +112,8 @@ export function chiSiamoNuova(testoPulito: string, iscrizione: string): { html: 
  * Le regole della Chi siamo nuova: stanno dopo quelle della Home (testata, pulsanti, numeri, valori, chiamata finale). Quelle che
  * toccano pezzi già esistenti sono sotto `.chi-siamo-nuova`; le classi nuove (`.slogan-*`, `.blocco-*`, `.fila-foto`, `.oggi`) non servono
  * altrove perché questo `<style>` esce solo su questa pagina. La fila è fatta per quattro foto (4 colonne, 2×2 sul telefono). Scala dei titoli: 120 pagina, 80 sezione, 40 tessera.
- * Il fuoco delle foto è per riquadro (non per file): la stessa foto sta in riquadri diversi di pagine diverse, e `!important`
- * serve a vincere sulle regole per file di sitoFoto.ts. Quelle del telefono vengono dopo.
+ * Dove stanno le persone nelle foto lo dicono i punti del database (sitoFoto.ts), come in ogni pagina.
  */
-const FUOCHI: Array<[string, string, string]> = [
-  ['.slogan-foto img', '50% 70%', '50% 45%'],
-  ['.blocco-foto.inchiostro .blocco-img img', '50% 25%', '50% 25%'],
-  ['.blocco-foto.giallo .blocco-img img', '50% 50%', '50% 50%'],
-  ['.fila-foto figure:nth-child(1) img', '50% 62%', '50% 62%'],
-  ['.fila-foto figure:nth-child(2) img', '40% 50%', '40% 20%'],
-  ['.fila-foto figure:nth-child(3) img', '50% 90%', '50% 90%'],
-  ['.fila-foto figure:nth-child(4) img', '60% 40%', '60% 40%'],
-]
-const fuochi = (i: 1 | 2) => FUOCHI.map((f) => `.chi-siamo-nuova ${f[0]}{object-position:${f[i]}!important}`).join('\n')
-
 export const CSS_CHI_SIAMO = `
 .chi-siamo-nuova .sezione{padding-top:96px}
 .chi-siamo-nuova .pagina-hero{display:block;padding:24px var(--margine) 0}
@@ -166,7 +154,6 @@ export const CSS_CHI_SIAMO = `
 .chi-siamo-nuova .nascosto{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .chi-siamo-nuova .tessere.perche{grid-template-columns:repeat(2,minmax(0,1fr))}
 .chi-siamo-nuova .tessere.perche>.tessera{grid-column:auto}
-${fuochi(1)}
 @media (max-width:900px){
 .chi-siamo-nuova h1{font-size:56px}
 .chi-siamo-nuova .sezione{padding-top:64px}
@@ -194,6 +181,5 @@ ${fuochi(1)}
 .fila-foto figure img{height:210px}
 .fila-foto figcaption{font-size:15px}
 .chi-siamo-nuova .tessere.perche{grid-template-columns:1fr}
-${fuochi(2)}
 }
 `.replace(/\n/g, '')

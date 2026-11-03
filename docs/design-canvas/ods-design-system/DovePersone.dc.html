@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITO «fuoco delle foto» (storia in ../fuoco-foto/): `DoveStannoLePersone` di src/components/segreteria/ImmaginiSito.tsx, `.sito-punto-*` di src/segreteria.css.
+Si apre da SITO › Immagini, «Dove stanno le persone». A sinistra la foto intera: si trascina il cerchio giallo o si tocca un punto, le frecce lo spostano
+(Maiusc per passi lunghi). A destra i ritagli veri del sito con quel punto (object-position), computer, telefono e la striscia dei corsi. DOVE SI USA:
+una riga per pagina con il tag verde «Segue il punto» (il punto vince anche dove il codice aveva un taglio fisso). Il piede è sticky in fondo al dialogo,
+con una riga sopra: nota, Torna come prima (rimette il punto salvato e torna sulla foto), Annulla, Salva il punto; l'avviso dell'errore sta nel piede.
+Sotto i 900 px una colonna sola: la foto con 24 px di margine (per scorrere col dito), computer e striscia a tutta larghezza, telefono 96×118.
+Sotto i 600 px Salva a tutta larghezza sopra, Torna e Annulla affiancati sotto. Chiuso il dialogo, il fuoco torna sul pulsante della foto. -->
+<div style="display:flex;justify-content:center;width:1440px;min-height:1000px;padding:40px;background:#46606f">
+  <div role="dialog" style="display:flex;flex-direction:column;gap:18px;width:1200px;padding:28px 32px;border-radius:6px;background:#ffffff">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span style="font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-style:oblique 9deg;font-weight:700;font-size:26px;letter-spacing:0.04em;line-height:1">DOVE STANNO LE PERSONE</span>
+      <span style="font-size:15px;color:#46606f">Trascina il punto su chi deve vedersi. Il sito taglia la foto intorno a questo punto, su computer e su telefono.</span>
+    </div>
+    <div style="display:flex;gap:28px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+        <div style="position:relative;width:540px;height:360px;border:2px solid #cfe6f4;cursor:grab">
+          <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%" aria-hidden="true">
+  <rect x="0" y="0" width="1200" height="800" fill="#cfe6f4"></rect><rect x="0" y="560" width="1200" height="240" fill="#eef5fa"></rect>
+  <rect x="60" y="120" width="220" height="300" fill="#ffffff" opacity="0.6"></rect>
+  <g fill="#0d2a3d"><circle cx="680" cy="250" r="42"></circle><rect x="630" y="300" width="100" height="230" rx="18"></rect></g>
+  <g fill="#14709f"><circle cx="770" cy="230" r="44"></circle><rect x="718" y="282" width="104" height="250" rx="18"></rect></g>
+  <g fill="#46606f"><circle cx="860" cy="255" r="40"></circle><rect x="812" y="303" width="96" height="226" rx="18"></rect></g>
+</svg>
+          <span style="position:absolute;left:0;right:0;top:30%;border-top:1px dashed #ffffff;filter:drop-shadow(0 0 1px #0d2a3d)"></span>
+          <span style="position:absolute;top:0;bottom:0;left:62%;border-left:1px dashed #ffffff;filter:drop-shadow(0 0 1px #0d2a3d)"></span>
+          <span style="position:absolute;left:62%;top:30%;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:rgba(255,255,255,0.35);border:4px solid #f4c31b;box-shadow:0 0 0 2px #0d2a3d"></span>
+        </div>
+        <span style="font-size:13px;color:#46606f">Anche con la tastiera: le frecce spostano il punto.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;flex:1;min-width:0">
+        <div style="display:flex;gap:18px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#46606f">COMPUTER <span style="font-weight:500;letter-spacing:0">· foto grande di una pagina</span></span>
+        <div style="width:380px;height:148px;overflow:hidden;border:2px solid #cfe6f4"><svg viewBox="0 100 1200 467" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%" aria-hidden="true">
+  <rect x="0" y="0" width="1200" height="800" fill="#cfe6f4"></rect><rect x="0" y="560" width="1200" height="240" fill="#eef5fa"></rect>
+  <rect x="60" y="120" width="220" height="300" fill="#ffffff" opacity="0.6"></rect>
+  <g fill="#0d2a3d"><circle cx="680" cy="250" r="42"></circle><rect x="630" y="300" width="100" height="230" rx="18"></rect></g>
+  <g fill="#14709f"><circle cx="770" cy="230" r="44"></circle><rect x="718" y="282" width="104" height="250" rx="18"></rect></g>
+  <g fill="#46606f"><circle cx="860" cy="255" r="40"></circle><rect x="812" y="303" width="96" height="226" rx="18"></rect></g>
+</svg></div>
+        
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#46606f">TELEFONO <span style="font-weight:500;letter-spacing:0">· la stessa foto</span></span>
+        <div style="width:130px;height:160px;overflow:hidden;border:2px solid #cfe6f4"><svg viewBox="341 0 650 800" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%" aria-hidden="true">
+  <rect x="0" y="0" width="1200" height="800" fill="#cfe6f4"></rect><rect x="0" y="560" width="1200" height="240" fill="#eef5fa"></rect>
+  <rect x="60" y="120" width="220" height="300" fill="#ffffff" opacity="0.6"></rect>
+  <g fill="#0d2a3d"><circle cx="680" cy="250" r="42"></circle><rect x="630" y="300" width="100" height="230" rx="18"></rect></g>
+  <g fill="#14709f"><circle cx="770" cy="230" r="44"></circle><rect x="718" y="282" width="104" height="250" rx="18"></rect></g>
+  <g fill="#46606f"><circle cx="860" cy="255" r="40"></circle><rect x="812" y="303" width="96" height="226" rx="18"></rect></g>
+</svg></div>
+        
+      </div>
+        </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#46606f">STRISCIA DEI CORSI <span style="font-weight:500;letter-spacing:0">· Home, alta 150 px</span></span>
+        <div style="width:560px;height:58px;overflow:hidden;border:2px solid #cfe6f4"><svg viewBox="0 202 1200 125" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%" aria-hidden="true">
+  <rect x="0" y="0" width="1200" height="800" fill="#cfe6f4"></rect><rect x="0" y="560" width="1200" height="240" fill="#eef5fa"></rect>
+  <rect x="60" y="120" width="220" height="300" fill="#ffffff" opacity="0.6"></rect>
+  <g fill="#0d2a3d"><circle cx="680" cy="250" r="42"></circle><rect x="630" y="300" width="100" height="230" rx="18"></rect></g>
+  <g fill="#14709f"><circle cx="770" cy="230" r="44"></circle><rect x="718" y="282" width="104" height="250" rx="18"></rect></g>
+  <g fill="#46606f"><circle cx="860" cy="255" r="40"></circle><rect x="812" y="303" width="96" height="226" rx="18"></rect></g>
+</svg></div>
+        <span style="font-size:13px;line-height:1.4;color:#8f6a00">La striscia è bassa: qualcosa resta tagliato con qualsiasi punto.</span>
+      </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#46606f">DOVE SI USA</span>
+        <div style="display:flex;align-items:center;gap:12px;min-height:44px;padding:6px 0;border-bottom:1px solid #cfe6f4">
+          <span style="flex:1;font-size:15px"><b>Judo</b> · foto in cima alla pagina</span>
+          <dc-import name="Badge" label="Segue il punto" tipo="tag" tono="verde" hint-size="130px,28px"></dc-import>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:44px;padding:6px 0;border-bottom:1px solid #cfe6f4">
+          <span style="flex:1;font-size:15px"><b>Home</b> · scheda del corso Judo</span>
+          <dc-import name="Badge" label="Segue il punto" tipo="tag" tono="verde" hint-size="130px,28px"></dc-import>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:44px;padding:6px 0;border-bottom:1px solid #cfe6f4">
+          <span style="flex:1;font-size:15px"><b>Orari e prezzi</b> · foto nel testo</span>
+          <dc-import name="Badge" label="Segue il punto" tipo="tag" tono="verde" hint-size="130px,28px"></dc-import>
+        </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 0 4px;border-top:2px solid #cfe6f4;background:#ffffff">
+      <span style="flex:1;font-size:14px;color:#46606f">Si vedrà sul sito entro qualche minuto.</span>
+      <dc-import name="Bottone" label="Torna come prima" variante="linea" contesto="segreteria" hint-size="180px,44px"></dc-import>
+      <dc-import name="Bottone" label="Annulla" variante="linea" contesto="segreteria" hint-size="110px,44px"></dc-import>
+      <dc-import name="Bottone" label="Salva il punto" variante="principale" contesto="segreteria" hint-size="160px,44px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

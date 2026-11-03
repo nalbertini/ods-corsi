@@ -190,8 +190,8 @@ console.log('\n7. Foto di scheda o iniziale')
     s.filter((a) => /<img/.test(a.html)).map((a) => a.html.match(/data-corso="([^"]*)"/)?.[1]),
     s.filter((a) => /senza-foto/.test(a.html)).map((a) => a.html.match(/<span aria-hidden="true">(.)</)?.[1]),
   ], [['judo', 'lotta', 'aikido', 'preparazione-atletica', 'giocomotricita-e-psicomotricita'], ['P', 'M', 'A', 'S']])
-  ok('il CSS dei fuochi ha judo, su desktop e su telefono', [1440, 375].map((w) => R.some((r) => vale(r.media, w) && r.sel === '.scheda-foto img[data-corso="judo"]')), [true, true])
-  ok('…e ci sono regole diverse per il telefono', R.some((r) => r.media.includes('max-width:900px') && r.sel === '.scheda-foto img[data-corso="judo"]'), true)
+  // I fuochi fissi per corso sono passati nel database (`138-sito-punti.sql`): un punto per foto, uguale su computer e telefono, provato in prova-sito-genera.
+  ok('nessun fuoco fisso per corso nel CSS: il punto viene dal pannello', R.some((r) => r.sel.includes('.scheda-foto img[data-corso')), false)
 }
 
 console.log('\n8. Le immagini dopo l’ultima scheda non finiscono nell’ultima')

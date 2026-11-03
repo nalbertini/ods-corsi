@@ -56,4 +56,4 @@ La pagina è nuova se prima del primo `h2` c'è un paragrafo di soli pulsanti co
 | la sezione subito prima della chiusura, con 3 o 4 `h3` e un solo paragrafo ciascuno | «Cosa aspettarsi», tessere numerate |
 | l'ultima sezione con un pulsante verso il modulo | chiusura gialla: titolo, frasi, pulsanti, foto C a destra (senza, a una colonna); l'invito «PROVA» del piede non si ripete |
 
-Il punto da tenere al centro delle foto è per corso e ruolo (`FUOCHI_CORSO`), non per file: le foto nuove hanno il nome che dà la libreria IMMAGINI. Un corso senza foto approvate non ha regole di fuoco.
+Il punto da tenere al centro delle foto è per foto, non per corso: lo sceglie la segreteria in SITO › Immagini (tabella `sito_punti`, 138-sito-punti.sql) e vale in ogni pagina che usa la foto.

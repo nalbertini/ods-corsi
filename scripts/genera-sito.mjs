@@ -112,16 +112,18 @@ async function leggi() {
       return fine(`Il database ha risposto una cosa che non si legge (${funzione}): riprova fra poco.`)
     }
   }
-  const [pagine, menu, rinvii, orari, orariSito] = await Promise.all([
+  const [pagine, menu, rinvii, orari, orariSito, punti] = await Promise.all([
     chiama('sito_pagine_pubbliche'),
     chiama('sito_menu_pubblico'),
     chiama('sito_redirect_pubblici'),
     chiama('orari_aperti', { facoltativa: true }),
     chiama('orari_sito', { manca: 'manca 69-orari-sito.sql, o va rilanciato 06-iscrizioni.sql' }),
+    // Senza 138-sito-punti.sql le foto restano col ritaglio dei riquadri: il sito esce lo stesso.
+    chiama('sito_punti_pubblici', { facoltativa: true }),
   ])
   // Zero righe non è un guasto (la pagina dice «Orari in arrivo»); una risposta che non è un elenco sì.
   if (!Array.isArray(orariSito)) fine('Il database ha risposto una cosa che non è un elenco (orari_sito): controlla che 69-orari-sito.sql sia stato lanciato.')
-  return { pagine, menu, rinvii, orari, orariSito }
+  return { pagine, menu, rinvii, orari, orariSito, punti }
 }
 
 /** Le misure delle foto del contenitore, per width/height. Una foto che non risponde o non si legge resta senza: il sito esce lo stesso. */
@@ -149,7 +151,7 @@ for (const nome of ['pagine', 'menu', 'rinvii']) {
 }
 // Nei file di dati di prima `orariSito` non c'è: la pagina dice «Orari in arrivo».
 if (risposte.orariSito !== undefined && !Array.isArray(risposte.orariSito)) fine('I dati non sono fatti come si aspetta il generatore: «orariSito» dovrebbe essere un elenco.')
-const dati = datiDaRisposte(dominio, risposte.pagine, risposte.menu, risposte.rinvii, Array.isArray(risposte.orari) ? risposte.orari : undefined, risposte.orariSito)
+const dati = datiDaRisposte(dominio, risposte.pagine, risposte.menu, risposte.rinvii, Array.isArray(risposte.orari) ? risposte.orari : undefined, risposte.orariSito, Array.isArray(risposte.punti) ? risposte.punti : undefined)
 // Le immagini delle pagine stanno nel contenitore «sito» del progetto: solo quelle entrano nel sito (vedi `supabase/58-sito-immagini.sql`).
 if (process.env.SUPABASE_URL) {
   let origine

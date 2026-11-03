@@ -6,12 +6,12 @@ import { GRIGLIA_MASSIMA, collage, conFila, conMisure, impagina, persona, testat
 import { elencoIstruttori, schedaScarna, type Cornice } from './sitoIstruttori'
 import { CSS_CORSI, CSS_CORSI_NUOVA, corsiNuova, eCorsiNuova } from './sitoCorsi'
 import { CSS_INTERNE } from './sitoInterne'
-import { cssFoci, cssFociSchede } from './sitoFoto'
+import { cssPunti, puntiDaRighe, type Punto } from './sitoFoto'
 import { eContattiNuova, contattiNuova } from './sitoContatti'
 import { CSS_ORARI, dividiOrari, orariHtml, type OrarioSito } from './sitoOrari'
 import { eHomeNuova, eIscrizione, homeNuova, pulsanti, pulsantiDi } from './sitoHome'
 import { conProvenienza, etichettaPagina, haProvenienza } from './provenienza'
-import { CSS_ORARIO_AUTOMATICO, corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
+import { CSS_ORARIO_AUTOMATICO, corsoNuovo, eCorsoNuovo } from './sitoCorso'
 import { testiOrario, type OrarioAperto } from './sitoOrario'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
 import { ACCESSO, CONTATTI, ISCRIZIONE, chiama, scrivi } from './sito'
@@ -76,6 +76,8 @@ export interface DatiSito {
   immagini?: Record<string, MisureImmagine>
   /** Le ricorrenze dei corsi (`orari_aperti()`): servono alle pagine collegate. Senza, una pagina collegata dice «Orario in arrivo». */
   orari?: OrarioAperto[]
+  /** Dove stanno le persone, per nome del file (`sito_punti_pubblici()`). Senza, ogni foto resta col ritaglio del suo riquadro. */
+  punti?: Record<string, Punto>
   /**
    * Il codice del sito su GoatCounter (`SITO_STATISTICHE`, lo passa solo `scripts/genera-sito.mjs`): con un codice buono le
    * pagine contano le visite. Assente o fuori forma: i file sono quelli di sempre, byte per byte (l'anteprima del pannello non lo passa mai).
@@ -941,7 +943,6 @@ h1{font-size:84px;line-height:.84}
 ${CSS_CORSI}
 ${CSS_INTERNE}
 ${CSS_TESTATA}
-${cssFoci()}
 @media (max-width:720px){.colonne.c-2,.colonne.c-3{grid-template-columns:minmax(0,1fr)}}
 /* Il movimento sta tutto qui (niente codice nostro: solo CSS). Titolo, testo e foto di apertura si muovono solo con transform: con l'opacità a 0 la prima immagine e il testo si vedrebbero dopo, e il contenuto manca se l'animazione non parte (per questo «backwards»). */
 @media (prefers-reduced-motion:no-preference){
@@ -1212,8 +1213,10 @@ const titoliInOrdine = (intro: string, resto: string) =>
 
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; cssCorsoNuovo?: string; cssCorsi?: boolean; cssOrari?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
+  // In fondo a tutto: le regole dei punti vincono sul ritaglio di ogni riquadro (vedi sitoFoto.ts).
+  const punti = cssPunti(c.d.punti ?? {})
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}${PRELOAD_FONT}<style>${CSS_SITO}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${conSalto(o.corpo)}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}${PRELOAD_FONT}<style>${CSS_SITO}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}${punti ? `<style>${punti}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${conSalto(o.corpo)}</body></html>`
 }
 
 /**
@@ -1320,7 +1323,7 @@ function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: b
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div></section>`
   const corpo = `${testata(c, percorso('corsi'))}<main class="passo-unico corso-nuovo" data-corso="${esc(p.slug)}">${titoliInOrdine(hero, h.html)}</main>${fondo(h.chiamata)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: true })
-  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsoNuovo: cssFuochiCorso(p.slug) + (collegata ? CSS_ORARIO_AUTOMATICO : ''), dati })
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsoNuovo: collegata ? CSS_ORARIO_AUTOMATICO : '', dati })
 }
 
 /** Contatti nuova (sitoContatti.ts): come la Home, testata, titolo con i due pulsanti, sezioni a passo unico; l'invito di sempre resta in fondo. */
@@ -1478,7 +1481,7 @@ export function generaSito(d: DatiSito): Record<string, string> {
 /** Le pagine di legge del sito: le tre che `56-sito.sql` crea più la dichiarazione di `107-sito-accessibilita.sql`, che non si nascondono (la funzione pubblica non dice quali sono). */
 export const PAGINE_DI_LEGGE = ['privacy', 'cookie', 'contributi-pubblici', 'dichiarazione-accessibilita']
 
-/** Le risposte delle funzioni pubbliche del database (`sito_pagine_pubbliche`, `sito_menu_pubblico`, `sito_redirect_pubblici`, `orari_sito`) come servono al generatore. */
+/** Le risposte delle funzioni pubbliche del database (`sito_pagine_pubbliche`, `sito_menu_pubblico`, `sito_redirect_pubblici`, `orari_sito`, `sito_punti_pubblici`) come servono al generatore. */
 export function datiDaRisposte(
   dominio: string,
   pagine: Array<{ slug: string; titolo: string | null; descrizione: string | null; testo: string | null; pubblicata_il: string | null; corsi_collegati?: string[] | null }>,
@@ -1486,6 +1489,7 @@ export function datiDaRisposte(
   rinvii: Array<{ da: string; a: string }>,
   orari?: Array<{ corso_id: string; giorno: number; ora: string; durata_min: number }>,
   orariSito?: OrarioSito[],
+  punti?: unknown[],
 ): DatiSito {
   return {
     dominio: dominio.replace(/\/+$/, ''),
@@ -1503,5 +1507,6 @@ export function datiDaRisposte(
     rinvii,
     orari: (orari ?? []).map((o) => ({ corsoId: o.corso_id, giorno: o.giorno, ora: o.ora, durataMin: o.durata_min })),
     orariSito,
+    punti: punti ? puntiDaRighe(punti) : undefined,
   }
 }

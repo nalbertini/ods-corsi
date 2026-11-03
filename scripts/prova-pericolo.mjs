@@ -47,10 +47,12 @@ function pulsanti(src) {
   const fuori = []
   for (let a = src.indexOf('<button'); a >= 0; a = src.indexOf('<button', a + 1)) {
     const f = fineAttributi(src, a + 7)
-    const chiude = src.indexOf('</button>', f)
+    // Un `<button ... />` non ha testo: la sua chiusura è più avanti, di un altro tasto.
+    const solo = f >= 0 && src[f - 1] === '/'
+    const chiude = solo ? f : src.indexOf('</button>', f)
     if (f < 0 || chiude < 0) continue
     const attr = src.slice(a + 7, f)
-    const dentro = src.slice(f + 1, chiude)
+    const dentro = solo ? '' : src.slice(f + 1, chiude)
     // Il testo che si legge: il testo semplice e le stringhe dentro le graffe.
     const parole = [
       ...dentro.replace(/\{[^}]*\}/g, (g) => ` ${[...g.matchAll(/'([^']*)'|"([^"]*)"/g)].map((m) => m[1] ?? m[2]).join(' | ')} `).split('|'),

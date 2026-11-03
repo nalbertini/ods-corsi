@@ -1178,6 +1178,40 @@ button.sito-immagine { cursor: pointer; }
 button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shadow: inset 0 0 0 2px var(--text); }
 .sito-scegli { width: min(760px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow-y: auto; }
 .sito-immagini-scelta { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+/* Dove stanno le persone: la miniatura taglia come il sito, col puntino giallo del punto scelto. */
+.sito-immagine-miniatura { position: relative; display: block; width: 100%; }
+.sito-punto-puntino { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--giallo); box-shadow: 0 0 0 2px var(--text); pointer-events: none; }
+.sito-punto { width: min(1200px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; }
+.sito-punto-corpo { display: grid; grid-template-columns: minmax(0, 540px) minmax(0, 1fr); gap: 28px; align-items: start; }
+.sito-punto-foto { position: relative; border: 2px solid var(--line); cursor: grab; touch-action: none; user-select: none; }
+.sito-punto-foto:active { cursor: grabbing; }
+.sito-punto-foto img { display: block; width: 100%; height: auto; }
+.sito-punto-riga { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--surface); filter: drop-shadow(0 0 1px var(--text)); pointer-events: none; }
+.sito-punto-colonna { position: absolute; top: 0; bottom: 0; border-left: 1px dashed var(--surface); filter: drop-shadow(0 0 1px var(--text)); pointer-events: none; }
+.sito-punto-cerchio { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: color-mix(in srgb, var(--surface) 35%, transparent); border: 4px solid var(--giallo); box-shadow: 0 0 0 2px var(--text); pointer-events: none; }
+.sito-punto-taglio { display: block; max-width: 100%; object-fit: cover; border: 2px solid var(--line); background: var(--surface-2); }
+.sito-punto-computer { width: 380px; height: 148px; }
+.sito-punto-telefono { width: 130px; height: 160px; }
+.sito-punto-striscia { width: 560px; height: 58px; }
+.sito-punto-uso { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.sito-punto-piede { position: sticky; bottom: 0; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: auto; padding: 12px 0 4px; border-top: 2px solid var(--line); background: var(--surface); }
+.sito-punto-nota { flex: 1; }
+.sito-punto-piede > :not(button, .sito-punto-nota) { flex-basis: 100%; }
+/* Sotto i 900 px: la foto e i due tagli più usati affiancati, gli altri sotto; intorno alla foto resta del margine per scorrere col dito. */
+@media (max-width: 900px) {
+  .sito-punto-corpo { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .sito-punto-foto { margin: 0 24px; }
+  .sito-punto-computer { width: 100%; height: auto; aspect-ratio: 380 / 148; }
+  .sito-punto-telefono { width: 96px; height: 118px; }
+  .sito-punto-striscia { width: 100%; height: auto; aspect-ratio: 560 / 58; }
+}
+/* A telefono: prima Salva, a tutta larghezza; Annulla e Torna affiancati sotto. */
+@media (max-width: 600px) {
+  .sito-punto-nota { flex-basis: 100%; }
+  .sito-punto-salva { order: 1; flex-basis: 100%; justify-content: center; }
+  .sito-punto-annulla, .sito-punto-torna { order: 2; flex: 1; justify-content: center; }
+  .sito-punto-piede > :not(button, .sito-punto-nota) { order: 3; }
+}
 .sito-immagini-scelta img { height: 110px; }
 .sito-barra-foto { align-items: center; }
 @media (max-width: 767px) { .sito-immagini-scelta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

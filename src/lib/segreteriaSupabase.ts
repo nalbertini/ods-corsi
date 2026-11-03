@@ -45,6 +45,7 @@ import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { cosaNonVaChiusura as cosaNonVaPeriodo, mancaChiusure, SENZA_CHIUSURE, type Chiusura, type ContoChiusura } from './chiusure'
 import { pezziInHtml, pezziValidi } from './sitoPezzi'
 import { ORARIO_NON_ATTIVO } from './sitoOrario'
+import { FOTO_NON_DEL_SITO, PUNTO_FUORI, nomeValido, puntiDaRighe, puntoValido } from './sitoFoto'
 import { CACHE_IMMAGINI, CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
 import { riduciFoto } from './foto'
 import type { NumeriSito } from './sitoNumeri'
@@ -223,6 +224,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/cambi_voce/, MANCA_CAMBIA_VOCE],
   [/collegamenti_persona/, MANCA_MOVIMENTI_PERSONA],
   [/voci_contabili|relation "(public\.)?(casse|movimenti)"|table 'public\.(casse|movimenti)'/, MANCA_CONTABILITA],
+  [/sito_punti/, 'I punti delle persone nelle foto non sono ancora attivi sul database: va lanciato 138-sito-punti.sql'],
   [/sito_pagine|sito_menu|sito_redirect|salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito/, MANCA_SITO],
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
   [/tessere/, 'Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql'],
@@ -2866,6 +2868,19 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const { data, error } = await db.storage.from(CONTENITORE_SITO).remove([nome])
       if (error) throw immaginiNonAttive(error)
       if (!data?.length) throw new Error('Questa immagine non si cancella: o non c’è più, o non hai il permesso')
+      // Il punto dopo il file: se non va via resta un punto di una foto che non c'è, che non tocca nessuna pagina (i nomi non tornano).
+      await db.from('sito_punti').delete().eq('nome', nome)
+    },
+
+    async sitoPunti() {
+      return puntiDaRighe(ok(await db.from('sito_punti').select('nome, x, y')) ?? [])
+    },
+
+    async salvaPuntoSito(nome, punto) {
+      if (!nomeValido(nome)) throw new Error(FOTO_NON_DEL_SITO)
+      if (!puntoValido(punto)) throw new Error(PUNTO_FUORI)
+      ok(await db.from('sito_punti').upsert({ nome, x: punto.x, y: punto.y, cambiato_il: new Date().toISOString() }))
+      void rigeneraSito()
     },
 
     async gestisciPresenzaIstruttore(id, conferma) {

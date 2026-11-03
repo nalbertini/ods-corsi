@@ -525,6 +525,58 @@ console.log('\nImmagini: segreteria in modalità prova')
   ok('dopo i rifiuti l\'elenco non cambia', await nomi(), [b?.nome, a?.nome])
   await chiama(() => s.cancellaImmagineSito(a?.nome))
   ok('cancella ne toglie una', await nomi(), [b?.nome])
+
+  // I punti «dove stanno le persone»: uno per foto, validi solo interi 0..100; cancellare la foto toglie il suo punto.
+  const punti = async () => await chiama(() => s.sitoPunti())
+  ok('all\'inizio non ci sono punti', await punti(), {})
+  await chiama(() => s.salvaPuntoSito(b?.nome, { x: 30, y: 70 }))
+  ok('salvato un punto, l\'elenco lo dà', await punti(), { [b?.nome]: { x: 30, y: 70 } })
+  await chiama(() => s.salvaPuntoSito(b?.nome, { x: 31, y: 71 }))
+  ok('salvarlo di nuovo lo sposta, non lo raddoppia', await punti(), { [b?.nome]: { x: 31, y: 71 } })
+  for (const [cosa, p] of [['101', { x: 101, y: 5 }], ['-1', { x: 5, y: -1 }], ['un decimale', { x: 5.5, y: 5 }], ['NaN', { x: NaN, y: 5 }]]) {
+    const e = await chiama(() => s.salvaPuntoSito(b?.nome, p))
+    ok(`un punto non valido (${cosa}) è rifiutato con una frase per la segreteria`, e, 'ERRORE: Il punto deve stare dentro la foto: spostalo e salva di nuovo.')
+  }
+  // Il database accetta solo i nomi del contenitore (uuid minuscolo e .jpg/.png/.webp): la prova rifiuta gli stessi.
+  for (const nome of ['a.html', b?.nome.toUpperCase(), `${b?.nome}x`]) {
+    ok(`un punto per un file che non è una foto del sito (${nome}) è rifiutato`, await chiama(() => s.salvaPuntoSito(nome, { x: 5, y: 5 })), 'ERRORE: Questa foto non è più nel sito: ricarica la pagina.')
+  }
+  ok('dopo i rifiuti il punto è com\'era', await punti(), { [b?.nome]: { x: 31, y: 71 } })
+  await chiama(() => s.cancellaImmagineSito(b?.nome))
+  ok('cancellare la foto toglie anche il suo punto', await punti(), {})
+}
+
+// Lo stesso con l'adattatore del database, su un client finto che segna le chiamate: il punto si controlla prima
+// di scrivere, si salva con un upsert su `sito_punti` (poi si rigenera il sito), e togliere la foto toglie il punto.
+{
+  const ss = await carica('src/lib/segreteriaSupabase.ts')
+  const chiamate = []
+  const tabella = (t) => ({
+    select: async (c) => (chiamate.push(['select', t, c]), { data: [{ nome: FOTO, x: 30, y: 70 }, { nome: 'a.html', x: 1, y: 1 }], error: null }),
+    upsert: async (r) => (chiamate.push(['upsert', t, Object.keys(r).sort(), r.nome, r.x, r.y]), { data: null, error: null }),
+    delete: () => ({ eq: async (c, v) => (chiamate.push(['delete', t, c, v]), { data: null, error: null }) }),
+  })
+  const db = {
+    from: tabella,
+    storage: { from: () => ({ remove: async (n) => (chiamate.push(['remove', ...n]), { data: n, error: null }) }) },
+    functions: { invoke: async (f, o) => (chiamate.push(['invoke', f, o.body.azione]), { data: null, error: null }) },
+  }
+  const FOTO = 'fbfe492b-0000-4000-8000-000000000000.jpg'
+  const s = prova(() => ss.creaSegreteriaSupabase(db))
+  const chiama = async (f) => {
+    chiamate.length = 0
+    try {
+      await f()
+      return 'nessun errore'
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  ok('database: i punti si leggono da sito_punti e le righe fuori forma si saltano', [await chiama(async () => ok('database: il punto letto', await s.sitoPunti(), { [FOTO]: { x: 30, y: 70 } })), chiamate], ['nessun errore', [['select', 'sito_punti', 'nome, x, y']]])
+  ok('database: un punto buono si salva con un upsert e il sito si rigenera', [await chiama(() => s.salvaPuntoSito(FOTO, { x: 31, y: 71 })), chiamate], ['nessun errore', [['upsert', 'sito_punti', ['cambiato_il', 'nome', 'x', 'y'], FOTO, 31, 71], ['invoke', 'sito', 'avvia']]])
+  ok('database: un punto fuori è rifiutato prima di scrivere', [await chiama(() => s.salvaPuntoSito(FOTO, { x: 101, y: 5 })), chiamate], ['ERRORE: Il punto deve stare dentro la foto: spostalo e salva di nuovo.', []])
+  ok('database: un nome che non è una foto del sito è rifiutato prima di scrivere', [await chiama(() => s.salvaPuntoSito('a.html', { x: 5, y: 5 })), chiamate], ['ERRORE: Questa foto non è più nel sito: ricarica la pagina.', []])
+  ok('database: togliere la foto toglie il file e poi il suo punto', [await chiama(() => s.cancellaImmagineSito(FOTO)), chiamate], ['nessun errore', [['remove', FOTO], ['delete', 'sito_punti', 'nome', FOTO]]])
 }
 
 console.log(guai ? `\n${guai} ✗` : '\nTutto ✓')

@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;width:240px;padding:12px;border:2px solid #cfe6f4;background:#ffffff">
+  <span style="position:relative;display:block;width:100%"><svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:160px" aria-hidden="true">
+  <rect x="0" y="0" width="1200" height="800" fill="#cfe6f4"></rect><rect x="0" y="560" width="1200" height="240" fill="#eef5fa"></rect>
+  <rect x="60" y="120" width="220" height="300" fill="#ffffff" opacity="0.6"></rect>
+  <g fill="#0d2a3d"><circle cx="680" cy="250" r="42"></circle><rect x="630" y="300" width="100" height="230" rx="18"></rect></g>
+  <g fill="#14709f"><circle cx="770" cy="230" r="44"></circle><rect x="718" y="282" width="104" height="250" rx="18"></rect></g>
+  <g fill="#46606f"><circle cx="860" cy="255" r="40"></circle><rect x="812" y="303" width="96" height="226" rx="18"></rect></g>
+</svg><sc-if value="{{aPosto}}" hint-placeholder-val="{{ true }}"><span style="position:absolute;left:62%;top:30%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#f4c31b;box-shadow:0 0 0 2px #0d2a3d"></span></sc-if></span>
+  <sc-if value="{{aPosto}}" hint-placeholder-val="{{ true }}"><dc-import name="Badge" label="Persone a posto" tipo="tag" tono="verde" hint-size="130px,28px"></dc-import></sc-if>
+  <sc-if value="{{alCentro}}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#46606f">Tagliata al centro</span></sc-if>
+  <span style="font-size:14px;color:#46606f">{{usataIn}}</span>
+  <dc-import name="Bottone" label="Dove stanno le persone" variante="linea" contesto="segreteria" alto="44px" corpo="14px" hint-size="210px,44px"></dc-import>
+  <sc-if value="{{inUso}}" hint-placeholder-val="{{ true }}"><dc-import name="Badge" tipo="tag" label="In uso: non si cancella" hint-size="170px,28px"></dc-import></sc-if>
+  <sc-if value="{{togli}}" hint-placeholder-val="{{ false }}"><dc-import name="Bottone" label="Togli" variante="pericolo" contesto="segreteria" alto="44px" corpo="14px" hint-size="80px,44px"></dc-import></sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"aPosto":{"editor":"boolean","default":true},"usata":{"editor":"text","default":"Home, Judo"},"$preview":{"width":264,"height":420}}'>
+// COSTRUITO «fuoco delle foto» (storia in ../fuoco-foto/): la scheda di una foto in SITO › Immagini, `Immagini` di ImmaginiSito.tsx,
+// `.sito-immagine*` e `.sito-punto-puntino` di src/segreteria.css. La miniatura è tagliata come il sito (object-position dal punto, se no al centro);
+// col punto scelto c'è il puntino giallo e il tag verde «Persone a posto», senza «Tagliata al centro» in grigio. «Dove stanno le persone» apre
+// DovePersone. Una foto usata in una pagina ha il tag «In uso: non si cancella», una non usata il chip rosso «Togli» (che toglie anche il punto).
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const usata = (p.usata || '').trim();
+    return { aPosto: !!p.aPosto, alCentro: !p.aPosto, usataIn: usata ? 'Usata in: ' + usata : 'Non è usata in nessuna pagina', inUso: !!usata, togli: !usata };
+  }
+}
+</script>
+</body>
+</html>

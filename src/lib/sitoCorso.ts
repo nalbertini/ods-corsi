@@ -24,32 +24,6 @@ export function eCorsoNuovo(testoPulito: string, iscrizione: string): boolean {
 
 const COLORI = ROTAZIONE_CORSO
 
-/**
- * Dove stanno le persone nelle foto di pagina, per corso e ruolo: `[computer, telefono]` come `object-position`.
- * Sono per corso e ruolo e non per file perché i file nuovi hanno un nome deciso dalla libreria IMMAGINI, non da noi.
- * Un corso che non è qui non ha foto approvate: i riquadri restano col ritaglio al centro.
- */
-type Fuochi = Partial<Record<'apertura' | 'interna' | 'chiusura', [string, string]>>
-const FUOCHI_CORSO: Record<string, Fuochi> = {
-  judo: { apertura: ['50% 12%', '50% 12%'], interna: ['50% 30%', '50% 29%'], chiusura: ['85% 50%', '85% 50%'] },
-  lotta: { apertura: ['50% 20%', '70% 0%'], interna: ['65% 50%', '58% 50%'], chiusura: ['10% 50%', '10% 50%'] },
-  aikido: { apertura: ['50% 8%', '50% 50%'], interna: ['24% 50%', '33% 50%'], chiusura: ['50% 50%', '50% 45%'] },
-  'preparazione-atletica': { apertura: ['50% 12%', '50% 12%'], interna: ['70% 50%', '80% 50%'], chiusura: ['50% 35%', '50% 35%'] },
-  'sollevamenti-pesi': { apertura: ['50% 55%', '60% 50%'], interna: ['45% 50%', '45% 50%'] },
-  'giocomotricita-e-psicomotricita': { apertura: ['50% 40%', '40% 40%'], chiusura: ['50% 50%', '50% 50%'] },
-  'avviamento-alle-arti-marziali': { apertura: ['50% 40%', '40% 50%'], interna: ['92% 50%', '90% 50%'], chiusura: ['40% 50%', '40% 50%'] },
-}
-
-const SELETTORE: Array<[keyof Fuochi, string]> = [['apertura', '.corso-apertura img'], ['interna', '.corso-interna img'], ['chiusura', '.cta-foto img']]
-
-/** Le regole di fuoco di un corso: vuote se il corso non ha foto approvate. */
-export function cssFuochiCorso(slug: string): string {
-  const f = FUOCHI_CORSO[slug]
-  if (!f) return ''
-  const regole = (i: 0 | 1) => SELETTORE.flatMap(([ruolo, selettore]) => { const x = f[ruolo]; return x ? [`main[data-corso="${slug}"] ${selettore}{object-position:${x[i]}}`] : [] }).join('')
-  return `${regole(0)}@media (max-width:900px){${regole(1)}}`
-}
-
 /** Le voci della fascia blu che dicono giorno e ora: in una pagina collegata le sostituisce l'orario di CORSI. */
 const VOCE_ORARIO = /^(giorn[oi]|ora|orari?)$/i
 
