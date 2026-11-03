@@ -245,6 +245,15 @@ console.log('\n13. I fuochi delle foto')
     const h = pagina(T(), { slug, titolo })
     ok(`${slug}: un fuoco per .corso-apertura img, .corso-interna img e .cta-foto img`, ['.corso-apertura img', '.corso-interna img', '.cta-foto img'].map((s) => regola(h, slug, s)), [true, true, true])
   }
+  // Le aperture che tagliavano i visi (sul telefono, o su tutti e due): [corso, computer, telefono].
+  for (const [slug, d, t] of [['judo', '50% 12%', '50% 12%'], ['lotta', '50% 20%', '70% 0%'], ['preparazione-atletica', '50% 12%', '50% 12%'], ['giocomotricita-e-psicomotricita', '50% 40%', '40% 40%']]) {
+    const c = css(pagina(T(), { slug, titolo: slug }))
+    const reg = (x) => `main[data-corso="${slug}"] .corso-apertura img{object-position:${x}}`
+    const i = c.indexOf(reg(d))
+    const m = c.indexOf('@media (max-width:900px){', i)
+    const j = m < 0 ? -1 : c.indexOf(reg(t), m)
+    ok(`${slug}: apertura ${d} sul computer, ${t} sul telefono`, [i >= 0, j > i], [true, true])
+  }
   const senza = pagina(T(), { slug: 'yoga', titolo: 'Yoga' })
   ok('un corso fuori dalla tabella (yoga): nessuna regola di fuoco per lui', css(senza).includes('[data-corso="yoga"]'), false)
   ok('la pagina di prima non ha regole di fuoco', /\[data-corso=/.test(css(pagina(T({ pul: '' })))), false)

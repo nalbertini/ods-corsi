@@ -46,9 +46,9 @@ const FOTO = {
 // Le foto delle schede dei corsi della Home si ritagliano per corso, non per file: il nome lo decide l'app al
 // caricamento e cambiare foto non deve far rifare il fuoco. [computer, telefono]
 const SCHEDE = {
-  judo: ['50% 0%', '50% 30%'],
+  judo: ['50% 0%', '50% 5%'],
   lotta: ['50% 85%', '50% 50%'],
-  aikido: ['50% 5%', '35% 50%'],
+  aikido: ['50% 5%', '40% 15%'],
   'preparazione-atletica': ['50% 50%', '50% 50%'],
   'giocomotricita-e-psicomotricita': ['75% 50%', '75% 50%'],
 }

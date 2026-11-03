@@ -116,11 +116,11 @@ export function chiSiamoNuova(testoPulito: string, iscrizione: string): { html: 
  * serve a vincere sulle regole per file di sitoFoto.ts. Quelle del telefono vengono dopo.
  */
 const FUOCHI: Array<[string, string, string]> = [
-  ['.slogan-foto img', '50% 70%', '50% 75%'],
+  ['.slogan-foto img', '50% 70%', '50% 45%'],
   ['.blocco-foto.inchiostro .blocco-img img', '50% 25%', '50% 25%'],
   ['.blocco-foto.giallo .blocco-img img', '50% 50%', '50% 50%'],
   ['.fila-foto figure:nth-child(1) img', '50% 62%', '50% 62%'],
-  ['.fila-foto figure:nth-child(2) img', '40% 50%', '40% 50%'],
+  ['.fila-foto figure:nth-child(2) img', '40% 50%', '40% 20%'],
   ['.fila-foto figure:nth-child(3) img', '50% 90%', '50% 90%'],
   ['.fila-foto figure:nth-child(4) img', '60% 40%', '60% 40%'],
 ]
