@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.236.0 — 3 novembre 2026
+
+### Novità
+
+- Dal pannello SITO si sceglie dove stanno le persone nelle foto del sito
+
 ## 0.235.4 — 3 novembre 2026
 
 ### Risolto
