@@ -82,7 +82,7 @@ alter table avvisi_segreteria add column if not exists preso_il timestamptz;
 alter table avvisi_segreteria add column if not exists dati jsonb;
 alter table avvisi_segreteria drop constraint if exists avvisi_segreteria_tipo_check;
 alter table avvisi_segreteria add constraint avvisi_segreteria_tipo_check
-  check (tipo in ('richiesta', 'pagamento', 'pagamento_senza_richiesta', 'satispay_scarico'));
+  check (tipo in ('richiesta', 'pagamento', 'pagamento_senza_richiesta', 'satispay_scarico', 'certificato'));
 alter table avvisi_segreteria drop constraint if exists avvisi_segreteria_non_mandato_check;
 alter table avvisi_segreteria add constraint avvisi_segreteria_non_mandato_check check (non_mandato in ('tetto', 'vuoto', 'guasto'));
 alter table avvisi_segreteria enable row level security;

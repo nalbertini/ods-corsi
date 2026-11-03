@@ -1,6 +1,8 @@
 // ---------------------------------------------------------------------------
 // Gli avvisi alla segreteria: un'email quando arriva una richiesta di
-// iscrizione o un pagamento Satispay (`84-avvisi-segreteria.sql`).
+// iscrizione, un pagamento Satispay (`84-avvisi-segreteria.sql`) o un
+// certificato mandato dall'area iscritti (`139-avviso-certificato.sql`, che si
+// lancia dopo aver pubblicato questa funzione).
 //
 //   POST (corpo ignorato) → `{ mandati, guasti }`
 //

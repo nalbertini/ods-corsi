@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------
 // Gli avvisi alla segreteria: l'email che parte quando arriva una richiesta di
-// iscrizione, un pagamento Satispay o uno scarico Satispay in CONTABILITÀ. Cosa avvisare e quando lo decide il
+// iscrizione, un pagamento Satispay, uno scarico Satispay in CONTABILITÀ o un
+// certificato medico mandato dall'area iscritti (139). Cosa avvisare e quando lo decide il
 // database (`84-avvisi-segreteria.sql`, `avvisi_da_mandare`); qui il testo
 // della mail e gli indirizzi, così che si provino senza posta né database.
 //
@@ -36,6 +37,8 @@ export type Avviso =
   | { tipo: 'pagamento_senza_richiesta'; nome: string; cognome: string; email: string; corso: string; importo: number; pagatoIl: string }
   /** Uno scarico Satispay non riuscito. Gli avvisi di prima del 132 hanno anche incassi, rimborsi e daDecidere. */
   | { tipo: 'satispay_scarico'; quando: string; incassi: number; rimborsi: number; daDecidere: number; errore: string | null }
+  /** Un certificato da guardare: solo chi e quando, il file e la scadenza stanno nella scheda. */
+  | { tipo: 'certificato'; personaId: string; nome: string; cognome: string; inviatoIl: string }
 
 const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
 
@@ -108,6 +111,12 @@ export function testoAvviso(a: Avviso, app: string): { oggetto: string; testo: s
       : [`Lo scarico di ${q.giorno} alle ${q.ora} è fatto: chi ha pagato lo trovi in IMPORTAZIONI.`]
     link = `${app}#importazioni`
     tasto = 'Apri IMPORTAZIONI'
+  } else if (a.tipo === 'certificato') {
+    const q = quando(a.inviatoIl)
+    oggetto = `Certificato medico · ${chi(a)}`
+    frasi = [`${chi(a)} ha mandato il certificato medico dall’area iscritti ${q.giorno} alle ${q.ora}: è da guardare e confermare.`]
+    link = `${app}#iscritti/${encodeURIComponent(a.personaId)}`
+    tasto = 'Apri la scheda'
   } else {
     const pagato = quando(a.pagatoIl)
     oggetto = `Pagamento Satispay senza richiesta · ${euro(a.importo)} · ${chi(a)}`
