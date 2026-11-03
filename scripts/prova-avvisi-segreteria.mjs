@@ -191,6 +191,29 @@ console.log('\n3bis. lo scarico dei pagamenti Satispay: l\'avviso solo se non è
   ok('il motivo non si ripete nella frase', scritto.split('non è riuscito').length - 1, 1)
 }
 
+console.log('\n3ter. il certificato medico mandato dall\'iscritto')
+{
+  const PID = 'aaaaaaaa-0000-0000-0000-000000000003'
+  // Un tipo che manca non ferma la prova: ogni caso dice il suo.
+  const cert = (x = {}) => {
+    try {
+      return testoAvviso({ tipo: 'certificato', personaId: PID, nome: 'Anna', cognome: 'Rossi', inviatoIl: ARRIVATA, ...x }, APP)
+    } catch (e) {
+      return `errore: ${String(e?.message).slice(0, 60)}`
+    }
+  }
+  const t = cert()
+  ok('l\'oggetto con nome e cognome', t?.oggetto, 'Certificato medico · Anna Rossi')
+  ok('il giorno e l\'ora dell\'invio', testo(t).includes('oggi alle 18.32'), true)
+  ok('il tasto «Apri la scheda»', html(t).includes('Apri la scheda'), true)
+  ok('il link alla scheda dell\'iscritto', testo(t).includes(`${APP}#iscritti/${PID}`), true)
+  ok('l\'id nel link è codificato', testo(cert({ personaId: 'a b/c' })).includes(`${APP}#iscritti/a%20b%2Fc`), true)
+  ok('un altro giorno: il giorno per esteso', testo(cert({ inviatoIl: '2026-11-03T17:32:00Z' })).includes('il 3 novembre alle 18.32'), true)
+  ok('un nome con a capo e tab: l\'oggetto sta su una riga', cert({ nome: 'Anna\r\nBcc: ladro@esempio.it', cognome: 'Ro\tssi' })?.oggetto, 'Certificato medico · Anna Bcc: ladro@esempio.it Ro ssi')
+  const tutto = [t?.oggetto, testo(t), html(t)].join('\n')
+  ok('niente scadenza, file né dati di salute', [tutto.includes('Certificato medico'), ['scadenza', 'scade', 'scaduto', 'file', 'attesa-'].filter((x) => tutto.toLowerCase().includes(x))], [true, []])
+}
+
 console.log('\n4. nella mail mai note, codice fiscale, nascita, file')
 {
   // Quel che il modulo raccoglie e la mail non deve dire, anche se arriva per sbaglio dentro l'avviso.

@@ -652,6 +652,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and coalesce((select pg_get_function_result(to_regprocedure('public.incassi_vecchio_programma()'))), '') like '%assegnato%'),
   -- Rifà `fai_ricevuta` (93): rilanciando la 93 (o la 92), il controllo torna «manca».
   ('137-annuale-tre-rate.sql', 'la ricevuta di un annuale non si emette con più di 3 rate',
-    exists (select 1 from dentro where nome = 'fai_ricevuta' and corpo like '%al massimo 3 rate%' and corpo like '%contabilita_oggi%'))
+    exists (select 1 from dentro where nome = 'fai_ricevuta' and corpo like '%al massimo 3 rate%' and corpo like '%contabilita_oggi%')),
+  -- Rifà `avvisi_da_mandare` (122) e `avviso_da_registro` (84): rilanciando quelli, il controllo torna «manca».
+  ('139-avviso-certificato.sql', 'un certificato mandato dall''area iscritti fa partire un''email alla segreteria',
+    exists (select 1 from dentro where nome = 'avvisi_da_mandare' and corpo like '%''certificato:''%')
+    and exists (select 1 from dentro where nome = 'avviso_da_registro' and corpo like '%''certificato''%'))
 ) as x(file, cosa, c)
 order by file, cosa;

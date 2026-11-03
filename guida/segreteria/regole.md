@@ -132,7 +132,8 @@ la richiesta parte lo stesso e il modulo dice di chiedere alla segreteria come p
 ## Gli avvisi
 
 **GLI AVVISI ALLA SEGRETERIA**: dove arriva un'email quando arriva una
-richiesta online, un pagamento Satispay o uno scarico Satispay non riuscito. **EMAIL PER GLI AVVISI** è
+richiesta online, un pagamento Satispay, uno scarico Satispay non riuscito o un
+certificato medico mandato dall'area iscritti. **EMAIL PER GLI AVVISI** è
 l'indirizzo della segreteria: vuoto, non parte nessun avviso. **IN COPIA** è
 facoltativo, e riceve ogni avviso (si parte con asdilcentrojudo@gmail.com).
 Le email partono da info@officinedellosport.it. Un indirizzo scritto male lo
@@ -156,9 +157,14 @@ prima, ad avvisi spenti, non mandano niente.
 - **Lo scarico Satispay non riuscito**: quando si è fermato, perché, e
   **Apri IMPORTAZIONI**. Uno scarico riuscito non manda niente: non scrive
   niente in contabilità, dice solo chi ha pagato.
+- **Un certificato medico** mandato dall'area iscritti, da cinque a dieci
+  minuti dopo: chi l'ha mandato, quando, e **Apri la scheda**, dove si guarda
+  il file e si conferma o si rifiuta. Se è già confermato o rifiutato prima,
+  o ne arriva un altro al suo posto, non parte. Un certificato rimandato dopo
+  l'email ne manda un'altra.
 
-Nell'email solo nomi, corsi e importi: mai note, codice fiscale, data di
-nascita, documenti. Al più 50 avvisi al giorno, perché la casella manda anche
+Nell'email solo nomi, corsi, importi e quando: mai note, codice fiscale, data di
+nascita, documenti, il file o la scadenza del certificato. Al più 50 avvisi al giorno, perché la casella manda anche
 le ricevute alle famiglie: quelli in più non partono, e
 [Richieste online](richieste.md) lo dice.
 

@@ -97,7 +97,8 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   segreteria lo controlla e scrive la scadenza, o lo rifiuta: se lo rifiuta
   va rimandato. Mentre è in attesa, in cima alla pagina e nel riquadro c'è
   scritto, in giallo, che **è arrivato** e che la segreteria lo deve
-  confermare: fino ad allora non vale ancora. Il file lo vede solo la segreteria: qui c'è solo la data
+  confermare: fino ad allora non vale ancora. Il file lo vede solo la
+  segreteria, che riceve un'email quando arriva: qui c'è solo la data
   d'invio. Per un minore senza accesso lo manda il titolare.
   Se hai pagato la quota in parte con una ricevuta, sotto c'è **PAGA … €
   CON SATISPAY**: paghi solo quel che manca, la cifra la calcola l'app (non
