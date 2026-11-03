@@ -656,6 +656,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rifà `avvisi_da_mandare` (122) e `avviso_da_registro` (84): rilanciando quelli, il controllo torna «manca».
   ('139-avviso-certificato.sql', 'un certificato mandato dall''area iscritti fa partire un''email alla segreteria',
     exists (select 1 from dentro where nome = 'avvisi_da_mandare' and corpo like '%''certificato:''%')
-    and exists (select 1 from dentro where nome = 'avviso_da_registro' and corpo like '%''certificato''%'))
+    and exists (select 1 from dentro where nome = 'avviso_da_registro' and corpo like '%''certificato''%')),
+  -- Rifà `fai_ricevuta_compenso` (96): rilanciando 80 o 96, il controllo torna «manca».
+  ('140-compenso-arrotondamento.sql', 'l''importo di una riga del compenso si divide per 60 alla fine, come nell''app',
+    exists (select 1 from dentro where nome = 'fai_ricevuta_compenso' and corpo like '%::numeric * (t->>''centesimi_ora'')::int / 60)%'))
 ) as x(file, cosa, c)
 order by file, cosa;

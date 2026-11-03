@@ -83,7 +83,8 @@ export function compensoDelMese<P extends MiaPresenza>(presenze: P[], senzaIstru
   const righe: RigaCompenso[] = x.perCorso.map((r) => {
     const t = tariffe.find((t) => t.corso === r.corso)
     const base = { corso: r.corso, lezioni: r.lezioni, minuti: r.minuti }
-    return t ? { ...base, centesimiOra: t.centesimi, importo: Math.round((r.minuti / 60) * t.centesimi) } : base
+    // Diviso per 60 alla fine, come il database (140): 65 / 60 in virgola mobile perde il mezzo centesimo.
+    return t ? { ...base, centesimiOra: t.centesimi, importo: Math.round((r.minuti * t.centesimi) / 60) } : base
   })
   return {
     righe,
