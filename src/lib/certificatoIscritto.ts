@@ -1,4 +1,4 @@
-import { AVVISO_CERTIFICATO, spostaGiorno, statoCertificato, type CertificatoSeg } from './segreteria'
+import { AVVISO_CERTIFICATO, dalCertificato, spostaGiorno, statoCertificato, type CertificatoSeg, type StatoCertificato } from './segreteria'
 
 /**
  * Il certificato medico che l'iscritto manda dall'area iscritti
@@ -69,4 +69,33 @@ export function boxCertificato(
   const scade = s.certificato.scade
   if (stato === 'valido' && scade && scade > spostaGiorno(oggi, AVVISO_CERTIFICATO)) return { tasto: null, testo: `Valido fino al ${data(scade)}.` }
   return { tasto: 'manda', testo: 'Manda una foto o un PDF del certificato: la segreteria lo controlla e scrive la scadenza.' }
+}
+
+export interface RigaCertificato {
+  testo: string
+  /** Niente tono quando va bene. */
+  tono?: 'avviso' | 'guaio'
+}
+
+/**
+ * La riga di stato del riquadro CERTIFICATO MEDICO. Con un file in attesa lo
+ * stato non cambia (non vale finché la segreteria non lo conferma), cambia
+ * come lo si dice: è arrivato, non «manca».
+ */
+export function rigaCertificato(s: { certificato: Pick<CertificatoSeg, 'scade'> & { inAttesaIl?: string }; natoIl?: string }, oggi: string): RigaCertificato {
+  const stato = statoCertificato(s, oggi)
+  const scade = data(s.certificato.scade ?? '')
+  const nuovo = s.certificato.inAttesaIl ? 'quello nuovo è arrivato, la segreteria lo deve confermare.' : null
+  if (nuovo && (stato === 'manca' || stato === 'in_arrivo')) return { tono: 'avviso', testo: 'Arrivato: la segreteria lo deve confermare.' }
+  if (nuovo && stato === 'scaduto') return { tono: 'avviso', testo: `Scaduto il ${scade}: ${nuovo}` }
+  if (nuovo && stato === 'in_scadenza') return { tono: 'avviso', testo: `Vale fino al ${scade}: ${nuovo}` }
+  const righe: Record<StatoCertificato, RigaCertificato> = {
+    manca: { tono: 'guaio', testo: 'Non risulta: senza, in sala non si entra.' },
+    scaduto: { tono: 'guaio', testo: `Scaduto il ${scade}.` },
+    in_scadenza: { tono: 'avviso', testo: `Vale fino al ${scade}: scade fra poco.` },
+    valido: { testo: `Vale fino al ${scade}.` },
+    non_serve: { testo: 'Sotto i 6 anni non serve.' },
+    in_arrivo: { tono: 'avviso', testo: `Dal ${data(dalCertificato(s.natoIl ?? ''))}, a 6 anni, serve: portalo in segreteria.` },
+  }
+  return righe[stato]
 }

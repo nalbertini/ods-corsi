@@ -133,6 +133,12 @@ console.log('\n5. gli avvisi in cima')
   ok('quota da pagare: dice che si paga qui sotto (c\'è il tasto PAGA LA QUOTA)', m.avvisi({ certificato: { scade: '2027-06-01', conFile: true }, pagamento: { stato: 'da_pagare' } }, '2026-10-02').map((a) => a.testo), ['La quota non risulta pagata: pagala qui sotto o passa in segreteria.'])
   ok('pagato in parte: avviso', t({ scade: '2027-06-01', conFile: true }, { stato: 'in_parte' }), ['avviso'])
   ok('pagato fino a ieri: guaio', t({ scade: '2027-06-01', conFile: true }, { stato: 'pagato', fino: '2026-10-01' }), ['guaio'])
+  // Il file mandato non vale finché la segreteria non lo conferma, ma non si dice «portalo»: è già arrivato.
+  const a = (certificato) => m.avvisi({ certificato, pagamento: { stato: 'pagato' } }, '2026-10-02')
+  ok('mandato, in attesa: avviso che dice che è arrivato', a({ inAttesaIl: '2026-10-01' }), [{ tono: 'avviso', testo: 'Il certificato medico è arrivato: la segreteria lo deve confermare.' }])
+  ok('scaduto, quello nuovo in attesa: avviso', a({ scade: '2026-09-01', inAttesaIl: '2026-10-01' }), [{ tono: 'avviso', testo: 'Il certificato medico è scaduto il 01/09/2026: quello nuovo è arrivato, la segreteria lo deve confermare.' }])
+  ok('in scadenza, quello nuovo in attesa: niente «prenota la visita»', a({ scade: '2026-10-20', inAttesaIl: '2026-10-01' }), [{ tono: 'avviso', testo: 'Il certificato medico scade il 20/10/2026: quello nuovo è arrivato, la segreteria lo deve confermare.' }])
+  ok('valido, quello nuovo in attesa: niente avvisi', a({ scade: '2027-06-01', inAttesaIl: '2026-10-01' }), [])
 }
 
 console.log('\n5b. sotto i 6 anni il certificato non serve (area iscritti)')
