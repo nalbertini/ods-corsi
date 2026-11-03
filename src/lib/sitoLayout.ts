@@ -550,7 +550,8 @@ export function conCaricamento(tag: string, prima: boolean): string {
 export function conMisure(tag: string): string {
   const m = /\bsrc="([^"]*\/storage\/v1)\/object\/public\/(sito\/[A-Za-z0-9._-]+)"/i.exec(tag)
   if (!m) return tag
-  const url = (w: number) => `${m[1]}/render/image/public/${m[2]}?width=${w}&quality=75`
+  // resize=contain: con solo width Supabase tiene l'altezza originale e taglia la striscia centrale della foto.
+  const url = (w: number) => `${m[1]}/render/image/public/${m[2]}?width=${w}&quality=75&resize=contain`
   const srcset = [480, 800, 1200].map((w) => `${url(w)} ${w}w`).join(', ')
   return tag.replace(m[0], `src="${url(800)}" srcset="${srcset}" sizes="(max-width: 800px) 100vw, 800px"`)
 }
