@@ -136,7 +136,7 @@ la richiesta parte lo stesso e il modulo dice di chiedere alla segreteria come p
 (da 1 a 120, di solito 30; fuori da lì non si salva: «I giorni vanno da 1 a
 120.»). Per chi si iscrive contano dal giorno in cui accogli la richiesta; per
 chi è già iscritto, dal giorno in cui il certificato scade. Cambiare il numero
-vale per le iscrizioni che accogli da adesso: chi ha già una data la tiene. Nel
+vale per le iscrizioni che accogli da adesso (chi ha già una data scritta la tiene) e per i rinnovi, che si calcolano dalla scadenza. Nel
 termine la persona viene alle lezioni ed è gialla; dopo è rossa, ma la presenza
 si segna lo stesso. Il modulo di iscrizione dice questi giorni.
 

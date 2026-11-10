@@ -359,7 +359,7 @@ export const domandaCertificato = (tipo: 'normale' | 'agonistico', di?: string):
 /** La scelta del passo documenti: nessuna, finché chi si iscrive non la fa. */
 export type SceltaCertificato = 'ora' | 'dopo'
 
-const giorniDetti = (giorni: number) => (giorni === 1 ? '1 giorno' : `${giorni} giorni`)
+export const giorniDetti = (giorni: number) => (giorni === 1 ? '1 giorno' : `${giorni} giorni`)
 
 /** Sotto «Non ce l’ho ancora»: si promettono i giorni, non una mail. */
 export const testoCertificatoDopo = (giorni: number): string =>
@@ -372,12 +372,27 @@ export function mancaCertificato(scelta: SceltaCertificato | undefined, conFile:
   return undefined
 }
 
-/** La riga della pagina finale: entro quando portarlo. La data non c'è ancora, parte dall'accoglimento. */
-export function promemoriaCertificato({ di, giorni }: { di?: string; giorni: number }): { titolo: string; testo: string } {
-  return {
-    titolo: `Porti il certificato medico${di ? ` di ${di}` : ''}`,
-    testo: `entro ${giorniDetti(giorni)} da quando la segreteria accoglie l’iscrizione: dall’area iscritti o in segreteria. Intanto ${di ? `${di} viene` : 'vieni'} alle lezioni`,
+/**
+ * La riga della pagina finale: entro quando portarlo. La data non c'è ancora, parte dall'accoglimento.
+ * `di` più d'uno (una famiglia): «Portate i certificati medici», e vengono alle lezioni.
+ */
+export function promemoriaCertificato({ di, giorni }: { di?: string | string[]; giorni: number }): { titolo: string; testo: string } {
+  const entro = `entro ${giorniDetti(giorni)} da quando la segreteria accoglie l’iscrizione: dall’area iscritti o in segreteria.`
+  if (Array.isArray(di) && di.length > 1) return { titolo: 'Portate i certificati medici', testo: `${entro} Intanto ${elencoNomi(di)} vengono alle lezioni` }
+  const uno = Array.isArray(di) ? di[0] : di
+  return { titolo: `Porti il certificato medico${uno ? ` di ${uno}` : ''}`, testo: `${entro} Intanto ${uno ? `${uno} viene` : 'vieni'} alle lezioni` }
+}
+
+const elencoNomi = (n: string[]) => (n.length < 2 ? n.join('') : `${n.slice(0, -1).join(', ')} e ${n[n.length - 1]}`)
+
+/** La frase della pagina finale del modulo: senza la scelta (prima di 141), solo il ricordo di portarlo. */
+export function fraseCertificatoFinale(c: { tipo: 'nessuno' | 'normale' | 'agonistico'; conFile: boolean; dopo: boolean; giorni: number | null; di?: string }): string | null {
+  if (c.tipo === 'nessuno' || c.conFile) return null
+  if (c.dopo && c.giorni !== null) {
+    const p = promemoriaCertificato({ di: c.di, giorni: c.giorni })
+    return `${p.titolo} ${p.testo}.`
   }
+  return `Ricorda di portare in segreteria il certificato medico${c.tipo === 'agonistico' ? ' agonistico' : ''}.`
 }
 
 /** Una frase sola: il certificato serve per partecipare, e si carica o si porta in segreteria. */
@@ -543,6 +558,8 @@ export function mancaPerInviare(
     firma: string | null
     file: Partial<Record<TipoFile, unknown>>
     obbligatori: TipoFile[]
+    /** La scelta del certificato, quando il modulo la chiede (141). */
+    certificato?: { scelta: SceltaCertificato | undefined }
   },
   oggi = new Date(),
 ): string | null {
@@ -551,6 +568,7 @@ export function mancaPerInviare(
     controlla(s.dati, oggi) ??
     (s.come === 'qui' ? s.firma : null) ??
     (fileMancante ? (fileMancante.tipo === 'ricevuta' ? MANCA_RICEVUTA : `Manca: ${fileMancante.etichetta.toLowerCase()}`) : null) ??
+    (s.certificato ? (mancaCertificato(s.certificato.scelta, !!s.file.certificato) ?? null) : null) ??
     (s.privacy ? null : "Serve la conferma di aver letto l'informativa privacy")
   )
 }

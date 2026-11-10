@@ -31,21 +31,23 @@ export function riquadroCertificato(c: CertificatoSeg, natoIl: string | undefine
   const stato = statoCertificato({ certificato: c, natoIl }, oggi)
   const rosso = stato === 'manca' || stato === 'scaduto'
   // Nel termine col file mandato: lo conferma la segreteria, non serve spostare la data.
-  const tasto: TastoTermine | undefined = !attiva || c.inAttesaIl ? undefined : c.entroScritto && (rosso || stato === 'atteso') ? 'Cambia la data' : rosso ? 'Dai una data' : undefined
+  // Col file senza data il gesto è «Scrivi la data» del certificato, non il termine.
+  const tasto: TastoTermine | undefined =
+    !attiva || c.inAttesaIl || (stato === 'manca' && c.conFile) ? undefined : c.entroScritto && (rosso || stato === 'atteso') ? 'Cambia la data' : rosso ? 'Dai una data' : undefined
   const conTasto = (r: Riquadro) => (tasto ? { ...r, tasto } : r)
   if (stato === 'atteso' && c.entro) {
     const entro = dataLunga(c.entro).toUpperCase()
     const mancano = giorni(oggi, c.entro)
     const quando = mancano === 0 ? 'oggi' : mancano === 1 ? 'domani' : `fra ${mancano} giorni`
+    // Il termine spostato a mano vince sul rinnovo calcolato: lo dice la traccia.
+    const spostato = c.spostatoDa && c.spostatoIl && c.entroScritto === c.entro ? `data spostata da ${c.spostatoDa} il ${dataLunga(c.spostatoIl)}` : undefined
     const sotto = c.inAttesaIl
       ? `caricato il ${dataLunga(c.inAttesaIl)}, da confermare: finché non lo confermi non vale`
-      : c.scade
-        ? `${quando} · il nuovo va portato entro ${giorni(c.scade, c.entro)} giorni dalla scadenza`
-        : `${quando} · ${c.spostatoDa && c.spostatoIl ? `data spostata da ${c.spostatoDa} il ${dataLunga(c.spostatoIl)}` : 'iscritto senza certificato'}`
+      : `${quando} · ${spostato ?? (c.scade ? `il nuovo va portato entro ${giorni(c.scade, c.entro)} giorni dalla scadenza` : 'iscritto senza certificato')}`
     return conTasto({ nome: c.scade ? `SCADUTO IL ${data} · DA PORTARE ENTRO IL ${entro}` : `DA PORTARE ENTRO IL ${entro}`, sotto, tono: 'giallo' })
   }
   if (stato === 'manca' && !c.conFile) {
-    if (!c.entro) return conTasto({ nome: 'CERTIFICATO NON ARRIVATO', sotto: 'iscritto prima di questa regola, senza termine · la presenza si segna', tono: 'rosso' })
+    if (!c.entro) return conTasto({ nome: 'CERTIFICATO NON ARRIVATO', sotto: 'senza un termine per portarlo · la presenza si segna', tono: 'rosso' })
     const da = giorni(c.entro, oggi)
     return conTasto({ nome: `DOVEVA PORTARLO ENTRO IL ${dataLunga(c.entro).toUpperCase()}`, sotto: `${da === 1 ? 'da ieri' : `da ${da} giorni`} · la presenza si segna, ma va sollecitato`, tono: 'rosso' })
   }

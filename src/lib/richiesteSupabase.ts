@@ -143,6 +143,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
     async certificatoGiorni() {
       try {
         const { data, error } = await db.rpc('iscrizioni_regole')
+        // as: `iscrizioni_regole()` dà un jsonb, qui controllato campo per campo.
         const g = !error && data && typeof data === 'object' ? (data as Record<string, unknown>).certificato_giorni : undefined
         return typeof g === 'number' ? g : null
       } catch {

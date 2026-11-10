@@ -55,7 +55,7 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
     righe.push({
       id: `certificato-${p.id}`,
       livello: 'blocca',
-      titolo: `${conNome(p)} · certificato ${statoCertificato(p, oggi) === 'manca' ? 'mancante' : 'scaduto'}`,
+      titolo: `${conNome(p)} · ${statoCertificato(p, oggi) === 'scaduto' ? 'certificato scaduto' : p.certificato.entro ? 'doveva portare il certificato' : 'certificato mancante'}`,
       sotto: cosaBlocca(p, oggi)?.frase ?? '',
       tasto: 'Apri la scheda',
       vai: { voce: 'iscritti', persona: p.id },

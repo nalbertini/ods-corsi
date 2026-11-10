@@ -495,7 +495,10 @@ export function creaRichiesteProva(): DatiRichieste {
         certificatiProva.set(id, { url: cert.url, pdf: cert.pdf })
         file.get(richiestaId)?.delete('certificato')
         a.persone = a.persone.map((p) =>
-          p.id === id ? { ...p, certificato: { scade: scade || p.certificato?.scade, file: `${id}/certificato-${Date.now()}.${cert.pdf ? 'pdf' : 'jpg'}`, caricatoIl: oggi } } : p,
+          // Il termine resta, salvo un certificato valido: come il trigger di 141.
+          p.id === id
+            ? { ...p, certificato: { scade: scade || p.certificato?.scade, file: `${id}/certificato-${Date.now()}.${cert.pdf ? 'pdf' : 'jpg'}`, caricatoIl: oggi, ...((scade || p.certificato?.scade || '') >= oggi ? {} : { entro: p.certificato?.entro, spostatoDa: p.certificato?.spostatoDa, spostatoIl: p.certificato?.spostatoIl }) } }
+            : p,
         )
       }
       // Come il trigger di 141: «non ce l'ho ancora», dai 6 anni e senza un certificato valido, prende il termine.

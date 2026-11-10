@@ -677,6 +677,10 @@ console.log('\n11. il riquadro rosso in fondo: il primo messaggio che blocca, a 
   ok('messa la spunta alla privacy, sparisce', manca({ privacy: true }), null)
   ok('campo obbligatorio mancante', manca({ dati: adulto({ cognome: '' }) }), 'Mancano: cognome')
   ok('compilato il campo, sparisce', manca({ dati: adulto({ cognome: 'Rossi' }) }), null)
+  // 141: con la scelta del certificato, nessuna scelta o «Lo carico ora» senza file fermano l'invio.
+  ok('certificato: senza scelta ferma', manca({ certificato: { scelta: undefined } }), 'Dicci se il certificato ce l’hai.')
+  ok('certificato: «Lo carico ora» senza file ferma', manca({ certificato: { scelta: 'ora' } }), 'Manca il certificato: caricalo, oppure scegli «Non ce l’ho ancora».')
+  ok('certificato: col file, o «Non ce l’ho ancora», parte', [manca({ certificato: { scelta: 'ora' }, file: { modulo: {}, documento: {}, certificato: {} } }), manca({ certificato: { scelta: 'dopo' } })], [null, null])
   // Due blocchi insieme: sistemato il primo si vede il secondo, poi più niente.
   const due = { dati: adulto({ regolamento: false }), privacy: false }
   ok('due blocchi: prima il regolamento', manca(due), REG)

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FocusEvent, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { anniScritti, avvisoCertificato, certificatoDaPortare, domandaCertificato, mancaCertificato, promemoriaCertificato, testoCertificatoDopo, type SceltaCertificato, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, DETTAGLIO_RICEVUTA, domandaUscita, ESTENSIONI, FILE, fileObbligatori, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante, tipiDaChiedere } from '../lib/richieste'
+import { anniScritti, avvisoCertificato, certificatoDaPortare, domandaCertificato, fraseCertificatoFinale, mancaCertificato, testoCertificatoDopo, type SceltaCertificato, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, DETTAGLIO_RICEVUTA, domandaUscita, ESTENSIONI, FILE, fileObbligatori, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante, tipiDaChiedere } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { CONOSCIUTO, domandaConosciuto, origineDellaRichiesta, pulisciConosciuto, SCEGLI_SE_VUOI, type Conosciuto } from '../lib/provenienza'
@@ -349,15 +349,15 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   }
 
   /** Cosa manca al modulo, a parte come si paga: con Satispay si paga solo col modulo a posto. */
-  const mancaModulo =
-    mancaPerInviare({
-      dati: pronta,
-      privacy,
-      come,
-      firma: mancaPerFirmare(),
-      file,
-      obbligatori,
-    }) ?? (chiedeScelta ? (mancaCertificato(sceltaCert, !!file.certificato) ?? null) : null)
+  const mancaModulo = mancaPerInviare({
+    dati: pronta,
+    privacy,
+    come,
+    firma: mancaPerFirmare(),
+    file,
+    obbligatori,
+    ...(chiedeScelta && { certificato: { scelta: sceltaCert } }),
+  })
   const riquadroPaga = scelta && stima ? statoRiquadroPaga(scelta, sp, { stima: stima.totale, corso: scelti[0].nome, manca: mancaModulo, preparo, guaio: guaioSp, metodo }) : null
   /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
   const blocco =
@@ -454,6 +454,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     // Se i campi sono a posto e manca una scelta del modulo, lo schermo va lì, non in fondo al riquadro.
     const mancata = sceltaMancante(scelte)
     if (!primo && come === 'qui' && mancata) setTimeout(() => document.getElementById(`m-${mancata}`)?.focus(), 0)
+    // …e così la scelta del certificato, se manca solo quella.
+    else if (!primo && chiedeScelta && !sceltaCert) setTimeout(() => document.getElementById('m-certificato')?.focus(), 0)
     if (blocco) return
     // Il modulo firmato si fa prima di mandare le risposte: se non viene, non
     // nasce una richiesta senza modulo.
@@ -484,12 +486,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   }
 
   // Il certificato da portare: lo dice la pagina finale, con o senza Satispay.
-  const promemoria = chiedeScelta && sceltaCert === 'dopo' && giorni !== null ? promemoriaCertificato({ di: nomeDi, giorni }) : null
-  const promemoriaDelCertificato = promemoria
-    ? `${promemoria.titolo} ${promemoria.testo}.`
-    : certificato !== 'nessuno' && !file.certificato
-      ? `Ricorda di portare in segreteria il certificato medico${certificato === 'agonistico' ? ' agonistico' : ''}.`
-      : null
+  const promemoriaDelCertificato = fraseCertificatoFinale({ tipo: certificato, conFile: !!file.certificato, dopo: chiedeScelta && sceltaCert === 'dopo', giorni, di: nomeDi })
 
   if (fase.tipo === 'fatto') {
     // Pagata con Satispay prima di mandare: lo dice la pagina finale.

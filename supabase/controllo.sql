@@ -17,9 +17,12 @@
 
 -- `dentro` sono le funzioni con il loro corpo: una versione vecchia di un
 -- file lascia la funzione, ma con dentro quello che faceva prima.
--- `invia_iscrizione_0` è la `invia_iscrizione` di prima, avvolta da 141: i controlli dei file di prima la cercano lì.
+-- `invia_iscrizione_0` è la `invia_iscrizione` di prima, avvolta da 141: i controlli dei file di prima la cercano lì,
+-- ma solo finché la `invia_iscrizione` vera è quella che la avvolge (dopo un rilancio di 06 o 125 non lo è più).
 with dentro(nome, corpo) as (
-  select case when p.proname = 'invia_iscrizione_0' then 'invia_iscrizione' else p.proname::text end, p.prosrc from pg_proc p where p.pronamespace = 'public'::regnamespace
+  select case when p.proname = 'invia_iscrizione_0' then 'invia_iscrizione' else p.proname::text end, p.prosrc from pg_proc p
+  where p.pronamespace = 'public'::regnamespace
+    and (p.proname <> 'invia_iscrizione_0' or exists (select 1 from pg_proc w where w.pronamespace = p.pronamespace and w.proname = 'invia_iscrizione' and w.prosrc like '%invia_iscrizione_0%'))
 )
 select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (values
   ('01-schema.sql', 'le tabelle',

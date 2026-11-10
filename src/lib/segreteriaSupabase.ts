@@ -718,11 +718,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
   /** I giorni per portare il certificato (141); `null` senza la colonna: nessun termine, come prima. */
   const giorniCertificato = async (): Promise<number | null> => {
-    // Senza 141 (colonna che manca) o se la lettura non va: l'elenco si vede lo stesso, senza termini.
+    // Senza 141 (la colonna manca): nessun termine, come prima. Se la lettura non va per altro, i giorni di sempre:
+    // senza, chi è nel termine diventerebbe rosso senza dirlo.
     const r = await db.from('impostazioni').select('certificato_giorni').maybeSingle()
-    if (r.error) return null
-    const g = (r.data as { certificato_giorni: number } | null)?.certificato_giorni
-    return g ?? GIORNI_CERTIFICATO
+    if (r.error?.code === '42703' || r.error?.code === 'PGRST204') return null
+    if (r.error) return GIORNI_CERTIFICATO
+    const g: unknown = (r.data as Record<string, unknown> | null)?.certificato_giorni // as: una riga di `impostazioni`, con o senza la colonna
+    return typeof g === 'number' ? g : GIORNI_CERTIFICATO
   }
 
   const impostazioni = async (): Promise<Impostazioni> => {
@@ -1233,7 +1235,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         // Una a una con la persona: PostgREST la dà come oggetto, ma meglio non contarci.
         const s = Array.isArray(r.schede_iscritti) ? r.schede_iscritti[0] : r.schede_iscritti
         const natoIl = natiIl.get(r.id)
-        const creataIl = r.creata_il.slice(0, 10)
+        // Il giorno di Roma, come `certificato_termine`: a mezzanotte UTC sarebbe ancora ieri.
+        const creataIl = oggiARoma(new Date(r.creata_il))
         const entroScritto = s?.certificato_entro ?? undefined
         return {
           id: r.id,

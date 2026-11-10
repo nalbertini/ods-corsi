@@ -209,7 +209,7 @@ await sezione('6. il riquadro CERTIFICATO della scheda', async () => {
   ok('… da ieri, per un giorno solo', r({ conFile: false, entro: '2026-12-12', entroScritto: '2026-12-12' }, adulto, '2026-12-13').sotto, 'da ieri · la presenza si segna, ma va sollecitato')
   ok('manca col termine passato, calcolato (nessun termine scritto): «Dai una data»', r({ conFile: false, entro: '2026-12-12' }, adulto, '2026-12-15').tasto, 'Dai una data')
   ok('manca senza termine, scheda di prima: CERTIFICATO NON ARRIVATO, «Dai una data»', r({ conFile: false }, adulto, '2026-12-15'),
-    { nome: 'CERTIFICATO NON ARRIVATO', sotto: 'iscritto prima di questa regola, senza termine · la presenza si segna', tono: 'rosso', tasto: 'Dai una data' })
+    { nome: 'CERTIFICATO NON ARRIVATO', sotto: 'senza un termine per portarlo · la presenza si segna', tono: 'rosso', tasto: 'Dai una data' })
   const scaduto = { scade: '2026-11-01', conFile: false, caricatoIl: '2026-02-03', entro: '2026-12-01' }
   ok('scaduto rosso: come oggi, più «Dai una data»', r(scaduto, adulto, '2026-12-15'),
     { nome: 'SCADUTO IL 1 NOVEMBRE 2026', sotto: '44 giorni fa · file cancellato', tono: 'rosso', tasto: 'Dai una data' })
@@ -285,6 +285,37 @@ await sezione('11. la proroga nella segreteria di prova: cambiaTermineCertificat
   const p = (await s.persone()).find((x) => x.id === id)
   ok('il termine scritto è quello nuovo, e vale come termine', [p.certificato.entroScritto, p.certificato.entro], ['2027-01-24', '2027-01-24'])
   ok('la traccia: il giorno in cui l’ha spostato', p.certificato.spostatoIl, '2026-09-26')
+})
+
+// Il giro di correzioni dopo collaudo e revisioni: ognuna lascia la sua prova.
+await sezione('12. le correzioni: esito, invio, scheda, gare, prova', async () => {
+  ok('famiglia: «Portate i certificati medici», e vengono alle lezioni', f('promemoriaCertificato', { di: ['Luca', 'Sara'], giorni: 30 }),
+    { titolo: 'Portate i certificati medici', testo: 'entro 30 giorni da quando la segreteria accoglie l’iscrizione: dall’area iscritti o in segreteria. Intanto Luca e Sara vengono alle lezioni' })
+  ok('una persona sola in elenco: come col nome', f('promemoriaCertificato', { di: ['Luca'], giorni: 30 }).titolo, 'Porti il certificato medico di Luca')
+  const fine = (x) => f('fraseCertificatoFinale', { tipo: 'normale', conFile: false, dopo: false, giorni: 30, ...x })
+  ok('la pagina finale con «non ce l’ho ancora»: titolo e testo dei giorni insieme', fine({ dopo: true, di: 'Matteo' }),
+    'Porti il certificato medico di Matteo entro 30 giorni da quando la segreteria accoglie l’iscrizione: dall’area iscritti o in segreteria. Intanto Matteo viene alle lezioni.')
+  ok('senza la scelta (prima di 141): solo il ricordo, senza «non si partecipa»', fine({ giorni: null, tipo: 'agonistico' }), 'Ricorda di portare in segreteria il certificato medico agonistico.')
+  ok('col file caricato, o sotto i 6 anni: niente', [fine({ conFile: true }), fine({ tipo: 'nessuno' })], [null, null])
+  const r = (c, oggi = '2026-11-24') => f('riquadroCertificato', c, '1990-05-05', oggi, true)
+  ok('il file senza data: niente «Dai una data» (c’è «Scrivi la data»)', r({ conFile: true }).tasto, undefined)
+  ok('rinnovo spostato a mano: la traccia, non i giorni dalla scadenza', r({ scade: '2026-11-01', conFile: false, entro: '2026-12-20', entroScritto: '2026-12-20', spostatoDa: 'Laura', spostatoIl: '2026-11-20' }).sotto,
+    'fra 26 giorni · data spostata da Laura il 20 novembre 2026')
+  const gara = { dal: '2026-12-05', al: '2026-12-06' }
+  ok('gare, segreteria: nel termine col certificato scaduto dice com’è', f('scrittaCertificato', { certificato: 'atteso', scade: '2026-11-01', daConfermare: false }).tipo, 'manca')
+  ok('LE MIE GARE: rinnovo nel termine, «scade il…»', f('certificatoPerLaGara', { certificato: { scade: '2026-11-20', entro: '2026-12-20' }, natoIl: '1990-05-05' }, gara)?.testo, 'Certificato: scade il 20 novembre')
+  const t = (e) => f('cosaNonVaTermineCertificato', e, '2026-11-24')
+  ok('cosaNonVaTermineCertificato: ieri e fra 121 giorni no, oggi e fra 120 sì', [t('2026-11-23'), t('2027-03-25'), t('2026-11-24'), t('2027-03-24')],
+    ['La data va da oggi a 120 giorni da oggi.', 'La data va da oggi a 120 giorni da oggi.', undefined, undefined])
+  // In prova come nel database: il termine resta, salvo un certificato valido.
+  const s = m.creaSegreteriaProva()
+  const id = await s.salvaPersona({ nome: 'Tea', cognome: 'Termine' })
+  await s.cambiaTermineCertificato(id, '2026-10-20')
+  const file = new File(['x'], 'cert.pdf', { type: 'application/pdf' })
+  await s.caricaCertificato(id, file, '2026-09-01').catch(() => {})
+  ok('caricato un certificato già scaduto: il termine resta', (await s.persone()).find((x) => x.id === id)?.certificato.entroScritto, '2026-10-20')
+  await s.caricaCertificato(id, file, '2027-09-01')
+  ok('caricato uno valido: il termine va via', (await s.persone()).find((x) => x.id === id)?.certificato.entroScritto, undefined)
 })
 
 if (guai) {

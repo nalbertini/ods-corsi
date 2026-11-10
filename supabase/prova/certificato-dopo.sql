@@ -165,11 +165,15 @@ select atteso('anon legge i giorni da iscrizioni_regole()', (iscrizioni_regole()
 select atteso('anon non legge impostazioni', rifiutata($$select count(*)::text from impostazioni$$), 'rifiutata');
 select atteso('anon non chiama certificato_termine', rifiutata($$select certificato_termine(pz(21))::text$$), 'rifiutata');
 select atteso('anon non chiama certificato_non_arrivato', rifiutata($$select certificato_non_arrivato(pz(21))::text$$), 'rifiutata');
+select atteso('anon non chiama invia_iscrizione_0 (la vecchia, avvolta)', rifiutata($$select invia_iscrizione_0('{}'::jsonb)::text$$), 'rifiutata');
 reset role;
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('nemmeno la segreteria chiama certificato_termine', rifiutata($$select certificato_termine(pz(21))::text$$), 'rifiutata');
 select atteso('né certificato_non_arrivato', rifiutata($$select certificato_non_arrivato(pz(21))::text$$), 'rifiutata');
+select atteso('né invia_iscrizione_0', rifiutata($$select invia_iscrizione_0('{}'::jsonb)::text$$), 'rifiutata');
+-- La segreteria può aggiornare la scheda via API: il termine scritto a mano ha lo stesso limite della proroga.
+select atteso('scritto a mano fra 200 giorni: no', codice($$update schede_iscritti set certificato_entro = (now() at time zone 'Europe/Rome')::date + 200 where persona_id = pz(21)$$), '22023');
 select atteso('iscrizioni_regole() dà il numero anche a chi ha l''accesso', (iscrizioni_regole() ->> 'certificato_giorni'), '30');
 reset role;
 
@@ -300,6 +304,9 @@ select chi('77777777-7777-7777-7777-777777777777');
 set role authenticated;
 select atteso('Ivo: scaduto da 5 giorni, senza termine scritto: il termine è fra 25 giorni', (select rel(s.certificato_entro) from iscritto_scheda(pz(33)) s), '25');
 select atteso('e la scadenza resta quella', (select rel(s.certificato_scade) from iscritto_scheda(pz(33)) s), '-5');
+select atteso('iscritto_nucleo dà lo stesso termine', (select rel(s.certificato_entro) from iscritto_nucleo(pz(33)) s where s.id = pz(33)), '25');
+select atteso('la scheda di un altro: niente', (select count(*)::text from iscritto_scheda(pz(21))), '0');
+select atteso('il nucleo di un altro: niente', (select count(*)::text from iscritto_nucleo(pz(21))), '0');
 reset role;
 
 \echo ''

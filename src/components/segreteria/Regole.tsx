@@ -848,7 +848,6 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
   )
 }
 
-/** A chi vanno le email di richieste e pagamenti: la prima vuota le spegne, la copia è facoltativa. */
 /**
  * I giorni per portare il certificato a chi si iscrive senza (141). Valgono per le
  * iscrizioni accolte da adesso e per il rinnovo, che si calcola: un termine già
@@ -892,7 +891,7 @@ function GiorniCertificato({ giorni, pronto, salva }: { giorni: number | undefin
             </span>
           )}
           <span className="sg-sotto">
-            Per chi si iscrive: dal giorno in cui accogli la richiesta. Per chi è già iscritto: dal giorno in cui il certificato scade. Cambiare il numero vale per le iscrizioni che accogli da adesso; chi ha già una data la tiene.
+            Per chi si iscrive: dal giorno in cui accogli la richiesta. Per chi è già iscritto: dal giorno in cui il certificato scade. Cambiare il numero vale per le iscrizioni che accogli da adesso (chi ha già una data scritta la tiene) e per i rinnovi, che si calcolano dalla scadenza.
           </span>
           <span className="sg-sotto">Nel termine la persona viene alle lezioni e in DA FARE è gialla; dopo è rossa, ma la presenza si segna lo stesso.</span>
           {scritto !== null && (
@@ -911,6 +910,7 @@ function GiorniCertificato({ giorni, pronto, salva }: { giorni: number | undefin
   )
 }
 
+/** A chi vanno le email di richieste e pagamenti: la prima vuota le spegne, la copia è facoltativa. */
 function AvvisiSegreteria({ d }: { d: DatiSegreteria }) {
   const letti = useCarica(() => d.avvisiIndirizzi(), [d])
   const { avviso, fai } = useAvviso()

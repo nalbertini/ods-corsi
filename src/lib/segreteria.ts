@@ -1163,6 +1163,10 @@ export type StatoCertificato = ComeCertificato | 'non_serve' | 'in_arrivo' | 'at
 export const GIORNI_CERTIFICATO = 30
 export const GIORNI_CERTIFICATO_MAX = 120
 
+/** «Cambia la data»: da oggi a 120 giorni da oggi, come `cambia_termine_certificato` (141). */
+export const cosaNonVaTermineCertificato = (entro: string, oggi: string): string | undefined =>
+  /^\d{4}-\d{2}-\d{2}$/.test(entro) && entro >= oggi && entro <= spostaGiorno(oggi, GIORNI_CERTIFICATO_MAX) ? undefined : 'La data va da oggi a 120 giorni da oggi.'
+
 /** Il numero di IMPOSTAZIONI › GLI AVVISI: lo stesso check del database. */
 export const cosaNonVaGiorniCertificato = (n: number): string | undefined =>
   Number.isInteger(n) && n >= 1 && n <= GIORNI_CERTIFICATO_MAX ? undefined : `I giorni vanno da 1 a ${GIORNI_CERTIFICATO_MAX}.`

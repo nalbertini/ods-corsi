@@ -199,7 +199,8 @@ export function scrittaCertificato(r: Pick<RigaAtletaGara, 'certificato' | 'scad
   if (r.certificato === 'valido' || r.certificato === 'in_scadenza') return { testo: `Valido, scade ${quando}`, tipo: 'fatto' }
   // Il nuovo mandato dall'iscritto non vale finché la segreteria non lo conferma: è lì che si deve guardare.
   if (r.daConfermare) return { testo: 'Caricato, da confermare', tipo: 'aspetta' }
-  return r.certificato === 'scaduto' ? { testo: `Scade ${quando}, prima della gara`, tipo: 'manca' } : { testo: 'Manca', tipo: 'manca' }
+  // Nel termine per portarlo (`atteso`) per la gara non vale: si dice com'è, scaduto o mancante.
+  return r.certificato === 'scaduto' || (r.certificato === 'atteso' && r.scade) ? { testo: `Scade ${quando}, prima della gara`, tipo: 'manca' } : { testo: 'Manca', tipo: 'manca' }
 }
 
 export function avvisoCertificati(righe: Pick<RigaAtletaGara, 'senzaCertificatoValido'>[]): string | null {
@@ -225,7 +226,8 @@ export function certificatoPerLaGara(p: { certificato: { scade?: string; inAttes
   if (stato === 'non_serve' || stato === 'in_arrivo') return null
   if ((stato === 'valido' || stato === 'in_scadenza') && scade) return { testo: `Certificato: valido fino al ${giorno(scade)} ${scade.slice(0, 4)}`, guaio: false }
   if (p.certificato.inAttesaIl) return { testo: 'Certificato: caricato, la segreteria lo deve ancora confermare', dettaglio: 'Finché non lo conferma non vale per la gara.', guaio: true }
-  if (stato === 'scaduto' && scade) return { testo: `Certificato: scade il ${giorno(scade)}`, dettaglio: `Scade prima della gara. Va rinnovato ${entro}`, guaio: true }
+  // `atteso` col certificato scaduto (il rinnovo): per la gara non vale, e si dice quando è scaduto.
+  if ((stato === 'scaduto' || stato === 'atteso') && scade) return { testo: `Certificato: scade il ${giorno(scade)}`, dettaglio: `Scade prima della gara. Va rinnovato ${entro}`, guaio: true }
   return { testo: 'Certificato: manca', dettaglio: `Va portato ${entro}`, guaio: true }
 }
 

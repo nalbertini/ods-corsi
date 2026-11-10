@@ -63,7 +63,7 @@ ok('in scadenza: fra 10 giorni, col file', scad.sotto?.startsWith('fra 10 giorni
 ok('scade oggi: «oggi»', cert({ scade: '2026-10-22', conFile: true, caricatoIl: '2026-09-03' }).sotto?.startsWith('oggi'), true)
 ok('scade domani: «domani»', cert({ scade: '2026-10-23', conFile: true, caricatoIl: '2026-09-03' }).sotto?.startsWith('domani'), true)
 ok('scaduto con il file cancellato', cert({ scade: '2026-09-09', conFile: false, caricatoIl: '2026-08-01' }).sotto?.endsWith('file cancellato'), true)
-ok('nessun certificato, adulto', cert({ conFile: false }, '1990-05-10'), { nome: 'CERTIFICATO NON ARRIVATO', sotto: 'iscritto prima di questa regola, senza termine · la presenza si segna', tono: 'rosso', tasto: 'Dai una data' })
+ok('nessun certificato, adulto', cert({ conFile: false }, '1990-05-10'), { nome: 'CERTIFICATO NON ARRIVATO', sotto: 'senza un termine per portarlo · la presenza si segna', tono: 'rosso', tasto: 'Dai una data' })
 const piccolo = cert({ conFile: false }, '2022-03-01')
 ok('bambino di 4 anni: non serve', [piccolo.nome, piccolo.tono], ['NON SERVE', 'spento'])
 

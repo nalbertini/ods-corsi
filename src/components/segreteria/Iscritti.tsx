@@ -4,7 +4,7 @@ import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
+import { avvisiGesto, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -2060,9 +2060,12 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
       {termine !== null && (
         <div className="stack" style={{ gap: 10, padding: 14, background: 'var(--surface)', border: '2px solid var(--line)', borderLeft: '4px solid var(--giallo)' }}>
           <Campo id="c-entro" etichetta="DA PORTARE ENTRO IL">
-            <input id="c-entro" className="sg-campo" type="date" min={oggi} max={spostaGiorno(oggi, GIORNI_CERTIFICATO_MAX)} value={termine} onChange={(e) => setTermine(e.target.value)} />
+            {/* Il fuoco va qui: il tasto che l'ha aperto sparisce. */}
+            <input id="c-entro" className="sg-campo" type="date" autoFocus min={oggi} max={spostaGiorno(oggi, GIORNI_CERTIFICATO_MAX)} value={termine} onChange={(e) => setTermine(e.target.value)} aria-describedby="c-entro-nota" />
           </Campo>
-          <span className="sg-sotto">Solo per {p.nome}: fino a {GIORNI_CERTIFICATO_MAX} giorni da oggi. La scheda dice chi l’ha spostato.</span>
+          <span id="c-entro-nota" className="sg-sotto" style={termine && cosaNonVaTermineCertificato(termine, oggi) ? { color: 'var(--rosso-testo)' } : undefined}>
+            {termine && cosaNonVaTermineCertificato(termine, oggi) ? cosaNonVaTermineCertificato(termine, oggi) : `Solo per ${p.nome}: fino a ${GIORNI_CERTIFICATO_MAX} giorni da oggi. La scheda dice chi l’ha spostato.`}
+          </span>
           <div className="row" style={{ gap: 8 }}>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setTermine(null)}>
               Lascia stare
@@ -2070,7 +2073,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             <Tasto
               tono="pieno"
               className="grow"
-              disabled={!termine}
+              disabled={!termine || !!cosaNonVaTermineCertificato(termine, oggi)}
               onClick={() =>
                 void fai(() => d.cambiaTermineCertificato(p.id, termine), 'Data cambiata', () => {
                   setTermine(null)

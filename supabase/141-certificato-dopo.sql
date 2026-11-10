@@ -73,10 +73,14 @@ create or replace function certificato_non_arrivato(persona uuid)
 $$;
 
 -- --- chi scrive il termine --------------------------------------------------------
--- Il termine scritto porta con sé chi l'ha spostato e quando, scritti dal server; all'accoglimento nessuno
--- (lo dice `ods.entro_accoglimento`). Un certificato valido lo azzera.
+-- Il termine scritto porta con sé chi l'ha spostato e quando, scritti dal server; all'accoglimento nessuno:
+-- lì la scrittura arriva dal trigger `richiesta_accolta_termine` (`pg_trigger_depth() > 1`), che un client
+-- non può fingere. Scritto a mano dall'app (la segreteria può aggiornare la scheda via API) vale lo stesso
+-- limite di `cambia_termine_certificato`. Un certificato valido lo azzera.
 create or replace function scheda_termine() returns trigger language plpgsql set search_path = public as $$
-declare oggi date := (now() at time zone 'Europe/Rome')::date;
+declare
+  oggi date := (now() at time zone 'Europe/Rome')::date;
+  accoglimento boolean := pg_trigger_depth() > 1;
 begin
   if new.certificato_scade >= oggi and (tg_op = 'INSERT' or new.certificato_scade is distinct from old.certificato_scade) then
     new.certificato_entro := null;
@@ -84,9 +88,13 @@ begin
   if new.certificato_entro is null then
     new.certificato_entro_da := null; new.certificato_entro_il := null;
   elsif tg_op = 'INSERT' or new.certificato_entro is distinct from old.certificato_entro then
-    if coalesce(current_setting('ods.entro_accoglimento', true), '') = 'si' then
+    if accoglimento then
       new.certificato_entro_da := null; new.certificato_entro_il := null;
     else
+      -- Solo chi scrive con l'accesso dell'app: la proroga (security definer) controlla da sé, l'amministratore del database no.
+      if current_user = 'authenticated' and (new.certificato_entro < oggi or new.certificato_entro > oggi + 120) then
+        raise exception 'La data va da oggi a 120 giorni da oggi.' using errcode = '22023';
+      end if;
       new.certificato_entro_da := persona_corrente(); new.certificato_entro_il := now();
     end if;
   else
@@ -107,10 +115,8 @@ declare
 begin
   if new.persona_id is null or new.nato_il is null or chat_sei_anni(new.nato_il) > oggi then return new; end if;
   if exists (select 1 from schede_iscritti where persona_id = new.persona_id and certificato_scade >= oggi) then return new; end if;
-  perform set_config('ods.entro_accoglimento', 'si', true);
   insert into schede_iscritti (persona_id, certificato_entro) values (new.persona_id, entro)
     on conflict (persona_id) do update set certificato_entro = greatest(schede_iscritti.certificato_entro, excluded.certificato_entro);
-  perform set_config('ods.entro_accoglimento', '', true);
   return new;
 end $$;
 drop trigger if exists richieste_accolta_termine on richieste_iscrizione;
