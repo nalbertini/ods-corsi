@@ -17,8 +17,9 @@
 
 -- `dentro` sono le funzioni con il loro corpo: una versione vecchia di un
 -- file lascia la funzione, ma con dentro quello che faceva prima.
+-- `invia_iscrizione_0` è la `invia_iscrizione` di prima, avvolta da 141: i controlli dei file di prima la cercano lì.
 with dentro(nome, corpo) as (
-  select p.proname::text, p.prosrc from pg_proc p where p.pronamespace = 'public'::regnamespace
+  select case when p.proname = 'invia_iscrizione_0' then 'invia_iscrizione' else p.proname::text end, p.prosrc from pg_proc p where p.pronamespace = 'public'::regnamespace
 )
 select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (values
   ('01-schema.sql', 'le tabelle',
@@ -659,6 +660,14 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'avviso_da_registro' and corpo like '%''certificato''%')),
   -- Rifà `fai_ricevuta_compenso` (96): rilanciando 80 o 96, il controllo torna «manca».
   ('140-compenso-arrotondamento.sql', 'l''importo di una riga del compenso si divide per 60 alla fine, come nell''app',
-    exists (select 1 from dentro where nome = 'fai_ricevuta_compenso' and corpo like '%::numeric * (t->>''centesimi_ora'')::int / 60)%'))
+    exists (select 1 from dentro where nome = 'fai_ricevuta_compenso' and corpo like '%::numeric * (t->>''centesimi_ora'')::int / 60)%')),
+  -- Rifà `iscrizioni_regole` (49), le schede dell'area iscritti (102) e avvolge `invia_iscrizione`: rilanciando quelli, il controllo torna «manca».
+  ('141-certificato-dopo.sql', 'ci si iscrive anche senza certificato, con un termine per portarlo',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'certificato_entro')
+    and exists (select 1 from dentro where nome = 'iscrizioni_regole' and corpo like '%certificato_giorni%')
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%invia_iscrizione_0%')
+    and exists (select 1 from dentro where nome = 'iscritto_scheda_di' and corpo like '%certificato_termine%')
+    and to_regprocedure('public.certificati_con_pin(text,uuid)') is not null
+    and exists (select 1 from pg_trigger where tgname = 'richieste_accolta_termine'))
 ) as x(file, cosa, c)
 order by file, cosa;

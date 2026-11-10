@@ -3176,8 +3176,8 @@ console.log('\nsotto i 6 anni il certificato non serve')
   ok('scheda: 5 anni col certificato scaduto, la data resta, spento e non rosso', cert(persona(cinque, { scade: '2026-01-15', conFile: false })), { tono: 'spento', parola: 'SCADUTO IL 15/01/2026', inElenco: 'Certificato scaduto', righe: [{ testo: 'NON SERVE SOTTO I 6 ANNI' }] })
   ok('scheda: ai 6 anni mancano 14 giorni, giallo con la data e i giorni', cert(persona('2020-10-10')), { tono: 'giallo', parola: 'SERVE DAL 10/10/2026', inElenco: 'Serve dal 10/10', righe: [{ testo: 'FRA 14 GIORNI' }] })
   ok('scheda: 6 anni oggi, rosso come oggi', cert(persona('2020-09-26')).parola, 'NO CERTIFICATO')
-  ok('scheda: senza data di nascita, rosso e una riga che dice che manca la data', cert(persona(undefined)), { tono: 'rosso', parola: 'NO CERTIFICATO', inElenco: 'Manca il certificato', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, { testo: 'MANCA LA DATA DI NASCITA' }] })
-  ok('scheda: con la data di nascita la riga non c\'è', cert(persona('2020-09-26')).righe, [{ testo: 'SENZA, IN SALA NON SI ENTRA' }])
+  ok('scheda: senza data di nascita, rosso e una riga che dice che manca la data', cert(persona(undefined)), { tono: 'rosso', parola: 'NO CERTIFICATO', inElenco: 'Manca il certificato', righe: [{ testo: 'MANCA LA DATA DI NASCITA' }] })
+  ok('scheda: con la data di nascita la riga non c\'è', cert(persona('2020-09-26')).righe, [])
   ok('scheda: il file non porta più DA STAMPARE, nemmeno sotto i 6 anni', vedi(() => cert(persona(cinque, { scade: '2027-06-01', conFile: true })).righe), [{ testo: 'NON SERVE SOTTO I 6 ANNI' }])
   ok('scheda: chi è disattivato ha il timbro spento, con le stesse parole', vedi(() => { const t = L.timbriScheda(persona(cinque, undefined, { attiva: false }), oggi); return [t.certificato.tono, t.certificato.parola] }), ['spento', 'NON SERVE'])
 
@@ -3189,7 +3189,7 @@ console.log('\nsotto i 6 anni il certificato non serve')
 
   // Il riquadro CERTIFICATO delle statistiche.
   const conta = vedi(() => L.contaCertificati([persona(cinque), persona(cinque, { scade: '2026-01-01', conFile: false }), persona('2020-10-10'), persona(undefined), persona('1990-01-01', { scade: '2027-06-01', conFile: false })], oggi))
-  ok('statistiche: i bambini di 5 anni non si contano, né chi sta per compiere 6 anni', conta, { valido: 1, in_scadenza: 0, scaduto: 0, manca: 1 })
+  ok('statistiche: i bambini di 5 anni non si contano, né chi sta per compiere 6 anni', conta, { valido: 1, in_scadenza: 0, scaduto: 0, manca: 1, atteso: 0 })
 
   // La data di nascita dalle fonti: la più recente, intera.
   const fonti = (l) => [...L.nascitaDelleFonti(l)]

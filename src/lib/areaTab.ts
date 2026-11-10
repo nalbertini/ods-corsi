@@ -35,7 +35,7 @@ export const idPannelloTab = (id: IdTabArea) => `area-pan-${id}`
 /** Il segno su DOCUMENTI: DA SISTEMARE se certificato o quota non vanno, del tono del peggiore. */
 export function segnoInRegola(cert: StatoCertificato, quota: ComePaga): SegnoScheda | null {
   const rosso = cert === 'manca' || cert === 'scaduto' || quota === 'da_pagare' || quota === 'scaduto'
-  const giallo = cert === 'in_scadenza' || cert === 'in_arrivo' || quota === 'in_parte'
+  const giallo = cert === 'in_scadenza' || cert === 'in_arrivo' || cert === 'atteso' || quota === 'in_parte'
   return rosso ? { parola: 'DA SISTEMARE', tono: 'rosso' } : giallo ? { parola: 'DA SISTEMARE', tono: 'giallo' } : null
 }
 

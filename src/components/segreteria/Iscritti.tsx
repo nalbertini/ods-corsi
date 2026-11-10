@@ -32,7 +32,7 @@ import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 import { Icona, ICONE_ISCRITTI } from '../Icons'
 
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
-const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto: 2, in_scadenza: 1, in_arrivo: 1, valido: 0, non_serve: 0 }
+const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto: 2, atteso: 1, in_scadenza: 1, in_arrivo: 1, valido: 0, non_serve: 0 }
 const GUAIO_PAGA: Record<ComePaga, number> = { da_pagare: 2, scaduto: 2, in_parte: 1, pagato: 0 }
 
 /**

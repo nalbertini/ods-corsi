@@ -7,7 +7,7 @@ import { stagioneDi } from './costi'
 import { euro, type Ricevuta } from './ricevute'
 import { dataLunga } from './sala'
 import { soldi } from './satispay'
-import { inCorso, pagamentoDi, presentaCertificato, timbriScheda, timbroDocumento, type CertificatoSeg, type IscrizioneSeg, type PersonaSeg, type StatoPaga, type Tono } from './segreteria'
+import { inCorso, pagamentoDi, presentaCertificato, statoCertificato, timbriScheda, timbroDocumento, type CertificatoSeg, type IscrizioneSeg, type PersonaSeg, type StatoPaga, type Tono } from './segreteria'
 
 export interface Riquadro {
   nome: string
@@ -21,10 +21,34 @@ const giorni = (dal: string, al: string) => Math.round((Date.parse(al) - Date.pa
 const doveFile = (c: CertificatoSeg) =>
   c.conFile ? (c.caricatoIl ? `file caricato il ${dataLunga(c.caricatoIl.slice(0, 10))}` : 'file caricato') : c.caricatoIl ? 'file cancellato' : 'data scritta dalla segreteria, senza file'
 
-export function riquadroCertificato(c: CertificatoSeg, natoIl: string | undefined, oggi: string, attiva = true): Riquadro {
+/** Il tasto del termine: «Dai una data» a chi non ne ha una scritta (le schede di prima, il rinnovo passato). */
+export type TastoTermine = 'Cambia la data' | 'Dai una data'
+
+export function riquadroCertificato(c: CertificatoSeg, natoIl: string | undefined, oggi: string, attiva = true): Riquadro & { tasto?: TastoTermine } {
   const x = presentaCertificato(c, natoIl, oggi, attiva)
   const data = c.scade ? dataLunga(c.scade).toUpperCase() : ''
   const fra = c.scade ? giorni(oggi, c.scade) : 0
+  const stato = statoCertificato({ certificato: c, natoIl }, oggi)
+  const rosso = stato === 'manca' || stato === 'scaduto'
+  // Nel termine col file mandato: lo conferma la segreteria, non serve spostare la data.
+  const tasto: TastoTermine | undefined = !attiva || c.inAttesaIl ? undefined : c.entroScritto && (rosso || stato === 'atteso') ? 'Cambia la data' : rosso ? 'Dai una data' : undefined
+  const conTasto = (r: Riquadro) => (tasto ? { ...r, tasto } : r)
+  if (stato === 'atteso' && c.entro) {
+    const entro = dataLunga(c.entro).toUpperCase()
+    const mancano = giorni(oggi, c.entro)
+    const quando = mancano === 0 ? 'oggi' : mancano === 1 ? 'domani' : `fra ${mancano} giorni`
+    const sotto = c.inAttesaIl
+      ? `caricato il ${dataLunga(c.inAttesaIl)}, da confermare: finché non lo confermi non vale`
+      : c.scade
+        ? `${quando} · il nuovo va portato entro ${giorni(c.scade, c.entro)} giorni dalla scadenza`
+        : `${quando} · ${c.spostatoDa && c.spostatoIl ? `data spostata da ${c.spostatoDa} il ${dataLunga(c.spostatoIl)}` : 'iscritto senza certificato'}`
+    return conTasto({ nome: c.scade ? `SCADUTO IL ${data} · DA PORTARE ENTRO IL ${entro}` : `DA PORTARE ENTRO IL ${entro}`, sotto, tono: 'giallo' })
+  }
+  if (stato === 'manca' && !c.conFile) {
+    if (!c.entro) return conTasto({ nome: 'CERTIFICATO NON ARRIVATO', sotto: 'iscritto prima di questa regola, senza termine · la presenza si segna', tono: 'rosso' })
+    const da = giorni(c.entro, oggi)
+    return conTasto({ nome: `DOVEVA PORTARLO ENTRO IL ${dataLunga(c.entro).toUpperCase()}`, sotto: `${da === 1 ? 'da ieri' : `da ${da} giorni`} · la presenza si segna, ma va sollecitato`, tono: 'rosso' })
+  }
   const [nome, sotto] =
     x.parola === 'VALIDO'
       ? [`VALIDO FINO AL ${data}`, doveFile(c)]
@@ -37,7 +61,7 @@ export function riquadroCertificato(c: CertificatoSeg, natoIl: string | undefine
             : x.parola === 'NON SERVE'
               ? ['NON SERVE', 'sotto i 6 anni non è obbligatorio']
               : [x.parola, x.frase]
-  return { nome, sotto, tono: x.tono }
+  return conTasto({ nome, sotto, tono: x.tono })
 }
 
 export function riquadroDocumento(documento: boolean, minore: boolean): Riquadro & { tasto: string } {

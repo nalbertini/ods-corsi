@@ -51,7 +51,7 @@ const OGGI = '2026-10-22'
 console.log('1. Riquadro del certificato')
 const cert = (c, nato = '2015-03-01') => f('riquadroCertificato', c, nato, OGGI)
 ok('scaduto, solo la data, mai un file', cert({ scade: '2026-09-09', conFile: false }), {
-  nome: 'SCADUTO IL 9 SETTEMBRE 2026', sotto: '43 giorni fa · data scritta dalla segreteria, senza file', tono: 'rosso',
+  nome: 'SCADUTO IL 9 SETTEMBRE 2026', sotto: '43 giorni fa · data scritta dalla segreteria, senza file', tono: 'rosso', tasto: 'Dai una data',
 })
 ok('valido, con il file', cert({ scade: '2027-06-30', conFile: true, caricatoIl: '2026-09-03' }), {
   nome: 'VALIDO FINO AL 30 GIUGNO 2027', sotto: 'file caricato il 3 settembre 2026', tono: 'verde',

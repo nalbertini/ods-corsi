@@ -172,10 +172,11 @@ await sezione('4. DA FARE: chi manca, chi deve portarlo', async () => {
     [senzaNascita.id]: ['nessun certificato · senza data di nascita', true],
   })
   const a = conCert({ conFile: false, entro: '2026-12-05' })
-  const b = conCert({ conFile: false, entro: '2026-11-15' })
+  // Oggi è il 24/11: il 25 è ancora nel termine.
+  const b = conCert({ conFile: false, entro: '2026-11-25' })
   const c = conCert({ conFile: false, entro: '2026-11-30' })
   const w = f('chiDaPortare', [a, b, c, passato, conCert({ conFile: false, entro: '2026-11-30' }, { attiva: false })], oggi)
-  ok('chiDaPortare: gli `atteso` per termine crescente, con «entro il …»', Array.isArray(w) ? w.map((x) => [x.id, x.perche]) : w, [[b.id, 'entro il 15 novembre'], [c.id, 'entro il 30 novembre'], [a.id, 'entro il 5 dicembre']])
+  ok('chiDaPortare: gli `atteso` per termine crescente, con «entro il …»', Array.isArray(w) ? w.map((x) => [x.id, x.perche]) : w, [[b.id, 'entro il 25 novembre'], [c.id, 'entro il 30 novembre'], [a.id, 'entro il 5 dicembre']])
 })
 
 await sezione('5. cosaBlocca: il certificato non arrivato non tiene fuori dalla sala', async () => {

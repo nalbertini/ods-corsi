@@ -49,7 +49,7 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
   }
 
   const attive = i.persone.filter((p) => p.attiva)
-  // Il genitore non iscritto non entra in sala: il certificato non gli si chiede, come in ISCRITTI.
+  // Il genitore non iscritto non viene alle lezioni: il certificato non gli si chiede, come in ISCRITTI.
   const senzaCert = attive.filter((p) => !p.genitoreNonIscritto && senzaCertificatoValido(p, oggi)).sort(perNome)
   for (const p of senzaCert.slice(0, PER_TIPO)) {
     righe.push({
@@ -62,7 +62,7 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
     })
   }
   if (senzaCert.length > PER_TIPO) {
-    righe.push({ id: 'certificati-altri', livello: 'blocca', titolo: `Altri ${senzaCert.length - PER_TIPO} senza certificato`, sotto: 'In sala non entrano.', tasto: 'Vedi chi', vai: { voce: 'iscritti', filtro: 'certificato' } })
+    righe.push({ id: 'certificati-altri', livello: 'blocca', titolo: `Altri ${senzaCert.length - PER_TIPO} senza certificato`, sotto: 'La presenza si segna, ma vanno sollecitati.', tasto: 'Vedi chi', vai: { voce: 'iscritti', filtro: 'certificato' } })
   }
 
   // Chi è già fra i certificati non si ripete: la scheda è la stessa. Per questo «Altri N» può

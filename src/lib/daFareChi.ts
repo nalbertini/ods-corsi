@@ -1,4 +1,4 @@
-import { dalCertificato, mancaLaData, pagamentoDi, senzaCertificatoValido, statoCertificato, certificatoInArrivo, certificatoInScadenza, type PersonaSeg } from './segreteria'
+import { certificatoAtteso, dalCertificato, mancaLaData, pagamentoDi, senzaCertificatoValido, statoCertificato, certificatoInArrivo, certificatoInScadenza, type PersonaSeg } from './segreteria'
 import { corsiDaPagare, corsiScaduti, testoCorsoBreve } from './corsiDaPagare'
 import { quotaDaIncassare, titolariDi } from './filtriIscritti'
 import type { CorsoRef, Listino } from './listino'
@@ -59,8 +59,24 @@ export function chiCertificati(persone: PersonaSeg[], oggi: string): VoceChi[] {
     (p) => ({
       id: p.id,
       rosso: true,
-      perche: statoCertificato(p, oggi) === 'scaduto' && p.certificato.scade ? `scaduto il ${dataLunga(p.certificato.scade, false)}` : mancaLaData(p) ? 'manca · senza data di nascita' : 'manca',
+      perche:
+        statoCertificato(p, oggi) === 'scaduto' && p.certificato.scade
+          ? `scaduto il ${dataLunga(p.certificato.scade, false)}`
+          : p.certificato.entro
+            ? `doveva portarlo entro il ${dataLunga(p.certificato.entro, false)}`
+            : mancaLaData(p)
+              ? 'nessun certificato · senza data di nascita'
+              : 'nessun certificato',
     }),
+  )
+}
+
+/** Nel termine per portarlo: prima chi ha il termine più vicino. Gialli, vengono alle lezioni. */
+export function chiDaPortare(persone: PersonaSeg[], oggi: string): VoceChi[] {
+  return inOrdine(
+    persone.filter((p) => !p.genitoreNonIscritto && certificatoAtteso(p, oggi)),
+    (p) => p.certificato.entro ?? SENZA_DATA,
+    (p) => ({ id: p.id, rosso: false, perche: `entro il ${dataLunga(p.certificato.entro ?? oggi, false)}` }),
   )
 }
 

@@ -4,7 +4,7 @@ import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagamento, extraDelPagamento, mancaPerRicevuta, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
-import { attivitaCambiata, cancellaFileIl, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, cancellaFileIl, cosaNonVaGiorniCertificato, GIORNI_CERTIFICATO, GIORNI_CERTIFICATO_MAX, spostaGiorno, termineCertificato, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
 import { unisciGare } from './gare'
 import { codicePulito, cosaNonVaNucleo, GENITORE_GIA_IN_ELENCO, GENITORE_SENZA_CF, GENITORE_SENZA_NOME, nuovoTitolare, type DatiGenitore } from './nucleo'
@@ -814,7 +814,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
             iscrizioni: a()
               .iscrizioni.filter((i) => i.personaId === p.id)
               .map((i) => ({ corsoId: i.corsoId, dal: i.dal, al: i.al })),
-            certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file, vecchio: !!p.certificato?.file && !p.certificato.caricatoIl, caricatoIl: p.certificato?.caricatoIl, inAttesaIl: p.certificato?.inAttesa?.il },
+            certificato: {
+              scade: p.certificato?.scade, conFile: !!p.certificato?.file, vecchio: !!p.certificato?.file && !p.certificato.caricatoIl, caricatoIl: p.certificato?.caricatoIl, inAttesaIl: p.certificato?.inAttesa?.il,
+              // Come `certificato_termine` di 141: lo scritto, il rinnovo, i 6 anni compiuti da iscritto.
+              entro: termineCertificato({ scade: p.certificato?.scade, entroScritto: p.certificato?.entro }, anagraficaDi(p.id)?.dati.natoIl, p.creataIl.slice(0, 10), a().impostazioni?.certificatoGiorni ?? GIORNI_CERTIFICATO),
+              entroScritto: p.certificato?.entro,
+              spostatoDa: p.certificato?.spostatoDa,
+              spostatoIl: p.certificato?.spostatoIl,
+            },
             documento: !!p.documento,
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
@@ -900,7 +907,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
           return i.personaId === personaId && (!i.al || i.al > fine) ? { ...i, al: fine } : i
         })
       a().persone = a().persone.map((p) =>
-        p.id !== personaId ? p : { ...p, attiva, certificato: !attiva && p.certificato ? { scade: p.certificato.scade, caricatoIl: p.certificato.caricatoIl } : p.certificato },
+        // Il termine resta: riattivata, la scheda lo ritrova.
+        p.id !== personaId ? p : { ...p, attiva, certificato: !attiva && p.certificato ? { scade: p.certificato.scade, caricatoIl: p.certificato.caricatoIl, entro: p.certificato.entro, spostatoDa: p.certificato.spostatoDa, spostatoIl: p.certificato.spostatoIl } : p.certificato },
       )
       salva()
     },
@@ -909,7 +917,16 @@ export function creaSegreteriaProva(): DatiSegreteria {
       persona(personaId)
       const guaio = cosaNonVaScadenza(scade)
       if (guaio) throw new Error(guaio)
-      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: { ...p.certificato, scade } } : p))
+      // Come il trigger di 141: un certificato valido azzera il termine.
+      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: { ...p.certificato, scade, ...(scade >= oggi() && { entro: undefined, spostatoDa: undefined, spostatoIl: undefined }) } } : p))
+      salva()
+    },
+
+    async cambiaTermineCertificato(personaId, entro) {
+      const p = persona(personaId)
+      if (!p.attiva) throw new Error('Persona inesistente')
+      if (!entro || entro < oggi() || entro > spostaGiorno(oggi(), GIORNI_CERTIFICATO_MAX)) throw new Error('La data va da oggi a 120 giorni da oggi.')
+      a().persone = a().persone.map((x) => (x.id === personaId ? { ...x, certificato: { ...x.certificato, entro, spostatoDa: 'Segreteria di prova', spostatoIl: oggi() } } : x))
       salva()
     },
 
@@ -932,7 +949,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       persona(personaId)
       scordaCertificato(personaId)
       // Il file mandato dall'iscritto e non ancora controllato resta: toglie solo quello confermato.
-      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: p.certificato?.inAttesa ? { inAttesa: p.certificato.inAttesa } : undefined } : p))
+      // Il termine resta, come nel database: togliere la data non lo azzera.
+      a().persone = a().persone.map((p) => {
+        if (p.id !== personaId) return p
+        const { inAttesa, entro, spostatoDa, spostatoIl } = p.certificato ?? {}
+        return { ...p, certificato: inAttesa || entro ? { inAttesa, entro, spostatoDa, spostatoIl } : undefined }
+      })
       salva()
     },
 
@@ -2894,10 +2916,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async impostazioni() {
-      return { inizioCorsi: null, fineCorsi: null, metodiSpenti: [], ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }) }
+      return { inizioCorsi: null, fineCorsi: null, metodiSpenti: [], certificatoGiorni: GIORNI_CERTIFICATO, ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }) }
     },
 
     async salvaImpostazioni(i) {
+      const guasto = i.certificatoGiorni !== undefined ? cosaNonVaGiorniCertificato(i.certificatoGiorni) : undefined
+      if (guasto) throw new Error(guasto)
       scriviImpostazioni(i)
     },
 

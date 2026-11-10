@@ -45,6 +45,8 @@ interface Riga {
   persona_id: string | null
   gestita_il: string | null
   gestore: { nome: string; cognome: string } | null
+  /** Arriva con 141-certificato-dopo.sql. */
+  certificato_dopo?: boolean
   /** Da `74-provenienza-richieste.sql`: prima le colonne non ci sono. */
   provenienza?: string | null
   conosciuto?: string | null
@@ -118,6 +120,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
     note: r.note ?? undefined,
     regolamento: r.regolamento,
     personaId: r.persona_id ?? undefined,
+    ...(r.certificato_dopo && { certificatoDopo: true }),
     gestitaIl: r.gestita_il ?? undefined,
     gestitaDa: r.gestore ? `${r.gestore.nome} ${r.gestore.cognome}`.trim() : undefined,
     provenienza: pulisciProvenienza(r.provenienza),
@@ -135,6 +138,16 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
 
     async corsiAperti() {
       return ok(await db.rpc('corsi_aperti')) as Array<{ id: string; nome: string }>
+    },
+
+    async certificatoGiorni() {
+      try {
+        const { data, error } = await db.rpc('iscrizioni_regole')
+        const g = !error && data && typeof data === 'object' ? (data as Record<string, unknown>).certificato_giorni : undefined
+        return typeof g === 'number' ? g : null
+      } catch {
+        return null
+      }
     },
 
     async orariAperti() {
@@ -187,6 +200,8 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             invio: d.invio,
             // Il titolare del nucleo: senza 100-nucleo.sql la chiave si ignora; senza nucleo non parte.
             nucleo_di: d.nucleoDi,
+            // «Non ce l'ho ancora»: senza 141-certificato-dopo.sql la chiave si ignora.
+            ...(d.certificatoDopo && { certificato_dopo: true }),
           },
         }),
       ) as string

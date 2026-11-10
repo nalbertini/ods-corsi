@@ -11,7 +11,7 @@
  */
 
 import type { FiltroSegreteria, Voce } from './indirizzoSegreteria'
-import { senzaCertificatoValido, type LezioneSeg, type PersonaSeg } from './segreteria'
+import { certificatoAtteso, senzaCertificatoValido, type LezioneSeg, type PersonaSeg } from './segreteria'
 import { SEGNALA_TESSERE } from './tessere'
 import { quotaDaIncassare, titolariDi } from './filtriIscritti'
 
@@ -238,6 +238,11 @@ export function appelliSenzaSegni(lezioni: LezioneSeg[], adesso: number): Lezion
 /** Fra chi è attivo, chi non ha il certificato valido (mancante o scaduto): le righe del filtro di ISCRITTI. Il genitore non iscritto no, come in `passaChip`. */
 export function certificatiDaSistemare(persone: PersonaSeg[], oggi: string): number {
   return persone.filter((p) => p.attiva && !p.genitoreNonIscritto && senzaCertificatoValido(p, oggi)).length
+}
+
+/** Nel termine per portarlo (`atteso`): il «+N da portare» sotto la casella, che non la fa rossa. */
+export function certificatiDaPortare(persone: PersonaSeg[], oggi: string): number {
+  return persone.filter((p) => !p.genitoreNonIscritto && certificatoAtteso(p, oggi)).length
 }
 
 /** Fra chi è attivo, chi non è in regola con la quota: le righe del filtro DA PAGARE di ISCRITTI. */

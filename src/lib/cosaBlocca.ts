@@ -3,9 +3,10 @@ import type { PersonaSeg } from './segreteria'
 import { pagamentoDi, statoCertificato } from './segreteria'
 
 /**
- * Cosa tiene una persona fuori da qualcosa, in una frase per la segreteria:
- * la scheda de «Il Banco» la mette in cima. `blocca` vuol dire che non può
- * entrare in sala (il certificato); la quota è un guaio, ma non la tiene fuori.
+ * Cosa c'è da sistemare per primo, in una frase per la segreteria: la scheda
+ * de «Il Banco» la mette in cima. Nessuno resta fuori di sala: la presenza si
+ * segna sempre (141), e il certificato nel termine non dice niente. `blocca`
+ * resta per chi lo leggesse, sempre falso.
  * `null` quando non c'è niente da dire, o la persona non è attiva.
  */
 export interface CosaBlocca {
@@ -22,10 +23,10 @@ const data = (g: string) => g.split('-').reverse().join('/')
 export function cosaBlocca(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): CosaBlocca | null {
   if (!p.attiva) return null
   const cert = statoCertificato(p, oggi)
-  if (cert === 'manca') return { blocca: true, titolo: 'NON PUÒ ENTRARE IN SALA', frase: 'Manca il certificato medico.', tasto: 'certificato' }
+  if (cert === 'manca') return { blocca: false, titolo: 'CERTIFICATO NON ARRIVATO', frase: 'Manca il certificato medico.', tasto: 'certificato' }
   if (cert === 'scaduto') {
     const scade = p.certificato.scade
-    return { blocca: true, titolo: 'NON PUÒ ENTRARE IN SALA', frase: scade ? `Il certificato è scaduto il ${data(scade)}.` : 'Il certificato è scaduto.', tasto: 'certificato' }
+    return { blocca: false, titolo: 'CERTIFICATO NON ARRIVATO', frase: scade ? `Il certificato è scaduto il ${data(scade)}.` : 'Il certificato è scaduto.', tasto: 'certificato' }
   }
   const quota = pagamentoDi(p, oggi)
   if (quota.come === 'pagato') return null

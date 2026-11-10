@@ -1,4 +1,4 @@
-import type { StatoPresenza, StatoSessione } from './sala'
+import { dataLunga, type StatoPresenza, type StatoSessione } from './sala'
 import type { CertificatoSeg, PagamentoSeg } from './segreteria'
 import { dalCertificato, pagamentoDi, statoCertificato } from './segreteria'
 import { euro, type QuotaRicevuta, type Ricevuta } from './ricevute'
@@ -39,7 +39,7 @@ export interface SchedaIscritto {
    * Fino a quando vale, e il giorno in cui ha mandato un file che la segreteria
    * non ha ancora controllato. Il file e il suo nome non si vedono mai da qui.
    */
-  certificato: Pick<CertificatoSeg, 'scade'> & { inAttesaIl?: string }
+  certificato: Pick<CertificatoSeg, 'scade' | 'entro'> & { inAttesaIl?: string }
   /** L'eccezione «pagato fuori dall'app»; se ha pagato lo dicono le `quote`. */
   pagamento: PagamentoSeg
   quote?: QuotaRicevuta[]
@@ -197,7 +197,18 @@ export function avvisi(s: Pick<SchedaIscritto, 'certificato' | 'pagamento' | 'qu
   // Il file mandato non vale finché la segreteria non lo conferma, ma non va detto «portalo»: è già arrivato.
   const nuovo = s.certificato.inAttesaIl ? 'quello nuovo è arrivato, la segreteria lo deve confermare.' : null
   if (nuovo && (c === 'manca' || c === 'in_arrivo')) x.push({ tono: 'avviso', testo: 'Il certificato medico è arrivato: la segreteria lo deve confermare.' })
-  else if (c === 'manca') x.push({ tono: 'guaio', testo: 'Manca il certificato medico: portalo in segreteria prima della prossima lezione.' })
+  else if (c === 'manca' && s.certificato.entro)
+    x.push({ tono: 'guaio', testo: `Il certificato medico doveva arrivare entro il ${dataLunga(s.certificato.entro, false)}: caricalo qui o portalo in segreteria.` })
+  else if (c === 'manca') x.push({ tono: 'guaio', testo: 'Manca il certificato medico: caricalo qui o portalo in segreteria.' })
+  // Nel termine: viene alle lezioni, e sa entro quando portarlo. Un file mandato non va detto «caricalo»: è arrivato.
+  if (c === 'atteso' && s.certificato.entro && !nuovo)
+    x.push({
+      tono: 'avviso',
+      testo: s.certificato.scade
+        ? `Il certificato medico è scaduto il ${data(s.certificato.scade)}: il nuovo va caricato entro il ${dataLunga(s.certificato.entro, false)}, qui o in segreteria. Fino ad allora vieni alle lezioni.`
+        : `Il certificato medico va caricato entro il ${dataLunga(s.certificato.entro, false)}: caricalo qui o portalo in segreteria. Fino ad allora vieni alle lezioni.`,
+    })
+  if (c === 'atteso' && nuovo) x.push({ tono: 'avviso', testo: 'Il certificato medico è arrivato: la segreteria lo deve confermare.' })
   if (c === 'scaduto') x.push({ tono: nuovo ? 'avviso' : 'guaio', testo: `Il certificato medico è scaduto il ${data(s.certificato.scade!)}: ${nuovo ?? 'portane uno nuovo in segreteria.'}` })
   if (c === 'in_arrivo' && !nuovo) x.push({ tono: 'avviso', testo: `Dal ${data(dalCertificato(s.natoIl!))} serve il certificato medico: portalo in segreteria.` }) // `in_arrivo` c'è solo con la data di nascita
   if (c === 'in_scadenza') x.push({ tono: 'avviso', testo: `Il certificato medico scade il ${data(s.certificato.scade!)}: ${nuovo ?? 'prenota la visita.'}` })

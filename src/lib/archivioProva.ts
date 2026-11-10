@@ -90,7 +90,8 @@ export interface PersonaProva {
   creataIl: string
   /** Solo degli iscritti, e anche questi possono mancare in un archivio già salvato. */
   /** `file`: il nome di quello caricato nell'app; senza `caricatoIl` è di prima della nuova gestione. */
-  certificato?: { scade?: string; file?: string; caricatoIl?: string; inAttesa?: { file: string; il: string } }
+  /** `entro`: il termine scritto per portarlo (141), con chi l'ha spostato e quando. */
+  certificato?: { scade?: string; file?: string; caricatoIl?: string; inAttesa?: { file: string; il: string }; entro?: string; spostatoDa?: string; spostatoIl?: string }
   /** La copia del documento d'identità è in segreteria. */
   documento?: boolean
   pagamento?: { stato: 'da_pagare' | 'in_parte' | 'pagato'; fino?: string; nota?: string }
@@ -139,7 +140,7 @@ export interface Archivio {
   attivita?: AttivitaProva[]
   /** I PIN del tablet cambiati dalla segreteria, per persona. */
   pin?: Record<string, string>
-  impostazioni?: { mesiPresenze: number; giorniCalendario: number; inizioCorsi?: string | null; fineCorsi?: string | null; metodiSpenti?: IdMetodo[] }
+  impostazioni?: { mesiPresenze: number; giorniCalendario: number; inizioCorsi?: string | null; fineCorsi?: string | null; metodiSpenti?: IdMetodo[]; certificatoGiorni?: number }
   /** Le liste della musica delle sale; `sala` nulla vuol dire tutte. */
   musica?: Array<{ id: string; nome: string; link: string; sala: string | null; disciplina?: string }>
   /** Il timer dei tablet di sala, uguale per tutti: lo cambia un tablet qualunque. */
