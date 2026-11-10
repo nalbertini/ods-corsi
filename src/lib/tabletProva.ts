@@ -2,7 +2,9 @@ import type { DatiTablet, EsitoTocco, LezioneSala, PresenzaIstruttore, RigaAppel
 import { fase, REGOLE, sigle, sigleDeiProvati } from './tablet'
 import { comeE, creaDatiProva, istruttoreDallAppello, lezioniFra, memoria, mettiProva, provatiProva, togliProvaDa } from './datiProva'
 import { archivio, type PresenzaIstruttoreProva } from './archivioProva'
-import { perCognome } from './sala'
+import { chiaveGiorno, perCognome } from './sala'
+import { senzaCertificatoValido } from './segreteria'
+import { creaSegreteriaProva } from './segreteriaProva'
 import { impostazioniSala, timerSala } from '../../timer/src/lib/impostazioniSala'
 import { fonteClipProva } from './voceProva'
 import { somiglianti, TROPPE_RICERCHE } from './prove'
@@ -256,6 +258,9 @@ export function creaTabletProva(): DatiTablet {
       const d = await lezione(sessioneId)
       if (!daPin(pin)) return []
       const origini = memoria.origini[sessioneId] ?? {}
+      // Come `certificati_con_pin` di 141: solo un sì/no, per chi ha passato il termine.
+      const oggi = chiaveGiorno(new Date())
+      const nonArrivato = new Set((await creaSegreteriaProva().persone()).filter((x) => senzaCertificatoValido(x, oggi)).map((x) => x.id))
       return [...d.elenco].sort((a, b) => Number(!!a.prova) - Number(!!b.prova) || perCognome(a, b)).map((p): RigaAppelloTablet => ({
         personaId: p.id,
         nome: p.nome,
@@ -263,6 +268,7 @@ export function creaTabletProva(): DatiTablet {
         stato: p.stato,
         origine: p.stato === null ? null : (origini[p.id]?.da ?? 'appello'),
         ...(p.prova ? { prova: true } : {}),
+        ...(!p.prova && nonArrivato.has(p.id) ? { certificatoNonArrivato: true as const } : {}),
       }))
     },
 

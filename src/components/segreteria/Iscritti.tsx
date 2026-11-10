@@ -4,7 +4,7 @@ import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
+import { avvisiGesto, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -196,6 +196,7 @@ export function Iscritti({
   const [soloSenzaEmail, setSoloSenzaEmail] = useState(false)
   const [poco, setPoco] = useState(false)
   const [certificato, setCertificato] = useState(filtroIniziale === 'certificato')
+  const [daPortare, setDaPortare] = useState(filtroIniziale === 'da-portare')
   const [scadenza, setScadenza] = useState(filtroIniziale === 'scadenza')
   const [arrivo, setArrivo] = useState(filtroIniziale === 'arrivo')
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
@@ -244,6 +245,7 @@ export function Iscritti({
     'senza-email': [soloSenzaEmail, setSoloSenzaEmail],
     poco: [poco, setPoco],
     certificato: [certificato, setCertificato],
+    'da-portare': [daPortare, setDaPortare],
     scadenza: [scadenza, setScadenza],
     arrivo: [arrivo, setArrivo],
     pagare: [pagare, setPagare],
@@ -297,6 +299,7 @@ export function Iscritti({
       (!soloSenzaEmail || senzaEmail(p)) &&
       (!poco || vienePoco(freq.dato?.get(p.id))) &&
       chip('certificato', certificato, p) &&
+      (!daPortare || certificatoAtteso(p, oggi)) &&
       (!scadenza || certificatoInScadenza(p, oggi)) &&
       (!arrivo || certificatoInArrivo(p, oggi)) &&
       chip('pagare', pagare, p) &&

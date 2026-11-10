@@ -5,7 +5,7 @@ import type { VoceCosto } from './costi'
 import type { Abbonamento, RigaStima } from './nucleo'
 import { causale, SCONTO_FAMIGLIA, stimaIscrizione } from './nucleo'
 import type { CampoModulo, DatiRichiesta, DatiRichieste, Formula, OrarioAperto, TipoFile } from './richieste'
-import { certificatoDaPortare, compiuti, dataDaCf, NOTE_NEL_DATABASE, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf, tipiDaChiedere } from './richieste'
+import { certificatoDaPortare, compiuti, dataDaCf, mancaCertificato, type SceltaCertificato, NOTE_NEL_DATABASE, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf, tipiDaChiedere } from './richieste'
 import type { Luoghi } from './codiceFiscale'
 import { cfValido, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { nomeProprio } from './nomi'
@@ -48,6 +48,13 @@ export interface StatoPassi {
   firmatario?: number
   /** Il corso alla stessa ora gli è già stato proposto (`alPassoDelCorso`): se l'ha tolto, resta tolto. */
   corsoProposto?: true
+  /**
+   * Il modulo chiede «ce l'hai già?» per il certificato (con 141 sul database, `iscrizioni_regole()` dà i giorni):
+   * lo mette il componente, a tutte le persone. Senza, il certificato resta facoltativo e senza scelta, come prima.
+   */
+  chiedeCertificato?: true
+  /** «Lo carico ora» (il file diventa obbligatorio) o «Non ce l'ho ancora» (si iscrive lo stesso, con un termine). */
+  certificato?: SceltaCertificato
   /** Solo nella prima persona, con la ricevuta del modulo: il totale (centesimi) e quante persone c'erano quando si è caricata. */
   ricevutaPer?: { totale: number; persone: number }
 }
@@ -118,7 +125,10 @@ export const passiDi = (chi: Chi): string[] => tipiDiPassi(chi).map((t) => NOME_
 
 /** Le risposte come partono: il regolamento è accettato iscrivendosi, la data dice il codice fiscale, l'adulto non ha genitore. */
 export function risposteDaiPassi(s: StatoPassi, oggi = new Date()): DatiRichiesta {
-  const r = { ...s.risposte, regolamento: true, natoIl: dataDaCf(s.risposte.codiceFiscale, s.risposte.natoIl, oggi) ?? s.risposte.natoIl }
+  const natoIl = dataDaCf(s.risposte.codiceFiscale, s.risposte.natoIl, oggi) ?? s.risposte.natoIl
+  // «Non ce l'ho ancora» parte solo se il certificato serve: sotto i 6 anni la scelta non c'è.
+  const dopo = s.chiedeCertificato && s.certificato === 'dopo' && compiuti(natoIl, 6, oggi)
+  const r = { ...s.risposte, regolamento: true, natoIl, ...(dopo && { certificatoDopo: true }) }
   return s.chi === 'adulto' ? { ...r, genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '' } : r
 }
 
@@ -198,7 +208,10 @@ function moduloEFile(s: StatoPassi): Pastiglia[] {
  */
 function documenti(s: StatoPassi, oggi: Date): Pastiglia[] {
   if (s.chi !== 'adulto' && !compiuti(s.risposte.natoIl, 6, oggi)) return []
-  return FILE.filter((f) => f.obbligatorio && f.tipo !== 'modulo' && !s.file[f.tipo]).map((f) => ({ chiave: f.tipo, nome: f.etichetta }))
+  const carta = FILE.filter((f) => f.obbligatorio && f.tipo !== 'modulo' && !s.file[f.tipo]).map((f) => ({ chiave: f.tipo, nome: f.etichetta }))
+  // Con la scelta, il certificato ferma finché non si sceglie, e con «Lo carico ora» finché manca il file.
+  const certificato = s.chiedeCertificato && compiuti(s.risposte.natoIl, 6, oggi) && mancaCertificato(s.certificato, !!s.file.certificato)
+  return certificato ? [...carta, { chiave: 'certificato', nome: 'CERTIFICATO MEDICO' }] : carta
 }
 
 /** Le caselle dell'io: la firma, l'ok e il foglio sono quelli del bambino 0, le risposte sul tesseramento e le foto sono sue. */
@@ -692,7 +705,7 @@ export function testoFile(chi: Chi, tipo: TipoFile, nome: string): { etichetta: 
     if (tipo === 'certificato') {
       return {
         etichetta: `IL CERTIFICATO ${n ? `DI ${n.toUpperCase()}` : 'DEL BAMBINO'}`,
-        dettaglio: `Lo porti in segreteria prima della prima lezione: senza, ${n || 'il bambino'} non può partecipare.`,
+        dettaglio: 'Una foto o il PDF.',
       }
     }
   }

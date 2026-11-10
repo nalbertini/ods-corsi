@@ -112,7 +112,8 @@ console.log('\n3. l’iscritto non vede il file né il nome')
 await prova(async () => {
   const c = await mio(chi)
   ok('(c’è un invio in attesa da guardare)', c.inAttesaIl, oggi)
-  ok('solo scadenza e giorno dell’invio', Object.keys(c).every((k) => ['scade', 'inAttesaIl'].includes(k)), true)
+  // Il termine per portarlo (141) è una data come la scadenza: si vede, il file no.
+  ok('solo scadenza, termine e giorno dell’invio', Object.keys(c).every((k) => ['scade', 'inAttesaIl', 'entro'].includes(k)), true)
   ok('niente nome del file nella scheda', /visita|foto|certificato-|\.pdf|\.png/.test(JSON.stringify(await io.scheda(chi))), false)
   ok('e nel nucleo nemmeno', /visita|foto|certificato-|\.pdf|\.png/.test(JSON.stringify(await io.nucleo(chi))), false)
 })

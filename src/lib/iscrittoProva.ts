@@ -48,7 +48,8 @@ export function creaIscrittoProva(): DatiIscritto {
       nome: p.nome,
       cognome: p.cognome,
       corsi,
-      certificato: { scade: p.certificato?.scade, inAttesaIl: p.certificato?.inAttesa?.il },
+      // Il termine come lo calcola la segreteria (e `certificato_termine` di 141).
+      certificato: { scade: p.certificato?.scade, inAttesaIl: p.certificato?.inAttesa?.il, entro: (await creaSegreteriaProva().persone()).find((x) => x.id === p.id)?.certificato.entro },
       // Senza `nota`, come col database: le note della segreteria non si vedono.
       pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino },
       quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),

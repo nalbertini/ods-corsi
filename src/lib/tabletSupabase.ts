@@ -152,6 +152,15 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
       } catch {
         // Niente prove: il tasto PROVE dice perché.
       }
+      // Chi non ha portato il certificato: senza 141-certificato-dopo.sql (o se non risponde) nessuno, come prima.
+      let senzaCertificato = new Set<string>()
+      if (righe?.length) {
+        try {
+          senzaCertificato = new Set(((await rpc<Array<{ persona_id: string }>>('certificati_con_pin', { pin, sessione: sessioneId })) ?? []).map((x) => x.persona_id))
+        } catch {
+          // Il tablet resta com'era.
+        }
+      }
       const iscritti = new Set((righe ?? []).map((r) => r.persona_id))
       const riga = (prova: boolean) => (r: Riga): RigaAppelloTablet => ({
         personaId: r.persona_id,
@@ -160,6 +169,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
         stato: r.stato,
         origine: r.origine,
         ...(prova ? { prova } : {}),
+        ...(!prova && senzaCertificato.has(r.persona_id) ? { certificatoNonArrivato: true as const } : {}),
       })
       return [...(righe ?? []).map(riga(false)), ...prove.filter((r) => !iscritti.has(r.persona_id)).map(riga(true))]
     },

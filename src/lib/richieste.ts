@@ -353,10 +353,8 @@ export function firmaDaRifare(minore: boolean, prima: { tratti: number; scelte: 
 }
 
 /** In cima a I FILE, quando il modulo chiede la scelta: cosa serve, e se c'è già. */
-export const domandaCertificato = (tipo: 'normale' | 'agonistico'): string =>
-  tipo === 'agonistico'
-    ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico. Ce l’hai già?'
-    : 'Dai 6 anni serve il certificato medico per fare sport. Ce l’hai già?'
+export const domandaCertificato = (tipo: 'normale' | 'agonistico', di?: string): string =>
+  `${tipo === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico.' : 'Dai 6 anni serve il certificato medico per fare sport.'} ${di ? `${di} ce l’ha già?` : 'Ce l’hai già?'}`
 
 /** La scelta del passo documenti: nessuna, finché chi si iscrive non la fa. */
 export type SceltaCertificato = 'ora' | 'dopo'

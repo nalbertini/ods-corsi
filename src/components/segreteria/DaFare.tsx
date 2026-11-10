@@ -5,10 +5,10 @@ import { datiRichieste } from '../../lib/richieste'
 import { prezziMancanti, prezziMancantiInBreve } from '../../lib/listino'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { contaTessere, conTessere, incrocioDaMostrare } from '../../lib/tessere'
-import { appelliSenzaSegni, certificatiDaSistemare, contiDaRileggere, contiDellaStriscia, GIORNI_APPELLI, mantieniIPrecedenti, pagamentiNonInRegola, type ContiCosaManca } from '../../lib/cosaManca'
+import { appelliSenzaSegni, certificatiDaPortare, certificatiDaSistemare, contiDaRileggere, contiDellaStriscia, GIORNI_APPELLI, mantieniIPrecedenti, pagamentiNonInRegola, type ContiCosaManca } from '../../lib/cosaManca'
 import { corsiScaduti } from '../../lib/corsiDaPagare'
 import { TESTI_DA_FARE, type ChiaveDaFare } from '../../lib/daFareTesti'
-import { chiArrivo, chiCertificati, chiCertificatiRicevuti, chiCorsi, chiListino, chiPagare, chiRichieste, chiScadenza, COLONNE_DA_FARE, primiDaFare, TASTO_DA_FARE, type VoceChi } from '../../lib/daFareChi'
+import { chiArrivo, chiCertificati, chiCertificatiRicevuti, chiDaPortare, chiCorsi, chiListino, chiPagare, chiRichieste, chiScadenza, COLONNE_DA_FARE, primiDaFare, TASTO_DA_FARE, type VoceChi } from '../../lib/daFareChi'
 import { dataLunga, Testa } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
@@ -23,6 +23,8 @@ export interface ContiDaFare {
   segnalate?: number | null
   /** Fra chi è attivo, come la testata e i filtri di ISCRITTI: certificato mancante o scaduto. */
   certificati: number | null
+  /** …e nel termine per portarlo (141): gialli, vengono alle lezioni. */
+  daPortare?: number | null
   /** Mandati dall'iscritto dall'area iscritti, in attesa che la segreteria scriva la scadenza. */
   certificatiRicevuti: number | null
   /** …e in scadenza entro un mese. */
@@ -139,6 +141,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           appelli: pesante ? appelliMancanti : prima.appelli,
           // Contati come i filtri di ISCRITTI che apre «Vedi chi»: il numero è quello delle righe che si vedono.
           certificati: pesante ? (pers ? certificatiDaSistemare(pers, oggi) : null) : prima.certificati,
+          daPortare: pesante ? (pers ? certificatiDaPortare(pers, oggi) : null) : prima.daPortare,
           certificatiRicevuti: pesante ? (pers ? chiCertificatiRicevuti(pers).length : null) : prima.certificatiRicevuti,
           scadenza: pesante ? (attive ? attive.filter((p) => certificatoInScadenza(p, oggi)).length : null) : prima.scadenza,
           arrivo: pesante ? (attive ? attive.filter((p) => certificatoInArrivo(p, oggi)).length : null) : prima.arrivo,
@@ -152,6 +155,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
             ...(pesante
               ? {
                   certificati: pers && chiCertificati(pers, oggi),
+                  'da-portare': pers && chiDaPortare(pers, oggi),
                   'certificati-ricevuti': pers && chiCertificatiRicevuti(pers),
                   scadenza: pers && chiScadenza(pers, oggi),
                   arrivo: pers && chiArrivo(pers, oggi),
@@ -202,6 +206,7 @@ const LIVELLO: Record<string, Livello> = {
   istruttori: 'presto',
   segnalate: 'presto',
   'certificati-ricevuti': 'presto',
+  'da-portare': 'presto',
   scadenza: 'presto',
   arrivo: 'presto',
   listino: 'presto',
@@ -265,10 +270,20 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       chiave: 'certificati',
       n: conti.certificati,
       titolo: (n) => uno(n, TESTI_DA_FARE.certificati.singolare, TESTI_DA_FARE.certificati.plurale),
-      sotto: 'Il certificato medico manca o è scaduto: senza, in sala non si entra. Sotto i 6 anni non serve.',
+      sotto: 'Il certificato manca, è scaduto o il termine per portarlo è passato.',
       aPosto: 'certificati',
       voce: 'iscritti',
       dove: { filtro: 'certificato' },
+      apri: apriScheda,
+    },
+    {
+      chiave: 'da-portare',
+      n: conti.daPortare ?? null,
+      titolo: (n) => uno(n, TESTI_DA_FARE['da-portare'].singolare, TESTI_DA_FARE['da-portare'].plurale),
+      sotto: 'Sono nel termine e vengono alle lezioni: ricordaglielo.',
+      aPosto: 'certificati da portare',
+      voce: 'iscritti',
+      dove: { filtro: 'da-portare' },
       apri: apriScheda,
     },
     {

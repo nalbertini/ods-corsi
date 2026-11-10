@@ -40,7 +40,7 @@ export const INFORMATIVA_FRASE = 'Come trattiamo i tuoi dati:'
 export const COSA_SERVE: Array<{ titolo: string; quando?: string; nota: string }> = [
   { titolo: 'Il codice fiscale', nota: 'Di chi si iscrive. Se iscrivi un figlio, anche il tuo.' },
   { titolo: 'La carta d’identità', nota: 'Di chi si iscrive, dai 6 anni. Una foto o il PDF.' },
-  { titolo: 'Il certificato medico', quando: 'SE CE L’HAI', nota: 'Se non ce l’hai, lo porti in segreteria prima della prima lezione.' },
+  { titolo: 'Il certificato medico', quando: 'SE CE L’HAI', nota: 'Se non ce l’hai ancora, ti iscrivi lo stesso e lo porti dopo.' },
   { titolo: 'Come paghi', quando: 'NELLA RICHIESTA', nota: 'Con Satispay, oppure col bonifico: allora serve la sua ricevuta.' },
 ]
 

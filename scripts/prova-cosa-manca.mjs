@@ -55,6 +55,9 @@ const ID = ['appelli', 'certificati', 'pagamenti', 'tessere', 'richieste']
 const alle1032 = Date.UTC(2026, 9, 16, 8, 32)
 
 console.log('Le caselle')
+// 141: chi è nel termine non fa rossa la casella, si dice sotto.
+ok('certificati: «+8 da portare» sotto, la casella conta solo i rossi', [casella('certificati', 3, { daPortare: 8 }).nota, casella('certificati', 3, { daPortare: 8 }).numero, casella('certificati', 3, { daPortare: 8 }).nome], ['termine passato o scaduti · +8 da portare', '3', '3 Certificati scaduti, termine passato o scaduti · +8 da portare'])
+ok('certificati: senza nessuno da portare la nota è quella di sempre', casella('certificati', 3, { daPortare: 0 }).nota, 'termine passato o scaduti')
 ok('CASELLE: sei, «corsi» subito dopo «pagamenti»', m.CASELLE, ['appelli', 'certificati', 'pagamenti', 'corsi', 'tessere', 'richieste'])
 ok('caselleCosaManca: senza il conto dei corsi (lettura delle ricevute fallita) la casella non c\'è', m.caselleCosaManca(conti(1, 2, 3, 4)).map((x) => x.id), ID)
 ok('caselleCosaManca: col conto dei corsi sono sei, nell\'ordine di CASELLE', m.caselleCosaManca(conti(1, 2, 3, 4, { corsi: 5 })).map((x) => x.id), m.CASELLE)
@@ -78,10 +81,10 @@ for (const id of ID) {
 
 console.log('\nLe note')
 ok('appelli: senza appello, ultimi 30 giorni', casella('appelli', 3).nota, 'senza appello, ultimi 30 giorni')
-ok('certificati: scaduti o mancanti', casella('certificati', 3).nota, 'scaduti o mancanti')
+ok('certificati: termine passato o scaduti', casella('certificati', 3).nota, 'termine passato o scaduti')
 ok('pagamenti: quote non in regola', casella('pagamenti', 3).nota, 'quote non in regola')
 ok('richieste: da accogliere', casella('richieste', 3).nota, 'da accogliere')
-ok('la nota resta anche a zero', ID.map((id) => casella(id, 0).nota), ['senza appello, ultimi 30 giorni', 'scaduti o mancanti', 'quote non in regola', 'senza tessera valida', 'da accogliere'])
+ok('la nota resta anche a zero', ID.map((id) => casella(id, 0).nota), ['senza appello, ultimi 30 giorni', 'termine passato o scaduti', 'quote non in regola', 'senza tessera valida', 'da accogliere'])
 ok('la nota degli appelli porta i giorni di GIORNI_APPELLI', casella('appelli', 3).nota.includes(String(m.GIORNI_APPELLI)), true)
 ok('prima lettura: nota «conto…»', ID.map((id) => casella(id, null, { contato: false }).nota), ['conto…', 'conto…', 'conto…', 'conto…', 'conto…'])
 ok('lettura fallita: nota «non so: riconta»', ID.map((id) => casella(id, null, { contato: true }).nota), ['non so: riconta', 'non so: riconta', 'non so: riconta', 'non so: riconta', 'non so: riconta'])
@@ -102,21 +105,21 @@ const nomi = (n, contato = true) => ID.map((id) => casella(id, n, { contato }).n
 // WCAG 2.5.3: il testo che si vede (titolo e nota) sta dentro il nome, se no chi detta i comandi a voce non la nomina giusta.
 ok('uno', nomi(1), [
   '1 Appelli non fatti, senza appello, ultimi 30 giorni',
-  '1 Certificati scaduti, scaduti o mancanti',
+  '1 Certificati scaduti, termine passato o scaduti',
   '1 Pagamenti, quote non in regola',
   '1 Senza tessera, senza tessera valida',
   '1 Richieste online, da accogliere',
 ])
 ok('più di uno', nomi(7), [
   '7 Appelli non fatti, senza appello, ultimi 30 giorni',
-  '7 Certificati scaduti, scaduti o mancanti',
+  '7 Certificati scaduti, termine passato o scaduti',
   '7 Pagamenti, quote non in regola',
   '7 Senza tessera, senza tessera valida',
   '7 Richieste online, da accogliere',
 ])
 ok('zero', nomi(0), [
   'Appelli non fatti, senza appello, ultimi 30 giorni: nessuno, a posto',
-  'Certificati scaduti, scaduti o mancanti: nessuno, a posto',
+  'Certificati scaduti, termine passato o scaduti: nessuno, a posto',
   'Pagamenti, quote non in regola: nessuno, a posto',
   'Senza tessera, senza tessera valida: nessuno, a posto',
   'Richieste online, da accogliere: nessuno, a posto',
@@ -308,12 +311,12 @@ console.log('\nI cinque conti, da dati finti')
   ok('non muta l\'ingresso (l\'ordine resta quello di prima)', lezioni, copiaLezioni)
 
   const conRichieste = (letti) => m.contiDellaStriscia(letti, adesso, oggi)
-  ok('tutto letto: i conti (le tessere non lette sono null, mai 0)', conRichieste({ persone, lezioni, richieste: 2 }), { appelli: 3, certificati: 3, pagamenti: 3, tessere: null, richieste: 2 })
-  ok('liste vuote (non null): 0 ovunque', conRichieste({ persone: [], lezioni: [], richieste: 0 }), { appelli: 0, certificati: 0, pagamenti: 0, tessere: null, richieste: 0 })
-  ok('persone mancanti: certificati e pagamenti null, mai 0; il resto invariato', conRichieste({ persone: null, lezioni, richieste: 2 }), { appelli: 3, certificati: null, pagamenti: null, tessere: null, richieste: 2 })
-  ok('lezioni mancanti: solo appelli null', conRichieste({ persone, lezioni: null, richieste: 2 }), { appelli: null, certificati: 3, pagamenti: 3, tessere: null, richieste: 2 })
-  ok('richieste mancanti: solo richieste null', conRichieste({ persone, lezioni, richieste: null }), { appelli: 3, certificati: 3, pagamenti: 3, tessere: null, richieste: null })
-  ok('niente letto: tutti null, nessuno 0', conRichieste({ persone: null, lezioni: null, richieste: null }), { appelli: null, certificati: null, pagamenti: null, tessere: null, richieste: null })
+  ok('tutto letto: i conti (le tessere non lette sono null, mai 0)', conRichieste({ persone, lezioni, richieste: 2 }), { appelli: 3, certificati: 3, daPortare: 0, pagamenti: 3, tessere: null, richieste: 2 })
+  ok('liste vuote (non null): 0 ovunque', conRichieste({ persone: [], lezioni: [], richieste: 0 }), { appelli: 0, certificati: 0, daPortare: 0, pagamenti: 0, tessere: null, richieste: 0 })
+  ok('persone mancanti: certificati e pagamenti null, mai 0; il resto invariato', conRichieste({ persone: null, lezioni, richieste: 2 }), { appelli: 3, certificati: null, daPortare: null, pagamenti: null, tessere: null, richieste: 2 })
+  ok('lezioni mancanti: solo appelli null', conRichieste({ persone, lezioni: null, richieste: 2 }), { appelli: null, certificati: 3, daPortare: 0, pagamenti: 3, tessere: null, richieste: 2 })
+  ok('richieste mancanti: solo richieste null', conRichieste({ persone, lezioni, richieste: null }), { appelli: 3, certificati: 3, daPortare: 0, pagamenti: 3, tessere: null, richieste: null })
+  ok('niente letto: tutti null, nessuno 0', conRichieste({ persone: null, lezioni: null, richieste: null }), { appelli: null, certificati: null, daPortare: null, pagamenti: null, tessere: null, richieste: null })
   ok('un conto che non si sa dà una casella «non so», non a posto', m.caselleCosaManca({ ...conRichieste({ persone: null, lezioni, richieste: 2 }), contato: true }).map((x) => x.stato), ['manca', 'nonso', 'nonso', 'nonso', 'attesa'])
   ok('le tessere lette arrivano nel conto', conRichieste({ persone, lezioni, richieste: 2, tessere: 14 }).tessere, 14)
 }
