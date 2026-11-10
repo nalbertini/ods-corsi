@@ -206,7 +206,7 @@ await sezione('1c. sotto i 6 anni, per tutti allo stesso modo', async () => {
   ]
   const attive = persone.filter((x) => x.attiva)
   const conti = f('contaCertificati', attive, oggi)
-  ok('i conti delle statistiche: valido, in scadenza, scaduto, manca (chi non ha l\'obbligo non si conta)', conti, { valido: 1, in_scadenza: 1, scaduto: 1, manca: 2 })
+  ok('i conti delle statistiche: valido, in scadenza, scaduto, manca, atteso (chi non ha l\'obbligo non si conta)', conti, { valido: 1, in_scadenza: 1, scaduto: 1, manca: 2, atteso: 0 })
   ok('chi manca è chi non è a posto: stesso numero in DA FARE, ISCRITTI e nelle statistiche', [
     attive.filter((x) => f('senzaCertificatoValido', x, oggi)).length,
     attive.filter((x) => ['manca', 'scaduto'].includes(f('statoCertificato', x, oggi))).length,

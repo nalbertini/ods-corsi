@@ -51,6 +51,7 @@
     "prova:abbina-movimenti": "node scripts/prova-abbina-movimenti.mjs",
     "prova:assegna-movimento": "node scripts/prova-assegna-movimento.mjs",
     "prova:certificati": "node scripts/prova-certificati.mjs",
+    "prova:certificato-dopo": "node scripts/prova-certificato-dopo.mjs",
     "prova:campi": "node scripts/prova-campi.mjs",
     "prova:richieste": "node scripts/prova-richieste.mjs",
     "prova:provenienza": "node scripts/prova-provenienza.mjs",

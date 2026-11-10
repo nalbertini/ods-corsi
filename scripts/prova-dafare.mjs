@@ -127,10 +127,10 @@ console.log(' certificati')
     tre(v), [
       ['Verdi Lia', 'scaduto il 10 settembre', true],
       ['Bianchi Marco', 'scaduto il 3 ottobre', true],
-      ['Èvola Ugo', 'manca', true],
-      ['Gialli Sara', 'manca · senza data di nascita', true],
-      ['Neri Carla', 'manca', true],
-      ['Zanetti Ugo', 'manca', true],
+      ['Èvola Ugo', 'nessun certificato', true],
+      ['Gialli Sara', 'nessun certificato · senza data di nascita', true],
+      ['Neri Carla', 'nessun certificato', true],
+      ['Zanetti Ugo', 'nessun certificato', true],
     ])
   ok('l\'id è quello della persona', primoId(v), persone[4].id)
   ok('nessuno: elenco vuoto', f('chiCertificati')([persona('Rossi', 'Anna')], OGGI), [])
