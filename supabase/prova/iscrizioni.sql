@@ -144,7 +144,8 @@ delete from richieste_iscrizione where nome in ('Quarto', 'Quinto', 'Sesto', 'Ul
 select atteso('le richieste si contano una alla volta, quelle già valide',
   (select (strpos(prosrc, 'pg_advisory_xact_lock(hashtext(''invia_iscrizione''))')
            between strpos(prosrc, 'Serve accettare il Regolamento') + 1 and strpos(prosrc, 'per_email_al_giorno'))::text
-     from pg_proc where proname = 'invia_iscrizione'), 'true');
+     -- Da 141 la funzione vera è `invia_iscrizione_0`, avvolta: si guarda quella che conta.
+     from pg_proc where proname in ('invia_iscrizione', 'invia_iscrizione_0') and prosrc like '%pg_advisory_xact_lock%'), 'true');
 select atteso('email e codice fiscale messi in ordine',
   (select email || ' ' || (codice_fiscale = cf_prova('RSSLCU', (current_date - interval '30 years')::date)) from richieste_iscrizione where nome = 'Luca'), 'luca@esempio.it true');
 select atteso('il luogo di nascita è quello del codice, non quello scritto',

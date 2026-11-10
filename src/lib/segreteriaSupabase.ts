@@ -718,9 +718,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
   /** I giorni per portare il certificato (141); `null` senza la colonna: nessun termine, come prima. */
   const giorniCertificato = async (): Promise<number | null> => {
+    // Senza 141 (colonna che manca) o se la lettura non va: l'elenco si vede lo stesso, senza termini.
     const r = await db.from('impostazioni').select('certificato_giorni').maybeSingle()
-    if (r.error?.code === '42703' || r.error?.code === 'PGRST204') return null
-    const g = (ok(r) as { certificato_giorni: number } | null)?.certificato_giorni
+    if (r.error) return null
+    const g = (r.data as { certificato_giorni: number } | null)?.certificato_giorni
     return g ?? GIORNI_CERTIFICATO
   }
 
