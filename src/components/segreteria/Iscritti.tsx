@@ -4,7 +4,7 @@ import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
+import { avvisiGesto, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -1983,7 +1983,8 @@ export function ModificaAnagrafica({
  * Il certificato medico: il file e fino a quando vale. Il file sta nell'app,
  * lo apre solo la segreteria con un link di dieci minuti, e si cancella da
  * solo trenta giorni dopo la scadenza. La data la scrive la segreteria
- * leggendo il foglio: senza, in sala non si entra (e sotto i 6 anni non serve).
+ * leggendo il foglio (sotto i 6 anni non serve). Senza, chi è nel termine
+ * per portarlo è giallo, dopo è rosso: la presenza si segna lo stesso (141).
  * Un gesto solo per caricare o sostituire: il file e la data insieme, un solo
  * SALVA. Chi ha il file ma non la data (arrivato col modulo) scrive solo la data.
  */
@@ -1993,7 +1994,10 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   const sel = useRef<HTMLInputElement>(null)
   // La scadenza che la segreteria legge sul file mandato dall'iscritto.
   const [scadeMandato, setScadeMandato] = useState('')
+  // «Cambia la data» / «Dai una data»: il termine per portarlo, di questa persona sola.
+  const [termine, setTermine] = useState<string | null>(null)
   const c = p.certificato
+  const riquadro = riquadroCertificato(c, p.natoIl, oggi, p.attiva)
   // Cosa dire e quale tasto offrire sta in `src/lib/segreteria.ts`: qui si mostra.
   const x = presentaCertificato(c, p.natoIl, oggi, p.attiva)
   const pronto = !!gesto && certificatoPronto(gesto, c)
@@ -2025,7 +2029,12 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
           </button>
         )}
       </Riga>
-      <Stato {...riquadroCertificato(c, p.natoIl, oggi, p.attiva)}>
+      <Stato nome={riquadro.nome} sotto={riquadro.sotto} tono={riquadro.tono}>
+        {riquadro.tasto && termine === null && !gesto && (
+          <button type="button" className="num sg-chip" onClick={() => setTermine(c.entroScritto ?? '')}>
+            {riquadro.tasto}
+          </button>
+        )}
         {c.conFile && (
           <button type="button" className="num sg-chip" onClick={apri}>
             Apri
@@ -2036,7 +2045,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             type="button"
             className="num sg-chip sg-pericolo"
             onClick={async () => {
-              if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne carica uno nuovo.`, 'Togli il certificato', { pericolo: true })))
+              if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file si cancella per sempre.' : ''} Senza certificato risulta da portare.`, 'Togli il certificato', { pericolo: true })))
                 void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
             }}
           >
@@ -2047,6 +2056,33 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
       {x.senzaNascita && <span className="sg-sotto">{x.senzaNascita}</span>}
       {x.cancellaIl && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Il file si cancella da solo il {dataLunga(x.cancellaIl)}, 30 giorni dopo la scadenza.</span>}
       {c.vecchio && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Certificato da archiviare (caricato prima della nuova gestione): si apre con APRI come gli altri.</span>}
+
+      {termine !== null && (
+        <div className="stack" style={{ gap: 10, padding: 14, background: 'var(--surface)', border: '2px solid var(--line)', borderLeft: '4px solid var(--giallo)' }}>
+          <Campo id="c-entro" etichetta="DA PORTARE ENTRO IL">
+            <input id="c-entro" className="sg-campo" type="date" min={oggi} max={spostaGiorno(oggi, GIORNI_CERTIFICATO_MAX)} value={termine} onChange={(e) => setTermine(e.target.value)} />
+          </Campo>
+          <span className="sg-sotto">Solo per {p.nome}: fino a {GIORNI_CERTIFICATO_MAX} giorni da oggi. La scheda dice chi l’ha spostato.</span>
+          <div className="row" style={{ gap: 8 }}>
+            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setTermine(null)}>
+              Lascia stare
+            </button>
+            <Tasto
+              tono="pieno"
+              className="grow"
+              disabled={!termine}
+              onClick={() =>
+                void fai(() => d.cambiaTermineCertificato(p.id, termine), 'Data cambiata', () => {
+                  setTermine(null)
+                  onCambiato()
+                })
+              }
+            >
+              Salva
+            </Tasto>
+          </div>
+        </div>
+      )}
 
       {c.inAttesaIl && !gesto && (
         <div className="stack" style={{ gap: 10, padding: 14, background: 'var(--surface)', border: '2px solid var(--line)', borderLeft: '4px solid var(--giallo)' }}>
