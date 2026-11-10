@@ -1,0 +1,57 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-10T12:00:00Z"
+ },
+ "title": "Certificato portato dopo",
+ "launch": {
+  "view": "canvas",
+  "page": "modulo"
+ },
+ "pages": [
+  { "id": "modulo", "name": "Il modulo" },
+  { "id": "area", "name": "L'area iscritti" },
+  { "id": "segreteria", "name": "La segreteria" },
+  { "id": "lib", "name": "Libreria" }
+ ],
+ "boards": {
+  "Oggi.dc.html": { "x": 0, "y": 300, "w": 390, "h": 1400, "page": "modulo", "title": "Com'è oggi · il certificato è facoltativo, «portalo prima della prima lezione»" },
+  "Main.dc.html": { "x": 470, "y": 300, "w": 390, "h": 1400, "page": "modulo", "title": "Proposta · «Non ce l'ho ancora»: ti iscrivi lo stesso, 30 giorni per portarlo" },
+  "Ora.dc.html": { "x": 940, "y": 300, "w": 390, "h": 1400, "page": "modulo", "title": "Proposta · «Lo carico ora»: il file diventa obbligatorio" },
+  "Fine.dc.html": { "x": 1410, "y": 300, "w": 390, "h": 900, "page": "modulo", "title": "Proposta · fine del modulo: entro quando portarlo" },
+  "AreaOggi.dc.html": { "x": 0, "y": 300, "w": 390, "h": 900, "page": "area", "title": "Com'è oggi · certificato scaduto" },
+  "AreaIscritti.dc.html": { "x": 470, "y": 300, "w": 390, "h": 900, "page": "area", "title": "Proposta · da caricare entro il 12 dicembre" },
+  "Scheda.dc.html": { "x": 0, "y": 300, "w": 1100, "h": 760, "page": "segreteria", "title": "Proposta · scheda dell'iscritto, gli stati del certificato" },
+  "DaFare.dc.html": { "x": 1180, "y": 300, "w": 1100, "h": 640, "page": "segreteria", "title": "Proposta · COSA MANCA e DA FARE" },
+  "Impostazioni.dc.html": { "x": 0, "y": 1180, "w": 1440, "h": 900, "page": "segreteria", "title": "Proposta · IMPOSTAZIONI › GLI AVVISI, i giorni per portarlo" },
+  "Titoletto.dc.html": { "x": 0, "y": 0, "w": 360, "h": 50, "page": "lib" },
+  "Campo.dc.html": { "x": 440, "y": 0, "w": 360, "h": 90, "page": "lib" },
+  "Riquadro.dc.html": { "x": 880, "y": 0, "w": 360, "h": 120, "page": "lib" },
+  "CaricaFile.dc.html": { "x": 1320, "y": 0, "w": 360, "h": 100, "page": "lib" },
+  "Bottone.dc.html": { "x": 1760, "y": 0, "w": 260, "h": 80, "page": "lib" },
+  "TitoloEsito.dc.html": { "x": 0, "y": 200, "w": 360, "h": 90, "page": "lib" },
+  "Riepilogo.dc.html": { "x": 440, "y": 200, "w": 350, "h": 240, "page": "lib" },
+  "Testata.dc.html": { "x": 880, "y": 200, "w": 390, "h": 72, "page": "lib" },
+  "SchedeArea.dc.html": { "x": 1320, "y": 200, "w": 390, "h": 50, "page": "lib" },
+  "Stato.dc.html": { "x": 0, "y": 520, "w": 640, "h": 80, "page": "lib" },
+  "Chip.dc.html": { "x": 720, "y": 520, "w": 200, "h": 48, "page": "lib" },
+  "RigaDaFare.dc.html": { "x": 0, "y": 700, "w": 1000, "h": 100, "page": "lib" },
+  "CosaManca.dc.html": { "x": 0, "y": 900, "w": 1284, "h": 108, "page": "lib" },
+  "Menu.dc.html": { "x": 1400, "y": 520, "w": 240, "h": 900, "page": "lib" },
+  "SchedeImpostazioni.dc.html": { "x": 0, "y": 1100, "w": 1100, "h": 50, "page": "lib" },
+  "Tablet.dc.html": { "x": 1520, "y": 1180, "w": 808, "h": 640, "page": "segreteria", "title": "Proposta · tablet dell'istruttore, solo chi ha passato il termine" },
+  "TabletTestaAppello.dc.html": { "x": 0, "y": 1250, "w": 808, "h": 170, "page": "lib" },
+  "TabletRigaAppello.dc.html": { "x": 900, "y": 1250, "w": 420, "h": 70, "page": "lib" },
+  "TabletTasto.dc.html": { "x": 1400, "y": 1250, "w": 200, "h": 60, "page": "lib" },
+  "SegnoCompleanno.dc.html": { "x": 1680, "y": 1250, "w": 200, "h": 30, "page": "lib" }
+ },
+ "order": ["Oggi.dc.html", "Main.dc.html", "Ora.dc.html", "Fine.dc.html", "AreaOggi.dc.html", "AreaIscritti.dc.html", "Scheda.dc.html", "DaFare.dc.html", "Impostazioni.dc.html", "Titoletto.dc.html", "Campo.dc.html", "Riquadro.dc.html", "CaricaFile.dc.html", "Bottone.dc.html", "TitoloEsito.dc.html", "Riepilogo.dc.html", "Testata.dc.html", "SchedeArea.dc.html", "Stato.dc.html", "Chip.dc.html", "RigaDaFare.dc.html", "CosaManca.dc.html", "Menu.dc.html", "SchedeImpostazioni.dc.html", "Tablet.dc.html", "TabletTestaAppello.dc.html", "TabletRigaAppello.dc.html", "TabletTasto.dc.html", "SegnoCompleanno.dc.html"],
+ "notes": {
+  "t-modulo": { "x": 0, "y": 0, "text": "Il modulo: «Lo carico ora» o «Non ce l'ho ancora»", "kind": "title1", "maxW": 1800, "page": "modulo" },
+  "n-modulo": { "x": 1880, "y": 300, "w": 360, "page": "modulo", "fill": "orange", "text": "Vale uguale in «Una persona in più» dall'area iscritti (stesso passo dei documenti, «di Matteo» nel testo).\n\nSotto i 6 anni la scelta non c'è, come oggi.\n\nIl numero di giorni lo dice IMPOSTAZIONI: qui 30.\n\nIl link per email arriva con la PR dei solleciti: per ora si carica dall'area iscritti o si porta in segreteria." },
+  "t-area": { "x": 0, "y": 0, "text": "L'area iscritti", "kind": "title1", "maxW": 860, "page": "area" },
+  "t-segreteria": { "x": 0, "y": 0, "text": "La segreteria: giallo nel termine, rosso dopo", "kind": "title1", "maxW": 2280, "page": "segreteria" }
+ },
+ "designSystems": []
+}

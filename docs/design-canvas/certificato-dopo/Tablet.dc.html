@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Appello sul tablet</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. L'appello dell'istruttore sul tablet (TabletIstruttore.tsx), da tablet-istruttore-icone/Main.dc.html. Oggi del
+     certificato non c'e' niente. Ora, solo per chi ha passato il termine (o e' di prima, senza certificato): «! CERTIFICATO
+     NON ARRIVATO» sotto il nome. Nel termine niente: viene alle lezioni e basta. La riga si tocca come sempre, la presenza
+     si segna. Al tablet arriva solo un si'/no per persona, mai la data o il file. -->
+<div style="display: flex; flex-direction: column; gap: 10px; width: 808px; min-height: 640px; padding: 0 0 24px; background: #eef5fa">
+  <dc-import name="TabletTestaAppello" corso="Judo kids" quando="oggi, 18:30–19:30" attivita="Tecnica" sotto="3 segnati da sé sul tablet · tocca un nome per cambiarlo" presenti="4" iscritti="6" prove="0" hint-size="100%,170px"></dc-import>
+  <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 24px">
+    <dc-import name="TabletRigaAppello" nome="Bianchi Luca" stato="presente" marchio="dal-tablet" hint-size="100%,60px"></dc-import>
+    <dc-import name="TabletRigaAppello" nome="Colombo Sara" stato="presente" certificato="{{ true }}" hint-size="100%,80px"></dc-import>
+    <dc-import name="TabletRigaAppello" nome="Ferrari Tommaso" stato="assente" hint-size="100%,60px"></dc-import>
+    <dc-import name="TabletRigaAppello" nome="Greco Anna" stato="presente" hint-size="100%,60px"></dc-import>
+    <dc-import name="TabletRigaAppello" nome="Neri Giulia" stato="presente" hint-size="100%,60px"></dc-import>
+    <dc-import name="TabletRigaAppello" nome="Russo Matteo" stato="niente" certificato="{{ true }}" hint-size="100%,80px"></dc-import>
+  </div>
+  <span style="padding: 4px 24px 0; font-size: 15px; line-height: 1.45; color: #46606f">Neri Giulia deve ancora portarlo ma è nel termine: sul tablet non ha niente.</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":808,"height":640}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

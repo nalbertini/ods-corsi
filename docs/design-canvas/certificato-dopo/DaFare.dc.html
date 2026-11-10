@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>COSA MANCA e DA FARE</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. COSA MANCA (CosaManca.tsx, cosaManca.ts): restano cinque caselle. CERTIFICATI conta solo i rossi (mancano,
+     scaduti, termine passato); quelli nel termine stanno nella riga sotto, «+8 da portare», senza diventare rossi.
+     DA FARE (DaFare.tsx, daFareChi.ts): la riga rossa di oggi resta per i rossi; sotto, una riga gialla nuova «presto»
+     con i primi cinque nomi e la data. -->
+<div style="display: flex; flex-direction: column; gap: 20px; width: 1100px; min-height: 640px; padding: 28px 36px; background: #eef5fa">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · LE CASELLE IN CIMA</span>
+  <dc-import name="CosaManca" tema="sito" colonne="{{ 5 }}" voci="2|APPELLI NON FATTI|senza appello, ultimi 30 giorni|r; 3|CERTIFICATI|termine passato o scaduti · +8 da portare|r; 7|PAGAMENTI|quote non in regola|r; 1|TESSERE|da rinnovare|g; 3|RICHIESTE ONLINE|da accogliere|g" hint-size="100%,108px"></dc-import>
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · DA FARE</span>
+  <dc-import name="RigaDaFare" tema="sito" n="3" titolo="iscritti senza certificato valido" sotto="Il certificato manca, è scaduto o il termine per portarlo è passato." tasto="Vedi tutti" livello="blocca" elenco="Rossi Marco~doveva portarlo entro il 12/11|Bianchi Sara~scaduto il 02/10|Verdi Luca~nessun certificato" rosso="doveva|scaduto|nessun" hint-size="100%,180px"></dc-import>
+  <dc-import name="RigaDaFare" tema="sito" n="8" titolo="iscritti devono ancora portare il certificato" sotto="Sono nel termine e vengono alle lezioni: ricordaglielo." tasto="Vedi tutti" livello="presto" elenco="Neri Giulia~entro il 15/11|Russo Matteo~entro il 20/11|Ferrari Anna~entro il 28/11|Esposito Leo~entro il 02/12|Romano Pietro~entro il 12/12" hint-size="100%,200px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":640}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Giorni per portare il certificato</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. IMPOSTAZIONI (Regole.tsx) › GLI AVVISI: un riquadro nuovo «Il certificato medico», sopra gli indirizzi degli
+     avvisi. In questa PR solo i giorni: un campo numerico (1-120) come «per quanto si tengono le presenze», col perche'
+     sotto. Con la PR dei solleciti qui sotto entrano interruttore, momenti e testo della mail: per questo GLI AVVISI. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="IMPOSTAZIONI" impostazioni="{{ true }}" numeri="RICHIESTE ONLINE:3" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 34px; line-height: 1">IMPOSTAZIONI</h1>
+      <span style="font-size: 14px; color: #46606f">Le scelte che spettano alla palestra, non al programma.</span>
+    </div>
+    <dc-import name="SchedeImpostazioni" tema="sito" acceso="GLI AVVISI" hint-size="100%,50px"></dc-import>
+    <section aria-label="Il certificato medico" style="display: flex; flex-direction: column; gap: 14px; max-width: 760px; padding: 20px 24px; background: #ffffff; border-radius: 6px">
+      <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">Il certificato medico</h2>
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid #cfe6f4">
+        <label for="giorni" style="font-size: 15px; font-weight: 600">Chi non ce l’ha ancora lo porta entro</label>
+        <input id="giorni" type="number" min="1" max="120" value="30" style="width: 88px; height: 44px; padding: 0 12px; font: 600 16px Inter, Arial, sans-serif; color: #0d2a3d; background: #ffffff; border: 1px solid #6f8a99; border-radius: 4px">
+        <span style="font-size: 15px; color: #0d2a3d">giorni</span>
+      </div>
+      <span style="font-size: 13px; line-height: 1.5; color: #46606f">Per chi si iscrive: dal giorno in cui accogli la richiesta. Per chi è già iscritto: dal giorno in cui il certificato scade. Cambiare il numero vale per le iscrizioni che accogli da adesso; chi ha già una data la tiene.</span>
+      <span style="font-size: 13px; line-height: 1.5; color: #46606f">Nel termine la persona viene alle lezioni e in DA FARE è gialla; dopo è rossa, ma la presenza si segna lo stesso.</span>
+    </section>
+    <section aria-label="Gli avvisi alla segreteria" style="display: flex; flex-direction: column; gap: 8px; max-width: 760px; padding: 20px 24px; background: #ffffff; border-radius: 6px; opacity: 0.6">
+      <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">Gli avvisi alla segreteria</h2>
+      <span style="font-size: 13px; color: #46606f">Come oggi: a chi vanno le email delle richieste e dei pagamenti.</span>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
