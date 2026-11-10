@@ -32,6 +32,12 @@ dalla più vecchia.
   istruttori](presenze-istruttori.md)); **Vedi tutti** le apre.
 - **Presenze segnalate da vedere**, solo in prova ([presenze
   segnalate](presenze-segnalate.md)).
+- **Iscritti devono ancora portare il certificato**, in giallo: sono nel
+  termine per portarlo (iscritti con «Non ce l'ho ancora», certificato scaduto
+  da poco, 6 anni compiuti da poco) e vengono alle lezioni: da ricordarglielo.
+  Coi primi nomi e la data, il termine più vicino prima. Passato il termine
+  vanno fra i **senza certificato valido**, in rosso, con «doveva portarlo
+  entro il …».
 - **Iscritti senza certificato valido**, **certificati in scadenza** (entro un
   mese), **iscritti che compiono 6 anni senza certificato** (entro un mese: da
   quel giorno il certificato serve, meglio avvisare la famiglia) e **iscritti
@@ -61,8 +67,8 @@ e la coda del banco. Il filtro, e
   certificato arrivato col modulo no: passa alla scheda.
 
 Le righe sono in ordine di quanto premono. Prima, col numero **rosso**,
-quello che è già un guaio: lezioni senza appello, chi entra in sala senza
-certificato valido o senza la quota. Poi, col numero **giallo**, quello che
+quello che è già un guaio: lezioni senza appello, chi non ha il certificato
+(o ha passato il termine per portarlo) o la quota. Poi, col numero **giallo**, quello che
 aspetta una risposta o scade fra poco: richieste, presenze da confermare,
 certificati in scadenza, chi sta per compiere 6 anni, i corsi con un prezzo mancante. Le stampe stanno in una riga sola, **QUANDO C'È UN
 MOMENTO** (i tasti **Vedi quali**). I numeri del menu sono gialli per la stessa ragione.

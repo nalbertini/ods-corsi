@@ -132,6 +132,14 @@ la richiesta parte lo stesso e il modulo dice di chiedere alla segreteria come p
 
 ## Gli avvisi
 
+**IL CERTIFICATO MEDICO**: «Chi non ce l'ha ancora lo porta entro N giorni»
+(da 1 a 120, di solito 30; fuori da lì non si salva: «I giorni vanno da 1 a
+120.»). Per chi si iscrive contano dal giorno in cui accogli la richiesta; per
+chi è già iscritto, dal giorno in cui il certificato scade. Cambiare il numero
+vale per le iscrizioni che accogli da adesso: chi ha già una data la tiene. Nel
+termine la persona viene alle lezioni ed è gialla; dopo è rossa, ma la presenza
+si segna lo stesso. Il modulo di iscrizione dice questi giorni.
+
 **GLI AVVISI ALLA SEGRETERIA**: dove arriva un'email quando arriva una
 richiesta online, un pagamento Satispay, uno scarico Satispay non riuscito o un
 certificato medico mandato dall'area iscritti. **EMAIL PER GLI AVVISI** è

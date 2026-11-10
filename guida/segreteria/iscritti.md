@@ -19,6 +19,11 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 - **Senza certificato valido** — chi è attivo e non ha il certificato medico,
   o ce l'ha scaduto. Chi ha meno di 6 anni non c'è: per lui il certificato
   non è obbligatorio.
+- **Certificato da portare** — chi è attivo e non ha il certificato, ma è nel
+  termine per portarlo: si è iscritto con «Non ce l'ho ancora», gli è scaduto
+  da meno dei giorni scritti in IMPOSTAZIONI, o ha compiuto 6 anni da poco.
+  Viene alle lezioni; passato il termine passa fra i **Senza certificato
+  valido**.
 - **Certificato in scadenza** — chi è attivo e ha il certificato che scade
   entro un mese (di chi ha meno di 6 anni no).
 - **Compiono 6 anni** — chi è attivo, compie 6 anni entro un mese e non ha il
@@ -97,7 +102,8 @@ registrata (o non ha la data di nascita).
 Due colonne dicono in un colpo d'occhio cosa manca, ciascuna per conto suo. Un
 pallino colorato davanti alla parola: rosso manca, giallo aspetta. Il ✓ verde è a posto.
 
-- **CERTIFICATO**: ✓ se è valido; in rosso **Manca** o **Scaduto**; in giallo
+- **CERTIFICATO**: ✓ se è valido; in giallo **Da portare** nel termine per
+  portarlo, in rosso **Doveva portarlo** dopo; in rosso **Manca** o **Scaduto**; in giallo
   **Scade il 14/10** (entro un mese; **Scade oggi** l'ultimo giorno). Sotto i 6
   anni il certificato non serve: c'è **Non serve** in grigio, e un mese prima
   del compleanno **Serve dal 14/10** in giallo. Per sapere l'età serve la data
@@ -308,7 +314,20 @@ scheda è disattivata, nessuno.
   Il file si cancella da solo **30 giorni dopo la scadenza** (la scheda dice
   quando), o subito se la persona viene disattivata; la data resta, e la
   scheda dice «file cancellato». Riattivare la persona non lo riporta: se
-  serve, si carica di nuovo. **Sotto i 6 anni** il certificato non si chiede:
+  serve, si carica di nuovo.
+  **Il termine per portarlo**: chi si è iscritto con «Non ce l'ho ancora» ha
+  **DA PORTARE ENTRO IL …** in giallo (sotto: fra quanti giorni). Lo stesso chi
+  ha il certificato scaduto da poco (**SCADUTO IL … · DA PORTARE ENTRO IL …**,
+  la scadenza più i giorni di IMPOSTAZIONI) e chi ha compiuto 6 anni da
+  iscritto. Il giorno del termine è ancora giallo; dal giorno dopo è rosso,
+  **DOVEVA PORTARLO ENTRO IL …**. Chi era iscritto prima di questa regola,
+  senza certificato, è rosso **CERTIFICATO NON ARRIVATO**. Giallo o rosso, la
+  presenza si segna lo stesso. **Cambia la data** (o **Dai una data**, per chi
+  non ne ha una) sposta il termine di questa persona sola, fino a 120 giorni da
+  oggi; la scheda dice poi chi l'ha spostato e quando. Un certificato valido
+  (confermato, caricato o con la data scritta) toglie il termine; rifiutare il
+  file mandato no. Un file mandato e non confermato non cambia il colore.
+  **Sotto i 6 anni** il certificato non si chiede:
   il riquadro dice **NON SERVE**, e chi ha meno di 6 anni non conta fra chi è
   senza certificato valido.
 - **Un certificato da archiviare** (file caricato quando il certificato
