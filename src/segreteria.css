@@ -132,14 +132,23 @@
 .sg-elenco-casella { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px; font-size: 15px; cursor: pointer; }
 .sg-elenco-casella input { width: 22px; height: 22px; margin: 0; accent-color: var(--text); cursor: pointer; }
 .sg-elenco-stato { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; min-height: 48px; padding: 8px 16px; background: var(--bg); border-block: 1px solid var(--line); font-size: 14px; }
-.sg-elenco-somme { display: flex; gap: 6px 16px; flex-wrap: wrap; color: var(--dim); }
-.sg-elenco-somme b { color: var(--text); white-space: nowrap; }
+.sg-elenco-barra-due { gap: 12px 24px; padding-top: 0; }
+.sg-periodo, .sg-filtro-gruppo { display: inline-flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; }
+.sg-tasto-quadro { width: 44px; min-width: 44px; padding: 0; justify-content: center; }
+/* I quattro totali del periodo: cifre grandi con l'etichetta sopra, si leggono come un estratto conto. */
+.sg-totali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+.sg-totali > div { display: flex; flex-direction: column; gap: 2px; padding: 12px 18px; min-width: 0; }
+.sg-totali > div + div { border-left: 1px solid var(--line); }
+.sg-totali > div > span { font-family: inherit; font-weight: 600; letter-spacing: 0.08em; }
+.sg-totali b { font-size: 22px; font-weight: 700; white-space: nowrap; }
+@media (max-width: 640px) {
+  .sg-totali { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-totali > div:nth-child(3) { border-left: 0; }
+  .sg-totali > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .sg-totali b { font-size: 18px; }
+}
 .sg-elenco .sg-tabella { border: 0; }
 .sg-elenco .sg-lista-testa { padding-top: 10px; }
-/* Una pillola della riga di stato: il filtro acceso, con la ✕ che toglie solo lui. */
-.sg-pillola { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; max-width: 100%; min-width: 0; padding-left: 12px; background: var(--surface); border: 1.5px solid var(--text); font-weight: 600; }
-.sg-pillola-testo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sg-pillola button { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 44px; height: 41px; font-size: 13px; }
 /* VOCE e CASSA con la loro icona davanti: si riconoscono a colpo d'occhio scorrendo. */
 .sg-cella-icona { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; }
 .sg-riga-movimento .sg-cella-icona svg { color: var(--blu, var(--text)); }
@@ -330,7 +339,9 @@
 .sg-scheda-campi { max-width: 720px; }
 /* La scheda di un movimento: testata (chi, quanto, quando), suggerimento a tutta larghezza, campi, piede coi tasti. Sul telefono tutto in colonna, tasti a tutta larghezza. */
 .sg-movimento-testata { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-.sg-movimento-chip { padding: 6px 12px; border: 2px solid var(--line-soft); font-size: 14px; font-weight: 600; }
+/* I dati che non si cambiano: in fila, l'etichetta sopra e il valore sotto. */
+.sg-movimento-dati { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px 24px; padding: 14px 0; border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+.sg-movimento-dati > div { display: flex; flex-direction: column; gap: 4px; font-size: 16px; min-width: 0; }
 .sg-movimento-importo { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: none; }
 .sg-movimento-importo b { font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
 .sg-sug-colonne { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
@@ -437,12 +448,7 @@
 .sg-sotto-movimento { display: block; font-size: 13px; color: var(--sec); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-sotto-extra::before { content: ' · '; }
 .sg-solo-telefono { display: none; }
-/* Le casse a scelta multipla: l'elenco si apre sotto il tasto. */
-.sg-filtro-casse { position: relative; }
-.sg-filtro-casse summary { display: flex; align-items: center; box-sizing: border-box; list-style: none; cursor: pointer; min-height: 44px; }
-.sg-filtro-casse summary::-webkit-details-marker { display: none; }
 .sg-filtro-menu-etichetta { color: var(--dim); }
-.sg-filtro-casse-lista { position: absolute; z-index: 6; top: 100%; left: -2px; display: flex; flex-direction: column; min-width: 100%; padding: 6px 12px; background: var(--bg, var(--surface)); border: 2px solid var(--text); white-space: nowrap; }
 /* Sul tablet la tabella dei movimenti ha troppe colonne (con PERSONA sette): sotto i 1200px resta come sul telefono, con il resto sotto la descrizione. */
 @media (max-width: 1200px) {
   .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr); gap: 8px; }
@@ -1371,3 +1377,34 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sg-banca-riga > :nth-child(2) { text-align: left; }
   .sg-banca-riga > :not(:nth-child(-n+2)):not(.sg-banca-importo) { grid-column: 1 / -1; order: 3; }
 }
+
+/* IMPORTAZIONI: le fonti in una tabella a quattro colonne, come nel design. */
+.sg-riga-fonte { display: grid; grid-template-columns: 260px 160px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--line-soft); font-size: 15px; }
+.sg-lista-testa.sg-riga-fonte { padding: 10px 18px; }
+.sg-riga-fonte:last-child { border-bottom: 0; }
+.sg-fonte-icona { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 6px; background: var(--bg); }
+.sg-fonte-tasti { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+/* Sotto i 1440px i tasti stringevano ULTIMO ARRIVO fino a una parola per riga: vanno sotto, a tutta riga. */
+@media (max-width: 1439px) {
+  .sg-riga-fonte { grid-template-columns: 220px 140px minmax(0, 1fr); }
+  .sg-fonte-tasti { grid-column: 1 / -1; justify-content: flex-start; }
+  .sg-lista-testa.sg-riga-fonte > :last-child { display: none; }
+}
+@media (max-width: 767px) {
+  .sg-lista-testa.sg-riga-fonte { display: none; }
+  .sg-riga-fonte { grid-template-columns: 1fr; gap: 10px; }
+  .sg-fonte-tasti { justify-content: flex-start; }
+}
+
+/* IMPORTA L'ESTRATTO CONTO: i passi numerati e il riquadro dove si lascia il file. */
+.sg-passi { list-style: none; margin: 0; padding: 0; max-width: 920px; }
+.sg-passi > li { display: flex; gap: 16px; padding: 20px 24px; font-size: 16px; }
+.sg-passi > li + li { border-top: 1px solid var(--line); }
+.sg-passo-numero { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 999px; background: var(--su-colore); color: var(--su-rosso); font-weight: 700; }
+.sg-trascina { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); font-size: 15px; text-align: center; }
+/* Al telefono non si trascina niente: resta solo «Scegli il file». */
+@media (hover: none) { .sg-trascina-testo { display: none; } }
+/* Con un filtro sulle righe restano solo entrate e uscite (striscia() in filtriMovimenti). */
+.sg-totali[data-quanti='2'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sg-totali[data-quanti='2'] > div:nth-child(n) { border-top: 0; }
+.sg-totali[data-quanti='2'] > div + div { border-left: 1px solid var(--line); }

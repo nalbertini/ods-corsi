@@ -124,13 +124,13 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
     const dati = datiImportBanca(a)
     const conVoce = classificate ? `${classificate === dati.length ? 'tutti' : classificate} con la voce che hai scelto${classificate === dati.length ? '' : ', gli altri in «Da classificare»'}` : 'in «Da classificare»'
     const si = await chiedi(
-      `Scrivo ${movimenti(dati.length)} nel Conto Corrente, ${conVoce}? ${a.daDecidere.length ? `I ${a.daDecidere.length} da decidere non entrano. ` : ''}Se cambi idea, «Annulla tutta l’importazione» li toglie in un colpo.`,
+      `Scrivo ${movimenti(dati.length)} nel Conto Corrente, ${conVoce}? ${a.daDecidere.length ? `I ${a.daDecidere.length} da decidere non entrano. ` : ''}Se cambi idea, «Annulla» in ULTIMA IMPORTAZIONE li toglie in un colpo.`,
       `Sì, importa ${dati.length === 1 ? 'il movimento' : `i ${dati.length} movimenti`}`,
     )
     if (!si) return
     void fai(async () => {
       const n = await d.importaMovimentiBanca(dati)
-      // I coperti si salvano dopo l'import: servono a ricontrollarli in «Cosa è entrato» con «Non è questo».
+      // I coperti si salvano dopo l'import: servono a ricontrollarli in «Visualizza i movimenti» con «Non è questo».
       try {
         await d.segnaCopertiBanca(copertiDaSalvare(a))
       } catch {
@@ -166,7 +166,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const annullaLotto = async () => {
     if (!ultima) return
     const si = await chiedi(
-      `Annullo i ${ultima.conteggio} movimenti importati dalla banca insieme? Li ritrovi in «Mostra annullati». Rileggere il file non li riscrive.`,
+      `Annullo i ${ultima.conteggio} movimenti importati dalla banca insieme? Li ritrovi in MOVIMENTI, in «Annullati». Rileggere il file non li riscrive.`,
       `Sì, annulla i ${ultima.conteggio}`,
       { pericolo: true },
     )
@@ -182,11 +182,14 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const conti = useMemo(() => contaRighe(a?.righe ?? [], segno), [a, segno])
   const nonLeggibile = lettura && lettura.movimenti.length === 0
   const troppi = !!a && a.entrano.length > MASSIMO_PER_IMPORTAZIONE
+  const sceltaFile = <input type="file" accept=".csv,.txt,text/csv,text/plain" className="vh" onChange={(e) => { void scegliFile(e.target.files?.[0]); e.target.value = '' }} />
 
   return (
     <section aria-label="Importa dalla banca" className="stack" style={{ gap: 18 }}>
-      {scritti === null && <span className="sg-etichetta">NIENTE SI SCRIVE FINCHÉ NON DICI SÌ</span>}
-      <h2 className="sg-riquadro-titolo" style={{ margin: 0 }}>IL FILE DELLA BANCA</h2>
+      <div className="stack" style={{ gap: 4 }}>
+        <h2 className="sg-riquadro-titolo" style={{ margin: 0 }}>{"IMPORTA L'ESTRATTO CONTO"}</h2>
+        <span className="sg-sotto">BancoPosta. Prima ti mostro cosa c’è nel file: niente si scrive finché non confermi.</span>
+      </div>
       {!conto && <p role="alert" style={{ color: 'var(--rosso-testo)' }}>Manca la cassa Conto Corrente: creala prima di importare.</p>}
 
       {scritti !== null && (
@@ -200,29 +203,49 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           </span>
           {scritti.guasto && <span role="alert" style={{ fontSize: 15, color: 'var(--rosso-testo)' }}>Alcune voci non si sono messe: {scritti.guasto}</span>}
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            <button type="button" className="sg-btn sg-btn-pieno" onClick={onVedi}>Guarda i movimenti</button>
+            {/* A linea: sotto c'è di nuovo «Scegli il file», e il giallo è uno solo. */}
+            <Tasto onClick={onVedi}>Guarda i movimenti</Tasto>
           </div>
         </div>
       )}
 
-      {ultima && (
-        <div className="sg-riquadro stack" style={{ gap: 10, padding: '14px 18px' }}>
-          <span style={{ fontSize: 15 }}>
-            L’ultima importazione ha scritto <b>{movimenti(ultima.conteggio)}</b>, dal {dataRicevuta(ultima.dal)} al {dataRicevuta(ultima.al)}.
-          </span>
-          <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            <Tasto tono="rosso" onClick={() => void annullaLotto()}>Annulla tutta l’importazione</Tasto>
-          </div>
-        </div>
-      )}
-
-      <div className="stack" style={{ gap: 8 }}>
-        <label className="sg-btn sg-btn-pieno" style={{ alignSelf: 'flex-start', cursor: 'pointer' }}>
-          {lettura ? 'Scegli un altro file' : 'Scegli il file della banca'}
-          <input type="file" accept=".csv,.txt,text/csv,text/plain" className="vh" onChange={(e) => { void scegliFile(e.target.files?.[0]); e.target.value = '' }} />
+      {lettura ? (
+        <label className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start', cursor: 'pointer' }}>
+          <Icona nome="carica" />
+          Scegli un altro file
+          {sceltaFile}
         </label>
-        <span className="sg-sotto">Dall’home banking di BancoPosta scarica «Lista movimenti» in formato CSV. Il file resta nel tuo browser: arrivano al database solo i movimenti, senza IBAN né codice fiscale.</span>
-      </div>
+      ) : (
+        <ol className="sg-riquadro sg-passi" aria-label="I passi">
+          <li>
+            <span className="sg-passo-numero" aria-hidden="true">1</span>
+            <div className="stack" style={{ gap: 4 }}>
+              <b>{"Scarica il file dall'home banking"}</b>
+              <span className="sg-sotto">In BancoPosta apri «Lista movimenti», scegli le date e scarica in formato CSV.</span>
+            </div>
+          </li>
+          <li>
+            <span className="sg-passo-numero" aria-hidden="true">2</span>
+            <div className="stack" style={{ gap: 12, flex: 1, minWidth: 0 }}>
+              <b>Scegli il file</b>
+              {/* Trascinare è una scorciatoia: il tasto resta la via per tastiera e lettori di schermo. */}
+              <div className="sg-trascina" onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); void scegliFile(e.dataTransfer.files[0]) }}>
+                <Icona nome="carica" misura={28} />
+                <span className="sg-trascina-testo">Trascina qui il file CSV, oppure</span>
+                <label className="sg-btn sg-btn-pieno" style={{ cursor: 'pointer' }}>
+                  <Icona nome="carica" />
+                  Scegli il file
+                  {sceltaFile}
+                </label>
+              </div>
+              <span className="row sg-sotto" style={{ gap: 6, alignItems: 'center' }}>
+                <Icona nome="lucchetto" misura={16} />
+                Il file resta nel tuo computer: arrivano all'app solo i movimenti, senza IBAN né codice fiscale.
+              </span>
+            </div>
+          </li>
+        </ol>
+      )}
 
       {nonLeggibile && (
         <div role="alert" className="sg-riquadro stack" style={{ gap: 6, padding: '14px 18px', borderColor: 'var(--rosso-testo)' }}>
@@ -342,7 +365,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
               <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>{a.daDecidere.length} DA DECIDERE · NON ENTRANO FINCHÉ NON SCEGLI</span>
               <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
                 {a.daDecidere.some((x) => x.preselezionato) && (
-                  <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setScelte((s) => ({ ...s, ...Object.fromEntries(a.daDecidere.flatMap((x) => (x.preselezionato ? [[x.movimento.chiave, x.preselezionato]] : []))) }))}>Conferma quelli che sembrano giusti ({a.daDecidere.filter((x) => x.preselezionato).length})</button>
+                  <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelte((s) => ({ ...s, ...Object.fromEntries(a.daDecidere.flatMap((x) => (x.preselezionato ? [[x.movimento.chiave, x.preselezionato]] : []))) }))}>Conferma quelli che sembrano giusti ({a.daDecidere.filter((x) => x.preselezionato).length})</button>
                 )}
                 {a.daDecidere.length > 1 && (
                   <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelte((s) => ({ ...s, ...Object.fromEntries(a.daDecidere.map((x) => [x.movimento.chiave, 'nessuno'])) }))}>Nessuno è già scritto: scrivili tutti e {a.daDecidere.length}</button>
@@ -363,10 +386,22 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
               <button type="button" className="sg-btn sg-btn-pieno" disabled={!a.entrano.length || troppi} onClick={() => void importa()}>
                 {a.entrano.length === 1 ? 'Sì, importa il movimento' : `Sì, importa i ${a.entrano.length} movimenti`}
               </button>
-              <Tasto onClick={() => setLettura(null)}>Annulla</Tasto>
+              <Tasto onClick={() => setLettura(null)}>Lascia stare</Tasto>
             </div>
           </div>
         </>
+      )}
+
+      {/* Durante l'anteprima no: due «Annulla» insieme, uno dei quali cancella un file intero, si confondono. */}
+      {ultima && !lettura && (
+        <section aria-label="L'ultima importazione" className="sg-riquadro row" style={{ gap: 16, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px' }}>
+          <div className="stack" style={{ gap: 2 }}>
+            <span className="sg-etichetta">ULTIMA IMPORTAZIONE</span>
+            <span style={{ fontSize: 15 }}>{dataRicevuta(ultima.creatoIl.slice(0, 10))} · <b>{movimenti(ultima.conteggio)}</b> dal {dataRicevuta(ultima.dal)} al {dataRicevuta(ultima.al)}</span>
+          </div>
+          {/* Rosso a linea e in fondo, lontano dal giallo: annulla tutti i movimenti del file. */}
+          <Tasto className="sg-pericolo" onClick={() => void annullaLotto()}>Annulla questa importazione</Tasto>
+        </section>
       )}
     </section>
   )

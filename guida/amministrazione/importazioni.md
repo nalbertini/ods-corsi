@@ -8,20 +8,22 @@ chi ha pagato con Satispay e cosa è entrato dalla banca. È nel menu, in **I CO
 
 ## Le fonti
 
-In cima, un riquadro per fonte:
+Accanto al titolo, **Importa** apre l'importazione dal file della banca, la stessa di MOVIMENTI
+(vedi [Importare dalla banca](contabilita.md#importare-dalla-banca)). Sotto, una tabella con una
+riga per fonte e tre colonne: **FONTE**, **STATO** e **ULTIMO ARRIVO**.
 
-- **Satispay**: quando è stato l'ultimo scarico. I pagamenti Satispay non entrano in
-  contabilità: i soldi arrivano in banca col versamento «Da Satispay Europe S.A.»
-  (vedi [Satispay](contabilita.md#satispay)). **Chi ha pagato** apre l'elenco del mese;
-  **Scarica ora** fa subito lo scarico (la prima volta c'è invece l'anteprima, **Guarda
-  il primo scarico**). Con Satispay spento in **REGOLE → COME SI PAGA** lo scarico è
-  fermo, di notte e a mano: il riquadro lo dice, **Scarica ora** non c'è e **Chi ha
-  pagato** mostra quel che era già stato scaricato. Riaccendendo, lo scarico riparte da
-  dove si era fermato.
-- **Banca · BancoPosta**: l'ultimo file importato, quando e quanti movimenti.
-  **Importa un file** apre l'importazione dal file della banca, la stessa di MOVIMENTI
-  (vedi [Importare dalla banca](contabilita.md#importare-dalla-banca)). **Cosa è
-  entrato** apre il riepilogo del mese.
+- **Banca** (BancoPosta · Conto Corrente): **Aggiornata**, o **Mai importata** se non c'è ancora
+  un file; l'ultimo arrivo dice quando e quanti movimenti. **Visualizza i movimenti** apre il
+  riepilogo del mese dell'ultimo file importato.
+- **Satispay**: **Acceso**, **Spento** o **Non riuscito** se l'ultimo scarico si è fermato
+  (sotto, cosa è successo); l'ultimo arrivo dice quando è stato l'ultimo scarico. I pagamenti
+  Satispay non entrano in contabilità: i soldi arrivano in banca col versamento «Da Satispay
+  Europe S.A.» (vedi [Satispay](contabilita.md#satispay)). **Visualizza chi ha pagato** apre
+  l'elenco del mese dell'ultimo scarico; **Scarica ora** fa subito lo scarico (la prima volta c'è invece
+  l'anteprima, **Guarda il primo scarico**). Con Satispay spento in **REGOLE → COME SI PAGA**
+  lo scarico è fermo, di notte e a mano: lo stato è **Spento**, **Riaccendi in Regole ›** porta
+  lì, **Scarica ora** non c'è e **Visualizza chi ha pagato** mostra quel che era già stato
+  scaricato. Riaccendendo, lo scarico riparte da dove si era fermato.
 
 ## Da classificare
 
@@ -43,7 +45,7 @@ se la annulli.
 
 ## Chi ha pagato
 
-L'elenco dei pagamenti Satispay di un mese, e a chi sono stati riconosciuti. È in sola
+Si apre con **Visualizza chi ha pagato**. L'elenco dei pagamenti Satispay di un mese, e a chi sono stati riconosciuti. È in sola
 lettura: i soldi sono già nei versamenti della banca, qui non si scrive niente.
 
 In cima tre numeri: **Pagato con Satispay** (i pagamenti del mese, meno i rimborsi),
@@ -67,9 +69,9 @@ I rimborsi sono in rosso, col **−**: escono dal versamento, non dai conti.
 chiusa: toglie il collegamento, il movimento a mano resta com'era e il pagamento resta
 nel versamento della banca.
 
-## Cosa è entrato
+## I movimenti della banca
 
-Il riepilogo di un mese dalla banca: due numeri, **Importati nuovi** (scritti dal file) e
+Si apre con **Visualizza i movimenti**. Il riepilogo di un mese dalla banca: due numeri, **Importati nuovi** (scritti dal file) e
 **Già scritti a mano** (abbinati a un movimento già scritto, entrate o uscite, o a una
 ricevuta o a un pagamento a mano in bonifico o POS), poi una riga per movimento.
 

@@ -8,8 +8,10 @@ semplice, gli istruttori e il tablet no. Ha cinque schede, sotto il titolo come 
 
 ## Movimenti
 
-MOVIMENTI è un **estratto conto**. In cima, in una riga di stato, **Saldo iniziale**,
-**Entrate**, **Uscite** e **Saldo finale**, di quel che hai scelto con i filtri. La
+MOVIMENTI è un **estratto conto**. Sotto i filtri, una striscia di quattro cifre: **SALDO INIZIALE**,
+**ENTRATE**, **USCITE** e **SALDO FINALE**, del periodo che hai scelto. Con **Da assegnare**,
+**Annullati**, un TIPO o una ricerca restano solo **ENTRATE** e **USCITE**: i saldi sono di tutta
+la cassa e non tornerebbero con le righe che vedi. La
 tabella ha le colonne **DATA**, **DESCRIZIONE**, **TIPO** (con la sua icona: Incasso iscritto,
 Giroconto, Entrata, Uscita), **CASSA**, **ENTRATE** e **USCITE**, con le righe dalla più
 recente. Accanto al titolo CONTABILITÀ, e solo in questa scheda, c'è **Nuovo movimento**
@@ -36,16 +38,21 @@ L'elenco unisce due cose:
 - i **movimenti che scrivi tu**: altre entrate (contributi, gare, attività
   fatturate) e le uscite.
 
-Si parte da **Tutto l'anno**: l'elenco, ENTRATE, USCITE e DIFFERENZA contano l'anno in
-corso, non più il mese. Filtri ed elenco stanno in un riquadro solo. Sopra la **ricerca** nella
-descrizione (non bada a maiuscole, accenti e spazi in più), il **periodo** (il mese, il mese
-scorso, tutto l'anno, tutto) e i menu, tutti sulla stessa riga. **Esporta CSV**, nel menu **Altre azioni**, dà un foglio per Excel e per il commercialista,
-senza gli annullati. I menu: **Casse** (**Conto corrente**, **Contanti**, **Satispay**: se ne spuntano quante
-si vuole, nessuna spuntata vale tutte), **Tipo** (**Tutti**, **Entrate**, **Uscite**), **Voce** e **Persona**, poi **Mostra annullati** e la **vista**: **Elenco** o **Per
-voce**, che dà i totali per voce. Un menu acceso ha il fondo pieno e una ✕ accanto che lo spegne.
-Sotto i filtri, una riga dice quanti movimenti ci sono, quanti ne hai scelti, ogni
-filtro acceso con la sua ✕ (toglie solo quello), **Togli i filtri** (li toglie tutti e riporta
-a Tutto l'anno) e a destra ENTRATE, USCITE e DIFFERENZA di quel che vedi.
+Si parte dal **mese corrente**. Filtri ed elenco stanno in un riquadro solo, in tre righe:
+
+- la **ricerca** nella descrizione, nel nome o nell'importo (non bada a maiuscole, accenti e
+  spazi in più) e il **periodo**: i menu **Mese** e **Anno**, con le frecce **‹** e **›** per il mese
+  prima e quello dopo. **›** si ferma al mese corrente; con **Tutti i mesi** le frecce non ci sono.
+  **Tutti gli anni** guarda tutto lo storico; un mese scelto senza anno è di quest'anno;
+- **MOSTRA**: **Da assegnare · N** (quel che resta da sistemare: una quota o un corso senza persona,
+  un omonimo da decidere, soldi ancora da assegnare, la voce **Da classificare**; guarda tutto lo
+  storico, il periodo passa a tutti gli anni), **Tutti** o **Annullati** (solo quelli annullati,
+  che non contano). **TIPO**: **Entrate**, **Uscite** o **Tutti**;
+- quanti movimenti ci sono («38 movimenti a novembre 2026»), quanti ne hai scelti e, a destra,
+  la **VISTA**: **Elenco** o **Per voce**, che dà i totali per voce.
+
+**Esporta CSV**, nel menu **Altre azioni**, dà un foglio per Excel e per il commercialista,
+senza gli annullati.
 
 ### Gli incassi degli iscritti
 
@@ -55,7 +62,7 @@ riepilogo prima di scrivere, e dove entra: Cassa Contanti per i contanti, Satisp
 Corrente per il resto) e **+ FAI LA RICEVUTA** ([Un pagamento e la sua
 ricevuta](../segreteria/iscritti.md#un-pagamento-e-la-sua-ricevuta)). Si annulla da lì: un
 pagamento senza ricevuta con **Annulla il pagamento**, uno di una ricevuta annullando la ricevuta
-intera. Sparisce dai conti, resta in elenco con **Mostra annullati**.
+intera. Sparisce dai conti, resta in elenco con MOSTRA **Annullati**.
 
 - **Satispay senza richiesta**: chi ha pagato con Satispay in fondo al modulo e poi non ha mandato
   la richiesta compare da solo, col segno **Satispay senza richiesta** e sotto il nome l'email e il
@@ -84,19 +91,21 @@ la quota **non conta come pagata** (per questo serve la ricevuta, dalla scheda d
 
 Prima di scrivere, l'app mostra un **riepilogo** (importo, voce, cassa, data e, se c'è, la persona): **Sì,
 registra il movimento** lo scrive, **No, torna al modulo** lascia tutto com'era. Se il movimento scritto è fuori dai filtri che hai
-acceso, l'elenco lo dice («Non lo vedi nell'elenco: è fuori dai filtri») e **Togli i filtri** lo
-fa comparire.
+acceso, l'elenco lo dice («Non lo vedi nell'elenco: è fuori dai filtri») e **Mostralo** porta al suo
+mese, con tutti i movimenti.
 
 Un movimento registrato **non si cambia** negli importi: toccandolo si apre in una **finestra** sopra l'elenco
 (vedi [La finestra dei dettagli](../segreteria/README.md#la-finestra-dei-dettagli)), e si può
 **annullare** (resta in elenco, annullato, e non si conta più), correggere la descrizione e
-la nota (di un giroconto, solo la nota) o **cambiare la voce** (vedi sotto). Per correggere
+la nota (di un giroconto, solo la nota) o **cambiare la voce** (vedi sotto). C'è un tasto
+**Salva le modifiche** solo: scrive la voce, il testo o tutti e due, quel che hai cambiato.
+**Annulla il movimento**, rosso a linea e lontano da Salva le modifiche, chiede prima di annullare. Per correggere
 importo, data o cassa si annulla e si rifà.
 
 Nella finestra, la riga **PERSONA** dice di chi è una quota o un corso. **Apri la scheda ›** porta alla
 scheda della persona (anche per un incasso di un iscritto). Su un movimento scritto qui: **Collega a una
-persona** se manca («Nessuna: di chi è?»), **Cambia persona** e **Scollega**. Il filtro **Persona** ha
-anche **Quote e corsi senza persona**, per trovare quelli scritti prima che la persona fosse obbligatoria.
+persona** se manca («Nessuna: di chi è?»), **Cambia persona** e **Scollega**. MOSTRA **Da assegnare**
+trova anche le quote e i corsi senza persona, scritti prima che la persona fosse obbligatoria.
 
 ### Cambiare la voce
 
@@ -127,8 +136,8 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
   registri l’incasso nella scheda della persona. **Scegli tu** non cambia niente: mette la proposta nei campi qui sotto, e decidi lì.
   Senza suggerimento, il riquadro non c'è.
 - **Tanti insieme**: nell'elenco scrivi nella ricerca una parte della causale (per esempio «enel»),
-  scegli la **voce** da cui partire (per esempio «Da classificare») e, se serve, il periodo
-  **Tutto**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure la casella in testa alla
+  e, se serve, MOSTRA **Da assegnare** (le voci da classificare ci sono) o il periodo
+  **Tutti gli anni**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure la casella in testa alla
   colonna, che le sceglie tutte. In fondo compare la barra **N scelti**: **Cambia voce** apre il riepilogo (quanti sono,
   di che tipo, quanto fanno, da quali voci vengono). Scegli la **nuova voce** e tocca **Sì, cambia la
   voce**: finché non lo dici, non cambia niente. Se cambi la ricerca o i filtri, la scelta si svuota.
@@ -164,8 +173,8 @@ storico qui, quelle scritte a mano dalla loro finestra (vedi sopra). Non si coll
   Niente si scrive finché non dici **Sì, collega**. Vanno a pacchetti da 500, ognuno tutto o niente; se uno
   si ferma, l'app dice quanti ne ha collegati e **Rifai il collegamento** riparte dagli altri. A fine
   lavoro **Togli questo lotto** scollega solo quelli appena collegati: quelli cambiati a mano dopo non si toccano.
-- **Chi ha più schede dello stesso nome** (omonimi) non si collega mai da sé: il tag **Omonimi** e il
-  filtro **Da decidere** li mostrano. Scegli i movimenti e tocca **Collega a una persona**: l'app offre
+- **Chi ha più schede dello stesso nome** (omonimi) non si collega mai da sé: il tag **Omonimi** e
+  MOSTRA **Da assegnare** li mostrano. Scegli i movimenti e tocca **Collega a una persona**: l'app offre
   le persone con quel nome e quel che le distingue (anno di nascita, corsi, iscrizione). Se non basta,
   si cerca per nome.
 - **Chi non ha più la scheda** (un ex iscritto): il movimento resta com'è, con il tag **Senza scheda** e il
@@ -175,9 +184,7 @@ storico qui, quelle scritte a mano dalla loro finestra (vedi sopra). Non si coll
 - Se una scheda viene eliminata, i suoi movimenti restano, senza persona; se due schede si uniscono,
   il collegamento passa a chi resta.
 
-Il filtro **Persona** sopra l'elenco ha **Collegati**, **Da decidere** e **Senza scheda**, con il numero
-di ognuno sull'intero storico. **Collegati** conta solo lo storico collegato: gli incassi degli iscritti
-hanno la persona da sé e non ci sono.
+Gli omonimi da decidere e le quote senza persona sono in MOSTRA **Da assegnare**, su tutto lo storico.
 
 ### Assegnare un bonifico a quota e corsi
 
@@ -245,15 +252,15 @@ a zero: i loro soldi sono sul Conto Corrente. Se dentro c'è qualcosa, tornano, 
 **Totale** si spiega.
 
 Chi ha pagato con Satispay (nome, importo, giorno, se l'app lo riconosce fra gli iscritti)
-lo dice lo scarico, ogni notte, in [IMPORTAZIONI → Chi ha pagato](importazioni.md#chi-ha-pagato).
+lo dice lo scarico, ogni notte, in [IMPORTAZIONI → Visualizza chi ha pagato](importazioni.md#chi-ha-pagato).
 Se lo scarico non riesce arriva un'email agli indirizzi degli avvisi (IMPOSTAZIONI → GLI
 AVVISI, vedi [Le regole](../segreteria/regole.md#gli-avvisi)).
 
 ### Importare dalla banca
 
-**Importa dalla banca**, in MOVIMENTI (o **Importa un file** in [IMPORTAZIONI](importazioni.md)), apre una pagina sua che legge il file della banca e scrive nel **Conto
-Corrente** i movimenti che mancano; **I movimenti**, in alto, torna indietro. Dall'home banking di BancoPosta scarica la
-**Lista movimenti** in formato CSV, poi scegli il file. Il file resta sul tuo computer:
+**Importa dalla banca**, nel menu **Altre azioni** di MOVIMENTI (o **Importa** in [IMPORTAZIONI](importazioni.md)), apre **IMPORTA L'ESTRATTO CONTO**, una pagina sua che legge il file della banca e scrive nel **Conto
+Corrente** i movimenti che mancano; il tasto in alto torna indietro. Due passi: **1** dall'home banking di BancoPosta scarica la
+**Lista movimenti** in formato CSV; **2** trascina il file nel riquadro o tocca **Scegli il file**. Letto un file, **Scegli un altro file** ne prende un altro. Il file resta sul tuo computer:
 l'app ne legge solo i movimenti, e toglie dalla descrizione IBAN e codici fiscali.
 
 Di un bonifico in uscita la banca dà solo «Distinta: …», senza dire a chi hai pagato.
@@ -261,7 +268,7 @@ Aprendo il movimento compare **MANCANO DEI DATI**: scrivi il destinatario e prem
 **Salva il destinatario**. Diventa il titolo del movimento, e la scritta della banca resta
 nella nota (con «Dalla banca:»), per ritrovarlo sull'estratto conto.
 
-Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**. Dice
+Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**; **Lascia stare** esce senza scrivere. Dice
 quanti movimenti ci sono, quanti entrano e per quanto, e sotto elenca **tutte le righe
 del file**, nuove o già importate, una per riga: data, testo della banca, tipologia, persona,
 importo e uno **stato** in parole. Con i filtri sopra l'elenco (**Tutte**, **Nuove**, **Duplicate**,
@@ -276,7 +283,7 @@ importo, restano fuori).
 - **Da decidere**: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo) e più di un possibile pagamento. Sotto **POTREBBE ESSERE** scegli quello giusto con la **spunta verde** (**È questa**), oppure **È nuova**. Finché non scegli, non entra. Se il testo ha nome e cognome di una persona (o del suo genitore), quella scheda è in evidenza con «Sembra questo»; se il nome è di una e il genitore di un'altra, sono in evidenza tutte e due e scegli tu: **Conferma quelli che sembrano giusti** li conferma tutti insieme, e una riga con una sola scheda così non cambia finché non confermi.
 - **Scartata**: la data o l'importo sono illeggibili, o la data è nel futuro. Il motivo è scritto nella riga. Correggila nel file e riprova.
 
-Sopra l'elenco, gli **avvisi**: i **versamenti di contanti** entrano, ma controlla che non siano già nella cassa contanti. I versamenti **«Da Satispay Europe S.A.»** entrano come gli altri: sono l'incasso di Satispay, sulla voce **Incassi Satispay** (vedi [Satispay](#satispay)). Le duplicate si ricontrollano dopo l'importazione in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
+Sopra l'elenco, gli **avvisi**: i **versamenti di contanti** entrano, ma controlla che non siano già nella cassa contanti. I versamenti **«Da Satispay Europe S.A.»** entrano come gli altri: sono l'incasso di Satispay, sulla voce **Incassi Satispay** (vedi [Satispay](#satispay)). Le duplicate si ricontrollano dopo l'importazione in [IMPORTAZIONI → Visualizza i movimenti](importazioni.md#i-movimenti-della-banca).
 
 Sulle righe che entrano scegli la **tipologia**: parte da quella che l'app propone (come per
 i movimenti da classificare) o da **Da classificare**. Per una quota o un corso serve anche la
@@ -288,9 +295,9 @@ resta lì. Se esci dalla pagina con delle scelte fatte, l'app chiede prima.
 
 I movimenti entrano col segno **DALLA BANCA**, nella voce scelta o in **Da classificare**:
 quelle rimaste le sistemi dopo, con **Cambia voce**. Rileggere lo stesso file non duplica niente,
-nemmeno un movimento annullato. Se qualcosa non torna, **Annulla tutta l'importazione**
-toglie in un colpo i movimenti dell'ultima importazione; uno annullato per sbaglio si
-recupera da **Annullati**. Solo l'amministrazione importa; la segreteria può poi
+nemmeno un movimento annullato. Se qualcosa non torna, **Annulla questa importazione**, in fondo in
+**ULTIMA IMPORTAZIONE**, toglie in un colpo i movimenti dell'ultima importazione (chiede prima). Li
+ritrovi in MOVIMENTI, in MOSTRA **Annullati**. Solo l'amministrazione importa; la segreteria può poi
 classificare. Una volta sola al massimo 1000 movimenti.
 
 ### Dalla chat, con Claude

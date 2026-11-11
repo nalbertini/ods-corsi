@@ -9,6 +9,7 @@
 // da decidere, avvisi, totali) e i dati per `importa_prima_nota`. Niente nomi veri né IBAN veri: il
 // file vero non entra mai nel repository. La metà database è in supabase/prova/importa-banca.sql.
 // ---------------------------------------------------------------------------
+import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({
@@ -577,6 +578,25 @@ console.log('\n14. un bonifico che paga una ricevuta in più rate: la ricevuta i
   ok('…e segnaCoperti rifatto non cambia niente', prova(() => { const t = m.segnaCoperti([], s.coperti, [cop()], 'conto', rata); return [t.coperti.length, t.daScrivere.length] }), [1, 0])
   ok('dopo, una riga nuova da 50,00 dello stesso giorno non copre la quota già usata dalla ricevuta: entra nuova', prova(() => m.anteprimaBanca(file(['03/10/2026', '50,00', 'Da ROSSI LUCA altro BONIFICO SEPA']), m.segnaIncassiCoperti(rata, s.coperti), 'conto', OGGI).entrano.length), 1)
   ok('«Cosa è entrato» la conta fra i coperti, una volta sola', prova(() => { const e = m.entratoBanca(rata, s.coperti, '2026-10'); return [e.coperti, e.nuovi.conteggio, e.righe.length] }), [{ conteggio: 1, importo: 22000 }, 0, 1])
+}
+
+console.log('\n15. le schermate: IMPORTAZIONI con un solo «Importa», l\'estratto conto a passi')
+{
+  const imp = readFileSync('src/components/segreteria/Importazioni.tsx', 'utf8')
+  ok('i tasti dicono cosa si vede', [/Visualizza i movimenti/, /Visualizza chi ha pagato/].map((x) => x.test(imp)), [true, true])
+  ok('niente più «Cosa è entrato» e «Chi ha pagato» sui tasti', [/>\s*Cosa è entrato\s*</, />\s*Chi ha pagato\s*</].map((x) => x.test(imp)), [false, false])
+  ok('le colonne FONTE, STATO, ULTIMO ARRIVO', ['FONTE', 'STATO', 'ULTIMO ARRIVO'].every((t) => imp.includes(t)), true)
+  ok('Satispay spento porta a Regole', /Riaccendi in Regole/.test(imp) && /onRegole/.test(imp), true)
+  ok('la riga sui soldi di Satispay', imp.includes('Solo per sapere chi ha pagato: i soldi entrano col versamento della banca, già al netto della commissione.'), true)
+  const seg = readFileSync('src/components/segreteria/Segreteria.tsx', 'utf8')
+  ok('Segreteria passa onRegole a Importazioni', /<Importazioni[^>]*onRegole=\{/.test(seg), true)
+  const ib = readFileSync('src/components/segreteria/ImportaBanca.tsx', 'utf8')
+  ok('il titolo e la frase sotto', ib.includes("IMPORTA L'ESTRATTO CONTO") && ib.includes('niente si scrive finché non confermi'), true)
+  ok('i due passi', [/Scarica il file dall'home banking/, /Scegli il file/].map((x) => x.test(ib)), [true, true])
+  ok('il file si trascina', /onDrop=/.test(ib), true)
+  ok('la riga sulla privacy', ib.includes('Il file resta nel tuo computer: arrivano all\'app solo i movimenti, senza IBAN né codice fiscale.'), true)
+  ok('l\'ultima importazione in fondo, con «Annulla» rosso a linea', /ULTIMA IMPORTAZIONE/.test(ib) && /className="sg-pericolo"/.test(ib), true)
+  ok('l\'annullo rimanda a «Annullati», non a «Mostra annullati»', [/Mostra annullati/.test(ib), /«Annullati»/.test(ib)], [false, true])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
