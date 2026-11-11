@@ -126,12 +126,13 @@ jobs:
       - run: npm ci --prefix timer
       - run: npm run build:tutto
       # Il browser viene dal CDN di Playwright, le librerie di sistema dai mirror di Ubuntu, che a volte non
-      # rispondono e fermavano il giro prima della prova. Le librerie: tre tentativi, poi si va avanti lo stesso
-      # (l'immagine di GitHub le ha già quasi tutte): se ne manca una, è la prova a fallire, e lo dice.
+      # rispondono e fermavano il giro prima della prova (apt riprova da solo per minuti). Le librerie: al più
+      # tre minuti, poi si va avanti lo stesso (l'immagine di GitHub le ha già quasi tutte): se ne manca una, è la
+      # prova a fallire, e lo dice.
       - run: npx playwright install chromium
       - run: |
-          for i in 1 2 3; do npx playwright install-deps chromium && exit 0; echo "tentativo $i non riuscito"; sleep 30; done
-          echo "::warning::Le librerie di sistema per Chromium non si sono installate: la prova parte con quelle dell'immagine."
+          timeout 180 npx playwright install-deps chromium \
+            || echo "::warning::Le librerie di sistema per Chromium non si sono installate: la prova parte con quelle dell'immagine."
       - run: npm run prova:a11y-axe
 
   database:
