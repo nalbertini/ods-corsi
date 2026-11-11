@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="width: 100%">
+<div style="display: flex; align-items: center; gap: 10px; width: 100%; height: 44px; padding: 0 12px; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#46606f" stroke-width="2" stroke-linecap="square"><circle cx="11" cy="11" r="7"></circle><path d="M16 16l5 5"></path></svg>
+  <span style="flex-grow: 1; color: {{colore}}">{{testo}}</span>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"iscritti":{"editor":"text","default":"12"},"testo":{"editor":"text","default":""},"$preview":{"width":358,"height":44}}'>
+// PROPOSTA (../appello-istruttore/): la ricerca dell'appello senza etichetta, alta 44px invece degli 88 del Campo con
+// CERCA PER NOME O COGNOME sopra. Bianca, bordo 2px #cfe6f4, raggio 6px, lente #46606f; il segnaposto dice anche quanti
+// sono («Cerca tra 12 iscritti»), cosi' il Titoletto ISCRITTI con il conto non serve piu': il conto e' gia' nella testa.
+// Resta sempre al suo posto, sopra le righe (regola di oggi). 16px perche' iOS non ingrandisca toccandola.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const testo = String(p.testo ?? '');
+    return {
+      testo: testo || 'Cerca tra ' + (p.iscritti ?? '12') + ' iscritti',
+      colore: testo ? '#0d2a3d' : '#46606f',
+    };
+  }
+}
+</script>
+</body>
+</html>

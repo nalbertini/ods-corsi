@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="width: 100%">
+<div style="display: flex; flex-direction: column; width: 100%; height: 140px; background: #eef5fa; border-bottom: 2px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <div style="display: flex; align-items: center; gap: 8px; padding: 10px 16px 0">
+    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-size: 22px; line-height: 1">&#8249;</span>
+    <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
+      <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 0.05em; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{corso}}</span>
+      <span style="display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: #46606f; white-space: nowrap">
+        <span style="display: inline-grid; place-items: center; flex-shrink: 0; width: 18px; height: 18px; border: 1.5px solid #e4292a; border-radius: 3px; color: #b81d1d; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif; font-size: 12px; font-weight: 700; line-height: 1">{{kanji}}</span>
+        <span style="overflow: hidden; text-overflow: ellipsis">{{quando}}</span>
+      </span>
+    </div>
+    <sc-if value="{{conTimer}}" hint-placeholder-val="{{ true }}">
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l3 2M9 2h6"></path></svg>
+      </span>
+    </sc-if>
+    <sc-if value="{{conMenu}}" hint-placeholder-val="{{ true }}">
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-size: 22px; font-weight: 700; line-height: 1; letter-spacing: 1px">&#8943;</span>
+    </sc-if>
+  </div>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 10px 16px 0">
+    <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+      <span style="display: flex; align-items: baseline; gap: 6px; white-space: nowrap">
+        <span style="font-variant-numeric: tabular-nums; font-size: 40px; font-weight: 800; line-height: 0.9">{{presenti}}</span>
+        <span style="font-variant-numeric: tabular-nums; font-size: 20px; color: #46606f">/ {{iscritti}}</span>
+        <sc-if value="{{haProve}}" hint-placeholder-val="{{ false }}">
+          <span style="font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: #8f6a00">{{proveTesto}}</span>
+        </sc-if>
+      </span>
+      <span style="font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; color: {{coloreStato}}">{{statoTesto}}</span>
+      <span style="height: 1.3em; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; color: #8f6a00">{{codaTesto}}</span>
+    </div>
+    <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}">
+      <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; flex-shrink: 0; width: 176px; height: 56px; border: {{bordoTasto}}; border-radius: 6px; background: {{sfondoTasto}}; color: {{coloreTasto}}">
+        <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.1em; line-height: 1">{{tasto}}</span>
+        <sc-if value="{{haSotto}}" hint-placeholder-val="{{ true }}">
+          <span style="font-size: 12px; font-weight: 600; line-height: 1.1">{{sotto}}</span>
+        </sc-if>
+      </span>
+    </sc-if>
+  </div>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"kanji":{"editor":"text","default":"柔"},"quando":{"editor":"text","default":"Mar 17:30 · Sala 1"},"presenti":{"editor":"text","default":"7"},"iscritti":{"editor":"text","default":"12"},"prove":{"editor":"text","default":"0"},"stato":{"editor":"enum","options":["mancano","segnati","assenti","lettura","futura"],"default":"mancano"},"mancano":{"editor":"text","default":"5"},"coda":{"editor":"text","default":""},"senzaTimer":{"editor":"boolean","default":false},"$preview":{"width":390,"height":140}}'>
+// PROPOSTA (../appello-istruttore/): la testa dell'appello piu' bassa, 140px contro i 224 di TestaAppello, perche' sul
+// telefono i nomi partano piu' in alto (cliente-ods: «se ne vedono quattro»). Due righe invece di tre.
+// 1. indietro · titolo 20px (la misura che la testa ha gia' sotto i 420px) con kanji e «giorno ora · sala» su una riga
+//    · timer · ⋯ (il menu con AZZERA e il cambio di attivita', vedi FoglioAppello). Tutti 44px.
+// 2. a sinistra il conto (Inter 800 40px) / iscritti, «+N PROVA» accanto; sotto lo stato (14px, segno davanti) e la coda
+//    (12px giallo-testo, alta 1.3em anche vuota: la testa non cambia altezza). La coda dice «N NON ANCORA INVIATE»
+//    invece di «N DA INVIARE», che il cliente non capiva.
+//    A destra il tasto giallo, sempre allo stesso posto e con la stessa parola: TUTTI PRESENTI, e sotto per chi
+//    vale («i 5 non segnati»). Spento a tutto segnato: bianco col bordo verde, «✓ TUTTI SEGNATI». In lettura non c'e'.
+// AZZERA non c'e' piu' accanto al giallo: sta nel menu ⋯, lontano dal pollice che segna. Anche l'attivita' (oggi il
+// select ATTIVITA' sotto la testa) si cambia solo dal menu: si cambia di rado (deciso dall'utente il 2026-11-11).
+// Il giallo pieno resta uno per schermata. Colori di TestaAppello.
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const stato = p.stato || 'mancano';
+    const mancano = String(p.mancano ?? '5');
+    const prove = Number(p.prove ?? 0);
+    const segnati = stato === 'segnati' || stato === 'assenti';
+    const STATI = { segnati: '✓ TUTTI SEGNATI', assenti: '✕ TUTTI ASSENTI', lettura: '… SOLO LETTURA', futura: '… NON ANCORA COMINCIATA' };
+    const coda = String(p.coda ?? '');
+    return {
+      corso: String(p.corso ?? 'Judo kids').toUpperCase(),
+      kanji: p.kanji ?? '柔',
+      quando: p.quando ?? 'Mar 17:30 · Sala 1',
+      conTimer: !truthy(p.senzaTimer), conMenu: stato !== 'lettura',
+      presenti: p.presenti ?? '7', iscritti: p.iscritti ?? '12',
+      haProve: prove > 0, proveTesto: '+' + prove + ' PROVA',
+      statoTesto: STATI[stato] || '… ' + mancano + ' DA SEGNARE',
+      coloreStato: stato === 'segnati' ? '#0b7a33' : stato === 'assenti' ? '#b81d1d' : stato === 'futura' ? '#8f6a00' : '#0d2a3d',
+      codaTesto: coda === '' ? '' : '… ' + coda + (coda === '1' ? ' NON ANCORA INVIATA' : ' NON ANCORA INVIATE'),
+      conTasto: stato !== 'lettura',
+      tasto: segnati ? '✓ TUTTI SEGNATI' : 'TUTTI PRESENTI',
+      haSotto: !segnati, sotto: mancano === '1' ? 'chi non è segnato' : 'i ' + mancano + ' non segnati',
+      sfondoTasto: segnati ? '#ffffff' : '#f4c31b', coloreTasto: segnati ? '#0b7a33' : '#0d2a3d', bordoTasto: segnati ? '2px solid #0b7a33' : '0',
+    };
+  }
+}
+</script>
+</body>
+</html>

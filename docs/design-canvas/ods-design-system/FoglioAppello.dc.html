@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="width: 100%">
+<div style="display: flex; flex-direction: column; gap: 14px; width: 100%; padding: 10px 16px 20px; background: #ffffff; border-radius: 12px 12px 0 0; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <span style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #cfe6f4"></span>
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 0.06em">{{titolo}}</span>
+  <sc-if value="{{conAttivita}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="ATTIVITÀ DI QUESTA LEZIONE" valore="Kata" nota="" hint-size="100%,86px"></dc-import>
+      <span style="font-size: 13px; color: #46606f">Cambia solo questa lezione.</span>
+    </div>
+  </sc-if>
+  <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 2px solid #cfe6f4">
+    <span style="display: flex; align-items: center; justify-content: center; height: 52px; border: 2px solid {{bordoAzzera}}; border-radius: 6px; background: {{sfondoAzzera}}; color: {{coloreAzzera}}; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 0.12em; opacity: {{opacitaAzzera}}">{{azzera}}</span>
+    <span style="font-size: 13px; color: #46606f">{{fraseAzzera}}</span>
+  </div>
+  <span style="display: flex; align-items: center; justify-content: center; height: 44px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.12em; color: #14709f">CHIUDI IL MENU</span>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"JUDO KIDS · MAR 17:30"},"conAttivita":{"editor":"boolean","default":true},"azzeraChiede":{"editor":"boolean","default":false},"azzeraSpento":{"editor":"boolean","default":false},"$preview":{"width":390,"height":330}}'>
+// PROPOSTA (../appello-istruttore/): il foglio che sale dal basso toccando ⋯ nella testa dell'appello (TestaAppelloCorta).
+// Tiene le due cose che si fanno di rado e che oggi occupano posto in cima: il cambio di attivita' (oggi il select
+// ATTIVITA' DI QUESTA LEZIONE sotto la testa, solo per chi fa la lezione: `conAttivita`) e AZZERA (oggi accanto al
+// tasto giallo, dove il pollice lo prende per sbaglio).
+// Bianco, raggio 12px in alto, maniglia 40x4 #cfe6f4. Titolo Big Shoulders 20px. AZZERA L'APPELLO e' un tasto
+// pericolo (contorno e testo rosso-testo #b81d1d) e vuole il secondo tocco come oggi (`azzeraChiede`: pieno rosso
+// #e4292a, «SÌ, TOGLI TUTTI I SEGNI»). Spento (0.4) se nessuno e' segnato. CHIUDI IL MENU in blu #14709f, 44px.
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const chiede = truthy(p.azzeraChiede);
+    return {
+      titolo: p.titolo ?? 'JUDO KIDS · MAR 17:30',
+      conAttivita: p.conAttivita === undefined ? true : truthy(p.conAttivita),
+      azzera: chiede ? 'SÌ, TOGLI TUTTI I SEGNI' : 'AZZERA L’APPELLO',
+      fraseAzzera: chiede ? 'Tocca di nuovo: tutti tornano da segnare.' : 'Toglie tutti i segni. Chiede un secondo tocco.',
+      bordoAzzera: chiede ? '#e4292a' : '#b81d1d', sfondoAzzera: chiede ? '#e4292a' : '#ffffff', coloreAzzera: chiede ? '#ffffff' : '#b81d1d',
+      opacitaAzzera: truthy(p.azzeraSpento) ? '0.4' : '1',
+    };
+  }
+}
+</script>
+</body>
+</html>

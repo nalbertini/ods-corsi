@@ -1,0 +1,20 @@
+{
+ "pages": [
+  { "id": "page-1", "name": "Appello istruttore · proposta" },
+  { "id": "page-2", "name": "Libreria" }
+ ],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "1 · TELEFONO · appello · oggi (tutta la pagina)", "x": 0, "y": 300, "w": 390, "h": 1600, "page": "page-1" },
+  { "file": "ProponiInizio.dc.html", "title": "2 · PROPOSTA · inizio lezione, nessuno segnato", "x": 510, "y": 300, "w": 390, "h": 844, "page": "page-1" },
+  { "file": "ProponiMeta.dc.html", "title": "3 · PROPOSTA · a metà, con attività e coda", "x": 1020, "y": 300, "w": 390, "h": 844, "page": "page-1" },
+  { "file": "ProponiChiudi.dc.html", "title": "4 · PROPOSTA · tutti segnati, CHIUDI diventa giallo", "x": 1530, "y": 300, "w": 390, "h": 844, "page": "page-1" },
+  { "file": "ProponiPassata.dc.html", "title": "5 · PROPOSTA · lezione di ieri, secondo tocco su CHIUDI", "x": 510, "y": 1264, "w": 390, "h": 844, "page": "page-1" },
+  { "file": "ProponiLettura.dc.html", "title": "6 · PROPOSTA · sola lettura", "x": 1020, "y": 1264, "w": 390, "h": 844, "page": "page-1" },
+  { "file": "ProponiMenu.dc.html", "title": "7 · PROPOSTA · menu ⋯: attività e AZZERA", "x": 1530, "y": 1264, "w": 390, "h": 844, "page": "page-1" },
+  { "file": "TestaAppelloCorta.dc.html", "title": "TestaAppelloCorta (proposta)", "x": 0, "y": 300, "w": 390, "h": 140, "page": "page-2" },
+  { "file": "BarraChiudiAppello.dc.html", "title": "BarraChiudiAppello (proposta)", "x": 510, "y": 300, "w": 390, "h": 92, "page": "page-2" },
+  { "file": "CercaAppello.dc.html", "title": "CercaAppello (proposta)", "x": 1020, "y": 300, "w": 358, "h": 44, "page": "page-2" },
+  { "file": "FoglioAppello.dc.html", "title": "FoglioAppello (proposta)", "x": 0, "y": 560, "w": 390, "h": 330, "page": "page-2" },
+  { "file": "RigaAppello.dc.html", "title": "RigaAppello, con «marcato» (proposta)", "x": 510, "y": 560, "w": 320, "h": 70, "page": "page-2" }
+ ]
+}

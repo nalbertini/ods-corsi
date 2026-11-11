@@ -27,6 +27,9 @@
       <sc-if value="{{conSegno}}" hint-placeholder-val="{{ true }}">
         <span>{{segno}}</span>
       </sc-if>
+      <sc-if value="{{conPieno}}" hint-placeholder-val="{{ false }}">
+        <span style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; background: {{sfondoPieno}}; color: #ffffff; font-size: 18px">{{segno}}</span>
+      </sc-if>
     </span>
     <span style="flex-grow: 1; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; font-weight: 500; color: {{coloreNomeSito}}; text-decoration: {{decorazione}}">{{nome}}</span>
     <sc-if value="{{compleanno}}" hint-placeholder-val="{{ false }}">
@@ -57,7 +60,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Rossi Giulia"},"stato":{"editor":"enum","options":["niente","presente","assente"],"default":"niente"},"prova":{"editor":"boolean","default":false},"lettura":{"editor":"boolean","default":false},"$preview":{"width":320,"height":70}}'>
+<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Rossi Giulia"},"stato":{"editor":"enum","options":["niente","presente","assente"],"default":"niente"},"prova":{"editor":"boolean","default":false},"lettura":{"editor":"boolean","default":false},"marcato":{"editor":"boolean","default":false},"$preview":{"width":320,"height":70}}'>
 // Riproduzione 1:1 della riga dell'appello: .riga-appello e .nome-appello (src/styles.css righe 413-429) usate in
 // src/components/AppelloScreen.tsx (righe 365-382). Tre stati, tre colori, e il segno grande a sinistra:
 // presente = bordo e segno verdi (--verde, non -testo: il segno e' grande); assente = bordo rosso, segno in
@@ -69,6 +72,9 @@
 // Non segnato = un quadratino vuoto da 22px col bordo blu #14709f e raggio 4px al posto del segno: dice «qui si tocca» (e' un disegno, non un testo nuovo).
 // `lettura` (appello in SOLA LETTURA): la riga non si tocca (disabled), il quadratino resta, il nome e' sempre in inchiostro #0d2a3d (anche l'assente, barrato) e TOGLI non c'e'.
 // PROVA e' il marchio con bordo giallo scuro #8f6a00 (Badge). TOGLI: 44px, bordo 2px celeste #cfe6f4 e testo #46606f, Inter 12px 700, 0.12em, senza raggio (come `.prova-togli`: nel look non e' un tasto a linea blu).
+// `marcato` PROPOSTA (../appello-istruttore/): lo stato piu' forte per la luce del sole in palestra (cliente-ods): barra
+// di 8px invece di 4 e il segno bianco in un quadrato pieno da 26px (verde #12913f ✓, rosso #e4292a ✕). Il non
+// segnato resta il quadratino vuoto blu: pieno contro vuoto si distingue anche senza colore.
 // Alta 56px perche' la si tocca in piedi e di fretta (La Regola del Dito di Fretta, DESIGN.md).
 const T = {
   sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', verde: '#12913f', rosso: '#e4292a', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33' },
@@ -80,13 +86,16 @@ class Component extends DCLogic {
     const c = T.sito;
     const stato = p.stato || 'niente';
     const sito = true;
+    const marcato = truthy(p.marcato);
+    const largo = marcato ? '8px' : '4px';
     return {
       compleanno: truthy(p.compleanno),
       sito, nonSito: !sito, conTogli: truthy(p.prova) && !truthy(p.lettura),
-      barra: stato === 'presente' ? 'inset 4px 0 0 #12913f' : stato === 'assente' ? 'inset 4px 0 0 #e4292a' : 'none',
+      barra: stato === 'presente' ? 'inset ' + largo + ' 0 0 #12913f' : stato === 'assente' ? 'inset ' + largo + ' 0 0 #e4292a' : 'none',
+      conPieno: marcato && stato !== 'niente', sfondoPieno: stato === 'presente' ? '#12913f' : '#e4292a',
       coloreSegnoSito: stato === 'presente' ? '#0b7a33' : '#b81d1d',
       coloreNomeSito: stato === 'assente' && !truthy(p.lettura) ? '#46606f' : '#0d2a3d',
-      conAnello: stato === 'niente', conSegno: stato !== 'niente',
+      conAnello: stato === 'niente', conSegno: stato !== 'niente' && !marcato,
       c,
       nome: p.nome ?? 'Rossi Giulia',
       prova: truthy(p.prova),
