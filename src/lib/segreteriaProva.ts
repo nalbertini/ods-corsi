@@ -824,7 +824,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             certificato: {
               scade: p.certificato?.scade, conFile: !!p.certificato?.file, vecchio: !!p.certificato?.file && !p.certificato.caricatoIl, caricatoIl: p.certificato?.caricatoIl, inAttesaIl: p.certificato?.inAttesa?.il,
               // Come `certificato_termine` di 141: lo scritto, il rinnovo, i 6 anni compiuti da iscritto.
-              entro: termineCertificato({ scade: p.certificato?.scade, entroScritto: p.certificato?.entro }, anagraficaDi(p.id)?.dati.natoIl, oggiARoma(new Date(p.creataIl)), a().impostazioni?.certificatoGiorni ?? GIORNI_CERTIFICATO),
+              entro: termineCertificato({ scade: p.certificato?.scade, entroScritto: p.certificato?.entro, spostatoIl: p.certificato?.spostatoIl }, anagraficaDi(p.id)?.dati.natoIl, oggiARoma(new Date(p.creataIl)), a().impostazioni?.certificatoGiorni ?? GIORNI_CERTIFICATO),
               entroScritto: p.certificato?.entro,
               spostatoDa: p.certificato?.spostatoDa,
               spostatoIl: p.certificato?.spostatoIl,

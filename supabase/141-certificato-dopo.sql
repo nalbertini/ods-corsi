@@ -2,10 +2,11 @@
 -- 141 · Il certificato portato dopo
 --
 -- Chi si iscrive dice «non ce l'ho ancora» e si iscrive lo stesso: ha un
--- termine per portarlo. Il termine di una persona è il più lontano fra:
---   · quello scritto in `schede_iscritti.certificato_entro`: all'accoglimento
---     di una richiesta con `certificato_dopo` (oggi + `certificato_giorni`), o
---     spostato dalla segreteria («Cambia la data»);
+-- termine per portarlo. Il termine di una persona è la data messa a mano
+-- dalla segreteria («Cambia la data», con la traccia `certificato_entro_il`),
+-- così com'è anche se accorcia (deciso il 2026-11-11). Se no, il più lontano fra:
+--   · quello scritto in `schede_iscritti.certificato_entro` all'accoglimento
+--     di una richiesta con `certificato_dopo` (oggi + `certificato_giorni`);
 --   · `certificato_scade` + giorni (il rinnovo, calcolato: segue i giorni di oggi);
 --   · il 6° compleanno + giorni, se lo compie da iscritto (dopo `creata_il`).
 -- Nel termine il certificato non vale (né in sala né per le gare): l'app lo
@@ -48,11 +49,11 @@ alter table schede_iscritti
 -- --- il termine ---------------------------------------------------------------
 create or replace function certificato_termine(persona uuid)
   returns date language sql stable security definer set search_path = public, extensions as $$
-  select greatest(
+  select case when s.certificato_entro_il is not null then s.certificato_entro else greatest(
     s.certificato_entro,
     s.certificato_scade + g.giorni,
     -- Il compleanno conta solo se arriva da iscritto: un adulto non ha un termine di trent'anni fa.
-    case when chat_sei_anni(n.nato) > (p.creata_il at time zone 'Europe/Rome')::date then chat_sei_anni(n.nato) + g.giorni end)
+    case when chat_sei_anni(n.nato) > (p.creata_il at time zone 'Europe/Rome')::date then chat_sei_anni(n.nato) + g.giorni end) end
   from persone p
   left join schede_iscritti s on s.persona_id = p.id
   cross join lateral (select coalesce((select i.certificato_giorni from impostazioni i limit 1), 30) as giorni) g
@@ -95,7 +96,9 @@ begin
       if current_user = 'authenticated' and (new.certificato_entro < oggi or new.certificato_entro > oggi + 120) then
         raise exception 'La data va da oggi a 120 giorni da oggi.' using errcode = '22023';
       end if;
-      new.certificato_entro_da := persona_corrente(); new.certificato_entro_il := now();
+      -- La traccia solo da una persona (la segreteria): scritto da un amministratore del database vale come all'accoglimento.
+      new.certificato_entro_da := persona_corrente();
+      new.certificato_entro_il := case when persona_corrente() is not null then now() end;
     end if;
   else
     -- Il resto della scheda cambia: la traccia resta quella che era.

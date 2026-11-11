@@ -324,7 +324,8 @@ scheda è disattivata, nessuno.
   senza certificato, è rosso **CERTIFICATO NON ARRIVATO**. Giallo o rosso, la
   presenza si segna lo stesso. **Cambia la data** (o **Dai una data**, per chi
   non ne ha una) sposta il termine di questa persona sola, fino a 120 giorni da
-  oggi; la scheda dice poi chi l'ha spostato e quando. Un certificato valido
+  oggi: la data scelta vale così com'è, anche se è più vicina di quella
+  calcolata dal rinnovo. La scheda dice poi chi l'ha spostato e quando. Un certificato valido
   (confermato, caricato o con la data scritta) toglie il termine; rifiutare il
   file mandato no. Un file mandato e non confermato non cambia il colore.
   **Sotto i 6 anni** il certificato non si chiede:

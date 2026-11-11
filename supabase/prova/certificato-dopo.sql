@@ -122,6 +122,7 @@ select chiunque(37, 'ADataValida',  '1990-05-05');
 select chiunque(38, 'ADataPassata', '1990-05-05');
 select chiunque(39, 'Disattiva',    '1990-05-05');
 select chiunque(40, 'Febbraio',     '2020-02-29', 0);
+select chiunque(46, 'Accorcia',     '1990-05-05');
 update persone set attiva = false where id = pz(39);
 -- Febbraio è iscritta da prima del 6° compleanno (1 marzo 2026 per chi è nata il 29 febbraio 2020): una data fissa, perché qui conta il calendario.
 update persone set creata_il = '2026-01-01' where id = pz(40);
@@ -130,7 +131,7 @@ insert into anagrafiche (persona_id, nato_il) values (pz(33), '1990-05-05');
 insert into schede_iscritti (persona_id, certificato_entro) values
   (pz(21), oggi()), (pz(30), oggi() - 1), (pz(34), oggi() + 10), (pz(35), oggi() + 10), (pz(36), oggi() + 10),
   (pz(37), oggi() + 10), (pz(38), oggi() + 10), (pz(39), oggi() + 10);
-insert into schede_iscritti (persona_id, certificato_scade) values (pz(22), oggi() - 29), (pz(23), oggi() - 31), (pz(29), oggi() + 100), (pz(33), oggi() - 5);
+insert into schede_iscritti (persona_id, certificato_scade) values (pz(46), oggi() - 10), (pz(22), oggi() - 29), (pz(23), oggi() - 31), (pz(29), oggi() + 100), (pz(33), oggi() - 5);
 insert into schede_iscritti (persona_id, certificato_scade, certificato_entro) values (pz(31), oggi() - 29, oggi() + 50), (pz(32), oggi() - 10, oggi() - 5);
 -- Dei tre della Lotta: Ferrari ha il certificato, Fontana è nel termine, De Luca niente (e nessuna nascita).
 insert into schede_iscritti (persona_id, certificato_scade) values ('aaaaaaaa-0000-0000-0000-000000000003', oggi() + 100);
@@ -297,6 +298,14 @@ set role anon;
 select atteso('anon no', rifiutata($$select cambia_termine_certificato(pz(21), oggi() + 5)::text$$), 'rifiutata');
 reset role;
 select atteso('dopo tutti i rifiuti il termine è ancora fra 120 giorni', entro(21), '120');
+-- La data messa a mano vale così com'è (deciso il 2026-11-11), anche se accorcia: qui il rinnovo calcolato è fra 20 giorni.
+select atteso('Accorcia: il rinnovo calcolato è fra 20 giorni', termine(46), '20');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria lo porta a fra 5 giorni', codice($$select cambia_termine_certificato(pz(46), oggi() + 5)$$), 'ok');
+reset role;
+select atteso('vale la data a mano, anche più vicina del rinnovo', termine(46), '5');
+select atteso('e l''iscritto vede quella', (select rel(certificato_entro) from iscritto_scheda_di(pz(46))), '5');
 
 \echo ''
 \echo '--- 9. l''iscritto vede il suo termine (anche quello calcolato dal rinnovo) ---'

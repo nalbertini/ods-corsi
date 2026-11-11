@@ -40,7 +40,7 @@ export function riquadroCertificato(c: CertificatoSeg, natoIl: string | undefine
     const mancano = giorni(oggi, c.entro)
     const quando = mancano === 0 ? 'oggi' : mancano === 1 ? 'domani' : `fra ${mancano} giorni`
     // Il termine spostato a mano vince sul rinnovo calcolato: lo dice la traccia.
-    const spostato = c.spostatoDa && c.spostatoIl && c.entroScritto === c.entro ? `data spostata da ${c.spostatoDa} il ${dataLunga(c.spostatoIl)}` : undefined
+    const spostato = c.spostatoIl && c.entroScritto === c.entro ? `data spostata${c.spostatoDa ? ` da ${c.spostatoDa}` : ''} il ${dataLunga(c.spostatoIl)}` : undefined
     const sotto = c.inAttesaIl
       ? `caricato il ${dataLunga(c.inAttesaIl)}, da confermare: finché non lo confermi non vale`
       : `${quando} · ${spostato ?? (c.scade ? `il nuovo va portato entro ${giorni(c.scade, c.entro)} giorni dalla scadenza` : 'iscritto senza certificato')}`

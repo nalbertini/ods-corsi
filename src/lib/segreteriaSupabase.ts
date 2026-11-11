@@ -1258,9 +1258,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             inAttesaIl: s?.certificato_in_attesa_il?.slice(0, 10),
             // Senza 141 (giorni `null`) nessun termine: mancante o scaduto, come prima.
             ...(giorni !== null && {
-              entro: termineCertificato({ scade: s?.certificato_scade ?? undefined, entroScritto }, natoIl, creataIl, giorni),
+              entro: termineCertificato({ scade: s?.certificato_scade ?? undefined, entroScritto, spostatoIl: s?.certificato_entro_il ?? undefined }, natoIl, creataIl, giorni),
               entroScritto,
-              ...(s?.certificato_entro_il && s.spostato && { spostatoDa: s.spostato.nome, spostatoIl: s.certificato_entro_il.slice(0, 10) }),
+              ...(s?.certificato_entro_il && { spostatoIl: oggiARoma(new Date(s.certificato_entro_il)), ...(s.spostato && { spostatoDa: s.spostato.nome }) }),
             }),
           },
           documento: !!s?.documento_in_segreteria,

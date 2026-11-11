@@ -113,6 +113,9 @@ await sezione('1. il termine: il più lontano fra quello scritto, la scadenza + 
   ok('un adulto senza termine scritto e senza certificato: nessun termine (il compleanno è di 30 anni fa)', t({}, '1990-05-05', '2020-01-01'), undefined)
   ok('chi è nato il 29 febbraio compie gli anni il 1 marzo: entro il 31 marzo', t({}, '2020-02-29', '2026-01-01'), '2026-03-31')
   ok('senza data di nascita, né scadenza né termine: nessun termine', t({}, undefined, '2026-01-01'), undefined)
+  // La data messa a mano dalla segreteria vale così com'è (deciso il 2026-11-11): può accorciare il rinnovo.
+  ok('data a mano più vicina del rinnovo: vale quella', t({ scade: '2026-11-01', entroScritto: '2026-11-15', spostatoIl: '2026-11-10' }, '1990-05-05', '2020-01-01'), '2026-11-15')
+  ok('data a mano più vicina del 6° compleanno + giorni: vale quella', t({ entroScritto: '2026-11-25', spostatoIl: '2026-11-10' }, '2020-11-20', '2026-10-01'), '2026-11-25')
 })
 
 await sezione('2. lo stato `atteso` (giallo) e il rosso dopo il termine', async () => {

@@ -1172,12 +1172,15 @@ export const cosaNonVaGiorniCertificato = (n: number): string | undefined =>
   Number.isInteger(n) && n >= 1 && n <= GIORNI_CERTIFICATO_MAX ? undefined : `I giorni vanno da 1 a ${GIORNI_CERTIFICATO_MAX}.`
 
 /**
- * Il termine che vale, come `certificato_termine` di `141-certificato-dopo.sql`:
- * il più lontano fra quello scritto, la scadenza + giorni (il rinnovo) e il 6°
- * compleanno + giorni, se lo compie da iscritto (dopo `creataIl`). Si calcola:
- * cambiare i giorni sposta rinnovo e compleanno, non quello scritto.
+ * Il termine che vale, come `certificato_termine` di `141-certificato-dopo.sql`.
+ * La data messa a mano dalla segreteria (`spostatoIl`) vale così com'è, anche
+ * se accorcia (deciso il 2026-11-11). Se no, il più lontano fra quello scritto
+ * all'accoglimento, la scadenza + giorni (il rinnovo) e il 6° compleanno +
+ * giorni, se lo compie da iscritto (dopo `creataIl`). Si calcola: cambiare i
+ * giorni sposta rinnovo e compleanno, non quello scritto.
  */
-export function termineCertificato(c: Pick<CertificatoSeg, 'scade' | 'entroScritto'>, natoIl: string | undefined, creataIl: string | undefined, giorni: number): string | undefined {
+export function termineCertificato(c: Pick<CertificatoSeg, 'scade' | 'entroScritto' | 'spostatoIl'>, natoIl: string | undefined, creataIl: string | undefined, giorni: number): string | undefined {
+  if (c.entroScritto && c.spostatoIl) return c.entroScritto
   const sei = natoIl && /^\d{4}-\d{2}-\d{2}$/.test(natoIl) ? dalCertificato(natoIl) : undefined
   const date = [c.entroScritto, c.scade && spostaGiorno(c.scade, giorni), sei && creataIl && sei > creataIl ? spostaGiorno(sei, giorni) : undefined]
   return date.filter((x): x is string => !!x).sort().at(-1)
