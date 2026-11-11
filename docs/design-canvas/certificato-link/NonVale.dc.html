@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Il link dopo</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. A sinistra dopo la conferma della segreteria; a destra per ogni altro caso (link sbagliato, persona non
+     piu' iscritta, oltre i 120 giorni): lo stesso testo, senza dire perche' e senza nome, cosi' non si conferma chi c'e'. -->
+<div style="display: flex; gap: 40px; width: 820px; min-height: 520px; background: #eef5fa">
+  <div style="display: flex; flex-direction: column; width: 390px">
+    <dc-import name="Testata" luogo="CERTIFICATO MEDICO" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+    <div style="padding: 20px"><dc-import name="TitoloEsito" tema="sito" titolo="GIÀ ARRIVATO" tono="fatto" testi="Il certificato di Marco è già arrivato ed è a posto. Grazie." hint-size="100%,200px"></dc-import></div>
+  </div>
+  <div style="display: flex; flex-direction: column; width: 390px">
+    <dc-import name="Testata" luogo="CERTIFICATO MEDICO" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+    <div style="padding: 20px"><dc-import name="TitoloEsito" tema="sito" titolo="LINK NON VALIDO" tono="avviso" testi="Questo link non vale più: scrivi alla segreteria o passa in palestra." hint-size="100%,200px"></dc-import></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":520}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

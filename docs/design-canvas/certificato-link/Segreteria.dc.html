@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>WhatsApp col link</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Il riquadro SOLLECITO SU WHATSAPP della scheda (Sollecito.dc.html, Sollecito.tsx) quando manca il
+     certificato: il messaggio finisce col link della persona. Se c'e' gia' un link valido si riusa, se no se ne fa uno.
+     Sotto, la STORIA dei solleciti: canale e, se il link e' stato aperto, quando (l'ultima apertura).
+     Senza il file SQL nuovo il messaggio resta quello di oggi, senza link. -->
+<div style="display: flex; flex-direction: column; gap: 18px; width: 720px; min-height: 640px; padding: 28px 36px; background: #eef5fa">
+  <dc-import name="Stato" tema="sito" nome="DA PORTARE ENTRO IL 12/12/2026" sotto="fra 18 giorni · caricato dal link il 20/11, da confermare: finché non lo confermi non vale" tono="giallo" tasto="" pericolo="" hint-size="100%,80px"></dc-import>
+  <dc-import name="Sollecito" motivi="Certificato medico da portare entro il 12 dicembre 2026:giallo" testo="Ciao Laura, ti scriviamo dalle Officine Dello Sport per Marco: il certificato medico va portato entro il 12 dicembre 2026. Puoi caricarlo da qui, senza password: https://ods.example/certificato/?l=6f1c…  Grazie!" chi="A Rossi Laura (genitore) · 333 123 4567" tasto="Apri WhatsApp" ultimo="Sollecitato l’ultima volta il 5 dicembre 2026 alle 18:10 da Laura" hint-size="100%,300px"></dc-import>
+  <div style="display: flex; flex-direction: column; gap: 0; background: #ffffff; border-radius: 6px; padding: 14px 18px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f; padding-bottom: 8px">SOLLECITI DEL CERTIFICATO</span>
+    <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4; font-size: 15px"><span><b>WhatsApp</b> · 5/12/2026 da Laura</span><span style="color: #0d2a3d">link aperto il 6/12/2026</span></div>
+    <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4; font-size: 15px"><span><b>WhatsApp</b> · 20/11/2026 da Paolo</span><span style="color: #46606f">link non aperto</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":720,"height":640}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
