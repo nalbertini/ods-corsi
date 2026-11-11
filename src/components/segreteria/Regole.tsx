@@ -1066,7 +1066,7 @@ function SollecitiPerEmail({ d, ora, salva }: { d: DatiSegreteria; ora: Sollecit
               <option value="dopo">giorni dopo il termine</option>
             </select>
             {x.righe.length > 1 && (
-              <button type="button" className="sg-btn sg-btn-linea sg-pericolo" style={{ gridColumn: 3 }} aria-label={`Togli il momento ${i + 1}: ${Number.isFinite(momenti[i]) ? rigaMomento(momenti[i]) : ''}`} onClick={() => cambia({ righe: x.righe.filter((_, k) => k !== i) })}>
+              <button type="button" data-bozza className="sg-btn sg-btn-linea sg-pericolo" style={{ gridColumn: 3 }} aria-label={`Togli il momento ${i + 1}: ${Number.isFinite(momenti[i]) ? rigaMomento(momenti[i]) : ''}`} onClick={() => cambia({ righe: x.righe.filter((_, k) => k !== i) })}>
                 Togli
               </button>
             )}

@@ -614,7 +614,6 @@
 .sg-sollecito-email { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
 .sg-sollecito-email > span { display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
 .sg-sollecito-email [data-tono='avviso'] { color: var(--giallo-testo); font-weight: 600; }
-.sg-sollecito-email .sg-sotto { font-size: 13px; }
 /* La testata della scheda: il nome a sinistra, il sollecito e «Altro» a destra; la riga dell'ultimo sollecito sotto i tasti. */
 .sg-scheda-testa { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .sg-scheda-testa-azioni { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
