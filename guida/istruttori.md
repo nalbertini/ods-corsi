@@ -168,7 +168,10 @@ dice cosa succede chiudendo:
   con la spunta;
 - **3 non segnati diventeranno assenti.** quando qualcuno è ancora da segnare:
   chiudendo, chi non ha un segno risulta **assente**. Il tasto resta scuro,
-  non rosso: in una lezione passata chiudere così è normale.
+  non rosso: in una lezione passata chiudere così è normale;
+- **Sono tutti assenti: chiudi solo se è giusto.** quando ogni iscritto è
+  segnato assente: di solito è un appello chiuso per sbaglio, e il tasto
+  giallo resta **TUTTI PRESENTI** in cima.
 
 Mentre il riquadro delle prove è aperto il tasto per chiudere non c'è: prima
 si finisce con le prove.

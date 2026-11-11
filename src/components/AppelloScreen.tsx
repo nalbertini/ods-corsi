@@ -9,7 +9,7 @@ import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, TogliProva } from './Prove'
 import { CercaPersona } from './CercaPersona'
-import { chiedeDiChiudere, chiudiAppello, codaAppello, mostraAiuto, proveInPiu, statoAppello, tastoAppello } from '../lib/etichetteAppello'
+import { aiutoAppello, chiudiAppello, codaAppello, contoRicerca, fraseAzzera, proveInPiu, quadroAppello, statoAppello, tastoAppello } from '../lib/etichetteAppello'
 import { DueTocchi } from './ds'
 import { SegnoCompleanno } from './SegnoCompleanno'
 import { vociAttivita } from '../lib/segreteria'
@@ -222,23 +222,25 @@ export function AppelloScreen({
   const foglio = useRef<HTMLDivElement>(null)
   const tastoMenu = useRef<HTMLButtonElement>(null)
   const menuAperto = useRef(false)
+  // Mentre un tasto chiede il secondo tocco, la frase accanto lo dice.
+  const [sicuroAzzera, setSicuroAzzera] = useState(false)
+  const [sicuroChiudi, setSicuroChiudi] = useState(false)
   useEffect(() => {
     // Chiuso il foglio, il fuoco torna sul ⋯: con la tastiera o il lettore di schermo non si riparte dal fondo della pagina.
     if (menu) foglio.current?.focus()
     else if (menuAperto.current) tastoMenu.current?.focus()
+    // DueTocchi smontato col foglio non dice più «non chiedo»: la frase di AZZERA va rimessa a mano.
+    if (!menu) setSicuroAzzera(false)
     menuAperto.current = menu
   }, [menu])
-  // Mentre un tasto chiede il secondo tocco, la frase accanto lo dice.
-  const [sicuroAzzera, setSicuroAzzera] = useState(false)
-  const [sicuroChiudi, setSicuroChiudi] = useState(false)
   // «Un tocco sul nome…» solo ai primi appelli: dopo è rumore sopra la lista.
   // Contato una volta per apertura; senza memoria del browser si mostra sempre.
+  // In sviluppo StrictMode chiama due volte l'inizializzatore e conta 2: nell'app pubblicata conta 1.
   const [aiuto] = useState(() => {
     try {
-      const volte = Number(localStorage.getItem('ods-appello-aiuto') ?? 0) || 0
-      localStorage.setItem('ods-appello-aiuto', String(volte + 1))
-      return mostraAiuto(volte)
+      return aiutoAppello(localStorage)
     } catch {
+      // localStorage stesso può mancare (Safari privato vecchio): l'aiuto si mostra.
       return true
     }
   })
@@ -301,7 +303,10 @@ export function AppelloScreen({
   }
   if (!d) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Sto leggendo la lezione…</p>
 
-  const segnati = d.elenco.filter((p) => p.stato !== null).length
+  // Un conto solo, dappertutto: gli iscritti, e chi prova detto a parte,
+  // come sulla scheda del calendario e nell'esito. Chiudendo diventano
+  // assenti tutti i non segnati, anche chi prova.
+  const { segnati, nonSegnati, tuttiSegnati, tuttiAssenti, mancano, proveMancano, futura, chiede } = quadroAppello({ elenco: d.elenco, inizio: d.sessione.inizio, adesso: Date.now() })
   const iscritti = d.elenco.filter((p) => !p.prova)
   const festeggiati = new Set(d.compleanni ?? [])
   const inProva = d.elenco.filter((p) => p.prova)
@@ -338,7 +343,6 @@ export function AppelloScreen({
   // quando nessun iscritto c'è e sono tutti segnati assenti: allora le ✕ sono
   // di una chiusura sbagliata. Solo gli iscritti: chi prova entra presente, e
   // contandolo il recupero spariva proprio dopo aver aggiunto una prova.
-  const tuttiAssenti = iscritti.length > 0 && iscritti.every((p) => p.stato === 'assente')
   const tuttiGliAltri = () => {
     if (segnati === 0 || tuttiAssenti) {
       setD((v) => v && { ...v, elenco: v.elenco.map((p) => ({ ...p, stato: 'presente' })) })
@@ -378,24 +382,15 @@ export function AppelloScreen({
     onChiudi?.(d.sessione, { presenti: presentiIscritti, assenti: iscritti.length - presentiIscritti, prove: presentiProve })
   }
 
-  // Un conto solo, dappertutto: gli iscritti, e chi prova detto a parte,
-  // come sulla scheda del calendario e nell'esito. Chiudendo diventano
-  // assenti tutti i non segnati, anche chi prova.
-  const tuttiSegnati = segnati === d.elenco.length
-  const mancano = iscritti.filter((p) => p.stato === null).length
-  const proveMancano = inProva.filter((p) => p.stato === null).length
   const presentiIscritti = iscritti.filter((p) => p.stato === 'presente').length
-  const futura = new Date(d.sessione.inizio).getTime() > Date.now()
   // Fuori finestra l'istruttore vede i segni e basta: il server rifiuterebbe ogni tocco.
   const finestra = appelloAperto(d.sessione.inizio, senzaLimiti)
   const soloLettura = finestra !== 'aperta' || rifiutata
   const stato = statoAppello({ soloLettura, tuttiSegnati, tuttiAssenti, mancano, proveMancano, futura })
-  const nonSegnati = d.elenco.length - segnati
   const tasto = tastoAppello({ nonSegnati, tuttiAssenti, tuttiSegnati })
-  // Chiudere vuole un secondo tocco quando è probabilmente uno sbaglio: di
-  // solito TUTTI PRESENTI dimenticato, e la segreteria riceverebbe assenze finte.
-  const chiede = chiedeDiChiudere({ segnati, tuttiSegnati, futura, mancano, iscritti: iscritti.length })
-  const barra = chiudiAppello({ nonSegnati, chiede: sicuroChiudi })
+  // `chiede`: chiudere vuole un secondo tocco quando è probabilmente uno sbaglio,
+  // di solito TUTTI PRESENTI dimenticato, e la segreteria riceverebbe assenze finte.
+  const barra = chiudiAppello({ nonSegnati, chiede: sicuroChiudi, tuttiAssenti })
 
   if (aggiungendo) {
     const giaQui = new Map<string, 'iscritto' | 'prova'>(d.elenco.map((p) => [p.id, p.prova ? 'prova' : 'iscritto']))
@@ -506,7 +501,7 @@ export function AppelloScreen({
                 AZZERA L’APPELLO
               </DueTocchi>
               <span className="foglio-appello-frase">
-                {sicuroAzzera ? 'Tocca di nuovo: tutti tornano da segnare.' : 'Toglie tutti i segni. Chiede un secondo tocco.'}
+                {fraseAzzera(sicuroAzzera)}
               </span>
             </div>
             <button type="button" className="btn btn-chiudi-menu" onClick={() => setMenu(false)}>
@@ -568,7 +563,7 @@ export function AppelloScreen({
           conto degli iscritti è già nella testa: qui basta il segnaposto. */}
       <div className="pad" style={{ paddingTop: 12, paddingBottom: 10 }}>
         <label className="cerca-appello">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#46606f" strokeWidth="2" strokeLinecap="square" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" aria-hidden="true">
             <circle cx="11" cy="11" r="7" />
             <path d="M16 16l5 5" />
           </svg>
@@ -584,9 +579,7 @@ export function AppelloScreen({
         </label>
         {cercando && (
           <span role="status" style={{ fontSize: 13, color: 'var(--dim)' }}>
-            {iscrittiTrovati.length + proveTrovate.length
-              ? `${iscrittiTrovati.length} su ${iscritti.length} iscritti${proveTrovate.length ? ` · ${proveTrovate.length} in prova` : ''}`
-              : 'Nessuno si chiama così: controlla come è scritto.'}
+            {contoRicerca({ iscrittiTrovati: iscrittiTrovati.length, iscritti: iscritti.length, proveTrovate: proveTrovate.length })}
           </span>
         )}
       </div>

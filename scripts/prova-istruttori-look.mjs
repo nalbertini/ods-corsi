@@ -80,6 +80,8 @@ ok('chiudi: 3 non segnati → «3 non segnati diventeranno assenti.»', C({ nonS
 ok('chiudi, secondo tocco: 3 assenti', C({ nonSegnati: 3, chiede: true }), { frase: 'Sicuro? Tocca di nuovo per chiudere.', tasto: 'SÌ, CHIUDI · 3 ASSENTI', pieno: false })
 ok('chiudi, secondo tocco: un assente', C({ nonSegnati: 1, chiede: true }), { frase: 'Sicuro? Tocca di nuovo per chiudere.', tasto: 'SÌ, CHIUDI · UN ASSENTE', pieno: false })
 ok('chiudi, secondo tocco con tutti segnati: niente assenti da nominare, mai giallo', C({ nonSegnati: 0, chiede: true }), { frase: 'Sicuro? Tocca di nuovo per chiudere.', tasto: 'SÌ, CHIUDI L’APPELLO', pieno: false })
+// Dalla revisione: tutti assenti è l'appello chiuso per sbaglio, e il tasto in testa è già giallo (TUTTI PRESENTI). CHIUDI non può spingere a chiudere.
+ok('chiudi, tutti assenti: frase che mette in guardia, tasto non pieno', C({ tuttiAssenti: true }), { frase: 'Sono tutti assenti: chiudi solo se è giusto.', tasto: 'CHIUDI L’APPELLO', pieno: false })
 // Chiede il secondo tocco quando chiudere è probabilmente uno sbaglio: stesse condizioni della vecchia `domanda` di AppelloScreen.
 const Q = (x) => vedi(() => e.chiedeDiChiudere({ segnati: 5, tuttiSegnati: false, futura: false, mancano: 1, iscritti: 12, ...x }))
 ok('chiede: pochi non segnati, appello cominciato → no', Q({}), false)
@@ -91,6 +93,32 @@ ok('chiede: esattamente metà (6 su 12) → no', Q({ mancano: 6, iscritti: 12 })
 // L'aiuto «Un tocco sul nome…» serve a chi comincia: poi è rumore sopra la lista.
 ok('aiuto: si vede le prime 3 volte (0, 1, 2)', [0, 1, 2].map((n) => vedi(() => e.mostraAiuto(n))), [true, true, true])
 ok('aiuto: dalla quarta volta in poi no (3, 10)', [3, 10].map((n) => vedi(() => e.mostraAiuto(n))), [false, false])
+// Dalla revisione: il contatore dell'aiuto sta in src/lib, con la memoria del browser passata da fuori.
+const memoria = (dentro, rotta = false) => ({ dentro, getItem: (k) => { if (rotta) throw new Error('no'); return dentro[k] ?? null }, setItem: (k, v) => { if (rotta) throw new Error('no'); dentro[k] = v } })
+const m0 = memoria({})
+ok('aiuto: prima volta → si vede, e conta 1', [vedi(() => e.aiutoAppello(m0)), m0.dentro['ods-appello-aiuto']], [true, '1'])
+const m3 = memoria({ 'ods-appello-aiuto': '3' })
+ok('aiuto: dopo tre volte → non si vede, e conta 4', [vedi(() => e.aiutoAppello(m3)), m3.dentro['ods-appello-aiuto']], [false, '4'])
+ok('aiuto: senza memoria del browser → si vede sempre', vedi(() => e.aiutoAppello(memoria({}, true))), true)
+// Dalla revisione: i conti che decidono il secondo tocco per chiudere stanno in src/lib. Prima erano nel .tsx e
+// si potevano sbagliare (lezione mai futura, tutti sempre segnati) senza che una prova cadesse.
+const P = (stato, prova = false) => ({ stato, prova })
+const ORA = Date.parse('2026-11-11T18:30:00')
+const QA = (elenco, inizio = '2026-11-11T18:00:00') => vedi(() => e.quadroAppello({ elenco, inizio, adesso: ORA }))
+ok('quadro: 3 su 4 segnati, una prova da segnare, lezione cominciata → niente secondo tocco', QA([P('presente'), P('presente'), P('assente'), P(null), P(null, true)]),
+  { segnati: 3, nonSegnati: 2, tuttiSegnati: false, tuttiAssenti: false, mancano: 1, proveMancano: 1, futura: false, chiede: false })
+ok('quadro: lezione non ancora cominciata → futura, e chiudere chiede il secondo tocco', QA([P('presente'), P('presente')], '2026-11-11T19:00:00'),
+  { segnati: 2, nonSegnati: 0, tuttiSegnati: true, tuttiAssenti: false, mancano: 0, proveMancano: 0, futura: true, chiede: true })
+ok('quadro: nessuno segnato → chiede il secondo tocco', vedi(() => QA([P(null), P(null), P(null)]).chiede), true)
+ok('quadro: più di metà da segnare (3 su 5) → chiede il secondo tocco', vedi(() => QA([P('presente'), P('presente'), P(null), P(null), P(null)]).chiede), true)
+ok('quadro: tutti gli iscritti assenti, chi prova non conta → tutti assenti', vedi(() => QA([P('assente'), P('assente'), P(null, true)]).tuttiAssenti), true)
+ok('quadro: nessun iscritto → non «tutti assenti»', vedi(() => QA([P(null, true)]).tuttiAssenti), false)
+// Dalla revisione: le frasi del foglio ⋯ e il conto della ricerca stanno in src/lib, con la loro prova.
+ok('azzera: frase prima del tocco', vedi(() => e.fraseAzzera(false)), 'Toglie tutti i segni. Chiede un secondo tocco.')
+ok('azzera: frase al secondo tocco', vedi(() => e.fraseAzzera(true)), 'Tocca di nuovo: tutti tornano da segnare.')
+ok('ricerca: trovati iscritti e prove', vedi(() => e.contoRicerca({ iscrittiTrovati: 2, iscritti: 12, proveTrovate: 1 })), '2 su 12 iscritti · 1 in prova')
+ok('ricerca: solo iscritti', vedi(() => e.contoRicerca({ iscrittiTrovati: 1, iscritti: 12, proveTrovate: 0 })), '1 su 12 iscritti')
+ok('ricerca: nessuno → dice cosa fare', vedi(() => e.contoRicerca({ iscrittiTrovati: 0, iscritti: 12, proveTrovate: 0 })), 'Nessuno si chiama così: controlla come è scritto.')
 const L = (x) => e.statoLezione({ manca: false, iniziato: true, fatto: false, presentiIscritti: 0, ...x })
 ok('lezione da chiudere: ✕ DA CHIUDERE, tono manca', L({ manca: true }), { testo: '✕ DA CHIUDERE', tono: 'manca' })
 ok('lezione non iniziata: ISCRITTI, senza tono (non è uno stato)', L({ iniziato: false }), { testo: 'ISCRITTI' })
@@ -230,6 +258,18 @@ ok('.foglio-appello: foglio dal basso, raggio 12px in alto', /border-radius:\s*1
 // Trovati nel collaudo a 390px: «+ PROVA» andava a capo su due righe, e chiuso il menu il fuoco ripartiva dal fondo della pagina.
 ok('.barra-chiudi .btn-prova: «+ PROVA» su una riga sola', /white-space:\s*nowrap/.test(corpo(/\.barra-chiudi \.btn-prova/)), true)
 ok('chiuso il menu ⋯ il fuoco torna sul tasto', /ref=\{tastoMenu\}[^>]*appello-menu/.test(readFileSync('src/components/AppelloScreen.tsx', 'utf8')) && /tastoMenu\.current\?\.focus\(\)/.test(readFileSync('src/components/AppelloScreen.tsx', 'utf8')), true)
+// Dalla revisione: chiuso il foglio con AZZERA che chiede, la frase restava «Tocca di nuovo»; la lente aveva il colore scritto a mano; AZZERA spento a 0.4 non si leggeva.
+{
+  const schermo = readFileSync('src/components/AppelloScreen.tsx', 'utf8')
+  ok('chiuso il menu, AZZERA non chiede più', /if \(!menu\) setSicuroAzzera\(false\)/.test(schermo), true)
+  ok('la lente della ricerca segue il colore del testo, niente esadecimale', /stroke="currentColor"/.test(schermo.slice(schermo.indexOf('cerca-appello'))) && !/stroke="#/.test(schermo), true)
+  // Dalla revisione (garante): il secondo tocco per chiudere va collegato ai conti di src/lib, non ricalcolato qui.
+  ok('i conti dell\'appello vengono da quadroAppello, con l\'ora vera', /quadroAppello\(\{ elenco: d\.elenco, inizio: d\.sessione\.inizio, adesso: Date\.now\(\) \}\)/.test(schermo), true)
+  ok('niente conti rifatti nel .tsx (tuttiSegnati, futura, chiedeDiChiudere)', /const (tuttiSegnati|futura|mancano|nonSegnati) =|chiedeDiChiudere\(/.test(schermo), false)
+  ok('CHIUDI chiede il secondo tocco quando quadroAppello lo dice', /chiede=\{chiede \? chiudiAppello\(/.test(schermo), true)
+  ok('aiuto, frase di AZZERA e conto della ricerca da src/lib', ['aiutoAppello(localStorage)', 'fraseAzzera(sicuroAzzera)', 'contoRicerca('].every((x) => schermo.includes(x)), true)
+  ok('AZZERA spento: fondo superficie-alta e testo spento, senza opacità', /var\(--surface-2\)/.test(corpo(/\.foglio-appello \.btn-azzera:disabled/)) && !/opacity:\s*0\.4/.test(corpo(/\.foglio-appello \.btn-azzera:disabled/)), true)
+}
 ok('.cerca-appello: alta 44px, testo da 16px (iOS non ingrandisce)', /(?<![-\w])(min-)?height:\s*44px/.test(corpo(/\.cerca-appello/)) && /font-size:\s*16px/.test(corpo(/\.cerca-appello/)), true)
 ok('.azzera e .appello-fine non ci sono più: lo spegnimento sta nel foglio e nella barra', regole.filter((r) => r.sel.some((x) => /\.azzera|\.appello-fine/.test(x))).length, 0)
 

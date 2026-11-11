@@ -538,11 +538,11 @@
 :root[data-look='sito'] .foglio-appello-azzera { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 2px solid var(--line); }
 :root[data-look='sito'] .foglio-appello .btn-azzera { min-height: 52px; background: var(--surface); color: var(--rosso-testo); border: 2px solid var(--rosso-testo); border-radius: 6px; }
 :root[data-look='sito'] .foglio-appello .btn-azzera[data-sicuro='true'] { background: var(--rosso); color: var(--su-rosso); border-color: var(--rosso); }
-:root[data-look='sito'] .foglio-appello .btn-azzera:disabled { opacity: 0.4; }
+:root[data-look='sito'] .foglio-appello .btn-azzera:disabled { background: var(--surface-2); color: var(--dim); border-color: var(--surface-2); opacity: 1; }
 :root[data-look='sito'] .foglio-appello-frase { font-size: 13px; color: var(--dim); }
 :root[data-look='sito'] .foglio-appello .btn-chiudi-menu { min-height: 44px; background: transparent; border: 0; color: var(--blu); }
 /* La ricerca senza etichetta: il segnaposto dice già quanti sono. 16px perché iOS non ingrandisca toccandola. */
-:root[data-look='sito'] .cerca-appello { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; background: var(--surface); border: 2px solid var(--line); border-radius: 6px; font-size: 16px; }
+:root[data-look='sito'] .cerca-appello { color: var(--dim); display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; background: var(--surface); border: 2px solid var(--line); border-radius: 6px; font-size: 16px; }
 :root[data-look='sito'] .cerca-appello input { flex-grow: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 16px; }
 :root[data-look='sito'] .cerca-appello input:focus { outline: none; }
 :root[data-look='sito'] .cerca-appello:focus-within { border-color: var(--blu); }

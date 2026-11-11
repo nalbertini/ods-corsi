@@ -39,7 +39,7 @@ export function tastoAppello(a: { nonSegnati: number; tuttiAssenti: boolean; tut
 }
 
 /** La barra ferma in fondo: la frase dice cosa succede chiudendo, il giallo solo quando non si perde niente. */
-export function chiudiAppello(a: { nonSegnati: number; chiede: boolean }): { frase: string; tasto: string; pieno: boolean } {
+export function chiudiAppello(a: { nonSegnati: number; chiede: boolean; tuttiAssenti?: boolean }): { frase: string; tasto: string; pieno: boolean } {
   const n = a.nonSegnati
   if (a.chiede)
     return {
@@ -47,6 +47,8 @@ export function chiudiAppello(a: { nonSegnati: number; chiede: boolean }): { fra
       tasto: n === 0 ? 'SÌ, CHIUDI L’APPELLO' : `SÌ, CHIUDI · ${n === 1 ? 'UN ASSENTE' : `${n} ASSENTI`}`,
       pieno: false,
     }
+  // Tutti assenti è di solito l'appello chiuso per sbaglio: il giallo resta sul TUTTI PRESENTI in testa, CHIUDI non spinge.
+  if (a.tuttiAssenti) return { frase: 'Sono tutti assenti: chiudi solo se è giusto.', tasto: 'CHIUDI L’APPELLO', pieno: false }
   if (n === 0) return { frase: 'Tutti segnati: chiudi e torna al calendario.', tasto: '✓ CHIUDI L’APPELLO', pieno: true }
   return { frase: n === 1 ? 'Chi non è segnato diventerà assente.' : `${n} non segnati diventeranno assenti.`, tasto: 'CHIUDI L’APPELLO', pieno: false }
 }
@@ -67,3 +69,49 @@ export function statoLezione(l: { manca: boolean; iniziato: boolean; fatto: bool
 }
 
 export const proveInPiu = (n: number): string => `+${n} PROVA`
+
+/**
+ * I conti dell'appello da cui partono le parole e il secondo tocco per chiudere.
+ * Chi prova conta nei segnati e nei non segnati (chiudendo diventa assente anche
+ * lui), non in «tutti assenti» né nella metà che fa chiedere il secondo tocco.
+ */
+export function quadroAppello(a: { elenco: { stato: string | null; prova?: boolean }[]; inizio: string; adesso: number }) {
+  const iscritti = a.elenco.filter((p) => !p.prova)
+  const segnati = a.elenco.filter((p) => p.stato !== null).length
+  const tuttiSegnati = segnati === a.elenco.length
+  const mancano = iscritti.filter((p) => p.stato === null).length
+  const futura = new Date(a.inizio).getTime() > a.adesso
+  return {
+    segnati,
+    nonSegnati: a.elenco.length - segnati,
+    tuttiSegnati,
+    tuttiAssenti: iscritti.length > 0 && iscritti.every((p) => p.stato === 'assente'),
+    mancano,
+    proveMancano: a.elenco.filter((p) => p.prova && p.stato === null).length,
+    futura,
+    chiede: chiedeDiChiudere({ segnati, tuttiSegnati, futura, mancano, iscritti: iscritti.length }),
+  }
+}
+
+/**
+ * Conta un'apertura dell'appello e dice se mostrare l'aiuto. La memoria arriva
+ * da fuori per provarla senza browser; se non c'è (navigazione privata) l'aiuto
+ * si mostra sempre.
+ */
+export function aiutoAppello(memoria: Pick<Storage, 'getItem' | 'setItem'>): boolean {
+  try {
+    const volte = Number(memoria.getItem('ods-appello-aiuto') ?? 0) || 0
+    memoria.setItem('ods-appello-aiuto', String(volte + 1))
+    return mostraAiuto(volte)
+  } catch {
+    return true
+  }
+}
+
+export const fraseAzzera = (chiede: boolean): string => (chiede ? 'Tocca di nuovo: tutti tornano da segnare.' : 'Toglie tutti i segni. Chiede un secondo tocco.')
+
+/** Sotto la ricerca: quanti ne restano, o cosa fare se non ne resta nessuno. */
+export function contoRicerca(a: { iscrittiTrovati: number; iscritti: number; proveTrovate: number }): string {
+  if (a.iscrittiTrovati + a.proveTrovate === 0) return 'Nessuno si chiama così: controlla come è scritto.'
+  return `${a.iscrittiTrovati} su ${a.iscritti} iscritti${a.proveTrovate ? ` · ${a.proveTrovate} in prova` : ''}`
+}

@@ -17,14 +17,14 @@
   </style>
 </helmet>
 <div style="width: 100%">
-<div style="display: flex; flex-direction: column; width: 100%; height: 140px; background: #eef5fa; border-bottom: 2px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<div style="display: flex; flex-direction: column; width: 100%; min-height: 140px; padding-bottom: 8px; background: #eef5fa; border-bottom: 2px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
   <div style="display: flex; align-items: center; gap: 8px; padding: 10px 16px 0">
     <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-size: 22px; line-height: 1">&#8249;</span>
     <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
       <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 0.05em; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{corso}}</span>
-      <span style="display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: #46606f; white-space: nowrap">
+      <span style="display: flex; align-items: flex-start; gap: 6px; min-width: 0; font-size: 13px; color: #46606f">
         <span style="display: inline-grid; place-items: center; flex-shrink: 0; width: 18px; height: 18px; border: 1.5px solid #e4292a; border-radius: 3px; color: #b81d1d; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif; font-size: 12px; font-weight: 700; line-height: 1">{{kanji}}</span>
-        <span style="overflow: hidden; text-overflow: ellipsis">{{quando}}</span>
+        <span style="overflow-wrap: anywhere">{{quando}}</span>
       </span>
     </div>
     <sc-if value="{{conTimer}}" hint-placeholder-val="{{ true }}">
@@ -61,7 +61,7 @@
 </div>
 </x-dc>
 <script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"kanji":{"editor":"text","default":"柔"},"quando":{"editor":"text","default":"Mar 17:30 · Sala 1"},"presenti":{"editor":"text","default":"7"},"iscritti":{"editor":"text","default":"12"},"prove":{"editor":"text","default":"0"},"stato":{"editor":"enum","options":["mancano","segnati","assenti","lettura","futura"],"default":"mancano"},"mancano":{"editor":"text","default":"5"},"coda":{"editor":"text","default":""},"senzaTimer":{"editor":"boolean","default":false},"$preview":{"width":390,"height":140}}'>
-// PROPOSTA (../appello-istruttore/): la testa dell'appello piu' bassa, 140px contro i 224 di TestaAppello, perche' sul
+// COSTRUITO (AppelloScreen.tsx, look sito; proposta in ../appello-istruttore/): la testa dell'appello piu' bassa, 140px contro i 224 di TestaAppello, perche' sul
 // telefono i nomi partano piu' in alto (cliente-ods: «se ne vedono quattro»). Due righe invece di tre.
 // 1. indietro · titolo 20px (la misura che la testa ha gia' sotto i 420px) con kanji e «giorno ora · sala» su una riga
 //    · timer · ⋯ (il menu con AZZERA e il cambio di attivita', vedi FoglioAppello). Tutti 44px.
@@ -73,6 +73,8 @@
 // AZZERA non c'e' piu' accanto al giallo: sta nel menu ⋯, lontano dal pollice che segna. Anche l'attivita' (oggi il
 // select ATTIVITA' sotto la testa) si cambia solo dal menu: si cambia di rado (deciso dall'utente il 2026-11-11).
 // Il giallo pieno resta uno per schermata. Colori di TestaAppello.
+// Nel codice la riga sotto il titolo e' «mercoledi' 11 novembre 18:00 · Pesi» e va a capo invece di tagliarsi: per questo
+// l'altezza e' minima (min-height 140px), e con un titolo lungo la testa arriva a circa 188px.
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {

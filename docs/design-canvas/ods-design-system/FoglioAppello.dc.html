@@ -35,25 +35,28 @@
 </div>
 </x-dc>
 <script data-dc-script data-props='{"titolo":{"editor":"text","default":"JUDO KIDS · MAR 17:30"},"conAttivita":{"editor":"boolean","default":true},"azzeraChiede":{"editor":"boolean","default":false},"azzeraSpento":{"editor":"boolean","default":false},"$preview":{"width":390,"height":330}}'>
-// PROPOSTA (../appello-istruttore/): il foglio che sale dal basso toccando ⋯ nella testa dell'appello (TestaAppelloCorta).
+// COSTRUITO (`.foglio-appello` nel look sito; proposta in ../appello-istruttore/): il foglio che sale dal basso toccando ⋯ nella testa dell'appello (TestaAppelloCorta).
 // Tiene le due cose che si fanno di rado e che oggi occupano posto in cima: il cambio di attivita' (oggi il select
 // ATTIVITA' DI QUESTA LEZIONE sotto la testa, solo per chi fa la lezione: `conAttivita`) e AZZERA (oggi accanto al
 // tasto giallo, dove il pollice lo prende per sbaglio).
 // Bianco, raggio 12px in alto, maniglia 40x4 #cfe6f4. Titolo Big Shoulders 20px. AZZERA L'APPELLO e' un tasto
 // pericolo (contorno e testo rosso-testo #b81d1d) e vuole il secondo tocco come oggi (`azzeraChiede`: pieno rosso
-// #e4292a, «SÌ, TOGLI TUTTI I SEGNI»). Spento (0.4) se nessuno e' segnato. CHIUDI IL MENU in blu #14709f, 44px.
+// #e4292a, «SÌ, TOGLI TUTTI I SEGNI»). Spento se nessuno e' segnato: fondo e bordo
+// celeste #cfe6f4 e testo #46606f, non trasparente (lo 0.4 non si leggeva). CHIUDI IL MENU in blu #14709f, 44px.
+// Nel codice il velo scuro dietro chiude il foglio, Esc anche, e chiudendo il fuoco torna sul tasto ⋯.
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const chiede = truthy(p.azzeraChiede);
+    const spento = truthy(p.azzeraSpento);
+    const chiede = !spento && truthy(p.azzeraChiede);
     return {
       titolo: p.titolo ?? 'JUDO KIDS · MAR 17:30',
       conAttivita: p.conAttivita === undefined ? true : truthy(p.conAttivita),
       azzera: chiede ? 'SÌ, TOGLI TUTTI I SEGNI' : 'AZZERA L’APPELLO',
       fraseAzzera: chiede ? 'Tocca di nuovo: tutti tornano da segnare.' : 'Toglie tutti i segni. Chiede un secondo tocco.',
-      bordoAzzera: chiede ? '#e4292a' : '#b81d1d', sfondoAzzera: chiede ? '#e4292a' : '#ffffff', coloreAzzera: chiede ? '#ffffff' : '#b81d1d',
-      opacitaAzzera: truthy(p.azzeraSpento) ? '0.4' : '1',
+      bordoAzzera: spento ? '#cfe6f4' : chiede ? '#e4292a' : '#b81d1d', sfondoAzzera: spento ? '#cfe6f4' : chiede ? '#e4292a' : '#ffffff', coloreAzzera: spento ? '#46606f' : chiede ? '#ffffff' : '#b81d1d',
+      opacitaAzzera: '1',
     };
   }
 }

@@ -72,8 +72,9 @@
 // Non segnato = un quadratino vuoto da 22px col bordo blu #14709f e raggio 4px al posto del segno: dice «qui si tocca» (e' un disegno, non un testo nuovo).
 // `lettura` (appello in SOLA LETTURA): la riga non si tocca (disabled), il quadratino resta, il nome e' sempre in inchiostro #0d2a3d (anche l'assente, barrato) e TOGLI non c'e'.
 // PROVA e' il marchio con bordo giallo scuro #8f6a00 (Badge). TOGLI: 44px, bordo 2px celeste #cfe6f4 e testo #46606f, Inter 12px 700, 0.12em, senza raggio (come `.prova-togli`: nel look non e' un tasto a linea blu).
-// `marcato` PROPOSTA (../appello-istruttore/): lo stato piu' forte per la luce del sole in palestra (cliente-ods): barra
-// di 8px invece di 4 e il segno bianco in un quadrato pieno da 26px (verde #12913f ✓, rosso #e4292a ✕). Il non
+// `marcato` COSTRUITO (`.riga-appello[data-stato]` nel look sito, proposta in ../appello-istruttore/): lo stato piu' forte per la luce del sole in palestra (cliente-ods): barra
+// di 8px invece di 4 e il segno bianco in un quadrato pieno da 26px (✓ su verde-testo #0b7a33, che col bianco passa il
+// contrasto; ✕ su rosso #e4292a). Il non
 // segnato resta il quadratino vuoto blu: pieno contro vuoto si distingue anche senza colore.
 // Alta 56px perche' la si tocca in piedi e di fretta (La Regola del Dito di Fretta, DESIGN.md).
 const T = {
@@ -92,7 +93,7 @@ class Component extends DCLogic {
       compleanno: truthy(p.compleanno),
       sito, nonSito: !sito, conTogli: truthy(p.prova) && !truthy(p.lettura),
       barra: stato === 'presente' ? 'inset ' + largo + ' 0 0 #12913f' : stato === 'assente' ? 'inset ' + largo + ' 0 0 #e4292a' : 'none',
-      conPieno: marcato && stato !== 'niente', sfondoPieno: stato === 'presente' ? '#12913f' : '#e4292a',
+      conPieno: marcato && stato !== 'niente', sfondoPieno: stato === 'presente' ? '#0b7a33' : '#e4292a',
       coloreSegnoSito: stato === 'presente' ? '#0b7a33' : '#b81d1d',
       coloreNomeSito: stato === 'assente' && !truthy(p.lettura) ? '#46606f' : '#0d2a3d',
       conAnello: stato === 'niente', conSegno: stato !== 'niente' && !marcato,
