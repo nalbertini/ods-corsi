@@ -5,7 +5,7 @@
  * sotto ogni titolo stanno in `DaFare.tsx`.
  */
 export type ChiaveDaFare =
-  | 'appelli' | 'richieste' | 'istruttori' | 'segnalate' | 'certificati' | 'da-portare' | 'scadenza'
+  | 'appelli' | 'richieste' | 'istruttori' | 'segnalate' | 'certificati' | 'da-portare' | 'a-mano' | 'scadenza'
   | 'certificati-ricevuti' | 'arrivo' | 'pagare' | 'corsi' | 'listino' | 'file-di-prima' | 'documenti-stampa'
 
 export const TESTI_DA_FARE: Record<ChiaveDaFare, { singolare: string; plurale: string }> = {
@@ -15,6 +15,7 @@ export const TESTI_DA_FARE: Record<ChiaveDaFare, { singolare: string; plurale: s
   segnalate: { singolare: 'Presenza segnalata da vedere', plurale: 'Presenze segnalate da vedere' },
   certificati: { singolare: 'Iscritto senza certificato valido', plurale: 'Iscritti senza certificato valido' },
   'da-portare': { singolare: 'Iscritto deve ancora portare il certificato', plurale: 'Iscritti devono ancora portare il certificato' },
+  'a-mano': { singolare: 'Sollecito del certificato da mandare a mano', plurale: 'Solleciti del certificato da mandare a mano' },
   scadenza: { singolare: 'Certificato in scadenza', plurale: 'Certificati in scadenza' },
   'certificati-ricevuti': { singolare: 'Certificato mandato da controllare', plurale: 'Certificati mandati da controllare' },
   arrivo: { singolare: 'Iscritto compie 6 anni senza certificato', plurale: 'Iscritti compiono 6 anni senza certificato' },

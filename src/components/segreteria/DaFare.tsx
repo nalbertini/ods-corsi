@@ -8,7 +8,7 @@ import { contaTessere, conTessere, incrocioDaMostrare } from '../../lib/tessere'
 import { appelliSenzaSegni, certificatiDaPortare, certificatiDaSistemare, contiDaRileggere, contiDellaStriscia, GIORNI_APPELLI, mantieniIPrecedenti, pagamentiNonInRegola, type ContiCosaManca } from '../../lib/cosaManca'
 import { corsiScaduti } from '../../lib/corsiDaPagare'
 import { TESTI_DA_FARE, type ChiaveDaFare } from '../../lib/daFareTesti'
-import { chiArrivo, chiCertificati, chiCertificatiRicevuti, chiDaPortare, chiCorsi, chiListino, chiPagare, chiRichieste, chiScadenza, COLONNE_DA_FARE, primiDaFare, TASTO_DA_FARE, type VoceChi } from '../../lib/daFareChi'
+import { chiArrivo, chiCertificati, chiCertificatiRicevuti, chiDaPortare, chiAMano, chiCorsi, chiListino, chiPagare, chiRichieste, chiScadenza, COLONNE_DA_FARE, primiDaFare, TASTO_DA_FARE, type VoceChi } from '../../lib/daFareChi'
 import { dataLunga, Testa } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
@@ -25,6 +25,8 @@ export interface ContiDaFare {
   certificati: number | null
   /** …e nel termine per portarlo (141): gialli, vengono alle lezioni. */
   daPortare?: number | null
+  /** I solleciti del certificato del giorno senza email, da mandare su WhatsApp (143). */
+  aMano?: number | null
   /** Mandati dall'iscritto dall'area iscritti, in attesa che la segreteria scriva la scadenza. */
   certificatiRicevuti: number | null
   /** …e in scadenza entro un mese. */
@@ -107,10 +109,11 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
     const tessere = pesante ? Promise.all([d.tessere(), d.corsi()]) : Promise.resolve(null)
     // I corsi scaduti chiedono il listino: quali corsi si pagano e con che nome.
     const corsiListino = pesante ? Promise.all([d.corsi(), d.listino()]) : Promise.resolve(null)
+    const aMano = pesante ? d.sollecitiAMano() : Promise.resolve(null)
     const lezioni = pesante ? d.settimana(new Date(adesso - GIORNI_APPELLI * 24 * 60 * 60_000), new Date(adesso)) : Promise.resolve(null)
     const listino = tutto ? Promise.all([d.listino(), d.corsi()]).then(([l, corsi]) => prezziMancanti(l.listino, corsi, oggi)) : Promise.resolve(null)
-    void Promise.all([oppure(istruttori), oppure(richieste), oppure(persone), oppure(lezioni), d.segnalate ? oppure(d.segnalate()) : null, oppure(listino), oppure(tessere), oppure(corsiListino)]).then(
-      ([istr, ric, pers, lez, segn, list, tess, cl]) => {
+    void Promise.all([oppure(istruttori), oppure(richieste), oppure(persone), oppure(lezioni), d.segnalate ? oppure(d.segnalate()) : null, oppure(listino), oppure(tessere), oppure(corsiListino), oppure(aMano)]).then(
+      ([istr, ric, pers, lez, segn, list, tess, cl, mano]) => {
         if (!vivo) return
         const attive = pers?.filter((p) => p.attiva) ?? null
         const appelliMancanti = lez ? appelliSenzaSegni(lez, adesso) : null
@@ -142,6 +145,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           // Contati come i filtri di ISCRITTI che apre «Vedi chi»: il numero è quello delle righe che si vedono.
           certificati: pesante ? (pers ? certificatiDaSistemare(pers, oggi) : null) : prima.certificati,
           daPortare: pesante ? (pers ? certificatiDaPortare(pers, oggi) : null) : prima.daPortare,
+          aMano: pesante ? (mano ? mano.length : null) : prima.aMano,
           certificatiRicevuti: pesante ? (pers ? chiCertificatiRicevuti(pers).length : null) : prima.certificatiRicevuti,
           scadenza: pesante ? (attive ? attive.filter((p) => certificatoInScadenza(p, oggi)).length : null) : prima.scadenza,
           arrivo: pesante ? (attive ? attive.filter((p) => certificatoInArrivo(p, oggi)).length : null) : prima.arrivo,
@@ -156,6 +160,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
               ? {
                   certificati: pers && chiCertificati(pers, oggi),
                   'da-portare': pers && chiDaPortare(pers, oggi),
+                  'a-mano': mano && chiAMano(mano),
                   'certificati-ricevuti': pers && chiCertificatiRicevuti(pers),
                   scadenza: pers && chiScadenza(pers, oggi),
                   arrivo: pers && chiArrivo(pers, oggi),
@@ -207,6 +212,7 @@ const LIVELLO: Record<string, Livello> = {
   segnalate: 'presto',
   'certificati-ricevuti': 'presto',
   'da-portare': 'presto',
+  'a-mano': 'presto',
   scadenza: 'presto',
   arrivo: 'presto',
   listino: 'presto',
@@ -286,6 +292,20 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       dove: { filtro: 'da-portare' },
       apri: apriScheda,
     },
+    // Solo quando ce n'è: con i solleciti spenti (o senza 143) la riga non serve nemmeno fra quelle a posto.
+    ...(conti.aMano
+      ? [
+          {
+            chiave: 'a-mano',
+            n: conti.aMano,
+            titolo: (n: number) => uno(n, TESTI_DA_FARE['a-mano'].singolare, TESTI_DA_FARE['a-mano'].plurale),
+            sotto: 'Non hanno un’email: apri la scheda e mandalo su WhatsApp, col link per caricarlo.',
+            aPosto: 'solleciti a mano',
+            voce: 'iscritti',
+            apri: apriScheda,
+          } satisfies Cosa,
+        ]
+      : []),
     {
       chiave: 'certificati-ricevuti',
       n: conti.certificatiRicevuti,

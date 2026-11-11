@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>La mail del sollecito</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Non e' una schermata dell'app: la mail nel programma di posta della famiglia, con la cornice unica
+     (cornicaMail.ts, come la ricevuta, ../ricevuta-email/). Oggetto e testo sono quelli di IMPOSTAZIONI; ogni {link}
+     diventa nell'HTML un tasto «Carica il certificato di <nome>» (tastoMail) con l'indirizzo scritto sotto, nel testo
+     semplice una riga «Marco: https://…». Mittente e casella delle ricevute. Mai cognome, nascita, codice fiscale. -->
+<div style="display: flex; gap: 36px; align-items: flex-start; width: 1300px; min-height: 720px; padding: 28px 36px; background: #eef5fa">
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">UNA PERSONA · 7 GIORNI PRIMA</span>
+    <div style="display: flex; flex-direction: column; width: 560px; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 16px 20px; border-bottom: 2px solid #cfe6f4; font-size: 14px">
+        <span><b>Officine Dello Sport</b> <span style="color: #46606f">&lt;info@officinedellosport.it&gt;</span></span>
+        <span style="color: #46606f">a laura.rossi@esempio.it</span>
+        <span style="font-size: 17px; font-weight: 700; margin-top: 6px">Il certificato medico di Marco</span>
+      </div>
+      <div style="padding: 12px 20px; border-bottom: 2px solid #cfe6f4; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">OFFICINE DELLO SPORT · CERTIFICATO MEDICO</div>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; font-size: 15px; line-height: 1.5">
+        <p style="margin: 0">Buongiorno,<br>per Marco ci manca ancora il certificato medico, da portare entro il 12 dicembre.<br>Puoi caricarlo da qui, senza password: basta una foto o il PDF.</p>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <a href="#" style="align-self: flex-start; padding: 12px 18px; background: #0d2a3d; color: #ffffff; font-weight: 600; text-decoration: none; border-radius: 6px">Carica il certificato di Marco</a>
+          <span style="font-size: 12px; color: #46606f; word-break: break-all">https://app.officinedellosport.it/certificato/?l=6f1c2a…</span>
+        </div>
+        <p style="margin: 0">Se l’hai già portato in segreteria, non serve fare altro.<br>A presto in palestra,<br>Officine Dello Sport</p>
+      </div>
+      <div style="padding: 12px 20px; border-top: 2px solid #cfe6f4; font-size: 12px; color: #46606f">Mail automatica: per qualsiasi domanda rispondi a questa mail.</div>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">DUE FRATELLI · L’ULTIMO SOLLECITO, CON LA COPIA</span>
+    <div style="display: flex; flex-direction: column; width: 560px; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 16px 20px; border-bottom: 2px solid #cfe6f4; font-size: 14px">
+        <span><b>Officine Dello Sport</b> <span style="color: #46606f">&lt;info@officinedellosport.it&gt;</span></span>
+        <span style="color: #46606f">a laura.rossi@esempio.it · cc segreteria</span>
+        <span style="font-size: 17px; font-weight: 700; margin-top: 6px">Il certificato medico di Marco e Giulia</span>
+      </div>
+      <div style="padding: 12px 20px; border-bottom: 2px solid #cfe6f4; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">OFFICINE DELLO SPORT · CERTIFICATO MEDICO</div>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; font-size: 15px; line-height: 1.5">
+        <p style="margin: 0">Buongiorno,<br>per Marco e Giulia ci manca ancora il certificato medico, da portare entro il 12 dicembre.<br>Puoi caricarlo da qui, senza password: basta una foto o il PDF.</p>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <a href="#" style="align-self: flex-start; padding: 12px 18px; background: #0d2a3d; color: #ffffff; font-weight: 600; text-decoration: none; border-radius: 6px">Carica il certificato di Marco</a>
+          <span style="font-size: 12px; color: #46606f; word-break: break-all">https://app.officinedellosport.it/certificato/?l=6f1c2a…</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <a href="#" style="align-self: flex-start; padding: 12px 18px; background: #0d2a3d; color: #ffffff; font-weight: 600; text-decoration: none; border-radius: 6px">Carica il certificato di Giulia</a>
+          <span style="font-size: 12px; color: #46606f; word-break: break-all">https://app.officinedellosport.it/certificato/?l=91b0e4…</span>
+        </div>
+        <p style="margin: 0">Se l’hai già portato in segreteria, non serve fare altro.<br>A presto in palestra,<br>Officine Dello Sport</p>
+      </div>
+      <div style="padding: 12px 20px; border-top: 2px solid #cfe6f4; font-size: 12px; color: #46606f">Mail automatica: per qualsiasi domanda rispondi a questa mail.</div>
+    </div>
+    <span style="font-size: 14px; line-height: 1.45; color: #46606f; max-width: 560px">Insieme solo se il sollecito di tutti e due cade lo stesso giorno; un fratello con un altro termine riceve la sua. {entro} è la data più vicina.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1300,"height":720}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

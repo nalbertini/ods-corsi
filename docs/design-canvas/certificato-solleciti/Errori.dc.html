@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Cosa non va nei solleciti</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Gli errori come quello dei giorni (`cosaNonVaGiorniCertificato`): una riga rossa 13px sotto il campo,
+     il campo con aria-invalid e bordo rosso; Salva spento finché c'è un errore. Una frase sola per campo, la prima. -->
+<div style="display: flex; flex-direction: column; gap: 18px; width: 760px; min-height: 620px; padding: 28px 36px; background: #eef5fa">
+  <div style="display: flex; flex-direction: column; gap: 6px; padding: 20px 24px; background: #ffffff; border-radius: 6px">
+    <label for="t1" style="font-size: 15px; font-weight: 600">Testo</label>
+    <textarea id="t1" rows="3" aria-invalid="true" style="padding: 10px 12px; font: 500 15px/1.5 Inter, Arial, sans-serif; color: #0d2a3d; border: 2px solid #b81d1d; border-radius: 4px">Buongiorno, per {nome} ci manca ancora il certificato medico, da portare entro il {entro}. Passa in segreteria.</textarea>
+    <span style="font-size: 13px; color: #b81d1d">Manca {link}: senza, chi legge la mail non sa dove caricarlo.</span>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 6px; padding: 20px 24px; background: #ffffff; border-radius: 6px">
+    <label for="t2" style="font-size: 15px; font-weight: 600">Testo</label>
+    <textarea id="t2" rows="2" aria-invalid="true" style="padding: 10px 12px; font: 500 15px/1.5 Inter, Arial, sans-serif; color: #0d2a3d; border: 2px solid #b81d1d; border-radius: 4px">Buongiorno {cognome}, per {nome} … {link}</textarea>
+    <span style="font-size: 13px; color: #b81d1d">{cognome} non si può usare: solo {nome}, {entro} e {link}.</span>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 8px; padding: 20px 24px; background: #ffffff; border-radius: 6px">
+    <span style="font-size: 15px; font-weight: 600">Quando</span>
+    <div style="display: flex; align-items: center; gap: 10px">
+      <input aria-label="Giorni" type="number" value="7" style="width: 76px; height: 44px; padding: 0 12px; font: 600 16px Inter, Arial, sans-serif; color: #0d2a3d; border: 1px solid #6f8a99; border-radius: 4px">
+      <select aria-label="Prima o dopo" style="height: 44px; padding: 0 10px; font: 500 15px Inter, Arial, sans-serif; border: 1px solid #6f8a99; border-radius: 4px; background: #ffffff"><option selected>giorni prima del termine</option></select>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px">
+      <input aria-label="Giorni" type="number" value="90" aria-invalid="true" style="width: 76px; height: 44px; padding: 0 12px; font: 600 16px Inter, Arial, sans-serif; color: #0d2a3d; border: 2px solid #b81d1d; border-radius: 4px">
+      <select aria-label="Prima o dopo" style="height: 44px; padding: 0 10px; font: 500 15px Inter, Arial, sans-serif; border: 1px solid #6f8a99; border-radius: 4px; background: #ffffff"><option selected>giorni dopo il termine</option></select>
+    </div>
+    <span style="font-size: 13px; color: #b81d1d">Al più 60 giorni prima o dopo il termine.</span>
+    <span style="font-size: 13px; line-height: 1.6; color: #46606f">Gli altri: «Due momenti sono lo stesso giorno: togline uno.» · «Ne servono da 1 a 6.» (il sesto spegne «+ Aggiungi»; l’ultimo non ha Togli: per fermarli si toglie la spunta). Oggetto vuoto: «Scrivi l’oggetto della mail.»</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":760,"height":620}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

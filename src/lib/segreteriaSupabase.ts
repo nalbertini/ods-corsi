@@ -1,3 +1,4 @@
+import { cosaNonVaSolleciti } from './sollecitiCertificato'
 import { indirizziDaSalvare } from './avvisoSegreteria'
 import { daSenzaIstruttore } from './ore'
 import type { IndiziDoppioni } from './doppioni'
@@ -733,8 +734,14 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     // non rilanciato) le impostazioni si leggono lo stesso.
     const r = ok(await db.from('impostazioni').select('*').maybeSingle()) as {
       mesi_presenze: number; giorni_calendario: number; inizio_corsi?: string | null; fine_corsi?: string | null; metodi_spenti?: unknown; certificato_giorni?: number
+      solleciti_certificato?: boolean; solleciti_momenti?: number[]; sollecito_oggetto?: string; sollecito_testo?: string; sollecito_copia?: boolean
     } | null
-    return { mesiPresenze: r?.mesi_presenze ?? 24, giorniCalendario: r?.giorni_calendario ?? 60, inizioCorsi: r?.inizio_corsi, fineCorsi: r?.fine_corsi, metodiSpenti: spentiDa(r?.metodi_spenti), certificatoGiorni: r?.certificato_giorni }
+    // Senza 143 le colonne non ci sono: IMPOSTAZIONI non mostra i solleciti.
+    const sollecitiCertificato =
+      r && Array.isArray(r.solleciti_momenti)
+        ? { accesi: !!r.solleciti_certificato, momenti: r.solleciti_momenti, oggetto: r.sollecito_oggetto ?? '', testo: r.sollecito_testo ?? '', copia: !!r.sollecito_copia }
+        : undefined
+    return { mesiPresenze: r?.mesi_presenze ?? 24, giorniCalendario: r?.giorni_calendario ?? 60, inizioCorsi: r?.inizio_corsi, fineCorsi: r?.fine_corsi, metodiSpenti: spentiDa(r?.metodi_spenti), certificatoGiorni: r?.certificato_giorni, sollecitiCertificato }
   }
 
   /**
@@ -1718,6 +1725,33 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         conLink: x.con_link,
         ...(x.aperto_il && { apertoIl: x.aperto_il }),
       }))
+    },
+
+    async sollecitiAMano() {
+      const r = await db.rpc('solleciti_a_mano')
+      // Senza 143 nessun sollecito parte da solo: niente da mandare a mano.
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return []
+      // `as`: le righe di solleciti_a_mano() in 143-solleciti-certificato.sql.
+      return (ok(r) as Array<{ persona_id: string; nome: string; cognome: string; entro: string; momento: number; dovuto_il: string }>).map((x) => ({
+        personaId: x.persona_id,
+        nome: x.nome,
+        cognome: x.cognome,
+        entro: x.entro,
+        momento: x.momento,
+        dovutoIl: x.dovuto_il,
+      }))
+    },
+
+    async sospendiSolleciti(personaId, sospesi) {
+      ok(await db.rpc('sospendi_solleciti', { persona: personaId, sospesi }))
+    },
+
+    async sollecitiEmailDi(personaId) {
+      const r = await db.rpc('solleciti_email_di', { persona: personaId })
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return null
+      // `as`: la riga di solleciti_email_di() in 143-solleciti-certificato.sql.
+      const x = (ok(r) as Array<{ a: string | null; sospesi: boolean }>)[0]
+      return x ? { a: x.a, sospesi: x.sospesi } : null
     },
 
     async ultimiSolleciti() {
@@ -3006,7 +3040,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     impostazioni,
 
     async salvaImpostazioni(i) {
-      const riga: Record<string, number | string | string[] | null> = {}
+      const riga: Record<string, number | number[] | string | string[] | boolean | null> = {}
       if (i.mesiPresenze !== undefined) riga.mesi_presenze = i.mesiPresenze
       if (i.giorniCalendario !== undefined) riga.giorni_calendario = i.giorniCalendario
       if (i.inizioCorsi !== undefined) riga.inizio_corsi = i.inizioCorsi
@@ -3016,6 +3050,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         const guasto = cosaNonVaGiorniCertificato(i.certificatoGiorni)
         if (guasto) throw new Error(guasto)
         riga.certificato_giorni = i.certificatoGiorni
+      }
+      if (i.sollecitiCertificato) {
+        const x = i.sollecitiCertificato
+        const guasto = cosaNonVaSolleciti(x)
+        if (guasto) throw new Error(guasto)
+        Object.assign(riga, { solleciti_certificato: x.accesi, solleciti_momenti: [...x.momenti].sort((a, b) => a - b), sollecito_oggetto: x.oggetto, sollecito_testo: x.testo, sollecito_copia: x.copia })
       }
       ok(await db.from('impostazioni').update(riga).eq('id', true))
     },

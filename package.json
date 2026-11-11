@@ -53,6 +53,7 @@
     "prova:certificati": "node scripts/prova-certificati.mjs",
     "prova:certificato-dopo": "node scripts/prova-certificato-dopo.mjs",
     "prova:certificato-link": "node scripts/prova-certificato-link.mjs",
+    "prova:solleciti-certificato": "node scripts/prova-solleciti-certificato.mjs",
     "prova:campi": "node scripts/prova-campi.mjs",
     "prova:richieste": "node scripts/prova-richieste.mjs",
     "prova:provenienza": "node scripts/prova-provenienza.mjs",

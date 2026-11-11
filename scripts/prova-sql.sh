@@ -28,7 +28,7 @@ prima() {
     timer-lezioni) echo timer ;;
     108-compleanni) echo tablet ;;
     111-iscrizione-troppo-grande) echo iscrizioni ;;
-    certificato-dopo | certificato-link) echo tablet ;;
+    certificato-dopo | certificato-link | solleciti-certificato) echo tablet ;;
   esac
 }
 

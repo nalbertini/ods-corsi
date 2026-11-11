@@ -4,6 +4,7 @@ import { quotaDaIncassare, titolariDi } from './filtriIscritti'
 import type { CorsoRef, Listino } from './listino'
 import type { Richiesta } from './richieste'
 import type { ChiaveDaFare } from './daFareTesti'
+import { percheAMano, type SollecitoAMano } from './sollecitiCertificato'
 import { euroBreve } from './ricevute'
 import { chiaveGiorno, dataLunga } from './sala'
 
@@ -30,7 +31,7 @@ export function primiDaFare<T>(voci: readonly T[] | null | undefined): T[] {
 /** Lo stesso tasto su ogni riga: tasti diversi per riga, accanto ai nomi, confondono. */
 export const TASTO_DA_FARE = 'Vedi tutti'
 /** Le righe col perché corto stanno su due colonne; quelle col perché lungo su una. */
-export const COLONNE_DA_FARE: Partial<Record<ChiaveDaFare, 1 | 2>> = { certificati: 2, 'certificati-ricevuti': 2, scadenza: 2, arrivo: 2, pagare: 2, corsi: 1, richieste: 1, listino: 1 }
+export const COLONNE_DA_FARE: Partial<Record<ChiaveDaFare, 1 | 2>> = { certificati: 2, 'a-mano': 2, 'certificati-ricevuti': 2, scadenza: 2, arrivo: 2, pagare: 2, corsi: 1, richieste: 1, listino: 1 }
 
 const pulito = (s: string) => s.trim().replace(/\s+/g, ' ')
 
@@ -79,6 +80,9 @@ export function chiDaPortare(persone: PersonaSeg[], oggi: string): VoceChi[] {
     (p) => ({ id: p.id, rosso: false, perche: `entro il ${dataLunga(p.certificato.entro ?? oggi, false)}` }),
   )
 }
+
+/** I solleciti del certificato senza email (143): già in ordine, dal più vecchio. */
+export const chiAMano = (s: SollecitoAMano[]): VoceChi[] => s.map((x) => ({ id: x.personaId, nome: nomeInElenco(x), rosso: false, perche: percheAMano(x) }))
 
 /** Certificati mandati dall'iscritto e non ancora confermati: prima quello arrivato da più tempo, che aspetta da più giorni. */
 export function chiCertificatiRicevuti(persone: PersonaSeg[]): VoceChi[] {

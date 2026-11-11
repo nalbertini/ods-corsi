@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Solleciti da mandare a mano</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. DA FARE (DaFare.tsx, daFareChi.ts): una riga gialla nuova («presto», non un guaio) per i solleciti del
+     giorno che non hanno un'email. Ogni nome apre la scheda sul riquadro del sollecito: «Apri WhatsApp» col link lo
+     segna e la persona esce dalla riga. Esce anche se carica il file, se lo confermi o se sospendi i solleciti.
+     Non entra in COSA MANCA (le caselle in cima restano cinque). -->
+<div style="display: flex; flex-direction: column; gap: 20px; width: 1100px; min-height: 420px; padding: 28px 36px; background: #eef5fa">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · DA FARE</span>
+  <dc-import name="RigaDaFare" tema="sito" n="2" titolo="solleciti del certificato da mandare a mano" sotto="Non hanno un’email: apri la scheda e mandalo su WhatsApp, col link per caricarlo." tasto="" livello="presto" elenco="Verdi Luca~il giorno del termine, 12/12|Neri Giulia~7 giorni dopo il termine, 5/12" hint-size="100%,180px"></dc-import>
+  <span style="font-size: 14px; line-height: 1.5; color: #46606f; max-width: 900px">La riga resta finché non lo mandi: un sollecito di ieri non mandato è ancora qui oggi. Se nel frattempo arriva il momento dopo, la persona resta una volta sola, col momento più recente.</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":420}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
