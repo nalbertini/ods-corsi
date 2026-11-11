@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.238.0 — 11 novembre 2026
+
+### Novità
+
+- I solleciti per il certificato partono da soli per email
+
 ## 0.237.2 — 11 novembre 2026
 
 ### Modificato
