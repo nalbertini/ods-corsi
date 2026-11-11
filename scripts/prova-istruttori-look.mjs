@@ -227,6 +227,9 @@ ok('.foglio-appello: foglio dal basso, raggio 12px in alto', /border-radius:\s*1
   const segno = corpo(/\.riga-appello(\[data-stato='presente'\])? \.segno$/)
   ok('.riga-appello segnato: quadrato pieno da 26px, segno bianco', /(?<![-\w])width:\s*26px/.test(segno) && /(?<![-\w])height:\s*26px/.test(segno) && /background(-color)?:\s*var\(--verde-testo\)/.test(segno) && /(?<![-\w])color:\s*(#ffffff|#fff|var\(--su-rosso\))/i.test(segno), true)
 }
+// Trovati nel collaudo a 390px: «+ PROVA» andava a capo su due righe, e chiuso il menu il fuoco ripartiva dal fondo della pagina.
+ok('.barra-chiudi .btn-prova: «+ PROVA» su una riga sola', /white-space:\s*nowrap/.test(corpo(/\.barra-chiudi \.btn-prova/)), true)
+ok('chiuso il menu ⋯ il fuoco torna sul tasto', /ref=\{tastoMenu\}[^>]*appello-menu/.test(readFileSync('src/components/AppelloScreen.tsx', 'utf8')) && /tastoMenu\.current\?\.focus\(\)/.test(readFileSync('src/components/AppelloScreen.tsx', 'utf8')), true)
 ok('.cerca-appello: alta 44px, testo da 16px (iOS non ingrandisce)', /(?<![-\w])(min-)?height:\s*44px/.test(corpo(/\.cerca-appello/)) && /font-size:\s*16px/.test(corpo(/\.cerca-appello/)), true)
 ok('.azzera e .appello-fine non ci sono più: lo spegnimento sta nel foglio e nella barra', regole.filter((r) => r.sel.some((x) => /\.azzera|\.appello-fine/.test(x))).length, 0)
 

@@ -528,7 +528,7 @@
 :root[data-look='sito'] .barra-chiudi .btn { min-height: 52px; }
 :root[data-look='sito'] .barra-chiudi-frase { min-height: 16px; font-size: 13px; line-height: 16px; color: var(--dim); }
 :root[data-look='sito'] .barra-chiudi-frase[data-chiede] { color: var(--rosso-testo); font-weight: 700; }
-:root[data-look='sito'] .barra-chiudi .btn-prova { width: 112px; flex-shrink: 0; background: var(--surface); color: var(--text); border: 2px solid var(--blu); border-radius: 6px; }
+:root[data-look='sito'] .barra-chiudi .btn-prova { width: 112px; flex-shrink: 0; padding: 0 8px; white-space: nowrap; background: var(--surface); color: var(--text); border: 2px solid var(--blu); border-radius: 6px; }
 /* Il foglio del menu ⋯: sale dal basso, sopra un velo che chiude toccandolo. */
 :root[data-look='sito'] .foglio-appello-velo { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; justify-content: flex-end; background: rgba(13, 42, 61, 0.45); }
 :root[data-look='sito'] .foglio-appello { display: flex; flex-direction: column; gap: 14px; padding: 10px 16px calc(var(--safe-b) + 20px); background: var(--surface); border-radius: 12px 12px 0 0; color: var(--text); max-height: 85vh; overflow-y: auto; }

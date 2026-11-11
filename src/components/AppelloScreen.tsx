@@ -220,8 +220,13 @@ export function AppelloScreen({
   // Il menu ⋯: le cose che si fanno di rado (AZZERA, l'attività) lontano dal pollice che segna.
   const [menu, setMenu] = useState(false)
   const foglio = useRef<HTMLDivElement>(null)
+  const tastoMenu = useRef<HTMLButtonElement>(null)
+  const menuAperto = useRef(false)
   useEffect(() => {
+    // Chiuso il foglio, il fuoco torna sul ⋯: con la tastiera o il lettore di schermo non si riparte dal fondo della pagina.
     if (menu) foglio.current?.focus()
+    else if (menuAperto.current) tastoMenu.current?.focus()
+    menuAperto.current = menu
   }, [menu])
   // Mentre un tasto chiede il secondo tocco, la frase accanto lo dice.
   const [sicuroAzzera, setSicuroAzzera] = useState(false)
@@ -428,7 +433,7 @@ export function AppelloScreen({
             </button>
           )}
           {!soloLettura && (
-            <button type="button" className="icon-btn appello-menu" aria-label="Altro: azzera l’appello, cambia l’attività" aria-haspopup="dialog" aria-expanded={menu} onClick={() => setMenu(true)}>
+            <button ref={tastoMenu} type="button" className="icon-btn appello-menu" aria-label="Altro: azzera l’appello, cambia l’attività" aria-haspopup="dialog" aria-expanded={menu} onClick={() => setMenu(true)}>
               ⋯
             </button>
           )}
