@@ -1,4 +1,4 @@
-import { cosaNonVaCambioVoce, giornoChiuso, pacchetti, vuolePersonaRiga, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento, type VoceContabile } from './contabilita'
+import { cosaNonVaCambioVoce, giornoChiuso, pacchetti, VOCE_QUOTA, vuolePersonaRiga, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento, type VoceContabile } from './contabilita'
 import { STRUTTURA_CF } from './codiceFiscale'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { nomeDallaCausale } from './movimentiPersona'
@@ -278,6 +278,11 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
   // Un movimento a mano copre un soldo arrivato solo: se è già di Satispay o di un'altra riga della banca, non è libero.
   const liberi = righe.filter((r) => r.cassaId === contoId && !r.annullato && !r.satispayId && !r.bancaChiave && !r.origineImport?.startsWith(PREFISSO_CHIAVE_BANCA))
   const usati = new Set<string>()
+  const gruppi = gruppiRicevute(righe.filter((r) => r.cassaId === contoId && !r.annullato), new Set(liberi.map((r) => r.id)))
+  // Un gruppo è libero finché nessuna delle sue rate copre un'altra riga; usarlo prende tutte le rate.
+  const libero = (r: RigaMovimento) => !usati.has(r.id) && !(gruppi.get(r.id) ?? []).some((id) => usati.has(id))
+  const usa = (r: RigaMovimento) => [r.id, ...(gruppi.get(r.id) ?? [])].forEach((id) => usati.add(id))
+  const possibili = [...liberi, ...[...gruppi.keys()].map((id) => gruppoComeRiga(id, liberi.filter((r) => gruppi.get(id)?.includes(r.id))))]
 
   const validi = lettura.movimenti.filter((x) => x.data <= oggi)
   const date = validi.map((x) => x.data).sort()
@@ -299,8 +304,8 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
       righeDelFile.push(riga({ riga: mv.riga, stato: 'duplicata', movimento: mv, voce: righe.find((r) => r.origineImport === mv.chiave || r.bancaChiave === mv.chiave) ?? null }))
       continue
     }
-    const candidati = liberi
-      .filter((r) => !usati.has(r.id) && r.tipo === mv.tipo && r.importo === mv.importo && giorniTra(r.data, mv.data) <= GIORNI_DI_DIFFERENZA)
+    const candidati = possibili
+      .filter((r) => libero(r) && r.tipo === mv.tipo && r.importo === mv.importo && giorniTra(r.data, mv.data) <= GIORNI_DI_DIFFERENZA)
       .sort((a, b) => giorniTra(a.data, mv.data) - giorniTra(b.data, mv.data))
     const scelta = scelte[mv.chiave]
     if (scelta === 'nessuno' || candidati.length === 0) {
@@ -309,17 +314,19 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
       continue
     }
     const migliori = candidati.filter((r) => giorniTra(r.data, mv.data) === giorniTra(candidati[0].data, mv.data))
-    // Candidati dello stesso giorno sono intercambiabili: non serve chiedere.
-    const unico = migliori.every((r) => r.data === migliori[0].data)
-    const scelto = candidati.find((r) => r.id === scelta) ?? (unico ? migliori[0] : undefined)
+    // Candidati dello stesso giorno sono intercambiabili: non serve chiedere. Una ricevuta intera no: è un'altra cosa.
+    const unico = migliori.every((r) => r.data === migliori[0].data) && (migliori.length === 1 || !migliori.some(eGruppo))
+    // Una ricevuta intera si prende da sola solo se il nome è quello del testo: se no la somma può tornare per caso.
+    const daSolo = unico && (!eGruppo(migliori[0]) || nomeNelTesto(migliori[0], mv))
+    const scelto = candidati.find((r) => r.id === scelta) ?? (daSolo ? migliori[0] : undefined)
     if (scelto) {
-      usati.add(scelto.id)
+      usa(scelto)
       coperti.push({ movimento: mv, con: scelto })
       righeDelFile.push(riga({ riga: mv.riga, stato: 'duplicata', movimento: mv, voce: scelto, rifiutabile: true }))
     } else {
       const d = { movimento: mv, ...inCimaChiSembra(mv, candidati, perGenitore[mv.chiave] ?? []) }
       daDecidere.push(d)
-      righeDelFile.push(riga({ riga: mv.riga, stato: 'da-decidere', ...d }))
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'da-decidere', ...d, motivo: unico ? NOME_DIVERSO : '' }))
     }
   }
 
@@ -427,8 +434,17 @@ export function segnaCoperti(movimenti: MovimentoManuale[], coperti: CopertoBanc
   for (const r of righe) {
     if (!r.chiave?.startsWith(PREFISSO_CHIAVE_BANCA)) throw new Error('Un movimento già scritto non ha la chiave della banca')
     if (cop.some((c) => c.chiave === r.chiave) || mov.some((m) => m.origineImport === r.chiave || m.bancaChiave === r.chiave)) continue
+    if (r.conId.startsWith(PREFISSO_RICEVUTA)) {
+      const id = r.conId.slice(PREFISSO_RICEVUTA.length)
+      const rate = incassi.filter((x) => ricevutaDellIncasso(x.id) === id && x.tipo === 'entrata' && x.cassaId === contoId && !x.annullato)
+      const regge = r.tipo === 'entrata' && rate.length >= 2 && rate.every((x) => x.data === rate[0].data) && rate.reduce((s, x) => s + x.importo, 0) === r.importo
+        && !cop.some((c) => c.conId === r.conId || ricevutaDellIncasso(c.conId) === id)
+      if (regge) cop.push(r)
+      else daScrivere.push({ chiave: r.chiave, data: r.data, cassa: 'conto', tipo: r.tipo, importo: r.importo, descrizione: r.descrizione, voce: VOCE_DA_CLASSIFICARE })
+      continue
+    }
     if (r.conId.startsWith(PREFISSO_INCASSO)) {
-      const regge = r.tipo === 'entrata' && !cop.some((c) => c.conId === r.conId)
+      const regge = r.tipo === 'entrata' && !cop.some((c) => c.conId === r.conId || c.conId === `${PREFISSO_RICEVUTA}${ricevutaDellIncasso(r.conId)}`)
         && incassi.some((x) => x.id === r.conId && x.tipo === 'entrata' && x.importo === r.importo && x.cassaId === contoId && !x.annullato)
       if (regge) cop.push(r)
       else daScrivere.push({ chiave: r.chiave, data: r.data, cassa: 'conto', tipo: r.tipo, importo: r.importo, descrizione: r.descrizione, voce: VOCE_DA_CLASSIFICARE })
@@ -446,14 +462,63 @@ export function segnaCoperti(movimenti: MovimentoManuale[], coperti: CopertoBanc
 }
 
 const PREFISSO_INCASSO = 'incasso:'
+/** Una ricevuta intera pagata in più rate (`ricevuta:<id>`): copre un bonifico solo che le paga tutte. */
+const PREFISSO_RICEVUTA = 'ricevuta:'
+const NOME_DIVERSO = 'Il nome nel testo non è quello della ricevuta: dimmi tu.'
+
+/** La ricevuta di un incasso `incasso:<ricevuta>:<voce>:<pagamento>` (`righeDaRicevute`); null per i pagamenti a mano e il resto. */
+const ricevutaDellIncasso = (id: string): string | null => /^incasso:(?!diretto:)([^:]+):\d+:\d+$/.exec(id)?.[1] ?? null
+
+const eGruppo = (r: RigaMovimento) => r.id.startsWith(PREFISSO_RICEVUTA)
+
+/**
+ * Le ricevute con almeno due rate sul conto, tutte libere e dello stesso giorno: id del gruppo → id delle rate.
+ * Una rata già coperta da un'altra riga toglie il gruppo: il database somma tutte le rate sul conto.
+ */
+function gruppiRicevute(delConto: RigaMovimento[], liberi: Set<string>): Map<string, string[]> {
+  const per = new Map<string, RigaMovimento[]>()
+  for (const r of delConto) {
+    const id = r.tipo === 'entrata' ? ricevutaDellIncasso(r.id) : null
+    if (id) per.set(id, [...(per.get(id) ?? []), r])
+  }
+  return new Map([...per].filter(([, rate]) => rate.length >= 2 && rate.every((x) => liberi.has(x.id) && x.data === rate[0].data))
+    .map(([id, rate]) => [`${PREFISSO_RICEVUTA}${id}`, rate.map((x) => x.id)]))
+}
+
+const virgola = (c: number) => (c / 100).toFixed(2).replace('.', ',')
+// «quota» per la quota associativa, se no la prima parola della voce («trimestre», «annuale»), come sulla ricevuta.
+const parteDi = (r: RigaMovimento) =>
+  `${r.voce === VOCE_QUOTA ? 'quota' : ((r.sotto ?? '').split(' · ')[0].match(/^(?!ricevuta )(\S+)/)?.[1] ?? r.voce ?? '').toLowerCase()} ${virgola(r.importo)}`
+
+/** La ricevuta intera come una riga sola, per l'anteprima: il nome, la somma e le rate nel dettaglio. */
+function gruppoComeRiga(id: string, rate: RigaMovimento[]): RigaMovimento {
+  const ordinate = [...rate].sort((a, b) => a.id.localeCompare(b.id, 'it', { numeric: true }))
+  const numero = rate.map((r) => /ricevuta \d+\/\d+/.exec(r.sotto ?? '')?.[0]).find(Boolean)
+  return {
+    ...ordinate[0], id, origine: 'ricevuta', importo: rate.reduce((s, x) => s + x.importo, 0),
+    sotto: [numero, ordinate.map(parteDi).join(' + ')].filter(Boolean).join(' · '),
+  }
+}
+
+/** Il nome della ricevuta (almeno due parole) sta tutto nel testo della banca. */
+const nomeNelTesto = (r: RigaMovimento, mv: MovimentoBanca) => {
+  const nel = new Set(parolePiene(mv.descrizione))
+  const p = parolePiene(r.descrizione)
+  return p.length > 1 && p.every((w) => nel.has(w))
+}
 
 /**
  * Gli incassi (ricevute e pagamenti a mano) coperti da una riga della banca prendono la sua chiave, come i
  * movimenti a mano: così l'anteprima li vede già importati e non li propone di nuovo, e la quadratura li conta.
+ * Una ricevuta intera (`ricevuta:<id>`) la dà a tutte le sue rate.
  */
 export function segnaIncassiCoperti(righe: RigaMovimento[], coperti: CopertoBanca[]): RigaMovimento[] {
   const chiavi = new Map(coperti.filter((c) => c.conId.startsWith(PREFISSO_INCASSO)).map((c) => [c.conId, c.chiave]))
-  return righe.map((r) => (chiavi.has(r.id) ? { ...r, bancaChiave: chiavi.get(r.id) } : r))
+  const perRicevuta = new Map(coperti.filter((c) => c.conId.startsWith(PREFISSO_RICEVUTA)).map((c) => [c.conId.slice(PREFISSO_RICEVUTA.length), c.chiave]))
+  return righe.map((r) => {
+    const k = chiavi.get(r.id) ?? perRicevuta.get(ricevutaDellIncasso(r.id) ?? '')
+    return k ? { ...r, bancaChiave: k } : r
+  })
 }
 
 /**

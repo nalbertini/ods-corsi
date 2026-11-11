@@ -684,6 +684,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.sospendi_solleciti(uuid,boolean)') is not null
     and exists (select 1 from dentro where nome = 'avvisi_da_mandare' and corpo like '%sollecito_certificato%')
     and exists (select 1 from dentro where nome = 'avviso_da_registro' and corpo like '%sollecito_ancora_dovuto%')
-    and exists (select 1 from dentro where nome = 'avviso_mandato' and corpo like '%solleciti%'))
+    and exists (select 1 from dentro where nome = 'avviso_mandato' and corpo like '%solleciti%')),
+  -- Rifà `banca_segna_coperti` (114, 134): rilanciando quelli, il controllo torna «manca».
+  ('144-banca-ricevuta-a-rate.sql', 'un bonifico della banca che paga una ricevuta in più rate la copre intera, senza contare due volte',
+    exists (select 1 from pg_indexes where indexname = 'banca_coperti_una_ricevuta')
+    and exists (select 1 from dentro where nome = 'banca_segna_coperti' and corpo like '%^ricevuta:%'))
 ) as x(file, cosa, c)
 order by file, cosa;

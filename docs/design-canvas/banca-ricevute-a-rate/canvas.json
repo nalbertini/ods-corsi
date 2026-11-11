@@ -1,0 +1,10 @@
+{
+ "pages": [{ "id": "page-1", "name": "Importa dalla banca · ricevute in più rate" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "Oggi · il bonifico entra nuovo e conta due volte", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "Proposta · la ricevuta intera è una voce sola", "x": 0, "y": 760, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1228, "text": "Importa dalla banca: un bonifico che paga una ricevuta in più rate" }
+ ]
+}

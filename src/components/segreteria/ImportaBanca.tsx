@@ -304,6 +304,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
                     )}
                     {r.stato === 'da-decidere' && mv && (
                       <>
+                        {r.motivo && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>{r.motivo}</span>}
                         {r.candidati.map((c) => (
                           <div key={c.id} className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'center' }}>
                             <span className="stack" style={{ gap: 2, minWidth: 0 }}>
