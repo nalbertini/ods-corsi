@@ -80,6 +80,8 @@ export interface DettaglioSessione {
   elenco: Array<Persona & { stato: StatoPresenza | null; prova?: boolean }>
   /** Chi compie gli anni oggi tra gli iscritti (solo gli id: la data non esce dal database). */
   compleanni?: string[]
+  /** Iscritti già presenti a un altro turno dello stesso corso e giorno (`turni.ts`): fuori dall'elenco, con l'`inizio` di quel turno. */
+  altrove?: Array<Persona & { inizio: string }>
 }
 
 /**

@@ -92,6 +92,11 @@ contano: Indietro riporta alla voce di prima.
     dall'app (vedi la [guida degli istruttori](../istruttori.md)). Entra in
     fondo all'appello, presente, col bollino **PROVA**; un tocco sul nome lo gira
     fra presente e assente, **Togli** lo toglie. Le prove non sono nei tre tasti.
+  - **Doppio turno**: se il corso ha due lezioni lo stesso giorno, chi è già
+    presente all'altra non è nei tre tasti né fra gli iscritti contati. Sta
+    in fondo, sotto **GIÀ PRESENTI A UN ALTRO TURNO**, con l'ora dell'altra
+    lezione, e non si tocca. Un'assenza messa prima qui resta salvata ma non
+    conta; se si toglie la presenza dall'altra lezione, torna.
 
 ## Lezione straordinaria
 

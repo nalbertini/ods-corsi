@@ -102,7 +102,8 @@ export interface NomeSala {
  * - `istruttore`: l'istruttore l'ha già segnato (assente, di solito) e il
  *   tablet non lo scavalca.
  */
-export type EsitoTocco = 'segnata' | 'gia' | 'istruttore'
+/** `altro_turno`: già presente a un altro turno dello stesso corso oggi (`turni.ts`), qui non si scrive. */
+export type EsitoTocco = 'segnata' | 'gia' | 'istruttore' | 'altro_turno'
 
 /** Una riga dell'appello dell'istruttore: qui il cognome c'è. */
 export interface RigaAppelloTablet {
@@ -497,6 +498,7 @@ export function annuncioFascia(
     | { tipo: 'fatto'; p: Pick<NomeSala, 'nome' | 'sigla'>; attesa?: boolean }
     | { tipo: 'gia'; p: Pick<NomeSala, 'nome' | 'sigla'>; annulla: boolean }
     | { tipo: 'istruttore'; p: Pick<NomeSala, 'nome' | 'sigla'> }
+    | { tipo: 'altro_turno'; p: Pick<NomeSala, 'nome' | 'sigla'> }
     | { tipo: 'annullato'; p: Pick<NomeSala, 'nome' | 'sigla'> }
     | { tipo: 'errore'; testo: string }
     | null,
@@ -507,6 +509,7 @@ export function annuncioFascia(
   if (f.tipo === 'errore') return `Non è andata. ${f.testo}`
   const chi = `${f.p.nome} ${f.p.sigla}`
   if (f.tipo === 'annullato') return `Annullato: presenza di ${chi} tolta.`
+  if (f.tipo === 'altro_turno') return `${chi} è già presente a un’altra lezione di oggi: qui non serve segnarsi.`
   if (f.tipo === 'istruttore') return `L’istruttore ha già segnato ${chi}. Se c’eri, diglielo.`
   if (f.tipo === 'gia') return `${chi} è già tra i presenti. ${f.annulla ? 'Toccato per sbaglio? C’è il tasto Annulla.' : 'Se non eri tu, dillo all’istruttore.'}`
   const dove = f.attesa ? 'segnata su questo tablet, parte appena torna la rete' : passata ? `segnata per ${giorno}` : 'segnata'

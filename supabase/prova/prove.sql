@@ -11,6 +11,9 @@ reset role;
 delete from tentativi_pin;
 -- Le lezioni che usa qui: quella di Lotta 2 in corso (06), quella di ieri
 -- (02), il Judo 2 nel Tatami (05). tablet.sql annulla quella di domani (04).
+-- Quella fra cinque minuti (01) è un doppio turno della 06 (145): con le sue presenze chi è presente lì
+-- non sarebbe nell'elenco della 06. Qui non si usa, e le presenze si tolgono.
+delete from presenze where sessione_id = 'eeeeeeee-0000-0000-0000-000000000001';
 
 \echo ''
 \echo '--- 1. l''istruttore aggiunge una prova dall''app ---'

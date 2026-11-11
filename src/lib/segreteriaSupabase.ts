@@ -20,6 +20,7 @@ import { insegna, RUOLI_DEL_PERSONALE, segniDi, type RuoloPersonale } from './ru
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
+import { presentiAltrove, togliAltrove } from './turni'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -853,14 +854,18 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const vuoto = ['00000000-0000-0000-0000-000000000000']
       const [isc, pres, chi] = await Promise.all([
         tutteLeRighe((prima, ultima) => db.from('iscrizioni').select('corso_id, persona_id, dal, al, persone ( attiva )').in('corso_id', corsi.length ? corsi : vuoto).order('id').range(prima, ultima)),
-        tutteLeRighe((da, fino) => db.from('presenze').select('sessione_id, stato').in('sessione_id', ids.length ? ids : vuoto).order('id').range(da, fino)),
+        tutteLeRighe((da, fino) => db.from('presenze').select('sessione_id, persona_id, stato').in('sessione_id', ids.length ? ids : vuoto).order('id').range(da, fino)),
         insegnanti(corsi),
       ])
       // Chi è disattivato non conta fra gli iscritti, come nell'appello e in prova.
       const iscrizioni = (ok(isc) as unknown as Array<Iscrizione & { persone: { attiva: boolean } | null }>).filter((i) => i.persone?.attiva)
-      const presenze = ok(pres) as Array<{ sessione_id: string; stato: StatoPresenza }>
-      return sessioni.map((s): LezioneSeg => {
+      const presenze = ok(pres) as Array<{ sessione_id: string; persona_id: string; stato: StatoPresenza }>
+      const turni = sessioni.map((s) => ({ id: s.id, corsoId: s.corso_id, inizio: s.inizio, stato: s.stato }))
+      const segniTurni = presenze.map((p) => ({ sessioneId: p.sessione_id, personaId: p.persona_id, stato: p.stato }))
+      return sessioni.map((s, n): LezioneSeg => {
         const g = giornoDi(s.inizio)
+        // Il doppio turno (`turni.ts`): chi è presente all'altro turno non è un iscritto di questo.
+        const altrove = presentiAltrove(turni[n], turni, segniTurni)
         const segni = presenze.filter((p) => p.sessione_id === s.id)
         const sostituto = s.istruttore_id && s.istruttore_id !== s.corsi?.istruttore_id ? s.istruttore_id : undefined
         return {
@@ -876,7 +881,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           fine: s.fine,
           stato: s.stato,
           straordinaria: !s.ricorrenza_id,
-          iscritti: iscrizioni.filter((i) => i.corso_id === s.corso_id && valeIl(i, g)).length,
+          iscritti: iscrizioni.filter((i) => i.corso_id === s.corso_id && valeIl(i, g) && !altrove.has(i.persona_id)).length,
           capienza: s.corsi?.capienza ?? undefined,
           presenti: segni.filter((p) => p.stato === 'presente').length,
           segnati: segni.length,
@@ -1307,11 +1312,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           .order('inizio', { ascending: false })
           .limit(quante * 4),
       ) as unknown as Array<{ id: string; corso_id: string; inizio: string; corsi: { nome: string } | null }>
-      const sue = sessioni.filter((s) => isc.some((i) => i.corso_id === s.corso_id && valeIl(i, giornoDi(s.inizio)))).slice(0, quante)
+      // Le presenze di tutte le lezioni lette (non annullate): una presenza all'altro turno dello stesso giorno toglie questa (`turni.ts`).
       const pres = ok(
-        await db.from('presenze').select('sessione_id, stato').eq('persona_id', personaId).in('sessione_id', sue.length ? sue.map((s) => s.id) : ['00000000-0000-0000-0000-000000000000']),
+        await db.from('presenze').select('sessione_id, stato').eq('persona_id', personaId).in('sessione_id', sessioni.length ? sessioni.map((s) => s.id) : ['00000000-0000-0000-0000-000000000000']),
       ) as Array<{ sessione_id: string; stato: StatoPresenza }>
-      return sue
+      const turni = sessioni.map((s) => ({ id: s.id, corsoId: s.corso_id, inizio: s.inizio }))
+      const segni = pres.map((p) => ({ sessioneId: p.sessione_id, personaId, stato: p.stato }))
+      return sessioni
+        .filter((s) => isc.some((i) => i.corso_id === s.corso_id && valeIl(i, giornoDi(s.inizio))))
+        .filter((s) => !presentiAltrove({ id: s.id, corsoId: s.corso_id, inizio: s.inizio }, turni, segni).has(personaId))
+        .slice(0, quante)
         .map((s): StoricoSeg => ({ sessioneId: s.id, inizio: s.inizio, corso: s.corsi?.nome ?? '', stato: pres.find((p) => p.sessione_id === s.id)?.stato ?? null }))
         .reverse()
     },
@@ -2281,7 +2291,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ])
       const iscrizioni = ok(isc) as unknown as Array<Iscrizione & { persone: { nome: string; cognome: string; attiva: boolean } | null }>
       const presenze = ok(pres) as Array<{ sessione_id: string; persona_id: string; stato: StatoPresenza }>
-      return sessioni.map((x): RigaRegistro => {
+      // Il doppio turno (`turni.ts`): chi è presente a un turno non sta nell'appello dell'altro.
+      return togliAltrove(sessioni.map((x): RigaRegistro & { id: string } => {
         const g = giornoDi(x.inizio)
         const segni = new Map(presenze.filter((p) => p.sessione_id === x.id).map((p) => [p.persona_id, p.stato]))
         const sostituto = x.istruttore_id && x.istruttore_id !== x.corsi?.istruttore_id
@@ -2296,8 +2307,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           appello: iscrizioni
             .filter((i) => i.corso_id === x.corso_id && i.persone?.attiva && valeIl(i, g))
             .map((i) => ({ personaId: i.persona_id, nome: i.persone!.nome, cognome: i.persone!.cognome, stato: segni.get(i.persona_id) ?? null })),
+          id: x.id,
         }
-      })
+      }))
     },
 
     async prove(da, a) {

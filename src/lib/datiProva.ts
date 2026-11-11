@@ -1,6 +1,7 @@
 import type { Dati } from './dati'
 import type { Persona, SessioneVista, StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, contiDellAppello, perCognome } from './sala'
+import { presentiAltrove } from './turni'
 import { contaPresenze, ordinaPerPresenze, type PresenzaStorico, type SessioneStorico } from './frequenza'
 import { archivio, nomeDi, type CorsoProva, type PresenzaIstruttoreProva, type RicorrenzaProva } from './archivioProva'
 import { ISTRUTTORE_PROVA } from './dati'
@@ -338,9 +339,26 @@ export function proveDi(sessioneId: string): Persona[] {
     .sort(perCognome)
 }
 
+/** Chi è presente a un altro turno dello stesso corso e giorno (`turni.ts`): persona → inizio di quel turno. */
+export function altroveDi(t: LezioneTrovata): Map<string, string> {
+  const giorno = new Date(t.inizio)
+  giorno.setHours(0, 0, 0, 0)
+  const turni = lezioniFra(giorno, giorno)
+    .filter((l) => l.corso.id === t.corso.id)
+    .map((l) => ({ id: l.id, corsoId: l.corso.id, inizio: l.inizio.toISOString(), stato: comeE(l).stato }))
+  const presenze = turni.flatMap((x) => Object.entries(memoria.segnate[x.id] ?? {}).map(([personaId, stato]) => ({ sessioneId: x.id, personaId, stato })))
+  return presentiAltrove({ id: t.id, corsoId: t.corso.id, inizio: t.inizio.toISOString() }, turni, presenze)
+}
+
+/** Gli iscritti nell'appello di una lezione: quelli di quel giorno, meno chi è già presente a un altro turno. */
+export function iscrittiDellAppello(t: LezioneTrovata): Persona[] {
+  const altrove = altroveDi(t)
+  return iscrittiIl(t.corso.id, chiaveGiorno(t.inizio)).filter((p) => !altrove.has(p.id))
+}
+
 /** L'appello di una lezione: gli iscritti di quel giorno, poi le prove. */
 function appelloDi(t: LezioneTrovata): Array<Persona & { prova?: boolean }> {
-  const iscritti = iscrittiIl(t.corso.id, chiaveGiorno(t.inizio))
+  const iscritti = iscrittiDellAppello(t)
   const qui = new Set(iscritti.map((p) => p.id))
   const elenco = [...iscritti, ...proveDi(t.id).filter((p) => !qui.has(p.id)).map((p) => ({ ...p, prova: true }))]
   return ordinaPerPresenze(elenco, presenzeDi(t))
@@ -542,9 +560,9 @@ export function creaDatiProva(): Dati {
       inizio: l.inizio.toISOString(),
       fine: l.fine.toISOString(),
       stato: k.stato,
-      iscritti: iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)).length,
+      iscritti: iscrittiDellAppello(l).length,
       presenti: Object.values(mie).filter((s) => s === 'presente').length,
-      ...contiDellAppello(iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)), mie),
+      ...contiDellAppello(iscrittiDellAppello(l), mie),
     }
   }
 
@@ -612,10 +630,15 @@ export function creaDatiProva(): Dati {
       const compleanni = elenco
         .filter((p) => !p.prova && compleannoOggi(archivio.dati.anagrafiche?.[p.id]?.natoIl, oggi))
         .map((p) => p.id)
+      const altrove = altroveDi(t)
       return {
         sessione: vista(t),
         elenco,
         compleanni,
+        altrove: iscrittiIl(t.corso.id, chiaveGiorno(t.inizio)).flatMap((p) => {
+          const inizio = altrove.get(p.id)
+          return inizio ? [{ ...p, inizio }] : []
+        }),
       }
     },
 
@@ -635,7 +658,8 @@ export function creaDatiProva(): Dati {
       dentroLaFinestra(sessioneId)
       const t = trovaLezione(sessioneId)
       if (!t) return
-      const mie: Record<string, StatoPresenza> = {}
+      // Si parte dai segni che ci sono: chi è presente a un altro turno è fuori dall'appello, e il suo ASSENTE resta salvato (`turni.ts`).
+      const mie: Record<string, StatoPresenza> = { ...(memoria.segnate[sessioneId] ?? {}) }
       for (const p of appelloDi(t)) mie[p.id] = stato
       memoria.segnate = { ...memoria.segnate, [sessioneId]: mie }
       daAppello(sessioneId)

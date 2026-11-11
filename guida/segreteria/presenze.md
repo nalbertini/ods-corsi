@@ -45,6 +45,11 @@ tutta, dove c'è la **›** a destra: non c'è un tasto per riga. Le sezioni lun
   si tocca da solo, senza aprire la scheda. Le prove
   non contano nelle medie, che sono sugli iscritti.
 
+Nei corsi con il **doppio turno** (due lezioni lo stesso giorno) quel giorno
+conta come una lezione sola: chi è venuto a una delle due è presente, chi non
+è venuto a nessuna ha un'assenza, non due. Nel registro e nel file CSV chi è
+presente a una lezione non compare nell'altra.
+
 ## Il registro del mese
 
 In fondo, **REGISTRO DEL MESE** (chiuso, col conto delle lezioni): le lezioni del mese con l'appello fatto,
