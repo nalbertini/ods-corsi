@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Com'è oggi</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COM'È OGGI: src/components/IscrizioniScreen.tsx CosaServe e COSA_SERVE in src/lib/paginaIscrizioni.ts (main dopo la #809). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 560px; background: #eef5fa; color: #0d2a3d">
+<dc-import name="Titoletto" label="COSA TI SERVE" hint-size="100%,58px"></dc-import>
+<div style="padding: 0 20px 20px">
+<ul style="list-style: none; margin: 0; padding: 4px 16px; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
+  <li style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 0"><span aria-hidden="true" style="flex: none; width: 22px; height: 22px; margin-top: 1px; border: 2px solid #14709f; border-radius: 4px"></span><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">Il codice fiscale</span><span style="font-size: 14px; line-height: 1.4; color: #46606f">Di chi si iscrive. Se iscrivi un figlio, anche il tuo.</span></span></li>
+  <li style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 2px solid #cfe6f4"><span aria-hidden="true" style="flex: none; width: 22px; height: 22px; margin-top: 1px; border: 2px solid #14709f; border-radius: 4px"></span><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">La carta d’identità</span><span style="font-size: 14px; line-height: 1.4; color: #46606f">Di chi si iscrive, dai 6 anni. Una foto o il PDF.</span></span></li>
+  <li style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 2px solid #cfe6f4"><span aria-hidden="true" style="flex: none; width: 22px; height: 22px; margin-top: 1px; border: 2px solid #14709f; border-radius: 4px"></span><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">Il certificato medico</span><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">SE CE L’HAI</span><span style="font-size: 14px; line-height: 1.4; color: #46606f">Se non ce l’hai ancora, ti iscrivi lo stesso e lo porti dopo.</span></span></li>
+  <li style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 2px solid #cfe6f4"><span aria-hidden="true" style="flex: none; width: 22px; height: 22px; margin-top: 1px; border: 2px solid #14709f; border-radius: 4px"></span><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">Come paghi</span><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">NELLA RICHIESTA</span><span style="font-size: 14px; line-height: 1.4; color: #46606f">Con Satispay, oppure col bonifico: allora serve la sua ricevuta.</span></span></li>
+</ul>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":560}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

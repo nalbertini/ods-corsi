@@ -23,17 +23,22 @@ ordine.
    Sport» e la frase «Compili la richiesta dal telefono. La segreteria la
    guarda e ti richiama.». In cima non c'è la testata dell'app né un tasto: la
    pagina non promette un giorno né un'ora.
-2. **Cosa ti serve**: una lista di cosa preparare, una cosa per riga con una
-   casella da spuntare a mente (la pagina non salva niente):
-   - il **codice fiscale** di chi si iscrive, e il tuo se iscrivi un figlio;
-   - la **carta d'identità** di chi si iscrive, dai 6 anni (quella del
-     genitore non serve);
-   - il **certificato medico**, **SE CE L'HAI**: se no ti iscrivi lo stesso e
-     lo porti dopo, entro i giorni che dice il modulo. La segreteria può
-     mandarti un link per caricarlo dal telefono, senza password: chiede la
-     foto o il PDF e la data di scadenza scritta sul certificato;
-   - **come paghi**, **NELLA RICHIESTA**: con Satispay, oppure col bonifico,
-     e allora serve la sua ricevuta.
+2. **Cosa ti serve**: due gruppi, ogni cosa su una riga con la sua icona
+   (niente caselle: la pagina non salva niente).
+   - **DA AVERE SOTTO MANO**:
+     - il **codice fiscale** di chi si iscrive, e il tuo se iscrivi un figlio;
+     - la **carta d'identità** di chi si iscrive, dai 6 anni (quella del
+       genitore non serve);
+     - il **certificato medico**, con l'etichetta gialla **PUOI PORTARLO
+       DOPO**: se non ce l'hai ancora ti iscrivi lo stesso, e la riga dice
+       quanti giorni hai per portarlo (quelli che la segreteria ha scritto in
+       **IMPOSTAZIONI**, gli stessi del modulo). La
+       segreteria può mandarti un link per caricarlo dal telefono, senza
+       password: chiede la foto o il PDF e la data di scadenza scritta sul
+       certificato.
+   - **DA FARE NELLA RICHIESTA**: **pagare la quota**, con Satispay oppure col
+     bonifico e la sua ricevuta. Se Satispay è spento, la riga dice solo il
+     bonifico.
 3. **Quanto costa**, in breve: la quota associativa (quella del
    [listino](segreteria/listino.md)), lo sconto famiglia e il costo di più
    corsi, come si paga in una riga (bonifico o Satispay, prima di mandare la
