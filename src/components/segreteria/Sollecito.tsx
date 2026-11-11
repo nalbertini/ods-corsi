@@ -11,7 +11,7 @@ import { useCarica, type useAvviso } from './comune'
  * segnato. null finché si legge, e quando non c'è niente da sollecitare: il
  * tasto in testata allora non c'è.
  */
-export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio, titolari, corsi }: {
+export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio, titolari, corsi, aperto }: {
   d: DatiSegreteria
   p: PersonaSeg
   oggi: string
@@ -23,6 +23,8 @@ export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio,
   titolari?: ReadonlySet<string>
   /** I corsi della persona (`statoCorsi`): il sollecito nomina quelli scaduti. */
   corsi?: StatoCorso[]
+  /** Il riquadro è aperto: solo allora si chiede il link, che guardare la scheda non crea. */
+  aperto: boolean
 }) {
   const dati = useCarica(
     async () => {
@@ -36,7 +38,7 @@ export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio,
   const opz = { quotaNelVecchio, titolari, corsi }
   const senzaLink = dati.dato ? sollecitoDi(p, dati.dato.anagrafica, dati.dato.quota, oggi, opz) : null
   // Il link si chiede solo per un certificato da portare: per la quota non serve.
-  const conCertificato = !!senzaLink?.certificato
+  const conCertificato = aperto && !!senzaLink?.certificato
   const link = useCarica(() => (conCertificato ? d.linkCertificato(p.id) : Promise.resolve(null)), [d, p.id, conCertificato])
   const s = dati.dato && link.dato ? sollecitoDi(p, dati.dato.anagrafica, dati.dato.quota, oggi, { ...opz, linkCertificato: indirizzo(`${INDIRIZZI.certificato}?l=${link.dato.codice}`) }) : senzaLink
   return { s, linkId: link.dato?.id, guaio: dati.guaio, ultimo: ultimo.dato }

@@ -179,7 +179,8 @@ begin
   if scade is null then raise exception 'Scrivi quando scade il certificato.' using errcode = '22023'; end if;
   if scade < oggi then raise exception 'Questo certificato è già scaduto: serve quello nuovo.' using errcode = '22023'; end if;
   if scade > (oggi + interval '3 years')::date then raise exception 'La data è troppo lontana: controlla l’anno.' using errcode = '22023'; end if;
-  select certificato_in_attesa into vecchio from schede_iscritti where persona_id = k.persona_id;
+  -- Due invii insieme dallo stesso link: il secondo aspetta, e il file del primo non resta orfano.
+  select certificato_in_attesa into vecchio from schede_iscritti where persona_id = k.persona_id for update;
   insert into schede_iscritti (persona_id, certificato_in_attesa, certificato_in_attesa_il) values (k.persona_id, file, now())
     on conflict (persona_id) do update set certificato_in_attesa = excluded.certificato_in_attesa, certificato_in_attesa_il = excluded.certificato_in_attesa_il;
   -- Dopo il file: il trigger toglie la data quando il file cambia.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CaricaFile, Campo, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, TitoloEsito } from './ds'
 import { codiceDalLink, cosaNonVaScadenza, esitoLink, testiLink, type EsitoLink } from '../lib/certificatoLink'
 import { cosaNonVaFileMandato } from '../lib/certificatoIscritto'
@@ -34,7 +34,12 @@ export function CertificatoLink() {
         </Tasti>
       </div>
     )
-  if (!aperto) return <Dettaglio>Un attimo…</Dettaglio>
+  if (!aperto)
+    return (
+      <div className="pad" style={{ paddingTop: 20 }}>
+        <Dettaglio>Un attimo…</Dettaglio>
+      </div>
+    )
   const fine = esito ?? (aperto.stato === 'valido' ? null : aperto)
   if (fine) return <Esito esito={fine} onAltro={esito?.stato === 'ricevuto' && aperto.stato === 'valido' ? () => setEsito(null) : undefined} />
   if (aperto.stato !== 'valido' || !codice) return null
@@ -43,8 +48,11 @@ export function CertificatoLink() {
 
 function Esito({ esito, onAltro }: { esito: EsitoLink; onAltro?: () => void }) {
   const t = esitoLink(esito)
+  // Il tasto premuto sparisce: il fuoco va sull'esito, che così si legge.
+  const qui = useRef<HTMLDivElement>(null)
+  useEffect(() => qui.current?.focus(), [])
   return (
-    <div className="pad stack" style={{ gap: 14, paddingTop: 20, paddingBottom: 28 }}>
+    <div ref={qui} tabIndex={-1} className="pad stack certificato-link" style={{ gap: 14, paddingTop: 20, paddingBottom: 28, outline: 'none' }}>
       <TitoloEsito tono={t.tono}>{t.titolo}</TitoloEsito>
       {t.testi.map((x) => (
         <Dettaglio key={x} tono="testo">
@@ -92,8 +100,8 @@ function Modulo({ info, codice, onNonVale, onRicevuto }: {
   }
 
   return (
-    <div className="pad stack" style={{ gap: 14, paddingTop: 6, paddingBottom: 28 }}>
-      <h2 className="ob certificato-link-titolo">{t.titolo}</h2>
+    <div className="pad stack certificato-link" style={{ gap: 14, paddingTop: 6, paddingBottom: 28 }}>
+      <h2 className="certificato-link-titolo">{t.titolo}</h2>
       <Riquadro tono="prova" stretto>
         <Etichetta>{t.etichetta}</Etichetta>
         <Dettaglio tono="testo">{t.testo}</Dettaglio>
@@ -109,9 +117,11 @@ function Modulo({ info, codice, onNonVale, onRicevuto }: {
       <Campo
         id="cl-scade"
         etichetta="SCADE IL"
-        nota={guaioData ? { testo: guaioData, guaio: true } : { testo: 'Cerca «valido fino al» o «scadenza». Se c’è solo la data della visita, scrivi la stessa data fra un anno.', guaio: false }}
+        nota={{ testo: 'Cerca «valido fino al» o «scadenza». Se c’è solo la data della visita, scrivi la stessa data fra un anno.', guaio: false }}
       >
         <input id="cl-scade" className="campo" type="date" min={oggi} value={scade} aria-describedby="cl-scade-nota" aria-invalid={!!guaioData || undefined} onChange={(e) => setScade(e.target.value)} />
+        {/* Sotto il campo e annunciato (role=alert), come l'errore del file. */}
+        {guaioData && <Dettaglio tono="guaio">{guaioData}</Dettaglio>}
       </Campo>
       <Tasti>
         <Tasto variante="principale" disabled={invio} onClick={manda}>

@@ -58,6 +58,8 @@ async function idDi(codice: string | null): Promise<string | null> {
 const invii = new Map<string, number[]>()
 function troppi(id: string): boolean {
   const ora = Date.now()
+  // Un'istanza che vive a lungo non si tiene i link di ieri.
+  if (invii.size > 1000) invii.clear()
   const suoi = (invii.get(id) ?? []).filter((t) => ora - t < 60_000)
   suoi.push(ora)
   invii.set(id, suoi)
@@ -112,7 +114,8 @@ async function linkPerLaSegreteria(req: Request, authorization: string) {
     console.error('link_certificato_per', error.code)
     return no('Il link non si è preparato: riprova fra poco', 500)
   }
-  const id = data as string
+  if (typeof data !== 'string') return no('Il link non si è preparato: riprova fra poco', 500)
+  const id = data
   return risposta({ codice: `${id}.${await firma(id)}`, id })
 }
 

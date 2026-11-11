@@ -167,5 +167,25 @@ ok('il link wa.me porta lo stesso testo, con il link dentro', decodeURIComponent
 const marcoRossi = paolo({ nome: 'Marco', cognome: 'Rossi', natoIl: '2017-05-01', certificato: { scade: '2026-03-12', conFile: true } })
 ok('un minorenne: il link c\'è anche nel messaggio al genitore', di(marcoRossi)?.testo.includes(`senza password: ${LINK} ${CHIUSA}`), true)
 
+console.log('\n7. in modalità prova, come 142-certificato-link.sql')
+{
+  const m = await impacchetta("export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva } from './src/lib/datiProva'; export { seminaEsempi } from './src/lib/esempiProva'")
+  m.creaDatiProva()
+  m.seminaEsempi()
+  const s = m.creaSegreteriaProva()
+  const [uno, due] = (await s.persone()).filter((p) => p.attiva)
+  const l1 = await s.linkCertificato(uno.id)
+  ok('il link ha la forma di quello vero', !!l1 && codiceDalLink(`?l=${l1.codice}`) === l1.codice, true)
+  ok('lo stesso link finché vale', (await s.linkCertificato(uno.id))?.id, l1?.id)
+  ok('un\'altra persona ha un link suo', (await s.linkCertificato(due.id))?.id !== l1?.id, true)
+  let rifiuto = null
+  await s.segnaSollecitoLink(due.id, l1.id).catch((e) => (rifiuto = e.message))
+  ok('il link di un\'altra persona non si segna', rifiuto, 'Il link non è di questa persona.')
+  await s.segnaSollecito(uno.id)
+  await s.segnaSollecitoLink(uno.id, l1.id)
+  const storia = await s.sollecitiDi(uno.id)
+  ok('la storia: due solleciti, uno col link', [storia.length, storia.filter((x) => x.conLink).length, storia.every((x) => x.canale === 'whatsapp')], [2, 1, true])
+}
+
 console.log(guai ? `\n${guai} prove non passano.` : '\nTutte le prove passano.')
 process.exit(guai ? 1 : 0)

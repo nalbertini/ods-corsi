@@ -841,7 +841,7 @@ function Scheda({
     window.addEventListener(APRI_SCHEDA, apri)
     return () => window.removeEventListener(APRI_SCHEDA, apri)
   }, [])
-  const sollecito = useSollecito({ d, p, oggi, giro: giroAnagrafica, giroSolleciti, quotaNelVecchio, titolari, corsi: statiCorsi })
+  const sollecito = useSollecito({ d, p, oggi, giro: giroAnagrafica, giroSolleciti, quotaNelVecchio, titolari, corsi: statiCorsi, aperto: sollecitoAperto })
   const azioni = azioniTestata(p, !!sollecito.s, { modifica: !!modifica, unendo, pagando })
   const voci = azioni.altro
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
@@ -1994,6 +1994,8 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   const sel = useRef<HTMLInputElement>(null)
   // La scadenza che la segreteria legge sul file mandato dall'iscritto.
   const [scadeMandato, setScadeMandato] = useState(p.certificato.inAttesaScade ?? '')
+  // Un file nuovo dal link porta la sua data: la scheda riletta la rimette nel campo.
+  useEffect(() => setScadeMandato(p.certificato.inAttesaScade ?? ''), [p.certificato.inAttesaScade])
   // «Cambia la data» / «Dai una data»: il termine per portarlo, di questa persona sola.
   const [termine, setTermine] = useState<string | null>(null)
   const c = p.certificato
