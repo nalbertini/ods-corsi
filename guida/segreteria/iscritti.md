@@ -207,8 +207,13 @@ sola. Quota e certificato vanno in un messaggio solo. A un minorenne si scrive
 al genitore dei **DATI ANAGRAFICI** («Ciao Laura, … per Marco»); senza genitore il
 messaggio non saluta per nome («Ciao, … per Marco»). Il messaggio
 dice solo nome, cosa manca, data e importo: mai codice fiscale, ricevute o note.
+Se c'è il certificato da portare, il messaggio finisce col link per caricarlo
+(«Puoi caricarlo da qui, senza password: …»): lo stesso link finché vale.
 Premuto **Apri WhatsApp**, sotto il tasto accanto al nome compare **Sollecitato
-l'ultima volta il … da …**, così la collega vede che è già stato fatto. Se il telefono manca o è sbagliato, il
+l'ultima volta il … da …**, così la collega vede che è già stato fatto. In
+fondo al riquadro, **SOLLECITI** elenca quelli fatti, dal più recente: canale,
+giorno e chi («WhatsApp · 5/12/2026 da Laura») e, se c'era il link, **link
+aperto il …** o **link non aperto**. Se il telefono manca o è sbagliato, il
 riquadro lo dice e **Vai a PERSONA** porta dove aggiungerlo; se sembra un fisso
 (comincia per 0), avvisa che su WhatsApp di solito non c'è. Una scheda
 disattivata, o in regola, non ha il tasto. In modifica il riquadro usa il
@@ -327,6 +332,15 @@ scheda è disattivata, nessuno.
   oggi; la scheda dice poi chi l'ha spostato e quando. Un certificato valido
   (confermato, caricato o con la data scritta) toglie il termine; rifiutare il
   file mandato no. Un file mandato e non confermato non cambia il colore.
+  **Il link per caricarlo**: chi deve portare il certificato (nel termine,
+  dopo, scaduto o in scadenza) può caricarlo da un link suo, senza password,
+  che apre una pagina con solo il nome (es. «Marco R.»), il tipo e la data
+  limite. Lì sceglie la foto o il PDF e scrive quando scade. Il file arriva
+  **da confermare** come quello dell'area iscritti, e alla conferma la data
+  che ha scritto è già nel campo: controllala sul foglio. Finché non confermi
+  si può ricaricare con lo stesso link (il nuovo prende il posto del vecchio);
+  confermato, il link dice «già arrivato»; rifiutato, il link torna buono. Un
+  link vale al massimo 120 giorni, poi ne nasce uno nuovo.
   **Sotto i 6 anni** il certificato non si chiede:
   il riquadro dice **NON SERVE**, e chi ha meno di 6 anni non conta fra chi è
   senza certificato valido.

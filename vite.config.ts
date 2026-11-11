@@ -24,7 +24,7 @@ function commit(): string {
 }
 
 // Le aree con un indirizzo vero: vedi `src/lib/aree.ts`.
-const AREE = ['segreteria', 'amministrazione', 'iscrizioni', 'iscritti', 'istruttori', 'sala', 'collega']
+const AREE = ['segreteria', 'amministrazione', 'iscrizioni', 'iscritti', 'istruttori', 'sala', 'collega', 'certificato']
 const BASE = '<base href="../">'
 const conBase = (html: string) => html.replace(/<head>/i, `<head>\n    ${BASE}`)
 
@@ -68,7 +68,9 @@ function pagineDelleAree(): Plugin {
       const radice = bundle['index.html']
       if (!radice || radice.type !== 'asset') return
       for (const area of AREE) {
-        this.emitFile({ type: 'asset', fileName: `${area}/index.html`, source: conPrecarica(conBase(String(radice.source)), daPrecaricare(bundle, area)) })
+        const pagina = conPrecarica(conBase(String(radice.source)), daPrecaricare(bundle, area))
+        // La pagina del link è per una persona sola: i motori di ricerca non la tengono.
+        this.emitFile({ type: 'asset', fileName: `${area}/index.html`, source: area === 'certificato' ? pagina.replace(/<head>/i, '<head>\n    <meta name="robots" content="noindex">') : pagina })
       }
     },
   }

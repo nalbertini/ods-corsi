@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>File scelto, data sbagliata</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Lo stesso, col file scelto e una data nel passato: l'errore sta sotto il campo e dice cosa fare. Un file troppo pesante o di un tipo che non va dice «La foto è troppo pesante: rifalla o manda il PDF» sotto il file, come nell’area iscritti. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #eef5fa">
+<dc-import name="Testata" luogo="CERTIFICATO MEDICO" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 6px 20px 28px">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05">Certificato medico di Marco R.</span>
+  <dc-import name="Riquadro" tono="prova" stretto="{{ true }}" etichetta="AGONISTICO · ENTRO IL 12 DICEMBRE" testo="Per judo, aikido e lotta, dai 12 anni serve il certificato agonistico. La segreteria lo controlla: fino ad allora Marco viene alle lezioni." tonoTesto="testo" tema="sito" hint-size="100%,120px"></dc-import>
+  <dc-import name="CaricaFile" etichetta="CERTIFICATO MEDICO" nome="certificato-marco.jpg" kb="1840" dettaglio="Una foto o il PDF, tutto leggibile: timbro e firma del medico." tema="sito" hint-size="100%,100px"></dc-import>
+  <dc-import name="Campo" etichetta="SCADE IL" valore="03/10/2026" manca="{{ true }}" nota="Questo certificato è già scaduto: serve quello nuovo." tema="sito" hint-size="100%,90px"></dc-import>
+  <dc-import name="Bottone" label="MANDA ALLA SEGRETERIA" variante="principale" tema="sito" hint-size="100%,56px"></dc-import>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

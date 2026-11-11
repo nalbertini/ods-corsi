@@ -25,6 +25,7 @@ import { oraDi, type SessioneVista } from './lib/sala'
 
 // Ogni area è un pezzo suo: chi apre `iscrizioni/` non scarica la segreteria né il tablet.
 const Tablet = lazy(() => import('./components/tablet/Tablet').then((m) => ({ default: m.Tablet })))
+const CertificatoLink = lazy(() => import('./components/CertificatoLink').then((m) => ({ default: m.CertificatoLink })))
 const Collega = lazy(() => import('./components/Collega').then((m) => ({ default: m.Collega })))
 const IscrizioniScreen = lazy(() => import('./components/IscrizioniScreen').then((m) => ({ default: m.IscrizioniScreen })))
 const IscrizioneAPassi = lazy(() => import('./components/IscrizioneAPassi').then((m) => ({ default: m.IscrizioneAPassi })))
@@ -84,6 +85,15 @@ function Aree() {
   if (area === 'istruttori') return <Istruttori />
   if (area === 'sala') return <Tablet />
   if (area === 'guida') return <AreaGuida />
+  if (area === 'certificato')
+    return (
+      <div className="app">
+        <Testata luogo="CERTIFICATO MEDICO" h1 />
+        <main className="scroll">
+          <CertificatoLink />
+        </main>
+      </div>
+    )
   if (area === 'collega')
     return (
       <div className="app">

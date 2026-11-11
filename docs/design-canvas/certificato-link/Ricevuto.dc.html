@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Ricevuto</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Dopo l'invio. Il file non si mostra. Lo stesso link vale ancora finche' la segreteria non conferma:
+     «Carica un altro file» sostituisce quello mandato. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 700px; background: #eef5fa">
+<dc-import name="Testata" luogo="CERTIFICATO MEDICO" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 28px">
+  <dc-import name="TitoloEsito" tema="sito" titolo="RICEVUTO" tono="fatto" testi="La segreteria lo controlla: non devi fare altro. Se qualcosa non va, ti scriviamo.|Scade il 20/11/2027, come hai scritto." hint-size="100%,220px"></dc-import>
+  <dc-import name="Bottone" tema="sito" label="HO SBAGLIATO, CARICANE UN ALTRO" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import>
+  <span style="font-size: 14px; line-height: 1.5; color: #46606f">Quello nuovo prende il posto di questo, finché la segreteria non l’ha controllato.</span>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":700}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

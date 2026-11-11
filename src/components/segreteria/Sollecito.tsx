@@ -1,5 +1,7 @@
 import type { DatiSegreteria, PersonaSeg, UltimoSollecito } from '../../lib/segreteria'
 import { fraseCorta, sollecitoDi, type StatoCella, type Sollecito } from '../../lib/sollecito'
+import { rigaStoricoSollecito } from '../../lib/certificatoLink'
+import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { voceQuota } from '../../lib/ricevute'
 import type { StatoCorso } from '../../lib/corsiDaPagare'
 import { useCarica, type useAvviso } from './comune'
@@ -9,7 +11,7 @@ import { useCarica, type useAvviso } from './comune'
  * segnato. null finché si legge, e quando non c'è niente da sollecitare: il
  * tasto in testata allora non c'è.
  */
-export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio, titolari, corsi }: {
+export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio, titolari, corsi, aperto }: {
   d: DatiSegreteria
   p: PersonaSeg
   oggi: string
@@ -21,6 +23,8 @@ export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio,
   titolari?: ReadonlySet<string>
   /** I corsi della persona (`statoCorsi`): il sollecito nomina quelli scaduti. */
   corsi?: StatoCorso[]
+  /** Il riquadro è aperto: solo allora si chiede il link, che guardare la scheda non crea. */
+  aperto: boolean
 }) {
   const dati = useCarica(
     async () => {
@@ -31,8 +35,13 @@ export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio,
     [d, p.id, oggi, giro],
   )
   const ultimo = useCarica(() => d.ultimoSollecito(p.id), [d, p.id, giroSolleciti])
-  const s = dati.dato ? sollecitoDi(p, dati.dato.anagrafica, dati.dato.quota, oggi, { quotaNelVecchio, titolari, corsi }) : null
-  return { s, guaio: dati.guaio, ultimo: ultimo.dato }
+  const opz = { quotaNelVecchio, titolari, corsi }
+  const senzaLink = dati.dato ? sollecitoDi(p, dati.dato.anagrafica, dati.dato.quota, oggi, opz) : null
+  // Il link si chiede solo per un certificato da portare: per la quota non serve.
+  const conCertificato = aperto && !!senzaLink?.certificato
+  const link = useCarica(() => (conCertificato ? d.linkCertificato(p.id) : Promise.resolve(null)), [d, p.id, conCertificato])
+  const s = dati.dato && link.dato ? sollecitoDi(p, dati.dato.anagrafica, dati.dato.quota, oggi, { ...opz, linkCertificato: indirizzo(`${INDIRIZZI.certificato}?l=${link.dato.codice}`) }) : senzaLink
+  return { s, linkId: link.dato?.id, guaio: dati.guaio, ultimo: ultimo.dato }
 }
 
 /**
@@ -40,10 +49,14 @@ export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio,
  * tasto che apre WhatsApp. L'app non manda niente; premere il tasto segna
  * «Sollecitato il … da …» (85-solleciti.sql).
  */
-export function SollecitoWhatsApp({ d, p, s, onSollecitato, avvisa, onPersona }: {
+export function SollecitoWhatsApp({ d, p, s, linkId, giroSolleciti, onSollecitato, avvisa, onPersona }: {
   d: DatiSegreteria
   p: PersonaSeg
   s: Sollecito
+  /** Il link del certificato che è nel messaggio: il sollecito si segna con lui. */
+  linkId?: string
+  /** Cambia quando un sollecito si segna o si toglie: si rilegge la storia. */
+  giroSolleciti: number
   /** Dopo il tasto o «Annulla»: l'elenco rilegge i suoi. */
   onSollecitato: () => void
   avvisa: ReturnType<typeof useAvviso>['avvisa']
@@ -51,7 +64,8 @@ export function SollecitoWhatsApp({ d, p, s, onSollecitato, avvisa, onPersona }:
   onPersona: () => void
 }) {
   // Il giro dell'elenco fa rileggere anche qui.
-  const segna = () => segnaSollecito(d, p, avvisa, onSollecitato)
+  const segna = () => segnaSollecito(d, p, avvisa, onSollecitato, linkId)
+  const storia = useCarica(() => d.sollecitiDi(p.id), [d, p.id, giroSolleciti])
 
   return (
     <section id="sg-sollecito" className="sg-riquadro sg-sollecito" aria-label="Sollecito su WhatsApp">
@@ -88,6 +102,22 @@ export function SollecitoWhatsApp({ d, p, s, onSollecitato, avvisa, onPersona }:
           </div>
         </>
       )}
+      {!!storia.dato?.length && (
+        <div className="sg-sollecito-storia">
+          <span className="sg-etichetta">SOLLECITI</span>
+          <ul>
+            {storia.dato.map((x) => {
+              const r = rigaStoricoSollecito(x)
+              return (
+                <li key={x.quando}>
+                  <span>{r.testo}</span>
+                  {r.link && <span data-aperto={!!x.apertoIl || undefined}>{r.link}</span>}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
     </section>
   )
 }
@@ -97,11 +127,12 @@ export function SollecitoWhatsApp({ d, p, s, onSollecitato, avvisa, onPersona }:
  * soltanto. L'avviso ha «Annulla», per un tasto premuto per sbaglio o un
  * messaggio che non è partito (87-solleciti-elenco.sql).
  */
-export function segnaSollecito(d: DatiSegreteria, p: PersonaSeg, avvisa: ReturnType<typeof useAvviso>['avvisa'], dopo: () => void) {
+export function segnaSollecito(d: DatiSegreteria, p: PersonaSeg, avvisa: ReturnType<typeof useAvviso>['avvisa'], dopo: () => void, linkId?: string) {
   // Un doppio tocco apre WhatsApp due volte, ma segna una volta sola: se no «Annulla» ne toglierebbe uno e l'altro resterebbe.
   if (inCorso.has(p.id)) return
   inCorso.add(p.id)
-  d.segnaSollecito(p.id).finally(() => inCorso.delete(p.id)).then(
+  const segnato = linkId ? d.segnaSollecitoLink(p.id, linkId) : d.segnaSollecito(p.id)
+  segnato.finally(() => inCorso.delete(p.id)).then(
     (quando) => {
       dopo()
       // Senza 85-solleciti.sql non si segna niente: niente avviso «segnato».

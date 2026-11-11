@@ -29,7 +29,9 @@ ordine.
    - la **carta d'identità** di chi si iscrive, dai 6 anni (quella del
      genitore non serve);
    - il **certificato medico**, **SE CE L'HAI**: se no ti iscrivi lo stesso e
-     lo porti dopo, entro i giorni che dice il modulo;
+     lo porti dopo, entro i giorni che dice il modulo. La segreteria può
+     mandarti un link per caricarlo dal telefono, senza password: chiede la
+     foto o il PDF e la data di scadenza scritta sul certificato;
    - **come paghi**, **NELLA RICHIESTA**: con Satispay, oppure col bonifico,
      e allora serve la sua ricevuta.
 3. **Quanto costa**, in breve: la quota associativa (quella del

@@ -1468,6 +1468,9 @@ a.btn { text-decoration: none; }
 .mia-riga + .mia-riga { border-top: 1px solid var(--line-soft); }
 .mia-riga svg { color: var(--blu); flex-shrink: 0; }
 .mia-riga-nome { flex: 1; font-size: 20px; font-weight: 800; }
+/* La pagina del link del certificato (certificato/): il titolo dritto come nel canvas, i tasti a tutta larghezza per il pollice. */
+.certificato-link-titolo { margin: 0; font-family: var(--cond); font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05; }
+.certificato-link .riga-tasti > .passo-btn { flex: 1 1 100%; min-height: 56px; }
 .mia-riga-nota { font-size: 14px; color: var(--dim); }
 .mia-riga-vai { color: var(--blu); font-size: 22px; }
 .mio-membro { gap: 12px; padding: 10px 14px; width: 100%; align-items: center; cursor: pointer; }

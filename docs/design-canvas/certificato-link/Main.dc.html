@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Il certificato dal link</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. La pagina certificato/?l=… (area nuova, senza accesso), da PaginaTelefono.dc.html nel look del sito come
+     l'area iscritti (AreaIscritti.dc.html di ../certificato-dopo/). Solo nome e iniziale del cognome, tipo e data limite:
+     niente altro della scheda. Il file e la data di scadenza sono obbligatori; il tasto e' spento finche' mancano.
+     Gli stessi tipi e limiti del file dell'area iscritti (foto o PDF). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #eef5fa">
+<dc-import name="Testata" luogo="CERTIFICATO MEDICO" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 6px 20px 28px">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05">Certificato medico di Marco R.</span>
+  <dc-import name="Riquadro" tono="prova" stretto="{{ true }}" etichetta="NON AGONISTICO · ENTRO IL 12 DICEMBRE" testo="Carica una foto o il PDF del certificato e scrivi quando scade. La segreteria lo controlla: fino ad allora Marco viene alle lezioni." tonoTesto="testo" tema="sito" hint-size="100%,120px"></dc-import>
+  <dc-import name="CaricaFile" etichetta="CERTIFICATO MEDICO" seManca="" dettaglio="Una foto o il PDF, tutto leggibile: timbro e firma del medico." tema="sito" hint-size="100%,100px"></dc-import>
+  <dc-import name="Campo" etichetta="SCADE IL" segnaposto="gg/mm/aaaa" nota="Cerca «valido fino al» o «scadenza». Se c’è solo la data della visita, scrivi la stessa data fra un anno." notaTono="avviso" tema="sito" hint-size="100%,90px"></dc-import>
+  <dc-import name="Bottone" label="MANDA ALLA SEGRETERIA" variante="principale" disabled="{{ true }}" tema="sito" hint-size="100%,56px"></dc-import>
+  <span style="font-size: 14px; line-height: 1.5; color: #46606f">Problemi? Scrivi alla segreteria o passa in palestra.</span>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
