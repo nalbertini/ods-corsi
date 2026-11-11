@@ -10,13 +10,15 @@
 -- Satispay) sono almeno due, dello stesso giorno, e sommano l'importo; nessuna di quelle rate copre già un'altra
 -- riga da sola, e la ricevuta non ne copre già un'altra. Simmetrico: una rata non copre una riga se la sua
 -- ricevuta intera ne copre già una. Una ricevuta nata da un bonifico assegnato (`movimento_id`, 135) è già nel
--- movimento: né lei né le sue rate coprono una riga. Due import insieme sulla stessa ricevuta si mettono in fila. Se non regge, la riga entra «Da classificare», come prima. Su ricevute e
--- pagamenti non si scrive. «Non è questo» (`banca_non_e_questo`) non cambia: libera la riga e la ricevuta.
+-- movimento: né lei né le sue rate coprono una riga. Due import insieme sulla stessa ricevuta si mettono in
+-- fila. Se non regge, la riga entra «Da classificare», come prima. Su ricevute e pagamenti non si scrive.
+-- «Non è questo» (`banca_non_e_questo`) non cambia: libera la riga e la ricevuta.
 --
--- Chi può: come nel 114, solo l'amministrazione. Si lancia dopo `134-banca-coperti-incassi.sql` e `135-assegna-movimento.sql` e si può
--- rilanciare; rifà `banca_segna_coperti`: se si rilancia `114` o `134` dopo, va rilanciato anche questo
--- (`controllo.sql` lo dice). Non chiede di rilanciare `06-iscrizioni.sql`. Finché non c'è, l'import di un
--- file con un bonifico coperto da una ricevuta intera si ferma con «rileggi lo stesso file» e non scrive niente.
+-- Chi può: come nel 114, solo l'amministrazione. Si lancia dopo `134-banca-coperti-incassi.sql` e
+-- `135-assegna-movimento.sql` e si può rilanciare; rifà `banca_segna_coperti`: se si rilancia `114` o `134`
+-- dopo, va rilanciato anche questo (`controllo.sql` lo dice). Non chiede di rilanciare `06-iscrizioni.sql`.
+-- Finché non c'è, l'import di un file con un bonifico coperto da una ricevuta intera scrive i movimenti nuovi e
+-- si ferma sui coperti, dicendo che il database va aggiornato.
 -- La stessa regola, per la modalità prova, è in src/lib/importaBanca.ts (segnaCoperti).
 -- ---------------------------------------------------------------------------
 
