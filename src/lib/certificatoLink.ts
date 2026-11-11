@@ -1,4 +1,4 @@
-import { chiaveGiorno, dataLunga } from './sala'
+import { dataLunga } from './sala'
 
 /**
  * Il certificato dal link, senza password (`142-certificato-link.sql`, Edge
@@ -67,9 +67,12 @@ export interface StoricoSollecito {
   apertoIl?: string
 }
 
+// Sempre nel fuso di Roma, qualunque sia quello del computer che guarda: «5/12/2026».
+const GIORNO_ROMA = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'numeric', year: 'numeric' })
 const gmaCorta = (iso: string) => {
-  const g = chiaveGiorno(new Date(iso))
-  return `${Number(g.slice(8))}/${Number(g.slice(5, 7))}/${g.slice(0, 4)}`
+  // it-IT mette lo zero davanti al giorno: qui no.
+  const p = Object.fromEntries(GIORNO_ROMA.formatToParts(new Date(iso)).map((x) => [x.type, x.value]))
+  return `${Number(p.day)}/${Number(p.month)}/${p.year}`
 }
 
 /** Una riga della storia dei solleciti: canale, giorno e chi; a destra, se c'era il link, se è stato aperto. */
