@@ -208,8 +208,8 @@ titolo('cosaBlocca')
   ok('non attiva: niente', cb({ ...a, attiva: false, certificato: SENZA_CERT }), null)
   ok('non attiva e senza quota: niente', cb({ ...a, attiva: false, quote: [] }), null)
 
-  ok('certificato mancante', cb({ ...a, certificato: SENZA_CERT }), { blocca: true, titolo: 'NON PUÒ ENTRARE IN SALA', frase: 'Manca il certificato medico.', tasto: 'certificato' })
-  ok('certificato scaduto', cb({ ...a, certificato: CERT_SCADUTO }), { blocca: true, titolo: 'NON PUÒ ENTRARE IN SALA', frase: 'Il certificato è scaduto il 01/10/2026.', tasto: 'certificato' })
+  ok('certificato mancante', cb({ ...a, certificato: SENZA_CERT }), { blocca: false, titolo: 'CERTIFICATO NON ARRIVATO', frase: 'Manca il certificato medico.', tasto: 'certificato' })
+  ok('certificato scaduto', cb({ ...a, certificato: CERT_SCADUTO }), { blocca: false, titolo: 'CERTIFICATO NON ARRIVATO', frase: 'Il certificato è scaduto il 01/10/2026.', tasto: 'certificato' })
   ok('scaduto ieri conta come scaduto', cb({ ...a, certificato: { scade: '2026-10-17', conFile: false } })?.frase, 'Il certificato è scaduto il 17/10/2026.')
   ok('scade oggi vale ancora (in scadenza, niente guaio)', cb({ ...a, certificato: { scade: OGGI, conFile: true } }), null)
 
@@ -234,7 +234,7 @@ titolo('cosaBlocca')
   ok(
     'manca tutto: vince il certificato e la frase nomina solo lui',
     cb({ ...a, quote: [], certificato: SENZA_CERT }),
-    { blocca: true, titolo: 'NON PUÒ ENTRARE IN SALA', frase: 'Manca il certificato medico.', tasto: 'certificato' },
+    { blocca: false, titolo: 'CERTIFICATO NON ARRIVATO', frase: 'Manca il certificato medico.', tasto: 'certificato' },
   )
   ok('certificato in scadenza e quota ok: niente', cb({ ...a, certificato: { scade: '2026-11-01', conFile: true } }), null)
   ok('certificato in scadenza e quota da pagare: guaio di quota', cb({ ...a, quote: [], certificato: { scade: '2026-11-01', conFile: true } })?.tasto, 'quota')

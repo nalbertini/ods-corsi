@@ -401,14 +401,17 @@ export function TabletIstruttore({
                 className="tb-riga"
                 data-stato={r.stato ?? 'niente'}
                 onClick={() => void metti([{ personaId: r.personaId, stato: r.stato === 'presente' ? 'assente' : 'presente', prova: r.prova }])}
-                aria-label={`${r.cognome} ${r.nome}${r.prova ? ', in prova' : ''}: ${r.stato ?? 'non segnato'}`}
+                aria-label={`${r.cognome} ${r.nome}${r.prova ? ', in prova' : ''}${r.certificatoNonArrivato ? ', certificato non arrivato' : ''}: ${r.stato ?? 'non segnato'}`}
               >
                 <span className="tb-riga-segno" aria-hidden="true">
                   {r.stato === 'presente' && <Spunta size={22} />}
                   {r.stato === 'assente' && <Croce />}
                 </span>
-                <span className="grow tb-riga-nome">
-                  {r.cognome} {r.nome}
+                <span className="grow tb-riga-testo">
+                  <span className="tb-riga-nome">
+                    {r.cognome} {r.nome}
+                  </span>
+                  {r.certificatoNonArrivato && <span className="num tb-riga-certificato">! CERTIFICATO NON ARRIVATO</span>}
                 </span>
                 {r.stato === 'presente' && r.origine === 'recupero' && <span className="num tb-marchio" data-tipo="dopo">SEGNATO DOPO</span>}
                 {r.stato === 'presente' && r.origine === 'tablet' && <span className="num tb-marchio">DAL TABLET</span>}

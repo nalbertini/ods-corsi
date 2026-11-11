@@ -46,7 +46,7 @@ atleta ha due righe: nome, anno e corso; sotto il certificato (lo stato
 all'ultimo giorno della gara, non oggi) e una nota. A destra la quota, con
 **Incassa**, e il tasto **✕**. **Modifica la gara**, **Stampa l'elenco** e
 **Aggiungi atleti** stanno in fondo e restano in vista mentre scorri. Un certificato mandato dalla famiglia e non ancora confermato
-conta come non valido. L'app sa solo la scadenza: che sia **agonistico** va
+conta come non valido, e così chi è ancora nel termine per portarlo. L'app sa solo la scadenza: che sia **agonistico** va
 controllato sul foglio.
 
 **✕** toglie l'atleta dalla gara, non dalla palestra. Chi ha già pagato resta nella gara: se non ci va,

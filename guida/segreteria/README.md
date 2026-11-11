@@ -67,7 +67,8 @@ Anche le linguette di CONTABILITÀ, del corso (Dati, Iscritti) e di PRESENZE (Il
 
 In cima a ogni pagina, tranne **Da fare**, ci sono sei caselle con un numero grande:
 **Appelli non fatti** (lezioni degli ultimi 30 giorni senza appello), **Certificati
-scaduti** (scaduti o mancanti), **Pagamenti** (quote non in regola), **Corsi scaduti**
+scaduti** (termine passato o scaduti; sotto, «+N da portare» per chi è ancora
+nel termine, che non fa rossa la casella), **Pagamenti** (quote non in regola), **Corsi scaduti**
 (chi ha un trimestre o un annuale finito o non pagato), **Senza tessera**
 (iscritti a un corso che chiede la tessera e non ne hanno una valida) e **Richieste
 online** (da accogliere). Sono gli stessi numeri di [DA FARE](da-fare.md). Il segno

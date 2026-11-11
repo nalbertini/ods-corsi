@@ -34,8 +34,8 @@ console.log('\nI cinque in vista')
 ok('certificato, pagare, corsi-scaduti, fuori, minorenni: in quest\'ordine', m.FILTRI_VISIBILI ?? mancante, ['certificato', 'pagare', 'corsi-scaduti', 'fuori', 'minorenni'])
 
 console.log('\nI testi')
-ok('un testo per ognuno dei 16 filtri', m.TESTI_FILTRI ?? mancante, {
-  'senza-email': 'Solo senza email', poco: 'Vengono poco', certificato: 'Senza certificato valido',
+ok('un testo per ognuno dei 17 filtri', m.TESTI_FILTRI ?? mancante, {
+  'senza-email': 'Solo senza email', poco: 'Vengono poco', certificato: 'Senza certificato valido', 'da-portare': 'Certificato da portare',
   scadenza: 'Certificato in scadenza', arrivo: 'Compiono 6 anni', pagare: 'Da pagare', fuori: 'Non in regola',
   'senza-tessera': 'Senza tessera', 'senza-corso': 'Tesserati senza corso', 'senza-documento': 'Senza documento', 'file-di-prima': 'Da archiviare',
   doppioni: 'Possibili doppioni', 'pagato-prima': 'Pagato nel vecchio programma', 'corsi-scaduti': 'Corsi scaduti',
@@ -55,14 +55,14 @@ console.log('\nTesserati senza corso')
 }
 
 console.log('\nGli altri filtri, quelli presenti adesso')
-const base = ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-documento', 'famiglie']
-ok('nessun opzionale: sei, nell\'ordine', altri(nessuno), base)
-ok('con le tessere: senza-tessera e senza-corso prima di senza-documento', altri({ ...nessuno, conTessere: true }), ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-tessera', 'senza-corso', 'senza-documento', 'famiglie'])
-ok('con le segnalazioni delle tessere spente: resta solo senza-corso', altri({ ...nessuno, conTessere: true, segnalaTessere: false }), ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-corso', 'senza-documento', 'famiglie'])
+const base = ['senza-email', 'poco', 'da-portare', 'scadenza', 'arrivo', 'senza-documento', 'famiglie']
+ok('nessun opzionale: sette, nell\'ordine', altri(nessuno), base)
+ok('con le tessere: senza-tessera e senza-corso prima di senza-documento', altri({ ...nessuno, conTessere: true }), ['senza-email', 'poco', 'da-portare', 'scadenza', 'arrivo', 'senza-tessera', 'senza-corso', 'senza-documento', 'famiglie'])
+ok('con le segnalazioni delle tessere spente: resta solo senza-corso', altri({ ...nessuno, conTessere: true, segnalaTessere: false }), ['senza-email', 'poco', 'da-portare', 'scadenza', 'arrivo', 'senza-corso', 'senza-documento', 'famiglie'])
 ok('con i file di prima: file-di-prima in fondo', altri({ ...nessuno, filePrima: 3 }), [...base, 'file-di-prima'])
 ok('con i doppioni: doppioni in fondo', altri({ ...nessuno, doppioni: 2 }), [...base, 'doppioni'])
 const tutti = altri({ conTessere: true, filePrima: 3, doppioni: 2 })
-ok('tutti gli opzionali: dieci, nell\'ordine', tutti, ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-tessera', 'senza-corso', 'senza-documento', 'famiglie', 'file-di-prima', 'doppioni'])
+ok('tutti gli opzionali: undici, nell\'ordine', tutti, ['senza-email', 'poco', 'da-portare', 'scadenza', 'arrivo', 'senza-tessera', 'senza-corso', 'senza-documento', 'famiglie', 'file-di-prima', 'doppioni'])
 ok('i cinque in vista non sono mai fra gli altri', Array.isArray(tutti) ? tutti.filter((x) => ['certificato', 'pagare', 'corsi-scaduti', 'fuori', 'minorenni'].includes(x)) : tutti, [])
 
 console.log('\nIl gruppo aperto')
@@ -165,11 +165,11 @@ console.log('\nIscritti.tsx li prende da src/lib')
 console.log('\nIl sollecito nell\'elenco: solo coi filtri di chi ha qualcosa da sistemare')
 {
   const con = (a) => (typeof m.conSollecito === 'function' ? m.conSollecito(a) : 'manca conSollecito')
-  ok('i filtri del sollecito sono esattamente sei', m.FILTRI_SOLLECITO ?? 'manca FILTRI_SOLLECITO', ['certificato', 'scadenza', 'arrivo', 'pagare', 'corsi-scaduti', 'fuori'])
+  ok('i filtri del sollecito sono esattamente sette', m.FILTRI_SOLLECITO ?? 'manca FILTRI_SOLLECITO', ['certificato', 'da-portare', 'scadenza', 'arrivo', 'pagare', 'corsi-scaduti', 'fuori'])
   ok('nessun filtro acceso: niente sollecito', con([]), false)
   ok('solo «Vengono poco»: niente sollecito', con(['poco']), false)
   ok('«Solo senza email» e «Vengono poco»: niente sollecito', con(['senza-email', 'poco']), false)
-  for (const f of ['certificato', 'scadenza', 'arrivo', 'pagare', 'corsi-scaduti', 'fuori']) ok(`acceso «${f}»: il sollecito c'è`, con([f]), true)
+  for (const f of ['certificato', 'da-portare', 'scadenza', 'arrivo', 'pagare', 'corsi-scaduti', 'fuori']) ok(`acceso «${f}»: il sollecito c'è`, con([f]), true)
   ok('«Vengono poco» insieme a «Da pagare»: il sollecito c\'è', con(['poco', 'pagare']), true)
   ok('«Pagato nel vecchio programma» ha la sua vista: niente colonna, anche con «Da pagare»', con(['pagare', 'pagato-prima']), false)
   ok('«Possibili doppioni» ha la sua vista: niente colonna', con(['fuori', 'doppioni']), false)

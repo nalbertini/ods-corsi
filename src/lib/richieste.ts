@@ -65,6 +65,12 @@ export interface DatiRichiesta {
    */
   nucleoDi?: string
   /**
+   * «Non ce l'ho ancora» nel passo dei documenti: si iscrive lo stesso, e
+   * all'accoglimento la scheda prende il termine per portarlo
+   * (`141-certificato-dopo.sql`). Senza 141 il database lo ignora.
+   */
+  certificatoDopo?: boolean
+  /**
    * L'etichetta del link da cui si è arrivati (`?da=`) e la risposta a «Come ci
    * hai conosciuto?», le stesse per tutte le richieste di un modulo. Le pulisce
    * il database (`74-provenienza-richieste.sql`): una sbagliata si scarta e la
@@ -125,6 +131,12 @@ export interface DatiRichieste {
 
   // Per chi si iscrive, senza accesso.
   corsiAperti(): Promise<CorsoAperto[]>
+  /**
+   * I giorni per portare il certificato dopo (`iscrizioni_regole()`, 141). Mai
+   * un errore: `null` senza 141 o senza rete, e il modulo resta com'era (il
+   * certificato facoltativo, senza la scelta).
+   */
+  certificatoGiorni(): Promise<number | null>
   /** Mai un errore: senza orari (file SQL non lanciato, rete) non c'è «stessa ora», e si va avanti. */
   orariAperti(): Promise<OrarioAperto[]>
   /** Le risposte: torna l'id della richiesta, che fa da cartella ai file. */
@@ -340,6 +352,49 @@ export function firmaDaRifare(minore: boolean, prima: { tratti: number; scelte: 
   return `Firma e autorizzazioni vanno rifatte: ora firma ${minore ? 'il genitore' : 'chi si iscrive'}.`
 }
 
+/** In cima a I FILE, quando il modulo chiede la scelta: cosa serve, e se c'è già. */
+export const domandaCertificato = (tipo: 'normale' | 'agonistico', di?: string): string =>
+  `${tipo === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico.' : 'Dai 6 anni serve il certificato medico per fare sport.'} ${di ? `${di} ce l’ha già?` : 'Ce l’hai già?'}`
+
+/** La scelta del passo documenti: nessuna, finché chi si iscrive non la fa. */
+export type SceltaCertificato = 'ora' | 'dopo'
+
+export const giorniDetti = (giorni: number) => (giorni === 1 ? '1 giorno' : `${giorni} giorni`)
+
+/** Sotto «Non ce l’ho ancora»: si promettono i giorni, non una mail. */
+export const testoCertificatoDopo = (giorni: number): string =>
+  `Hai ${giorniDetti(giorni)} da quando la segreteria accoglie l’iscrizione: lo carichi dall’area iscritti o lo porti in segreteria. Intanto vieni alle lezioni.`
+
+/** Cosa ferma l'invio, per il certificato: la scelta che manca, o il file che «Lo carico ora» chiede. */
+export function mancaCertificato(scelta: SceltaCertificato | undefined, conFile: boolean): string | undefined {
+  if (!scelta) return 'Dicci se il certificato ce l’hai.'
+  if (scelta === 'ora' && !conFile) return 'Manca il certificato: caricalo, oppure scegli «Non ce l’ho ancora».'
+  return undefined
+}
+
+/**
+ * La riga della pagina finale: entro quando portarlo. La data non c'è ancora, parte dall'accoglimento.
+ * `di` più d'uno (una famiglia): «Portate i certificati medici», e vengono alle lezioni.
+ */
+export function promemoriaCertificato({ di, giorni }: { di?: string | string[]; giorni: number }): { titolo: string; testo: string } {
+  const entro = `entro ${giorniDetti(giorni)} da quando la segreteria accoglie l’iscrizione: dall’area iscritti o in segreteria.`
+  if (Array.isArray(di) && di.length > 1) return { titolo: 'Portate i certificati medici', testo: `${entro} Intanto ${elencoNomi(di)} vengono alle lezioni` }
+  const uno = Array.isArray(di) ? di[0] : di
+  return { titolo: `Porti il certificato medico${uno ? ` di ${uno}` : ''}`, testo: `${entro} Intanto ${uno ? `${uno} viene` : 'vieni'} alle lezioni` }
+}
+
+const elencoNomi = (n: string[]) => (n.length < 2 ? n.join('') : `${n.slice(0, -1).join(', ')} e ${n[n.length - 1]}`)
+
+/** La frase della pagina finale del modulo: senza la scelta (prima di 141), solo il ricordo di portarlo. */
+export function fraseCertificatoFinale(c: { tipo: 'nessuno' | 'normale' | 'agonistico'; conFile: boolean; dopo: boolean; giorni: number | null; di?: string }): string | null {
+  if (c.tipo === 'nessuno' || c.conFile) return null
+  if (c.dopo && c.giorni !== null) {
+    const p = promemoriaCertificato({ di: c.di, giorni: c.giorni })
+    return `${p.titolo} ${p.testo}.`
+  }
+  return `Ricorda di portare in segreteria il certificato medico${c.tipo === 'agonistico' ? ' agonistico' : ''}.`
+}
+
 /** Una frase sola: il certificato serve per partecipare, e si carica o si porta in segreteria. */
 export const avvisoCertificato = (tipo: 'normale' | 'agonistico'): string =>
   `${tipo === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico' : 'Dai 6 anni serve il certificato medico'} per partecipare alle lezioni. Caricalo qui sotto o portalo in segreteria.`
@@ -367,7 +422,7 @@ export function tipiDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new D
 }
 
 /** I campi del modulo che possono non andare, per segnarli uno per uno. */
-export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'provenienza' | 'conosciuto' | 'pagamentoSatispay' | 'chiavePagamento' | 'invio'>
+export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'certificatoDopo' | 'provenienza' | 'conosciuto' | 'pagamentoSatispay' | 'chiavePagamento' | 'invio'>
 
 /**
  * Una cosa che non va: `messaggio` è quello del server, `testo` quello corto
@@ -503,6 +558,8 @@ export function mancaPerInviare(
     firma: string | null
     file: Partial<Record<TipoFile, unknown>>
     obbligatori: TipoFile[]
+    /** La scelta del certificato, quando il modulo la chiede (141). */
+    certificato?: { scelta: SceltaCertificato | undefined }
   },
   oggi = new Date(),
 ): string | null {
@@ -511,6 +568,7 @@ export function mancaPerInviare(
     controlla(s.dati, oggi) ??
     (s.come === 'qui' ? s.firma : null) ??
     (fileMancante ? (fileMancante.tipo === 'ricevuta' ? MANCA_RICEVUTA : `Manca: ${fileMancante.etichetta.toLowerCase()}`) : null) ??
+    (s.certificato ? (mancaCertificato(s.certificato.scelta, !!s.file.certificato) ?? null) : null) ??
     (s.privacy ? null : "Serve la conferma di aver letto l'informativa privacy")
   )
 }

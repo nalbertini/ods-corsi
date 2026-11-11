@@ -112,7 +112,8 @@ console.log('\n3. l’iscritto non vede il file né il nome')
 await prova(async () => {
   const c = await mio(chi)
   ok('(c’è un invio in attesa da guardare)', c.inAttesaIl, oggi)
-  ok('solo scadenza e giorno dell’invio', Object.keys(c).every((k) => ['scade', 'inAttesaIl'].includes(k)), true)
+  // Il termine per portarlo (141) è una data come la scadenza: si vede, il file no.
+  ok('solo scadenza, termine e giorno dell’invio', Object.keys(c).every((k) => ['scade', 'inAttesaIl', 'entro'].includes(k)), true)
   ok('niente nome del file nella scheda', /visita|foto|certificato-|\.pdf|\.png/.test(JSON.stringify(await io.scheda(chi))), false)
   ok('e nel nucleo nemmeno', /visita|foto|certificato-|\.pdf|\.png/.test(JSON.stringify(await io.nucleo(chi))), false)
 })
@@ -189,7 +190,7 @@ console.log('\n8b. la riga di stato del riquadro, col certificato mandato e in a
 await prova(async () => {
   const d = (s) => s.split('-').reverse().join('/')
   const riga = (scade, inAttesaIl) => f('rigaCertificato')({ certificato: { scade, inAttesaIl }, natoIl: '1990-01-01' }, oggi)
-  ok('manca: guaio, in sala non si entra', riga(undefined), { tono: 'guaio', testo: 'Non risulta: senza, in sala non si entra.' })
+  ok('manca: guaio, «Non risulta.»', riga(undefined), { tono: 'guaio', testo: 'Non risulta.' })
   ok('manca ma mandato: avviso, è arrivato', riga(undefined, oggi), { tono: 'avviso', testo: 'Arrivato: la segreteria lo deve confermare.' })
   ok('scaduto: guaio', riga(fra(-10)), { tono: 'guaio', testo: `Scaduto il ${d(fra(-10))}.` })
   ok('scaduto ma quello nuovo mandato: avviso', riga(fra(-10), oggi), { tono: 'avviso', testo: `Scaduto il ${d(fra(-10))}: quello nuovo è arrivato, la segreteria lo deve confermare.` })

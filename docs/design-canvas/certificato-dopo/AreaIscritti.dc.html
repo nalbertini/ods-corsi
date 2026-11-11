@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Da caricare entro</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Da certificato-iscritto/Prima.dc.html (AreaIscritti.tsx, boxCertificato e rigaCertificato di certificatoIscritto.ts).
+     Nel termine il segno su IN REGOLA e' giallo «DA SISTEMARE» come oggi, ma il riquadro dice la data e che si viene alle
+     lezioni. Dopo il termine: «Il certificato medico doveva arrivare entro il 12 dicembre: caricalo qui o portalo in
+     segreteria», segno rosso. Il tasto MANDA ALLA SEGRETERIA c'e' gia': non cambia. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 900px; background: #eef5fa">
+<dc-import name="Testata" luogo="LA TUA PAGINA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 6px 20px 14px">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05">Ciao Manuela</span>
+  <dc-import name="Riquadro" tono="prova" stretto="{{ true }}" etichetta="" testo="Il certificato medico va caricato entro il 12 dicembre: caricalo qui o portalo in segreteria. Fino ad allora vieni alle lezioni." tonoTesto="avviso" tema="sito" hint-size="100%,96px"></dc-import>
+</div>
+<div style="padding: 0 20px 14px"><dc-import name="SchedeArea" acceso="IN REGOLA" voci="LEZIONI|IN REGOLA|NUCLEO" segnoSu="IN REGOLA" tonoSegno="giallo" parolaSegno="DA SISTEMARE" tema="sito" hint-size="100%,50px"></dc-import></div>
+<dc-import name="Titoletto" label="CERTIFICATO E QUOTA" conto="" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+  <dc-import name="CaricaFile" etichetta="CERTIFICATO MEDICO" seManca="ENTRO IL 12 DICEMBRE" dettaglio="Una foto o il PDF. La segreteria lo controlla." tema="sito" hint-size="100%,100px"></dc-import>
+  <dc-import name="Riquadro" etichetta="QUOTA" testo="Pagata fino al 30 giugno 2027." tonoTesto="testo" tema="sito" hint-size="100%,110px"></dc-import>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

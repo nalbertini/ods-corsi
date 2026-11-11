@@ -1,4 +1,5 @@
 import { AVVISO_CERTIFICATO, dalCertificato, spostaGiorno, statoCertificato, type CertificatoSeg, type StatoCertificato } from './segreteria'
+import { dataLunga } from './sala'
 
 /**
  * Il certificato medico che l'iscritto manda dall'area iscritti
@@ -56,7 +57,7 @@ const data = (g: string) => g.split('-').reverse().join('/')
  * testo manda in segreteria come prima.
  */
 export function boxCertificato(
-  s: { certificato: Pick<CertificatoSeg, 'scade'> & { inAttesaIl?: string }; natoIl?: string },
+  s: { certificato: Pick<CertificatoSeg, 'scade' | 'entro'> & { inAttesaIl?: string }; natoIl?: string },
   oggi: string,
   attivo: boolean,
 ): BoxCertificato {
@@ -82,15 +83,16 @@ export interface RigaCertificato {
  * stato non cambia (non vale finché la segreteria non lo conferma), cambia
  * come lo si dice: è arrivato, non «manca».
  */
-export function rigaCertificato(s: { certificato: Pick<CertificatoSeg, 'scade'> & { inAttesaIl?: string }; natoIl?: string }, oggi: string): RigaCertificato {
+export function rigaCertificato(s: { certificato: Pick<CertificatoSeg, 'scade' | 'entro'> & { inAttesaIl?: string }; natoIl?: string }, oggi: string): RigaCertificato {
   const stato = statoCertificato(s, oggi)
   const scade = data(s.certificato.scade ?? '')
   const nuovo = s.certificato.inAttesaIl ? 'quello nuovo è arrivato, la segreteria lo deve confermare.' : null
-  if (nuovo && (stato === 'manca' || stato === 'in_arrivo')) return { tono: 'avviso', testo: 'Arrivato: la segreteria lo deve confermare.' }
+  if (nuovo && (stato === 'manca' || stato === 'in_arrivo' || stato === 'atteso')) return { tono: 'avviso', testo: 'Arrivato: la segreteria lo deve confermare.' }
   if (nuovo && stato === 'scaduto') return { tono: 'avviso', testo: `Scaduto il ${scade}: ${nuovo}` }
   if (nuovo && stato === 'in_scadenza') return { tono: 'avviso', testo: `Vale fino al ${scade}: ${nuovo}` }
   const righe: Record<StatoCertificato, RigaCertificato> = {
-    manca: { tono: 'guaio', testo: 'Non risulta: senza, in sala non si entra.' },
+    manca: { tono: 'guaio', testo: 'Non risulta.' },
+    atteso: { tono: 'avviso', testo: `Da caricare entro il ${dataLunga(s.certificato.entro ?? oggi, false)}.` },
     scaduto: { tono: 'guaio', testo: `Scaduto il ${scade}.` },
     in_scadenza: { tono: 'avviso', testo: `Vale fino al ${scade}: scade fra poco.` },
     valido: { testo: `Vale fino al ${scade}.` },

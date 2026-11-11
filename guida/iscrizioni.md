@@ -28,8 +28,8 @@ ordine.
    - il **codice fiscale** di chi si iscrive, e il tuo se iscrivi un figlio;
    - la **carta d'identità** di chi si iscrive, dai 6 anni (quella del
      genitore non serve);
-   - il **certificato medico**, **SE CE L'HAI**: se no lo porti in segreteria
-     prima della prima lezione;
+   - il **certificato medico**, **SE CE L'HAI**: se no ti iscrivi lo stesso e
+     lo porti dopo, entro i giorni che dice il modulo;
    - **come paghi**, **NELLA RICHIESTA**: con Satispay, oppure col bonifico,
      e allora serve la sua ricevuta.
 3. **Quanto costa**, in breve: la quota associativa (quella del
@@ -136,11 +136,18 @@ Chi si iscrive risponde alle domande dal telefono:
   medico** se ce l'ha già (lo vede solo la segreteria). Il certificato si
   chiede solo quando serve: dai 6 anni quello normale, dai 12 quello
   agonistico se tra i corsi scelti c'è judo, aikido o lotta (lo dice il nome
-  del corso). Sopra c'è una frase sola: serve per partecipare alle lezioni,
-  e si carica lì o si porta in segreteria (sotto il nome
-  c'è **PUOI PORTARLO DOPO**); senza non si
-  partecipa alle lezioni: se non è stato caricato, lo ricorda **RICHIESTA
-  ARRIVATA**. Il documento la segreteria lo stampa, lo tiene su carta e lo
+  del corso). In cima a **I FILE** c'è **IL CERTIFICATO MEDICO** (o
+  **AGONISTICO**) con la domanda «Ce l'hai già?» e due tasti della stessa
+  larghezza, nessuno scelto: **Lo carico ora** fa comparire il file, che
+  diventa obbligatorio («Manca il certificato: caricalo, oppure scegli «Non ce
+  l'ho ancora».»); **Non ce l'ho ancora** dice **TI ISCRIVI LO STESSO**: hai i
+  giorni scritti in IMPOSTAZIONI (di solito 30) da quando la segreteria accoglie
+  l'iscrizione, per caricarlo dall'area iscritti o portarlo in segreteria, e
+  intanto vieni alle lezioni. Senza una scelta la richiesta non parte («Dicci
+  se il certificato ce l'hai.»); si può cambiare idea senza perdere il resto.
+  Vale per ogni persona, anche in famiglia e da «una persona in più»; sotto i
+  6 anni la domanda non c'è. **RICHIESTA ARRIVATA** ricorda entro quando
+  portarlo. Il documento la segreteria lo stampa, lo tiene su carta e lo
   cancella dall'app; il certificato resta nell'app e lo vede solo la
   segreteria.
 - **Il pagamento**, dopo aver scelto un corso: **QUANTO PAGHI**, quota e

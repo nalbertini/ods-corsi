@@ -920,8 +920,9 @@ console.log('\n16b. le parole per il genitore, nel flusso del figlio')
   ok('figlio: il retro, cosa caricare', t('figlio', 'documento-retro', 'Matteo').dettaglio, 'Il retro. Una foto o il PDF.')
   ok('figlio: il certificato col nome in maiuscolo', t('figlio', 'certificato', 'Matteo').etichetta, 'IL CERTIFICATO DI MATTEO')
   ok('figlio: il certificato senza nome', t('figlio', 'certificato', '').etichetta, 'IL CERTIFICATO DEL BAMBINO')
-  ok('figlio: il certificato, cosa succede se manca', t('figlio', 'certificato', 'Matteo').dettaglio, 'Lo porti in segreteria prima della prima lezione: senza, Matteo non può partecipare.')
-  ok('figlio senza nome: il certificato dice «il bambino»', t('figlio', 'certificato', '').dettaglio, 'Lo porti in segreteria prima della prima lezione: senza, il bambino non può partecipare.')
+  // Cosa succede se manca lo dice la scelta «Non ce l’ho ancora» (141): sotto il file, solo cosa caricare.
+  ok('figlio: il certificato, cosa caricare', t('figlio', 'certificato', 'Matteo').dettaglio, 'Una foto o il PDF.')
+  ok('figlio senza nome: il certificato dice «il bambino»', t('figlio', 'certificato', '').etichetta, 'IL CERTIFICATO DEL BAMBINO')
   ok('adulto: i testi di oggi, documento', t('adulto', 'documento', 'Luca'), { etichetta: adultoDoc.etichetta, dettaglio: adultoDoc.dettaglio })
   ok('il dettaglio di FILE non manda più alla carta del genitore', /genitore/i.test(adultoDoc.dettaglio), false)
   const cert = m.FILE.find((f) => f.tipo === 'certificato')
@@ -3167,6 +3168,21 @@ console.log('\n47. ESCI DALLA PROVA')
   ok('…dice che le richieste non arrivano in segreteria', /<NastroProva\b[^>]*testo="PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA"/.test(iscrizioni), true)
   // In sala solo coi dati di prova, ed ESCI solo con la prova scelta.
   ok('la sala usa lo stesso nastro, solo in prova', /\{d\.modo === 'prova' && <NastroProva testo="DATI DI PROVA · ISCRITTI INVENTATI" onEsci=\{inProvaScelta \? \(\) => scegliProva\(false\) : undefined\} \/>\}/.test(senzaCommenti('src/components/Sala.tsx')), true)
+}
+
+// ---------------------------------------------------------------------------
+// IL CERTIFICATO PORTATO DOPO (141): con la scelta, il passo DOCUMENTI aspetta
+// «Lo carico ora» (col file) o «Non ce l’ho ancora», che parte con la richiesta.
+// ---------------------------------------------------------------------------
+console.log('\n48. IL CERTIFICATO PORTATO DOPO')
+{
+  const doc = 4 // DOCUMENTI dell'adulto
+  ok('senza la scelta (prima di 141) il certificato non ferma', m.mancaNelPasso(adulto(), doc).includes('CERTIFICATO MEDICO'), false)
+  ok('con la scelta, nessuna scelta fatta: ferma', m.mancaNelPasso(adulto({}, { chiedeCertificato: true }), doc).includes('CERTIFICATO MEDICO'), true)
+  ok('«Lo carico ora» senza file: ferma', m.mancaNelPasso(adulto({}, { chiedeCertificato: true, certificato: 'ora' }), doc).includes('CERTIFICATO MEDICO'), true)
+  ok('«Lo carico ora» col file: va', m.mancaNelPasso(adulto({}, { chiedeCertificato: true, certificato: 'ora', file: { documento: F('documento.jpg'), certificato: F('cert.pdf') } }), doc).includes('CERTIFICATO MEDICO'), false)
+  ok('«Non ce l’ho ancora»: va, e la richiesta lo dice', [m.mancaNelPasso(adulto({}, { chiedeCertificato: true, certificato: 'dopo' }), doc).includes('CERTIFICATO MEDICO'), m.risposteDaiPassi(adulto({}, { chiedeCertificato: true, certificato: 'dopo' })).certificatoDopo], [false, true])
+  ok('«Lo carico ora» non scrive certificatoDopo', m.risposteDaiPassi(adulto({}, { chiedeCertificato: true, certificato: 'ora' })).certificatoDopo, undefined)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

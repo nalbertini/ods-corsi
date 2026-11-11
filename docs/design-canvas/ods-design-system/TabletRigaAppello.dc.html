@@ -29,6 +29,9 @@
     <sc-if value="{{compleanno}}" hint-placeholder-val="{{ false }}">
       <dc-import name="SegnoCompleanno" forma="etichetta" misura="tablet" hint-size="110px,22px"></dc-import>
     </sc-if>
+    <sc-if value="{{certificato}}" hint-placeholder-val="{{ false }}">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: {{c.rossoTesto}}">! CERTIFICATO NON ARRIVATO</span>
+    </sc-if>
   </span>
   <sc-if value="{{haMarchio}}" hint-placeholder-val="{{ false }}">
     <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; color: {{coloreMarchio}}; border: 2px solid {{bordoMarchio}}; padding: 2px 7px">{{marchio}}</span>
@@ -42,12 +45,14 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Cognome Nome"},"stato":{"editor":"enum","options":["niente","presente","assente"],"default":"niente"},"marchio":{"editor":"enum","options":["","dal-tablet","dopo"],"default":""},"prova":{"editor":"boolean","default":false},"$preview":{"width":420,"height":70}}'>
+<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"certificato":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Cognome Nome"},"stato":{"editor":"enum","options":["niente","presente","assente"],"default":"niente"},"marchio":{"editor":"enum","options":["","dal-tablet","dopo"],"default":""},"prova":{"editor":"boolean","default":false},"$preview":{"width":420,"height":70}}'>
 // Riproduzione 1:1 della riga dell'appello dell'area istruttore del tablet: .tb-riga, .tb-riga-segno, .tb-riga-nome e
 // .tb-marchio (TabletIstruttore.tsx, righe 411-434; src/styles.css, righe 1127-1143). Alta 60px, nome da 18px,
 // spunta o croce da 22px a sinistra (non il glifo della riga dell'app: qui sono le icone Spunta e Croce).
 // - stato: presente = bordo e segno verdi; assente = bordo rosso, segno rosso-testo, nome barrato e spento; niente = bordo `line`.
 // - compleanno (PROPOSTA, ../compleanni/): SegnoCompleanno sotto il nome (la riga resta da 60px minimo; a fianco del nome non ci sta con DAL TABLET).
+// - certificato (COSTRUITO, ../certificato-dopo/; .tb-riga-certificato): «! CERTIFICATO NON ARRIVATO» in rosso-testo sotto il nome, solo per chi ha passato
+//   il termine (o non ne ha uno). Nel termine niente. Un avviso: la riga si tocca e la presenza si segna come sempre.
 // - marchio: «dal-tablet» = DAL TABLET (si e' segnato da se' sul tablet), «dopo» = SEGNATO DOPO (giallo: segnato a lezione finita);
 //   compaiono solo su un presente. prova: il marchio PROVA (.prova-marchio, 15px nel tablet); TOGLI (.prova-togli, 44px) e' accanto alla riga, dentro .riga-prova.
 const T = {
@@ -62,7 +67,7 @@ class Component extends DCLogic {
     const dopo = p.marchio === 'dopo';
     const marchio = st === 'presente' && (dopo || p.marchio === 'dal-tablet') ? (dopo ? 'SEGNATO DOPO' : 'DAL TABLET') : '';
     return {
-      compleanno: truthy(p.compleanno),
+      compleanno: truthy(p.compleanno), certificato: truthy(p.certificato),
       c, nome: p.nome ?? 'Cognome Nome', prova: truthy(p.prova),
       presente: st === 'presente', assente: st === 'assente',
       bordo: st === 'presente' ? c.verde : st === 'assente' ? c.rosso : c.line,

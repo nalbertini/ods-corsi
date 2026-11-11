@@ -113,6 +113,8 @@ export interface RigaAppelloTablet {
   origine: Origine | null
   /** Venuto a provare: non è iscritto, l'ha aggiunto chi fa l'appello (`prove.ts`). */
   prova?: boolean
+  /** Ha passato il termine per portare il certificato, o è di prima senza (`certificati_con_pin`, 141). Solo il sì: mai date né file. */
+  certificatoNonArrivato?: true
 }
 
 /**

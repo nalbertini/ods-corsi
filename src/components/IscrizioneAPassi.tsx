@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { chiama, scrivi } from '../lib/sito'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, OrarioAperto, TipoFile } from '../lib/richieste'
-import { anniScritti, dataDaCf, datiRichieste, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
+import { anniScritti, dataDaCf, datiRichieste, domandaCertificato, giorniDetti, mancaCertificato, promemoriaCertificato, testoCertificatoDopo, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO } from '../lib/iscrizione'
@@ -12,7 +12,7 @@ import { chiaveGiorno } from '../lib/sala'
 import * as P from '../lib/passiIscrizione'
 import { useListino, useMetodiSpenti } from './Costi'
 import { acceso } from '../lib/metodiPagamento'
-import { Avanzamento, BarraPasso, Bollino, CaricaFile, Campo, Chip, Dettaglio, NotaCampo, Riepilogo, Riquadro, SceltaCorsi, Tasti, Tasto, TestoAPezzi, TitoloEsito, Titoletto, type Nota, type RigaRiepilogo } from './ds'
+import { Avanzamento, BarraPasso, Bollino, CaricaFile, Campo, Chip, Dettaglio, Etichetta, NotaCampo, Riepilogo, Riquadro, SceltaCorsi, Tasti, Tasto, TestoAPezzi, TitoloEsito, Titoletto, type Nota, type RigaRiepilogo } from './ds'
 import { Contatti, Prova } from './IscrizioniScreen'
 import { useDialogo } from './segreteria/comune'
 import { Casella, ComeCiHaiConosciuto, QuantoCosta, SceltaFile } from './ModuloIscrizione'
@@ -48,6 +48,8 @@ export function IscrizioneAPassi() {
   const listino = useListino()?.listino
   // Da dove si parte: la scelta (null), o un flusso (`n` lo rimette a zero).
   const [avvio, setAvvio] = useState<{ chi: P.Chi; stato?: P.StatoPassi; n: number } | null>(null)
+  // I giorni per portare il certificato dopo (141): senza, il certificato resta facoltativo e senza scelta.
+  const [giorni, setGiorni] = useState<number | null>(null)
 
   useEffect(() => {
     let vivo = true
@@ -57,6 +59,7 @@ export function IscrizioneAPassi() {
         setD(x)
         // Gli orari non fermano niente: senza, nessuna «stessa ora» (orariAperti non rifiuta mai).
         void x.orariAperti().then((o) => vivo && setOrari(o))
+        void x.certificatoGiorni().then((g) => vivo && setGiorni(g))
         return x.corsiAperti().then((c) => vivo && setCorsi(c))
       })
       .catch((e) => {
@@ -86,6 +89,7 @@ export function IscrizioneAPassi() {
           orari={orari}
           luoghi={luoghi}
           listino={listino}
+          giorni={giorni}
           onEsci={() => setAvvio(null)}
           onAltroFiglio={(s) => setAvvio({ chi: 'figlio', stato: P.perUnAltroFiglio(s), n: avvio.n + 1 })}
         />
@@ -101,7 +105,7 @@ export function IscrizioneAPassi() {
  * il figlio (la carta e il certificato sono del bambino): `etichetta` e `dettaglio` al posto di quelli di `FILE`.
  * Da cancellare quando il modulo vecchio sparisce: `SceltaFile` prenderà etichetta e dettaglio.
  */
-function SceltaFileGenitore({ tipo, file, onFile, etichetta, dettaglio }: { tipo: TipoFile; file?: File; onFile: (f: File | undefined) => void; etichetta: string; dettaglio: string }) {
+function SceltaFileGenitore({ tipo, file, onFile, etichetta, dettaglio, obbligatorio, errore }: { tipo: TipoFile; file?: File; onFile: (f: File | undefined) => void; etichetta: string; dettaglio: string; obbligatorio?: boolean; errore?: string }) {
   const f = FILE.find((x) => x.tipo === tipo)!
   const [guaio, setGuaio] = useState<string | null>(null)
   const [lavoro, setLavoro] = useState(false)
@@ -119,10 +123,10 @@ function SceltaFileGenitore({ tipo, file, onFile, etichetta, dettaglio }: { tipo
     <CaricaFile
       id={`m-file-${tipo}`}
       etichetta={etichetta}
-      seManca={f.obbligatorio ? undefined : (f.seManca ?? 'FACOLTATIVO')}
+      seManca={f.obbligatorio || obbligatorio ? undefined : (f.seManca ?? 'FACOLTATIVO')}
       dettaglio={lavoro ? 'Preparo la foto…' : dettaglio}
       file={file && !lavoro ? { nome: file.name, byte: file.size } : undefined}
-      errore={guaio}
+      errore={guaio ?? errore}
       onFile={(x) => void scelto(x)}
     />
   )
@@ -182,7 +186,7 @@ function Scelta({ prova, onScegli }: { prova: boolean; onScegli: (chi: P.Chi) =>
           scelti={[]}
           onScegli={(c) => onScegli(c === 'figlio' ? 'figlio' : 'adulto')}
         />
-        <Dettaglio>Il certificato medico si può caricare nel passo dei documenti, o portare in segreteria prima della prima lezione.</Dettaglio>
+        <Dettaglio>Il certificato medico si può caricare nel passo dei documenti; se non ce l’hai ancora, ti iscrivi lo stesso e lo porti dopo.</Dettaglio>
       </div>
       <Prova />
       <Contatti />
@@ -383,9 +387,11 @@ function Flusso({
   orari,
   luoghi,
   listino,
+  giorni,
   onEsci,
   onAltroFiglio,
 }: {
+  giorni: number | null
   chi: P.Chi
   iniziale?: P.StatoPassi
   d: DatiRichieste | null
@@ -448,9 +454,10 @@ function Flusso({
         risposte: { ...r, natoIl, natoA: luogo ? scriviLuogo(luogo) : r.natoA, corsi: listino && corsi ? corsiAmmessi(r.corsi, corsi, listino.corsi, natoIl) : r.corsi },
         natoAGenitore: luogoG?.nome ?? grezzo.natoAGenitore,
         firmaInFoto: P.firmaInFoto(come === 'foto', persone.length),
+        ...(giorni !== null && { chiedeCertificato: true as const }),
       }
       }),
-    [persone, luoghi, come, corsi, listino],
+    [persone, luoghi, come, corsi, listino, giorni],
   )
   const v = tutte[attivo]
   const r = v.risposte
@@ -731,7 +738,13 @@ function Flusso({
       const ultimaVolta = figlio ? 'ISCRIVI UN ALTRO FIGLIO' : 'ISCRIVI UN’ALTRA PERSONA'
       const righe: RigaRiepilogo[] = [
         ...(certificati.length
-          ? [{ stato: 'numero' as const, titolo: certificati.length > 1 ? 'Portate i certificati medici' : `Porti il certificato medico${famiglia ? ` di ${certificati[0]}` : figlio ? ` di ${nomeBambino}` : ''}`, dettaglio: 'in segreteria, prima della prima lezione' }]
+          ? [
+              giorni !== null
+                ? (({ titolo, testo }) => ({ stato: 'numero' as const, titolo, dettaglio: testo }))(
+                    promemoriaCertificato({ di: famiglia ? certificati : figlio ? nomeBambino : undefined, giorni }),
+                  )
+                : { stato: 'numero' as const, titolo: certificati.length > 1 ? 'Portate i certificati medici' : `Porti il certificato medico${famiglia ? ` di ${certificati[0]}` : figlio ? ` di ${nomeBambino}` : ''}`, dettaglio: 'in segreteria' },
+            ]
           : []),
       ]
       return (
@@ -1247,25 +1260,66 @@ function Flusso({
                 <Dettaglio tono="testo">Sotto i 6 anni non serve niente: né la carta d’identità né il certificato medico.</Dettaglio>
               </span>
             )}
-            {certificato !== 'nessuno' && !figlio && (
+            {certificato !== 'nessuno' && !figlio && !v.chiedeCertificato && (
               <div className="modulo-campo modulo-largo">
-                <span className="modulo-etichetta">{figlio ? P.testoFile(v.chi, 'certificato', r.nome).etichetta : certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
+                <span className="modulo-etichetta">{certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
                 <Dettaglio tono="avviso">
-                  {certificato === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico' : 'Dai 6 anni serve il certificato medico'} per partecipare alle lezioni.{' '}
-                  {figlio ? P.testoFile(v.chi, 'certificato', r.nome).dettaglio : 'Se non ce l’hai ancora, lo porti in segreteria prima della prima lezione.'}
+                  {certificato === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico' : 'Dai 6 anni serve il certificato medico'} per partecipare alle lezioni. Se non ce l’hai ancora, lo porti in segreteria.
                 </Dettaglio>
               </div>
             )}
+            {certificato !== 'nessuno' && v.chiedeCertificato && giorni !== null && (
+              <div className="modulo-campo modulo-largo">
+                <span className="modulo-etichetta">{certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
+                <Dettaglio tono="testo">{domandaCertificato(certificato, figlio ? nomeBambino : undefined)}</Dettaglio>
+                <SceltaCorsi
+                  id="n-certificato"
+                  etichetta="Il certificato medico c’è già?"
+                  una
+                  voci={[
+                    { id: 'ora', testo: 'Lo carico ora' },
+                    { id: 'dopo', testo: 'Non ce l’ho ancora' },
+                  ]}
+                  scelti={v.certificato ? [v.certificato] : []}
+                  // «Non ce l'ho ancora»: il file scelto prima non parte. Si torna a «Lo carico ora» senza perdere il resto.
+                  onScegli={(c) => setGrezzo((p) => (c === 'dopo' ? { ...p, certificato: 'dopo', file: { ...p.file, certificato: undefined } } : { ...p, certificato: 'ora' }))}
+                />
+                {provato && !v.certificato && <Dettaglio tono="guaio">{mancaCertificato(undefined, false)}</Dettaglio>}
+                {v.certificato === 'dopo' && (
+                  <Riquadro tono="prova" stretto>
+                    <Etichetta>TI ISCRIVI LO STESSO</Etichetta>
+                    <Dettaglio tono="testo">{testoCertificatoDopo(giorni)}</Dettaglio>
+                  </Riquadro>
+                )}
+              </div>
+            )}
             {daChiedere.file
-              .filter((f) => f.tipo === 'documento' || f.tipo === 'documento-retro' || f.tipo === 'certificato')
+              .filter((f) => f.tipo === 'documento' || f.tipo === 'documento-retro' || (f.tipo === 'certificato' && (!v.chiedeCertificato || v.certificato === 'ora')))
               .map((f) => {
                 const testi = P.testoFile(v.chi, f.tipo, r.nome)
                 // Il perché del certificato è già detto sopra: qui solo cosa caricare.
                 const dettaglio = testi.dettaglio
                 return figlio ? (
-                  <SceltaFileGenitore key={f.tipo} tipo={f.tipo} file={v.file[f.tipo]} onFile={(x) => setFile(f.tipo, x)} etichetta={testi.etichetta} dettaglio={dettaglio} />
+                  <SceltaFileGenitore
+                    key={f.tipo}
+                    tipo={f.tipo}
+                    file={v.file[f.tipo]}
+                    onFile={(x) => setFile(f.tipo, x)}
+                    etichetta={testi.etichetta}
+                    dettaglio={dettaglio}
+                    obbligatorio={f.tipo === 'certificato' && v.chiedeCertificato}
+                    errore={f.tipo === 'certificato' && v.chiedeCertificato && provato ? mancaCertificato('ora', !!v.file.certificato) : undefined}
+                  />
                 ) : (
-                  <SceltaFile key={f.tipo} tipo={f.tipo} file={v.file[f.tipo]} onFile={(x) => setFile(f.tipo, x)} facoltativo={!f.obbligatorio} dettaglio={f.tipo === 'certificato' ? 'Una foto o il PDF.' : undefined} />
+                  <SceltaFile
+                    key={f.tipo}
+                    tipo={f.tipo}
+                    file={v.file[f.tipo]}
+                    onFile={(x) => setFile(f.tipo, x)}
+                    facoltativo={!f.obbligatorio && !(f.tipo === 'certificato' && v.chiedeCertificato)}
+                    dettaglio={f.tipo === 'certificato' ? 'Una foto o il PDF.' : undefined}
+                    errore={f.tipo === 'certificato' && v.chiedeCertificato && provato ? mancaCertificato('ora', !!v.file.certificato) : undefined}
+                  />
                 )
               })}
           </div>
@@ -1386,7 +1440,13 @@ function Flusso({
       if (x.cosa === 'genitore') return { stato: 'fatto', titolo: `Genitore: ${x.valore}`, dettaglio: `${r.telefono} · ${r.email}`, tasto }
       // Il certificato del bambino dice di chi è: il genitore legge la riga.
       const di = x.cosa === 'certificato' && figlio ? ` di ${nomeBambino}` : ''
-      const dettaglio = x.manca ? (x.carica === 'certificato' ? 'non caricato: lo porti in segreteria' : 'non caricata: paghi in segreteria') : x.valore
+      const dettaglio = x.manca
+        ? x.carica === 'certificato'
+          ? giorni !== null && v.certificato === 'dopo'
+            ? `non ce l’hai ancora: lo porti entro ${giorniDetti(giorni)} da quando la segreteria accoglie l’iscrizione`
+            : 'non caricato: lo porti in segreteria'
+          : 'non caricata: paghi in segreteria'
+        : x.valore
       return { stato: x.manca ? 'manca' : 'fatto', titolo: maiuscola(x.etichetta) + di, dettaglio, tasto }
     }
     const scelteDette = (sc: P.StatoPassi['scelte']) => `tesseramento: ${sc.tesseramento ? 'autorizzo' : 'non autorizzo'} · foto: ${sc.foto ? 'autorizzo' : 'non autorizzo'}`
@@ -1411,7 +1471,11 @@ function Flusso({
             <Dettaglio>È una stima: lo sconto lo conferma la segreteria. La quota associativa non ha sconti.</Dettaglio>
           </Riquadro>
         )}
-        {senzaCertificato && <Dettaglio tono="avviso">Il certificato medico si porta in segreteria prima della prima lezione: senza non si partecipa.</Dettaglio>}
+        {senzaCertificato && (
+          <Dettaglio tono="avviso">
+            {giorni !== null ? `Il certificato medico si carica dall’area iscritti o si porta in segreteria, entro ${giorniDetti(giorni)} da quando la segreteria accoglie l’iscrizione.` : 'Il certificato medico si porta in segreteria.'}
+          </Dettaglio>
+        )}
         <ComeCiHaiConosciuto id="n-conosciuto" famiglia={famiglia} valore={P.conosciutoDelModulo(tutte)} onScegli={(c) => setPersone((ps) => P.conIlConosciuto(ps, c))} />
         <Campo id="n-note" etichetta="NOTE PER LA SEGRETERIA · FACOLTATIVE" largo>
           <textarea

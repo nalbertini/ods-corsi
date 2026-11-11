@@ -1832,6 +1832,9 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 }
 .tb-riga-segno { width: 26px; display: flex; justify-content: center; }
 .tb-riga-nome { font-size: 18px; font-weight: 500; }
+/* Il nome e, sotto, il certificato non arrivato (141): solo un avviso, la riga si tocca come sempre. */
+.tb-riga-testo { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
+.tb-riga-certificato { font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: var(--rosso-testo); }
 .tb-riga[data-stato='presente'] { border-color: var(--verde); }
 .tb-riga[data-stato='presente'] .tb-riga-segno { color: var(--verde-testo); }
 .tb-riga[data-stato='assente'] { border-color: var(--rosso); }

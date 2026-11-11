@@ -150,6 +150,9 @@ export const corsoDi = (p: PersonaSeg | undefined, corsi: CorsoSeg[], oggi: stri
 /** Il certificato di oggi, guardato all'ultimo giorno della gara: uno non confermato non ha `scade`, quindi manca. */
 export const certificatoAllaGara = (p: PersonaSeg, g: Pick<Gara, 'dal' | 'al'>): StatoCertificato => statoCertificato(p, ultimoGiorno(g))
 
+/** Valido per la gara: nel termine per portarlo (`atteso`) no, non è ancora arrivato. */
+const valeAllaGara = (s: StatoCertificato) => s === 'valido' || s === 'in_scadenza' || s === 'non_serve' || s === 'in_arrivo'
+
 export interface RigaAtletaGara {
   personaId: string
   nome: string
@@ -181,7 +184,7 @@ export function righeGara(g: Gara, atleti: AtletaGara[], persone: PersonaSeg[]):
         scade: p.certificato.scade,
         daConfermare: !!p.certificato.inAttesaIl,
         // Anche chi è archiviato dopo la gara: lì conta la gara, non se frequenta ancora.
-        senzaCertificatoValido: certificato === 'manca' || certificato === 'scaduto',
+        senzaCertificatoValido: !valeAllaGara(certificato),
         nota: a.nota,
         pagata: !!a.pagamento,
       }]
@@ -196,7 +199,8 @@ export function scrittaCertificato(r: Pick<RigaAtletaGara, 'certificato' | 'scad
   if (r.certificato === 'valido' || r.certificato === 'in_scadenza') return { testo: `Valido, scade ${quando}`, tipo: 'fatto' }
   // Il nuovo mandato dall'iscritto non vale finché la segreteria non lo conferma: è lì che si deve guardare.
   if (r.daConfermare) return { testo: 'Caricato, da confermare', tipo: 'aspetta' }
-  return r.certificato === 'scaduto' ? { testo: `Scade ${quando}, prima della gara`, tipo: 'manca' } : { testo: 'Manca', tipo: 'manca' }
+  // Nel termine per portarlo (`atteso`) per la gara non vale: si dice com'è, scaduto o mancante.
+  return r.certificato === 'scaduto' || (r.certificato === 'atteso' && r.scade) ? { testo: `Scade ${quando}, prima della gara`, tipo: 'manca' } : { testo: 'Manca', tipo: 'manca' }
 }
 
 export function avvisoCertificati(righe: Pick<RigaAtletaGara, 'senzaCertificatoValido'>[]): string | null {
@@ -214,7 +218,7 @@ export function riepilogoCertificati<R extends Pick<RigaAtletaGara, 'senzaCertif
  * Il certificato nella gara dell'iscritto (LE MIE GARE): cosa fare e per quando, guardato all'ultimo giorno.
  * Uno mandato e non confermato non vale ancora, come per la segreteria. `null` se non serve.
  */
-export function certificatoPerLaGara(p: { certificato: { scade?: string; inAttesaIl?: string }; natoIl?: string }, g: Pick<Gara, 'dal' | 'al'>): { testo: string; dettaglio?: string; guaio: boolean } | null {
+export function certificatoPerLaGara(p: { certificato: { scade?: string; inAttesaIl?: string; entro?: string }; natoIl?: string }, g: Pick<Gara, 'dal' | 'al'>): { testo: string; dettaglio?: string; guaio: boolean } | null {
   const stato = statoCertificato(p, ultimoGiorno(g))
   const giorno = (d: string) => dataLunga(d, false)
   const entro = `in segreteria prima del ${giorno(g.dal)}.`
@@ -222,7 +226,8 @@ export function certificatoPerLaGara(p: { certificato: { scade?: string; inAttes
   if (stato === 'non_serve' || stato === 'in_arrivo') return null
   if ((stato === 'valido' || stato === 'in_scadenza') && scade) return { testo: `Certificato: valido fino al ${giorno(scade)} ${scade.slice(0, 4)}`, guaio: false }
   if (p.certificato.inAttesaIl) return { testo: 'Certificato: caricato, la segreteria lo deve ancora confermare', dettaglio: 'Finché non lo conferma non vale per la gara.', guaio: true }
-  if (stato === 'scaduto' && scade) return { testo: `Certificato: scade il ${giorno(scade)}`, dettaglio: `Scade prima della gara. Va rinnovato ${entro}`, guaio: true }
+  // `atteso` col certificato scaduto (il rinnovo): per la gara non vale, e si dice quando è scaduto.
+  if ((stato === 'scaduto' || stato === 'atteso') && scade) return { testo: `Certificato: scade il ${giorno(scade)}`, dettaglio: `Scade prima della gara. Va rinnovato ${entro}`, guaio: true }
   return { testo: 'Certificato: manca', dettaglio: `Va portato ${entro}`, guaio: true }
 }
 

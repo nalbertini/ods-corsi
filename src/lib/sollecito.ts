@@ -111,6 +111,8 @@ function cosaManca(p: PersonaSeg, quota: number, oggi: string, opz: OpzioniSolle
     fuori.push({ testo: `Certificato medico scaduto il ${dataLunga(scade)}`, tono: 'rosso', frase: `il certificato medico è scaduto il ${dataLunga(scade)}` })
   if (cert === 'in_scadenza' && scade)
     fuori.push({ testo: `Certificato medico in scadenza il ${dataLunga(scade)}, ${fra(scade, oggi)}`, tono: 'giallo', frase: `il certificato medico scade il ${dataLunga(scade)}` })
+  if (cert === 'atteso' && p.certificato.entro)
+    fuori.push({ testo: `Certificato medico da portare entro il ${dataLunga(p.certificato.entro)}`, tono: 'giallo', frase: `il certificato medico va portato entro il ${dataLunga(p.certificato.entro)}` })
   if (cert === 'in_arrivo' && p.natoIl) {
     const dal = dataLunga(dalCertificato(p.natoIl))
     fuori.push({ testo: `Compie 6 anni il ${dal}: da allora serve il certificato medico`, tono: 'giallo', frase: `dal ${dal}, quando compie 6 anni, per allenarsi serve il certificato medico` })

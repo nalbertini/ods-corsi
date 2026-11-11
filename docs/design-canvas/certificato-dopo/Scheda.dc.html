@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Gli stati del certificato</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. La riga del certificato nella scheda dell'iscritto (Iscritti.tsx `Certificato`, presentaCertificato in
+     schedeIscritto.ts), col componente Stato. Giallo = nel termine, viene alle lezioni; rosso = termine passato, solo
+     segnalazione: la presenza si segna. Nessun «NON PUÒ ENTRARE IN SALA» per il giallo. Il file caricato da confermare
+     non cambia il colore: lo dice la riga sotto. -->
+<div style="display: flex; flex-direction: column; gap: 18px; width: 1100px; min-height: 760px; padding: 28px 36px; background: #eef5fa">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · LA RIGA CERTIFICATO DELLA SCHEDA</span>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 600; color: #46606f">Nuovo iscritto, «non ce l’ho ancora», nel termine</span>
+      <dc-import name="Stato" tema="sito" nome="DA PORTARE ENTRO IL 12/12/2026" sotto="fra 18 giorni · iscritto il 12/11 senza certificato" tono="giallo" tasto="Cambia la data" pericolo="" hint-size="100%,80px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 600; color: #46606f">Termine passato</span>
+      <dc-import name="Stato" tema="sito" nome="DOVEVA PORTARLO ENTRO IL 12/12/2026" sotto="da 3 giorni · la presenza si segna, ma va sollecitato" tono="rosso" tasto="Cambia la data" pericolo="" hint-size="100%,80px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 600; color: #46606f">Già iscritto, certificato scaduto, nel termine</span>
+      <dc-import name="Stato" tema="sito" nome="SCADUTO IL 01/11/2026 · DA PORTARE ENTRO IL 01/12/2026" sotto="fra 7 giorni · il nuovo va portato entro 30 giorni dalla scadenza" tono="giallo" tasto="" pericolo="" hint-size="100%,80px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 600; color: #46606f">Caricato dall’area iscritti, da confermare</span>
+      <dc-import name="Stato" tema="sito" nome="DA PORTARE ENTRO IL 12/12/2026" sotto="caricato il 20/11, da confermare: finché non lo confermi non vale" tono="giallo" tasto="" pericolo="" hint-size="100%,80px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 600; color: #46606f">Scheda di prima, senza termine (come oggi)</span>
+      <dc-import name="Stato" tema="sito" nome="CERTIFICATO NON ARRIVATO" sotto="iscritto prima di questa regola, senza termine · la presenza si segna" tono="rosso" tasto="Dai una data" pericolo="" hint-size="100%,80px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 600; color: #46606f">Confermato: il termine sparisce</span>
+      <dc-import name="Stato" tema="sito" nome="VALIDO FINO AL 20/11/2027" sotto="confermato il 21/11/2026" tono="verde" tasto="" pericolo="" hint-size="100%,80px"></dc-import>
+    </div>
+  </div>
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">NELL’ELENCO ISCRITTI E NEL BANCO</span>
+  <span style="font-size: 15px; line-height: 1.5; color: #0d2a3d; max-width: 900px">Colonna CERTIFICATO: «Da portare» in giallo nel termine, «Doveva portarlo» in rosso dopo. Filtro nuovo «Certificato da portare»; il filtro «Senza certificato valido» resta per i rossi. Nel Banco «NON PUÒ ENTRARE IN SALA» non c’è più: il giallo non ha niente, il rosso (termine passato o iscritto di prima) dice «CERTIFICATO NON ARRIVATO». «Cambia la data» sposta il termine solo di questa persona (una data, fino a 120 giorni da oggi), e la storia della scheda dice chi l’ha spostato.</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

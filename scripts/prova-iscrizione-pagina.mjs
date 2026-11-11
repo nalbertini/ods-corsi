@@ -77,7 +77,7 @@ console.log('\nCosa ti serve (COSA_SERVE)')
 ok('COSA_SERVE: quattro voci, titolo, quando e nota', P.COSA_SERVE, [
   { titolo: 'Il codice fiscale', nota: 'Di chi si iscrive. Se iscrivi un figlio, anche il tuo.' },
   { titolo: 'La carta d’identità', nota: 'Di chi si iscrive, dai 6 anni. Una foto o il PDF.' },
-  { titolo: 'Il certificato medico', quando: 'SE CE L’HAI', nota: 'Se non ce l’hai, lo porti in segreteria prima della prima lezione.' },
+  { titolo: 'Il certificato medico', quando: 'SE CE L’HAI', nota: 'Se non ce l’hai ancora, ti iscrivi lo stesso e lo porti dopo.' },
   { titolo: 'Come paghi', quando: 'NELLA RICHIESTA', nota: 'Con Satispay, oppure col bonifico: allora serve la sua ricevuta.' },
 ])
 ok('la ricevuta non ha «quando»: non è più facoltativa', P.COSA_SERVE?.find((v) => v.titolo === 'La ricevuta del pagamento')?.quando, undefined)

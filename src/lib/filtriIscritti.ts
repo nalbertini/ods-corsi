@@ -8,13 +8,13 @@ import { senzaTessera, type RigaIncrocio } from './tessere'
  * un filtro acceso non resta mai nascosto.
  */
 export type IdFiltro =
-  | 'senza-email' | 'poco' | 'certificato' | 'scadenza' | 'arrivo' | 'pagare'
+  | 'senza-email' | 'poco' | 'certificato' | 'da-portare' | 'scadenza' | 'arrivo' | 'pagare'
   | 'corsi-scaduti' | 'fuori' | 'senza-tessera' | 'senza-corso' | 'senza-documento' | 'file-di-prima' | 'doppioni' | 'pagato-prima'
   | 'minorenni' | 'famiglie'
 
 /** Tutti i filtri, per sapere quali sono accesi anche se il loro chip adesso non c'è. */
 export const ID_FILTRI: IdFiltro[] = [
-  'senza-email', 'poco', 'certificato', 'scadenza', 'arrivo', 'pagare',
+  'senza-email', 'poco', 'certificato', 'da-portare', 'scadenza', 'arrivo', 'pagare',
   'corsi-scaduti', 'fuori', 'senza-tessera', 'senza-corso', 'senza-documento', 'file-di-prima', 'doppioni', 'pagato-prima',
   'minorenni', 'famiglie',
 ]
@@ -25,6 +25,7 @@ export const TESTI_FILTRI: Record<IdFiltro, string> = {
   'senza-email': 'Solo senza email',
   poco: 'Vengono poco',
   certificato: 'Senza certificato valido',
+  'da-portare': 'Certificato da portare',
   scadenza: 'Certificato in scadenza',
   arrivo: 'Compiono 6 anni',
   pagare: 'Da pagare',
@@ -45,6 +46,7 @@ export function altriFiltri(c: { conTessere: boolean; filePrima: number; doppion
   return [
     'senza-email',
     'poco',
+    'da-portare',
     'scadenza',
     'arrivo',
     ...(c.conTessere ? ([...(c.segnalaTessere === false ? [] : (['senza-tessera'] as const)), 'senza-corso'] as const) : []),
@@ -62,7 +64,7 @@ export function altriAperti(accesi: IdFiltro[], scelto: boolean): boolean {
 }
 
 /** I filtri di chi ha qualcosa da sistemare: con uno acceso l'elenco ha il tasto del sollecito su WhatsApp. */
-export const FILTRI_SOLLECITO: IdFiltro[] = ['certificato', 'scadenza', 'arrivo', 'pagare', 'corsi-scaduti', 'fuori']
+export const FILTRI_SOLLECITO: IdFiltro[] = ['certificato', 'da-portare', 'scadenza', 'arrivo', 'pagare', 'corsi-scaduti', 'fuori']
 
 /** «Pagato nel vecchio programma» e «Possibili doppioni» accesi mostrano una vista loro, senza la tabella: lì la colonna non c'è. */
 export const conSollecito = (accesi: IdFiltro[]) =>

@@ -92,7 +92,11 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   **RIFIUTATA**. Una volta sola per lezione.
 - **Certificato e quota** (tab DOCUMENTI): fino a quando vale il certificato medico (sotto i
   6 anni non è obbligatorio), e fino a quando è pagata la quota. Se manca, è
-  scaduto o scade entro un mese c'è il tasto **MANDA IL CERTIFICATO**: una
+  scaduto o scade entro un mese c'è il tasto **MANDA IL CERTIFICATO**. Chi si è
+  iscritto senza, o ha il certificato scaduto da poco, ha un termine: in cima
+  alla pagina «Il certificato medico va caricato entro il 12 dicembre: caricalo
+  qui o portalo in segreteria. Fino ad allora vieni alle lezioni.», e, passato
+  il termine, «doveva arrivare entro il …». Il tasto manda una
   foto o un PDF, al massimo 5 MB. Resta **in attesa di conferma** finché la
   segreteria lo controlla e scrive la scadenza, o lo rifiuta: se lo rifiuta
   va rimandato. Mentre è in attesa, in cima alla pagina e nel riquadro c'è

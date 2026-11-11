@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, motivoAttivitaUsata, testoDateSalvate, type AttivitaSeg, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
+import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, cosaNonVaGiorniCertificato, GIORNI_CERTIFICATO_MAX, motivoAttivitaUsata, testoDateSalvate, type AttivitaSeg, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
 import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { indirizzoValido } from '../../lib/avvisoSegreteria'
@@ -237,6 +237,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
       </Pannello>
 
       <Pannello apri={setAperta} id="avvisi" aperta={aperta}>
+        <GiorniCertificato giorni={imp.dato?.certificatoGiorni} pronto={!!imp.dato} salva={(n) => fai(() => d.salvaImpostazioni({ certificatoGiorni: n }), 'Giorni salvati', imp.ricarica)} />
         <AvvisiSegreteria d={d} />
       </Pannello>
 
@@ -843,6 +844,68 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
         Drive. GitHub tiene le copie novanta giorni. Il file è cifrato: senza la password del backup non lo apre nessuno, quindi su Drive può stare anche
         in una cartella condivisa. La password va tenuta da parte, fuori da qui: per rimettere a posto una copia serve, insieme al file.
       </ComeFunziona>
+    </section>
+  )
+}
+
+/**
+ * I giorni per portare il certificato a chi si iscrive senza (141). Valgono per le
+ * iscrizioni accolte da adesso e per il rinnovo, che si calcola: un termine già
+ * scritto resta. Senza 141 sul database il numero non c'è, e lo si dice.
+ */
+function GiorniCertificato({ giorni, pronto, salva }: { giorni: number | undefined; pronto: boolean; salva: (n: number) => Promise<unknown> }) {
+  const [scritto, setScritto] = useState<string | null>(null)
+  const ora = scritto ?? (giorni === undefined ? '' : String(giorni))
+  const guaio = scritto !== null ? cosaNonVaGiorniCertificato(Number(scritto)) : undefined
+  useBozza(scritto !== null && Number(scritto) !== giorni, 'I giorni per portare il certificato')
+  return (
+    <section aria-label="Il certificato medico" className="sg-riquadro">
+      <span className="ob sg-riquadro-titolo">IL CERTIFICATO MEDICO</span>
+      {pronto && giorni === undefined ? (
+        <span className="sg-sotto">Non ancora attivo sul database: va lanciato 141-certificato-dopo.sql.</span>
+      ) : (
+        <>
+          <div className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <label htmlFor="giorni-certificato" style={{ fontSize: 15, fontWeight: 600 }}>
+              Chi non ce l’ha ancora lo porta entro
+            </label>
+            <input
+              id="giorni-certificato"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={GIORNI_CERTIFICATO_MAX}
+              className="sg-campo"
+              style={{ width: 88 }}
+              value={ora}
+              disabled={!pronto}
+              aria-invalid={!!guaio}
+              aria-describedby={guaio ? 'giorni-certificato-nota' : undefined}
+              onChange={(e) => setScritto(e.target.value)}
+            />
+            <span>giorni</span>
+          </div>
+          {guaio && (
+            <span id="giorni-certificato-nota" style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>
+              {guaio}
+            </span>
+          )}
+          <span className="sg-sotto">
+            Per chi si iscrive: dal giorno in cui accogli la richiesta. Per chi è già iscritto: dal giorno in cui il certificato scade. Cambiare il numero vale per le iscrizioni che accogli da adesso (chi ha già una data scritta la tiene) e per i rinnovi, che si calcolano dalla scadenza.
+          </span>
+          <span className="sg-sotto">Nel termine la persona viene alle lezioni e in DA FARE è gialla; dopo è rossa, ma la presenza si segna lo stesso.</span>
+          {scritto !== null && (
+            <div className="row" style={{ gap: 8 }}>
+              <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setScritto(null)}>
+                Lascia stare
+              </button>
+              <Tasto tono="pieno" className="grow" disabled={!!guaio || Number(scritto) === giorni} onClick={() => void salva(Number(scritto)).then((fatto) => fatto && setScritto(null))}>
+                Salva
+              </Tasto>
+            </div>
+          )}
+        </>
+      )}
     </section>
   )
 }

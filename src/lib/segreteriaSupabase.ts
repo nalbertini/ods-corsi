@@ -9,7 +9,7 @@ import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, cosaNonVaExtra, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
-import { attivitaCambiata, cosaNonVaAnagrafica, emailNonValida, SERVE_IL_99, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, cosaNonVaGiorniCertificato, GIORNI_CERTIFICATO, termineCertificato, cosaNonVaAnagrafica, emailNonValida, SERVE_IL_99, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { spentiDa } from './metodiPagamento'
 import { genitoriDa, type RigaGenitore } from './sollecito'
@@ -181,6 +181,10 @@ type Scheda = {
   certificato_caricato_il?: string | null
   /** Arriva con 102-certificato-iscritto.sql. */
   certificato_in_attesa_il?: string | null
+  /** Arrivano con 141-certificato-dopo.sql: il termine scritto, e chi l'ha spostato. */
+  certificato_entro?: string | null
+  certificato_entro_il?: string | null
+  spostato?: { nome: string } | null
   documento_in_segreteria?: boolean
   pagamento: StatoPagamento
   pagato_fino: string | null
@@ -712,13 +716,24 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     return m
   }
 
+  /** I giorni per portare il certificato (141); `null` senza la colonna: nessun termine, come prima. */
+  const giorniCertificato = async (): Promise<number | null> => {
+    // Senza 141 (la colonna manca): nessun termine, come prima. Se la lettura non va per altro, i giorni di sempre:
+    // senza, chi è nel termine diventerebbe rosso senza dirlo.
+    const r = await db.from('impostazioni').select('certificato_giorni').maybeSingle()
+    if (r.error?.code === '42703' || r.error?.code === 'PGRST204') return null
+    if (r.error) return GIORNI_CERTIFICATO
+    const g: unknown = (r.data as Record<string, unknown> | null)?.certificato_giorni // as: una riga di `impostazioni`, con o senza la colonna
+    return typeof g === 'number' ? g : GIORNI_CERTIFICATO
+  }
+
   const impostazioni = async (): Promise<Impostazioni> => {
     // Con `*`: su un database senza le date dei corsi (`12-calendario-da-se.sql`
     // non rilanciato) le impostazioni si leggono lo stesso.
     const r = ok(await db.from('impostazioni').select('*').maybeSingle()) as {
-      mesi_presenze: number; giorni_calendario: number; inizio_corsi?: string | null; fine_corsi?: string | null; metodi_spenti?: unknown
+      mesi_presenze: number; giorni_calendario: number; inizio_corsi?: string | null; fine_corsi?: string | null; metodi_spenti?: unknown; certificato_giorni?: number
     } | null
-    return { mesiPresenze: r?.mesi_presenze ?? 24, giorniCalendario: r?.giorni_calendario ?? 60, inizioCorsi: r?.inizio_corsi, fineCorsi: r?.fine_corsi, metodiSpenti: spentiDa(r?.metodi_spenti) }
+    return { mesiPresenze: r?.mesi_presenze ?? 24, giorniCalendario: r?.giorni_calendario ?? 60, inizioCorsi: r?.inizio_corsi, fineCorsi: r?.fine_corsi, metodiSpenti: spentiDa(r?.metodi_spenti), certificatoGiorni: r?.certificato_giorni }
   }
 
   /**
@@ -1172,7 +1187,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703' && !/nucleo|genitore_non_iscritto/.test(x.error.message ?? '')
       const leggiTutto = async (nucleo: string) => {
         // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
-        let r = await leggi(`${scheda}, certificato_caricato_il, certificato_in_attesa_il, documento_in_segreteria`, nucleo)
+        // «spostato»: chi ha spostato il termine (141). schede_iscritti punta a persone anche da lì.
+        let r = await leggi(`${scheda}, certificato_caricato_il, certificato_in_attesa_il, documento_in_segreteria, certificato_entro, certificato_entro_il, spostato:persone!certificato_entro_da ( nome )`, nucleo)
+        // Senza 141-certificato-dopo.sql non c'è il termine: tutto come prima.
+        if (colonnaMancante(r) || r.error?.code === 'PGRST200') r = await leggi(`${scheda}, certificato_caricato_il, certificato_in_attesa_il, documento_in_segreteria`, nucleo)
         // Senza 102-certificato-iscritto.sql manca la colonna dei file mandati dagli iscritti.
         if (colonnaMancante(r)) r = await leggi(`${scheda}, certificato_caricato_il, documento_in_segreteria`, nucleo)
         // Senza 45-certificati-online.sql ogni file è di prima; e 07-certificati-pagamenti.sql di prima del documento su carta: senza la colonna nuova.
@@ -1212,9 +1230,14 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const diretti = ['42703', '42P01', 'PGRST205'].includes(assegnate.error?.code ?? '') ? [] : (ok(assegnate) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)
       const { listino } = diretti.length ? await this.listino() : { listino: LISTINO_PREDEFINITO }
       const oggi = oggiARoma()
+      const giorni = await giorniCertificato()
       return righe.map((r): PersonaSeg => {
         // Una a una con la persona: PostgREST la dà come oggetto, ma meglio non contarci.
         const s = Array.isArray(r.schede_iscritti) ? r.schede_iscritti[0] : r.schede_iscritti
+        const natoIl = natiIl.get(r.id)
+        // Il giorno di Roma, come `certificato_termine`: a mezzanotte UTC sarebbe ancora ieri.
+        const creataIl = oggiARoma(new Date(r.creata_il))
+        const entroScritto = s?.certificato_entro ?? undefined
         return {
           id: r.id,
           nome: r.nome,
@@ -1233,6 +1256,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             vecchio: !!s?.certificato_file && !s.certificato_caricato_il,
             caricatoIl: s?.certificato_caricato_il?.slice(0, 10),
             inAttesaIl: s?.certificato_in_attesa_il?.slice(0, 10),
+            // Senza 141 (giorni `null`) nessun termine: mancante o scaduto, come prima.
+            ...(giorni !== null && {
+              entro: termineCertificato({ scade: s?.certificato_scade ?? undefined, entroScritto }, natoIl, creataIl, giorni),
+              entroScritto,
+              ...(s?.certificato_entro_il && s.spostato && { spostatoDa: s.spostato.nome, spostatoIl: s.certificato_entro_il.slice(0, 10) }),
+            }),
           },
           documento: !!s?.documento_in_segreteria,
           pagamento: { stato: s?.pagamento ?? 'da_pagare', fino: s?.pagato_fino ?? undefined, nota: s?.pagamento_nota ?? undefined },
@@ -1244,7 +1273,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           saldo: conSaldo.get(r.id),
           satispayQuota: quotaSatispay.get(r.id),
           satispayCorsi: corsiSatispay.get(r.id),
-          natoIl: natiIl.get(r.id),
+          natoIl,
         }
       }).map((p) => conAssegnazioni(p, diretti, listino, oggi))
     },
@@ -1331,6 +1360,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async termina(personaId, corsoId) {
       ok(await db.from('iscrizioni').update({ al: oggi() }).eq('persona_id', personaId).eq('corso_id', corsoId))
+    },
+
+    async cambiaTermineCertificato(personaId, entro) {
+      const r = await db.rpc('cambia_termine_certificato', { persona: personaId, entro })
+      if (r.error?.code === 'PGRST202' || r.error?.code === '42883') throw new Error('Il termine del certificato non è ancora attivo sul database: va lanciato 141-certificato-dopo.sql')
+      ok(r)
     },
 
     async salvaCertificato(personaId, scade) {
@@ -2944,6 +2979,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       if (i.inizioCorsi !== undefined) riga.inizio_corsi = i.inizioCorsi
       if (i.fineCorsi !== undefined) riga.fine_corsi = i.fineCorsi
       if (i.metodiSpenti !== undefined) riga.metodi_spenti = i.metodiSpenti
+      if (i.certificatoGiorni !== undefined) {
+        const guasto = cosaNonVaGiorniCertificato(i.certificatoGiorni)
+        if (guasto) throw new Error(guasto)
+        riga.certificato_giorni = i.certificatoGiorni
+      }
       ok(await db.from('impostazioni').update(riga).eq('id', true))
     },
 

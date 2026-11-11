@@ -70,7 +70,8 @@ sempre.
 ## La scheda di una persona
 
 Da ISCRITTI, o dalla ricerca, si apre la scheda di sempre. Nel Banco in cima c'è
-in più una riga che dice **cosa blocca quella persona**: in rosso **NON PUÒ
-ENTRARE IN SALA** se manca il certificato o è scaduto; in giallo **QUOTA DA
-SISTEMARE** se la quota non è in regola. Il tasto apre la scheda del problema (**QUOTA E PAGAMENTI** o **DOCUMENTI**), dove si
+in più una riga che dice **cosa c'è da sistemare**: in rosso **CERTIFICATO NON
+ARRIVATO** se manca il certificato, è scaduto o il termine per portarlo è
+passato (la presenza si segna lo stesso); nel termine niente; in giallo
+**QUOTA DA SISTEMARE** se la quota non è in regola. Il tasto apre la scheda del problema (**QUOTA E PAGAMENTI** o **DOCUMENTI**), dove si
 sistema. Sotto, le presenze degli ultimi trenta giorni e la famiglia.

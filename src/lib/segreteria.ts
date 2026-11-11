@@ -197,6 +197,13 @@ export interface CertificatoSeg {
   caricatoIl?: string
   /** Il giorno in cui l'iscritto ha mandato un file che nessuno ha ancora controllato (`102-certificato-iscritto.sql`). */
   inAttesaIl?: string
+  /** Il termine per portarlo, quello che vale (`termineCertificato`): fino a quel giorno è `atteso`, non `manca`. */
+  entro?: string
+  /** Il termine scritto nella scheda (`certificato_entro`, 141): all'accoglimento o spostato dalla segreteria. */
+  entroScritto?: string
+  /** Chi l'ha spostato e quando (`AAAA-MM-GG`), se l'ha spostato la segreteria. */
+  spostatoDa?: string
+  spostatoIl?: string
 }
 
 /** Un certificato mandato dall'iscritto, da confermare con la scadenza o da rifiutare. */
@@ -567,6 +574,8 @@ export interface Impostazioni {
    * (`126-metodi-pagamento.sql` da lanciare): sono tutti accesi.
    */
   metodiSpenti?: IdMetodo[]
+  /** I giorni per portare il certificato (1–120); `undefined` senza `141-certificato-dopo.sql`. */
+  certificatoGiorni?: number
 }
 
 export interface DatiPersona {
@@ -645,6 +654,8 @@ export interface DatiSegreteria {
   /** `dal`: da quando, se non è oggi (l'import dei fogli usa il giorno della risposta). Vale per un'iscrizione nuova o ripresa, non per una in corso. */
   iscrivi(personaId: string, corsoId: string, dal?: string): Promise<void>
   termina(personaId: string, corsoId: string): Promise<void>
+  /** «Cambia la data» / «Dai una data»: il termine per portare il certificato di una persona sola, fino a 120 giorni da oggi (141). */
+  cambiaTermineCertificato(personaId: string, entro: string): Promise<void>
   /** Solo la data di scadenza del certificato: il file, se c'è, resta. */
   salvaCertificato(personaId: string, scade: string): Promise<void>
   /**
@@ -1088,7 +1099,7 @@ export const AVVISO_CERTIFICATO = 30
 export type ComeCertificato = 'manca' | 'scaduto' | 'in_scadenza' | 'valido'
 
 /**
- * Senza data il certificato non c'è: in sala non si entra. La data la scrive
+ * Senza data il certificato non c'è. La data la scrive
  * la segreteria quando ha il foglio in mano, quindi basta quella.
  */
 export function comeCertificato(c: Pick<CertificatoSeg, 'scade'>, oggi: string): ComeCertificato {
@@ -1146,22 +1157,53 @@ export function nascitaDelleFonti(fonti: FonteNascita[]): Map<string, string> {
   return new Map([...vince].flatMap(([id, f]) => (f.natoIl ? [[id, f.natoIl] as [string, string]] : [])))
 }
 
-export type StatoCertificato = ComeCertificato | 'non_serve' | 'in_arrivo'
+export type StatoCertificato = ComeCertificato | 'non_serve' | 'in_arrivo' | 'atteso'
+
+/** I giorni per portare il certificato, se IMPOSTAZIONI non dice altro (`impostazioni.certificato_giorni`, 141). */
+export const GIORNI_CERTIFICATO = 30
+export const GIORNI_CERTIFICATO_MAX = 120
+
+/** «Cambia la data»: da oggi a 120 giorni da oggi, come `cambia_termine_certificato` (141). */
+export const cosaNonVaTermineCertificato = (entro: string, oggi: string): string | undefined =>
+  /^\d{4}-\d{2}-\d{2}$/.test(entro) && entro >= oggi && entro <= spostaGiorno(oggi, GIORNI_CERTIFICATO_MAX) ? undefined : 'La data va da oggi a 120 giorni da oggi.'
+
+/** Il numero di IMPOSTAZIONI › GLI AVVISI: lo stesso check del database. */
+export const cosaNonVaGiorniCertificato = (n: number): string | undefined =>
+  Number.isInteger(n) && n >= 1 && n <= GIORNI_CERTIFICATO_MAX ? undefined : `I giorni vanno da 1 a ${GIORNI_CERTIFICATO_MAX}.`
+
+/**
+ * Il termine che vale, come `certificato_termine` di `141-certificato-dopo.sql`:
+ * il più lontano fra quello scritto, la scadenza + giorni (il rinnovo) e il 6°
+ * compleanno + giorni, se lo compie da iscritto (dopo `creataIl`). Si calcola:
+ * cambiare i giorni sposta rinnovo e compleanno, non quello scritto.
+ */
+export function termineCertificato(c: Pick<CertificatoSeg, 'scade' | 'entroScritto'>, natoIl: string | undefined, creataIl: string | undefined, giorni: number): string | undefined {
+  const sei = natoIl && /^\d{4}-\d{2}-\d{2}$/.test(natoIl) ? dalCertificato(natoIl) : undefined
+  const date = [c.entroScritto, c.scade && spostaGiorno(c.scade, giorni), sei && creataIl && sei > creataIl ? spostaGiorno(sei, giorni) : undefined]
+  return date.filter((x): x is string => !!x).sort().at(-1)
+}
 
 /**
  * `comeCertificato` con l'età. Sotto i 6 anni non serve, anche se la
  * segreteria ne ha segnato uno; a un mese dal compleanno, senza certificato,
- * è `in_arrivo`.
+ * è `in_arrivo`. Mancante o scaduto ma nel termine (`entro`, il giorno stesso
+ * compreso) è `atteso`: non vale, ma non è ancora rosso.
  */
-export function statoCertificato(p: { certificato: Pick<CertificatoSeg, 'scade'>; natoIl?: string; seiAnni?: string }, oggi: string): StatoCertificato {
+export function statoCertificato(p: { certificato: Pick<CertificatoSeg, 'scade' | 'entro'>; natoIl?: string; seiAnni?: string }, oggi: string): StatoCertificato {
   const serve = p.seiAnni ? serveCertificatoDal(p.seiAnni, oggi) : serveCertificato(p.natoIl, oggi)
-  if (serve === 'serve') return comeCertificato(p.certificato, oggi)
+  if (serve === 'serve') {
+    const come = comeCertificato(p.certificato, oggi)
+    return (come === 'manca' || come === 'scaduto') && p.certificato.entro && oggi <= p.certificato.entro ? 'atteso' : come
+  }
   if (serve === 'in_arrivo' && !p.certificato.scade) return 'in_arrivo'
   return 'non_serve'
 }
 
 // Il certificato si cerca fra chi è attivo: chi ha smesso non lo deve portare. Gli stessi conti di DA FARE.
+// I rossi: `atteso` non c'è, sta in `certificatoAtteso`.
 export const senzaCertificatoValido = (p: PersonaSeg, oggi: string) => p.attiva && ['manca', 'scaduto'].includes(statoCertificato(p, oggi))
+/** Nel termine per portarlo: giallo, viene alle lezioni. */
+export const certificatoAtteso = (p: PersonaSeg, oggi: string) => p.attiva && statoCertificato(p, oggi) === 'atteso'
 export const certificatoInScadenza = (p: PersonaSeg, oggi: string) => p.attiva && statoCertificato(p, oggi) === 'in_scadenza'
 /** Compie 6 anni entro un mese e non ha il certificato: da avvisare la famiglia. */
 export const certificatoInArrivo = (p: PersonaSeg, oggi: string) => p.attiva && statoCertificato(p, oggi) === 'in_arrivo'
@@ -1171,7 +1213,7 @@ export const mancaLaData = (p: Pick<PersonaSeg, 'certificato' | 'natoIl'>) => !p
 
 /** Il riquadro CERTIFICATO delle statistiche: chi non ha l'obbligo non si conta. */
 export function contaCertificati(persone: Array<Pick<PersonaSeg, 'certificato' | 'natoIl'>>, oggi: string) {
-  const conto = { valido: 0, in_scadenza: 0, scaduto: 0, manca: 0 }
+  const conto = { valido: 0, in_scadenza: 0, scaduto: 0, manca: 0, atteso: 0 }
   for (const p of persone) {
     const come = statoCertificato(p, oggi)
     if (come !== 'non_serve' && come !== 'in_arrivo') conto[come]++
@@ -1231,17 +1273,17 @@ export function presentaCertificato(c: CertificatoSeg, natoIl: string | undefine
   const data = c.scade ? dataLunga(c.scade) : ''
   const fra = c.scade ? Math.round((Date.parse(c.scade) - Date.parse(oggi)) / 86_400_000) : 0
   const frase = {
-    nessuno: c.conFile ? 'Il file c’è, ma manca la data: scrivila leggendo il foglio. Senza, in sala non si entra.' : 'Nessun certificato in segreteria: senza, in sala non si entra.',
+    nessuno: c.conFile ? 'Il file c’è, ma manca la data: scrivila leggendo il foglio.' : 'Nessun certificato in segreteria.',
     valido: `Valido fino al ${data}.`,
     file_vecchio: `Valido fino al ${data}.`,
     // Una frase sola (niente nota sotto che la ripete). Disattivata non si carica più: non invita.
     valido_senza_file: attiva ? `Valido fino al ${data}. Il file non c’è: carica la copia.` : `Valido fino al ${data}.`,
     in_scadenza: `Scade il ${data}, ${fra === 0 ? 'oggi' : fra === 1 ? 'domani' : `fra ${fra} giorni`}.`,
-    scaduto_con_file: `Scaduto il ${data}: va rinnovato prima di tornare in sala.`,
+    scaduto_con_file: `Scaduto il ${data}: va rinnovato.`,
     // «File cancellato» solo se un file c'è stato: la sola data scritta a mano non ne ha mai avuto.
     scaduto_senza_file: c.caricatoIl
-      ? `Certificato scaduto, file cancellato. Scaduto il ${data}: ne serve uno nuovo prima di tornare in sala.`
-      : `Certificato scaduto il ${data}: ne serve uno nuovo prima di tornare in sala.`,
+      ? `Certificato scaduto, file cancellato. Scaduto il ${data}: ne serve uno nuovo.`
+      : `Certificato scaduto il ${data}: ne serve uno nuovo.`,
   }[stato]
   const fileCancellato = !c.conFile && !!c.caricatoIl
   const nota = c.conFile
@@ -1276,6 +1318,8 @@ export function presentaCertificato(c: CertificatoSeg, natoIl: string | undefine
           tono: 'spento' as Tono,
           frase: `Sotto i 6 anni il certificato non è obbligatorio.${c.scade ? ` In segreteria c’è, scaduto il ${data}.` : ''}`,
         }
+      : eta === 'atteso' && c.entro
+        ? { parola: 'DA PORTARE', tono: 'giallo' as Tono, frase: `Da portare entro il ${dataLunga(c.entro)}.` }
       : inArrivo
         ? { parola: 'SERVE DAL', tono: 'giallo' as Tono, frase: `Compie 6 anni il ${dataLunga(dalCertificato(natoIl!))}: da quel giorno serve il certificato. Meglio avvisare la famiglia.` }
         : { parola, tono: (verde ? 'verde' : stato === 'in_scadenza' ? 'giallo' : 'rosso') as Tono, frase }),
@@ -1390,7 +1434,7 @@ export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay' 
 
 /** In regola: certificato valido (anche se in scadenza) e quota pagata. */
 export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'saldo' | 'natoIl'>, oggi: string) =>
-  !['manca', 'scaduto'].includes(statoCertificato(p, oggi)) && comePaga(p, oggi) === 'pagato'
+  !['manca', 'scaduto', 'atteso'].includes(statoCertificato(p, oggi)) && comePaga(p, oggi) === 'pagato'
 
 /** Chi è attivo e ha il certificato o la quota da sistemare: il bottone CHI NON È IN REGOLA delle statistiche. */
 export const fuoriRegola = (p: PersonaSeg, oggi: string) => p.attiva && !inRegola(p, oggi)
@@ -1456,7 +1500,10 @@ function timbroCertificato(c: CertificatoSeg, oggi: string, natoIl?: string): Ti
     }
   }
   const righe = file
-  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', inElenco: 'Manca il certificato', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...(mancaLaData({ certificato: c, natoIl }) ? [{ testo: 'MANCA LA DATA DI NASCITA' }] : []), ...righe] }
+  // Nel termine viene alle lezioni: giallo, con la data. Dopo, rosso: la presenza si segna lo stesso.
+  if (stato === 'atteso' && c.entro) return { tono: 'giallo', parola: `DA PORTARE ENTRO IL ${dataTimbro(c.entro)}`, inElenco: 'Da portare', righe }
+  if (!c.scade && c.entro) return { tono: 'rosso', parola: `DOVEVA PORTARLO ENTRO IL ${dataTimbro(c.entro)}`, inElenco: 'Doveva portarlo', righe }
+  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', inElenco: 'Manca il certificato', righe: [...(mancaLaData({ certificato: c, natoIl }) ? [{ testo: 'MANCA LA DATA DI NASCITA' }] : []), ...righe] }
   if (stato === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'Certificato scaduto', righe }
   if (stato === 'in_scadenza') {
     if (c.scade === oggi) return { tono: 'giallo', parola: 'SCADE OGGI', inElenco: 'Scade oggi', righe }
@@ -1550,7 +1597,7 @@ export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | '
   const quota = pagamentoDi(p, oggi).come
   if (cert === 'manca' || cert === 'scaduto') return 'certificato'
   if (quota !== 'pagato') return 'quota'
-  return cert === 'in_scadenza' ? 'certificato' : 'quota'
+  return cert === 'in_scadenza' || cert === 'atteso' ? 'certificato' : 'quota'
 }
 
 /**
@@ -1603,7 +1650,9 @@ function vociDi(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'qu
   const stato = statoCertificato(p, oggi)
   const t = timbroCertificato(p.certificato, oggi, p.natoIl)
   const certificato: VoceSegno =
-    stato === 'manca' ? voce('rosso', 'Manca', 'Manca il certificato')
+    stato === 'atteso' ? voce('giallo', 'Da portare', 'Certificato da portare')
+    : stato === 'manca' && p.certificato.entro ? voce('rosso', 'Doveva portarlo', 'Doveva portare il certificato')
+    : stato === 'manca' ? voce('rosso', 'Manca', 'Manca il certificato')
     : stato === 'scaduto' ? voce('rosso', 'Scaduto', 'Certificato scaduto')
     : stato === 'non_serve' && t.tono !== 'verde' ? voce('nota', 'Non serve')
     : t.tono !== 'verde' ? voceCertificato(t.tono, t.inElenco ?? t.parola)

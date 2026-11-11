@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FocusEvent, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { anniScritti, avvisoCertificato, certificatoDaPortare, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, DETTAGLIO_RICEVUTA, domandaUscita, ESTENSIONI, FILE, fileObbligatori, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante, tipiDaChiedere } from '../lib/richieste'
+import { anniScritti, avvisoCertificato, certificatoDaPortare, domandaCertificato, fraseCertificatoFinale, mancaCertificato, testoCertificatoDopo, type SceltaCertificato, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, DETTAGLIO_RICEVUTA, domandaUscita, ESTENSIONI, FILE, fileObbligatori, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante, tipiDaChiedere } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { CONOSCIUTO, domandaConosciuto, origineDellaRichiesta, pulisciConosciuto, SCEGLI_SE_VUOI, type Conosciuto } from '../lib/provenienza'
@@ -17,7 +17,7 @@ import type { SceltaModulo } from '../lib/firma'
 import { haUnServer } from '../lib/dati'
 import { contaIscrizione, EVENTI_ISCRIZIONE } from '../lib/contaIscrizione'
 import { CampiCarta } from './CampiCarta'
-import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
+import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, Etichetta, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
 import { chiaveDelBrowser, chiavePreparo, chiedeRicevuta, comePuoiPagare, cosaNonVaModo, ERRORE_CARTA, ERRORE_SATISPAY, esitoPagamento, modoPagamento, nonSemplice, pagamentoDaMandare, senzaVoceDelCorso, soldi, statoRiquadroPaga, type PagamentoPrima, type Pago } from '../lib/satispay'
 
@@ -116,6 +116,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const [inizio] = useState<DatiRichiesta>(() => ({ ...VUOTO, ...nucleo?.dati }))
   const [b, setB] = useState<DatiRichiesta>(inizio)
   const [file, setFile] = useState<Partial<Record<TipoFile, File>>>({})
+  // I giorni per portare il certificato dopo (141): senza, `null`, e il modulo è com'era (certificato facoltativo, senza scelta).
+  const [giorni, setGiorni] = useState<number | null>(null)
+  const [sceltaCert, setSceltaCert] = useState<SceltaCertificato>()
   const [privacy, setPrivacy] = useState(false)
   // Il modulo: firmato qui, o la foto del foglio firmato a mano.
   const [come, setCome] = useState<'qui' | 'foto'>('qui')
@@ -166,6 +169,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         // Dal nucleo di un iscritto si paga come prima: Satispay è del modulo pubblico.
         if (!nucleo) void x.satispayAttivo().then((a) => vivo && setSatispayAttivo(a))
         if (!nucleo) void x.cartaAttiva().then((c) => vivo && setCarta(c))
+        void x.certificatoGiorni().then((g) => vivo && setGiorni(g))
         return x.corsiAperti().then((c) => vivo && setCorsi(c))
       })
       .catch((e) => vivo && setGuaioCorsi(e instanceof Error ? e.message : 'Il server non risponde'))
@@ -247,7 +251,10 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const modo = modoPagamento(pago, { ...puoi, carta: cartaPuoi }, !!nucleo, bonificoAcceso)
   const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || chiedeRicevuta(modo, !!nucleo)))
   // I file di I FILE: il modulo ha la sua sezione, e la ricevuta del bonifico sta in IL PAGAMENTO (dal nucleo, qui come prima).
-  const fileQui = daChiedere.filter((f) => f.tipo !== 'modulo' && (f.tipo !== 'ricevuta' || !!nucleo))
+  // Con la scelta (141), il certificato si chiede solo con «Lo carico ora».
+  const chiedeScelta = giorni !== null && certificato !== 'nessuno'
+  const fileQui = daChiedere.filter((f) => f.tipo !== 'modulo' && (f.tipo !== 'ricevuta' || !!nucleo) && (f.tipo !== 'certificato' || !chiedeScelta || sceltaCert === 'ora'))
+  const nomeDi = minore || nucleo ? b.nome.trim() || undefined : undefined
   // Col bonifico la ricevuta è obbligatoria (con Satispay non si chiede): come vuole anche `fileObbligatori` per la pagina pubblica.
   const obbligatori = fileObbligatori(daChiedere, modo === 'bonifico')
 
@@ -349,6 +356,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     firma: mancaPerFirmare(),
     file,
     obbligatori,
+    ...(chiedeScelta && { certificato: { scelta: sceltaCert } }),
   })
   const riquadroPaga = scelta && stima ? statoRiquadroPaga(scelta, sp, { stima: stima.totale, corso: scelti[0].nome, manca: mancaModulo, preparo, guaio: guaioSp, metodo }) : null
   /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
@@ -446,6 +454,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     // Se i campi sono a posto e manca una scelta del modulo, lo schermo va lì, non in fondo al riquadro.
     const mancata = sceltaMancante(scelte)
     if (!primo && come === 'qui' && mancata) setTimeout(() => document.getElementById(`m-${mancata}`)?.focus(), 0)
+    // …e così la scelta del certificato, se manca solo quella.
+    else if (!primo && chiedeScelta && !sceltaCert) setTimeout(() => document.getElementById('m-certificato')?.focus(), 0)
     if (blocco) return
     // Il modulo firmato si fa prima di mandare le risposte: se non viene, non
     // nasce una richiesta senza modulo.
@@ -466,7 +476,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       // Da dove arriva: l'etichetta del link della visita e la risposta; dall'area iscritti «area-iscritti», senza domanda.
       const { conosciuto, ...risposte } = pronta
       // Con Satispay la richiesta prende con sé il pagamento già fatto: senza, il database la rifiuta.
-      id = await d!.invia({ ...risposte, ...origineDellaRichiesta(!!nucleo, conosciuto), pagamentoSatispay: pagamentoDaMandare(modo, sp), chiavePagamento: chiaveDelBrowser() })
+      id = await d!.invia({ ...risposte, ...(chiedeScelta && sceltaCert === 'dopo' && { certificatoDopo: true }), ...origineDellaRichiesta(!!nucleo, conosciuto), pagamentoSatispay: pagamentoDaMandare(modo, sp), chiavePagamento: chiaveDelBrowser() })
     } catch (e) {
       setFase({ tipo: 'compila' })
       return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')
@@ -476,10 +486,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   }
 
   // Il certificato da portare: lo dice la pagina finale, con o senza Satispay.
-  const promemoriaCertificato =
-    certificato !== 'nessuno' && !file.certificato
-      ? `Ricorda di consegnare in segreteria il certificato medico${certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.`
-      : null
+  const promemoriaDelCertificato = fraseCertificatoFinale({ tipo: certificato, conFile: !!file.certificato, dopo: chiedeScelta && sceltaCert === 'dopo', giorni, di: nomeDi })
 
   if (fase.tipo === 'fatto') {
     // Pagata con Satispay prima di mandare: lo dice la pagina finale.
@@ -497,7 +504,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
           </span>
         )}
-        {promemoriaCertificato && <span className="esito-testo">{promemoriaCertificato}</span>}
+        {promemoriaDelCertificato && <span className="esito-testo">{promemoriaDelCertificato}</span>}
         {!file.ricevuta && !modo && <span className="esito-testo">Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato.</span>}
         <Tasto onClick={onChiudi}>{torna}</Tasto>
       </div>
@@ -868,9 +875,37 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
 
       {fileQui.length > 0 || certificato !== 'nessuno' ? (
       <Sezione titolo="I FILE">
-        {certificato !== 'nessuno' && (
+        {certificato !== 'nessuno' && !chiedeScelta && (
           <div className="modulo-campo modulo-largo">
             <Dettaglio tono="avviso">{avvisoCertificato(certificato)}</Dettaglio>
+          </div>
+        )}
+        {chiedeScelta && (
+          <div className="modulo-campo modulo-largo">
+            <span className="modulo-etichetta">{certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
+            <Dettaglio tono="testo">{domandaCertificato(certificato)}</Dettaglio>
+            <SceltaCorsi
+              id="m-certificato"
+              etichetta="Il certificato medico ce l’hai già?"
+              una
+              voci={[
+                { id: 'ora', testo: 'Lo carico ora' },
+                { id: 'dopo', testo: 'Non ce l’ho ancora' },
+              ]}
+              scelti={sceltaCert ? [sceltaCert] : []}
+              onScegli={(c) => {
+                setSceltaCert(c === 'ora' ? 'ora' : 'dopo')
+                // «Non ce l'ho ancora»: il file scelto prima non parte.
+                if (c === 'dopo') setFile((p) => ({ ...p, certificato: undefined }))
+              }}
+            />
+            {provato && !sceltaCert && <Dettaglio tono="guaio">{mancaCertificato(undefined, false)}</Dettaglio>}
+            {sceltaCert === 'dopo' && giorni !== null && (
+              <Riquadro tono="prova" stretto>
+                <Etichetta>TI ISCRIVI LO STESSO</Etichetta>
+                <Dettaglio tono="testo">{testoCertificatoDopo(giorni)}</Dettaglio>
+              </Riquadro>
+            )}
           </div>
         )}
         {fileQui.map((f) => (
@@ -879,8 +914,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             tipo={f.tipo}
             file={file[f.tipo]}
             onFile={(x) => setFile((p) => ({ ...p, [f.tipo]: x }))}
-            facoltativo={!obbligatori.includes(f.tipo)}
-            dettaglio={f.tipo === 'ricevuta' && obbligatori.includes('ricevuta') ? DETTAGLIO_RICEVUTA : undefined}
+            facoltativo={!obbligatori.includes(f.tipo) && !(f.tipo === 'certificato' && chiedeScelta)}
+            dettaglio={f.tipo === 'ricevuta' && obbligatori.includes('ricevuta') ? DETTAGLIO_RICEVUTA : f.tipo === 'certificato' && chiedeScelta ? 'Una foto o il PDF.' : undefined}
+            errore={f.tipo === 'certificato' && chiedeScelta && provato && !file.certificato ? mancaCertificato('ora', false) : undefined}
           />
         ))}
       </Sezione>
@@ -1046,6 +1082,7 @@ export function SceltaFile({
   facoltativo,
   dettaglio,
   seManca,
+  errore,
 }: {
   tipo: TipoFile
   file?: File
@@ -1054,6 +1091,8 @@ export function SceltaFile({
   dettaglio?: string
   /** La parola accanto all'etichetta quando il file è facoltativo, se quella della lista non va qui. */
   seManca?: string
+  /** Cosa manca, detto sotto il file (il certificato con «Lo carico ora»). */
+  errore?: string
 }) {
   const f = FILE.find((x) => x.tipo === tipo)!
   const [guaio, setGuaio] = useState<string | null>(null)
@@ -1075,7 +1114,7 @@ export function SceltaFile({
       seManca={(facoltativo ?? !f.obbligatorio) ? (seManca ?? f.seManca ?? 'FACOLTATIVO') : undefined}
       dettaglio={lavoro ? 'Preparo la foto…' : (dettaglio ?? f.dettaglio)}
       file={file && !lavoro ? { nome: file.name, byte: file.size } : undefined}
-      errore={guaio}
+      errore={guaio ?? errore}
       onFile={(x) => void scelto(x)}
     />
   )

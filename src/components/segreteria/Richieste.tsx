@@ -479,6 +479,10 @@ function Scheda({
           {file.dato.length === 0 && (
             <span className="sg-sotto">{r.modo === 'prova' ? 'Nessun file: in prova restano solo finché la pagina è aperta.' : 'Nessun file arrivato.'}</span>
           )}
+          {/* «Non ce l'ho ancora» nel modulo (141): accolta, la scheda prende il termine per portarlo. */}
+          {x.certificatoDopo && !certificato && (
+            <span className="sg-sotto">{x.stato === 'nuova' ? 'Il certificato lo porta dopo: accogliendo, la scheda prende il termine per portarlo.' : 'Il certificato lo porta dopo.'}</span>
+          )}
           {FILE.filter((f) => arrivati.has(f.tipo) && !DA_STAMPARE.includes(f.tipo) && !(certificato && f.tipo === 'certificato')).map((f) => (
             <Anteprima key={f.tipo} f={arrivati.get(f.tipo)!} />
           ))}

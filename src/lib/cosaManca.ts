@@ -11,7 +11,7 @@
  */
 
 import type { FiltroSegreteria, Voce } from './indirizzoSegreteria'
-import { senzaCertificatoValido, type LezioneSeg, type PersonaSeg } from './segreteria'
+import { certificatoAtteso, senzaCertificatoValido, type LezioneSeg, type PersonaSeg } from './segreteria'
 import { SEGNALA_TESSERE } from './tessere'
 import { quotaDaIncassare, titolariDi } from './filtriIscritti'
 
@@ -32,6 +32,8 @@ export type StatoCasella = 'manca' | 'attesa' | 'aposto' | 'nonso'
 export interface ContiCosaManca {
   appelli: number | null
   certificati: number | null
+  /** Nel termine per portarlo (141): non fanno rossa la casella, si dicono sotto («+8 da portare»). */
+  daPortare?: number | null
   pagamenti: number | null
   /** Chi ha un corso scaduto o non pagato (`corsiScaduti`). Assente se le ricevute non si sono mai lette: la casella non c'è. */
   corsi?: number | null
@@ -83,7 +85,7 @@ const NOMI: Record<IdCasella, string> = {
 
 const NOTE: Record<IdCasella, string> = {
   appelli: `senza appello, ultimi ${GIORNI_APPELLI} giorni`,
-  certificati: 'scaduti o mancanti',
+  certificati: 'termine passato o scaduti',
   pagamenti: 'quote non in regola',
   corsi: 'trimestre o annuale finito',
   tessere: 'senza tessera valida',
@@ -104,11 +106,14 @@ export function statoDi(id: IdCasella, n: number | null): StatoCasella {
 }
 
 /** Il nome contiene il testo che si vede (titolo e nota): WCAG 2.5.3, per chi detta i comandi a voce. */
-function nomeAccessibile(id: IdCasella, n: number | null, contato: boolean): string {
+function nomeAccessibile(id: IdCasella, n: number | null, contato: boolean, nota = NOTE[id]): string {
   if (n === null) return `${NOMI[id]}: ${contato ? 'non so, non si è riusciti a contare' : 'sto contando'}`
-  if (n === 0) return `${TITOLI[id]}, ${NOTE[id]}: nessuno, a posto`
-  return `${n} ${TITOLI[id]}, ${NOTE[id]}`
+  if (n === 0) return `${TITOLI[id]}, ${nota}: nessuno, a posto`
+  return `${n} ${TITOLI[id]}, ${nota}`
 }
+
+/** La nota di sempre; per i certificati anche chi è nel termine, che non è rosso. */
+const notaFissa = (id: IdCasella, c: ContiCosaManca) => (id === 'certificati' && c.daPortare ? `${NOTE[id]} · +${c.daPortare} da portare` : NOTE[id])
 
 const orario = (ms: number) => new Date(ms).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false })
 
@@ -124,7 +129,7 @@ export function caselleCosaManca(c: ContiCosaManca): Casella[] {
           ? c.aggiornato !== undefined
             ? `conto delle ${orario(c.aggiornato)}`
             : 'conto vecchio'
-          : NOTE[id]
+          : notaFissa(id, c)
     return {
       id,
       titolo: TITOLI[id],
@@ -133,7 +138,7 @@ export function caselleCosaManca(c: ContiCosaManca): Casella[] {
       stato: statoDi(id, n),
       nota,
       notaFissa: n !== null && !c.vecchio,
-      nome: nomeAccessibile(id, n, c.contato),
+      nome: nomeAccessibile(id, n, c.contato, notaFissa(id, c)),
       ...DESTINAZIONI[id],
     }
   })
@@ -202,10 +207,13 @@ export function valorePreferenzaStriscia(voluta: boolean): string {
  */
 export function mantieniIPrecedenti(
   prima: ContiCosaManca,
-  letti: Pick<ContiCosaManca, 'appelli' | 'certificati' | 'pagamenti' | 'corsi' | 'tessere' | 'richieste'>,
+  letti: Pick<ContiCosaManca, 'appelli' | 'certificati' | 'daPortare' | 'pagamenti' | 'corsi' | 'tessere' | 'richieste'>,
   ora: number,
 ): ContiCosaManca {
   const dopo: ContiCosaManca = { appelli: null, certificati: null, pagamenti: null, tessere: null, richieste: null, contato: true }
+  // Non è una casella: segue i certificati, e se non si legge resta quello di prima.
+  const daPortare = letti.daPortare ?? prima.daPortare
+  if (daPortare !== undefined) dopo.daPortare = daPortare
   let qualcunoNuovo = false
   let vecchio = false
   for (const id of CASELLE) {
@@ -240,6 +248,11 @@ export function certificatiDaSistemare(persone: PersonaSeg[], oggi: string): num
   return persone.filter((p) => p.attiva && !p.genitoreNonIscritto && senzaCertificatoValido(p, oggi)).length
 }
 
+/** Nel termine per portarlo (`atteso`): il «+N da portare» sotto la casella, che non la fa rossa. */
+export function certificatiDaPortare(persone: PersonaSeg[], oggi: string): number {
+  return persone.filter((p) => !p.genitoreNonIscritto && certificatoAtteso(p, oggi)).length
+}
+
 /** Fra chi è attivo, chi non è in regola con la quota: le righe del filtro DA PAGARE di ISCRITTI. */
 export function pagamentiNonInRegola(persone: PersonaSeg[], oggi: string): number {
   const titolari = titolariDi(persone)
@@ -256,10 +269,11 @@ export function contiDellaStriscia(
   letti: { persone: PersonaSeg[] | null; lezioni: LezioneSeg[] | null; richieste: number | null; tessere?: number | null; corsi?: number | null },
   adesso: number,
   oggi: string,
-): Pick<ContiCosaManca, 'appelli' | 'certificati' | 'pagamenti' | 'corsi' | 'tessere' | 'richieste'> {
+): Pick<ContiCosaManca, 'appelli' | 'certificati' | 'daPortare' | 'pagamenti' | 'corsi' | 'tessere' | 'richieste'> {
   return {
     appelli: letti.lezioni ? appelliSenzaSegni(letti.lezioni, adesso).length : null,
     certificati: letti.persone ? certificatiDaSistemare(letti.persone, oggi) : null,
+    daPortare: letti.persone ? certificatiDaPortare(letti.persone, oggi) : null,
     pagamenti: letti.persone ? pagamentiNonInRegola(letti.persone, oggi) : null,
     tessere: letti.tessere ?? null,
     richieste: letti.richieste,

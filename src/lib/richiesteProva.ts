@@ -4,7 +4,7 @@ import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { archivio, certificatiProva, scordaCertificato } from './archivioProva'
 import { nomeProprio } from './nomi'
 import { chiaveGiorno } from './sala'
-import { cosaNonVaScadenza } from './segreteria'
+import { cosaNonVaScadenza, dalCertificato, GIORNI_CERTIFICATO, spostaGiorno } from './segreteria'
 import { MASSIMO_PERSONE } from './passiIscrizione'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { caricaListino } from './listino'
@@ -211,6 +211,10 @@ export function creaRichiesteProva(): DatiRichieste {
 
   return {
     modo: 'prova',
+
+    async certificatoGiorni() {
+      return archivio.dati.impostazioni?.certificatoGiorni ?? GIORNI_CERTIFICATO
+    },
 
     async corsiAperti() {
       return archivio.dati.corsi
@@ -491,8 +495,18 @@ export function creaRichiesteProva(): DatiRichieste {
         certificatiProva.set(id, { url: cert.url, pdf: cert.pdf })
         file.get(richiestaId)?.delete('certificato')
         a.persone = a.persone.map((p) =>
-          p.id === id ? { ...p, certificato: { scade: scade || p.certificato?.scade, file: `${id}/certificato-${Date.now()}.${cert.pdf ? 'pdf' : 'jpg'}`, caricatoIl: oggi } } : p,
+          // Il termine resta, salvo un certificato valido: come il trigger di 141.
+          p.id === id
+            ? { ...p, certificato: { scade: scade || p.certificato?.scade, file: `${id}/certificato-${Date.now()}.${cert.pdf ? 'pdf' : 'jpg'}`, caricatoIl: oggi, ...((scade || p.certificato?.scade || '') >= oggi ? {} : { entro: p.certificato?.entro, spostatoDa: p.certificato?.spostatoDa, spostatoIl: p.certificato?.spostatoIl }) } }
+            : p,
         )
+      }
+      // Come il trigger di 141: «non ce l'ho ancora», dai 6 anni e senza un certificato valido, prende il termine.
+      const giorni = a.impostazioni?.certificatoGiorni ?? GIORNI_CERTIFICATO
+      const ora = a.persone.find((p) => p.id === id)?.certificato
+      if (r.certificatoDopo && /^\d{4}-\d{2}-\d{2}$/.test(r.natoIl) && dalCertificato(r.natoIl) <= oggi && !(ora?.scade && ora.scade >= oggi)) {
+        const entro = [ora?.entro, spostaGiorno(oggi, giorni)].filter((x): x is string => !!x).sort().at(-1)
+        a.persone = a.persone.map((p) => (p.id === id ? { ...p, certificato: { ...p.certificato, entro, ...(entro !== ora?.entro && { spostatoDa: undefined, spostatoIl: undefined }) } } : p))
       }
       archivio.salva()
       cambia(richiestaId, { stato: 'accolta', personaId: id, gestitaIl: new Date().toISOString(), gestitaDa: 'Segreteria di prova' })

@@ -198,7 +198,11 @@ iniziale.
    (**+1 PROVA**), come nell'app. Lo stesso in cima all'appello.
 3. A destra l'appello della lezione scelta, con cognome e nome. Accanto ai nomi:
    - **DAL TABLET** — si è segnato da solo;
-   - **SEGNATO DOPO** — si è segnato col recupero.
+   - **SEGNATO DOPO** — si è segnato col recupero;
+   - **! CERTIFICATO NON ARRIVATO**, in rosso sotto il nome — non ha portato il
+     certificato medico e il termine per portarlo è passato. È solo un avviso:
+     la presenza si segna come sempre, e la segreteria lo sollecita. Chi è
+     ancora nel termine non ha niente.
 4. Toccate un nome per cambiarlo: **presente ↔ assente**. (Dal tablet un
    vostro segno non si toglie, si cambia.)
 5. I due tasti in cima:

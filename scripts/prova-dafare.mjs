@@ -39,6 +39,7 @@ const VOLUTI = {
   istruttori: ['Presenza istruttore da confermare', 'Presenze istruttori da confermare'],
   segnalate: ['Presenza segnalata da vedere', 'Presenze segnalate da vedere'],
   certificati: ['Iscritto senza certificato valido', 'Iscritti senza certificato valido'],
+  'da-portare': ['Iscritto deve ancora portare il certificato', 'Iscritti devono ancora portare il certificato'],
   'certificati-ricevuti': ['Certificato mandato da controllare', 'Certificati mandati da controllare'],
   scadenza: ['Certificato in scadenza', 'Certificati in scadenza'],
   arrivo: ['Iscritto compie 6 anni senza certificato', 'Iscritti compiono 6 anni senza certificato'],
@@ -50,7 +51,7 @@ const VOLUTI = {
 }
 
 console.log('\nI testi')
-ok('le tredici cose, e nessun\'altra', typeof T === 'object' ? Object.keys(T).sort() : T, Object.keys(VOLUTI).sort())
+ok('le quattordici cose, e nessun\'altra', typeof T === 'object' ? Object.keys(T).sort() : T, Object.keys(VOLUTI).sort())
 for (const [k, [singolare, plurale]] of Object.entries(VOLUTI))
   ok(`${k}: singolare, plurale`, [T[k]?.singolare, T[k]?.plurale], [singolare, plurale])
 ok('nessun testo è tutto maiuscolo', typeof T === 'object'
@@ -127,10 +128,10 @@ console.log(' certificati')
     tre(v), [
       ['Verdi Lia', 'scaduto il 10 settembre', true],
       ['Bianchi Marco', 'scaduto il 3 ottobre', true],
-      ['Èvola Ugo', 'manca', true],
-      ['Gialli Sara', 'manca · senza data di nascita', true],
-      ['Neri Carla', 'manca', true],
-      ['Zanetti Ugo', 'manca', true],
+      ['Èvola Ugo', 'nessun certificato', true],
+      ['Gialli Sara', 'nessun certificato · senza data di nascita', true],
+      ['Neri Carla', 'nessun certificato', true],
+      ['Zanetti Ugo', 'nessun certificato', true],
     ])
   ok('l\'id è quello della persona', primoId(v), persone[4].id)
   ok('nessuno: elenco vuoto', f('chiCertificati')([persona('Rossi', 'Anna')], OGGI), [])

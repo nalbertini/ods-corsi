@@ -640,6 +640,8 @@ function InRegola({ persone, oggi, onVai }: { persone: PersonaSeg[]; oggi: strin
         parti={[
           { nome: 'Valido', n: cert.valido, tono: 'verde' },
           { nome: 'In scadenza', n: cert.in_scadenza, tono: 'giallo' },
+          // Nel termine per portarlo (141): non vale, ma non è ancora rosso.
+          { nome: 'Da portare', n: cert.atteso, tono: 'giallo' },
           { nome: 'Scaduto', n: cert.scaduto, tono: 'rosso' },
           { nome: 'Manca', n: cert.manca, tono: 'spento' },
         ]}

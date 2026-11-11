@@ -129,9 +129,9 @@ await sezione('1b. cosa dice la scheda e cosa si può salvare', async () => {
   const p = (c, natoIl) => f('presentaCertificato', c, natoIl, oggi)
   const riga = (x) => (typeof x === 'string' ? x : [x.parola, x.tono, x.tasto, x.primo])
   ok('nessun certificato: MANCA, rosso, CARICA IL CERTIFICATO, il primo gesto', riga(p({ conFile: false })), ['MANCA', 'rosso', 'Carica il certificato', true])
-  ok('… e la frase', p({ conFile: false }).frase, 'Nessun certificato in segreteria: senza, in sala non si entra.')
+  ok('… e la frase', p({ conFile: false }).frase, 'Nessun certificato in segreteria.')
   ok('il file senza la data: SCRIVI LA DATA', riga(p({ conFile: true })), ['MANCA', 'rosso', 'Scrivi la data', true])
-  ok('… e dice cosa fare', p({ conFile: true }).frase, 'Il file c’è, ma manca la data: scrivila leggendo il foglio. Senza, in sala non si entra.')
+  ok('… e dice cosa fare', p({ conFile: true }).frase, 'Il file c’è, ma manca la data: scrivila leggendo il foglio.')
   ok('valido col file: Sostituisci, non è il primo gesto', riga(p({ scade: '2027-03-14', conFile: true })), ['VALIDO', 'verde', 'Sostituisci', false])
   ok('… e la frase', p({ scade: '2027-03-14', conFile: true }).frase, 'Valido fino al 14 marzo 2027.')
   ok('il file di prima è un valido come gli altri', riga(p({ scade: '2027-03-14', conFile: true, vecchio: true })), ['VALIDO', 'verde', 'Sostituisci', false])
@@ -142,12 +142,12 @@ await sezione('1b. cosa dice la scheda e cosa si può salvare', async () => {
     [['IN SCADENZA', 'giallo', 'Sostituisci', false], 'Scade il 8 ottobre 2026, fra 12 giorni.'])
   ok('scade domani e oggi', [p({ scade: '2026-09-27', conFile: true }).frase, p({ scade: oggi, conFile: true }).frase], ['Scade il 27 settembre 2026, domani.', 'Scade il 26 settembre 2026, oggi.'])
   const sc = p({ scade: '2026-09-25', conFile: true })
-  ok('scaduto col file: SOSTITUISCI primo, e quando il file si cancella', [riga(sc), sc.frase, sc.cancellaIl], [['SCADUTO', 'rosso', 'Sostituisci', true], 'Scaduto il 25 settembre 2026: va rinnovato prima di tornare in sala.', '2026-10-25'])
+  ok('scaduto col file: SOSTITUISCI primo, e quando il file si cancella', [riga(sc), sc.frase, sc.cancellaIl], [['SCADUTO', 'rosso', 'Sostituisci', true], 'Scaduto il 25 settembre 2026: va rinnovato.', '2026-10-25'])
   // Un file c'è stato (il giorno di caricamento resta anche dopo la pulizia): «file cancellato». Se non c'è mai stato, niente sul file.
   const ss = p({ scade: '2026-08-01', conFile: false, caricatoIl: '2026-02-03' })
-  ok('scaduto senza file, che c\'era: Carica il nuovo, file cancellato', [riga(ss), ss.frase, ss.cancellaIl, ss.nota], [['SCADUTO', 'rosso', 'Carica il nuovo', true], 'Certificato scaduto, file cancellato. Scaduto il 1 agosto 2026: ne serve uno nuovo prima di tornare in sala.', undefined, 'Il file è stato cancellato 30 giorni dopo la scadenza, come previsto.'])
+  ok('scaduto senza file, che c\'era: Carica il nuovo, file cancellato', [riga(ss), ss.frase, ss.cancellaIl, ss.nota], [['SCADUTO', 'rosso', 'Carica il nuovo', true], 'Certificato scaduto, file cancellato. Scaduto il 1 agosto 2026: ne serve uno nuovo.', undefined, 'Il file è stato cancellato 30 giorni dopo la scadenza, come previsto.'])
   const mai = p({ scade: '2026-08-01', conFile: false })
-  ok('scaduto con la sola data scritta a mano: niente parola sul file', [riga(mai), mai.frase, mai.nota], [['SCADUTO', 'rosso', 'Carica il nuovo', true], 'Certificato scaduto il 1 agosto 2026: ne serve uno nuovo prima di tornare in sala.', 'Nessun file caricato: la data l’ha scritta la segreteria.'])
+  ok('scaduto con la sola data scritta a mano: niente parola sul file', [riga(mai), mai.frase, mai.nota], [['SCADUTO', 'rosso', 'Carica il nuovo', true], 'Certificato scaduto il 1 agosto 2026: ne serve uno nuovo.', 'Nessun file caricato: la data l’ha scritta la segreteria.'])
   // Disattivata: il file è andato alla disattivazione, e non c'è più niente da cambiare.
   const dis = f('presentaCertificato', { scade: '2027-03-14', conFile: false, caricatoIl: '2026-02-03' }, undefined, oggi, false)
   ok('disattivata: file cancellato alla disattivazione, né SOSTITUISCI né TOGLI', [dis.nota, dis.puoCambiare, p({ scade: '2027-03-14', conFile: true }).puoCambiare], ['File cancellato alla disattivazione.', false, true])
@@ -206,7 +206,7 @@ await sezione('1c. sotto i 6 anni, per tutti allo stesso modo', async () => {
   ]
   const attive = persone.filter((x) => x.attiva)
   const conti = f('contaCertificati', attive, oggi)
-  ok('i conti delle statistiche: valido, in scadenza, scaduto, manca (chi non ha l\'obbligo non si conta)', conti, { valido: 1, in_scadenza: 1, scaduto: 1, manca: 2 })
+  ok('i conti delle statistiche: valido, in scadenza, scaduto, manca, atteso (chi non ha l\'obbligo non si conta)', conti, { valido: 1, in_scadenza: 1, scaduto: 1, manca: 2, atteso: 0 })
   ok('chi manca è chi non è a posto: stesso numero in DA FARE, ISCRITTI e nelle statistiche', [
     attive.filter((x) => f('senzaCertificatoValido', x, oggi)).length,
     attive.filter((x) => ['manca', 'scaduto'].includes(f('statoCertificato', x, oggi))).length,

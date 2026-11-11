@@ -84,6 +84,11 @@ perché nell'app non resta: accolta la richiesta, la si apre, si stampa, si
 mette nella cartellina e **Stampato, cancella** la cancella per sempre. La
 scheda dell'iscritto segna da sé che la copia è in segreteria.
 
+Se chi si iscrive ha scelto «Non ce l'ho ancora», fra i file c'è **Il
+certificato lo porta dopo**: accogliendo, la scheda prende il termine per
+portarlo (oggi più i giorni di [Regole](regole.md), solo dai 6 anni e se non
+ha già un certificato valido).
+
 Il **certificato medico**, se è arrivato, ha il suo riquadro, **IL
 CERTIFICATO ARRIVATO DAL MODULO**, da guardare prima di accogliere: **Apri**
 (il link dura 10 minuti), e **VALIDO FINO AL**, dove si scrive la data

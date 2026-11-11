@@ -32,6 +32,8 @@ export interface RigaScheda {
   certificato_scade: string | null
   /** Arriva con 102-certificato-iscritto.sql. */
   certificato_in_attesa_il?: string | null
+  /** Arriva con 141-certificato-dopo.sql: il termine per portarlo, già calcolato. */
+  certificato_entro?: string | null
   pagamento: StatoPagamento
   pagato_fino: string | null
   quote: Array<{ anno: number; numero: number; dal: string | null; al: string | null; mancano: number }> | null
@@ -44,7 +46,7 @@ export function schedaDa(r: RigaScheda): SchedaIscritto {
     nome: r.nome,
     cognome: r.cognome,
     corsi: (r.corsi ?? []).map((c) => ({ id: c.id, nome: c.nome, colore: c.colore ?? undefined })),
-    certificato: { scade: r.certificato_scade ?? undefined, inAttesaIl: r.certificato_in_attesa_il?.slice(0, 10) },
+    certificato: { scade: r.certificato_scade ?? undefined, inAttesaIl: r.certificato_in_attesa_il?.slice(0, 10), entro: r.certificato_entro ?? undefined },
     pagamento: { stato: r.pagamento, fino: r.pagato_fino ?? undefined },
     quote: (r.quote ?? []).map((q): QuotaRicevuta => ({ anno: q.anno, numero: q.numero, dal: q.dal ?? undefined, al: q.al ?? undefined, mancano: q.mancano })),
     natoIl: r.nato_il ?? undefined,
