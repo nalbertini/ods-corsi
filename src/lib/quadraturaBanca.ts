@@ -170,6 +170,20 @@ function causaSoloBanca(r: RigaBanca): string | null {
 /** L'importo col segno: le entrate in più, le uscite in meno. */
 export const firmato = (r: { tipo: 'entrata' | 'uscita'; importo: number }) => (r.tipo === 'entrata' ? r.importo : -r.importo)
 
+/**
+ * Le rate di una ricevuta intera coperta da un bonifico solo hanno tutte la sua chiave (`segnaIncassiCoperti`):
+ * per abbinarle alla riga della banca sono una riga sola, con la somma, al posto della prima.
+ */
+function unisciRate<T extends RigaApp & { chiavi: string[] }>(app: T[]): T[] {
+  const perChiave = new Map<string, T[]>()
+  for (const a of app) if (a.id.startsWith('incasso:') && a.chiavi.length === 1) perChiave.set(a.chiavi[0], [...(perChiave.get(a.chiavi[0]) ?? []), a])
+  return app.flatMap((a) => {
+    const rate = a.id.startsWith('incasso:') && a.chiavi.length === 1 ? perChiave.get(a.chiavi[0]) ?? [a] : [a]
+    if (rate.length === 1) return [a]
+    return rate[0] === a ? [{ ...a, id: rate.map((x) => x.id).join(' + '), importo: rate.reduce((s, x) => s + x.importo, 0) }] : []
+  })
+}
+
 /** Le coppie app–banca su tutte le righe, uno a uno: prima per chiave, poi per tipo, importo e data vicina. */
 function abbina(app: (RigaApp & { chiavi: string[] })[], banca: RigaBanca[]): Coppia[] {
   const coppie: Coppia[] = []
@@ -234,8 +248,8 @@ export function quadratura(o: {
       const riga: RigaApp = { id: r.id, data: r.data, tipo: e > 0 ? 'entrata' : 'uscita', importo: Math.abs(e), descrizione: r.descrizione, voce: r.voce }
       return [{ ...riga, chiavi: [r.origineImport, r.bancaChiave].filter((k): k is string => !!k) }]
     })
-    const coppie = abbina(righeApp, banca)
-    const appiate = new Set(coppie.map((c) => c.app.id))
+    const coppie = abbina(unisciRate(righeApp), banca)
+    const appiate = new Set(coppie.flatMap((c) => c.app.id.split(' + ')))
     const bancaAppiate = new Set(coppie.map((c) => c.banca.chiave))
     const togliChiavi = ({ chiavi: _, ...r }: RigaApp & { chiavi: string[] }): RigaApp => r
     const abbinate = coppie.filter((c) => nelMese(c.app.data) || nelMese(c.banca.data))

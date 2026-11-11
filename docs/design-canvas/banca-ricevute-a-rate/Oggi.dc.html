@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Oggi · il bonifico per una ricevuta in due rate</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<section aria-label="Le righe del file" style="display:flex;flex-direction:column;gap:14px;width:1180px;padding:22px 24px;background:#ffffff;border:2px solid #cfe6f4">
+<span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">LE RIGHE DEL FILE</span>
+<div style="display:flex;flex-direction:column;border-top:1px solid #cfe6f4">
+<!-- OGGI: la ricevuta n. 124 ha quota 50,00 + trimestre 170,00 in Bonifico, stesso giorno. Nessun incasso da 220,00: la riga entra nuova e i soldi si contano due volte. -->
+<dc-import name="RigaBanca" stato="nuova" data="09/11/2026" testo="Da BIANCHI MARTA per iscrizione SARA ROSSI BONIFICO SEPA" tipologia="Da classificare" persona="nessuna" importo="+ 220,00 €" hint-size="100%,96px"></dc-import>
+<div style="padding:10px 12px;margin-top:8px;background:#fcf6e6;border-left:4px solid #8f6a00;font-size:13px;line-height:1.5">Nel Conto Corrente: + 220,00 € da questa riga e + 50,00 € + 170,00 € dalla ricevuta n. 124. Gli stessi soldi due volte.</div>
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1228,"height":330}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

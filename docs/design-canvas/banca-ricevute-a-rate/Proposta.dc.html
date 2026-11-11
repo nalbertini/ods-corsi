@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta · la ricevuta intera copre il bonifico</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<section aria-label="Le righe del file" style="display:flex;flex-direction:column;gap:14px;width:1180px;padding:22px 24px;background:#ffffff;border:2px solid #cfe6f4">
+<span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">LE RIGHE DEL FILE</span>
+<div style="display:flex;flex-direction:column;border-top:1px solid #cfe6f4">
+<!-- PROPOSTA: le parole restano quelle di oggi (DUPLICATA, GIÀ SCRITTA COME, POTREBBE ESSERE, È nuova). La ricevuta in più rate è una voce sola, con le parti nel dettaglio. Nomi e numeri inventati. -->
+<dc-import name="RigaBanca" stato="duplicata" data="09/11/2026" testo="Da BIANCHI MARTA per iscrizione SARA ROSSI BONIFICO SEPA" voce="Rossi Sara" dettaglio="09/11/2026 · ricevuta n. 124 · quota 50,00 + trimestre 170,00" rifiutabile="{{ true }}" importo="+ 220,00 €" hint-size="100%,96px"></dc-import>
+<div role="row" style="display:grid;grid-template-columns:150px 90px minmax(160px,1fr) 436px 104px;gap:16px;align-items:center;min-height:76px;padding:12px 0;border-bottom:1px solid #cfe6f4">
+<dc-import name="Badge" tema="sito" tipo="tag" tono="giallo" label="DA DECIDERE" larghezza="150px" hint-size="150px,24px"></dc-import>
+<span style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">06/11/2026</span>
+<span style="font-size:14px;overflow-wrap:anywhere;min-width:0">Da VERDI PAOLO per quota LUCA VERDI BONIFICO SEPA</span>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">POTREBBE ESSERE</span><span style="font-size:14px"><b>Verdi Luca</b> <span style="font-size:13px;color:#46606f">06/11/2026 · ricevuta n. 119 · annuale 220,00</span> <span style="font-size:13px;color:#0b7a33">· nome e cognome sono nel testo</span></span></span><span role="img" aria-label="È questa: collega il movimento a Verdi Luca" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:none;background:#ffffff;border:2px solid #0b7a33;border-radius:6px;font-size:22px;font-weight:700;color:#0b7a33">✓</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">POTREBBE ESSERE</span><span style="font-size:14px"><b>Neri Giulia</b> <span style="font-size:13px;color:#46606f">05/11/2026 · ricevuta n. 117 · quota 50,00 + trimestre 170,00</span></span></span><span role="img" aria-label="È questa: collega il movimento a Neri Giulia" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:none;background:#ffffff;border:2px solid #0b7a33;border-radius:6px;font-size:22px;font-weight:700;color:#0b7a33">✓</span></div><div><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="È nuova" hint-size="110px,44px"></dc-import></div></div>
+<b style="text-align:right;font-size:15px;font-variant-numeric:tabular-nums">+ 220,00 €</b>
+</div>
+<div role="row" style="display:grid;grid-template-columns:150px 90px minmax(160px,1fr) 436px 104px;gap:16px;align-items:center;min-height:76px;padding:12px 0;border-bottom:1px solid #cfe6f4">
+<dc-import name="Badge" tema="sito" tipo="tag" tono="giallo" label="DA DECIDERE" larghezza="150px" hint-size="150px,24px"></dc-import>
+<span style="font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">05/11/2026</span>
+<span style="font-size:14px;overflow-wrap:anywhere;min-width:0">Da GIALLI ANDREA per gara regionale BONIFICO SEPA</span>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;color:#8f6a00">Il nome nel testo non è quello della ricevuta: dimmi tu.</span><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">POTREBBE ESSERE</span><span style="font-size:14px"><b>Rossi Sara</b> <span style="font-size:13px;color:#46606f">05/11/2026 · ricevuta n. 116 · quota 50,00 + trimestre 170,00</span></span></span><span role="img" aria-label="È questa: collega il movimento a Rossi Sara" style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:none;background:#ffffff;border:2px solid #0b7a33;border-radius:6px;font-size:22px;font-weight:700;color:#0b7a33">✓</span></div><div><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="È nuova" hint-size="110px,44px"></dc-import></div></div>
+<b style="text-align:right;font-size:15px;font-variant-numeric:tabular-nums">+ 220,00 €</b>
+</div>
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1228,"height":760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -504,3 +504,84 @@ select atteso('…la ricevuta è intatta',
   (select (annullata_il is null)::text || ' ' || pagato::text from ricevute where id = :'r1'), 'true 12000');
 select atteso('«Non è questo» sul pagamento a mano: ok', come(ada(), 'authenticated', $$select banca_non_e_questo('banca:i2')$$) || ' ' || stato_banca('banca:i2'), 'ok 0 coperto, 1 scritto');
 select atteso('…il pagamento è intatto', (select (annullato_il is null)::text || ' ' || importo::text from pagamenti_diretti where id = :'d1'), 'true 12000');
+
+\echo ''
+\echo '--- 11. banca: un bonifico che paga una ricevuta intera in più rate (conId «ricevuta:<uuid>») ---'
+-- Quota 50,00 + trimestre 170,00, due pagamenti dello stesso giorno: la riga della banca (220,00) copre la ricevuta, non una rata sola.
+-- Regola di src/lib/importaBanca.ts (segnaCoperti): la ricevuta regge se la somma dei suoi pagamenti sul conto (non contanti, carta,
+-- Satispay) è l'importo, non è annullata, e né lei né uno dei suoi incassi `incasso:<id>:…` copre già un'altra riga. Vale anche al contrario.
+select pulisci(); select pulisci_banca();
+update casse set dal = '2026-09-01' where nome = 'Conto Corrente';
+create or replace function ricevuta_a_rate(m1 text, i1 int, m2 text, i2 int, annullata boolean default false) returns uuid
+  language sql security definer set search_path = public as $$
+  insert into ricevute (anno, numero, data, persona_id, ente, intestatario, voci, totale, pagato, anticipo, annullata_il)
+  values (2026, (select coalesce(max(numero), 0) + 1 from ricevute where anno = 2026), '2026-10-14', 'aaaaaaaa-0000-0000-0000-000000000007', '{}', '{"nome": "Luca", "cognome": "Rossi"}',
+    jsonb_build_array(
+      jsonb_build_object('descrizione', 'QUOTA ASSOCIATIVA 2026/2027', 'quantita', 1, 'prezzo', i1,
+        'pagamenti', jsonb_build_array(jsonb_build_object('data', '2026-10-14', 'importo', i1, 'metodo', m1))),
+      jsonb_build_object('descrizione', 'Trimestre ottobre-dicembre', 'quantita', 1, 'prezzo', i2,
+        'pagamenti', jsonb_build_array(jsonb_build_object('data', '2026-10-14', 'importo', i2, 'metodo', m2)))),
+    i1 + i2, i1 + i2, 0, case when annullata then now() end)
+  returning id $$;
+grant execute on function ricevuta_a_rate(text, int, text, int, boolean) to authenticated;
+-- La riga della banca (entrata del 14 ottobre, 220,00 se non si dice altro) coperta da quell'id.
+create or replace function copre_ricevuta(chiave text, con text, importo int default 22000, tipo text default 'entrata') returns text language sql as $$
+  select come(ada(), 'authenticated', format('select banca_segna_coperti(%L::jsonb)', jsonb_build_array(jsonb_build_object(
+    'chiave', chiave, 'data', '2026-10-14', 'tipo', tipo, 'importo', importo, 'descrizione', 'Da Rossi Luca BONIFICO', 'conId', con, 'conDescrizione', 'ricevuta')))) $$;
+grant execute on function copre_ricevuta(text, text, int, text) to authenticated;
+
+select ricevuta_a_rate('Bonifico', 5000, 'bonifico', 17000) as rr1 \gset
+select (select count(*) from movimenti) as mm0 \gset
+select atteso('50,00 + 170,00 in bonifico: la riga da 220,00 copre la ricevuta intera', copre_ricevuta('banca:r1', 'ricevuta:' || :'rr1') || ' ' || stato_banca('banca:r1'), 'ok 1 coperto, 0 scritto');
+select atteso('…il con_id è «ricevuta:<id>» e nessun movimento è nato', (select con_id from banca_coperti where chiave = 'banca:r1') || ' ' || (select count(*) from movimenti)::text, 'ricevuta:' || :'rr1' || ' ' || :'mm0');
+select atteso('rilanciata con la stessa riga: non cambia niente', copre_ricevuta('banca:r1', 'ricevuta:' || :'rr1') || ' ' || (select count(*)::text from banca_coperti), 'ok 1');
+
+-- Non regge: la riga entra «Da classificare», come per un incasso o un movimento.
+select atteso('un''altra riga sulla stessa ricevuta: entra «Da classificare»', copre_ricevuta('banca:r2', 'ricevuta:' || :'rr1') || ' ' || stato_banca('banca:r2'), 'ok 0 coperto, 1 scritto');
+select atteso('…nel Conto Corrente', (select concat_ws('|', m.tipo, m.importo, c.nome, v.nome) from movimenti m join casse c on c.id = m.cassa_id join voci_contabili v on v.id = m.voce_id where m.origine_import = 'banca:r2'), 'entrata|22000|Conto Corrente|Da classificare');
+select ricevuta_a_rate('Bonifico', 5000, 'Bonifico', 17000) as rr2 \gset
+select atteso('importo che non è la somma (219,00): «Da classificare»', copre_ricevuta('banca:r3', 'ricevuta:' || :'rr2', 21900) || ' ' || stato_banca('banca:r3'), 'ok 0 coperto, 1 scritto');
+select atteso('importo che non è la somma (221,00): «Da classificare»', copre_ricevuta('banca:r4', 'ricevuta:' || :'rr2', 22100) || ' ' || stato_banca('banca:r4'), 'ok 0 coperto, 1 scritto');
+select atteso('un''uscita della banca: «Da classificare»', copre_ricevuta('banca:r5', 'ricevuta:' || :'rr2', 22000, 'uscita') || ' ' || stato_banca('banca:r5'), 'ok 0 coperto, 1 scritto');
+select ricevuta_a_rate('Bonifico', 5000, 'Bonifico', 17000, true) as rr_ann \gset
+select atteso('ricevuta annullata: «Da classificare»', copre_ricevuta('banca:r6', 'ricevuta:' || :'rr_ann') || ' ' || stato_banca('banca:r6'), 'ok 0 coperto, 1 scritto');
+select atteso('ricevuta che non c''è: «Da classificare»', copre_ricevuta('banca:r7', 'ricevuta:aaaaaaaa-9999-0000-0000-000000000000') || ' ' || stato_banca('banca:r7'), 'ok 0 coperto, 1 scritto');
+select ricevuta_a_rate('Bonifico', 5000, 'Satispay', 17000) as rr_sat \gset
+select atteso('una rata con Satispay non è sul conto: 220,00 non torna, «Da classificare»', copre_ricevuta('banca:r8', 'ricevuta:' || :'rr_sat') || ' ' || stato_banca('banca:r8'), 'ok 0 coperto, 1 scritto');
+select ricevuta_a_rate('Carta', 5000, 'Bonifico', 17000) as rr_carta \gset
+select atteso('una rata con la carta non è sul conto: 220,00 non torna', copre_ricevuta('banca:r9', 'ricevuta:' || :'rr_carta') || ' ' || stato_banca('banca:r9'), 'ok 0 coperto, 1 scritto');
+select ricevuta_a_rate('Contanti', 5000, 'Bonifico', 17000) as rr_cont \gset
+select atteso('una rata in contanti non entra nella somma: 220,00 non torna', copre_ricevuta('banca:r10', 'ricevuta:' || :'rr_cont') || ' ' || stato_banca('banca:r10'), 'ok 0 coperto, 1 scritto');
+-- Con una rata sola sul conto non c'è una ricevuta intera: l'app abbina quella rata da sola (`incasso:<id>:1:0`).
+select atteso('…e con una sola rata sul conto (170,00) non è una ricevuta intera: «Da classificare»', copre_ricevuta('banca:r11', 'ricevuta:' || :'rr_cont', 17000) || ' ' || stato_banca('banca:r11'), 'ok 0 coperto, 1 scritto');
+select atteso('un conId «ricevuta:pippo»: errore 22023', left(copre_ricevuta('banca:r12', 'ricevuta:pippo'), 5), '22023');
+
+-- Unicità: un incasso della ricevuta già coperto la blocca, e viceversa.
+select ricevuta_a_rate('Bonifico', 5000, 'Bonifico', 17000) as rr3 \gset
+select atteso('un incasso della ricevuta (la quota, 50,00) coperto da una riga della banca', copre_ricevuta('banca:u3', 'incasso:' || :'rr3' || ':0:0', 5000) || ' ' || stato_banca('banca:u3'), 'ok 1 coperto, 0 scritto');
+select atteso('…la ricevuta intera non regge più: «Da classificare»', copre_ricevuta('banca:u4', 'ricevuta:' || :'rr3') || ' ' || stato_banca('banca:u4'), 'ok 0 coperto, 1 scritto');
+select ricevuta_a_rate('Bonifico', 5000, 'Bonifico', 17000) as rr4 \gset
+select atteso('la ricevuta intera coperta', copre_ricevuta('banca:u5', 'ricevuta:' || :'rr4') || ' ' || stato_banca('banca:u5'), 'ok 1 coperto, 0 scritto');
+select atteso('…la quota (incasso:<id>:0:0) non regge più: «Da classificare»', copre_ricevuta('banca:u6', 'incasso:' || :'rr4' || ':0:0', 5000) || ' ' || stato_banca('banca:u6'), 'ok 0 coperto, 1 scritto');
+select atteso('…né il trimestre (incasso:<id>:1:0)', copre_ricevuta('banca:u7', 'incasso:' || :'rr4' || ':1:0', 17000) || ' ' || stato_banca('banca:u7'), 'ok 0 coperto, 1 scritto');
+
+-- Rate di giorni diversi: non è una ricevuta intera, come nell'app.
+select ricevuta_a_rate('Bonifico', 5000, 'Bonifico', 17000) as rr_giorni \gset
+update ricevute set voci = jsonb_set(voci, '{1,pagamenti,0,data}', '"2026-10-15"') where id = :'rr_giorni';
+select atteso('rate del 14 e del 15 ottobre: «Da classificare»', copre_ricevuta('banca:g1', 'ricevuta:' || :'rr_giorni') || ' ' || stato_banca('banca:g1'), 'ok 0 coperto, 1 scritto');
+-- Una rata senza data non si conta come «stesso giorno».
+update ricevute set voci = voci #- '{1,pagamenti,0,data}' where id = :'rr_giorni';
+select atteso('una rata senza data: «Da classificare»', copre_ricevuta('banca:g2', 'ricevuta:' || :'rr_giorni') || ' ' || stato_banca('banca:g2'), 'ok 0 coperto, 1 scritto');
+
+-- Una ricevuta nata da un bonifico assegnato (135) è già nel movimento: né lei né le sue rate coprono un'altra riga.
+select ricevuta_a_rate('Bonifico', 5000, 'Bonifico', 17000) as rr_ass \gset
+alter table ricevute disable trigger user;
+update ricevute set movimento_id = (select id from movimenti where origine_import = 'banca:r2') where id = :'rr_ass';
+alter table ricevute enable trigger user;
+select atteso('ricevuta col bonifico assegnato: la ricevuta intera non regge', copre_ricevuta('banca:a1', 'ricevuta:' || :'rr_ass') || ' ' || stato_banca('banca:a1'), 'ok 0 coperto, 1 scritto');
+select atteso('…né una sua rata da sola', copre_ricevuta('banca:a2', 'incasso:' || :'rr_ass' || ':0:0', 5000) || ' ' || stato_banca('banca:a2'), 'ok 0 coperto, 1 scritto');
+select atteso('«Non è questo» sulla ricevuta intera: ok, la riga entra «Da classificare», la ricevuta è intatta',
+  come(ada(), 'authenticated', $$select banca_non_e_questo('banca:u5')$$) || ' ' || stato_banca('banca:u5') || ' ' || (select (annullata_il is null)::text || ' ' || pagato::text from ricevute where id = :'rr4'),
+  'ok 0 coperto, 1 scritto true 22000');
+select atteso('…liberata, la quota si può coprire di nuovo', copre_ricevuta('banca:u8', 'incasso:' || :'rr4' || ':0:0', 5000) || ' ' || stato_banca('banca:u8'), 'ok 1 coperto, 0 scritto');
+select atteso('la segreteria semplice non copre con una ricevuta intera', left(come('11111111-1111-1111-1111-111111111111', 'authenticated', format('select banca_segna_coperti(%L::jsonb)', jsonb_build_array(jsonb_build_object('chiave', 'banca:x9', 'data', '2026-10-14', 'tipo', 'entrata', 'importo', 22000, 'descrizione', 'x', 'conId', 'ricevuta:' || :'rr3', 'conDescrizione', 'x')))), 5), '42501');

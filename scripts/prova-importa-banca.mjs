@@ -467,5 +467,117 @@ console.log('\n13. un bonifico o un POS già registrato con una ricevuta o un pa
   nonRegge('…senza il parametro degli incassi', undefined)
 }
 
+console.log('\n14. un bonifico che paga una ricevuta in più rate: la ricevuta intera copre la riga')
+{
+  const RI = '33333333-3333-3333-3333-333333333333'
+  const RB = '44444444-4444-4444-4444-444444444444'
+  const FRASE = 'Il nome nel testo non è quello della ricevuta: dimmi tu.'
+  // Gli incassi come li fa `incassiDerivati`: `incasso:<ricevuta>:<voce>:<pagamento>`, nome «cognome nome», voce di sistema.
+  const quota = (o = {}) => riga({ id: `incasso:${RI}:0:0`, origine: 'ricevuta', tipo: 'entrata', data: '2026-10-03', importo: 5000, descrizione: 'Rossi Luca', sotto: 'ricevuta 12/2026', voce: 'Quota associativa', personaId: 'p-luca', ...o })
+  const trim = (o = {}) => riga({ id: `incasso:${RI}:1:0`, origine: 'ricevuta', tipo: 'entrata', data: '2026-10-03', importo: 17000, descrizione: 'Rossi Luca', sotto: 'Trimestre ottobre-dicembre · ricevuta 12/2026', voce: 'Corsi e altri pagamenti', personaId: 'p-luca', ...o })
+  const rata = [quota(), trim()]
+  const GIUSTO = 'Da ROSSI LUCA quota e trimestre BONIFICO SEPA'
+  const SBAGLIATO = 'Da BIANCHI ANNA saldo BONIFICO SEPA'
+  const file = (...r) => m.leggiBanca(piccolo(...r.map(([d, imp, t]) => mov(d, '', imp, t, 'ACCREDITO'))))
+  const una = (testo, righe, giorno = '03/10/2026', importo = '220,00', scelte) => {
+    const l = file([giorno, importo, testo])
+    const a = m.anteprimaBanca(l, righe, 'conto', OGGI, scelte)
+    return { a, r: a.righe[0], l }
+  }
+
+  const g = prova(() => una(GIUSTO, rata))
+  ok('50,00 + 170,00 con il nome giusto: la riga da 220,00 è duplicata, coperta dalla ricevuta intera', prova(() => [g.r.stato, g.r.voce.id, g.r.rifiutabile]), ['duplicata', `ricevuta:${RI}`, true])
+  ok('…il candidato sintetico: origine, tipo, importo somma, data, nome, conto, persona', prova(() => { const v = g.r.voce; return [v.origine, v.tipo, v.importo, v.data, v.descrizione, v.cassaId, v.personaId] }), ['ricevuta', 'entrata', 22000, '2026-10-03', 'Rossi Luca', 'conto', 'p-luca'])
+  ok('…«sotto» dice la ricevuta e le parti', prova(() => g.r.voce.sotto), 'ricevuta 12/2026 · quota 50,00 + trimestre 170,00')
+  ok('…è nei coperti con quell\'id, e non entra né è da decidere', prova(() => [g.a.coperti.map((c) => c.con.id), g.a.entrano.length, g.a.daDecidere.length]), [[`ricevuta:${RI}`], 0, 0])
+  ok('copertiDaSalvare porta conId «ricevuta:<id>»', prova(() => m.copertiDaSalvare(g.a).map((c) => [c.conId, c.importo])), [[`ricevuta:${RI}`, 22000]])
+  ok('non va fra i dati per importa_prima_nota', prova(() => m.datiImportBanca(g.a).length), 0)
+  ok('con le rate in ordine inverso nell\'elenco: stessa ricevuta, stesse parti', prova(() => una(GIUSTO, [trim(), quota()]).r.voce.sotto), 'ricevuta 12/2026 · quota 50,00 + trimestre 170,00')
+  ok('il nome in altro ordine, senza maiuscole né accenti: combacia', prova(() => una('da luca rossi bonifico', rata).r.stato), 'duplicata')
+  ok('la data della banca a due giorni dalle rate: coperta; a tre no', prova(() => [una(GIUSTO, rata, '05/10/2026').r.stato, una(GIUSTO, rata, '06/10/2026').r.stato]), ['duplicata', 'nuova'])
+
+  const d = prova(() => una(SBAGLIATO, rata))
+  ok('nome diverso: da decidere, con la ricevuta fra i candidati, nessuna preselezione', prova(() => [d.r.stato, d.r.candidati.map((c) => c.id), d.r.preselezionato]), ['da-decidere', [`ricevuta:${RI}`], null])
+  ok('…con il motivo «Il nome nel testo non è quello della ricevuta: dimmi tu.»', prova(() => d.r.motivo), FRASE)
+  ok('…non entra e non è coperta finché la segreteria non decide', prova(() => [d.a.entrano.length, d.a.coperti.length, d.a.daDecidere.length]), [0, 0, 1])
+  ok('…«È questa» sulla ricevuta: duplicata di quella, rifiutabile', prova(() => { const x = una(SBAGLIATO, rata, '03/10/2026', '220,00', { [d.l.movimenti[0].chiave]: `ricevuta:${RI}` }).r; return [x.stato, x.voce.id, x.rifiutabile] }), ['duplicata', `ricevuta:${RI}`, true])
+  ok('…«Nessuno»: entra come movimento nuovo', prova(() => { const x = una(SBAGLIATO, rata, '03/10/2026', '220,00', { [d.l.movimenti[0].chiave]: 'nessuno' }); return [x.r.stato, x.a.entrano.length] }), ['nuova', 1])
+  ok('una sola parola del nome non basta (il cognome solo): da decidere', prova(() => una('Da ROSSI saldo BONIFICO', rata).r.stato), 'da-decidere')
+  ok('un nome di una parola sola nel gruppo non combacia mai da solo: da decidere', prova(() => una(GIUSTO, [quota({ descrizione: 'Rossi' }), trim({ descrizione: 'Rossi' })]).r.stato), 'da-decidere')
+
+  console.log('  — somme che non tornano, e rate che non fanno gruppo')
+  ok('la somma non è l\'importo della riga (230,00): nuova', prova(() => una(GIUSTO, rata, '03/10/2026', '230,00').r.stato), 'nuova')
+  ok('una sola rata sul conto: niente gruppo (il gruppo vuole almeno due rate)', prova(() => una(GIUSTO, [quota()], '03/10/2026', '220,00').r.stato), 'nuova')
+  ok('…ma la rata sola resta coperta come oggi, dal suo incasso', prova(() => { const x = una(GIUSTO, [quota()], '03/10/2026', '50,00').r; return [x.stato, x.voce.id] }), ['duplicata', `incasso:${RI}:0:0`])
+  // Un «gruppo» di una rata sola sarebbe un secondo candidato da 50,00: la riga diventerebbe da decidere.
+  ok('una rata sola libera (l\'altra è contanti) e una riga da 50,00: coperta dalla rata, nessun candidato «ricevuta:»', prova(() => { const x = una(GIUSTO, [quota(), trim({ cassaId: 'contanti' })], '03/10/2026', '50,00').r; return [x.stato, x.voce.id, x.candidati.length] }), ['duplicata', `incasso:${RI}:0:0`, 0])
+  const terza = trim({ id: `incasso:${RI}:2:0`, importo: 3000, sotto: 'Extra · ricevuta 12/2026' })
+  ok('una rata della ricevuta già coperta da un\'altra riga: le altre due non fanno gruppo (il database somma tutte le rate)', prova(() => una(GIUSTO, [quota({ bancaChiave: 'banca:20261001:aaa:0' }), trim(), terza], '03/10/2026', '200,00').r.stato), 'nuova')
+  ok('date diverse (3 e 4 ottobre): niente gruppo', prova(() => una(GIUSTO, [quota(), trim({ data: '2026-10-04' })], '04/10/2026').r.stato), 'nuova')
+  ok('rate di ricevute diverse non si sommano mai: nuova', prova(() => una(GIUSTO, [quota(), trim({ id: `incasso:${RB}:0:0` })]).r.stato), 'nuova')
+  ok('una rata annullata non fa parte del gruppo: nuova', prova(() => una(GIUSTO, [quota(), trim({ annullato: true })]).r.stato), 'nuova')
+  ok('una rata in un\'altra cassa (carta) non fa parte del gruppo: nuova', prova(() => una(GIUSTO, [quota(), trim({ cassaId: 'carta' })]).r.stato), 'nuova')
+  const cont = { id: `incasso:${RI}:2:0`, cassaId: 'contanti', importo: 3000, sotto: 'Extra · ricevuta 12/2026', voce: 'Corsi e altri pagamenti' }
+  const conContanti = prova(() => una(GIUSTO, [...rata, trim(cont)]))
+  ok('una rata in contanti non è sul conto: il gruppo è delle due sul conto, e il «sotto» non la nomina', prova(() => [conContanti.r.stato, conContanti.r.voce.importo, conContanti.r.voce.sotto]), ['duplicata', 22000, 'ricevuta 12/2026 · quota 50,00 + trimestre 170,00'])
+  ok('…con una sola rata sul conto e una in contanti: niente gruppo', prova(() => una(GIUSTO, [quota(), trim(cont)], '03/10/2026', '80,00').r.stato), 'nuova')
+  ok('un incasso che porta già la chiave di una riga del conto non è libero: gruppo non disponibile', prova(() => una(GIUSTO, [quota({ bancaChiave: 'banca:20260901:zzz:0' }), trim()]).r.stato), 'nuova')
+  ok('un incasso senza ricevuta (pagamento a mano, «incasso:diretto:») non fa gruppo', prova(() => una(GIUSTO, [quota({ id: 'incasso:diretto:a1' }), trim({ id: 'incasso:diretto:a2' })]).r.stato), 'nuova')
+
+  console.log('  — il gruppo e gli altri candidati')
+  const singolo = riga({ id: `incasso:${RB}:0:0`, origine: 'ricevuta', tipo: 'entrata', data: '2026-10-03', importo: 22000, descrizione: 'Neri Paola', sotto: 'ricevuta 13/2026', voce: 'Corsi e altri pagamenti' })
+  const s1 = prova(() => una(GIUSTO, [...rata, singolo]))
+  ok('un incasso singolo da 220,00 e il gruppo 50+170, stesso giorno: sempre da decidere, con tutti e due', prova(() => [s1.r.stato, s1.r.candidati.map((c) => c.id).sort()]), ['da-decidere', [`incasso:${RB}:0:0`, `ricevuta:${RI}`].sort()])
+  ok('…anche col nome del gruppo che combacia: nessuna preselezione automatica che scelga il singolo', prova(() => s1.r.preselezionato === `incasso:${RB}:0:0`), false)
+  ok('…e il gruppo non è mai coperto in silenzio', prova(() => [s1.a.coperti.length, s1.a.entrano.length]), [0, 0])
+  const aMano = riga({ id: 'mano-220', tipo: 'entrata', data: '2026-10-03', importo: 22000 })
+  ok('un movimento a mano da 220,00 e il gruppo, stesso giorno: da decidere con tutti e due', prova(() => { const x = una(GIUSTO, [...rata, aMano]).r; return [x.stato, x.candidati.map((c) => c.id).sort()] }), ['da-decidere', ['mano-220', `ricevuta:${RI}`].sort()])
+  ok('…il gruppo più vicino per data di un movimento a mano di due giorni prima: vince il gruppo', prova(() => { const x = una(GIUSTO, [...rata, riga({ id: 'mano-lontano', tipo: 'entrata', data: '2026-10-01', importo: 22000 })]).r; return [x.stato, x.voce?.id] }), ['duplicata', `ricevuta:${RI}`])
+  ok('un movimento a mano uguale ma più vicino della ricevuta: copre quello', prova(() => { const x = una(GIUSTO, [...rata, riga({ id: 'mano-vicino', tipo: 'entrata', data: '2026-10-04', importo: 22000 })], '04/10/2026').r; return [x.stato, x.voce?.id] }), ['duplicata', 'mano-vicino'])
+  ok('scelto a mano il singolo fra i due: il gruppo resta libero e il singolo copre', prova(() => { const x = una(GIUSTO, [...rata, singolo], '03/10/2026', '220,00', { [s1.l.movimenti[0].chiave]: `incasso:${RB}:0:0` }); return [x.r.stato, x.r.voce.id, x.a.coperti.length] }), ['duplicata', `incasso:${RB}:0:0`, 1])
+
+  console.log('  — usati una volta sola, in qualunque ordine')
+  const due = (prima, dopo) => prova(() => { const a = m.anteprimaBanca(file(prima, dopo), rata, 'conto', OGGI); return { a, st: a.righe.map((x) => [x.stato, x.voce?.id ?? null]) } })
+  const R220 = ['03/10/2026', '220,00', GIUSTO], R50 = ['03/10/2026', '50,00', 'Da ROSSI LUCA quota BONIFICO SEPA']
+  const o1 = due(R220, R50)
+  ok('prima la riga da 220,00, poi quella da 50,00: la prima prende il gruppo, la seconda non può coprire la quota (entra nuova)', prova(() => o1.st), [['duplicata', `ricevuta:${RI}`], ['nuova', null]])
+  const o2 = due(R50, R220)
+  ok('prima 50,00, poi 220,00: la quota è usata, il gruppo non è più disponibile (la 220,00 entra nuova)', prova(() => o2.st), [['duplicata', `incasso:${RI}:0:0`], ['nuova', null]])
+  ok('due righe da 220,00 identiche e una ricevuta: una coperta, una nuova', prova(() => { const a = m.anteprimaBanca(file(R220, R220), rata, 'conto', OGGI); return a.righe.map((x) => x.stato) }), ['duplicata', 'nuova'])
+
+  console.log('  — segnaCoperti (modalità prova)')
+  const K = g.l.movimenti[0].chiave
+  const cop = (o = {}) => ({ chiave: K, data: '2026-10-03', tipo: 'entrata', importo: 22000, descrizione: 'Da ROSSI LUCA', conId: `ricevuta:${RI}`, conDescrizione: 'Rossi Luca', ...o })
+  const esito = (c, incassi, gia = []) => prova(() => { const s = m.segnaCoperti([], gia, [c], 'conto', incassi); return [s.coperti.length - gia.length, s.daScrivere.map((x) => [x.chiave, x.voce]), s.movimenti.length] })
+  ok('regge: entrata, gli incassi sul conto sommano l\'importo, nessun altro coperto', esito(cop(), rata), [1, [], 0])
+  ok('…una rata in contanti nella ricevuta non conta nella somma', esito(cop(), [...rata, trim(cont)]), [1, [], 0])
+  const rifiuto = (cosa, c, incassi, gia) => ok(cosa, esito(c, incassi, gia), [0, [[c.chiave, 'Da classificare']], 0])
+  rifiuto('non regge: somma diversa dall\'importo → «Da classificare»', cop({ importo: 22100 }), rata)
+  rifiuto('non regge: rate di giorni diversi (come il database) → «Da classificare»', cop(), [quota(), trim({ data: '2026-10-09' })])
+  rifiuto('…senza gli incassi (parametro assente)', cop(), undefined)
+  rifiuto('…un incasso annullato non si somma', cop(), [quota(), trim({ annullato: true })])
+  rifiuto('…un incasso di un\'altra cassa non si somma', cop(), [quota(), trim({ cassaId: 'carta' })])
+  rifiuto('…un\'uscita', cop({ tipo: 'uscita' }), rata)
+  rifiuto('…una ricevuta di cui non si hanno incassi', cop({ conId: `ricevuta:${RB}` }), rata)
+  rifiuto('…la ricevuta già coperta da un\'altra riga della banca', cop(), rata, [cop({ chiave: 'banca:20261003:yyy:0' })])
+  rifiuto('…un incasso della ricevuta già coperto (incasso:<id>:0:0): la ricevuta intera non regge', cop(), rata, [cop({ chiave: 'banca:20261003:yyy:0', conId: `incasso:${RI}:0:0`, importo: 5000 })])
+  rifiuto('simmetrico: un incasso della ricevuta (la quota) non regge se c\'è già il coperto «ricevuta:<id>»', cop({ conId: `incasso:${RI}:0:0`, importo: 5000 }), rata, [cop({ chiave: 'banca:20261003:yyy:0' })])
+  ok('…ma la quota regge se la ricevuta non è coperta, come oggi', esito(cop({ conId: `incasso:${RI}:0:0`, importo: 5000 }), rata), [1, [], 0])
+  ok('un incasso di un\'altra ricevuta coperto non blocca questa', esito(cop(), rata, [cop({ chiave: 'banca:20261003:yyy:0', conId: `incasso:${RB}:0:0`, importo: 22000 })]), [1, [], 0])
+  ok('rilanciata con la stessa riga: non cambia niente', prova(() => { const s = m.segnaCoperti([], [cop()], [cop()], 'conto', rata); return [s.coperti.length, s.daScrivere.length] }), [1, 0])
+
+  console.log('  — segnaIncassiCoperti e la rilettura del file')
+  const tutti = [quota(), trim(), trim(cont), quota({ id: `incasso:${RB}:0:0` }), riga({ id: 'mano' })]
+  ok('un coperto «ricevuta:<id>» dà la chiave a TUTTI gli incassi di quella ricevuta, e solo a quelli', prova(() => m.segnaIncassiCoperti(tutti, [cop()]).map((r) => r.bancaChiave ?? null)), [K, K, K, null, null])
+  ok('senza coperti: niente cambia', prova(() => m.segnaIncassiCoperti(tutti, []).map((r) => r.bancaChiave ?? null)), [null, null, null, null, null])
+  const s = prova(() => m.segnaCoperti([], [], [cop()], 'conto', rata))
+  const dopo = prova(() => m.anteprimaBanca(g.l, m.segnaIncassiCoperti(rata, s.coperti), 'conto', OGGI))
+  ok('rileggendo lo stesso file: la riga è «già importata», niente coperto, niente entra', prova(() => [dopo.giaImportati.map((x) => x.riga), dopo.coperti.length, dopo.entrano.length, dopo.daDecidere.length]), [[g.l.movimenti[0].riga], 0, 0, 0])
+  ok('…e resta duplicata, ma non rifiutabile (l\'abbinamento è di prima)', prova(() => [dopo.righe[0].stato, dopo.righe[0].rifiutabile]), ['duplicata', false])
+  ok('…e segnaCoperti rifatto non cambia niente', prova(() => { const t = m.segnaCoperti([], s.coperti, [cop()], 'conto', rata); return [t.coperti.length, t.daScrivere.length] }), [1, 0])
+  ok('dopo, una riga nuova da 50,00 dello stesso giorno non copre la quota già usata dalla ricevuta: entra nuova', prova(() => m.anteprimaBanca(file(['03/10/2026', '50,00', 'Da ROSSI LUCA altro BONIFICO SEPA']), m.segnaIncassiCoperti(rata, s.coperti), 'conto', OGGI).entrano.length), 1)
+  ok('«Cosa è entrato» la conta fra i coperti, una volta sola', prova(() => { const e = m.entratoBanca(rata, s.coperti, '2026-10'); return [e.coperti, e.nuovi.conteggio, e.righe.length] }), [{ conteggio: 1, importo: 22000 }, 0, 1])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

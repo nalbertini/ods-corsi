@@ -1988,6 +1988,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const r = await db.rpc('banca_segna_coperti', { righe })
       // Senza il 114 l'import è già fatto: i movimenti abbinati restano solo da non ricontrollare.
       if (r.error && (r.error.code === 'PGRST202' || r.error.code === '42883')) return
+      // Senza il 144 il database non conosce la ricevuta intera: rileggere il file non servirebbe.
+      if (r.error?.code === '22023' && righe.some((x) => x.conId.startsWith('ricevuta:'))) {
+        throw new Error('I movimenti nuovi sono importati, ma i bonifici che pagano una ricevuta in più rate non sono salvati: il database va aggiornato. Avvisa l’amministrazione e reimporta lo stesso file dopo.')
+      }
       ok(r)
     },
 

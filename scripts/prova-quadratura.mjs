@@ -494,5 +494,18 @@ console.log('23. un bonifico già in una ricevuta: la riga della banca coperta s
   ok('…e non conta due volte: in banca non resta niente da spiegare', r.soloBanca?.length, 0)
 }
 
+console.log('24. un bonifico che paga una ricevuta in più rate: le rate sono una riga sola con la banca')
+{
+  const incassi = [
+    mv('incasso:r1:0:0', 'entrata', '2026-10-05', 5000, { origine: 'ricevuta' }),
+    mv('incasso:r1:1:0', 'entrata', '2026-10-05', 17000, { origine: 'ricevuta' }),
+  ]
+  const coperti = [{ chiave: 'banca:r1', data: '2026-10-05', tipo: 'entrata', importo: 22000, descrizione: 'Bonifico', conId: 'ricevuta:r1', conDescrizione: 'Ricevuta 1' }]
+  const righe = prova(() => ib.segnaIncassiCoperti(incassi, coperti))
+  const r = quadra(base({ righe: Array.isArray(righe) ? righe : [], banca: [bn('r1', 'entrata', '2026-10-05', 22000)], saldo: sb('2026-10', 10000, 22000, 0, 32000) }))
+  ok('la riga della banca da 220,00 si abbina alle due rate insieme', r.abbinate?.map((x) => [x.app.id, x.app.importo, x.banca.chiave]), [['incasso:r1:0:0 + incasso:r1:1:0', 22000, 'banca:r1']])
+  ok('…e nessuna rata resta «solo nell’app», niente da spiegare', [r.soloApp?.length, r.soloBanca?.length, r.nonSpiegato], [0, 0, 0])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
