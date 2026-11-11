@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.238.1 — 11 novembre 2026
+
+### Risolto
+
+- Nella pagina iscrizioni si legge che la quota si può pagare anche in palestra
+
 ## 0.238.0 — 11 novembre 2026
 
 ### Novità
