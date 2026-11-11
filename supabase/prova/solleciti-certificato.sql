@@ -198,6 +198,9 @@ select atteso('rilanciata: niente', dovuti(), '0');
 select termine_a(n, 7) from unnest(array[91, 92, 93, 94, 96]) n;
 select atteso('sospesi, certificato valido, file in attesa, persona disattivata, WhatsApp di oggi, senza termine: niente', dovuti(), '0');
 select atteso('e Senzatermine non ha nemmeno una scheda', (select count(*)::text from schede_iscritti where persona_id = pz(95)), '0');
+select persona_prova(120, 'Bimbo', 'Piccolo', 4);
+select termine_a(120, 7);
+select atteso('sotto i 6 anni il certificato non serve: niente, anche col termine scritto', dovuti(), '0');
 
 \echo ''
 \echo '--- 5. senza email del titolare: a mano, e la segreteria lo vede ---'
