@@ -85,8 +85,8 @@ basta dare un'occhiata e segnare assente chi non c'è.
 ### E se non c'è rete?
 
 Non si perde niente. Ogni presenza viene scritta prima sul telefono e parte
-appena torna la rete. Finché aspetta, accanto al nome del corso compare
-una spia gialla «N DA INVIARE». Non chiudete la pagina finché non sparisce, se potete; ma
+appena torna la rete. Finché aspetta, in cima all'appello compare
+una spia gialla «N NON ANCORA INVIATE». Non chiudete la pagina finché non sparisce, se potete; ma
 anche se la chiudete, la coda riparte alla prossima apertura.
 
 ## Chi può fare cosa

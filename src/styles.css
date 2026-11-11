@@ -495,32 +495,68 @@
 :root[data-look='sito'] .lezione-stato { letter-spacing: 0.04em; font-weight: 700; }
 
 :root[data-look='sito'] .appello-testa { background: var(--bg); border-bottom-color: var(--line); }
+/* Sul telefono la testa è alta 140px e non cambia mentre si segna (stato e coda hanno il loro posto): i nomi partono
+   più in alto (se ne vedevano quattro) e non saltano. Cresce solo per un sottotitolo lungo, che va a capo invece di
+   tagliarsi dietro il timer (correzione di prima). */
+:root[data-look='sito'] .appello-testa { min-height: 140px; box-sizing: border-box; padding-bottom: 0; }
+:root[data-look='sito'] .appello-testa .chi-kanji > span:last-child { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
 :root[data-look='sito'] .testata .icon-btn,
 :root[data-look='sito'] .btn-ghost { border-color: var(--blu); }
 :root[data-look='sito'] .appello-testa .icon-btn { background: var(--surface); border: 2px solid var(--blu); border-radius: 6px; color: var(--text); }
 :root[data-look='sito'] .appello-titolo { font-size: 26px; font-weight: 800; letter-spacing: 0.05em; }
 :root[data-look='sito'] .appello-testa .btn-go[data-fatto]:disabled { background: var(--surface); color: var(--verde-testo); border: 2px solid var(--verde-testo); opacity: 1; }
-:root[data-look='sito'] .appello-vai { display: inline-flex; align-items: center; min-height: 44px; }
+/* ⋯ apre il foglio con le cose che si fanno di rado: lontane dal pollice che segna. */
+:root[data-look='sito'] .appello-menu { width: 44px; height: 44px; flex-shrink: 0; font-size: 22px; font-weight: 700; line-height: 1; letter-spacing: 1px; }
 /* NON LO TROVO: SCRIVI IL NOME sta su una riga a 375px dentro il bordo tratteggiato. */
 :root[data-look='sito'] .btn-dashed { white-space: nowrap; letter-spacing: 0; padding-left: 8px; padding-right: 8px; }
-:root[data-look='sito'] .conto-appello { font-size: 52px; font-weight: 800; }
-:root[data-look='sito'] .appello-stato { letter-spacing: 0.04em; white-space: normal; text-align: right; }
-/* Il sottotitolo (giorno, ora, sala) va a capo invece di tagliarsi dietro il tasto del timer; il conto no. */
-:root[data-look='sito'] .appello-testa .chi-kanji > span:last-child { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+:root[data-look='sito'] .conto-appello { font-size: 40px; font-weight: 800; }
+:root[data-look='sito'] .appello-stato { letter-spacing: 0.04em; white-space: nowrap; }
 :root[data-look='sito'] .conto-appello { white-space: nowrap; }
-:root[data-look='sito'] .appello-coda { letter-spacing: 0.04em; }
+:root[data-look='sito'] .appello-coda { letter-spacing: 0.04em; font-size: 12px; white-space: nowrap; }
+:root[data-look='sito'] .appello-titolo { font-size: 20px; }
 /* Il tasto principale della schermata: sempre in vista, perché la testa resta ferma. */
 :root[data-look='sito'] .appello-testa .btn-go { background: var(--giallo); color: var(--su-colore); border-radius: 6px; letter-spacing: 0.04em; }
+/* TUTTI PRESENTI sempre allo stesso posto e con la stessa parola; sotto, per chi vale. */
+:root[data-look='sito'] .appello-tasto { width: 176px; min-height: 56px; flex-shrink: 0; flex-direction: column; gap: 1px; padding: 0 8px; }
+:root[data-look='sito'] .appello-tasto-sotto { font-family: var(--body); font-size: 12px; font-weight: 600; letter-spacing: 0; line-height: 1.1; text-transform: none; }
 :root[data-look='sito'] .appello-testa .btn-go:disabled { background: var(--surface-2); color: var(--dim); opacity: 1; }
-/* CHIUDI L'APPELLO resta giallo come CHIUDI · N ASSENTI: è lo stesso tasto, cambia solo cosa dice. */
-:root[data-look='sito'] .appello-fine .btn-go { background: var(--giallo); color: var(--su-colore); }
+/* CHIUDI in inchiostro, mai rosso: chiudere con dei non segnati in una lezione passata è normale.
+   A tutto segnato diventa il giallo della schermata (quello in testa è spento): è la cosa da fare adesso. */
+:root[data-look='sito'] .barra-chiudi .btn-chiudi { background: var(--text); color: #ffffff; border: 0; border-radius: 6px; }
+:root[data-look='sito'] .barra-chiudi .btn-chiudi[data-pieno] { background: var(--giallo); color: var(--su-colore); }
+:root[data-look='sito'] .barra-chiudi { position: sticky; bottom: 0; z-index: 2; display: flex; flex-direction: column; gap: 6px; margin-top: 12px; padding: 8px 20px 10px; background: var(--surface); border-top: 2px solid var(--line); }
+:root[data-look='sito'] .barra-chiudi .btn { min-height: 52px; }
+:root[data-look='sito'] .barra-chiudi-frase { min-height: 16px; font-size: 13px; line-height: 16px; color: var(--dim); }
+:root[data-look='sito'] .barra-chiudi-frase[data-chiede] { color: var(--rosso-testo); font-weight: 700; }
+:root[data-look='sito'] .barra-chiudi .btn-prova { width: 112px; flex-shrink: 0; background: var(--surface); color: var(--text); border: 2px solid var(--blu); border-radius: 6px; }
+/* Il foglio del menu ⋯: sale dal basso, sopra un velo che chiude toccandolo. */
+:root[data-look='sito'] .foglio-appello-velo { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; justify-content: flex-end; background: rgba(13, 42, 61, 0.45); }
+:root[data-look='sito'] .foglio-appello { display: flex; flex-direction: column; gap: 14px; padding: 10px 16px calc(var(--safe-b) + 20px); background: var(--surface); border-radius: 12px 12px 0 0; color: var(--text); max-height: 85vh; overflow-y: auto; }
+:root[data-look='sito'] .foglio-appello:focus { outline: none; }
+:root[data-look='sito'] .foglio-appello-maniglia { align-self: center; width: 40px; height: 4px; border-radius: 2px; background: var(--line); }
+:root[data-look='sito'] .foglio-appello-titolo { font-family: var(--cond); font-size: 20px; font-weight: 800; letter-spacing: 0.06em; }
+:root[data-look='sito'] .foglio-appello-azzera { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 2px solid var(--line); }
+:root[data-look='sito'] .foglio-appello .btn-azzera { min-height: 52px; background: var(--surface); color: var(--rosso-testo); border: 2px solid var(--rosso-testo); border-radius: 6px; }
+:root[data-look='sito'] .foglio-appello .btn-azzera[data-sicuro='true'] { background: var(--rosso); color: var(--su-rosso); border-color: var(--rosso); }
+:root[data-look='sito'] .foglio-appello .btn-azzera:disabled { opacity: 0.4; }
+:root[data-look='sito'] .foglio-appello-frase { font-size: 13px; color: var(--dim); }
+:root[data-look='sito'] .foglio-appello .btn-chiudi-menu { min-height: 44px; background: transparent; border: 0; color: var(--blu); }
+/* La ricerca senza etichetta: il segnaposto dice già quanti sono. 16px perché iOS non ingrandisca toccandola. */
+:root[data-look='sito'] .cerca-appello { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; background: var(--surface); border: 2px solid var(--line); border-radius: 6px; font-size: 16px; }
+:root[data-look='sito'] .cerca-appello input { flex-grow: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 16px; }
+:root[data-look='sito'] .cerca-appello input:focus { outline: none; }
+:root[data-look='sito'] .cerca-appello:focus-within { border-color: var(--blu); }
 
 :root[data-look='sito'] .riga-appello { background: var(--surface); border: 0; border-radius: 6px; box-shadow: inset 4px 0 0 transparent; }
-:root[data-look='sito'] .riga-appello[data-stato='presente'] { box-shadow: inset 4px 0 0 var(--verde); }
-:root[data-look='sito'] .riga-appello[data-stato='assente'] { box-shadow: inset 4px 0 0 var(--rosso); }
+/* Lo stato forte per la luce del sole in palestra: barra da 8px e il segno bianco in un quadrato pieno.
+   Pieno contro il quadratino vuoto del non segnato: si distingue anche senza colore. */
+:root[data-look='sito'] .riga-appello[data-stato='presente'] { box-shadow: inset 8px 0 0 var(--verde); }
+:root[data-look='sito'] .riga-appello[data-stato='assente'] { box-shadow: inset 8px 0 0 var(--rosso); }
 /* Non segnato: un quadratino vuoto dice «qui si tocca». */
 :root[data-look='sito'] .riga-appello[data-stato='niente'] .segno { border: 2px solid var(--blu); border-radius: 4px; width: 22px; height: 22px; margin: 0 2px; }
 :root[data-look='sito'] .riga-appello .segno { font-family: var(--body); font-size: 22px; }
+:root[data-look='sito'] .riga-appello[data-stato='presente'] .segno { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; background: var(--verde-testo); color: #ffffff; font-size: 18px; }
+:root[data-look='sito'] .riga-appello[data-stato='assente'] .segno { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; background: var(--rosso); color: var(--su-rosso); font-size: 18px; }
 
 :root[data-look='sito'] .spia-coda { background: var(--surface); border-radius: 6px; }
 :root[data-look='sito'] .spia-coda-quante { color: var(--giallo-testo); letter-spacing: 0.02em; }
@@ -854,19 +890,12 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .appello-stato { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); }
 .appello-stato[data-fatto='true'] { color: var(--verde-testo); }
 .appello-stato[data-manca] { color: var(--rosso-testo); }
-/* CHIUDI IN FONDO si tocca: porta al tasto per chiudere. Il bersaglio è più
-   grande della scritta, ma la scritta non cambia altezza alla testa. */
-.appello-vai { position: relative; text-decoration: underline; text-underline-offset: 4px; }
-.appello-vai::after { content: ''; position: absolute; inset: -14px -10px; }
 .esito-tasto { min-height: 48px; padding: 0 18px; font-size: 15px; }
 .appello-prove { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: var(--giallo-testo); white-space: nowrap; }
 .appello-coda { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--giallo-testo); min-height: 1.3em; }
 .segnalata-esito { min-height: 44px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
 .segnalata-esito[data-accolta='true'] { color: var(--verde-testo); }
 .appello-aiuto { font-size: 14px; line-height: 1.4; color: var(--dim); margin: 0 0 10px; }
-.appello-fine { gap: 10px; padding-top: 20px; padding-bottom: calc(var(--safe-b) + 28px); }
-.azzera { min-height: 56px; width: 124px; flex-shrink: 0; padding: 0 8px; font-size: 16px; }
-.azzera[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso-testo); }
 
 /* Dopo CHIUDI L'APPELLO: verde quando è arrivato, giallo finché aspetta la rete. */
 .esito-appello { gap: 8px; padding: 12px 10px 10px 14px; border-color: var(--giallo); }

@@ -209,7 +209,9 @@ ok('NON LO TROVO: SCRIVI IL NOME (.btn-dashed) sta su una riga', /white-space:\s
 }
 // La testa nuova: alta uguale in ogni stato (nessun salto), menu ⋯, foglio dal basso, barra ferma, riga e ricerca.
 ok('.appello-vai non c\'è più (CHIUDI IN FONDO è sparito: c\'è la barra)', regole.filter((r) => r.sel.some((x) => /\.appello-vai/.test(x))).length, 0)
-ok('.appello-testa: alta 140px fissa', /(?<![-\w])height:\s*140px/.test(corpo(/\.appello-testa(?![\w-])/)), true)
+// Almeno 140px, non fissa: un sottotitolo lungo va a capo (correzione di prima, prova sopra) e la testa cresce.
+// Nessun salto mentre si segna lo garantiscono stato e coda col loro posto (prova-appello).
+ok('.appello-testa: alta 140px (min-height)', /min-height:\s*140px/.test(corpo(/\.appello-testa(?![\w-])/)), true)
 ok('.appello-menu (⋯): 44 per 44px', /(?<![-\w])(min-)?width:\s*44px/.test(corpo(/\.appello-menu/)) && /(?<![-\w])(min-)?height:\s*44px/.test(corpo(/\.appello-menu/)), true)
 ok('.foglio-appello: foglio dal basso, raggio 12px in alto', /border-radius:\s*12px 12px 0 0|border-top-left-radius:\s*12px/.test(corpo(/\.foglio-appello(?![\w-])/)), true)
 {
