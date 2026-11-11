@@ -174,8 +174,9 @@ I tasti che si usano ovunque hanno un'icona davanti alla parola, sempre la
 stessa: **Salva**, **Annulla**, **Aggiungi**, **Cerca**, **Elimina**,
 **Scarica**, **Stampa**, **Copia**, **Importa**, **Modifica**, **Chiudi**. Gli
 altri tasti restano con la sola parola. Nel nuovo aspetto gli stati con l'icona
-(in regola, da confermare, manca) sono un'etichetta colorata piena invece del
-bordo col segno ✓ o ✕.
+(in regola, da confermare, manca) sono un'etichetta colorata piena; gli altri
+stati hanno il bordo e la parola del loro colore, senza segni davanti. Anche un
+filtro scelto si riconosce dal blu pieno, senza ✓.
 
 ## Il giro di una settimana normale
 

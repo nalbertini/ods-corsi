@@ -40,8 +40,8 @@ export function TastoLink({ tono = 'linea', icona, className, children, ...resto
 }
 
 /**
- * Il segno di uno stato (DA PAGARE, PUBBLICATA…). Con l'icona, nel look sito,
- * diventa una pastiglia tinta: l'icona prende il posto di ✕ … ✓.
+ * Il segno di uno stato (DA PAGARE, PUBBLICATA…): bordo e colore dello stato, e
+ * la parola. Con l'icona, nel look sito, diventa una pastiglia tinta.
  */
 export function Tag({ tipo, icona, className, children }: { tipo?: 'manca' | 'aspetta' | 'sostituto' | 'presto' | 'fatto'; icona?: NomeIcona; className?: string; children: ReactNode }) {
   return (
@@ -780,7 +780,7 @@ export function scaricaCsv(nome: string, testo: string) {
 
 /**
  * Una scelta fra poche voci che si escludono (il periodo, la vista): tasti
- * attaccati, quello scelto pieno col ✓. Un gruppo di `aria-pressed` e non
+ * attaccati, quello scelto pieno di blu. Un gruppo di `aria-pressed` e non
  * dei tab: la scelta cambia l'elenco sotto, non apre un pannello.
  */
 export function Segmenti<T extends string>({ etichetta, voci, scelta, onScegli }: { etichetta: string; voci: readonly (readonly [T, string])[]; scelta: T; onScegli: (v: T) => void }) {
