@@ -246,6 +246,12 @@ select atteso('Gigi è ancora in coda', da_mandare('tina@ods.it'), 'tina@ods.it 
 update schede_iscritti set certificato_in_attesa = pz(88)::text || '/attesa-1.pdf', certificato_in_attesa_il = now() where persona_id = pz(88);
 select atteso('Gigi ha caricato il file (in attesa): il sollecito non si rende più', da_mandare('tina@ods.it'), 'niente');
 select atteso('e la riga si è chiusa vuoto', riga_a('tina@ods.it'), 'vuoto · 1 · false');
+-- L'indirizzo è quello di adesso: il nucleo di Paola cambia email prima che la mail parta.
+select atteso('Paola: ancora in coda', da_mandare('paola@ods.it'), 'paola@ods.it · - · sollecito_certificato · 2');
+update persone set email_contatto = 'paola.nuova@ods.it' where id = pz(84);
+select atteso('cambiata l''email del titolare: alla vecchia non parte', da_mandare('paola@ods.it'), 'niente');
+select atteso('e la riga si è chiusa vuoto', riga_a('paola@ods.it'), 'vuoto · 2 · false');
+update persone set email_contatto = 'paola@ods.it' where id = pz(84);
 
 \echo ''
 \echo '--- 9. i permessi ---'
@@ -275,6 +281,8 @@ select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('Anna non chiama solleciti_certificato_dovuti (è di service_role)', rifiutata($$select solleciti_certificato_dovuti()::text$$), 'rifiutata');
 select atteso('Anna chiama solleciti_a_mano', tenta($$select count(*)::text from solleciti_a_mano()$$), '0');
+select atteso('Anna cambia i momenti (il check gira con lei)', tenta($$update impostazioni set solleciti_momenti = '{-7,0,7}'$$), 'FATTO (1 righe)');
+select atteso('Anna: momenti doppi rifiutati dal check', tenta($$update impostazioni set solleciti_momenti = '{2,2}'$$), 'NEGATO: …solleciti_momenti_va…');
 select atteso('solleciti_email_di: il figlio del nucleo dà l''email della madre, non sospeso', tenta($$select a || ' · ' || sospesi from solleciti_email_di(pz(85))$$), 'paola@ods.it · false');
 select atteso('Anna sospende Marco', tenta($$select sospendi_solleciti(pz(81), true)::text$$), '');
 select atteso('solleciti_email_di: Marco ora è sospeso', tenta($$select sospesi::text from solleciti_email_di(pz(81))$$), 'true');
@@ -299,7 +307,7 @@ declare i int; p uuid; l uuid; e date := oggi() + 30;
 begin
   for i in 1..104 loop
     p := gen_random_uuid();
-    insert into persone (id, nome, cognome, ruolo) values (p, 'T' || lpad(i::text, 3, '0'), 'Tetto', 'iscritto');
+    insert into persone (id, nome, cognome, ruolo, email) values (p, 'T' || lpad(i::text, 3, '0'), 'Tetto', 'iscritto', 'tetto@ods.it');
     insert into schede_iscritti (persona_id, certificato_entro) values (p, e);
     insert into link_certificato (persona_id) values (p) returning id into l;
     insert into avvisi_segreteria (tipo, chiave, creato_il, dati) values ('sollecito_certificato', 'cert:' || p || ':' || e || ':-7', now() - make_interval(mins => 300 - i),
@@ -308,11 +316,11 @@ begin
   end loop;
 end $$;
 select atteso('104 in coda, nessuno mandato', (select count(*)::text from avvisi_segreteria where tipo = 'sollecito_certificato' and mandato_il is null and non_mandato is null), '104');
-select atteso('al più 100 per volta', quanti_da_mandare(), '100');
--- I tre più vecchi partono (come avviso_mandato): restano 101 in coda e il tetto del giorno ne lascia 97.
+select atteso('al più 25 per chiamata', quanti_da_mandare(), '25');
+-- I tre più vecchi partono (come avviso_mandato): restano 101 in coda, sempre 25 per chiamata.
 select manda(id) from (select id from avvisi_segreteria where tipo = 'sollecito_certificato' order by creato_il limit 3) x;
 select atteso('i tre mandati hanno scritto il loro sollecito', (select count(*)::text from solleciti s join persone p on p.id = s.persona_id where p.cognome = 'Tetto' and s.canale = 'email'), '3');
-select atteso('100 meno i 3 già mandati oggi: 97', quanti_da_mandare(), '97');
+select atteso('dopo 3 mandati, ancora 25 per chiamata', quanti_da_mandare(), '25');
 -- Il primo e l'ultimo nome fra quelli resi: i più vecchi prima.
 create or replace function estremi_da_mandare() returns text language plpgsql as $$
 declare r text;
@@ -323,5 +331,9 @@ begin
   return r;
 exception when others then reset role; return 'NEGATO: ' || sqlerrm;
 end $$;
-select atteso('i più vecchi prima: da T004 a T100', estremi_da_mandare(), 'T004 … T100');
-select atteso('gli ultimi quattro restano in coda per domani', (select count(*)::text from avvisi_segreteria v where v.tipo = 'sollecito_certificato' and v.mandato_il is null and v.non_mandato is null), '101');
+select atteso('i più vecchi prima: da T004 a T028', estremi_da_mandare(), 'T004 … T028');
+-- Altri 80 partono: 83 oggi, il tetto del giorno ne lascia 17 (da T084 a T100); gli ultimi quattro restano per domani.
+select manda(id) from (select id from avvisi_segreteria where tipo = 'sollecito_certificato' and mandato_il is null order by creato_il limit 80) x;
+select atteso('100 meno gli 83 già mandati oggi: 17', quanti_da_mandare(), '17');
+select atteso('i più vecchi prima: da T084 a T100', estremi_da_mandare(), 'T084 … T100');
+select atteso('gli ultimi quattro restano in coda per domani', (select count(*)::text from avvisi_segreteria v where v.tipo = 'sollecito_certificato' and v.mandato_il is null and v.non_mandato is null), '21');

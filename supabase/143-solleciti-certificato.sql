@@ -23,6 +23,7 @@
 --     quelli in più partono il giorno dopo. Il tetto di 50 degli avvisi alla
 --     segreteria non li conta.
 --   · `avviso_mandato()` segna nei `solleciti` (canale `email`, momento, link).
+--   · Spegnere i solleciti chiude quelli in coda: riaccesi, ripartono dal momento dopo.
 --   · `sospendi_solleciti(persona, sospesi)` e `solleciti_email_di(persona)` (a chi
 --     va la mail, se sono sospesi) per la segreteria, dalla scheda.
 --   Nella mail solo nomi, la data e i link: mai cognome, nascita, codice fiscale.
@@ -178,7 +179,10 @@ begin
       into persone_s
       from jsonb_array_elements(coalesce(v.dati->'persone', '[]'::jsonb)) e
       join persone pe on pe.id = (e->>'persona')::uuid
-     where sollecito_ancora_dovuto(pe.id, (e->>'entro')::date, (e->>'link')::uuid, v.creato_il);
+     where sollecito_ancora_dovuto(pe.id, (e->>'entro')::date, (e->>'link')::uuid, v.creato_il)
+       -- L'indirizzo è quello del titolare di adesso: cambiato il nucleo o corretta l'email, la riga non vale più.
+       and (select coalesce(nullif(btrim(t.email_contatto::text), ''), nullif(btrim(t.email::text), ''))
+              from persone t where t.id = coalesce(pe.nucleo, pe.id)) is not distinct from v.dati->>'a';
     if persone_s is null then return null; end if;
     return (select jsonb_build_object('tipo', 'sollecito_certificato', 'oggetto', i.sollecito_oggetto, 'testo', i.sollecito_testo, 'persone', persone_s)
               from impostazioni i limit 1);
@@ -301,7 +305,8 @@ begin
        and v.mandato_il is null and v.non_mandato is null and x.avviso is not null
      order by v.creato_il, v.id;
   -- I solleciti: alla famiglia, la segreteria in copia sull'ultimo. Al più 100 al giorno, i più vecchi prima:
-  -- quelli in più restano in coda e partono domani.
+  -- quelli in più restano in coda e partono domani. Al più 25 per chiamata: la Edge Function le manda una per una,
+  -- e un giro troppo lungo che si ferma a metà rimanderebbe dieci minuti dopo quelle già partite.
   select count(*) into mandati_oggi from avvisi_segreteria v
    where v.tipo = 'sollecito_certificato' and (v.mandato_il at time zone 'Europe/Rome')::date = oggi;
   return query
@@ -309,7 +314,7 @@ begin
       from avvisi_segreteria v, lateral (select avviso_da_registro(v) as avviso) x
      where v.tipo = 'sollecito_certificato' and v.mandato_il is null and v.non_mandato is null and x.avviso is not null
      order by v.creato_il, v.id
-     limit greatest(0, 100 - mandati_oggi);
+     limit least(25, greatest(0, 100 - mandati_oggi));
 end $$;
 
 -- Partito: per un sollecito, la riga nei `solleciti` di chi era nella mail (lo storico della scheda).
