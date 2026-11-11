@@ -40,6 +40,7 @@ const VOLUTI = {
   segnalate: ['Presenza segnalata da vedere', 'Presenze segnalate da vedere'],
   certificati: ['Iscritto senza certificato valido', 'Iscritti senza certificato valido'],
   'da-portare': ['Iscritto deve ancora portare il certificato', 'Iscritti devono ancora portare il certificato'],
+  'a-mano': ['Sollecito del certificato da mandare a mano', 'Solleciti del certificato da mandare a mano'],
   'certificati-ricevuti': ['Certificato mandato da controllare', 'Certificati mandati da controllare'],
   scadenza: ['Certificato in scadenza', 'Certificati in scadenza'],
   arrivo: ['Iscritto compie 6 anni senza certificato', 'Iscritti compiono 6 anni senza certificato'],
@@ -51,7 +52,7 @@ const VOLUTI = {
 }
 
 console.log('\nI testi')
-ok('le quattordici cose, e nessun\'altra', typeof T === 'object' ? Object.keys(T).sort() : T, Object.keys(VOLUTI).sort())
+ok('le quindici cose, e nessun\'altra', typeof T === 'object' ? Object.keys(T).sort() : T, Object.keys(VOLUTI).sort())
 for (const [k, [singolare, plurale]] of Object.entries(VOLUTI))
   ok(`${k}: singolare, plurale`, [T[k]?.singolare, T[k]?.plurale], [singolare, plurale])
 ok('nessun testo è tutto maiuscolo', typeof T === 'object'
@@ -98,8 +99,13 @@ ok('PRIMI_DA_FARE = 5', C.PRIMI_DA_FARE, 5)
 ok('primiDaFare: di 7 voci restano le prime 5, nello stesso ordine', typeof C.primiDaFare === 'function' ? C.primiDaFare([1, 2, 3, 4, 5, 6, 7]) : 'manca primiDaFare', [1, 2, 3, 4, 5])
 ok('primiDaFare: senza elenco, niente', typeof C.primiDaFare === 'function' ? C.primiDaFare(null) : 'manca primiDaFare', [])
 ok('TASTO_DA_FARE = «Vedi tutti»', C.TASTO_DA_FARE, 'Vedi tutti')
-ok('COLONNE_DA_FARE: due colonne per certificati, certificati ricevuti, scadenza, arrivo, pagare; una per corsi, richieste, listino',
-  C.COLONNE_DA_FARE, { certificati: 2, 'certificati-ricevuti': 2, scadenza: 2, arrivo: 2, pagare: 2, corsi: 1, richieste: 1, listino: 1 })
+ok('COLONNE_DA_FARE: due colonne per certificati, solleciti a mano, certificati ricevuti, scadenza, arrivo, pagare; una per corsi, richieste, listino',
+  C.COLONNE_DA_FARE, { certificati: 2, 'a-mano': 2, 'certificati-ricevuti': 2, scadenza: 2, arrivo: 2, pagare: 2, corsi: 1, richieste: 1, listino: 1 })
+
+console.log(' chiAMano')
+ok('i solleciti senza email: «Cognome Nome», il momento e il giorno, gialli, nello stesso ordine',
+  typeof C.chiAMano === 'function' ? C.chiAMano([{ personaId: 'a', nome: 'Luca', cognome: 'Verdi', entro: '2026-12-12', momento: 0, dovutoIl: '2026-12-12' }, { personaId: 'b', nome: 'Giulia', cognome: 'Neri', entro: '2026-11-28', momento: 7, dovutoIl: '2026-12-05' }]) : 'manca chiAMano',
+  [{ id: 'a', nome: 'Verdi Luca', rosso: false, perche: 'il giorno del termine, 12/12/2026' }, { id: 'b', nome: 'Neri Giulia', rosso: false, perche: '7 giorni dopo il termine, 5/12/2026' }])
 
 console.log(' nomeInElenco')
 const N = f('nomeInElenco')

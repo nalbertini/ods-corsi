@@ -213,7 +213,12 @@ Premuto **Apri WhatsApp**, sotto il tasto accanto al nome compare **Sollecitato
 l'ultima volta il … da …**, così la collega vede che è già stato fatto. In
 fondo al riquadro, **SOLLECITI** elenca quelli fatti, dal più recente: canale,
 giorno e chi («WhatsApp · 5/12/2026 da Laura») e, se c'era il link, **link
-aperto il …** o **link non aperto**. Se il telefono manca o è sbagliato, il
+aperto il …** o **link non aperto**; le mail partite da sole sono «Email · 5/12/2026».
+Sopra, **SOLLECITI PER EMAIL** dice quando parte il prossimo («Il prossimo il
+12/12/2026, il giorno del termine, a …») o perché non parte (nessuna email,
+spenti in IMPOSTAZIONI, file da confermare, nessun altro); **Sospendi i
+solleciti** li ferma per questa persona sola, **Riattiva i solleciti** li fa
+ripartire dal prossimo giorno (quelli passati non si recuperano). Se il telefono manca o è sbagliato, il
 riquadro lo dice e **Vai a PERSONA** porta dove aggiungerlo; se sembra un fisso
 (comincia per 0), avvisa che su WhatsApp di solito non c'è. Una scheda
 disattivata, o in regola, non ha il tasto. In modifica il riquadro usa il

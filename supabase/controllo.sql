@@ -677,6 +677,13 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'certificato_in_attesa_scade')
     and to_regprocedure('public.link_manda_certificato(uuid,text,date)') is not null
     and to_regprocedure('public.segna_sollecito_link(uuid,uuid)') is not null
-    and exists (select 1 from pg_trigger where tgname = 'schede_chiude_link'))
+    and exists (select 1 from pg_trigger where tgname = 'schede_chiude_link')),
+  ('143-solleciti-certificato.sql', 'i solleciti del certificato partono da soli per email',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'solleciti_momenti')
+    and to_regprocedure('public.solleciti_certificato_dovuti()') is not null
+    and to_regprocedure('public.sospendi_solleciti(uuid,boolean)') is not null
+    and exists (select 1 from dentro where nome = 'avvisi_da_mandare' and corpo like '%sollecito_certificato%')
+    and exists (select 1 from dentro where nome = 'avviso_da_registro' and corpo like '%sollecito_ancora_dovuto%')
+    and exists (select 1 from dentro where nome = 'avviso_mandato' and corpo like '%solleciti%'))
 ) as x(file, cosa, c)
 order by file, cosa;

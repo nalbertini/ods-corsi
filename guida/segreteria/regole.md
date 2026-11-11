@@ -140,6 +140,30 @@ vale per le iscrizioni che accogli da adesso (chi ha già una data scritta la ti
 termine la persona viene alle lezioni ed è gialla; dopo è rossa, ma la presenza
 si segna lo stesso. Il modulo di iscrizione dice questi giorni.
 
+**I SOLLECITI PER EMAIL**, sotto i giorni: con **Manda i solleciti per email**
+acceso, alle 9 del mattino (le 10 con l'ora legale) parte una mail a chi deve
+ancora portare il certificato e ha un termine, col link per caricarlo senza
+password. Una mail per famiglia, al titolare del nucleo, con un tasto «Carica il
+certificato di …» per ognuno; i fratelli vanno insieme solo se il loro sollecito
+cade lo stesso giorno. Parte spento: accendendolo non parte niente subito, ognuno
+riceve il suo prossimo sollecito nel suo giorno.
+- **Quando**: i giorni rispetto al termine, di solito 7 giorni prima, il giorno
+  del termine (l'ultimo utile) e 7 giorni dopo; da 60 prima a 60 dopo, al più 6.
+  Parte solo il giorno esatto: un giorno già passato non si recupera.
+- **Oggetto** e **Testo**, con {nome} (i nomi, «Marco e Giulia»), {entro} (la
+  data più vicina) e {link} (un link per persona), che serve sempre. Altre parole
+  fra graffe non passano. Sotto, l'anteprima con due fratelli inventati.
+- **Mettimi in copia sull'ultimo sollecito**: la copia va all'**EMAIL PER GLI
+  AVVISI**.
+
+Si fermano quando la persona carica il file (anche se è ancora da confermare),
+quando lo confermi, quando la scheda è disattivata o quando li sospendi dalla
+scheda; dopo un rifiuto ripartono dal giorno successivo, con lo stesso link. Un
+WhatsApp segnato lo stesso giorno ferma la mail. Gli iscritti di prima, senza
+termine, non ne ricevono. Chi non ha un'email finisce in DA FARE, da mandare a
+mano. Al più 100 solleciti al giorno: gli altri partono il giorno dopo. Nella
+mail solo i nomi, la data e i link: mai cognome, nascita o codice fiscale.
+
 **GLI AVVISI ALLA SEGRETERIA**: dove arriva un'email quando arriva una
 richiesta online, un pagamento Satispay, uno scarico Satispay non riuscito o un
 certificato medico mandato dall'area iscritti. **EMAIL PER GLI AVVISI** è
