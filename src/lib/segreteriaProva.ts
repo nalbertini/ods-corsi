@@ -1,4 +1,4 @@
-import { cosaNonVaSolleciti, SOLLECITI_PROPOSTI, ultimoSollecito as ultimoSollecitoDovuto } from './sollecitiCertificato'
+import { cosaNonVaSolleciti, SOLLECITI_PROPOSTI, ultimoMomentoArrivato } from './sollecitiCertificato'
 import { indirizziDaSalvare } from './avvisoSegreteria'
 import type { Anagrafica, AnagraficaDi, UltimoSollecito, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
@@ -1619,6 +1619,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     // Come `solleciti_a_mano` (143): in prova nessuna mail parte e il giro del mattino non gira. Chi non ha un'email
     // e ha un momento già arrivato, senza un sollecito da quel giorno, è da mandare a mano: come se il giro ci fosse stato.
+    // shortcut: calcolata e non un registro, quindi recupera anche un momento passato prima dell'accensione e non
+    // guarda il link; se la prova deve mostrare proprio quel caso, va scritto un registro `a_mano` come nel database.
     async sollecitiAMano() {
       const s = (await this.impostazioni()).sollecitiCertificato ?? SOLLECITI_PROPOSTI
       if (!s.accesi) return []
@@ -1629,14 +1631,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
         const titolare = a().persone.find((x) => x.id === (a().persone.find((y) => y.id === p.id)?.nucleo ?? p.id))
         const stato = statoCertificato(p, g)
         if (!p.attiva || sospesi.has(p.id) || p.certificato.inAttesaIl || titolare?.email || !p.certificato.entro || !['atteso', 'manca', 'scaduto'].includes(stato)) return []
-        const u = ultimoSollecitoDovuto(p.certificato.entro, g, s.momenti)
+        const u = ultimoMomentoArrivato(p.certificato.entro, g, s.momenti)
         if (!u || (a().solleciti ?? []).some((x) => x.personaId === p.id && oggiARoma(new Date(x.creatoIl)) >= u.il)) return []
         return [{ personaId: p.id, nome: p.nome, cognome: p.cognome, entro: p.certificato.entro, momento: u.momento, dovutoIl: u.il }]
       })
     },
 
     async sospendiSolleciti(personaId, sospesi) {
-      if (!a().persone.some((p) => p.id === personaId && p.attiva)) throw new Error('La scheda non c’è o è disattivata.')
+      if (!a().persone.some((p) => p.id === personaId && p.attiva && p.ruolo === 'iscritto')) throw new Error('La scheda non c’è o è disattivata.')
       a().sollecitiSospesi = [...(a().sollecitiSospesi ?? []).filter((x) => x !== personaId), ...(sospesi ? [personaId] : [])]
       salva()
     },

@@ -73,7 +73,7 @@ Deno.serve(async () => {
   let mandati = 0
   let guasti = 0
   for (const x of avvisi) {
-    // Un'altra chiamata l'ha già preso, o la posta l'ha rifiutato troppe volte.
+    // Senza indirizzo il database non lo dà (resta `a_mano`): qui solo per il tipo.
     if (!x.a) continue
     let avviso: Avviso
     if (x.avviso.tipo === 'sollecito_certificato') {
@@ -87,6 +87,7 @@ Deno.serve(async () => {
       const persone = await Promise.all(x.avviso.persone.map(async (p) => ({ nome: p.nome, entro: p.entro, link: await linkFirmato(p.linkId, segreto) })))
       avviso = { tipo: 'sollecito_certificato', oggetto: x.avviso.oggetto, testo: x.avviso.testo, persone }
     } else avviso = x.avviso
+    // Un'altra chiamata l'ha già preso, o la posta l'ha rifiutato troppe volte.
     const preso = await db.rpc('avviso_preso', { avviso: x.id })
     if (preso.error || preso.data !== true) continue
     const t = testoAvviso(avviso, APP)

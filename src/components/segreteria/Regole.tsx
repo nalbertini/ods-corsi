@@ -3,7 +3,7 @@ import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, cosaNonVaGi
 import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { indirizzoValido, testoAvviso } from '../../lib/avvisoSegreteria'
-import { cosaNonVaMomenti, cosaNonVaOggetto, cosaNonVaTesto, MOMENTI_MAX, MOMENTO_MAX, rigaMomento, type SollecitiCertificato } from '../../lib/sollecitiCertificato'
+import { cosaNonVaMomenti, cosaNonVaOggetto, cosaNonVaTesto, esempioMomenti, MOMENTI_MAX, MOMENTO_MAX, primoLibero, rigaMomento, type SollecitiCertificato } from '../../lib/sollecitiCertificato'
 import { oggiARoma } from '../../lib/contabilita'
 import { ICONE_IMPOSTAZIONI, Spunta } from '../Icons'
 import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
@@ -1026,7 +1026,7 @@ function SollecitiPerEmail({ d, ora, salva }: { d: DatiSegreteria; ora: Sollecit
         <input type="checkbox" style={{ width: 24, height: 24, margin: 0, accentColor: 'var(--text)', cursor: 'pointer' }} checked={x.accesi} onChange={(e) => cambia({ accesi: e.target.checked })} />
         <span className="stack" style={{ gap: 2 }}>
           <b>Manda i solleciti per email</b>
-          <span className="sg-sotto">Alle 9 del mattino, a chi deve ancora portarlo: una mail per famiglia, al titolare, con un link per ognuno. Chi non ha un’email lo trovi in DA FARE, da mandare a mano su WhatsApp.</span>
+          <span className="sg-sotto">Accesi, partono alle 9 del mattino a chi deve ancora portarlo: una mail per famiglia, al titolare, con un link per ognuno. Chi non ha un’email lo trovi in DA FARE, da mandare a mano su WhatsApp.</span>
           {!ora.accesi && conTermine.dato !== undefined && conTermine.dato !== null && (
             <span className="sg-sotto" style={{ color: 'var(--giallo-testo)', fontWeight: 600 }}>
               {`Accendendola non parte niente subito: ${conTermine.dato === 1 ? 'la persona che oggi ha un termine riceve' : `le ${conTermine.dato} persone che oggi hanno un termine ricevono ognuna`} il suo prossimo sollecito, nel suo giorno.`}
@@ -1038,7 +1038,8 @@ function SollecitiPerEmail({ d, ora, salva }: { d: DatiSegreteria; ora: Sollecit
       <fieldset className="stack" style={{ gap: 8, border: 0, padding: 0, margin: 0 }}>
         <legend style={{ fontSize: 15, fontWeight: 600, padding: 0, marginBottom: 8 }}>Quando</legend>
         {x.righe.map((r, i) => (
-          <div key={i} className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          // Tre colonne fisse: Togli sempre a destra, la riga «il giorno del termine» allineata alle altre.
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '76px minmax(0, 1fr) auto', gap: 10, alignItems: 'center', maxWidth: 520 }}>
             {r.verso !== 'giorno' && (
               <input
                 type="number"
@@ -1056,6 +1057,7 @@ function SollecitiPerEmail({ d, ora, salva }: { d: DatiSegreteria; ora: Sollecit
             <select
               aria-label={`Prima o dopo, momento ${i + 1}`}
               className="sg-campo"
+              style={{ gridColumn: 2, minWidth: 0 }}
               value={r.verso}
               onChange={(e) => cambia({ righe: x.righe.map((y, k) => (k === i ? { n: y.n || '7', verso: e.target.value as Verso } : y)) })} // as: i value delle option qui sotto
             >
@@ -1064,21 +1066,21 @@ function SollecitiPerEmail({ d, ora, salva }: { d: DatiSegreteria; ora: Sollecit
               <option value="dopo">giorni dopo il termine</option>
             </select>
             {x.righe.length > 1 && (
-              <button type="button" className="sg-btn sg-btn-linea sg-pericolo" aria-label={`Togli il momento ${i + 1}: ${Number.isFinite(momenti[i]) ? rigaMomento(momenti[i]) : ''}`} onClick={() => cambia({ righe: x.righe.filter((_, k) => k !== i) })}>
+              <button type="button" className="sg-btn sg-btn-linea sg-pericolo" style={{ gridColumn: 3 }} aria-label={`Togli il momento ${i + 1}: ${Number.isFinite(momenti[i]) ? rigaMomento(momenti[i]) : ''}`} onClick={() => cambia({ righe: x.righe.filter((_, k) => k !== i) })}>
                 Togli
               </button>
             )}
           </div>
         ))}
         <div>
-          <button type="button" className="sg-btn sg-btn-tratteggio" disabled={x.righe.length >= MOMENTI_MAX} onClick={() => cambia({ righe: [...x.righe, { n: '3', verso: 'dopo' }] })}>
+          <button type="button" className="sg-btn sg-btn-tratteggio" disabled={x.righe.length >= MOMENTI_MAX || primoLibero(momenti) === null} onClick={() => cambia({ righe: [...x.righe, rigaDi(primoLibero(momenti) ?? 0)] })}>
             + Aggiungi un momento
           </button>
         </div>
         {guaioMomenti ? (
           <span role="alert" style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{guaioMomenti}</span>
         ) : (
-          <span className="sg-sotto">Da {MOMENTO_MAX} giorni prima a {MOMENTO_MAX} dopo, al massimo {MOMENTI_MAX}. Il giorno del termine è l’ultimo utile. Un WhatsApp segnato quel giorno ferma la mail.</span>
+          <span className="sg-sotto">Da {MOMENTO_MAX} giorni prima a {MOMENTO_MAX} dopo, al massimo {MOMENTI_MAX}. Il giorno del termine è l’ultimo utile. {esempioMomenti(momenti)} Un WhatsApp segnato quel giorno ferma la mail.</span>
         )}
       </fieldset>
 

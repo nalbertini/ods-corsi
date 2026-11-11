@@ -189,5 +189,14 @@ const giulia = { nome: 'Giulia', entro: '2026-12-10', link: L2 }
   ok('l\'oggetto sta su una riga', /[\r\n]/.test(m.oggetto), false)
 }
 
+console.log('\nI momenti in IMPOSTAZIONI')
+ok('primoLibero: con −7/0/7 il primo libero dopo è 1', lib(sc, 'primoLibero')([-7, 0, 7]), 1)
+ok('primoLibero: con 1–3 è 4', lib(sc, 'primoLibero')([1, 2, 3]), 4)
+ok('primoLibero: tutti i 60 giorni dopo presi → null', lib(sc, 'primoLibero')(Array.from({ length: 60 }, (_, i) => i + 1)), null)
+ok('esempioMomenti: −7/0/7 in disordine, termine 12 dicembre', lib(sc, 'esempioMomenti')([7, -7, 0]), 'Con un termine il 12 dicembre: 5 dicembre, 12 dicembre, 19 dicembre.')
+ok('esempioMomenti: a cavallo del mese', lib(sc, 'esempioMomenti')([-14, 30]), 'Con un termine il 12 dicembre: 28 novembre, 11 gennaio.')
+ok('ultimoMomentoArrivato: termine 12/12, oggi 13/12 → il giorno del termine', lib(sc, 'ultimoMomentoArrivato')('2026-12-12', '2026-12-13', [-7, 0, 7]), { il: '2026-12-12', momento: 0 })
+ok('ultimoMomentoArrivato: oggi prima del primo → null', lib(sc, 'ultimoMomentoArrivato')('2026-12-12', '2026-12-04', [-7, 0, 7]), null)
+
 console.log(guai ? `\n${guai} prove non passano.` : '\nTutte le prove passano.')
 process.exit(guai ? 1 : 0)

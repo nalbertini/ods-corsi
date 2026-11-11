@@ -7,6 +7,7 @@
 // ---------------------------------------------------------------------------
 
 import { spostaGiorno } from './segreteria'
+import { dataLunga } from './sala'
 import { nomiInsieme } from './avvisoSegreteria'
 
 export { nomiInsieme }
@@ -63,10 +64,17 @@ export const SOLLECITI_PROPOSTI: SollecitiCertificato = {
 }
 
 /** L'ultimo momento già arrivato (oggi compreso): in prova, il sollecito che il giro avrebbe scritto. */
-export function ultimoSollecito(entro: string, oggi: string, momenti: number[]): { il: string; momento: number } | null {
+export function ultimoMomentoArrivato(entro: string, oggi: string, momenti: number[]): { il: string; momento: number } | null {
   const passati = [...momenti].sort((a, b) => b - a).map((m) => ({ il: spostaGiorno(entro, m), momento: m })).filter((x) => x.il <= oggi)
   return passati[0] ?? null
 }
+
+/** Il primo giorno dopo il termine che non c'è ancora: «+ Aggiungi» non crea un doppione. null se sono tutti presi. */
+export const primoLibero = (m: number[]): number | null => Array.from({ length: MOMENTO_MAX }, (_, i) => i + 1).find((g) => !m.includes(g)) ?? null
+
+/** Con un termine d'esempio, i giorni veri: «Con un termine il 12 dicembre: 5 dicembre, 12 dicembre, 19 dicembre.» */
+export const esempioMomenti = (m: number[], termine = '2026-12-12') =>
+  `Con un termine il ${dataLunga(termine, false)}: ${[...m].sort((a, b) => a - b).map((x) => dataLunga(spostaGiorno(termine, x), false)).join(', ')}.`
 
 export function rigaMomento(m: number): string {
   if (m === 0) return 'il giorno del termine'
