@@ -7,8 +7,10 @@
  */
 import { INDIRIZZO_PREZZI, INDIRIZZO_RICHIESTA, INDIRIZZO_VESTIARIO } from './cancelletti'
 import { PIU_CORSI, STAGIONE } from './costi'
+import type { NomeIcona } from './icone'
 import { SCONTO_FAMIGLIA } from './nucleo'
 import { flussoNuovoAcceso } from './passiIscrizione'
+import { giorniDetti } from './richieste'
 import { inEuro } from './vestiario'
 
 export const APERTURA = {
@@ -33,16 +35,33 @@ export const DUBBIO = 'Hai un dubbio? Chiamaci o passa in palestra.'
 export const INFORMATIVA_FRASE = 'Come trattiamo i tuoi dati:'
 
 /**
- * Cosa preparare, una cosa per riga: chi apre il link si mette in pari prima
- * di cominciare. `quando` dice che la cosa non è obbligatoria; il certificato
- * non blocca, la segreteria lo prende anche di persona.
+ * Cosa ti serve, in due gruppi (proposta B, docs/design-canvas/cosa-ti-serve):
+ * le cose da avere sotto mano prima di cominciare, e quello che si fa dentro la
+ * richiesta. `giorni` sono quelli per portare il certificato
+ * (`impostazioni.certificato_giorni`): senza, come il modulo, nessun numero.
+ * Satispay si nomina solo se c'è, come in `costiBreve`.
  */
-export const COSA_SERVE: Array<{ titolo: string; quando?: string; nota: string }> = [
-  { titolo: 'Il codice fiscale', nota: 'Di chi si iscrive. Se iscrivi un figlio, anche il tuo.' },
-  { titolo: 'La carta d’identità', nota: 'Di chi si iscrive, dai 6 anni. Una foto o il PDF.' },
-  { titolo: 'Il certificato medico', quando: 'SE CE L’HAI', nota: 'Se non ce l’hai ancora, ti iscrivi lo stesso e lo porti dopo.' },
-  { titolo: 'Come paghi', quando: 'NELLA RICHIESTA', nota: 'Con Satispay, oppure col bonifico: allora serve la sua ricevuta.' },
-]
+export function cosaServe(giorni: number | null, satispay: boolean): Array<{ etichetta: string; voci: Array<{ icona: NomeIcona; titolo: string; quando?: string; nota: string }> }> {
+  return [
+    {
+      etichetta: 'DA AVERE SOTTO MANO',
+      voci: [
+        { icona: 'documento', titolo: 'Il codice fiscale', nota: 'Di chi si iscrive. Se iscrivi un figlio, anche il tuo.' },
+        { icona: 'tessera', titolo: 'La carta d’identità', nota: 'Di chi si iscrive, dai 6 anni: una foto o il PDF.' },
+        {
+          icona: 'certificato',
+          titolo: 'Il certificato medico',
+          quando: 'PUOI PORTARLO DOPO',
+          nota: giorni === null ? 'Se non ce l’hai ancora, ti iscrivi lo stesso e lo porti dopo.' : `Se non ce l’hai ancora, ti iscrivi lo stesso: hai ${giorniDetti(giorni)} per portarlo.`,
+        },
+      ],
+    },
+    {
+      etichetta: 'DA FARE NELLA RICHIESTA',
+      voci: [{ icona: 'carta', titolo: 'Pagare la quota', nota: satispay ? 'Con Satispay, oppure col bonifico e la sua ricevuta.' : 'Col bonifico e la sua ricevuta.' }],
+    },
+  ]
+}
 
 /** Si paga nella richiesta: con Satispay, o col bonifico e la sua ricevuta (decisione del 2026-10-20). */
 export const COME_SI_PAGA = {

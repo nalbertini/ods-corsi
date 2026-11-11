@@ -73,15 +73,31 @@ ok('aperturaDellaPagina non c’è più (il tasto in cima non c’è)', typeof P
 ok('MODULO_DA_LEGGERE non c’è più (si firma col dito nella richiesta)', typeof P.MODULO_DA_LEGGERE, 'undefined')
 
 // --- 4. cosa ti serve ---------------------------------------------------------
-console.log('\nCosa ti serve (COSA_SERVE)')
-ok('COSA_SERVE: quattro voci, titolo, quando e nota', P.COSA_SERVE, [
-  { titolo: 'Il codice fiscale', nota: 'Di chi si iscrive. Se iscrivi un figlio, anche il tuo.' },
-  { titolo: 'La carta d’identità', nota: 'Di chi si iscrive, dai 6 anni. Una foto o il PDF.' },
-  { titolo: 'Il certificato medico', quando: 'SE CE L’HAI', nota: 'Se non ce l’hai ancora, ti iscrivi lo stesso e lo porti dopo.' },
-  { titolo: 'Come paghi', quando: 'NELLA RICHIESTA', nota: 'Con Satispay, oppure col bonifico: allora serve la sua ricevuta.' },
+console.log('\nCosa ti serve (cosaServe)')
+// Proposta B (docs/design-canvas/cosa-ti-serve/B.dc.html): due gruppi, niente caselle, un'icona per riga.
+const SOTTO_MANO = (notaCert) => ({
+  etichetta: 'DA AVERE SOTTO MANO',
+  voci: [
+    { icona: 'documento', titolo: 'Il codice fiscale', nota: 'Di chi si iscrive. Se iscrivi un figlio, anche il tuo.' },
+    { icona: 'tessera', titolo: 'La carta d’identità', nota: 'Di chi si iscrive, dai 6 anni: una foto o il PDF.' },
+    { icona: 'certificato', titolo: 'Il certificato medico', quando: 'PUOI PORTARLO DOPO', nota: notaCert },
+  ],
+})
+const NELLA_RICHIESTA = (nota) => ({ etichetta: 'DA FARE NELLA RICHIESTA', voci: [{ icona: 'carta', titolo: 'Pagare la quota', nota }] })
+ok('30 giorni, con Satispay', prova(() => P.cosaServe(30, true)), [
+  SOTTO_MANO('Se non ce l’hai ancora, ti iscrivi lo stesso: hai 30 giorni per portarlo.'),
+  NELLA_RICHIESTA('Con Satispay, oppure col bonifico e la sua ricevuta.'),
 ])
-ok('la ricevuta non ha «quando»: non è più facoltativa', P.COSA_SERVE?.find((v) => v.titolo === 'La ricevuta del pagamento')?.quando, undefined)
-ok('nessuna voce dice «firma il genitore»', JSON.stringify(P.COSA_SERVE ?? '').includes('firma il genitore'), false)
+ok('i giorni sono quelli passati (da IMPOSTAZIONI): 45 → «hai 45 giorni»', prova(() => P.cosaServe(45, true)[0].voci[2].nota), 'Se non ce l’hai ancora, ti iscrivi lo stesso: hai 45 giorni per portarlo.')
+ok('un giorno solo: «hai 1 giorno»', prova(() => P.cosaServe(1, true)[0].voci[2].nota), 'Se non ce l’hai ancora, ti iscrivi lo stesso: hai 1 giorno per portarlo.')
+// Come il modulo: senza i giorni (server che non risponde, prima della 141) non si promette un numero.
+ok('senza i giorni (null): nessun numero', prova(() => P.cosaServe(null, true)[0].voci[2].nota), 'Se non ce l’hai ancora, ti iscrivi lo stesso e lo porti dopo.')
+// La stessa regola di costiBreve: Satispay spento non si nomina.
+ok('senza Satispay la nota non lo nomina', prova(() => P.cosaServe(30, false)[1].voci[0].nota), 'Col bonifico e la sua ricevuta.')
+ok('COSA_SERVE non c’è più (le voci dipendono dai giorni)', typeof P.COSA_SERVE, 'undefined')
+ok('nessuna voce dice «firma il genitore»', JSON.stringify(prova(() => P.cosaServe(30, true))).includes('firma il genitore'), false)
+ok('«Come paghi» non è più una cosa da preparare', JSON.stringify(prova(() => P.cosaServe(30, true))).includes('Come paghi'), false)
+ok('«SE CE L’HAI» e «NELLA RICHIESTA» non sono più etichette di riga', prova(() => P.cosaServe(30, true).flatMap((g) => g.voci).map((v) => v.quando).filter(Boolean)), ['PUOI PORTARLO DOPO'])
 
 // --- 5 e 6. il riquadro breve dei costi ----------------------------------------
 console.log('\nQuanto costa, in breve (costiBreve)')
@@ -99,7 +115,7 @@ ok('con Satispay', prova(() => P.costiBreve(50, true)), {
 ok('senza Satispay la frase non lo nomina', prova(() => P.costiBreve(50, false).testo), 'I prezzi di ogni corso e come si paga: bonifico, nella richiesta.')
 // Il pagamento non si rimanda più: nessun testo della pagina dice di pagare in segreteria o dopo la richiesta.
 // Il certificato «lo porti in segreteria» resta: la sua voce si toglie prima di cercare.
-const testiPagamento = JSON.stringify([(P.COSA_SERVE ?? []).filter((v) => v.titolo !== 'Il certificato medico'), P.COME_SI_PAGA, prova(() => P.costiBreve(50, true)), prova(() => P.costiBreve(50, false))])
+const testiPagamento = JSON.stringify([prova(() => P.cosaServe(30, true)[1]), prova(() => P.cosaServe(30, false)[1]), P.COME_SI_PAGA, prova(() => P.costiBreve(50, true)), prova(() => P.costiBreve(50, false))])
 ok('nessun testo del pagamento dice «in segreteria»', /in segreteria/i.test(testiPagamento), false)
 ok('nessun testo del pagamento dice «dopo la richiesta»', /dopo la richiesta/i.test(testiPagamento), false)
 ok('la quota è quella passata (dal listino), non scritta: 55 → «55 €»', prova(() => P.costiBreve(55, true).titolo), 'Quota associativa 55 €, più il corso.')
@@ -233,7 +249,10 @@ ok('nessuna altezza fissa per l’attesa nel CSS', /iscrizioni-costi-attesa[^{]*
 for (const x of ['50 €', '660', '20%', 'Satispay', '3 €', '10 €'])
   ok(`«${x}» non è scritto nella pagina`, pagina.includes(x), false)
 ok('il riquadro prova e dubbi: provaEDubbi(CONTATTI), PROVA.costi, PROVA.testo, CONTATTI.mappa', ['provaEDubbi(CONTATTI)', 'PROVA.costi', 'PROVA.testo', 'CONTATTI.mappa'].map((x) => pagina.includes(x)), [true, true, true, true])
-ok('le voci di COSA_SERVE si rendono con titolo, quando e nota', ['COSA_SERVE', '.titolo', '.quando', '.nota'].map((x) => pagina.includes(x)), [true, true, true, true])
+const serve = funzione(pagina, 'CosaServe')
+ok('cosa ti serve: cosaServe(giorni, PAGAMENTO.satispay), con titolo, quando, nota e <Icona', [/cosaServe\(\s*giorni\s*,\s*!!PAGAMENTO\.satispay\s*\)/.test(serve), ...['.etichetta', '.titolo', '.quando', '.nota', '<Icona'].map((x) => serve.includes(x))], [true, true, true, true, true, true])
+ok('i giorni li legge certificatoGiorni(), come il modulo', /certificatoGiorni\(\)/.test(serve), true)
+ok('niente più caselle da spuntare', [serve.includes('iscrizioni-casella'), /iscrizioni-casella/.test(sorgente('src/styles.css'))], [false, false])
 ok('nessun componente usa PAGAMENTO.quotaAssociativa', (await import('node:child_process')).execSync('grep -rl "PAGAMENTO.quotaAssociativa" src/components || true').toString().trim(), '')
 
 // --- 3 e 9. la pagina dei prezzi ---------------------------------------------

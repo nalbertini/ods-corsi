@@ -1,0 +1,19 @@
+{
+ "v": 3,
+ "createdOnFiles": { "v": 1, "at": "2026-11-11T09:00:00Z" },
+ "title": "Cosa ti serve",
+ "launch": { "view": "canvas" },
+ "pages": [],
+ "boards": {
+  "Main.dc.html": { "x": 0, "y": 300, "w": 390, "h": 560, "title": "Com'è oggi · caselle che non salvano, «Come paghi» non è una cosa da preparare" },
+  "A.dc.html": { "x": 470, "y": 300, "w": 390, "h": 560, "title": "Proposta A · tre cose da avere sotto mano, il pagamento resta a QUANTO COSTA" },
+  "B.dc.html": { "x": 940, "y": 300, "w": 390, "h": 640, "title": "Proposta B · due gruppi: da avere sotto mano, da fare nella richiesta" },
+  "Titoletto.dc.html": { "x": 0, "y": 1100, "w": 360, "h": 50, "title": "Libreria · Titoletto" }
+ },
+ "order": ["Main.dc.html", "A.dc.html", "B.dc.html", "Titoletto.dc.html"],
+ "notes": {
+  "t": { "x": 0, "y": 0, "text": "Pagina iscrizioni: COSA TI SERVE", "kind": "title1", "maxW": 1330 },
+  "n": { "x": 1410, "y": 300, "w": 340, "fill": "orange", "text": "Cosa non va oggi:\n· le caselle sembrano da spuntare ma non salvano niente;\n· «SE CE L'HAI» e «NELLA RICHIESTA» sono due cose diverse con la stessa etichetta;\n· «Come paghi» non si prepara, e lo ripete QUANTO COSTA subito sotto;\n· il certificato non dice entro quando.\n\nI 30 giorni vengono da IMPOSTAZIONI." }
+ },
+ "designSystems": []
+}
