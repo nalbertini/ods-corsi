@@ -58,7 +58,7 @@ export function cosaServe(giorni: number | null, satispay: boolean): Array<{ eti
     },
     {
       etichetta: 'DA FARE NELLA RICHIESTA',
-      voci: [{ icona: 'carta', titolo: 'Pagare la quota', nota: satispay ? 'Con Satispay, oppure col bonifico e la sua ricevuta.' : 'Col bonifico e la sua ricevuta.' }],
+      voci: [{ icona: 'carta', titolo: 'Pagare la quota', nota: satispay ? 'Con Satispay, col bonifico e la sua ricevuta, oppure in palestra direttamente.' : 'Col bonifico e la sua ricevuta, oppure in palestra direttamente.' }],
     },
   ]
 }

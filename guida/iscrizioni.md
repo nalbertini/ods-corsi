@@ -36,9 +36,9 @@ ordine.
        segreteria può mandarti un link per caricarlo dal telefono, senza
        password: chiede la foto o il PDF e la data di scadenza scritta sul
        certificato.
-   - **DA FARE NELLA RICHIESTA**: **pagare la quota**, con Satispay oppure col
-     bonifico e la sua ricevuta. Se Satispay è spento, la riga dice solo il
-     bonifico.
+   - **DA FARE NELLA RICHIESTA**: **pagare la quota**, con Satispay, col
+     bonifico e la sua ricevuta, oppure in palestra direttamente. Se Satispay
+     è spento, la riga non lo nomina.
 3. **Quanto costa**, in breve: la quota associativa (quella del
    [listino](segreteria/listino.md)), lo sconto famiglia e il costo di più
    corsi, come si paga in una riga (bonifico o Satispay, prima di mandare la

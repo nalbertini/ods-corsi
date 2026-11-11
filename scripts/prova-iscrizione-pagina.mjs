@@ -86,14 +86,14 @@ const SOTTO_MANO = (notaCert) => ({
 const NELLA_RICHIESTA = (nota) => ({ etichetta: 'DA FARE NELLA RICHIESTA', voci: [{ icona: 'carta', titolo: 'Pagare la quota', nota }] })
 ok('30 giorni, con Satispay', prova(() => P.cosaServe(30, true)), [
   SOTTO_MANO('Se non ce l’hai ancora, ti iscrivi lo stesso: hai 30 giorni per portarlo.'),
-  NELLA_RICHIESTA('Con Satispay, oppure col bonifico e la sua ricevuta.'),
+  NELLA_RICHIESTA('Con Satispay, col bonifico e la sua ricevuta, oppure in palestra direttamente.'),
 ])
 ok('i giorni sono quelli passati (da IMPOSTAZIONI): 45 → «hai 45 giorni»', prova(() => P.cosaServe(45, true)[0].voci[2].nota), 'Se non ce l’hai ancora, ti iscrivi lo stesso: hai 45 giorni per portarlo.')
 ok('un giorno solo: «hai 1 giorno»', prova(() => P.cosaServe(1, true)[0].voci[2].nota), 'Se non ce l’hai ancora, ti iscrivi lo stesso: hai 1 giorno per portarlo.')
 // Come il modulo: senza i giorni (server che non risponde, prima della 141) non si promette un numero.
 ok('senza i giorni (null): nessun numero', prova(() => P.cosaServe(null, true)[0].voci[2].nota), 'Se non ce l’hai ancora, ti iscrivi lo stesso e lo porti dopo.')
 // La stessa regola di costiBreve: Satispay spento non si nomina.
-ok('senza Satispay la nota non lo nomina', prova(() => P.cosaServe(30, false)[1].voci[0].nota), 'Col bonifico e la sua ricevuta.')
+ok('senza Satispay la nota non lo nomina', prova(() => P.cosaServe(30, false)[1].voci[0].nota), 'Col bonifico e la sua ricevuta, oppure in palestra direttamente.')
 ok('COSA_SERVE non c’è più (le voci dipendono dai giorni)', typeof P.COSA_SERVE, 'undefined')
 ok('nessuna voce dice «firma il genitore»', JSON.stringify(prova(() => P.cosaServe(30, true))).includes('firma il genitore'), false)
 ok('«Come paghi» non è più una cosa da preparare', JSON.stringify(prova(() => P.cosaServe(30, true))).includes('Come paghi'), false)
