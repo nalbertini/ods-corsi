@@ -3,10 +3,12 @@ import { INFORMATIVA_PUBBLICA, MODULO_IN_APP, PAGAMENTO, PROVA } from '../lib/is
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { INDIRIZZO_PREZZI } from '../lib/cancelletti'
 import { LISTINO_PREDEFINITO } from '../lib/listino'
-import { APERTURA, COSA_SERVE, costiBreve, DUBBIO, fondoDellaPagina, INFORMATIVA_FRASE, moduloDalCancelletto, PROVA_CHIAMA, provaEDubbi, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
+import { APERTURA, costiBreve, cosaServe, DUBBIO, fondoDellaPagina, INFORMATIVA_FRASE, moduloDalCancelletto, PROVA_CHIAMA, provaEDubbi, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
+import { datiRichieste } from '../lib/richieste'
 import { useListino } from './Costi'
 import { Dettaglio, Etichetta, Cifra, Riquadro, Tasti, Tasto, Titoletto } from './ds'
+import { Icona } from './Icons'
 import { Logo } from './Logo'
 import { ModuloIscrizione } from './ModuloIscrizione'
 import { PagamentoOnline, RitornoDalPagamento } from './PagamentoOnline'
@@ -106,24 +108,43 @@ function Apertura() {
   )
 }
 
-/** Cosa preparare, una cosa per riga: la casella si spunta a mente, la pagina non salva niente. */
+/** Cosa ti serve, in due gruppi: un'icona per riga, niente caselle (la pagina non salva niente). */
 function CosaServe() {
+  // I giorni per il certificato, come nel modulo: finché non arrivano (o se il server non risponde) la nota non dà un numero.
+  const [giorni, setGiorni] = useState<number | null>(null)
+  useEffect(() => {
+    let vivo = true
+    void datiRichieste()
+      .then((x) => x.certificatoGiorni())
+      .then((g) => vivo && setGiorni(g))
+      .catch(() => undefined)
+    return () => {
+      vivo = false
+    }
+  }, [])
   return (
     <section>
       <Titoletto>COSA TI SERVE</Titoletto>
-      <div className="pad">
-        <ul className="card iscrizioni-serve">
-          {COSA_SERVE.map((v) => (
-            <li key={v.titolo} className="iscrizioni-serve-voce">
-              <span className="iscrizioni-casella" aria-hidden="true" />
-              <span className="stack iscrizioni-serve-testo">
-                <span className="passo-titolo">{v.titolo}</span>
-                {v.quando && <span className="iscrizioni-quando">{v.quando}</span>}
-                <Dettaglio>{v.nota}</Dettaglio>
-              </span>
-            </li>
-          ))}
-        </ul>
+      <div className="pad stack iscrizioni-serve-gruppi">
+        {cosaServe(giorni, !!PAGAMENTO.satispay).map((g) => (
+          <div key={g.etichetta} className="stack iscrizioni-serve-gruppo">
+            <span className="iscrizioni-serve-etichetta">{g.etichetta}</span>
+            <ul className="card iscrizioni-serve">
+              {g.voci.map((v) => (
+                <li key={v.titolo} className="iscrizioni-serve-voce">
+                  <span className="iscrizioni-serve-icona"><Icona nome={v.icona} misura={22} /></span>
+                  <span className="stack iscrizioni-serve-testo">
+                    <span className="iscrizioni-serve-titolo">
+                      <span className="passo-titolo">{v.titolo}</span>
+                      {v.quando && <span className="iscrizioni-quando">{v.quando}</span>}
+                    </span>
+                    <Dettaglio>{v.nota}</Dettaglio>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </section>
   )

@@ -1055,14 +1055,19 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .iscrizioni-richiesta { display: flex; flex-direction: column; gap: 12px; padding-top: 20px; padding-bottom: 32px; }
 .iscrizioni-contatti { padding-bottom: 16px; }
 .prova-testa { gap: 10px; align-items: baseline; flex-wrap: wrap; }
-/* La pagina corta: il marchio sopra il titolo, cosa preparare in una lista con le caselle da spuntare a mente. */
+/* La pagina corta: il marchio sopra il titolo, cosa ti serve in due gruppi, un'icona blu per riga (niente caselle: non si spunta niente). */
 .iscrizioni-apertura svg { display: block; }
+.iscrizioni-serve-gruppi { gap: 18px; }
+.iscrizioni-serve-gruppo { gap: 10px; }
+.iscrizioni-serve-etichetta { font-family: var(--cond); font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: var(--dim); }
 .iscrizioni-serve { list-style: none; margin: 0; padding: 4px 16px; }
 .iscrizioni-serve-voce { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; }
 .iscrizioni-serve-voce + .iscrizioni-serve-voce { border-top: 2px solid var(--line-soft); }
-.iscrizioni-casella { flex: none; width: 22px; height: 22px; margin-top: 1px; border: 2px solid var(--riga-campo); border-radius: 4px; background: var(--surface); }
+.iscrizioni-serve-icona { flex: none; display: flex; margin-top: 1px; color: var(--blu); }
 .iscrizioni-serve-testo { gap: 2px; min-width: 0; }
-.iscrizioni-quando { font-family: var(--cond); font-size: 13px; font-weight: 800; letter-spacing: 0.08em; color: var(--dim); }
+.iscrizioni-serve-titolo { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+/* Come i segni con la tinta (Tag): fondo giallo chiaro, testo giallo scuro sopra 4,5:1. */
+.iscrizioni-quando { padding: 2px 8px; border-radius: 4px; background: var(--tinta-giallo); color: var(--giallo-testo); font-family: var(--cond); font-size: 13px; font-weight: 800; letter-spacing: 0.08em; }
 /* Le offerte in breve: la frase a sinistra, la cifra a destra sulla stessa riga. */
 .iscrizioni-riga { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .iscrizioni-riga > :first-child { min-width: 0; }

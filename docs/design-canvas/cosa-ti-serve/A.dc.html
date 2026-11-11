@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta A</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA A. Niente caselle (non salvano): un numero per riga. Solo le cose da preparare; il pagamento sta già in QUANTO COSTA, subito sotto.
+     Il certificato dice che non blocca e il termine, con i giorni di IMPOSTAZIONI. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 560px; background: #eef5fa; color: #0d2a3d">
+<dc-import name="Titoletto" label="COSA TI SERVE" hint-size="100%,58px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 20px">
+<span style="font-size: 15px; line-height: 1.45">Tienili a portata di mano: la richiesta te li chiede mentre la compili.</span>
+<ol style="list-style: none; margin: 0; padding: 4px 16px; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
+  <li style="display: flex; gap: 14px; align-items: flex-start; padding: 14px 0"><span aria-hidden="true" style="flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #14709f; color: #ffffff; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800">1</span><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">Il codice fiscale</span><span style="font-size: 14px; line-height: 1.4; color: #46606f">Di chi si iscrive. Se iscrivi un figlio, anche il tuo.</span></span></li>
+  <li style="display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 2px solid #cfe6f4"><span aria-hidden="true" style="flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #14709f; color: #ffffff; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800">2</span><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">La carta d’identità</span><span style="font-size: 14px; line-height: 1.4; color: #46606f">Di chi si iscrive, dai 6 anni: una foto o il PDF.</span></span></li>
+  <li style="display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 2px solid #cfe6f4"><span aria-hidden="true" style="flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #14709f; color: #ffffff; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800">3</span><span style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 16px; font-weight: 600">Il certificato medico</span><span style="font-size: 14px; line-height: 1.4; color: #46606f">Dai 6 anni: una foto o il PDF.</span><span style="align-self: flex-start; padding: 6px 10px; border-radius: 4px; background: #fff3cc; color: #6b4f00; font-size: 14px; line-height: 1.4">Non ce l’hai ancora? Ti iscrivi lo stesso e hai 30 giorni per portarlo.</span></span></li>
+</ol>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":560}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
