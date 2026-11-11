@@ -1587,6 +1587,35 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return creatoIl
     },
 
+    async segnaSollecitoLink(personaId, linkId) {
+      if (!(a().linkCertificato ?? []).some((l) => l.id === linkId && l.personaId === personaId)) throw new Error('Il link non è di questa persona.')
+      const quando = await this.segnaSollecito(personaId)
+      const s = (a().solleciti ?? []).find((x) => x.personaId === personaId && x.creatoIl === quando)
+      if (s) s.linkId = linkId
+      salva()
+      return quando
+    },
+
+    // Come `link_certificato_per`: lo stesso link finché vale (120 giorni; in prova il certificato non chiude niente).
+    async linkCertificato(personaId) {
+      if (!a().persone.some((p) => p.id === personaId && p.attiva)) return null
+      const vale = (a().linkCertificato ?? []).find((l) => l.personaId === personaId && Date.parse(l.creatoIl) > Date.now() - 120 * 86_400_000)
+      const l = vale ?? { id: crypto.randomUUID(), personaId, creatoIl: new Date().toISOString() }
+      if (!vale) {
+        a().linkCertificato = [...(a().linkCertificato ?? []), l]
+        salva()
+      }
+      // La firma vera la fa la Edge Function: in prova il link apre il certificato finto di `certificatoLinkDati`.
+      return { codice: `${l.id}.${'p'.repeat(43)}`, id: l.id }
+    },
+
+    async sollecitiDi(personaId) {
+      return (a().solleciti ?? [])
+        .filter((s) => s.personaId === personaId)
+        .sort((x, y) => y.creatoIl.localeCompare(x.creatoIl))
+        .map((s) => ({ quando: s.creatoIl, ...(s.da && { da: s.da }), canale: 'whatsapp' as const, conLink: !!s.linkId }))
+    },
+
     async ultimiSolleciti() {
       const tutti = new Map<string, UltimoSollecito>()
       for (const s of a().solleciti ?? []) if ((tutti.get(s.personaId)?.quando ?? '') < s.creatoIl) tutti.set(s.personaId, { quando: s.creatoIl, da: s.da })

@@ -33,6 +33,8 @@ export interface Sollecito {
   fisso: boolean
   /** Il telefono della scheda: vuoto e scritto male si dicono in modo diverso. */
   telefono: 'ok' | 'manca' | 'sbagliato'
+  /** Fra i motivi c'è il certificato: il messaggio può portare il link per caricarlo. */
+  certificato: boolean
 }
 
 /**
@@ -69,6 +71,8 @@ export interface OpzioniSollecito {
   corsi?: StatoCorso[]
   /** I titolari dei nuclei (`titolariDi`): al titolare senza corsi la quota non si chiede, come nei conti. */
   titolari?: ReadonlySet<string>
+  /** Il link per caricare il certificato senza password (`142-certificato-link.sql`): entra solo se si sollecita il certificato. */
+  linkCertificato?: string
 }
 
 /** Il motivo di un corso non coperto; null per quelli pagati e per «da controllare», che la segreteria guarda prima. */
@@ -86,8 +90,8 @@ function motivoCorso(s: StatoCorso): (Motivo & { frase: string }) | null {
 }
 
 /** I motivi con la loro frase per il messaggio, nell'ordine in cui si dicono. */
-function cosaManca(p: PersonaSeg, quota: number, oggi: string, opz: OpzioniSollecito): Array<Motivo & { frase: string }> {
-  const fuori: Array<Motivo & { frase: string }> = []
+function cosaManca(p: PersonaSeg, quota: number, oggi: string, opz: OpzioniSollecito): Array<Motivo & { frase: string; certificato?: true }> {
+  const fuori: Array<Motivo & { frase: string; certificato?: true }> = []
   const paga = opz.quotaNelVecchio || titolareSenzaCorsi(p, opz.titolari, oggi) ? { come: 'pagato' as const } : pagamentoDi(p, oggi)
   const prezzo = `${euro(quota)} €`
   if (paga.come === 'da_pagare') fuori.push({ testo: `Quota associativa da pagare: ${prezzo}`, tono: 'rosso', frase: `la quota associativa è da pagare (${prezzo})` })
@@ -106,13 +110,13 @@ function cosaManca(p: PersonaSeg, quota: number, oggi: string, opz: OpzioniSolle
 
   const scade = p.certificato.scade
   const cert = statoCertificato(p, oggi)
-  if (cert === 'manca') fuori.push({ testo: 'Certificato medico mancante', tono: 'rosso', frase: 'manca il certificato medico' })
+  if (cert === 'manca') fuori.push({ testo: 'Certificato medico mancante', tono: 'rosso', frase: 'manca il certificato medico', certificato: true })
   if (cert === 'scaduto' && scade)
-    fuori.push({ testo: `Certificato medico scaduto il ${dataLunga(scade)}`, tono: 'rosso', frase: `il certificato medico è scaduto il ${dataLunga(scade)}` })
+    fuori.push({ testo: `Certificato medico scaduto il ${dataLunga(scade)}`, tono: 'rosso', frase: `il certificato medico è scaduto il ${dataLunga(scade)}`, certificato: true })
   if (cert === 'in_scadenza' && scade)
-    fuori.push({ testo: `Certificato medico in scadenza il ${dataLunga(scade)}, ${fra(scade, oggi)}`, tono: 'giallo', frase: `il certificato medico scade il ${dataLunga(scade)}` })
+    fuori.push({ testo: `Certificato medico in scadenza il ${dataLunga(scade)}, ${fra(scade, oggi)}`, tono: 'giallo', frase: `il certificato medico scade il ${dataLunga(scade)}`, certificato: true })
   if (cert === 'atteso' && p.certificato.entro)
-    fuori.push({ testo: `Certificato medico da portare entro il ${dataLunga(p.certificato.entro)}`, tono: 'giallo', frase: `il certificato medico va portato entro il ${dataLunga(p.certificato.entro)}` })
+    fuori.push({ testo: `Certificato medico da portare entro il ${dataLunga(p.certificato.entro)}`, tono: 'giallo', frase: `il certificato medico va portato entro il ${dataLunga(p.certificato.entro)}`, certificato: true })
   if (cert === 'in_arrivo' && p.natoIl) {
     const dal = dataLunga(dalCertificato(p.natoIl))
     fuori.push({ testo: `Compie 6 anni il ${dal}: da allora serve il certificato medico`, tono: 'giallo', frase: `dal ${dal}, quando compie 6 anni, per allenarsi serve il certificato medico` })
@@ -135,7 +139,9 @@ export function sollecitoDi(p: PersonaSeg, anagrafica: Anagrafica | undefined, q
   const genitore = minore && anagrafica?.genitoreNome ? anagrafica : undefined
   // Un minorenne senza genitore in scheda: il telefono è forse di un genitore, e a un bambino non si scrive «ti».
   const saluto = genitore ? `Ciao ${genitore.genitoreNome}, ${SALUTO} per ${p.nome}` : minore ? `Ciao, ${SALUTO} per ${p.nome}` : `Ciao ${p.nome}, ${SALUTO}`
-  const testo = `${saluto}: ${manca.map((x) => x.frase).join(' e ')}. ${CHIUSA}`
+  const certificato = manca.some((x) => x.certificato)
+  const link = opz.linkCertificato && certificato ? ` Puoi caricarlo da qui, senza password: ${opz.linkCertificato}` : ''
+  const testo = `${saluto}: ${manca.map((x) => x.frase).join(' e ')}.${link} ${CHIUSA}`
   const numero = numeroWhatsApp(p.telefono)
   return {
     motivi: manca.map(({ testo, tono }) => ({ testo, tono })),
@@ -145,6 +151,7 @@ export function sollecitoDi(p: PersonaSeg, anagrafica: Anagrafica | undefined, q
     a: genitore ? `${[genitore.genitoreCognome, genitore.genitoreNome].filter(Boolean).join(' ')} (genitore)` : minore ? `un genitore di ${p.nome}` : `${p.cognome} ${p.nome}`,
     fisso: !!numero && sembraFisso(numero),
     telefono: numero ? 'ok' : p.telefono?.trim() ? 'sbagliato' : 'manca',
+    certificato,
   }
 }
 

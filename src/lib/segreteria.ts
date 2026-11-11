@@ -17,6 +17,7 @@ import type { Disciplina } from '../../timer/src/lib/discipline'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
 import type { RigaAssegnata } from './assegna'
+import type { StoricoSollecito } from './certificatoLink'
 import { euro, mancanoDatiSocio } from './ricevute'
 import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
@@ -197,6 +198,8 @@ export interface CertificatoSeg {
   caricatoIl?: string
   /** Il giorno in cui l'iscritto ha mandato un file che nessuno ha ancora controllato (`102-certificato-iscritto.sql`). */
   inAttesaIl?: string
+  /** La scadenza scritta da chi l'ha caricato dal link (`142-certificato-link.sql`): la conferma parte da lì. */
+  inAttesaScade?: string
   /** Il termine per portarlo, quello che vale (`termineCertificato`): fino a quel giorno è `atteso`, non `manca`. */
   entro?: string
   /** Il termine scritto nella scheda (`certificato_entro`, 141): all'accoglimento o spostato dalla segreteria. */
@@ -833,6 +836,12 @@ export interface DatiSegreteria {
   ricevuteEmailDal(): Promise<string | null>
   /** Segna che la segreteria ha aperto il sollecito su WhatsApp di una persona attiva (`85-solleciti.sql`); `null` senza il file. */
   segnaSollecito(personaId: string): Promise<string | null>
+  /** Lo stesso, col link per il certificato messo nel messaggio (`142-certificato-link.sql`). */
+  segnaSollecitoLink(personaId: string, linkId: string): Promise<string | null>
+  /** Il link per caricare il certificato senza password (Edge Function `certificato`); null senza 142 o se non si prepara: il messaggio parte senza. */
+  linkCertificato(personaId: string): Promise<{ codice: string; id: string } | null>
+  /** I solleciti di una persona, dal più recente, con canale e apertura del link; vuoto senza 142. */
+  sollecitiDi(personaId: string): Promise<StoricoSollecito[]>
   /** L'ultimo sollecito segnato, col nome di chi; `null` se non ce n'è o senza `85-solleciti.sql`. */
   ultimoSollecito(personaId: string): Promise<UltimoSollecito | null>
   /** L'ultimo sollecito di ognuno, in un colpo, per l'elenco ISCRITTI; vuota senza `87-solleciti-elenco.sql`. */

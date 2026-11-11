@@ -671,6 +671,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%invia_iscrizione_0%')
     and exists (select 1 from dentro where nome = 'iscritto_scheda_di' and corpo like '%certificato_termine%')
     and to_regprocedure('public.certificati_con_pin(text,uuid)') is not null
-    and exists (select 1 from pg_trigger where tgname = 'richieste_accolta_termine'))
+    and exists (select 1 from pg_trigger where tgname = 'richieste_accolta_termine')),
+  ('142-certificato-link.sql', 'il certificato si carica da un link, senza password',
+    to_regclass('public.link_certificato') is not null
+    and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'certificato_in_attesa_scade')
+    and to_regprocedure('public.link_manda_certificato(uuid,text,date)') is not null
+    and to_regprocedure('public.segna_sollecito_link(uuid,uuid)') is not null
+    and exists (select 1 from pg_trigger where tgname = 'schede_chiude_link'))
 ) as x(file, cosa, c)
 order by file, cosa;

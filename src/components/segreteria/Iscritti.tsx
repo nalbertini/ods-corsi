@@ -967,7 +967,7 @@ function Scheda({
         )}
       </div>
       {!unendo && !pagando && sollecito.guaio && <Guaio titolo="SOLLECITO SU WHATSAPP" testo={sollecito.guaio} />}
-      {azioni.sollecito && sollecito.s && sollecitoAperto && <SollecitoWhatsApp d={d} p={p} s={sollecito.s} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
+      {azioni.sollecito && sollecito.s && sollecitoAperto && <SollecitoWhatsApp d={d} p={p} s={sollecito.s} linkId={sollecito.linkId} giroSolleciti={giroSolleciti} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
       {!unendo && !pagando && manca.length > 0 && (
         <div className="sg-scheda-manca" role="status">
           <span className="sg-scheda-manca-titolo">✕ COSA MANCA</span>
@@ -1993,7 +1993,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   const [gesto, setGesto] = useState<{ file?: File; scade: string } | null>(null)
   const sel = useRef<HTMLInputElement>(null)
   // La scadenza che la segreteria legge sul file mandato dall'iscritto.
-  const [scadeMandato, setScadeMandato] = useState('')
+  const [scadeMandato, setScadeMandato] = useState(p.certificato.inAttesaScade ?? '')
   // «Cambia la data» / «Dai una data»: il termine per portarlo, di questa persona sola.
   const [termine, setTermine] = useState<string | null>(null)
   const c = p.certificato

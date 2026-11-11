@@ -5,7 +5,7 @@
  * l'uno dell'altro non devono sapere niente. Vale anche senza la barra finale
  * e con `index.html` in fondo: sono la stessa pagina.
  */
-export function areaDelPercorso(): 'segreteria' | 'amministrazione' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'collega' | null {
-  const m = /\/(segreteria|amministrazione|iscrizioni|iscritti|istruttori|sala|collega)(\/(index\.html)?)?$/.exec(window.location.pathname)
-  return m ? (m[1] as 'segreteria' | 'amministrazione' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'collega') : null
+export function areaDelPercorso(): 'segreteria' | 'amministrazione' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'collega' | 'certificato' | null {
+  const m = /\/(segreteria|amministrazione|iscrizioni|iscritti|istruttori|sala|collega|certificato)(\/(index\.html)?)?$/.exec(window.location.pathname)
+  return m ? (m[1] as 'segreteria' | 'amministrazione' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'collega' | 'certificato') : null
 }

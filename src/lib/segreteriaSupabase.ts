@@ -181,6 +181,7 @@ type Scheda = {
   certificato_caricato_il?: string | null
   /** Arriva con 102-certificato-iscritto.sql. */
   certificato_in_attesa_il?: string | null
+  certificato_in_attesa_scade?: string | null
   /** Arrivano con 141-certificato-dopo.sql: il termine scritto, e chi l'ha spostato. */
   certificato_entro?: string | null
   certificato_entro_il?: string | null
@@ -1188,7 +1189,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const leggiTutto = async (nucleo: string) => {
         // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
         // «spostato»: chi ha spostato il termine (141). schede_iscritti punta a persone anche da lì.
-        let r = await leggi(`${scheda}, certificato_caricato_il, certificato_in_attesa_il, documento_in_segreteria, certificato_entro, certificato_entro_il, spostato:persone!certificato_entro_da ( nome )`, nucleo)
+        let r = await leggi(`${scheda}, certificato_caricato_il, certificato_in_attesa_il, certificato_in_attesa_scade, documento_in_segreteria, certificato_entro, certificato_entro_il, spostato:persone!certificato_entro_da ( nome )`, nucleo)
+        // Senza 142-certificato-link.sql non c'è la scadenza scritta da chi carica dal link.
+        if (colonnaMancante(r)) r = await leggi(`${scheda}, certificato_caricato_il, certificato_in_attesa_il, documento_in_segreteria, certificato_entro, certificato_entro_il, spostato:persone!certificato_entro_da ( nome )`, nucleo)
         // Senza 141-certificato-dopo.sql non c'è il termine: tutto come prima.
         if (colonnaMancante(r) || r.error?.code === 'PGRST200') r = await leggi(`${scheda}, certificato_caricato_il, certificato_in_attesa_il, documento_in_segreteria`, nucleo)
         // Senza 102-certificato-iscritto.sql manca la colonna dei file mandati dagli iscritti.
@@ -1256,6 +1259,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             vecchio: !!s?.certificato_file && !s.certificato_caricato_il,
             caricatoIl: s?.certificato_caricato_il?.slice(0, 10),
             inAttesaIl: s?.certificato_in_attesa_il?.slice(0, 10),
+            ...(s?.certificato_in_attesa_scade && { inAttesaScade: s.certificato_in_attesa_scade }),
             // Senza 141 (giorni `null`) nessun termine: mancante o scaduto, come prima.
             ...(giorni !== null && {
               entro: termineCertificato({ scade: s?.certificato_scade ?? undefined, entroScritto }, natoIl, creataIl, giorni),
@@ -1685,6 +1689,35 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return null
       // `as`: segna_sollecito() in 85-solleciti.sql rende un timestamptz.
       return ok(r) as string
+    },
+
+    async segnaSollecitoLink(personaId, linkId) {
+      const r = await db.rpc('segna_sollecito_link', { persona: personaId, link: linkId })
+      // Senza 142 il link non c'era neanche: si segna come prima.
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return this.segnaSollecito(personaId)
+      // `as`: segna_sollecito_link() in 142-certificato-link.sql rende un timestamptz.
+      return ok(r) as string
+    },
+
+    async linkCertificato(personaId) {
+      // Il segreto della firma sta solo nella funzione: qui arriva il codice già firmato.
+      const { data, error } = await db.functions.invoke('certificato', { body: { persona: personaId } })
+      // Senza la funzione, senza 142 o con un guasto il WhatsApp parte lo stesso, senza link.
+      if (error || typeof data?.codice !== 'string' || typeof data?.id !== 'string') return null
+      return { codice: data.codice, id: data.id }
+    },
+
+    async sollecitiDi(personaId) {
+      const r = await db.rpc('solleciti_di', { persona: personaId })
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return []
+      // `as`: le righe di solleciti_di() in 142-certificato-link.sql.
+      return (ok(r) as Array<{ creato_il: string; da: string; canale: 'whatsapp' | 'email'; con_link: boolean; aperto_il: string | null }>).map((x) => ({
+        quando: x.creato_il,
+        ...(x.da && { da: x.da }),
+        canale: x.canale,
+        conLink: x.con_link,
+        ...(x.aperto_il && { apertoIl: x.aperto_il }),
+      }))
     },
 
     async ultimiSolleciti() {

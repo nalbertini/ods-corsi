@@ -18,7 +18,9 @@ import { eIndirizzoGuida, INDIRIZZO_AREE, INDIRIZZO_VESTIARIO } from './cancelle
  * - `istruttori/`: il calendario e l'appello, per istruttori e segreteria;
  * - `sala/`: il tablet appeso al muro;
  * - `collega/`: dove Supabase manda chi collega Claude al suo account, per dire
- *   CONSENTI (vedi `collega.ts`); non ha link, ci si arriva solo da Claude.
+ *   CONSENTI (vedi `collega.ts`); non ha link, ci si arriva solo da Claude;
+ * - `certificato/`: la pagina del link per caricare il certificato medico,
+ *   senza accesso (vedi `certificatoLink.ts`, `142-certificato-link.sql`).
  *
  * Sono cartelle vere del sito (`…/ods-corsi/segreteria/`): GitHub Pages non sa
  * rimandare un indirizzo qualunque all'app, quindi la compilazione mette in
@@ -42,7 +44,7 @@ import { eIndirizzoGuida, INDIRIZZO_AREE, INDIRIZZO_VESTIARIO } from './cancelle
  * portano i link «tutte le aree». Con la radice e basta, un dispositivo che
  * una volta ha aperto `sala/` tornerebbe al tablet.
  */
-export type Area = 'segreteria' | 'amministrazione' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'collega' | 'guida' | 'scelta'
+export type Area = 'segreteria' | 'amministrazione' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'collega' | 'certificato' | 'guida' | 'scelta'
 
 export type AreaConIndirizzo = Exclude<Area, 'scelta' | 'guida'>
 
@@ -54,6 +56,7 @@ export const INDIRIZZI: Record<AreaConIndirizzo, string> = {
   istruttori: 'istruttori/',
   sala: 'sala/',
   collega: 'collega/',
+  certificato: 'certificato/',
 }
 
 /** La pagina con tutte le aree, anche su un dispositivo che si ricorda di essere un tablet. */

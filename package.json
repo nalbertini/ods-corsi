@@ -52,6 +52,7 @@
     "prova:assegna-movimento": "node scripts/prova-assegna-movimento.mjs",
     "prova:certificati": "node scripts/prova-certificati.mjs",
     "prova:certificato-dopo": "node scripts/prova-certificato-dopo.mjs",
+    "prova:certificato-link": "node scripts/prova-certificato-link.mjs",
     "prova:campi": "node scripts/prova-campi.mjs",
     "prova:richieste": "node scripts/prova-richieste.mjs",
     "prova:provenienza": "node scripts/prova-provenienza.mjs",
@@ -188,6 +189,7 @@
     "prova:chiusure": "node scripts/prova-chiusure.mjs",
     "prova:quadratura": "node scripts/prova-quadratura.mjs",
     "prova:edge": "node scripts/prova-edge.mjs",
+    "prova:edge-certificato": "node scripts/prova-edge-certificato.mjs",
     "prova:a11y-axe": "node scripts/prova-a11y-axe.mjs"
   },
   "dependencies": {
