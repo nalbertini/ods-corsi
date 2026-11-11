@@ -271,7 +271,10 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   iscrive risponde alle domande dal telefono, **firma col dito** il modulo
   delle autorizzazioni (il PDF della palestra, compilato coi suoi dati da
   `src/lib/firma.ts`; o ne carica la foto firmata a mano), e carica il
-  documento d'identità, il certificato medico se c'è già, e la ricevuta del
+  documento d'identità, il certificato medico se c'è già (se no sceglie «Non
+  ce l'ho ancora» e ha i giorni di IMPOSTAZIONI per portarlo, dall'accoglimento:
+  giallo nel termine, rosso dopo, la presenza si segna sempre;
+  `supabase/141-certificato-dopo.sql`), e la ricevuta del
   bonifico o di Satispay, obbligatoria dalla pagina pubblica: il modulo mostra
   quanto pagare, l'IBAN e la causale (`fileObbligatori` in `src/lib/richieste.ts`)
   (il documento la segreteria lo stampa, lo tiene su carta e lo cancella
