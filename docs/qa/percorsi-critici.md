@@ -204,11 +204,11 @@ quando arriva la prova.
 - Suggerimento da classificare: il caricamento in `Contabilita.tsx` (listino
   assente → solo importo escluso; nessun abbinato → ricerca per nome) sta nel
   `.tsx`; nessuna prova, solo collaudo a mano.
-- Importa dalla banca: le righe di `ImportaBanca.tsx` (chip, «È nuova», ✓
-  della persona, frase gialla del «DA DECIDERE») e il giro di `cambiaVoceMovimenti` dopo l'importazione:
-  solo collaudo a mano. Il piano e le scelte hanno le loro prove.
+- Importa dalla banca: le righe di `ImportaBanca.tsx` (filtri, gruppi, «Conferma», «Nuovo», CHI HA PAGATO?)
+  e il giro di `cambiaVoceMovimenti` dopo l'importazione: solo collaudo a mano. Le regole hanno le loro prove.
+- Importa dalla banca, la persona proposta (nome intero, una scheda sola) entra senza conferma: c'è la prova.
 - Suggerimento da classificare: `ImportaBanca.tsx` (al massimo trenta
-  richieste; «Conferma quelli che sembrano giusti» scrive) sta nel `.tsx`:
+  richieste; «Conferma» del gruppo collega i preselezionati) sta nel `.tsx`:
   solo collaudo a mano.
 - Suggerimento da classificare: la traduzione verso il database
   (`codiceFiscaleLetto` → `codice_fiscale_letto`, `gia_iscritto` →
