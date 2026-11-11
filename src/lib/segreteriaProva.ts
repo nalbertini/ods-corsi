@@ -1,10 +1,11 @@
+import { cosaNonVaSolleciti, SOLLECITI_PROPOSTI, ultimoMomentoArrivato } from './sollecitiCertificato'
 import { indirizziDaSalvare } from './avvisoSegreteria'
 import type { Anagrafica, AnagraficaDi, UltimoSollecito, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagamento, extraDelPagamento, mancaPerRicevuta, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
-import { attivitaCambiata, cancellaFileIl, cosaNonVaGiorniCertificato, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO, termineCertificato, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { statoCertificato, attivitaCambiata, cancellaFileIl, cosaNonVaGiorniCertificato, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO, termineCertificato, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
 import { unisciGare } from './gare'
 import { codicePulito, cosaNonVaNucleo, GENITORE_GIA_IN_ELENCO, GENITORE_SENZA_CF, GENITORE_SENZA_NOME, nuovoTitolare, type DatiGenitore } from './nucleo'
@@ -1616,6 +1617,39 @@ export function creaSegreteriaProva(): DatiSegreteria {
         .map((s) => ({ quando: s.creatoIl, ...(s.da && { da: s.da }), canale: 'whatsapp' as const, conLink: !!s.linkId }))
     },
 
+    // Come `solleciti_a_mano` (143): in prova nessuna mail parte e il giro del mattino non gira. Chi non ha un'email
+    // e ha un momento già arrivato, senza un sollecito da quel giorno, è da mandare a mano: come se il giro ci fosse stato.
+    // shortcut: calcolata e non un registro, quindi recupera anche un momento passato prima dell'accensione e non
+    // guarda il link; se la prova deve mostrare proprio quel caso, va scritto un registro `a_mano` come nel database.
+    async sollecitiAMano() {
+      const s = (await this.impostazioni()).sollecitiCertificato ?? SOLLECITI_PROPOSTI
+      if (!s.accesi) return []
+      const g = oggiARoma()
+      const sospesi = new Set(a().sollecitiSospesi ?? [])
+      const persone = await this.persone()
+      return persone.flatMap((p) => {
+        const titolare = a().persone.find((x) => x.id === (a().persone.find((y) => y.id === p.id)?.nucleo ?? p.id))
+        const stato = statoCertificato(p, g)
+        if (!p.attiva || sospesi.has(p.id) || p.certificato.inAttesaIl || titolare?.email || !p.certificato.entro || !['atteso', 'manca', 'scaduto'].includes(stato)) return []
+        const u = ultimoMomentoArrivato(p.certificato.entro, g, s.momenti)
+        if (!u || (a().solleciti ?? []).some((x) => x.personaId === p.id && oggiARoma(new Date(x.creatoIl)) >= u.il)) return []
+        return [{ personaId: p.id, nome: p.nome, cognome: p.cognome, entro: p.certificato.entro, momento: u.momento, dovutoIl: u.il }]
+      })
+    },
+
+    async sospendiSolleciti(personaId, sospesi) {
+      if (!a().persone.some((p) => p.id === personaId && p.attiva && p.ruolo === 'iscritto')) throw new Error('La scheda non c’è o è disattivata.')
+      a().sollecitiSospesi = [...(a().sollecitiSospesi ?? []).filter((x) => x !== personaId), ...(sospesi ? [personaId] : [])]
+      salva()
+    },
+
+    async sollecitiEmailDi(personaId) {
+      const p = a().persone.find((x) => x.id === personaId)
+      if (!p) return null
+      const titolare = a().persone.find((x) => x.id === (p.nucleo ?? p.id))
+      return { a: titolare?.email || null, sospesi: (a().sollecitiSospesi ?? []).includes(personaId) }
+    },
+
     async ultimiSolleciti() {
       const tutti = new Map<string, UltimoSollecito>()
       for (const s of a().solleciti ?? []) if ((tutti.get(s.personaId)?.quando ?? '') < s.creatoIl) tutti.set(s.personaId, { quando: s.creatoIl, da: s.da })
@@ -2955,11 +2989,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async impostazioni() {
-      return { inizioCorsi: null, fineCorsi: null, metodiSpenti: [], certificatoGiorni: GIORNI_CERTIFICATO, ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }) }
+      return { inizioCorsi: null, fineCorsi: null, metodiSpenti: [], certificatoGiorni: GIORNI_CERTIFICATO, sollecitiCertificato: SOLLECITI_PROPOSTI, ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }) }
     },
 
     async salvaImpostazioni(i) {
-      const guasto = i.certificatoGiorni !== undefined ? cosaNonVaGiorniCertificato(i.certificatoGiorni) : undefined
+      const guasto = (i.certificatoGiorni !== undefined ? cosaNonVaGiorniCertificato(i.certificatoGiorni) : undefined) ?? (i.sollecitiCertificato && cosaNonVaSolleciti(i.sollecitiCertificato))
       if (guasto) throw new Error(guasto)
       scriviImpostazioni(i)
     },

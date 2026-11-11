@@ -1,3 +1,4 @@
+import type { SollecitiCertificato } from './sollecitiCertificato'
 import type { IdMetodo } from './metodiPagamento'
 import { nascitaOggi } from './compleanni'
 import type { Lettera } from './lettere'
@@ -140,7 +141,7 @@ export interface Archivio {
   attivita?: AttivitaProva[]
   /** I PIN del tablet cambiati dalla segreteria, per persona. */
   pin?: Record<string, string>
-  impostazioni?: { mesiPresenze: number; giorniCalendario: number; inizioCorsi?: string | null; fineCorsi?: string | null; metodiSpenti?: IdMetodo[]; certificatoGiorni?: number }
+  impostazioni?: { mesiPresenze: number; giorniCalendario: number; inizioCorsi?: string | null; fineCorsi?: string | null; metodiSpenti?: IdMetodo[]; certificatoGiorni?: number; sollecitiCertificato?: SollecitiCertificato }
   /** Le liste della musica delle sale; `sala` nulla vuol dire tutte. */
   musica?: Array<{ id: string; nome: string; link: string; sala: string | null; disciplina?: string }>
   /** Il timer dei tablet di sala, uguale per tutti: lo cambia un tablet qualunque. */
@@ -174,6 +175,8 @@ export interface Archivio {
   inviiRicevute?: InvioRicevuta[]
   /** I solleciti su WhatsApp segnati, come `solleciti` (85-solleciti.sql): in prova nessun messaggio parte. */
   solleciti?: Array<{ personaId: string; creatoIl: string; da: string; linkId?: string }>
+  /** Chi ha i solleciti del certificato sospesi (`schede_iscritti.solleciti_sospesi`, 143). */
+  sollecitiSospesi?: string[]
   /** I link per caricare il certificato (142-certificato-link.sql): in prova non si aprono. */
   linkCertificato?: Array<{ id: string; personaId: string; creatoIl: string }>
   /** Da quando le ricevute si mandano: la prima volta che si guarda, come il file SQL lanciato quel giorno. */

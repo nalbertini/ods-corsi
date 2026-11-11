@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Solleciti nella scheda</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Nella scheda dell'iscritto, nel riquadro del sollecito (Sollecito.tsx): fra il tasto WhatsApp e la storia una
+     riga nuova SOLLECITI PER EMAIL che dice il prossimo (giorno e momento) o perché non parte, col tasto a linea
+     «Sospendi i solleciti» / «Riattiva i solleciti». La storia (rigaStoricoSollecito, PR2) prende le righe «Email · …»,
+     senza «da …»: le manda l'app. Compare solo quando c'è un termine (atteso o manca). -->
+<div style="display: flex; flex-direction: column; gap: 18px; width: 1100px; min-height: 1240px; padding: 28px 36px; background: #eef5fa">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · SOLLECITI ACCESI, IL PROSSIMO</span>
+  <dc-import name="Stato" tema="sito" nome="DA PORTARE ENTRO IL 12/12/2026" sotto="fra 9 giorni · iscritto il 12/11 senza certificato" tono="giallo" tasto="Cambia la data" pericolo="" hint-size="100%,80px"></dc-import>
+  <dc-import name="Sollecito" motivi="Certificato medico da portare entro il 12 dicembre 2026:giallo" testo="Ciao Laura, ti scriviamo dalle Officine Dello Sport per Marco: il certificato medico va portato entro il 12 dicembre 2026. Puoi caricarlo da qui, senza password: https://app.officinedellosport.it/certificato/?l=6f1c…  Puoi passare in segreteria o rispondere qui. Grazie!" chi="A Rossi Laura (genitore) · 333 123 4567" tasto="Apri WhatsApp" storia="" hint-size="100%,260px"></dc-import>
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: -18px; padding: 0 18px 16px; background: #ffffff; border-radius: 0 0 6px 6px; box-shadow: inset 4px 0 0 #8f6a00">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding-top: 12px; border-top: 1px solid #cfe6f4">
+      <span style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">SOLLECITI PER EMAIL</span>
+        <span style="font-size: 15px">Il prossimo il 12/12/2026, il giorno del termine, a laura.rossi@esempio.it</span>
+      </span>
+      <dc-import name="Bottone" label="Sospendi i solleciti" variante="linea" contesto="segreteria" alto="44px" hint-size="190px,44px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f; padding: 6px 0">SOLLECITI</span>
+      <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4; font-size: 15px"><span>Email · 5/12/2026</span><span>link aperto il 6/12/2026</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4; font-size: 15px"><span>WhatsApp · 20/11/2026 da Paolo</span><span style="color: #46606f">link non aperto</span></div>
+    </div>
+  </div>
+
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00; margin-top: 12px">PROPOSTA · SOSPESI</span>
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 14px 18px; background: #ffffff; border-radius: 6px; box-shadow: inset 4px 0 0 #8f6a00">
+    <span style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">SOLLECITI PER EMAIL</span>
+      <span style="font-size: 15px; color: #8f6a00; font-weight: 600">Sospesi: a Marco non scriviamo più finché non li riattivi.</span>
+      <span style="font-size: 13px; color: #46606f">Riattivati, ripartono dal prossimo momento: quelli passati non si recuperano.</span>
+    </span>
+    <dc-import name="Bottone" label="Riattiva i solleciti" variante="linea" contesto="segreteria" alto="44px" hint-size="190px,44px"></dc-import>
+  </div>
+
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00; margin-top: 12px">PROPOSTA · PERCHÉ NON PARTONO</span>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px">
+    <div style="display: flex; flex-direction: column; gap: 2px; padding: 14px 18px; background: #ffffff; border-radius: 6px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">SOLLECITI PER EMAIL</span>
+      <span style="font-size: 15px">Nessuna email: il 12/12 lo trovi in DA FARE, da mandare su WhatsApp.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px; padding: 14px 18px; background: #ffffff; border-radius: 6px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">SOLLECITI PER EMAIL</span>
+      <span style="font-size: 15px">Caricato dal link il 20/11, da confermare: i solleciti sono fermi.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px; padding: 14px 18px; background: #ffffff; border-radius: 6px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">SOLLECITI PER EMAIL</span>
+      <span style="font-size: 15px">Spenti per tutti in IMPOSTAZIONI › GLI AVVISI.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px; padding: 14px 18px; background: #ffffff; border-radius: 6px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">SOLLECITI PER EMAIL</span>
+      <span style="font-size: 15px">Nessun altro: l’ultimo è partito il 19/12.</span>
+    </div>
+  </div>
+  <span style="font-size: 14px; line-height: 1.5; color: #46606f; max-width: 900px">Iscritti di prima, senza termine: la riga non c’è (niente solleciti automatici; resta il WhatsApp a mano). Il tasto Sospendi c’è solo finché c’è un prossimo sollecito o sono sospesi.</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":1240}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

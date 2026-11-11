@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import type { DatiSegreteria, PersonaSeg, UltimoSollecito } from '../../lib/segreteria'
 import { fraseCorta, sollecitoDi, type StatoCella, type Sollecito } from '../../lib/sollecito'
 import { rigaStoricoSollecito } from '../../lib/certificatoLink'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { voceQuota } from '../../lib/ricevute'
 import type { StatoCorso } from '../../lib/corsiDaPagare'
+import { rigaSollecitiEmail } from '../../lib/sollecitiCertificato'
+import { oggiARoma } from '../../lib/contabilita'
 import { useCarica, type useAvviso } from './comune'
 
 /**
@@ -102,6 +105,7 @@ export function SollecitoWhatsApp({ d, p, s, linkId, giroSolleciti, onSollecitat
           </div>
         </>
       )}
+      {s.certificato && <SollecitiEmail d={d} p={p} avvisa={avvisa} />}
       {!!storia.dato?.length && (
         <div className="sg-sollecito-storia">
           <span className="sg-etichetta">SOLLECITI</span>
@@ -119,6 +123,46 @@ export function SollecitoWhatsApp({ d, p, s, linkId, giroSolleciti, onSollecitat
         </div>
       )}
     </section>
+  )
+}
+
+/**
+ * SOLLECITI PER EMAIL (143): quando parte il prossimo, o perché non parte, e il
+ * tasto che li sospende per questa persona. Senza 143 o senza termine non c'è.
+ */
+function SollecitiEmail({ d, p, avvisa }: { d: DatiSegreteria; p: PersonaSeg; avvisa: ReturnType<typeof useAvviso>['avvisa'] }) {
+  const dati = useCarica(() => Promise.all([d.impostazioni(), d.sollecitiEmailDi(p.id)]), [d, p.id])
+  const [inCorso, setInCorso] = useState(false)
+  const [imp, email] = dati.dato ?? []
+  const s = imp?.sollecitiCertificato
+  const riga =
+    s && email
+      ? rigaSollecitiEmail({ nome: p.nome, accesi: s.accesi, sospesi: email.sospesi, inAttesa: !!p.certificato.inAttesaIl, entro: p.certificato.entro, oggi: oggiARoma(), momenti: s.momenti, a: email.a })
+      : null
+  if (!riga) return null
+  const cambia = (sospesi: boolean) => {
+    setInCorso(true)
+    d.sospendiSolleciti(p.id, sospesi).then(
+      () => {
+        dati.ricarica()
+        avvisa(sospesi ? `Solleciti per email di ${p.nome} sospesi.` : `Solleciti per email di ${p.nome} riattivati.`)
+      },
+      () => avvisa('Non si è salvato: controlla la connessione e riprova.', true),
+    ).finally(() => setInCorso(false))
+  }
+  return (
+    <div className="sg-sollecito-email">
+      <span>
+        <span className="sg-etichetta">SOLLECITI PER EMAIL</span>
+        <span data-tono={riga.tono}>{riga.testo}</span>
+        {riga.sotto && <span className="sg-sotto">{riga.sotto}</span>}
+      </span>
+      {riga.tasto && (
+        <button type="button" className="sg-btn sg-btn-linea" disabled={inCorso} onClick={() => cambia(riga.tasto === 'sospendi')}>
+          {riga.tasto === 'sospendi' ? 'Sospendi i solleciti' : 'Riattiva i solleciti'}
+        </button>
+      )}
+    </div>
   )
 }
 

@@ -1,0 +1,105 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-11T15:00:00Z"
+ },
+ "title": "Solleciti del certificato",
+ "launch": {
+  "view": "canvas",
+  "page": "impostazioni"
+ },
+ "pages": [
+  {
+   "id": "impostazioni",
+   "name": "IMPOSTAZIONI"
+  },
+  {
+   "id": "mail",
+   "name": "La mail"
+  },
+  {
+   "id": "scheda",
+   "name": "Scheda e DA FARE"
+  },
+  {
+   "id": "lib",
+   "name": "Libreria"
+  }
+ ],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 1440,
+   "h": 1640,
+   "page": "impostazioni",
+   "title": "Proposta · IMPOSTAZIONI › GLI AVVISI: i solleciti per email"
+  },
+  "Errori.dc.html": {
+   "x": 1520,
+   "y": 300,
+   "w": 760,
+   "h": 620,
+   "page": "impostazioni",
+   "title": "Proposta · cosa non va, detto sotto il campo"
+  },
+  "Mail.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 1300,
+   "h": 720,
+   "page": "mail",
+   "title": "Proposta · la mail che arriva alla famiglia"
+  },
+  "Scheda.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 1100,
+   "h": 1240,
+   "page": "scheda",
+   "title": "Proposta · scheda: prossimo sollecito, sospendi, storia con email"
+  },
+  "DaFare.dc.html": {
+   "x": 1180,
+   "y": 300,
+   "w": 1100,
+   "h": 420,
+   "page": "scheda",
+   "title": "Proposta · DA FARE: i solleciti da mandare a mano"
+  },
+  "Menu.dc.html": { "x": 0, "y": 0, "w": 240, "h": 900, "page": "lib" },
+  "SchedeImpostazioni.dc.html": { "x": 320, "y": 0, "w": 1100, "h": 50, "page": "lib" },
+  "Stato.dc.html": { "x": 320, "y": 170, "w": 640, "h": 80, "page": "lib" },
+  "Sollecito.dc.html": { "x": 320, "y": 370, "w": 640, "h": 260, "page": "lib" },
+  "RigaDaFare.dc.html": { "x": 320, "y": 750, "w": 1000, "h": 100, "page": "lib" },
+  "Bottone.dc.html": { "x": 1040, "y": 170, "w": 260, "h": 80, "page": "lib" },
+  "Chip.dc.html": { "x": 1040, "y": 370, "w": 200, "h": 48, "page": "lib" },
+  "Icona.dc.html": { "x": 1500, "y": 0, "w": 360, "h": 200, "page": "lib" }
+ },
+ "order": [
+  "Main.dc.html",
+  "Errori.dc.html",
+  "Mail.dc.html",
+  "Scheda.dc.html",
+  "DaFare.dc.html",
+  "Menu.dc.html",
+  "SchedeImpostazioni.dc.html",
+  "Stato.dc.html",
+  "Sollecito.dc.html",
+  "RigaDaFare.dc.html",
+  "Bottone.dc.html",
+  "Chip.dc.html",
+  "Icona.dc.html"
+ ],
+ "notes": {
+  "t-imp": { "x": 0, "y": 0, "text": "I solleciti per il certificato partono da soli per email", "kind": "title1", "maxW": 2280, "page": "impostazioni" },
+  "n-imp": {
+   "x": 2360, "y": 300, "w": 380, "page": "impostazioni", "fill": "orange",
+   "text": "Partono alle 9, solo il giorno esatto di ogni momento: un momento già passato non si recupera (una scheda vecchia non riceve tre mail insieme).\n\nSolo chi ha un termine: gli iscritti di prima, senza data, non ricevono niente.\n\nSi fermano quando carica il file (anche se è ancora da confermare), quando lo confermi, quando la persona è disattivata o li sospendi dalla scheda. Dopo un rifiuto ripartono dal momento successivo.\n\nSpenti di default: si accendono dopo aver letto il testo.\n\nAl più 100 mail al giorno: quelle in più partono il giorno dopo."
+  },
+  "t-mail": { "x": 0, "y": 0, "text": "La mail: una per famiglia, un link per persona", "kind": "title1", "maxW": 1300, "page": "mail" },
+  "t-scheda": { "x": 0, "y": 0, "text": "La scheda e DA FARE", "kind": "title1", "maxW": 2280, "page": "scheda" }
+ },
+ "designSystems": []
+}

@@ -1,4 +1,5 @@
 import type { StatoPresenza, StatoSessione } from './sala'
+import type { SollecitiCertificato, SollecitoAMano } from './sollecitiCertificato'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
 import type { IdMetodo } from './metodiPagamento'
@@ -579,6 +580,8 @@ export interface Impostazioni {
   metodiSpenti?: IdMetodo[]
   /** I giorni per portare il certificato (1–120); `undefined` senza `141-certificato-dopo.sql`. */
   certificatoGiorni?: number
+  /** I solleciti del certificato per email; `undefined` senza `143-solleciti-certificato.sql`. */
+  sollecitiCertificato?: SollecitiCertificato
 }
 
 export interface DatiPersona {
@@ -842,6 +845,12 @@ export interface DatiSegreteria {
   linkCertificato(personaId: string): Promise<{ codice: string; id: string } | null>
   /** I solleciti di una persona, dal più recente, con canale e apertura del link; vuoto senza 142. */
   sollecitiDi(personaId: string): Promise<StoricoSollecito[]>
+  /** DA FARE: chi aspetta un sollecito del certificato e non ha un'email; vuoto senza 143. */
+  sollecitiAMano(): Promise<SollecitoAMano[]>
+  /** Sospende o riattiva i solleciti per email di una persona (143). */
+  sospendiSolleciti(personaId: string, sospesi: boolean): Promise<void>
+  /** A chi va la mail del sollecito (il titolare) e se sono sospesi; null senza 143. */
+  sollecitiEmailDi(personaId: string): Promise<{ a: string | null; sospesi: boolean } | null>
   /** L'ultimo sollecito segnato, col nome di chi; `null` se non ce n'è o senza `85-solleciti.sql`. */
   ultimoSollecito(personaId: string): Promise<UltimoSollecito | null>
   /** L'ultimo sollecito di ognuno, in un colpo, per l'elenco ISCRITTI; vuota senza `87-solleciti-elenco.sql`. */

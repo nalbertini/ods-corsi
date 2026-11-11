@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
-import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, cosaNonVaGiorniCertificato, GIORNI_CERTIFICATO_MAX, motivoAttivitaUsata, testoDateSalvate, type AttivitaSeg, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
+import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, cosaNonVaGiorniCertificato, GIORNI_CERTIFICATO_MAX, motivoAttivitaUsata, spostaGiorno, statoCertificato, testoDateSalvate, type AttivitaSeg, type PersonaSeg, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
 import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
-import { indirizzoValido } from '../../lib/avvisoSegreteria'
+import { indirizzoValido, testoAvviso } from '../../lib/avvisoSegreteria'
+import { cosaNonVaMomenti, cosaNonVaOggetto, cosaNonVaTesto, esempioMomenti, MOMENTI_MAX, MOMENTO_MAX, primoLibero, rigaMomento, type SollecitiCertificato } from '../../lib/sollecitiCertificato'
+import { oggiARoma } from '../../lib/contabilita'
 import { ICONE_IMPOSTAZIONI, Spunta } from '../Icons'
 import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
 import { TELEFONO, useSchermo } from '../../lib/largo'
@@ -237,7 +239,11 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
       </Pannello>
 
       <Pannello apri={setAperta} id="avvisi" aperta={aperta}>
-        <GiorniCertificato giorni={imp.dato?.certificatoGiorni} pronto={!!imp.dato} salva={(n) => fai(() => d.salvaImpostazioni({ certificatoGiorni: n }), 'Giorni salvati', imp.ricarica)} />
+        <GiorniCertificato giorni={imp.dato?.certificatoGiorni} pronto={!!imp.dato} salva={(n) => fai(() => d.salvaImpostazioni({ certificatoGiorni: n }), 'Giorni salvati', imp.ricarica)}>
+          {imp.dato?.sollecitiCertificato && (
+            <SollecitiPerEmail d={d} ora={imp.dato.sollecitiCertificato} salva={(x) => fai(() => d.salvaImpostazioni({ sollecitiCertificato: x }), 'Solleciti salvati', imp.ricarica)} />
+          )}
+        </GiorniCertificato>
         <AvvisiSegreteria d={d} />
       </Pannello>
 
@@ -853,7 +859,7 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
  * iscrizioni accolte da adesso e per il rinnovo, che si calcola: un termine già
  * scritto resta. Senza 141 sul database il numero non c'è, e lo si dice.
  */
-function GiorniCertificato({ giorni, pronto, salva }: { giorni: number | undefined; pronto: boolean; salva: (n: number) => Promise<unknown> }) {
+function GiorniCertificato({ giorni, pronto, salva, children }: { giorni: number | undefined; pronto: boolean; salva: (n: number) => Promise<unknown>; children?: ReactNode }) {
   const [scritto, setScritto] = useState<string | null>(null)
   const ora = scritto ?? (giorni === undefined ? '' : String(giorni))
   const guaio = scritto !== null ? cosaNonVaGiorniCertificato(Number(scritto)) : undefined
@@ -906,6 +912,7 @@ function GiorniCertificato({ giorni, pronto, salva }: { giorni: number | undefin
           )}
         </>
       )}
+      {children}
     </section>
   )
 }
@@ -973,5 +980,155 @@ function AvvisiSegreteria({ d }: { d: DatiSegreteria }) {
       <span className="sg-sotto">Al più 50 avvisi al giorno: le ricevute alle famiglie vengono prima. Quelli in più li conta RICHIESTE ONLINE.</span>
       {avviso}
     </section>
+  )
+}
+
+// Chi riceverebbe ancora un sollecito: da portare (o termine passato), senza file in attesa, con l'ultimo momento ancora davanti.
+const ancoraNelGiro = (p: PersonaSeg, oggi: string, ultimo: number) =>
+  p.attiva && !p.certificato.inAttesaIl && !!p.certificato.entro && ['atteso', 'manca', 'scaduto'].includes(statoCertificato(p, oggi)) && spostaGiorno(p.certificato.entro, ultimo) >= oggi
+
+type Verso = 'prima' | 'giorno' | 'dopo'
+type RigaMomento = { n: string; verso: Verso }
+const rigaDi = (m: number): RigaMomento => ({ n: m ? String(Math.abs(m)) : '', verso: m < 0 ? 'prima' : m > 0 ? 'dopo' : 'giorno' })
+// Un numero scritto male resta NaN: lo dice `cosaNonVaMomenti`.
+const momentoDi = (r: RigaMomento) => (r.verso === 'giorno' ? 0 : (r.verso === 'prima' ? -1 : 1) * (r.n.trim() ? Number(r.n) : NaN))
+
+/** Due fratelli inventati per l'anteprima: mai dati veri. */
+const ANTEPRIMA = [
+  { nome: 'Marco', entro: '2026-12-12', link: 'https://app.officinedellosport.it/certificato/?l=…' },
+  { nome: 'Giulia', entro: '2026-12-12', link: 'https://app.officinedellosport.it/certificato/?l=…' },
+]
+
+/**
+ * I solleciti del certificato per email (143), sotto i giorni: interruttore, momenti, oggetto, testo con
+ * l'anteprima e la copia. Si salvano insieme, come i giorni: Lascia stare / Salva solo con una modifica.
+ */
+function SollecitiPerEmail({ d, ora, salva }: { d: DatiSegreteria; ora: SollecitiCertificato; salva: (x: SollecitiCertificato) => Promise<unknown> }) {
+  const [bozza, setBozza] = useState<(Omit<SollecitiCertificato, 'momenti'> & { righe: RigaMomento[] }) | null>(null)
+  const x = bozza ?? { ...ora, righe: ora.momenti.map(rigaDi) }
+  const momenti = x.righe.map(momentoDi)
+  const cambiata = !!bozza && JSON.stringify({ ...bozza, righe: undefined, momenti }) !== JSON.stringify({ ...ora, momenti: ora.momenti })
+  useBozza(cambiata, 'I solleciti per email')
+  const cambia = (y: Partial<typeof x>) => setBozza({ ...x, ...y })
+  const guaioMomenti = cosaNonVaMomenti(momenti)
+  const guaioOggetto = cosaNonVaOggetto(x.oggetto)
+  const guaioTesto = cosaNonVaTesto(x.testo)
+  // Quanti hanno un termine oggi: accendendo, nessuno riceve niente subito, ognuno al suo momento.
+  const conTermine = useCarica(
+    () => (ora.accesi ? Promise.resolve(null) : d.persone().then((ps) => ps.filter((p) => ancoraNelGiro(p, oggiARoma(), Math.max(...ora.momenti))).length)),
+    [d, ora.accesi],
+  )
+  const anteprima = !guaioOggetto && !guaioTesto ? testoAvviso({ tipo: 'sollecito_certificato', oggetto: x.oggetto, testo: x.testo, persone: ANTEPRIMA }, '') : null
+  return (
+    <div className="stack" style={{ gap: 14, paddingTop: 16, borderTop: '1px solid var(--line-soft)' }}>
+      <span className="ob sg-riquadro-titolo">I SOLLECITI PER EMAIL</span>
+      <label className="row" style={{ gap: 12, minHeight: 44, alignItems: 'flex-start' }}>
+        <input type="checkbox" style={{ width: 24, height: 24, margin: 0, accentColor: 'var(--text)', cursor: 'pointer' }} checked={x.accesi} onChange={(e) => cambia({ accesi: e.target.checked })} />
+        <span className="stack" style={{ gap: 2 }}>
+          <b>Manda i solleciti per email</b>
+          <span className="sg-sotto">Accesi, partono alle 9 del mattino a chi deve ancora portarlo: una mail per famiglia, al titolare, con un link per ognuno. Chi non ha un’email lo trovi in DA FARE, da mandare a mano su WhatsApp.</span>
+          {!ora.accesi && conTermine.dato !== undefined && conTermine.dato !== null && (
+            <span className="sg-sotto" style={{ color: 'var(--giallo-testo)', fontWeight: 600 }}>
+              {`Accendendola non parte niente subito: ${conTermine.dato === 1 ? 'la persona che oggi ha un termine riceve' : `le ${conTermine.dato} persone che oggi hanno un termine ricevono ognuna`} il suo prossimo sollecito, nel suo giorno.`}
+            </span>
+          )}
+        </span>
+      </label>
+
+      <fieldset className="stack" style={{ gap: 8, border: 0, padding: 0, margin: 0 }}>
+        <legend style={{ fontSize: 15, fontWeight: 600, padding: 0, marginBottom: 8 }}>Quando</legend>
+        {x.righe.map((r, i) => (
+          // Tre colonne fisse: Togli sempre a destra, la riga «il giorno del termine» allineata alle altre.
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '76px minmax(0, 1fr) auto', gap: 10, alignItems: 'center', maxWidth: 520 }}>
+            {r.verso !== 'giorno' && (
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={MOMENTO_MAX}
+                aria-label={`Giorni, momento ${i + 1}`}
+                className="sg-campo"
+                style={{ width: 76 }}
+                value={r.n}
+                aria-invalid={!Number.isFinite(momenti[i]) || Math.abs(momenti[i]) > MOMENTO_MAX}
+                onChange={(e) => cambia({ righe: x.righe.map((y, k) => (k === i ? { ...y, n: e.target.value } : y)) })}
+              />
+            )}
+            <select
+              aria-label={`Prima o dopo, momento ${i + 1}`}
+              className="sg-campo"
+              style={{ gridColumn: 2, minWidth: 0 }}
+              value={r.verso}
+              onChange={(e) => cambia({ righe: x.righe.map((y, k) => (k === i ? { n: y.n || '7', verso: e.target.value as Verso } : y)) })} // as: i value delle option qui sotto
+            >
+              <option value="prima">giorni prima del termine</option>
+              <option value="giorno">il giorno del termine</option>
+              <option value="dopo">giorni dopo il termine</option>
+            </select>
+            {x.righe.length > 1 && (
+              <button type="button" data-bozza className="sg-btn sg-btn-linea sg-pericolo" style={{ gridColumn: 3 }} aria-label={`Togli il momento ${i + 1}: ${Number.isFinite(momenti[i]) ? rigaMomento(momenti[i]) : ''}`} onClick={() => cambia({ righe: x.righe.filter((_, k) => k !== i) })}>
+                Togli
+              </button>
+            )}
+          </div>
+        ))}
+        <div>
+          <button type="button" className="sg-btn sg-btn-tratteggio" disabled={x.righe.length >= MOMENTI_MAX || primoLibero(momenti) === null} onClick={() => cambia({ righe: [...x.righe, rigaDi(primoLibero(momenti) ?? 0)] })}>
+            + Aggiungi un momento
+          </button>
+        </div>
+        {guaioMomenti ? (
+          <span role="alert" style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{guaioMomenti}</span>
+        ) : (
+          <span className="sg-sotto">Da {MOMENTO_MAX} giorni prima a {MOMENTO_MAX} dopo, al massimo {MOMENTI_MAX}. Il giorno del termine è l’ultimo utile. {esempioMomenti(momenti)} Un WhatsApp segnato quel giorno ferma la mail.</span>
+        )}
+      </fieldset>
+
+      <div className="stack" style={{ gap: 6 }}>
+        <label htmlFor="sollecito-oggetto" style={{ fontSize: 15, fontWeight: 600 }}>Oggetto</label>
+        <input id="sollecito-oggetto" className="sg-campo" value={x.oggetto} maxLength={200} aria-invalid={!!guaioOggetto} aria-describedby={guaioOggetto ? 'sollecito-oggetto-nota' : undefined} onChange={(e) => cambia({ oggetto: e.target.value })} />
+        {guaioOggetto && <span id="sollecito-oggetto-nota" style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{guaioOggetto}</span>}
+      </div>
+      <div className="stack" style={{ gap: 6 }}>
+        <label htmlFor="sollecito-testo" style={{ fontSize: 15, fontWeight: 600 }}>Testo</label>
+        <textarea id="sollecito-testo" className="sg-campo" rows={8} value={x.testo} maxLength={4000} aria-invalid={!!guaioTesto} aria-describedby="sollecito-testo-nota" onChange={(e) => cambia({ testo: e.target.value })} />
+        <span id="sollecito-testo-nota" style={{ fontSize: 13, color: guaioTesto ? 'var(--rosso-testo)' : 'var(--dim)' }}>
+          {guaioTesto ?? 'Puoi usare {nome} (i nomi, «Marco e Giulia»), {entro} (la data più vicina) e {link} (un link per persona, uno per riga). {link} serve sempre.'}
+        </span>
+      </div>
+      {anteprima && (
+        <div className="stack" style={{ gap: 6 }}>
+          <span style={{ fontSize: 15, fontWeight: 600 }}>Anteprima, con due fratelli inventati</span>
+          <div className="stack" style={{ gap: 8, padding: '12px 14px', background: 'var(--bg)', borderRadius: 6, fontSize: 14, lineHeight: 1.5 }}>
+            <b>{anteprima.oggetto}</b>
+            <span style={{ whiteSpace: 'pre-wrap' }}>{anteprima.testo}</span>
+          </div>
+        </div>
+      )}
+
+      <label className="row" style={{ gap: 12, minHeight: 44, alignItems: 'flex-start' }}>
+        <input type="checkbox" style={{ width: 24, height: 24, margin: 0, accentColor: 'var(--text)', cursor: 'pointer' }} checked={x.copia} onChange={(e) => cambia({ copia: e.target.checked })} />
+        <span className="stack" style={{ gap: 2 }}>
+          <b>Mettimi in copia sull’ultimo sollecito</b>
+          <span className="sg-sotto">La copia va all’indirizzo degli avvisi qui sotto. Sugli altri solleciti no.</span>
+        </span>
+      </label>
+
+      {cambiata && (
+        <div className="row" style={{ gap: 8 }}>
+          <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setBozza(null)}>
+            Lascia stare
+          </button>
+          <Tasto
+            tono="pieno"
+            className="grow"
+            disabled={!!(guaioMomenti ?? guaioOggetto ?? guaioTesto)}
+            onClick={() => void salva({ accesi: x.accesi, momenti, oggetto: x.oggetto, testo: x.testo, copia: x.copia }).then((fatto) => fatto && setBozza(null))}
+          >
+            Salva
+          </Tasto>
+        </div>
+      )}
+    </div>
   )
 }

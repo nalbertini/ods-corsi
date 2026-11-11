@@ -38,6 +38,12 @@ dalla più vecchia.
   Coi primi nomi e la data, il termine più vicino prima. Passato il termine
   vanno fra i **senza certificato valido**, in rosso, con «doveva portarlo
   entro il …».
+- **Solleciti del certificato da mandare a mano**, in giallo, solo coi solleciti
+  per email accesi: è il giorno del sollecito e il titolare non ha un'email.
+  Coi nomi e il giorno («il giorno del termine, 12/12/2026»): il nome apre la
+  scheda, **Sollecita su WhatsApp** manda il messaggio col link e la persona esce
+  dalla riga. Esce anche se carica il file, se lo confermi o se sospendi i
+  solleciti. Un sollecito non mandato resta qui anche i giorni dopo.
 - **Iscritti senza certificato valido**, **certificati in scadenza** (entro un
   mese), **iscritti che compiono 6 anni senza certificato** (entro un mese: da
   quel giorno il certificato serve, meglio avvisare la famiglia) e **iscritti

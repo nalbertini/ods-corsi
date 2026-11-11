@@ -1,7 +1,9 @@
 // ---------------------------------------------------------------------------
 // Gli avvisi alla segreteria: l'email che parte quando arriva una richiesta di
 // iscrizione, un pagamento Satispay, uno scarico Satispay in CONTABILITÀ o un
-// certificato medico mandato dall'area iscritti (139). Cosa avvisare e quando lo decide il
+// certificato medico mandato dall'area iscritti (139). In più il sollecito del
+// certificato alla famiglia (143): oggetto e testo li scrive la segreteria in
+// IMPOSTAZIONI, qui si mettono i nomi, la data e i link. Cosa avvisare e quando lo decide il
 // database (`84-avvisi-segreteria.sql`, `avvisi_da_mandare`); qui il testo
 // della mail e gli indirizzi, così che si provino senza posta né database.
 //
@@ -39,6 +41,8 @@ export type Avviso =
   | { tipo: 'satispay_scarico'; quando: string; incassi: number; rimborsi: number; daDecidere: number; errore: string | null }
   /** Un certificato da guardare: solo chi e quando, il file e la scadenza stanno nella scheda. */
   | { tipo: 'certificato'; personaId: string; nome: string; cognome: string; inviatoIl: string }
+  /** Il sollecito alla famiglia: solo i nomi, il termine (`AAAA-MM-GG`) e il link firmato di ciascuno. */
+  | { tipo: 'sollecito_certificato'; oggetto: string; testo: string; persone: { nome: string; entro: string; link: string }[] }
 
 const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
 
@@ -63,6 +67,38 @@ function quando(iso: string): { giorno: string; ora: string } {
   return { giorno: stesso ? 'oggi' : `il ${Number(x.day)} ${MESI[Number(x.month) - 1]}`, ora: `${x.hour}.${x.minute}` }
 }
 
+/** «Marco», «Marco e Giulia», «Marco, Giulia e Leo». */
+export function nomiInsieme(nomi: string[]): string {
+  const n = nomi.map(riga)
+  return n.length < 2 ? (n[0] ?? '') : `${n.slice(0, -1).join(', ')} e ${n[n.length - 1]}`
+}
+
+/** «12 dicembre» da `2026-12-12`: è un giorno, non un istante, e non passa dai fusi. */
+const giornoMese = (g: string) => {
+  const [, m, d] = g.split('-').map(Number)
+  return `${d} ${MESI[m - 1]}`
+}
+
+/**
+ * Il sollecito: {nome} e {entro} (il termine più vicino) nell'oggetto e nel testo; {link} nel testo è l'indirizzo
+ * (una persona) o una riga «Marco: …» per ciascuno, e nell'HTML un tasto per persona. Il testo della segreteria
+ * entra nell'HTML convertito: un `<b>` scritto lì resta testo.
+ */
+function testoSollecito(a: Extract<Avviso, { tipo: 'sollecito_certificato' }>): { oggetto: string; testo: string; html: string } {
+  const entro = [...a.persone.map((p) => p.entro)].sort()[0] ?? ''
+  const metti = (t: string) => t.replaceAll('{nome}', nomiInsieme(a.persone.map((p) => p.nome))).replaceAll('{entro}', entro ? giornoMese(entro) : '')
+  const link = a.persone.length === 1 ? a.persone[0].link : a.persone.map((p) => `${riga(p.nome)}: ${p.link}`).join('\n')
+  const pezzi = metti(a.testo).split('{link}')
+  const tasti = a.persone.map((p) => tastoMail(`Carica il certificato di ${riga(p.nome)}`, p.link)).join('\n')
+  const paragrafo = (t: string) => (t.trim() ? `<p style="margin:0 0 10px">${html(t.trim()).replace(/\r?\n/g, '<br>')}</p>` : '')
+  const corpo = pezzi.map(paragrafo).join(`\n${tasti}\n`)
+  return {
+    oggetto: riga(metti(a.oggetto)),
+    testo: pezzi.join(link),
+    html: incorniciaMail(corpo, { testata: 'OFFICINE DELLO SPORT · CERTIFICATO MEDICO', piede: 'Mail automatica: per qualsiasi domanda rispondi a questa mail.' }),
+  }
+}
+
 const chi = (x: { nome: string; cognome: string }) => `${riga(x.nome)} ${riga(x.cognome)}`
 
 function rigaPagamento(p: Pagamento): string {
@@ -73,6 +109,7 @@ function rigaPagamento(p: Pagamento): string {
 
 /** Oggetto, testo e HTML della mail; `app` è l'indirizzo della segreteria, con la barra in fondo. */
 export function testoAvviso(a: Avviso, app: string): { oggetto: string; testo: string; html: string } {
+  if (a.tipo === 'sollecito_certificato') return testoSollecito(a)
   let oggetto: string
   let frasi: string[]
   let link: string
