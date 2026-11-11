@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.238.3 — 11 novembre 2026
+
+### Modificato
+
+- La prova di accessibilità non si ferma più quando i server di Ubuntu non rispondono
+
 ## 0.238.2 — 11 novembre 2026
 
 ### Risolto
