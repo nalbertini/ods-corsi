@@ -213,7 +213,7 @@ export function cosaNonVaAbbinamento(m: MovimentoAbbinabile, r: RicevutaAbbinabi
   if (!m.personaId && !r.personaId) return 'La ricevuta non ha una persona.'
   if (!m.personaId && !personeDelNucleo(r.personaId ?? '', persone).some((id) => {
     const p = persone.find((x) => x.id === id)
-    return !!p && nomeOGenitore({ nome: p.nome ?? '', cognome: p.cognome ?? '', genitoreNome: p.genitoreNome, genitoreCognome: p.genitoreCognome }, m.descrizione ?? '') !== null
+    return !!p && nomeOGenitore({ nome: p.nome ?? '', cognome: p.cognome ?? '', genitoreNome: p.genitoreNome ?? null, genitoreCognome: p.genitoreCognome ?? null }, m.descrizione ?? '') !== null
   })) return 'La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.'
   if (r.pagato !== m.importo) return 'La ricevuta e il bonifico non hanno lo stesso importo.'
   const pagamenti = r.voci.flatMap((v) => v.pagamenti)

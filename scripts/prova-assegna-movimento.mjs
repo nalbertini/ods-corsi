@@ -690,6 +690,11 @@ try {
   const prima2 = await tot()
   await s.abbinaRicevutaMovimento(mT, rT.id)
   ok('…il Conto Corrente: prima dell’abbinamento 61,00 € contati due volte, dopo una', prima2 - (await tot()), 6100)
+  // Il genitore scritto nell'anagrafica: la causale col suo nome basta, come `abbina_ricevuta_movimento` (153).
+  await s.salvaAnagrafica(nuovo.id, { genitoreNome: 'Carla', genitoreCognome: 'Fumo' })
+  const mG = await s.registraMovimento({ tipo: 'entrata', data: '2026-09-01', importo: 6300, voceId: 'voce-da-classificare-entrata', cassaId: 'cassa-conto', descrizione: 'DA FUMO CARLA PER JUDO' })
+  const rG = await ricevutaVecchia(nuovo, 6300, '2026-09-03')
+  ok('un Da classificare con il genitore dell’anagrafica nella causale: si abbina', await errore(() => s.abbinaRicevutaMovimento(mG, rG.id)), 'nessun errore')
   const mDc = await s.registraMovimento({ tipo: 'entrata', data: '2026-09-01', importo: 5000, voceId: 'voce-da-classificare-entrata', cassaId: 'cassa-contanti', descrizione: 'Contanti da classificare' })
   const rDc = await ricevutaVecchia(nuovo, 5000, '2026-09-04')
   ok('…un Da classificare in Cassa Contanti, senza persona: no', await errore(() => s.abbinaRicevutaMovimento(mDc, rDc.id)), 'Collega prima il movimento a una persona.')
