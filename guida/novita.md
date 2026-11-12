@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.244.2 — 12 novembre 2026
+
+### Risolto
+
+- Il bonifico di chi è segnato pagato a mano si assegna a quota e corsi
+
 ## 0.244.1 — 12 novembre 2026
 
 ### Modificato
