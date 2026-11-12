@@ -169,8 +169,8 @@ for (const [c, colore] of [[".sg-dafare-riga[data-livello='blocca']", 'rosso'], 
 // Il giallo pieno è di sei cose sole (con il tasto verde del tablet, che nella sala è giallo): il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
 // il tasto principale di tutto il resto (.btn-primary: CHIUDI e simili), la voce di menu corrente e la voce corrente
 // della barra in basso dell'istruttore.
-const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .appello-fine .btn-go`, `${LOOK} .btn-primary`, `${LOOK} .tb-btn-verde`]
-ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .tb-btn-verde, .appello-testa .btn-go, .appello-fine .btn-go e le due voci di menu correnti',
+const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .barra-chiudi .btn-chiudi[data-pieno]`, `${LOOK} .btn-primary`, `${LOOK} .tb-btn-verde`]
+ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .tb-btn-verde, .appello-testa .btn-go, .barra-chiudi .btn-chiudi[data-pieno] e le due voci di menu correnti',
   delLook.filter((r) => r !== bloccoLook && GIALLO_PIENO.test(r.corpo) && !r.selettori.every((s) => PIENO_AMMESSO.includes(s))).map((r) => r.selettori.join(',')), [])
 ok('.sg-btn-pieno: fondo var(--giallo), testo var(--su-colore)', ha('.sg-btn-pieno', /background(-color)?:\s*var\(--giallo\)/) && ha('.sg-btn-pieno', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // Ogni regola di fuori del look con un .sg- e il giallo pieno ne ha una gemella nel look col giallo scritto.
@@ -235,8 +235,8 @@ ok("il tasto «tocca di nuovo per eliminare» (.btn-primary[data-sicuro='true'])
 // Il bordo di .btn-ghost è var(--blu) (regola dell'appello, che vince sull'ordine): nel look vale quanto --riga-campo.
 for (const [c, bordo] of [['.btn-ghost', /border(-color)?:[^;]*var\(--blu\)/], ['.btn-dashed', /border(-color)?:[^;]*dashed[^;]*var\(--riga-campo\)/]])
   ok(`${c}: bordo ${c === '.btn-dashed' ? 'tratteggiato var(--riga-campo)' : 'var(--blu)'}, testo var(--text)`, ha(c, bordo) && ha(c, /(?<![-\w])color:\s*var\(--text\)/), true)
-// CHIUDI L'APPELLO (tutto segnato) è .btn-go: giallo come CHIUDI · N ASSENTI, approvato dall'utente.
-ok(".appello-fine .btn-go: fondo var(--giallo), testo var(--su-colore)", ha('.appello-fine .btn-go', /background(-color)?:\s*var\(--giallo\)/) && ha('.appello-fine .btn-go', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
+// CHIUDI L'APPELLO (tutto segnato) sta nella barra ferma in fondo: giallo solo con data-pieno, approvato dall'utente.
+ok(".barra-chiudi .btn-chiudi[data-pieno]: fondo var(--giallo), testo var(--su-colore)", ha('.barra-chiudi .btn-chiudi[data-pieno]', /background(-color)?:\s*var\(--giallo\)/) && ha('.barra-chiudi .btn-chiudi[data-pieno]', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // TUTTI PRESENTI spento: grigio come ogni tasto spento, non azzurro.
 ok('.appello-testa .btn-go:disabled: fondo var(--surface-2)', ha('.appello-testa .btn-go:disabled', /background(-color)?:\s*var\(--surface-2\)/) && !ha('.appello-testa .btn-go:disabled', /var\(--line\)/), true)
 ok('.btn:disabled: grigio (fondo var(--surface-2), testo var(--dim)), mai sbiadito (opacity 1)', ha('.btn:disabled', /background(-color)?:\s*var\(--surface-2\)/) && ha('.btn:disabled', /(?<![-\w])color:\s*var\(--dim\)/) && ha('.btn:disabled', /opacity:\s*1\s*(;|$)/), true)
