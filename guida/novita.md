@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.242.6 — 12 novembre 2026
+
+### Risolto
+
+- Unire due schede non si ferma più su una presenza segnalata o un pagamento online in attesa, e l'anteprima conta anche tessere, gare e pagamenti
+
 ## 0.242.5 — 12 novembre 2026
 
 ### Risolto
