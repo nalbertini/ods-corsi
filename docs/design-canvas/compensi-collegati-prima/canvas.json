@@ -1,0 +1,41 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Compensi · il bonifico già in banca non conta due volte"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · Segna pagato scrive sempre un’uscita nuova",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Proposta.dc.html",
+   "title": "Proposta · FORSE È GIÀ IN BANCA",
+   "x": 1000,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Scelto.dc.html",
+   "title": "Proposta · bonifico spuntato: Abbina al bonifico",
+   "x": 2000,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1000,
+   "text": "Compensi: il bonifico già in banca non conta due volte"
+  }
+ ]
+}

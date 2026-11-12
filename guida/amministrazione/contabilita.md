@@ -384,6 +384,11 @@ come le altre, con la voce di sistema **Compensi istruttori**, collegata al tecn
 descrizione «Compenso · Nome Cognome · ott 2026». Se è sbagliato si **annulla** qui: le sue
 ricevute tornano da pagare in COMPENSI e si ripagano da lì.
 
+Se il bonifico al tecnico è già arrivato dall'importazione della banca (di solito Da
+classificare), non serve scriverne un altro: in COMPENSI, **Segna pagato** lo propone in
+FORSE È GIÀ IN BANCA, e scelto prende il tecnico e la voce Compensi istruttori, con la sua
+descrizione della banca. Annullarlo qui rimette le ricevute da pagare, come sopra.
+
 ## Bilancio
 
 Il bilancio di un anno solare, da gennaio a dicembre: ogni anno ha il suo e niente

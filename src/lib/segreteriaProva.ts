@@ -3,7 +3,7 @@ import { indirizziDaSalvare } from './avvisoSegreteria'
 import type { Anagrafica, AnagraficaDi, UltimoSollecito, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
-import { cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagamento, extraDelPagamento, mancaPerRicevuta, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
+import { bonificiPerCompensi, cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagamento, extraDelPagamento, mancaPerRicevuta, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { statoCertificato, attivitaCambiata, cancellaFileIl, cosaNonVaGiorniCertificato, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO, termineCertificato, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
@@ -75,6 +75,7 @@ import {
   VOCE_GARE,
   VOCE_INCASSI_SATISPAY,
   contantiInGiornoChiuso,
+  giornoChiuso,
   VOCE_QUOTA,
   type Cassa,
   type VoceContabile,
@@ -1466,6 +1467,28 @@ export function creaSegreteriaProva(): DatiSegreteria {
         },
       ]
       a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((r) => (scelte.includes(r.id) ? { ...r, movimentoId: id, pagataIl: data } : r))
+      salva()
+    },
+
+    async abbinaCompensiMovimento(ids, movimentoId) {
+      // Le stesse regole di `abbina_compensi_movimento` (154): quelle di `paga_compensi` sulle ricevute, poi il movimento.
+      const scelte = [...new Set(ids)]
+      if (!scelte.length) throw new Error('Scegli almeno una ricevuta da pagare')
+      const tutte = a().ricevuteCompensi ?? []
+      const rs = tutte.filter((r) => scelte.includes(r.id) && !r.annullataIl && !r.movimentoId)
+      if (rs.length !== scelte.length) throw new Error("Una delle ricevute non c'è più, è annullata o è già pagata: ricarica la pagina")
+      if (new Set(rs.map((r) => r.personaId)).size !== 1) throw new Error('Si pagano insieme solo le ricevute dello stesso tecnico')
+      const { casse, voci, chiusure, movimenti } = contabilita()
+      const p = persona(rs[0].personaId)
+      const m = movimenti.find((x) => x.id === movimentoId)
+      if (!m) throw new Error('Il bonifico non c’è più: ricarica la pagina')
+      const { colNome, senzaNome } = bonificiPerCompensi([m], tutte, rs, { id: p.id, nome: p.nome, cognome: p.cognome ?? '' }, casse, voci)
+      if (!colNome.length && !senzaNome.length) throw new Error('Questo bonifico non può essere il pagamento di queste ricevute: ricarica la pagina')
+      if (giornoChiuso(chiusure, [m.cassaId], m.data)) throw new Error('Quel giorno la cassa è già chiusa: scegli un altro giorno o annulla la chiusura')
+      const voce = voci.find((v) => v.tipo === 'uscita' && v.diSistema && v.nome.trim().toLowerCase() === VOCE_COMPENSI.toLowerCase())?.id
+      if (!voce) throw new Error('Manca la voce «Compensi istruttori»: va lanciato 81-compensi-pagati.sql')
+      a().movimenti = movimenti.map((x) => (x.id === m.id ? { ...x, personaId: p.id, voceId: voce } : x))
+      a().ricevuteCompensi = tutte.map((r) => (scelte.includes(r.id) ? { ...r, movimentoId: m.id, pagataIl: m.data } : r))
       salva()
     },
 

@@ -126,6 +126,20 @@ riepilogo di quello che si scrive in CONTABILITÀ: un'uscita sola, con la voce
 set, ott 2026»; un'extra ci aggiunge il suo «per cosa». **Segna pagato** la scrive, e le ricevute diventano **PAGATA**
 con la data.
 
+Se il bonifico è già arrivato in CONTABILITÀ dall'[importazione della
+banca](../amministrazione/contabilita.md), il pannello lo dice in **FORSE È GIÀ
+IN BANCA**: un'uscita del Conto Corrente con lo stesso importo delle ricevute
+spuntate, il nome e il cognome del tecnico nella descrizione, entro 45 giorni
+dalla fine del mese più recente, ancora Da classificare (o già su Compensi
+istruttori) e non pagamento di altre ricevute. Sotto, in **STESSO IMPORTO, NOME
+NON TROVATO**, quelle uguali ma con una sigla al posto del nome: si spuntano solo
+se si sa che sono lui. Si ricalcola a ogni spunta e non si sceglie mai da sé.
+Spuntato il bonifico, giorno e cassa sono i suoi e il tasto diventa **Abbina al
+bonifico**: non nasce un'uscita nuova, il bonifico prende il tecnico e la voce
+Compensi istruttori (la descrizione della banca resta) e le ricevute diventano
+**PAGATA** il giorno del bonifico. Così lo stesso pagamento non conta due
+volte.
+
 Una ricevuta pagata non si annulla da qui: prima si annulla il pagamento in
 [Contabilità](../amministrazione/contabilita.md) → MOVIMENTI, e le ricevute
 tornano da pagare. Chi aspetta il bonifico sta in DA PAGARE.

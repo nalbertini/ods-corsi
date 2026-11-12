@@ -221,6 +221,7 @@ const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la 
 const MANCA_QUOTE_PERSONA = 'Il database non è ancora aggiornato per scrivere la persona di una quota o di un corso: va lanciato 98-quote-persona.sql'
 const MANCA_MOVIMENTI_PERSONA = 'Il database non è ancora aggiornato per collegare i movimenti alle persone: va lanciato 70-movimenti-persona.sql'
 const MANCA_PAGATI = 'Pagare i compensi non è ancora attivo sul database: va lanciato 81-compensi-pagati.sql'
+const MANCA_DAL_BONIFICO = 'Pagare i compensi con un bonifico già in banca non è ancora attivo sul database: va lanciato 154-compensi-dal-bonifico.sql'
 const MANCA_FIRMA = 'Segnare chi non c’era e «a lezione basta uno» non sono ancora attivi sul database: va lanciato 82-manca-la-firma.sql'
 const MANCA_EXTRA = 'Le ricevute di compenso extra non sono ancora attive sul database: va lanciato 96-compensi-extra.sql'
 const MANCA_COMPENSI = 'Le ricevute dei compensi non sono ancora attive sul database: va lanciato 80-ricevute-compensi.sql'
@@ -432,6 +433,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '23514' && /musica_sale_link_check/.test(e.message ?? ''))
     return new Error('Le radio nelle liste non sono ancora attive sul database: va lanciato 39-musica-radio.sql')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /paga_compensi/.test(e.message ?? '')) return new Error(MANCA_PAGATI)
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /abbina_compensi_movimento/.test(e.message ?? '')) return new Error(MANCA_DAL_BONIFICO)
   if (((e?.code === 'PGRST202' || e?.code === '42883') && /segna_istruttore_assente/.test(e.message ?? '')) || ((e?.code === '42703' || e?.code === 'PGRST204') && /basta_uno/.test(e.message ?? '')))
     return new Error(MANCA_FIRMA)
   // Prima di /ricevuta_compenso/, che la contiene.
@@ -1605,6 +1607,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async pagaCompensi(ids, data, cassaId) {
       ok(await db.rpc('paga_compensi', { ricevute: ids, data, cassa: cassaId }))
+    },
+
+    async abbinaCompensiMovimento(ids, movimentoId) {
+      ok(await db.rpc('abbina_compensi_movimento', { ricevute: ids, movimento: movimentoId }))
     },
 
     async segnaFirmataCompenso(id, firmata) {
