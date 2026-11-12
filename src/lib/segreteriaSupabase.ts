@@ -2478,7 +2478,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         return p.id
       }
       // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla. Mai un iscritto: vedi `personaleDaRiprendere`.
-      const personale = ok(await db.from('persone').select('id, nome, cognome, email, ruolo').in('ruolo', [...RUOLI_DEL_PERSONALE])) as Array<{ id: string; nome: string; cognome: string; email: string | null; ruolo: string }>
+      const personale = ok(await db.from('persone').select('id, nome, cognome, email, ruolo').in('ruolo', [...RUOLI_DEL_PERSONALE]).order('creata_il')) as Array<{ id: string; nome: string; cognome: string; email: string | null; ruolo: string }>
       const stessa = personaleDaRiprendere(personale, riga)
       if (stessa) {
         ok(await db.from('persone').update({ email, ...ruolo, attiva: true }).eq('id', stessa.id))
