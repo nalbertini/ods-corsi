@@ -39,7 +39,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const righe = useMemo(() => (coperti.dato ? segnaIncassiCoperti(tutte, coperti.dato.righe ?? []) : null), [tutte, coperti.dato])
   const [lettura, setLettura] = useState<LetturaBanca | null>(null)
   const [scelte, setScelte] = useState<Record<string, string>>({})
-  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[] } | null>(null)
+  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[]; senzaAbbinare: string | null } | null>(null)
   // Le ricevute libere a cui può andare un bonifico che entra con la persona; se non si leggono, si importa senza abbinare.
   const archivio = useCarica(async () => {
     const [ricevute, persone] = await Promise.all([d.ricevute(), d.persone()])
@@ -154,6 +154,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
       let guasto: string | null = null
       const abbinati: string[] = []
       const nonAbbinati: string[] = []
+      let senzaAbbinare: string | null = null
       if (classificate) {
         // Un lotto che non va resta in «Da classificare» e gli altri vanno avanti; il primo motivo si dice nel riepilogo.
         try {
@@ -169,24 +170,31 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
             }
           }
           // Solo dopo la voce e la persona: l'abbinamento vuole il bonifico già collegato. Uno che non va non ferma gli altri.
-          // Le ricevute rilette ora: una fatta o legata da un'altra parte dopo l'anteprima cambia la proposta.
-          const oraRicevute = await d.ricevute()
-          const oraAbbinamenti = abbinamentiImport(a.entrano, scelteValide, oraRicevute, persone, voci, conto.id)
+          // Ricevute e persone rilette ora: una ricevuta fatta o legata altrove dopo l'anteprima cambia la proposta.
+          let ora: { ricevute: Ricevuta[]; persone: typeof persone } | null = null
+          try {
+            const [r, p] = await Promise.all([d.ricevute(), d.persone()])
+            ora = { ricevute: r, persone: p }
+          } catch (e) {
+            senzaAbbinare = erroreSegreteria(e)
+          }
+          const oraAbbinamenti = ora ? abbinamentiImport(a.entrano, scelteValide, ora.ricevute, ora.persone, voci, conto.id) : {}
           for (const c of pianoDiAbbinamento(oraAbbinamenti, tolti, messi, scrittiOra)) {
-            const r = oraRicevute.find((x) => x.id === c.ricevutaId)
+            const r = ora?.ricevute.find((x) => x.id === c.ricevutaId)
             const mv = a.entrano.find((x) => x.chiave === c.chiave)
+            if (!r || !mv) continue
             try {
               await d.abbinaRicevutaMovimento(c.movimentoId, c.ricevutaId)
-              abbinati.push(r ? `n. ${r.numero}/${r.anno} di ${nomeDi(r.personaId)}` : '')
+              abbinati.push(`n. ${r.numero}/${r.anno} di ${nomeDi(r.personaId)}`)
             } catch (e) {
-              nonAbbinati.push(`${nomeDi(sceltaDi(c.chiave)?.personaId)}, ${mv ? `${soldi(mv.importo)} del ${dataRicevuta(mv.data)}` : ''} (${erroreSegreteria(e)})`)
+              nonAbbinati.push(`${nomeDi(sceltaDi(c.chiave)?.personaId)}, ${soldi(mv.importo)} del ${dataRicevuta(mv.data)} (${erroreSegreteria(e)})`)
             }
           }
         } catch (e) {
           guasto ??= erroreSegreteria(e)
         }
       }
-      setScritti({ n, classificati, guasto, abbinati, nonAbbinati })
+      setScritti({ n, classificati, guasto, abbinati, nonAbbinati, senzaAbbinare })
     }, undefined, () => {
       setLettura(null)
       onRileggi()
@@ -229,8 +237,13 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           <span style={{ fontSize: 15 }}>
             Sono nel <b>Conto Corrente</b>
             {scritti.classificati ? <>: <b>{scritti.classificati === 1 ? '1 ha' : `${scritti.classificati} hanno`} la voce che hai scelto</b>{scritti.n > scritti.classificati ? <>, {scritti.n - scritti.classificati === 1 ? 'l’altro è' : `gli altri ${scritti.n - scritti.classificati} sono`} in «Da classificare»: la voce la scegli dopo, con Cambia voce</> : ''}.</> : <>, in «Da classificare»: la voce la scegli dopo, con Cambia voce.</>}{' '}
-            {scritti.abbinati.length ? <><b>{scritti.abbinati.length === 1 ? '1 bonifico è già con la sua ricevuta' : `${scritti.abbinati.length} bonifici sono già con la loro ricevuta`}</b> ({scritti.abbinati.join(', ')}); gli altri incassi non hanno ricevuta.</> : 'Gli incassi importati non hanno ricevuta.'}
+            {scritti.senzaAbbinare ? null : scritti.abbinati.length ? <><b>{scritti.abbinati.length === 1 ? '1 bonifico è già con la sua ricevuta' : `${scritti.abbinati.length} bonifici sono già con la loro ricevuta`}</b> ({scritti.abbinati.join(', ')}); gli altri incassi non hanno ricevuta.</> : 'Gli incassi importati non hanno ricevuta.'}
           </span>
+          {scritti.senzaAbbinare && (
+            <span role="alert" className="sg-banca-avviso" style={{ fontSize: 15 }}>
+              <b>Le ricevute non si sono abbinate</b>: {scritti.senzaAbbinare}. I bonifici sono in «Da assegnare», con la persona: li abbini da lì.
+            </span>
+          )}
           {scritti.nonAbbinati.length > 0 && (
             <span role="alert" className="sg-banca-avviso" style={{ fontSize: 15 }}>
               <b>{scritti.nonAbbinati.length === 1 ? '1 bonifico non si è abbinato' : `${scritti.nonAbbinati.length} bonifici non si sono abbinati`}</b>: {scritti.nonAbbinati.join('; ')}. {scritti.nonAbbinati.length === 1 ? 'È' : 'Sono'} in «Da assegnare».
@@ -290,6 +303,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
       )}
 
       {lettura && !nonLeggibile && coperti.guaio && <Guaio testo={coperti.guaio} />}
+      {lettura && !nonLeggibile && archivio.guaio && <Guaio testo={`Non riesco a leggere le ricevute: i bonifici entrano senza abbinarli. ${archivio.guaio}`} />}
 
       {a && lettura && !nonLeggibile && conto && (
         <>

@@ -208,7 +208,6 @@ quando arriva la prova.
   `.tsx`; nessuna prova, solo collaudo a mano.
 - Importa dalla banca: le righe di `ImportaBanca.tsx` (filtri, gruppi, «Conferma», «Nuovo», CHI HA PAGATO?)
   e il giro di `cambiaVoceMovimenti` dopo l'importazione: solo collaudo a mano. Le regole hanno le loro prove.
-- Import della banca, abbinamento: l'ordine (si abbina solo la riga la cui voce è andata) sta in `ImportaBanca.tsx`, nessuna prova; da portare in `src/lib` (DA FARE).
 - Importa dalla banca, la persona proposta (nome intero, una scheda sola) entra senza conferma: c'è la prova.
 - Suggerimento da classificare: `ImportaBanca.tsx` (al massimo trenta
   richieste; «Conferma» del gruppo collega i preselezionati) sta nel `.tsx`:
