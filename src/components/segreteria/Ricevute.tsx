@@ -36,7 +36,7 @@ import {
 } from '../../lib/ricevute'
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { chiaveGiorno } from '../../lib/sala'
-import { bonificiDaAssegnare, bonificiLiberi, bonificiPerRicevuta, cosaNonVaRicevutaDaMovimento, euroAssegna, movimentoDaClassificareAbbinabile, voceDaRicevuta, vociDaMovimento } from '../../lib/assegna'
+import { bonificiDaAssegnare, bonificiLiberi, bonificiPerRicevuta, conGenitori, cosaNonVaRicevutaDaMovimento, euroAssegna, movimentoDaClassificareAbbinabile, voceDaRicevuta, vociDaMovimento } from '../../lib/assegna'
 import { nuovoId } from '../../lib/prove'
 import { avvisoDopoRicevuta, avvisoManda, confermaEmail, daMandare, domandaManda, genitoreDellaMail, restaDopoManda, restaDopoRicevuta, siRiprova, statoPosta, ultimaMandata } from '../../lib/ricevuteEmail'
 import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, suCarta, useAvviso, useBozza, useCarica, Tasto } from './comune'
@@ -650,7 +650,7 @@ export function NuovaRicevuta({
   // I bonifici già nel Conto Corrente che possono essere questi soldi (151): chi ha CONTABILITÀ (`onMovimento`) può
   // abbinare la ricevuta al bonifico appena fatta, e i soldi contano una volta sola. Gli altri non leggono i movimenti.
   const inBanca = useCarica(
-    () => (!onMovimento || daPagamento || daMovimento ? Promise.resolve(null) : Promise.all([d.movimenti(), d.pagamentiDiretti(), d.ricevute(), d.casse(), d.voci(), d.persone()])),
+    () => (!onMovimento || daPagamento || daMovimento ? Promise.resolve(null) : Promise.all([d.movimenti(), d.pagamentiDiretti(), d.ricevute(), d.casse(), d.voci(), d.persone(), d.genitori().catch(() => new Map())])),
     [d, p.id, !!onMovimento],
   )
   const [abbinaA, setAbbinaA] = useState<string | null>(null)
@@ -736,7 +736,7 @@ export function NuovaRicevuta({
   const pagatoQui = dati ? dati.voci.reduce((t, v) => t + v.pagamenti.reduce((u, x) => u + x.importo, 0), 0) : 0
   const possibili =
     inBanca.dato && dati && metodo === 'Bonifico' && pagatoQui > 0
-      ? bonificiPerRicevuta(bonificiLiberi(inBanca.dato[0], inBanca.dato[1], inBanca.dato[2], inBanca.dato[3], inBanca.dato[4], oggi), { personaId: p.id, data: dati.data, voci: dati.voci, pagato: pagatoQui }, inBanca.dato[5])
+      ? bonificiPerRicevuta(bonificiLiberi(inBanca.dato[0], inBanca.dato[1], inBanca.dato[2], inBanca.dato[3], inBanca.dato[4], oggi), { personaId: p.id, data: dati.data, voci: dati.voci, pagato: pagatoQui }, conGenitori(inBanca.dato[5], inBanca.dato[6]))
       : []
   // Il bonifico scelto vale finché è ancora fra i possibili: cambiati importo o data, la scelta cade.
   const abbinato = possibili.find((m) => m.id === abbinaA)
