@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #0d2a3d; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: repeat({{quanti}}, minmax(0, 1fr)); width: 100%; background: #ffffff; border-bottom: 1px solid #cfe6f4">
+  <div style="display: {{saldi}}; padding: 12px 18px; border-right: 1px solid #cfe6f4"><div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">SALDO INIZIALE</div><div style="font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; white-space: nowrap">{{iniziale}}</div></div>
+  <div style="padding: 12px 18px; border-right: 1px solid #cfe6f4"><div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">ENTRATE</div><div style="font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; white-space: nowrap; color: #0b7a33">{{entrate}}</div></div>
+  <div style="padding: 12px 18px; border-right: {{bordoUscite}}"><div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">USCITE</div><div style="font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; white-space: nowrap">{{uscite}}</div></div>
+  <div style="display: {{saldi}}; padding: 12px 18px"><div style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">SALDO FINALE</div><div style="font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; white-space: nowrap">{{finale}}</div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"iniziale":{"editor":"text","default":"46.718,71 €"},"entrate":{"editor":"text","default":"+ 149.288,37 €"},"uscite":{"editor":"text","default":"− 156.680,48 €"},"finale":{"editor":"text","default":"39.326,60 €"},"filtrato":{"editor":"boolean","default":false},"$preview":{"width":1100,"height":76}}'>
+// COSTRUITO «segreteria in ordine» (../../../src/segreteria.css `.sg-totali`, Contabilita.tsx): i quattro totali del periodo sotto i filtri di MOVIMENTI,
+// al posto della frase con le somme. Con MOSTRA diverso da Tutti, un TIPO o una ricerca (`filtrato`, `striscia()` di filtriMovimenti.ts) restano solo
+// ENTRATE e USCITE su due colonne: i saldi sono della cassa e non tornerebbero. Il segno solo se la cifra non è zero («0 €», mai «− 0 €»). Etichetta 12px 600 0.08em `dim`, cifra 22px 700 tabellare; entrate `verde-testo`. Sotto i 640px due per riga, cifre 18px.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { iniziale: p.iniziale ?? '46.718,71 €', entrate: p.entrate ?? '+ 149.288,37 €', uscite: p.uscite ?? '− 156.680,48 €', finale: p.finale ?? '39.326,60 €',
+      quanti: p.filtrato ? 2 : 4, saldi: p.filtrato ? 'none' : 'block', bordoUscite: p.filtrato ? '0' : '1px solid #cfe6f4' };
+  }
+}
+</script>
+</body>
+</html>

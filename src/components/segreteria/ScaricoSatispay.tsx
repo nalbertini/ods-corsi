@@ -34,7 +34,7 @@ export function PrimoScarico({ d, fai, onFatto, onChiudi }: { d: DatiSegreteria;
           </div>
         ))}
       </div>
-      <span className="sg-sotto">Chi ha pagato lo trovi poi in IMPORTAZIONI → Chi ha pagato.</span>
+      <span className="sg-sotto">Chi ha pagato lo trovi poi in IMPORTAZIONI → Visualizza chi ha pagato.</span>
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void fai(() => d.scaricaSatispay(false), 'Scarico fatto: da stanotte va da solo', onFatto)}>
           Sì, comincia lo scarico

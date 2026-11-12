@@ -159,7 +159,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const annullaLotto = async () => {
     if (!ultima) return
     const si = await chiedi(
-      `Annullo i ${ultima.conteggio} movimenti importati dalla banca insieme? Li ritrovi in «Mostra annullati». Rileggere il file non li riscrive.`,
+      `Annullo i ${ultima.conteggio} movimenti importati dalla banca insieme? Li ritrovi in MOVIMENTI, in «Annullati». Rileggere il file non li riscrive.`,
       `Sì, annulla i ${ultima.conteggio}`,
       { pericolo: true },
     )

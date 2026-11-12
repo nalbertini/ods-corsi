@@ -8,7 +8,9 @@ import { entratoBanca, ultimaImportazione } from '../../lib/importaBanca'
 import { daClassificare, FONTI_DA_CLASSIFICARE, vistaDaClassificare, type FonteDaClassificare } from '../../lib/daClassificare'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { Chip } from '../ds'
-import { Campo, chiedi, Guaio, SchedaPiena, Testa, useAvviso, useCarica, Tasto } from './comune'
+import { Campo, chiedi, Guaio, SchedaPiena, SegnoStato, Testa, useAvviso, useCarica, Tasto } from './comune'
+import { Icona } from '../Icons'
+import type { NomeIcona } from '../../lib/icone'
 import { ImportaBanca } from './ImportaBanca'
 import { Numero } from './Presenze'
 import { PrimoScarico } from './ScaricoSatispay'
@@ -18,10 +20,19 @@ type Fonte = 'satispay' | 'banca'
 
 const soldi = (c: number) => `${euro(c)} €`
 const quando = (iso: string) => new Date(iso).toLocaleString('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-const riquadroFonte = { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: '12px 18px', padding: '14px 18px' } as const
 /** Le righe di «Da classificare» che si vedono per prime: con lo storico sono centinaia. */
 const RIGHE_DA_CLASSIFICARE = 20
 const rigaTabella = { gap: 14, padding: '10px 14px', borderBottom: '1px solid var(--line-soft)', alignItems: 'center', flexWrap: 'wrap' } as const
+
+/** La prima colonna delle fonti: l'icona, il nome e da dove arriva. */
+function CellaFonte({ icona, nome, sotto }: { icona: NomeIcona; nome: string; sotto: string }) {
+  return (
+    <span role="cell" className="row" style={{ gap: 12, alignItems: 'center', minWidth: 0 }}>
+      <span className="sg-fonte-icona"><Icona nome={icona} misura={22} /></span>
+      <span className="stack" style={{ minWidth: 0 }}><b style={{ fontSize: 16 }}>{nome}</b><span className="sg-sotto">{sotto}</span></span>
+    </span>
+  )
+}
 
 /** Gli ultimi 12 mesi, dal più recente, come `AAAA-MM` col nome da mostrare. */
 function mesi(oggi: string): Array<[string, string]> {
@@ -35,10 +46,10 @@ function mesi(oggi: string): Array<[string, string]> {
 
 /**
  * IMPORTAZIONI, in I CONTI: quel che arriva dalla banca e chi ha pagato con Satispay, «Da classificare» (tutto quel
- * che è in contabilità senza una voce vera) e «Cosa è entrato» per ricontrollare un mese.
+ * che è in contabilità senza una voce vera) e i movimenti di un mese, per ricontrollarli.
  * Le regole sono in `satispayScarico.ts`, `importaBanca.ts` e `daClassificare.ts`.
  */
-export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassifica: (movimentoId: string) => void }) {
+export function Importazioni({ d, onClassifica, onRegole }: { d: DatiSegreteria; onClassifica: (movimentoId: string) => void; onRegole?: () => void }) {
   const casse = useCarica(() => d.casse(), [d])
   const voci = useCarica(() => d.voci(), [d])
   const manuali = useCarica(() => d.movimenti(), [d])
@@ -80,8 +91,8 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
 
   if (vista === 'satispay' || vista === 'banca') {
     return (
-      <SchedaPiena etichetta={vista === 'satispay' ? 'Chi ha pagato' : 'Cosa è entrato'} torna="Le importazioni" onTorna={() => setVista(null)}>
-        <Entrato d={d} fonte={vista} onFonte={setVista} casse={casse.dato ?? []} manuali={manuali.dato ?? []} chiusure={chiusure.dato ?? []} righe={righe}
+      <SchedaPiena etichetta={vista === 'satispay' ? 'Chi ha pagato con Satispay' : 'I movimenti della banca'} torna="Le importazioni" onTorna={() => setVista(null)}>
+        <Entrato d={d} fonte={vista} onFonte={setVista} meseIniziale={(vista === 'banca' ? ultima?.al : s?.ultimo)?.slice(0, 7)} casse={casse.dato ?? []} manuali={manuali.dato ?? []} chiusure={chiusure.dato ?? []} righe={righe}
           pagamenti={pagamentiIscritti} modulo={incassi.dato?.satispay ?? []} fai={fai} onCambiato={rileggi} />
         {avviso}
       </SchedaPiena>
@@ -90,45 +101,69 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <Testa titolo="IMPORTAZIONI" sotto="Quello che arriva dalla banca, e chi ha pagato con Satispay." />
+      <Testa titolo="IMPORTAZIONI" sotto="I movimenti che arrivano dalla banca e i pagamenti fatti con Satispay.">
+        <Tasto tono="pieno" icona="carica" disabled={!pronto} onClick={() => setVista('importa')}>Importa</Tasto>
+      </Testa>
       {guaio && <Guaio testo={guaio} />}
-      <section aria-label="Satispay" className="sg-riquadro" style={riquadroFonte}>
-        <div className="stack" style={{ gap: 2, flex: '999 1 420px', minWidth: 0 }}>
-          <span className="sg-etichetta">SATISPAY · CHI HA PAGATO</span>
-          {/* Senza il 96 lo scarico non c'è: lo si dice, e la banca funziona lo stesso. */}
-          {!s ? (
-            <span style={{ fontSize: 15 }}>{stato.guaio ?? 'Lo scarico da Satispay non è ancora attivo.'}</span>
-          ) : (
-            <span style={{ fontSize: 15 }}>{s.ultimo ? `Ultimo scarico il ${quando(s.ultimo)}.` : 'Il primo scarico non è ancora fatto.'}</span>
-          )}
-          <span className="sg-sotto">Non entrano in contabilità: i soldi arrivano in banca col versamento «Da Satispay Europe S.A.», già al netto della commissione.</span>
-          {/* Spento, l'errore dell'ultimo giro non conta più: resta nel database e lo sostituisce il prossimo scarico vero. */}
-          {s && fermo && <span className="sg-sotto">{SCARICO_FERMO}</span>}
-          {s?.errore && interruttore && !fermo && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>L’ultimo scarico non è riuscito: {s.errore}</span>}
+      <div role="table" aria-label="Le fonti" className="sg-tabella">
+        <div role="row" className="sg-lista-testa sg-riga-fonte">
+          <span role="columnheader" className="sg-etichetta">FONTE</span>
+          <span role="columnheader" className="sg-etichetta">STATO</span>
+          <span role="columnheader" className="sg-etichetta">ULTIMO ARRIVO</span>
+          <span role="columnheader" />
         </div>
-        {s && (
-          <>
-            <button type="button" className="sg-btn sg-btn-linea" disabled={!pronto} onClick={() => setVista('satispay')}>Chi ha pagato</button>
-            {fermo || !interruttore ? null : s.primoFatto ? (
-              <Tasto onClick={() => void fai(() => d.scaricaSatispay(false), 'Scarico Satispay fatto', rileggi)}>Scarica ora</Tasto>
-            ) : (
-              <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setVista('primo')}>Guarda il primo scarico</button>
-            )}
-          </>
-        )}
-      </section>
-      <section aria-label="Banca" className="sg-riquadro" style={riquadroFonte}>
-        <div className="stack" style={{ gap: 2, flex: '999 1 420px', minWidth: 0 }}>
-          <span className="sg-etichetta">BANCA · BANCOPOSTA</span>
-          <span style={{ fontSize: 15 }}>
-            {ultima
-              ? <>Ultimo file importato il {dataRicevuta(ultima.creatoIl.slice(0, 10))}: <b>{ultima.conteggio === 1 ? '1 movimento' : `${ultima.conteggio} movimenti`}</b>, dal {dataRicevuta(ultima.dal)} al {dataRicevuta(ultima.al)}.</>
-              : 'Nessun file importato finora.'}
+        <div role="row" className="sg-riga-fonte">
+          <CellaFonte icona="banca" nome="Banca" sotto={`BancoPosta · ${NOME_CASSA_CONTO}`} />
+          <span role="cell">{ultima ? <SegnoStato tono="verde" parola="Aggiornata" /> : <SegnoStato tono="nota" parola="Mai importata" />}</span>
+          <span role="cell" className="stack" style={{ gap: 2 }}>
+            {ultima ? (
+              <>
+                <span>{dataRicevuta(ultima.creatoIl.slice(0, 10))} · <b>{ultima.conteggio === 1 ? '1 movimento' : `${ultima.conteggio} movimenti`}</b></span>
+                <span className="sg-sotto">dal {dataRicevuta(ultima.dal)} al {dataRicevuta(ultima.al)}</span>
+              </>
+            ) : <span>Nessun file importato finora.</span>}
+          </span>
+          <span role="cell" className="sg-fonte-tasti">
+            <Tasto icona="movimenti" disabled={!pronto} onClick={() => setVista('banca')}>Visualizza i movimenti</Tasto>
           </span>
         </div>
-        <button type="button" className="sg-btn sg-btn-linea" disabled={!pronto} onClick={() => setVista('banca')}>Cosa è entrato</button>
-        <Tasto tono="pieno" disabled={!pronto} onClick={() => setVista('importa')}>Importa un file</Tasto>
-      </section>
+        <div role="row" className="sg-riga-fonte">
+          <CellaFonte icona="telefono" nome="Satispay" sotto="Chi ha pagato e per cosa" />
+          <span role="cell" className="stack" style={{ gap: 2 }}>
+            {/* Senza il 96 lo scarico non c'è: lo si dice, e la banca funziona lo stesso. */}
+            {!s ? <SegnoStato tono="nota" parola="Non attivo" />
+              : fermo ? (
+                <>
+                  <SegnoStato tono="giallo" parola="Spento" title={SCARICO_FERMO} />
+                  {/* Il perché si legge anche al telefono, non solo passandoci sopra. */}
+                  <span className="sg-sotto">Lo scarico è fermo.</span>
+                  {onRegole && <button type="button" className="sg-link" onClick={onRegole}>Riaccendi in Regole ›</button>}
+                </>
+              )
+              // Spento, l'errore dell'ultimo giro non conta più: resta nel database e lo sostituisce il prossimo scarico vero.
+              : s.errore && interruttore ? <SegnoStato tono="rosso" parola="Non riuscito" />
+              : <SegnoStato tono="verde" parola="Acceso" />}
+          </span>
+          <span role="cell" className="stack" style={{ gap: 2 }}>
+            <span>{!s ? (stato.guaio ?? 'Lo scarico da Satispay non è ancora attivo.') : s.ultimo ? quando(s.ultimo) : 'Il primo scarico non è ancora fatto.'}</span>
+            {s?.errore && interruttore && !fermo && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>L’ultimo scarico non è riuscito: {s.errore}</span>}
+            <span className="sg-sotto">Solo per sapere chi ha pagato: i soldi entrano col versamento della banca, già al netto della commissione.</span>
+          </span>
+          <span role="cell" className="sg-fonte-tasti">
+            {s && (
+              <>
+                {/* Un solo tasto giallo nella pagina, «Importa»: questi sono a linea. */}
+                {fermo || !interruttore ? null : s.primoFatto ? (
+                  <Tasto onClick={() => void fai(() => d.scaricaSatispay(false), 'Scarico Satispay fatto', rileggi)}>Scarica ora</Tasto>
+                ) : (
+                  <Tasto onClick={() => setVista('primo')}>Guarda il primo scarico</Tasto>
+                )}
+                <Tasto icona="persona" disabled={!pronto} onClick={() => setVista('satispay')}>Visualizza chi ha pagato</Tasto>
+              </>
+            )}
+          </span>
+        </div>
+      </div>
 
       {pronto && (
         <section aria-label="Da classificare" className="stack" style={{ gap: 14, paddingTop: 6 }}>
@@ -205,12 +240,13 @@ export function Importazioni({ d, onClassifica }: { d: DatiSegreteria; onClassif
  * Un mese da Satispay o dalla banca. Satispay: «Chi ha pagato», in sola lettura, perché i soldi sono nei versamenti
  * della banca. Banca: ogni movimento importato e dove è finito. «Non è questo» scioglie gli abbinamenti.
  */
-function Entrato({ d, fonte, onFonte, casse, manuali, chiusure, righe, pagamenti, modulo, fai, onCambiato }: {
-  d: DatiSegreteria; fonte: Fonte; onFonte: (f: Fonte) => void; casse: Cassa[]; manuali: MovimentoManuale[]
+function Entrato({ d, fonte, onFonte, meseIniziale, casse, manuali, chiusure, righe, pagamenti, modulo, fai, onCambiato }: {
+  d: DatiSegreteria; fonte: Fonte; onFonte: (f: Fonte) => void; meseIniziale?: string; casse: Cassa[]; manuali: MovimentoManuale[]
   chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; pagamenti: RigaPagamento[]; modulo: PagamentoSatispay[]; fai: Fai; onCambiato: () => void
 }) {
   const oggi = oggiARoma()
-  const [mese, setMese] = useState(oggi.slice(0, 7))
+  // Il mese dell'ultimo arrivo: è lì che si va a guardare, non per forza in quello corrente.
+  const [mese, setMese] = useState(() => (meseIniziale && mesi(oggi).some(([m]) => m === meseIniziale) ? meseIniziale : oggi.slice(0, 7)))
   const [cerca, setCerca] = useState('')
   const [soloNon, setSoloNon] = useState(false)
   const negozio = useCarica(() => (fonte === 'satispay' ? d.negozioSatispay(mese) : Promise.resolve([])), [d, fonte, mese])
@@ -230,7 +266,7 @@ function Entrato({ d, fonte, onFonte, casse, manuali, chiusure, righe, pagamenti
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <Testa titolo={fonte === 'satispay' ? 'CHI HA PAGATO' : 'COSA È ENTRATO'} sotto={fonte === 'satispay'
+      <Testa titolo={fonte === 'satispay' ? 'CHI HA PAGATO' : 'I MOVIMENTI DELLA BANCA'} sotto={fonte === 'satispay'
         ? `Da Satispay, ${nomeMese}: ogni pagamento scaricato e a chi è stato riconosciuto. I soldi sono nei versamenti della banca.`
         : `Dalla banca, ${nomeMese}: ogni movimento importato e dove è finito.`} />
       <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>

@@ -404,12 +404,7 @@
 :root[data-look='sito'] .sg-segmenti > button[aria-pressed='true'] { background: var(--blu); color: #ffffff; }
 :root[data-look='sito'] .sg-segmenti > button:focus-visible { outline-color: var(--blu); }
 :root[data-look='sito'] .sg-filtro-menu:focus-within { outline-color: var(--blu); }
-/* L'elenco delle casse esce dal riquadro: senza taglio, e il raggio sul tasto. */
-:root[data-look='sito'] .sg-filtro-menu.sg-casse { overflow: visible; }
-:root[data-look='sito'] .sg-filtro-casse summary { border-radius: 4px; }
-:root[data-look='sito'] .sg-filtro-casse-lista { border-color: var(--riga-campo); border-radius: 6px; }
 :root[data-look='sito'] .sg-filtro-menu[data-acceso='true'] { background: var(--line); }
-:root[data-look='sito'] .sg-pillola { border-color: var(--blu); border-radius: 6px; }
 :root[data-look='sito'] .sg-elenco-casella input { accent-color: var(--blu); }
 /* Gli stati sono un tag bianco con bordo e testo del colore dello stato, e la parola: niente segno davanti. */
 /* Il bordo e il testo hanno lo stesso colore (scritto per esteso: `prova:look` lo legge così). */

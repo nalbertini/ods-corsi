@@ -124,7 +124,7 @@ export interface SuggerimentoMovimento {
 /** Il blocco «Suggerito» di un movimento da classificare; `null` per ogni altro movimento: lì non c'è. */
 export function suggerisciMovimento(riga: RigaMovimento, righe: RigaMovimento[], voci: VoceContabile[], persone: PersonaPerNome[], listino?: Listino, abbinati: Abbinato[] = []): SuggerimentoMovimento | null {
   if (riga.origine !== 'movimento' || riga.annullato || (riga.tipo !== 'entrata' && riga.tipo !== 'uscita') || riga.voce !== VOCE_DA_CLASSIFICARE) return null
-  // Il versamento di Satispay non è di una persona: chi ha pagato lo dice IMPORTAZIONI → Chi ha pagato.
+  // Il versamento di Satispay non è di una persona: chi ha pagato lo dice IMPORTAZIONI → Visualizza chi ha pagato.
   if (riga.tipo === 'entrata' && /satispay\s+europe/i.test(riga.descrizione)) {
     const v = vociOfferte(voci, 'entrata').find((x) => x.nome === VOCE_INCASSI_SATISPAY)
     const voce = v ? { voceId: v.id, nome: v.nome, motivo: 'È il versamento di Satispay in banca' } : null
