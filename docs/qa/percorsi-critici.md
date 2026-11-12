@@ -39,7 +39,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Ricevuta da un pagamento a mano | segreteria, amministrazione | incasso contato due volte o perso | `prova:pagamenti`, `prova:satispay`, `pagamento-una-volta.sql`, `pagamento-diventa-ricevuta.sql`, `ricevuta-pagamento-perso.sql` | sì |
 | Contanti di un giorno di cassa chiusa | segreteria, amministrazione | chiusura rotta senza che nessuno lo sappia | `prova:contabilita`, `prova:pagamenti`, `ricevuta-cassa-chiusa.sql` | sì |
 | Ricevute e pagamenti | segreteria, amministrazione | quota o ricevuta sbagliata, ricevuta doppia | `prova:ricevuta`, `prova:segreteria`, `prova:pagamenti`, `prova:satispay`, `prova:righe-dovute`, `ricevute.sql`, `satispay.sql` | sì |
-| Bonifico collegato assegnato a quota e corsi | amministrazione, segreteria | bonifico contato due volte, quota sopra il listino, soldi persi | `prova:assegna-movimento`, `prova:pagamenti`, `prova:ricevuta`, `prova:pagato-prima`, `assegna-movimento.sql`, `pagato-vecchio-programma.sql` | sì |
+| Bonifico collegato assegnato a quota e corsi | amministrazione, segreteria | bonifico contato due volte o fermo, quota sopra il listino, soldi persi | `prova:assegna-movimento`, `prova:pagamenti`, `prova:ricevuta`, `prova:pagato-prima`, `assegna-movimento.sql`, `pagato-vecchio-programma.sql` | sì |
 | Corsi da pagare | segreteria | corso scaduto che non si vede, sollecito a chi ha pagato | `prova:dafare`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `prova:conteggi-dovuti`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:scheda`, `prova:sollecito`, `prova:tessere`, `corso-archiviato-il.sql` | sì |
 | Annuale a rate (la quota non è una rata) | segreteria, amministrazione | quota contata come rata, annuale scaduto non visto, versamento doppio | `prova:ricevuta`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `annuale-tre-rate.sql` | sì |
 | Ricevuta per email alla famiglia | segreteria, amministrazione, famiglie | ricevuta all'indirizzo sbagliato o annullata che parte | `prova:ricevute-email`, `prova:edge`, `prova:cornice-mail`, `prova:avvisi-segreteria`, `ricevute-email.sql` | sì |
@@ -255,6 +255,7 @@ quando arriva la prova.
   ordine del giorno, che la regola non chiede; se la firma cade dopo il
   caricamento resta una bozza col PDF. Solo collaudo a mano.
 - Bonifico aperto, «C'è già la ricevuta» (`AssegnaMovimento.tsx`): la regola (`ricevutaGiaFatta`, `collegatiPrima`) è provata, il riquadro con «Abbina» / «Non è questa» no. Solo collaudo a mano.
+- Bonifico su chi è pagato a mano («È questo bonifico», `AssegnaMovimento.tsx`): le regole (`daChiedereAMano`, `dovutiDelNucleo`, `propostaDopoIlSi`) sono provate, il riquadro no. Solo collaudo a mano.
 - Scheda del movimento (`MovimentoAperto`): «Salva» solo con modifiche,
   «Da assegnare» solo nella card della persona, nome del ⋯. Le regole sono
   provate in lib; il cablaggio nel `.tsx` no. Solo collaudo a mano.

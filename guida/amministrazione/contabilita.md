@@ -218,6 +218,13 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   la data è quella del bonifico, il modo **Bonifico**. **Assegna senza ricevuta** scrive solo
   l'assegnazione: la ricevuta si fa dopo, dalla stessa finestra, con **Fai la ricevuta**. Quel che non
   assegni resta **da assegnare**.
+- Se la persona è segnata **pagata a mano** nella scheda, senza un pagamento nell'app, non c'è niente da
+  pagare e la finestra mostra il riquadro giallo **GIÀ PAGATO A MANO**. Se il bonifico è quel
+  pagamento, **È questo bonifico** propone la quota e i corsi interi, prima i suoi e quel che avanza ai
+  familiari: assegnali, con o senza ricevuta, e il bonifico esce da Da assegnare. Se il bonifico copre
+  meno del listino, il corso diventa **pagato in parte** con quel che manca: la finestra lo dice prima,
+  con «Resteranno…». **Non è questo** chiude il riquadro e il bonifico resta da assegnare, con la scheda
+  segnata pagata com'era.
 - Nella finestra, **ASSEGNATO A** elenca a chi e a cosa sono andati i soldi, con la ricevuta (e il
   **PDF**) o il tag **Senza ricevuta**.
 - La scheda **DA ASSEGNARE** elenca tutte le entrate collegate che hanno ancora soldi senza una voce,

@@ -1,0 +1,11 @@
+{
+ "pages": [{ "id": "page-1", "name": "Contabilità · bonifico già pagato a mano" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "Oggi · niente da pagare, tasti spenti", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "Proposta · GIÀ PAGATO A MANO", "x": 880, "y": 300, "page": "page-1" },
+  { "file": "Abbinato.dc.html", "title": "Proposta · dopo «È questo bonifico»", "x": 1760, "y": 300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 2600, "text": "Contabilità: il bonifico di chi è già segnato pagato a mano" }
+ ]
+}
