@@ -10,7 +10,7 @@ semplice, gli istruttori e il tablet no. Ha cinque schede, sotto il titolo come 
 
 MOVIMENTI è un **estratto conto**. Sotto i filtri, una striscia di quattro cifre: **SALDO INIZIALE**,
 **ENTRATE**, **USCITE** e **SALDO FINALE**, del periodo che hai scelto. Con **Da assegnare**,
-**Annullati**, un TIPO o una ricerca restano solo **ENTRATE** e **USCITE**: i saldi sono di tutta
+**Annullati**, un TIPO, una voce o una ricerca restano solo **ENTRATE** e **USCITE**: i saldi sono di tutta
 la cassa e non tornerebbero con le righe che vedi. La
 tabella ha le colonne **DATA**, **DESCRIZIONE**, **TIPO** (con la sua icona: Incasso iscritto,
 Giroconto, Entrata, Uscita), **CASSA**, **ENTRATE** e **USCITE**, con le righe dalla più
@@ -38,7 +38,8 @@ L'elenco unisce due cose:
 - i **movimenti che scrivi tu**: altre entrate (contributi, gare, attività
   fatturate) e le uscite.
 
-Si parte dal **mese corrente**. Filtri ed elenco stanno in un riquadro solo, in tre righe:
+Si parte dal **mese corrente**. Filtri ed elenco stanno in un riquadro solo. In alto, su una riga
+(sullo schermo stretto vanno a capo):
 
 - la **ricerca** nella descrizione, nel nome o nell'importo (non bada a maiuscole, accenti e
   spazi in più) e il **periodo**: i menu **Mese** e **Anno**, con le frecce **‹** e **›** per il mese
@@ -47,9 +48,12 @@ Si parte dal **mese corrente**. Filtri ed elenco stanno in un riquadro solo, in 
 - **MOSTRA**: **Da assegnare · N** (quel che resta da sistemare: una quota o un corso senza persona,
   un omonimo da decidere, soldi ancora da assegnare, la voce **Da classificare**; guarda tutto lo
   storico, il periodo passa a tutti gli anni), **Tutti** o **Annullati** (solo quelli annullati,
-  che non contano). **TIPO**: **Entrate**, **Uscite** o **Tutti**;
-- quanti movimenti ci sono («38 movimenti a novembre 2026»), quanti ne hai scelti e, a destra,
-  la **VISTA**: **Elenco** o **Per voce**, che dà i totali per voce.
+  che non contano). **TIPO**: **Entrate**, **Uscite** o **Tutti**. **Voce**: una sola voce, fra
+  quelle che i movimenti hanno (anche quelle vecchie o spente); segue il TIPO, e se cambi TIPO e la
+  voce non c'è più si toglie da sola. Con una voce scelta restano solo **ENTRATE** e **USCITE**.
+
+Sotto, quanti movimenti ci sono («38 movimenti a novembre 2026»), quanti ne hai scelti e, a destra,
+la **VISTA**: **Elenco** o **Per voce**, che dà i totali per voce.
 
 **Esporta CSV**, nel menu **Altre azioni**, dà un foglio per Excel e per il commercialista,
 senza gli annullati.
@@ -136,8 +140,8 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
   registri l’incasso nella scheda della persona. **Scegli tu** non cambia niente: mette la proposta nei campi qui sotto, e decidi lì.
   Senza suggerimento, il riquadro non c'è.
 - **Tanti insieme**: nell'elenco scrivi nella ricerca una parte della causale (per esempio «enel»),
-  e, se serve, MOSTRA **Da assegnare** (le voci da classificare ci sono) o il periodo
-  **Tutti gli anni**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure la casella in testa alla
+  e, se serve, MOSTRA **Da assegnare** (le voci da classificare ci sono), la **Voce** di partenza
+  (per spostare tutta una voce in un'altra) o il periodo **Tutti gli anni**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure la casella in testa alla
   colonna, che le sceglie tutte. In fondo compare la barra **N scelti**: **Cambia voce** apre il riepilogo (quanti sono,
   di che tipo, quanto fanno, da quali voci vengono). Scegli la **nuova voce** e tocca **Sì, cambia la
   voce**: finché non lo dici, non cambia niente. Se cambi la ricerca o i filtri, la scelta si svuota.

@@ -67,7 +67,7 @@ import {
   vociPerLaScelta,
 } from '../../lib/contabilita'
 import { cosaNonVaCollegato, collegatoAMano, type CandidatoPersona } from '../../lib/movimentiPersona'
-import { anniConMovimenti, conMostra, conPeriodo, estrattoMostra, filtraMostra, filtriIniziali, filtriPer, nomeMese, nonSiVedra, puoSpostare, spostaMese, striscia, testoConto, type FiltriElenco } from '../../lib/filtriMovimenti'
+import { anniConMovimenti, conMostra, conPeriodo, conTipo, estrattoMostra, filtraMostra, filtriIniziali, filtriPer, nomeMese, nonSiVedra, puoSpostare, spostaMese, striscia, testoConto, vociDelFiltro, type FiltriElenco } from '../../lib/filtriMovimenti'
 import { fraseDallaChat } from '../../lib/collega'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { ImportaBanca } from './ImportaBanca'
@@ -431,7 +431,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
       )}
 
       <section className="sg-elenco" aria-label="Filtri ed elenco dei movimenti">
-        <div className="sg-elenco-barra" role="group" aria-label="Filtri dei movimenti">
+        <div className="sg-elenco-barra sg-elenco-barra-movimenti" role="group" aria-label="Filtri dei movimenti">
           <label htmlFor="cerca-movimenti" className="vh">
             Cerca nella descrizione, nel nome o nell’importo
           </label>
@@ -442,8 +442,6 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
             <FiltroMenu id="filtro-anno" nome="Anno" value={String(f.anno)} opzioni={[['0', 'Tutti gli anni'], ...anniConMovimenti(righe, oggi).map((a) => [String(a), String(a)] as const)]} onChange={(v) => setF(conPeriodo(f, { anno: Number(v) }, oggi))} />
             <button type="button" className="sg-btn sg-btn-linea sg-tasto-quadro" aria-label="Mese dopo" disabled={!puoSpostare(f, 1, oggi)} onClick={() => setF(spostaMese(f, 1))}><Icona nome="avanti" /></button>
           </div>
-        </div>
-        <div className="sg-elenco-barra sg-elenco-barra-due">
           <span className="sg-filtro-gruppo">
             <span className="sg-etichetta" aria-hidden="true">MOSTRA</span>
             <Segmenti
@@ -467,9 +465,10 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
                 ['', 'Tutti'],
               ]}
               scelta={f.tipo}
-              onScegli={(v) => metti({ tipo: v })}
+              onScegli={(v) => setF(conTipo(righe, f, v))}
             />
           </span>
+          <FiltroMenu id="filtro-voce" nome="Voce" value={f.voce} opzioni={[['', 'Tutte'], ...vociDelFiltro(righe, f.tipo).map((n) => [n, n] as const)]} onChange={(v) => metti({ voce: v })} />
         </div>
         {esitiLetti.guaio && <span className="sg-sotto" role="status" style={{ padding: '0 16px 12px' }}>{esitiLetti.guaio}</span>}
 
