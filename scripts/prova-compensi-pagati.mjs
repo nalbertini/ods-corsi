@@ -438,9 +438,9 @@ console.log('\n10. col database vero: abbina_compensi_movimento, e finché non c
   })
   await prova('abbina con abbina_compensi_movimento, e non rende niente', () => con().abbinaCompensiMovimento(['r1', 'r2'], 'mv1'), undefined)
   ok('la funzione giusta, coi nomi giusti', chiesto, [['abbina_compensi_movimento', { ricevute: ['r1', 'r2'], movimento: 'mv1' }]])
-  ok('senza il 153: dice cosa lanciare',
+  ok('senza il 154: dice cosa lanciare',
     await errore(() => con({ code: 'PGRST202', message: 'Could not find the function public.abbina_compensi_movimento(movimento, ricevute) in the schema cache' }).abbinaCompensiMovimento(['r1'], 'mv1')),
-    'Pagare i compensi con un bonifico già in banca non è ancora attivo sul database: va lanciato 153-compensi-dal-bonifico.sql')
+    'Pagare i compensi con un bonifico già in banca non è ancora attivo sul database: va lanciato 154-compensi-dal-bonifico.sql')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

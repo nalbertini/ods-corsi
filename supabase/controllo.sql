@@ -733,7 +733,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'corso_importo' and corpo like '%nomi_del_corso%' and corpo like '%corso_in_segreteria%')
     and exists (select 1 from dentro where nome = 'quota_importo' and corpo like '%fine_fuori_app%' and corpo like '%quota_in_segreteria%')
     and exists (select 1 from dentro where nome = 'satispay_corsi_chi' and corpo like '%senzaPrezzoVaBene%' and corpo like '%corso_in_segreteria%')),
-  ('153-compensi-dal-bonifico.sql', 'i compensi si pagano con un bonifico già in banca',
+  ('154-compensi-dal-bonifico.sql', 'i compensi si pagano con un bonifico già in banca',
     to_regprocedure('public.abbina_compensi_movimento(uuid[],uuid)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

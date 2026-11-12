@@ -1,9 +1,9 @@
--- Il compenso pagato con un bonifico già in banca (`153-compensi-dal-bonifico.sql`): in COMPENSI › Segna pagato
+-- Il compenso pagato con un bonifico già in banca (`154-compensi-dal-bonifico.sql`): in COMPENSI › Segna pagato
 -- la segreteria con l'amministrazione sceglie l'uscita già nel Conto Corrente (arrivata dall'importazione della banca)
 -- invece di scriverne una nuova. Le ricevute prendono quel movimento e il suo giorno, il movimento prende il tecnico e
 -- la voce «Compensi istruttori», e non nasce un'altra uscita. Annullato il movimento, le ricevute tornano da pagare
 -- (`compensi_tornano` dell'81). Le stesse regole della modalità prova, provate da scripts/prova-compensi-pagati.mjs.
--- Si lancia dopo finto-supabase.sql e tutto lo schema (153-compensi-dal-bonifico.sql compreso). Mesi del 2025:
+-- Si lancia dopo finto-supabase.sql e tutto lo schema (154-compensi-dal-bonifico.sql compreso). Mesi del 2025:
 -- passati, così le date sono sempre le stesse.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';

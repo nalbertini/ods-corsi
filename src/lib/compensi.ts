@@ -479,7 +479,7 @@ const fineDelMese = (mese: string) => {
 }
 
 /**
- * Le uscite già nel Conto Corrente che possono essere il pagamento delle ricevute `scelte` (153), dalla data più vicina
+ * Le uscite già nel Conto Corrente che possono essere il pagamento delle ricevute `scelte` (154), dalla data più vicina
  * alla fine del mese più recente: non annullate, non Satispay, su «Compensi istruttori» o «Da classificare», senza
  * persona o col tecnico, non già il pagamento di altre ricevute (`ricevute`, tutte), con lo stesso importo e entro
  * `GIORNI_BONIFICO_COMPENSI`. `colNome` ha il nome e il cognome del tecnico nella descrizione (o il tecnico collegato),

@@ -1113,7 +1113,7 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
  * il giorno e la cassa; diventano un'uscita sola in CONTABILITÀ con la voce
  * «Compensi istruttori». Prima di scrivere si vede il riepilogo. Se il bonifico
  * è già nel Conto Corrente (dall'importazione della banca), FORSE È GIÀ IN BANCA
- * lo propone: spuntato, è lui il pagamento e non nasce un’altra uscita (153).
+ * lo propone: spuntato, è lui il pagamento e non nasce un’altra uscita (154).
  */
 function PannelloPaga({
   d,
