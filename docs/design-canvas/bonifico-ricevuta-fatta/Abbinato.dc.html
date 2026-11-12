@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta · dopo Abbina</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- DOPO «Abbina»: avviso «Bonifico abbinato», il movimento si rilegge e mostra ASSEGNATO A con la ricevuta, come oggi dopo un abbinamento da Da assegnare. Niente di nuovo da costruire qui. -->
+<div style="display: flex; flex-direction: column; gap: 12px; width: 560px; padding: 20px">
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; border: 2px solid #14709f; background: #ffffff">
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+      <span style="display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: #14709f; color: #ffffff; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 18px; font-weight: 700">RI</span>
+      <b style="flex: 1 1 160px; min-width: 0; font-size: 18px">Rus Irene</b>
+      <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; color: #0d2a3d; text-underline-offset: 3px">Apri scheda →</a>
+      <button type="button" aria-label="Altro su Rus Irene" style="min-width: 48px; min-height: 48px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-size: 16px; font-weight: 600; color: #14709f">⋯</button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+      <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">ASSEGNATO A</span>
+      <div style="display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; font-size: 15px">
+        <span style="flex: 1 1 200px; min-width: 0">Ricevuta n. 324/2026 <span style="font-size: 13px; color: #46606f">· intestata a Rus Irene</span></span>
+        <span style="font-variant-numeric: tabular-nums">220,00 €</span>
+        <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; color: #0d2a3d; text-underline-offset: 3px">PDF</a>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":600,"height":260}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
