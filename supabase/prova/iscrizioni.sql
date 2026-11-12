@@ -551,6 +551,47 @@ select atteso('la scheda del primo Ugo resta senza corsi nuovi', (select count(*
 reset role;
 
 \echo ''
+\echo '--- lo stesso nome scritto in un altro modo: apostrofi, accenti, trattini ---'
+-- Come `compatto` in src/lib/nomi.ts: D'Amico, D’Amico (apostrofo curvo) e
+-- Damico sono lo stesso nome, e una richiesta con lo stesso codice fiscale
+-- non deve far nascere una seconda scheda.
+select atteso('nome_compatto come compatto',
+  (select string_agg(nome_compatto(x), ',') from unnest(array['D''Amico', 'D’Amico', 'Damico', 'Nicolò', 'De-Luca', ' De Luca ', 'D‘Àrco']) x),
+  'damico,damico,damico,nicolo,deluca,deluca,darco');
+-- Luca D'Amico è arrivato dal modulo Google: il codice sta nelle anagrafiche.
+insert into persone (id, nome, cognome, ruolo) values ('aaaaaaaa-0000-0000-0000-000000000013', 'Luca', 'D''Amico', 'iscritto');
+insert into anagrafiche (persona_id, codice_fiscale) values ('aaaaaaaa-0000-0000-0000-000000000013', cf_prova('DMCLCU', (current_date - interval '30 years')::date));
+-- Ennio De Luca, senza email, come chi è venuto a fare una prova.
+insert into persone (id, nome, cognome, ruolo) values ('aaaaaaaa-0000-0000-0000-000000000014', 'Ennio', 'De Luca', 'iscritto');
+set role anon;
+select atteso('Luca scrive D’Amico con l''apostrofo curvo', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Luca', 'cognome', 'D’Amico', 'codice_fiscale', cf_prova('DMCLCU', (current_date - interval '30 years')::date),
+  'email', 'luca.damico@esempio.it', 'telefono', '347 888 0001'))) is not null)::text$$), 'true');
+select atteso('Lia D''Arco la manda', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Lia', 'cognome', 'D''Arco', 'codice_fiscale', cf_prova('DRCLIA', (current_date - interval '30 years')::date, true), 'email', 'lia@esempio.it', 'telefono', '347 888 0002'))) is not null)::text$$), 'true');
+select atteso('Ennio scrive Deluca', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Ennio', 'cognome', 'Deluca', 'codice_fiscale', cf_prova('DLCNNE', (current_date - interval '30 years')::date), 'email', 'ennio@esempio.it', 'telefono', '347 888 0003'))) is not null)::text$$), 'true');
+reset role;
+set role authenticated;
+select atteso('D’Amico ritrovato dal codice delle anagrafiche',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'luca.damico@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000013')::text$$), 'true');
+select atteso('Lia accolta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'lia@esempio.it')) is not null)::text$$), 'true');
+select atteso('Deluca ritrovato dal nome, senza email',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'ennio@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000014')::text$$), 'true');
+reset role;
+-- La seconda richiesta di Lia la manda l'altro genitore, con l'apostrofo curvo: stesso codice.
+set role anon;
+select atteso('Lia D’Arco la rimanda da un''altra email', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Lia', 'cognome', 'D’Arco', 'codice_fiscale', cf_prova('DRCLIA', (current_date - interval '30 years')::date, true), 'email', 'papa.lia@esempio.it', 'telefono', '347 888 0004'))) is not null)::text$$), 'true');
+reset role;
+set role authenticated;
+select atteso('D’Arco ritrovata dal codice della richiesta accolta',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'papa.lia@esempio.it')) = (select persona_id from richieste_iscrizione where email = 'lia@esempio.it'))::text$$), 'true');
+reset role;
+select atteso('una scheda sola per D''Amico, D''Arco e De Luca',
+  (select count(*)::text from persone where nome_compatto(cognome) in ('damico', 'darco', 'deluca')), '3');
+
+\echo ''
 \echo '--- eliminare una richiesta: accolta, tiene i dati della scheda ---'
 -- Per chi arriva dal modulo nascita, codice fiscale, residenza e genitore
 -- stanno solo nella richiesta accolta: eliminarla li toglie alla scheda.

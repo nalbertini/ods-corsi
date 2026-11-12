@@ -275,7 +275,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'salva_bozza_sito')
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'sito_pagine_pubbliche')),
   ('53-codice-fiscale-stesso-nome.sql', 'accogliere aggancia dal codice fiscale solo chi ha lo stesso nome',
-    exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%lower(p.cognome) = lower(r.cognome)%')),
+    exists (select 1 from dentro where nome = 'accogli_iscrizione' and (corpo like '%lower(p.cognome) = lower(r.cognome)%' or corpo like '%nome_compatto(p.cognome) = nome_compatto(r.cognome)%'))),
   ('90-omonimi-codice-fiscale.sql', 'accogliere non aggancia l''omonimo che ha già un altro codice fiscale',
     exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%a.codice_fiscale <> r.codice_fiscale%')),
   ('54-pagamenti-diretti.sql', 'i pagamenti fatti a mano, senza ricevuta',
@@ -707,6 +707,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'saldo_mancano' and corpo like '%quota_in_segreteria%')
     and exists (select 1 from dentro where nome = 'corso_importo' and corpo like '%corso_in_segreteria%')
     and exists (select 1 from dentro where nome = 'satispay_corsi_chi' and corpo like '%corso_in_segreteria%')
-    and exists (select 1 from dentro where nome = 'iscritto_scheda_di' and corpo like '%quota_della_segreteria%'))
+    and exists (select 1 from dentro where nome = 'iscritto_scheda_di' and corpo like '%quota_della_segreteria%')),
+  -- Rifà `accogli_iscrizione` di 100: rilanciando 06, 44, 45, 53, 90, 95, 99 o 100, il controllo torna «manca».
+  ('148-nome-compatto.sql', 'accogliere riconosce lo stesso nome scritto con un altro apostrofo, accento o trattino',
+    exists (select 1 from dentro where nome = 'nome_compatto')
+    and exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%nome_compatto(p.cognome) = nome_compatto(r.cognome)%'))
 ) as x(file, cosa, c)
 order by file, cosa;
