@@ -53,7 +53,7 @@ import {
   type MovimentoManuale,
   type IconaConti,
   iconaCassa,
-  lineaVoce,
+  lineaPersona,
   tipoMovimento,
   type RigaMovimento,
   type VoceContabile,
@@ -538,6 +538,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
             )}
             {trovate.slice(0, viste).map((r) => {
               const e = dellEstratto.get(r.id)
+              const persona = lineaPersona(r, r.personaId ? nomiPersone.get(r.personaId) ?? (collegatoAMano(r) ? 'Persona collegata' : '') : '')
               return (
               <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} data-scelto={aperto?.id === r.id} data-scelta={scelti.has(r.id)} data-senza-casella={!cambiabile(r)} data-da-sistemare={rigaDaSistemare(r)} onClick={() => { if (r.origine !== 'movimento' && r.personaId && onPersona) onPersona(r.personaId); else { setScrivo(null); setAperto(r) } }}>
                 <span role="cell" className="sg-scelta-riga" onClick={(e) => e.stopPropagation()}>
@@ -548,7 +549,6 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
                   <button type="button" className="sg-riga-apri">{r.descrizione}</button>
                   {/* Gli stati stanno accanto alla descrizione, pallino e parola come in ogni elenco. */}
                   <span className="sg-stati-riga">
-                    {originiMovimento(r) && <SegnoStato tono="nota" parola={originiMovimento(r) ?? ''} />}
                     {r.annullato && <SegnoStato tono="rosso" parola="Annullato" />}
                     {/* Lo stato del collegamento alla persona sta accanto alla descrizione: la colonna PERSONA non c'è più. */}
                     {r.personaId && collegatoAMano(r) && <SegnoStato tono="verde" parola="Collegato" />}
@@ -558,8 +558,8 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
                   </span>
                   <span className="sg-sotto-movimento">
                     <span className="sg-solo-telefono">{[tipoMovimento(r).nome, r.tipo === 'giroconto' ? '' : `${r.tipo === 'entrata' ? '+ ' : '− '}${soldi(r.importo)}`, dataRicevuta(r.data), r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)].filter(Boolean).join(' · ')}</span>
-                    <span>{lineaVoce(r, r.personaId ? nomiPersone.get(r.personaId) ?? (collegatoAMano(r) ? 'Persona collegata' : '') : '')}</span>
-                    {r.sotto && <span className="sg-sotto-extra">{r.sotto}</span>}
+                    {persona && <span>{persona}</span>}
+                    {r.sotto && <span className={persona ? 'sg-sotto-extra' : undefined}>{r.sotto}</span>}
                   </span>
                 </span>
                 <span role="cell" className="sg-cella-icona">
