@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .et { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .val { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .velo { background: rgba(13, 42, 61, 0.55); }
+    .finestra { display: flex; flex-direction: column; background: #ffffff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; color: #0d2a3d; }
+    .nuovo { box-shadow: inset 4px 0 0 #f4c31b; padding-left: 14px; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 32px; }
+    .cella { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .tab { display: grid; gap: 14px; align-items: center; padding: 8px 14px; min-height: 48px; border-bottom: 1px solid #cfe6f4; background: #ffffff; font-size: 15px; }
+    .num { font-variant-numeric: tabular-nums; text-align: right; }
+    .link { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px; }
+    .piede { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 14px 28px 18px; border-top: 2px solid #cfe6f4; }
+  </style>
+</helmet>
+<!-- PROPOSTA, bonifico spuntato: data e cassa diventano quelle del bonifico e non si cambiano; il riepilogo dice «già in banca» e la descrizione della banca resta; il tasto dice «Abbina al bonifico». Togliendo la spunta torna come prima. Nomi inventati. -->
+<div style="padding: 24px; width: 900px"><section style="display: flex; flex-direction: column; gap: 14px; max-width: 820px; padding: 22px 24px; background: #ffffff; border: 2px solid #0d2a3d">
+    <span class="big" style="font-size: 24px">SEGNA PAGATO · ANNA GIALLI</span>
+    <div style="display: flex; flex-direction: column; gap: 6px"><span class="et">LE RICEVUTE CHE PAGHI</span>
+        <div style="display: flex; flex-direction: column; border-top: 1px solid #cfe6f4"><div class="tab" style="grid-template-columns: 44px minmax(0,1fr) 120px"><span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px"><span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #0d2a3d; border-radius: 4px; background: #0d2a3d; color: #ffffff; font-size: 16px; font-weight: 700">✓</span></span><span>Settembre 2026 · fatta il 2 ottobre 2026</span><span class="num" style="font-weight: 700">134,80 €</span></div><div class="tab" style="grid-template-columns: 44px minmax(0,1fr) 120px"><span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px"><span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #0d2a3d; border-radius: 4px; background: #0d2a3d; color: #ffffff; font-size: 16px; font-weight: 700">✓</span></span><span>Ottobre 2026 · fatta il 2 novembre 2026</span><span class="num" style="font-weight: 700">160,00 €</span></div></div>
+        <span class="frase">Solo le sue ricevute fatte e non ancora pagate. Un bonifico che paga più mesi è un movimento solo.</span>
+      </div>
+    <section aria-label="Forse è già in banca" style="display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #ffffff; border: 2px solid #cfe6f4; box-shadow: inset 4px 0 0 #8f6a00">
+      <span class="et">FORSE È GIÀ IN BANCA</span>
+      <span style="font-size: 15px; line-height: 1.4">Questo bonifico è già nel Conto Corrente, con lo stesso importo delle ricevute spuntate e il nome di Anna Gialli. Se è questo pagamento, spuntalo: così non si conta due volte.</span>
+      <div style="display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #cfe6f4; padding-top: 10px">
+        <span style="font-size: 15px; line-height: 1.4">Bonifico in uscita del 04/11/2026 da <b class="num">294,80 €</b>, da classificare: «TIB studio Training e salute di Anna Gialli».</span>
+        <label style="display: flex; gap: 10px; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600"><input type="checkbox" checked style="width: 22px; height: 22px; accent-color: #0d2a3d"> È questo: è il pagamento di queste ricevute</label>
+      </div>
+    </section>
+    <div class="due"><div class="cella"><span class="et">DATA DEL PAGAMENTO</span><span class="val">04/11/2026 · quella del bonifico</span></div><div class="cella"><span class="et">CASSA</span><span class="val">Conto Corrente · quella del bonifico</span></div></div>
+    <div class="due" style="padding: 14px 16px; border: 2px solid #cfe6f4"><div class="cella"><span class="et">TIPO</span><span class="val">Uscita già in banca</span></div><div class="cella"><span class="et">CASSA</span><span class="val">Conto Corrente</span></div><div class="cella"><span class="et">VOCE</span><span class="val">Compensi istruttori</span></div><div class="cella"><span class="et">IMPORTO</span><span class="val">294,80 €</span></div><div class="cella" style="grid-column: span 2"><span class="et">DESCRIZIONE</span><span class="val">TIB studio Training e salute di Anna Gialli <span class="frase">· resta quella della banca</span></span></div></div>
+    <span class="frase">Non nasce un’uscita nuova: il bonifico va ad Anna Gialli su «Compensi istruttori» e le ricevute risultano pagate il 04/11/2026. Se va annullato, si annulla da CONTABILITÀ → MOVIMENTI e le ricevute tornano da pagare.</span>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap"><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Lascia stare" variante="linea" hint-size="152px,48px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Abbina al bonifico 294,80 €" variante="pieno" hint-size="286px,48px"></dc-import></div>
+  </section></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":900,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

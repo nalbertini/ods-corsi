@@ -725,6 +725,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_trigger where tgname = 'corsi_archiviato_il' and tgrelid = 'public.corsi'::regclass)),
   -- Rifà `abbina_ricevuta_movimento` del 135: se si rilancia 135 dopo, va rilanciato anche questo.
   ('151-abbina-famiglia-da-classificare.sql', 'il bonifico del genitore o Da classificare si abbina alla ricevuta in Bonifico',
-    position('da_classificare' in pg_get_functiondef('public.abbina_ricevuta_movimento(uuid,uuid)'::regprocedure)) > 0)
+    position('da_classificare' in pg_get_functiondef('public.abbina_ricevuta_movimento(uuid,uuid)'::regprocedure)) > 0),
+  ('152-compensi-dal-bonifico.sql', 'i compensi si pagano con un bonifico già in banca',
+    to_regprocedure('public.abbina_compensi_movimento(uuid[],uuid)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

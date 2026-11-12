@@ -333,5 +333,115 @@ console.log('\n7. senza 81-compensi-pagati.sql: dice cosa lanciare')
     'dice di lanciare 81-compensi-pagati.sql')
 }
 
+console.log('\n8. il bonifico già in banca: quali uscite propone «Segna pagato»')
+{
+  const casse = [{ id: 'cc', nome: 'Conto Corrente', saldoIniziale: 0 }, { id: 'cx', nome: 'Cassa Contanti', saldoIniziale: 0 }]
+  const voci = [
+    { id: 'vc', nome: 'Compensi istruttori', tipo: 'uscita', diSistema: true, attiva: true },
+    { id: 'vd', nome: 'Da classificare', tipo: 'uscita', diSistema: false, attiva: true },
+    { id: 'va', nome: 'Affitto sala', tipo: 'uscita', diSistema: false, attiva: true },
+  ]
+  const tecnico = { id: 'T', nome: 'Tiziano', cognome: 'Bartocci' }
+  const mv = (id, x = {}) => ({ id, tipo: 'uscita', data: '2026-11-04', importo: 29480, voceId: 'vd', cassaId: 'cc', descrizione: 'TIB studio Training e salute di Tiziano Bartocci', creatoIl: '2026-11-05T10:00:00Z', origineImport: `banca:20261104:x:${id}`, ...x })
+  const scelte = [ric('r1', 'T', '2026-09-01', 13480), ric('r2', 'T', '2026-10-01', 16000)]
+  const proposti = (movimenti, ricevute = scelte, chi = tecnico, tutte = ricevute) => sicuro(() => {
+    const x = c.bonificiPerCompensi(movimenti, tutte, ricevute, chi, casse, voci)
+    return [x.colNome.map((m) => m.id), x.senzaNome.map((m) => m.id)]
+  })
+  ok('Bartocci: il bonifico Da classificare col suo nome, settembre e ottobre insieme', proposti([mv('b')]), [['b'], []])
+  ok('anche su «Compensi istruttori»', proposti([mv('b', { voceId: 'vc' })]), [['b'], []])
+  ok('anche già collegato a lui, anche senza il nome', proposti([mv('b', { personaId: 'T', descrizione: 'BONIFICO SEPA' })]), [['b'], []])
+  ok('un centesimo in più no', proposti([mv('b', { importo: 29481 })]), [[], []])
+  ok('solo ottobre spuntato: 160 € non sono 294,80', proposti([mv('b')], [scelte[1]]), [[], []])
+  ok('nessuna ricevuta spuntata: niente', proposti([mv('b')], []), [[], []])
+  ok('dalla Cassa Contanti no', proposti([mv('b', { cassaId: 'cx' })]), [[], []])
+  ok('su un\'altra voce no', proposti([mv('b', { voceId: 'va' })]), [[], []])
+  ok('collegato a un altro no', proposti([mv('b', { personaId: 'Z' })]), [[], []])
+  ok('un\'entrata no', proposti([mv('b', { tipo: 'entrata' })]), [[], []])
+  ok('annullato no', proposti([mv('b', { annullatoIl: '2026-11-06T10:00:00Z' })]), [[], []])
+  ok('da Satispay no', proposti([mv('b', { satispayId: 's1' })]), [[], []])
+  ok('già il pagamento di altre ricevute no', proposti([mv('b')], scelte, tecnico, [...scelte, ric('r9', 'T', '2026-08-01', 29480, { movimentoId: 'b', pagataIl: '2026-11-04' })]), [[], []])
+  ok('una ricevuta annullata che l\'aveva non lo tiene', proposti([mv('b')], scelte, tecnico, [...scelte, ric('r9', 'T', '2026-08-01', 29480, { movimentoId: 'b', annullataIl: '2026-11-05T10:00:00Z' })]), [['b'], []])
+  // La fine di ottobre è il 31: 45 giorni dopo è il 15/12, 45 prima il 16/09.
+  ok('il 15/12, a 45 giorni dalla fine di ottobre, sì', proposti([mv('b', { data: '2026-12-15' })]), [['b'], []])
+  ok('il 16/12, a 46 giorni, no', proposti([mv('b', { data: '2026-12-16' })]), [[], []])
+  ok('il 16/09, 45 giorni prima, sì', proposti([mv('b', { data: '2026-09-16' })]), [['b'], []])
+  ok('il 15/09, 46 giorni prima, no', proposti([mv('b', { data: '2026-09-15' })]), [[], []])
+  ok('il nome per intero, comunque scritto: «BARTOCCI TIZIANO»', proposti([mv('b', { descrizione: 'BONIFICO A BARTOCCI TIZIANO' })]), [['b'], []])
+  ok('il solo cognome non basta: va fra quelli senza nome', proposti([mv('b', { descrizione: 'TIB BARTOCCI SRL' })]), [[], ['b']])
+  ok('senza nome, stesso importo e nei giorni: a parte', proposti([mv('b', { descrizione: 'BONIFICO SEPA TIB SRL' })]), [[], ['b']])
+  ok('col nome di un altro: a parte anche lui', proposti([mv('b', { descrizione: 'Mario Rossi' })]), [[], ['b']])
+  ok('più bonifici: tutti, dal più vicino alla fine del mese',
+    proposti([mv('lontano', { data: '2026-12-10' }), mv('vicino', { data: '2026-11-02' }), mv('mezzo', { data: '2026-11-20', descrizione: 'SEPA' }), mv('pari', { data: '2026-10-20' })]),
+    [['vicino', 'pari', 'lontano'], ['mezzo']])
+  ok('il mese più recente conta, anche spuntato per primo', proposti([mv('b', { data: '2026-12-15' })], [scelte[1], scelte[0]]), [['b'], []])
+  ok('le extra contano nel totale e non nella data: il mese è quello della ricevuta',
+    proposti([mv('b', { importo: 34480 })], [...scelte, ric('x1', 'T', '2026-10-01', 5000, { extra: 'Stage' })]), [['b'], []])
+}
+
+console.log('\n9. la segreteria di prova abbina il bonifico invece di scrivere un\'uscita')
+{
+  const s = m.creaSegreteriaProva()
+  const casse = await s.casse()
+  const conto = casse.find((x) => x.nome === 'Conto Corrente')?.id
+  await s.salvaSaldoCassa(conto, 0, '2025-08-01')
+  const voci = await s.voci()
+  const compensi = voci.find((v) => v.nome === 'Compensi istruttori')?.id
+  const tiziano = await s.salvaPersonale({ nome: 'Tiziano', cognome: 'Bartocci', ruolo: 'istruttore' })
+  const ivo = await s.salvaPersonale({ nome: 'Ivo', cognome: 'Tecnico', ruolo: 'istruttore' })
+  const BASE = {
+    righe: [{ corso: 'Judo kids', lezioni: 6, minuti: 720, centesimiOra: 1500, importo: 18000 }],
+    motivo: null, qualifica: 'Allenatore', data: '2025-11-02',
+    tecnico: { nome: 'Tiziano', cognome: 'Bartocci', codiceFiscale: 'BRTTZN80A01L219X', iban: 'IT60X0542811101000000123456' },
+  }
+  // Il conto delle lezioni resta 180 €: l'importo si corregge a mano, col motivo.
+  const fai = (personaId, mese, importo) => s.faiRicevutaCompenso({ ...BASE, personaId, mese, calcolato: 18000, importo, motivo: 'Corretto a mano' })
+  const set = await fai(tiziano, '2025-09-01', 13480)
+  const ott = await fai(tiziano, '2025-10-01', 16000)
+  const iOtt = await fai(ivo, '2025-10-01', 29480)
+  await s.importaMovimentiBanca([
+    { chiave: 'banca:20251104:p:0', data: '2025-11-04', importo: 29480, tipo: 'uscita', voce: 'Da classificare', descrizione: 'TIB studio Training e salute di Tiziano Bartocci' },
+    { chiave: 'banca:20251105:p:0', data: '2025-11-05', importo: 16000, tipo: 'uscita', voce: 'Da classificare', descrizione: 'Tiziano Bartocci' },
+  ])
+  const dalla = async (chiave) => (await s.movimenti()).find((x) => x.origineImport === chiave)
+  const bonifico = await dalla('banca:20251104:p:0')
+  const piccolo = await dalla('banca:20251105:p:0')
+  const quanti = (await s.movimenti()).length
+  const sue = async (id) => (await s.ricevuteCompensi()).find((x) => x.id === id)
+
+  ok('importo diverso no', await rifiuta(() => s.abbinaCompensiMovimento([set.id, ott.id], piccolo?.id)), 'rifiutato')
+  ok('due tecnici no', await rifiuta(() => s.abbinaCompensiMovimento([set.id, iOtt.id], bonifico?.id)), 'rifiutato')
+  ok('un movimento che non c\'è no', await rifiuta(() => s.abbinaCompensiMovimento([set.id, ott.id], 'non-ce')), 'rifiutato')
+  ok('nessuna ricevuta no', await rifiuta(() => s.abbinaCompensiMovimento([], bonifico?.id)), 'rifiutato')
+  await prova('settembre e ottobre di Tiziano al bonifico del 04/11', () => s.abbinaCompensiMovimento([ott.id, set.id], bonifico?.id), undefined)
+  ok('nessun movimento in più', (await s.movimenti()).length, quanti)
+  await prova('le ricevute col bonifico e il suo giorno', async () => [await sue(set.id), await sue(ott.id)].map((x) => [x.movimentoId === bonifico?.id, campo(x.pagataIl)]), [[true, '2025-11-04'], [true, '2025-11-04']])
+  await prova('il bonifico prende Tiziano e «Compensi istruttori», la descrizione resta',
+    async () => { const x = await dalla('banca:20251104:p:0'); return [x?.personaId === tiziano, x?.voceId === compensi, x?.descrizione] },
+    [true, true, 'TIB studio Training e salute di Tiziano Bartocci'])
+  ok('lo stesso bonifico per Ivo no', await rifiuta(() => s.abbinaCompensiMovimento([iOtt.id], bonifico?.id)), 'rifiutato')
+  await prova('e non è più proposto', async () => c.bonificiPerCompensi(await s.movimenti(), await s.ricevuteCompensi(), [await sue(iOtt.id)], { id: ivo, nome: 'Ivo', cognome: 'Tecnico' }, casse, await s.voci()).senzaNome.length, 0)
+  await prova('annullato il bonifico, tornano da pagare', async () => { await s.annullaMovimento(bonifico?.id); return [await sue(set.id), await sue(ott.id)].map((x) => [campo(x.movimentoId), campo(x.pagataIl)]) }, [[null, null], [null, null]])
+}
+
+console.log('\n10. col database vero: abbina_compensi_movimento, e finché non c\'è')
+{
+  const chiesto = []
+  const catena = (risposta) => {
+    const x = new Proxy(() => x, { get: (_, k) => (k === 'then' ? (f, ko) => Promise.resolve(risposta).then(f, ko) : () => x), apply: () => x })
+    return x
+  }
+  const con = (errore) => m.creaSegreteriaSupabase({
+    auth: { getSession: async () => ({ data: { session: null } }) },
+    from: () => catena({ data: null, error: null }),
+    rpc: (f, args) => (chiesto.push([f, args]), catena({ data: errore ? null : { id: 'mv1' }, error: errore ?? null })),
+  })
+  await prova('abbina con abbina_compensi_movimento, e non rende niente', () => con().abbinaCompensiMovimento(['r1', 'r2'], 'mv1'), undefined)
+  ok('la funzione giusta, coi nomi giusti', chiesto, [['abbina_compensi_movimento', { ricevute: ['r1', 'r2'], movimento: 'mv1' }]])
+  ok('senza il 152: dice cosa lanciare',
+    await errore(() => con({ code: 'PGRST202', message: 'Could not find the function public.abbina_compensi_movimento(movimento, ricevute) in the schema cache' }).abbinaCompensiMovimento(['r1'], 'mv1')),
+    'Pagare i compensi con un bonifico già in banca non è ancora attivo sul database: va lanciato 152-compensi-dal-bonifico.sql')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

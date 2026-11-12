@@ -20,7 +20,9 @@ import { delMese, type MiaPresenza } from './ore'
 import { euro } from './ricevute'
 import { QUALIFICHE, stagioneDi, type Lettera, type TecnicoLettera } from './lettere'
 import type { LezioneSenzaIstruttore, PresenzaIstruttoreSeg, Tariffa } from './segreteria'
-import { giornoChiuso, type Cassa, type ChiusuraCassa } from './contabilita'
+import { giornoChiuso, NOME_CASSA_CONTO, type Cassa, type ChiusuraCassa, type MovimentoManuale, type VoceContabile } from './contabilita'
+import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
+import { paroleCercate, somiglia } from './nomi'
 
 export interface RigaCompenso {
   corso: string
@@ -465,6 +467,48 @@ export const pagabili = <R extends Pick<RicevutaCompenso, 'personaId' | 'mese' |
 
 /** La voce di sistema dei pagamenti dei tecnici in CONTABILITÀ (`81-compensi-pagati.sql`). */
 export const VOCE_COMPENSI = 'Compensi istruttori'
+
+/** Il bonifico di un compenso parte entro tanti giorni dalla fine del mese più recente che paga (o prima). */
+export const GIORNI_BONIFICO_COMPENSI = 45
+
+const giorniFra = (a: string, b: string) => Math.abs(Date.parse(`${a}T12:00:00Z`) - Date.parse(`${b}T12:00:00Z`)) / 86_400_000
+// L'ultimo giorno del mese di `AAAA-MM-01`, `AAAA-MM-GG`.
+const fineDelMese = (mese: string) => {
+  const [a, m] = mese.split('-').map(Number)
+  return `${mese.slice(0, 8)}${String(new Date(Date.UTC(a, m, 0)).getUTCDate()).padStart(2, '0')}`
+}
+
+/**
+ * Le uscite già nel Conto Corrente che possono essere il pagamento delle ricevute `scelte` (152), dalla data più vicina
+ * alla fine del mese più recente: non annullate, non Satispay, su «Compensi istruttori» o «Da classificare», senza
+ * persona o col tecnico, non già il pagamento di altre ricevute (`ricevute`, tutte), con lo stesso importo e entro
+ * `GIORNI_BONIFICO_COMPENSI`. `colNome` ha il nome e il cognome del tecnico nella descrizione (o il tecnico collegato),
+ * `senzaNome` no: le descrizioni della banca sono spesso sigle, e si sceglie sempre a mano.
+ * Le stesse regole in `abbina_compensi_movimento`, che il nome non lo guarda.
+ */
+export function bonificiPerCompensi(
+  movimenti: MovimentoManuale[],
+  ricevute: Array<Pick<RicevutaCompenso, 'movimentoId' | 'annullataIl'>>,
+  scelte: Array<Pick<RicevutaCompenso, 'mese' | 'importo'>>,
+  tecnico: { id: string; nome: string; cognome: string },
+  casse: Cassa[],
+  voci: VoceContabile[],
+): { colNome: MovimentoManuale[]; senzaNome: MovimentoManuale[] } {
+  if (!scelte.length) return { colNome: [], senzaNome: [] }
+  const totale = scelte.reduce((s, r) => s + r.importo, 0)
+  const fine = fineDelMese(scelte.map((r) => r.mese).sort().at(-1) ?? '')
+  const usati = new Set(ricevute.filter((r) => !r.annullataIl && r.movimentoId).map((r) => r.movimentoId))
+  const conto = casse.find((c) => c.nome === NOME_CASSA_CONTO)?.id
+  const buone = new Set(voci.filter((v) => v.tipo === 'uscita' && (v.nome === VOCE_COMPENSI || v.nome === VOCE_DA_CLASSIFICARE)).map((v) => v.id))
+  const possibili = movimenti
+    .filter((m) => m.tipo === 'uscita' && !m.annullatoIl && !m.satispayId && m.cassaId === conto && buone.has(m.voceId ?? '')
+      && (!m.personaId || m.personaId === tecnico.id) && m.importo === totale && !usati.has(m.id) && giorniFra(m.data, fine) <= GIORNI_BONIFICO_COMPENSI)
+    .sort((a, b) => giorniFra(a.data, fine) - giorniFra(b.data, fine) || a.data.localeCompare(b.data) || a.id.localeCompare(b.id))
+  // Il nome intero: ogni parola di nome e cognome è l'inizio di una parola della descrizione (`somiglia`, al contrario).
+  const parole = paroleCercate(`${tecnico.nome} ${tecnico.cognome}`)
+  const colNome = (m: MovimentoManuale) => m.personaId === tecnico.id || somiglia({ nome: m.descrizione, cognome: '' }, parole)
+  return { colNome: possibili.filter(colNome), senzaNome: possibili.filter((m) => !colNome(m)) }
+}
 
 /**
  * Perché il pagamento non si può segnare; `null` se va. Le stesse regole di
