@@ -38,15 +38,24 @@
     </span>
   </sc-if>
   <sc-if value="{{vuota}}" hint-placeholder-val="{{ false }}"><span></span></sc-if>
+  <sc-if value="{{conAbbina}}" hint-placeholder-val="{{ false }}">
+    <span style="grid-column: 2 / 5; font-size: 14px; line-height: 1.35; color: {{tonoAbbina}}">{{testoAbbina}}</span>
+    <span style="display: flex; gap: 8px; justify-content: flex-end">
+      <sc-if value="{{conTogli}}" hint-placeholder-val="{{ false }}"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="rosso" label="Togli" larghezza="104px" hint-size="104px,44px"></dc-import></sc-if>
+      <sc-if value="{{conAbbinaTasto}}" hint-placeholder-val="{{ false }}"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Abbina" larghezza="104px" hint-size="104px,44px"></dc-import></sc-if>
+    </span>
+  </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"stato":{"editor":"enum","options":["nuova","da controllare","duplicata","da decidere","scartata"],"default":"nuova"},"data":{"editor":"text","default":"29/10/2026"},"operazione":{"editor":"text","default":"BONIFICO SEPA"},"testo":{"editor":"text","default":"Da BIANCHI ANNA per quota trimestre judo"},"tipologia":{"editor":"text","default":"Quota trimestrale"},"persona":{"editor":"text","default":"Anna Bianchi"},"voce":{"editor":"text","default":"Rossi Luca"},"dettaglio":{"editor":"text","default":"ricevuta n. 119 · 26/10/2026"},"importo":{"editor":"text","default":"+ 120,00 €"},"rifiutabile":{"editor":"boolean","default":true},"motivo":{"editor":"text","default":""},"$preview":{"width":1100,"height":70}}'>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["nuova","da controllare","duplicata","da decidere","scartata"],"default":"nuova"},"data":{"editor":"text","default":"29/10/2026"},"operazione":{"editor":"text","default":"BONIFICO SEPA"},"testo":{"editor":"text","default":"Da BIANCHI ANNA per quota trimestre judo"},"tipologia":{"editor":"text","default":"Quota trimestrale"},"persona":{"editor":"text","default":"Anna Bianchi"},"voce":{"editor":"text","default":"Rossi Luca"},"dettaglio":{"editor":"text","default":"ricevuta n. 119 · 26/10/2026"},"importo":{"editor":"text","default":"+ 120,00 €"},"rifiutabile":{"editor":"boolean","default":true},"motivo":{"editor":"text","default":""},"abbina":{"editor":"enum","options":["niente","con la ricevuta","tolta","più ricevute","contesa"],"default":"niente"},"ricevuta":{"editor":"text","default":"n. 324/2026 di <b>Rus Irene</b>, 09/11/2026, 220,00 €"},"$preview":{"width":1100,"height":70}}'>
 // COSTRUITA (ImportaBanca.tsx, `.sg-banca-riga`; docs/design-canvas/importa-banca-snella): una riga del file della banca nella pagina «Importa dalla banca».
 // Griglia 84 / 1fr (almeno 160) / 190 / 104 / 216, gap 12, padding 6px 12px, alta almeno 56, filetto 1px `line-soft`; sotto i 1200px data e importo in alto, il resto sotto.
 // Niente colonna di stato: lo dice il gruppo (`.sg-banca-gruppo`: forse già nell'app su `tinta-giallo` coi tasti Conferma e Tutti nuovi, movimenti nuovi in `verde-testo`, già nell'app, scartate).
 // La descrizione ha il tipo d'operazione della banca sopra (11px 700 `dim`) e il testo senza codici TRN; `nota` gialla 13px per i contanti e per «Nome diverso».
 // Nuova e da controllare: TIPOLOGIA (select `sg-campo`) e, in fondo a destra, il campo PERSONA quando la voce la vuole (`persona` vuota = «Assegna», bordo e testo `giallo-testo`); apre CHI HA PAGATO?.
 // Da decidere: al posto della tipologia il movimento dell'app che potrebbe essere (nome in grassetto, sotto ricevuta e data), in fondo «Conferma» (giallo) e «Nuovo».
+// Sotto una riga nuova che entra con la persona, la ricevuta (`.sg-banca-abbina`, colonne 2–4, 14px): verde `verde-testo` «Va con la ricevuta …» e «Togli» (rosso) nell'ultima colonna;
+// tolta in `dim` «Non la abbino: resta in «Da assegnare», ci pensi tu.» e «Abbina» (linea); più ricevute o contesa in `giallo-testo`, senza tasto: la sceglie la segreteria in «Da assegnare».
 // Duplicata (già nell'app): il movimento dell'app a cui corrisponde; «Nuovo» solo se `rifiutabile`. Scartata: il motivo nel testo, niente altro. I tasti sempre nell'ultima colonna, larghi 104.
 class Component extends DCLogic {
   renderVals() {
@@ -57,6 +66,8 @@ class Component extends DCLogic {
     const persona = p.persona ?? '';
     const conPersona = entra && persona !== '-';
     const conTasti = decide || (stato === 'duplicata' && p.rifiutabile !== false);
+    const ab = p.abbina || 'niente';
+    const ric = (p.ricevuta ?? '').replace(/<[^>]+>/g, '');
     const nota = stato === 'da controllare' ? 'Contanti: controlla che non siano già nella cassa contanti.' : decide ? (p.motivo ?? '') : '';
     return {
       data: p.data ?? '', operazione: p.operazione ?? '', testo: stato === 'scartata' ? (p.motivo || 'La data non si legge. Correggila nel file e riprova.') : (p.testo ?? ''), importo: p.importo ?? '',
@@ -64,6 +75,9 @@ class Component extends DCLogic {
       scartata: stato === 'scartata', conPersona, persona: persona || 'Assegna', bordoPersona: persona ? '#14709f' : '#8f6a00',
       conTasti, decide, conNuovo: decide || p.rifiutabile !== false, vuota: !conPersona && !conTasti,
       conNota: !!nota, nota,
+      conAbbina: entra && ab !== 'niente', tonoAbbina: { 'con la ricevuta': '#0b7a33', tolta: '#46606f' }[ab] ?? '#8f6a00',
+      testoAbbina: { 'con la ricevuta': `Va con la ricevuta ${ric}`, tolta: `Non la abbino: resta in «Da assegnare», ci pensi tu. (Ricevuta ${ric})`, 'più ricevute': '2 ricevute possibili di Rus Irene (n. 323/2026 e 324/2026): la scegli in «Da assegnare»', contesa: 'Questo e il bonifico del 06/11 vogliono la stessa ricevuta: la scegli in «Da assegnare»' }[ab] ?? '',
+      conTogli: ab === 'con la ricevuta', conAbbinaTasto: ab === 'tolta',
     };
   }
 }

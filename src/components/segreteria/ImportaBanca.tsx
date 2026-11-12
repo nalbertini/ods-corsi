@@ -39,7 +39,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const righe = useMemo(() => (coperti.dato ? segnaIncassiCoperti(tutte, coperti.dato.righe ?? []) : null), [tutte, coperti.dato])
   const [lettura, setLettura] = useState<LetturaBanca | null>(null)
   const [scelte, setScelte] = useState<Record<string, string>>({})
-  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[]; senzaAbbinare: string | null } | null>(null)
+  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[]; senzaAbbinare: string | null; incassi: number } | null>(null)
   // Le ricevute libere a cui può andare un bonifico che entra con la persona; se non si leggono, si importa senza abbinare.
   const archivio = useCarica(async () => {
     const [ricevute, persone] = await Promise.all([d.ricevute(), d.persone()])
@@ -194,7 +194,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           guasto ??= erroreSegreteria(e)
         }
       }
-      setScritti({ n, classificati, guasto, abbinati, nonAbbinati, senzaAbbinare })
+      setScritti({ n, classificati, guasto, abbinati, nonAbbinati, senzaAbbinare, incassi: a.entrano.filter((m) => m.tipo === 'entrata').length })
     }, undefined, () => {
       setLettura(null)
       onRileggi()
@@ -237,15 +237,15 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           <span style={{ fontSize: 15 }}>
             Sono nel <b>Conto Corrente</b>
             {scritti.classificati ? <>: <b>{scritti.classificati === 1 ? '1 ha' : `${scritti.classificati} hanno`} la voce che hai scelto</b>{scritti.n > scritti.classificati ? <>, {scritti.n - scritti.classificati === 1 ? 'l’altro è' : `gli altri ${scritti.n - scritti.classificati} sono`} in «Da classificare»: la voce la scegli dopo, con Cambia voce</> : ''}.</> : <>, in «Da classificare»: la voce la scegli dopo, con Cambia voce.</>}{' '}
-            {scritti.senzaAbbinare ? null : scritti.abbinati.length ? <><b>{scritti.abbinati.length === 1 ? '1 bonifico è già con la sua ricevuta' : `${scritti.abbinati.length} bonifici sono già con la loro ricevuta`}</b> ({scritti.abbinati.join(', ')}); gli altri incassi non hanno ricevuta.</> : 'Gli incassi importati non hanno ricevuta.'}
+            {scritti.senzaAbbinare ? null : scritti.abbinati.length ? <><b>{scritti.abbinati.length === 1 ? '1 bonifico è già con la sua ricevuta' : `${scritti.abbinati.length} bonifici sono già con la loro ricevuta`}</b> ({scritti.abbinati.join(', ')}){scritti.incassi > scritti.abbinati.length ? '; gli altri incassi non hanno ricevuta.' : '.'}</> : 'Gli incassi importati non hanno ricevuta.'}
           </span>
           {scritti.senzaAbbinare && (
-            <span role="alert" className="sg-banca-avviso" style={{ fontSize: 15 }}>
+            <span role="alert" className="sg-banca-avviso">
               <b>Le ricevute non si sono abbinate</b>: {scritti.senzaAbbinare}. I bonifici sono in «Da assegnare», con la persona: li abbini da lì.
             </span>
           )}
           {scritti.nonAbbinati.length > 0 && (
-            <span role="alert" className="sg-banca-avviso" style={{ fontSize: 15 }}>
+            <span role="alert" className="sg-banca-avviso">
               <b>{scritti.nonAbbinati.length === 1 ? '1 bonifico non si è abbinato' : `${scritti.nonAbbinati.length} bonifici non si sono abbinati`}</b>: {scritti.nonAbbinati.join('; ')}. {scritti.nonAbbinati.length === 1 ? 'È' : 'Sono'} in «Da assegnare».
             </span>
           )}
