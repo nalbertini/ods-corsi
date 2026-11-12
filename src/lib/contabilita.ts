@@ -577,11 +577,12 @@ export type IconaConti = 'banconota' | 'banca' | 'telefono' | 'tessera' | 'perso
 const ICONE_CASSE: Record<string, IconaConti> = { [NOME_CASSA_CONTANTI]: 'banconota', [NOME_CASSA_CONTO]: 'banca', [NOME_CASSA_SATISPAY]: 'telefono', [NOME_CASSA_CARTA]: 'tessera' }
 export const iconaCassa = (nome: string): IconaConti | null => ICONE_CASSE[nome] ?? null
 
-/** Il tipo di un movimento, per la colonna TIPO dell'elenco: il nome e l'icona (quelle di `ICONE_CONTI`). */
-export const tipoMovimento = (r: Pick<RigaMovimento, 'origine' | 'tipo'>): { nome: string; icona: IconaConti | 'frecce' } =>
-  r.tipo === 'giroconto' ? { nome: 'Giroconto', icona: 'frecce' }
-  : r.origine !== 'movimento' ? { nome: 'Incasso iscritto', icona: 'tessera' }
-  : { nome: r.tipo === 'entrata' ? 'Entrata' : 'Uscita', icona: 'banconota' }
+/** Il tipo di un movimento, per la colonna TIPO dell'elenco: la voce con la sua icona; senza voce, il genere del movimento. */
+export const tipoMovimento = (r: Pick<RigaMovimento, 'origine' | 'tipo' | 'voce'>): { nome: string; icona: IconaConti | 'frecce' } => {
+  if (r.tipo === 'giroconto') return { nome: 'Giroconto', icona: 'frecce' }
+  const genere = r.origine !== 'movimento' ? { nome: 'Incasso iscritto', icona: 'tessera' as const } : { nome: r.tipo === 'entrata' ? 'Entrata' : 'Uscita', icona: 'banconota' as const }
+  return r.voce ? { nome: r.voce, icona: iconaVoce(r.voce) ?? genere.icona } : genere
+}
 
 /**
  * Da dove viene una riga, per la nota nell'elenco e nel movimento aperto: tutti i movimenti si correggono allo stesso modo, qualunque sia l'origine.
@@ -608,11 +609,9 @@ export function testoConDestinatario(descrizioneBanca: string, notaAttuale: stri
   return { descrizione, nota: nota.includes(traccia) ? nota : nota ? `${nota}\n${traccia}` : traccia }
 }
 
-/** La linea sotto il nome di una riga: la voce, e la persona solo se non è già il nome (negli incassi lo è). */
-export const lineaVoce = (r: Pick<RigaMovimento, 'descrizione' | 'voce'>, persona?: string): string => {
-  const uguale = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
-  return [r.voce, persona && !uguale(persona, r.descrizione) ? persona : ''].filter(Boolean).join(' · ')
-}
+/** La linea sotto il nome di una riga: la persona, solo se non è già il nome (negli incassi lo è). La voce sta nella colonna TIPO. */
+export const lineaPersona = (r: Pick<RigaMovimento, 'descrizione'>, persona?: string): string =>
+  persona && persona.trim().toLowerCase() !== r.descrizione.trim().toLowerCase() ? persona : ''
 
 // Le voci le scrive chi cura i conti: l'icona si trova solo per le parole che si riconoscono, il resto resta senza.
 const ICONE_VOCI: [RegExp, IconaConti][] = [

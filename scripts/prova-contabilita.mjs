@@ -1366,11 +1366,10 @@ console.log('\n98. il tipo di un movimento ha una colonna sua, e la riga non rip
   ok('un incasso di un iscritto (da ricevuta o diretto)', [tipo('ricevuta', 'entrata'), tipo('pagamento', 'entrata')], [{ nome: 'Incasso iscritto', icona: 'tessera' }, { nome: 'Incasso iscritto', icona: 'tessera' }])
   ok('un giroconto', tipo('movimento', 'giroconto'), { nome: 'Giroconto', icona: 'frecce' })
   ok('un\'entrata e un\'uscita a mano', [tipo('movimento', 'entrata'), tipo('movimento', 'uscita')], [{ nome: 'Entrata', icona: 'banconota' }, { nome: 'Uscita', icona: 'banconota' }])
-  const voce = (r, persona) => prova(() => m.lineaVoce(r, persona))
-  ok('la linea della voce dice la voce', voce({ descrizione: 'Rossi Giulia', voce: 'Quota associativa' }, undefined), 'Quota associativa')
-  ok('…e la persona solo se non è già il nome della riga', [voce({ descrizione: 'Affitto sala', voce: 'Affitto sala' }, 'Rossi Giulia'), voce({ descrizione: 'Rossi Giulia', voce: 'Quota associativa' }, 'Rossi Giulia')], ['Affitto sala · Rossi Giulia', 'Quota associativa'])
-  ok('…senza badare a maiuscole e spazi', voce({ descrizione: ' ROSSI giulia ', voce: 'Quota associativa' }, 'Rossi Giulia'), 'Quota associativa')
-  ok('un giroconto non ha voce', voce({ descrizione: 'Giroconto da A a B', voce: null }, undefined), '')
+  ok('con la voce, il tipo è la voce con la sua icona', [prova(() => m.tipoMovimento({ origine: 'ricevuta', tipo: 'entrata', voce: 'Quota associativa' })), prova(() => m.tipoMovimento({ origine: 'movimento', tipo: 'uscita', voce: 'Iscrizione gare e stage' }))], [{ nome: 'Quota associativa', icona: 'tessera' }, { nome: 'Iscrizione gare e stage', icona: 'banconota' }])
+  const chi = (r, persona) => prova(() => m.lineaPersona(r, persona))
+  ok('la linea sotto dice la persona solo se non è già il nome della riga', [chi({ descrizione: 'Affitto sala' }, 'Rossi Giulia'), chi({ descrizione: 'Rossi Giulia' }, 'Rossi Giulia'), chi({ descrizione: 'Affitto sala' }, undefined)], ['Rossi Giulia', '', ''])
+  ok('…senza badare a maiuscole e spazi', chi({ descrizione: ' ROSSI giulia ' }, 'Rossi Giulia'), '')
 }
 
 console.log('\n99. ogni riga dice da dove viene')
