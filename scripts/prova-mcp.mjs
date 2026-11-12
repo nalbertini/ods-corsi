@@ -854,6 +854,31 @@ console.log('\n23. dalle revisioni: le righe del database, il doppio conteggio, 
   ok('un gruppo tutto senza voce: non dice una voce di partenza che il filtro non ha', prova(() => [righeCon(solo, 'idraulico bassi')[0].includes('ora su'), righeCon(solo, 'idraulico bassi')[0].includes('senza voce')]), [false, true])
 }
 
+console.log('\n23b. un bonifico assegnato a un iscritto conta una volta sola, come in BILANCIO')
+{
+  // Il bonifico è il movimento di banca (m20, m21); la ricevuta e il pagamento a mano che ne nascono (135) lo puntano.
+  const banca = [
+    mov('m20', 'entrata', '2026-10-19', 15000, 'v-dce', 'c2', 'Bonifico Rossi'),
+    mov('m21', 'entrata', '2026-10-18', 6000, 'v-quota', 'c2', 'Bonifico Verdi'),
+  ]
+  const r3 = ric('r3', 42, 'Luca', 'Rossi', [vr('TRIMESTRE BIMBI', [{ data: '2026-10-19', importo: 15000, metodo: 'Bonifico' }])], { movimentoId: 'm20' })
+  const d4 = { id: 'd4', personaId: 'p-verdi', data: '2026-10-18', importo: 6000, metodo: 'Bonifico', voce: 'QUOTA ASSOCIATIVA', creatoIl: '2026-10-18T10:00:00Z', movimentoId: 'm21' }
+  const app = prova(() => conti.elencoMovimenti([...ricevuteConti, r3], [...direttiConti, d4], nomiConti, casseConti, [...manuali, ...banca], vociConti))
+  const tApp = prova(() => conti.totali(conti.filtraMovimenti(app, { dal: '2026-10-01', al: OGGI })))
+  ok('in BILANCIO i due bonifici entrano una volta: 463,00 + 210,00', tApp.entrate, 67300)
+  // Le righe come le danno `chat_ricevute` e `chat_pagamenti_diretti`, col movimento del bonifico (147).
+  const rigaRic = [...ricevuteConti, r3].map((r) => ({ id: r.id, voci: r.voci, annullata_il: r.annullataIl ?? null, movimento_id: r.movimentoId ?? null }))
+  const rigaDir = [...direttiConti, d4].map((d) => ({ id: d.id, data: d.data, importo: d.importo, metodo: d.metodo, voce: d.voce, annullato_il: d.annullatoIl ?? null, movimento_id: d.movimentoId ?? null }))
+  const db = () => dbConti({ movimenti: [...manuali, ...banca], incassi: prova(() => conti.incassiDaRighe(rigaRic, rigaDir)) })
+  const [ott] = await chiedi('conti', { dal: '2026-10-01', al: '2026-10-31' }, db())
+  ok('conti in chat: le entrate di ottobre sono quelle di BILANCIO', prova(() => rigaDi(ott, 'Entrate').includes(eur(tApp.entrate))), true)
+  const [s] = await chiedi('saldi_casse', {}, db())
+  ok('saldi_casse in chat: il Conto Corrente è quello di BILANCIO', prova(() => rigaDi(s, '- Conto Corrente').includes(eur(conti.previstoCassa(casseConti, app, 'c2', OGGI)))), true)
+  const { movimento_id: _, ...senzaColonna } = rigaRic.find((r) => r.id === 'r3')
+  ok('…e i soldi senza bonifico restano: senza movimento_id la ricevuta conta', prova(() => conti.incassiPerConti(conti.incassiDaRighe([{ ...senzaColonna, movimento_id: null }], []), casseConti).length), 1)
+  ok('…anche col database senza il 147, che la colonna non la dà', prova(() => conti.incassiPerConti(conti.incassiDaRighe([senzaColonna], []), casseConti).length), 1)
+}
+
 // ---------------------------------------------------------------------------
 // La segreteria dalla chat, in sola lettura: corsi, certificati, quote,
 // iscritti, presenze, chi_manca. Il database finto dà le righe come le danno
