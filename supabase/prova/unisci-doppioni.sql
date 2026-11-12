@@ -493,4 +493,67 @@ reset role;
 
 
 \echo ''
+\echo '--- 15. due righe che possono essere una sola per persona non fermano l''unione ---'
+-- Una presenza segnalata dall'area iscritti è una per lezione e per persona;
+-- un pagamento online in attesa uno per quota, corso o saldo. Prima l'unione
+-- si fermava con l'errore grezzo del database.
+insert into persone (id, nome, cognome, ruolo) values
+  ('aaaaaaaa-0000-0000-0000-000000000080', 'Pia', 'Zeta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000081', 'Pia', 'Zeta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000082', 'Ugo', 'Zeta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000083', 'Ugo', 'Zeta', 'iscritto');
+-- Lezione 1: tutte e due l'hanno segnata, quella del doppione la segreteria l'ha già accolta. Lezione 2: solo il doppione.
+insert into presenze_segnalate (sessione_id, persona_id, stato, gestita_il) values
+  ('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000080', 'da_vedere', null),
+  ('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000081', 'accolta', now()),
+  ('eeeeeeee-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000081', 'da_vedere', null);
+-- La quota in attesa su tutte e due; quella del doppione Satispay non l'ha mai vista.
+insert into pagamenti_satispay (chi, importo, stato, persona_id, voce, satispay_id) values
+  ('Zeta Pia', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000080', 'quota', 'S-PIA-1'),
+  ('Zeta Pia', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000081', 'quota', null),
+-- Ugo: tutte e due già da Satispay, e una delle due può ancora arrivare pagata.
+  ('Zeta Ugo', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000082', 'quota', 'S-UGO-1'),
+  ('Zeta Ugo', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000083', 'quota', 'S-UGO-2');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('Pia unita', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000080', 'aaaaaaaa-0000-0000-0000-000000000081')$$), 'fatto');
+reset role;
+select atteso('una segnalazione per lezione, e resta quella già accolta',
+  (select string_agg(right(sessione_id::text, 1) || ' ' || stato, ', ' order by sessione_id) from presenze_segnalate where persona_id = 'aaaaaaaa-0000-0000-0000-000000000080'),
+  '1 accolta, 2 da_vedere');
+select atteso('la quota in attesa è una: quella che Satispay conosce; l''altra passa, non andata',
+  (select string_agg(coalesce(satispay_id, '-') || ' ' || stato, ', ' order by satispay_id nulls last) from pagamenti_satispay where persona_id = 'aaaaaaaa-0000-0000-0000-000000000080'),
+  'S-PIA-1 attesa, - non-andato');
+set role authenticated;
+select atteso('Ugo: due pagamenti in corso, si dice di aspettare',
+  rifiuta($$select unisci_persone('aaaaaaaa-0000-0000-0000-000000000082', 'aaaaaaaa-0000-0000-0000-000000000083')$$),
+  'RIFIUTATO: Tutte e due le schede hanno un pagamento online in corso…');
+select atteso('e le due schede di Ugo restano', (select count(*)::text from persone where nome = 'Ugo' and cognome = 'Zeta'), '2');
+reset role;
+
+\echo ''
+\echo '--- 16. l''anteprima conta anche tessere, gare, movimenti e pagamenti online ---'
+insert into persone (id, nome, cognome, ruolo) values
+  ('aaaaaaaa-0000-0000-0000-000000000084', 'Ada', 'Zeta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000085', 'Ada', 'Zeta', 'iscritto');
+insert into tessere (persona_id, ente, tipo, codice, dal, al) values ('aaaaaaaa-0000-0000-0000-000000000085', 'CSEN', 'praticante', 'T1', '2026-09-01', '2027-08-31');
+insert into gare (id, nome, dal) values ('ffffffff-0000-0000-0000-000000000001', 'Coppa', '2026-12-01');
+insert into gare_atleti (gara_id, persona_id) values ('ffffffff-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000085');
+insert into casse (id, nome) values ('ffffffff-0000-0000-0000-000000000002', 'Cassa prova');
+insert into voci_contabili (id, nome, tipo) values ('ffffffff-0000-0000-0000-000000000003', 'Quote prova', 'entrata');
+insert into movimenti (tipo, data, importo, cassa_id, voce_id, descrizione, persona_id) values
+  ('entrata', current_date, 3000, 'ffffffff-0000-0000-0000-000000000002', 'ffffffff-0000-0000-0000-000000000003', 'Quota', 'aaaaaaaa-0000-0000-0000-000000000085');
+-- Uno pagato conta, uno non andato no: non è un pagamento.
+insert into pagamenti_satispay (chi, importo, stato, persona_id) values
+  ('Zeta Ada', 3000, 'pagato', 'aaaaaaaa-0000-0000-0000-000000000085'),
+  ('Zeta Ada', 3000, 'non-andato', 'aaaaaaaa-0000-0000-0000-000000000085');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('una tessera, una gara, un movimento, un pagamento online',
+  (select concat_ws(' ', j->>'tessere', j->>'gare', j->>'movimenti', j->>'pagamentiOnline')
+     from (select anteprima_unione('aaaaaaaa-0000-0000-0000-000000000084', 'aaaaaaaa-0000-0000-0000-000000000085')::jsonb j) x),
+  '1 1 1 1');
+reset role;
+
+\echo ''
 \echo 'TUTTO A POSTO'

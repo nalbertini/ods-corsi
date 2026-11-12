@@ -2654,6 +2654,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
         prove: (a().prove ?? []).filter((x) => x.personaId === via).length,
         iscrizioni: a().iscrizioni.filter((x) => x.personaId === via).length,
         ricevute: (a().ricevute ?? []).filter((x) => x.personaId === via).length,
+        tessere: (a().tessere ?? []).filter((x) => x.personaId === via).length,
+        gare: (a().gareAtleti ?? []).filter((x) => x.personaId === via).length,
+        movimenti: (a().movimenti ?? []).filter((x) => x.personaId === via).length,
+        // In prova non ci sono pagamenti online.
+        pagamentiOnline: 0,
       }
     },
 
@@ -2761,7 +2766,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
         a().anagrafiche = { ...altre, [resta]: { ...suaA, ...Object.fromEntries(Object.entries(mia).filter(([, x]) => piena(x))), cambiataIl: new Date().toISOString() } }
       }
       spostaRichieste(via, resta)
-      a().segnalate = (a().segnalate ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      // Una segnalazione per lezione, come `presenze_segnalate_unione` (149): resta quella di chi resta, con lo stato dell'altra se solo quella è già gestita.
+      const segnalate = a().segnalate ?? []
+      a().segnalate = segnalate.flatMap((x) => {
+        const altra = segnalate.find((y) => y.sessioneId === x.sessioneId && y.personaId === (x.personaId === via ? resta : via))
+        if (x.personaId === via) return altra ? [] : [{ ...x, personaId: resta }]
+        if (x.personaId === resta && altra && x.stato === 'da_vedere' && altra.stato !== 'da_vedere') return [{ ...x, stato: altra.stato, gestitaIl: altra.gestitaIl, gestitaDa: altra.gestitaDa }]
+        return [x]
+      })
       const gare = unisciGare({ gare: a().gare ?? [], atleti: a().gareAtleti ?? [] }, via, resta)
       a().gare = gare.gare
       a().gareAtleti = gare.atleti

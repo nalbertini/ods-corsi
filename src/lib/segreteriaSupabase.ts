@@ -1,7 +1,7 @@
 import { cosaNonVaSolleciti } from './sollecitiCertificato'
 import { indirizziDaSalvare } from './avvisoSegreteria'
 import { daSenzaIstruttore } from './ore'
-import type { IndiziDoppioni } from './doppioni'
+import type { AnteprimaUnione, IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import { giorniConLezioni } from './calendarioSettimana'
@@ -2524,7 +2524,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async anteprimaUnione(resta, via) {
-      return ok(await db.rpc('anteprima_unione', { resta, via })) as { presenze: number; prove: number; iscrizioni: number; ricevute: number }
+      return ok(await db.rpc('anteprima_unione', { resta, via })) as AnteprimaUnione
     },
 
     async unisciPersone(resta, via) {

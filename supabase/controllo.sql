@@ -711,6 +711,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rifà due funzioni del 77: rilanciando quello, il controllo torna «manca».
   ('147-chat-bonifici-assegnati.sql', 'nei conti della chat un bonifico assegnato conta una volta sola',
     coalesce((select pg_get_function_result(to_regprocedure('public.chat_ricevute()'))), '') like '%movimento_id%'
-    and coalesce((select pg_get_function_result(to_regprocedure('public.chat_pagamenti_diretti()'))), '') like '%movimento_id%')
+    and coalesce((select pg_get_function_result(to_regprocedure('public.chat_pagamenti_diretti()'))), '') like '%movimento_id%'),
+  -- Rifà `anteprima_unione` del 29: rilanciando quello, il controllo torna «manca».
+  ('149-unione-non-si-ferma.sql', 'unire due schede non si ferma su presenze segnalate e pagamenti online in attesa; l''anteprima conta di più',
+    exists (select 1 from pg_trigger where tgname = 'presenze_segnalate_unione')
+    and exists (select 1 from pg_trigger where tgname = 'pagamenti_satispay_unione')
+    and exists (select 1 from dentro where nome = 'anteprima_unione' and corpo like '%pagamentiOnline%'))
 ) as x(file, cosa, c)
 order by file, cosa;
