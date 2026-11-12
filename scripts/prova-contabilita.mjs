@@ -895,7 +895,7 @@ console.log('\n34. il dettaglio di un movimento è una pagina intera, come quell
   const corpo = da >= 0 && fino > da ? tsx.slice(da, fino) : ''
   ok('`SchedaPiena` arriva da ./comune', /import \{[^}]*\bSchedaPiena\b[^}]*\} from '\.\/comune'/.test(tsx), true)
   const k = corpo.indexOf('<MovimentoAperto')
-  const prima = k > 0 ? corpo.slice(corpo.lastIndexOf('{aperto &&', k), k) : ''
+  const prima = k > 0 ? corpo.slice(corpo.lastIndexOf('{rigaAperta &&', k), k) : ''
   ok('`MovimentoAperto` sta dentro una `SchedaPiena`', prima.includes('<SchedaPiena'), true)
   ok('…e non più in un `InVista`', prima.includes('<InVista'), false)
   ok('si torna all\'elenco chiedendo prima se c\'è una correzione non salvata (`lasciare`)', /lasciare\(\)/.test(corpo), true)

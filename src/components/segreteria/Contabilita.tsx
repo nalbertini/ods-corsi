@@ -252,6 +252,8 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
   useEffect(() => {
     if (apriRiga) setAperto(righe.find((r) => r.id === apriRiga.id) ?? null)
   }, [apriRiga])
+  // Il movimento aperto com'è nelle righe rilette: salvando il destinatario il popup resta aperto e mostra il testo nuovo.
+  const rigaAperta = aperto && (righe.find((r) => r.id === aperto.id) ?? aperto)
   const [viste, setViste] = useState(RIGHE_ELENCO)
   const [scelti, setScelti] = useState<Set<string>>(new Set())
   const [cambio, setCambio] = useState(false)
@@ -418,9 +420,9 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
       {cambio && idScelti.length > 0 && sceltaRiep.tipo !== 'misto' && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={cambioFinito} onChiudi={() => setCambio(false)} /></InVista>}
       {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); setF(conMostra(iniziali, 'da_assegnare')) }} onChiudi={chiudiCollega} /></InVista>}
       {collegando === 'mano' && sceltiRighe.length > 0 && <InVista><CollegaAPersona d={d} righe={sceltiRighe} fai={fai} onFatto={collegamentoFatto} onChiudi={chiudiCollega} /></InVista>}
-      {aperto && (
-        <SchedaPiena key={aperto.id} etichetta={`Movimento: ${aperto.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
-          <MovimentoAperto d={d} voci={voci} righe={righe} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} nomePersona={aperto.personaId ? nomiPersone.get(aperto.personaId) : undefined} fai={fai} avvisa={avvisa} casse={casse} manuali={manuali} diretti={diretti} ricevute={ricevute} onFatto={() => { fatto(); void esitiLetti.ricarica() }} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onPersona={onPersona} />
+      {rigaAperta && (
+        <SchedaPiena key={rigaAperta.id} etichetta={`Movimento: ${rigaAperta.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
+          <MovimentoAperto d={d} voci={voci} righe={righe} riga={rigaAperta} chiusure={chiusure} cassa={nomeCassa(rigaAperta.cassaId)} cassaA={nomeCassa(rigaAperta.cassaAId)} nomePersona={rigaAperta.personaId ? nomiPersone.get(rigaAperta.personaId) : undefined} fai={fai} avvisa={avvisa} casse={casse} manuali={manuali} diretti={diretti} ricevute={ricevute} onFatto={() => { fatto(); void esitiLetti.ricarica() }} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onPersona={onPersona} />
         </SchedaPiena>
       )}
 
@@ -915,6 +917,14 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
   useBozza(destinatario.trim() !== '', 'Il destinatario')
   // La nota com'è nel campo qui sotto: salvando il destinatario non si perde la correzione.
   const testoDestinatario = testoConDestinatario(riga.descrizione, nota, destinatario)
+  // Il popup resta aperto: dopo il destinatario si sceglie ancora voce e persona. I campi prendono il testo salvato, se no «Salva» lo riscriverebbe vecchio.
+  const destinatarioSalvato = () => {
+    setDescrizione(testoDestinatario.descrizione)
+    setNota(testoDestinatario.nota)
+    setDestinatario('')
+    onRileggi()
+    requestAnimationFrame(() => document.getElementById(cambiabile(riga) ? 'ma-voce' : 'ma-nota')?.focus())
+  }
   // La voce si cambia anche nei giorni chiusi: non tocca i soldi. La traccia dice chi l'ha cambiata e quando.
   const offerte = riga.tipo === 'entrata' || riga.tipo === 'uscita' ? vociOfferte(voci, riga.tipo) : []
   const voceAttuale = voci.find((v) => v.nome === riga.voce && v.tipo === riga.tipo)
@@ -1045,7 +1055,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           </Campo>
           {testoDestinatario.nota.length > 300 && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>La nota è troppo lunga per tenere anche la scritta della banca: accorciala qui sotto e salva, poi scrivi il destinatario.</span>}
           <div className="row sg-movimento-gruppo">
-            <Tasto disabled={!destinatario.trim() || testoDestinatario.nota.length > 300} onClick={() => void fai(() => d.correggiTestoMovimento(riga.id, testoDestinatario.descrizione, testoDestinatario.nota), 'Destinatario salvato', onFatto)}>
+            <Tasto disabled={!destinatario.trim() || testoDestinatario.nota.length > 300} onClick={() => void fai(() => d.correggiTestoMovimento(riga.id, testoDestinatario.descrizione, testoDestinatario.nota), 'Destinatario salvato', destinatarioSalvato)}>
               Salva il destinatario
             </Tasto>
           </div>
