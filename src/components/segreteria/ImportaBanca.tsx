@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { NOME_CASSA_CONTO, oggiARoma, vociOfferte, type Cassa, type RigaMovimento, type VoceContabile } from '../../lib/contabilita'
-import { anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, filtroIniziale, gruppiRighe, leggiBanca, PREFISSO_CHIAVE_BANCA, testoDaMostrare, MASSIMO_PER_IMPORTAZIONE, pianoDiClassificazione, rigaComeMovimento, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type FiltroRigheBanca, type GruppoRigheBanca, type LetturaBanca, type MovimentoBanca, type RigaAnteprima, type SceltaVoceBanca, type SegnoBanca } from '../../lib/importaBanca'
+import { abbinamentiImport, anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, filtroIniziale, gruppiRighe, leggiBanca, PREFISSO_CHIAVE_BANCA, testoDaMostrare, MASSIMO_PER_IMPORTAZIONE, pianoDiAbbinamento, pianoDiClassificazione, rigaComeMovimento, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type AbbinamentoBanca, type FiltroRigheBanca, type GruppoRigheBanca, type LetturaBanca, type MovimentoBanca, type RigaAnteprima, type SceltaVoceBanca, type SegnoBanca } from '../../lib/importaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import type { CandidatoPersona, PersonaPerNome } from '../../lib/movimentiPersona'
 import { parolaDelMovimento, suggerisciMovimento, type SuggerimentoMovimento } from '../../lib/suggerimentoMovimento'
 import { useListino } from '../Costi'
 import { erroreSegreteria } from '../../lib/chatSegreteria'
 import { CampoPersona, SchedaCandidata } from './CollegaPersona'
-import { dataRicevuta, euro } from '../../lib/ricevute'
+import { dataRicevuta, euro, type Ricevuta } from '../../lib/ricevute'
 import { Icona } from '../Icons'
 import { chiedi, Guaio, Segmenti, type useAvviso, Tasto, useBozza, useCarica, useDialogo } from './comune'
 
@@ -39,7 +39,14 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const righe = useMemo(() => (coperti.dato ? segnaIncassiCoperti(tutte, coperti.dato.righe ?? []) : null), [tutte, coperti.dato])
   const [lettura, setLettura] = useState<LetturaBanca | null>(null)
   const [scelte, setScelte] = useState<Record<string, string>>({})
-  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null } | null>(null)
+  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[] } | null>(null)
+  // Le ricevute libere a cui può andare un bonifico che entra con la persona; se non si leggono, si importa senza abbinare.
+  const archivio = useCarica(async () => {
+    const [ricevute, persone] = await Promise.all([d.ricevute(), d.persone()])
+    return { ricevute, persone }
+  }, [d, tutte])
+  // Le righe a cui la segreteria ha tolto la ricevuta proposta: entrano senza, e restano in «Da assegnare».
+  const [tolti, setTolti] = useState<Set<string>>(new Set())
   // Null finché la segreteria non sceglie: vale il filtro di partenza, che dipende dal file.
   const [filtro, setFiltro] = useState<FiltroRigheBanca | null>(null)
   const [segno, setSegno] = useState<SegnoBanca>('entrambe')
@@ -95,6 +102,15 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   // Prima di scrivere il piano si fa sulle chiavi: dice quante righe avranno la voce scelta.
   const previsto = a && conto ? pianoDiClassificazione(a.entrano, scelteValide, a.entrano.map((m) => ({ id: m.chiave, origineImport: m.chiave })), voci, conto.id) : null
   const classificate = previsto ? previsto.lotti.reduce((n, l) => n + l.ids.length, 0) : 0
+  const ricevute = archivio.dato?.ricevute ?? []
+  const persone = archivio.dato?.persone ?? []
+  const abbinamenti = a && conto ? abbinamentiImport(a.entrano, scelteValide, ricevute, persone, voci, conto.id) : {}
+  const conRicevuta = Object.entries(abbinamenti).filter(([k, x]) => x.esito === 'ricevuta' && !tolti.has(k)).length
+  const ricevutaDi = (id: string) => ricevute.find((r) => r.id === id)
+  const nomeDi = (id?: string) => {
+    const p = persone.find((x) => x.id === id)
+    return p ? `${p.nome} ${p.cognome}` : ''
+  }
   useBozza(!!a && (Object.keys(vociScelte).length > 0 || Object.keys(scelte).length > 0), 'Importa dalla banca')
   const scegli = (chiave: string, x: Partial<SceltaVoceBanca>) => {
     const ora = sceltaDi(chiave)
@@ -109,6 +125,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
     setPersonaDi(null)
     setFiltro(null)
     setScritti(null)
+    setTolti(new Set())
     // Un file che il browser non riesce a leggere si tratta come un file sbagliato: stesso messaggio, niente scritto.
     setLettura(leggiBanca(await file.text().catch(() => '')))
   }
@@ -135,22 +152,39 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
       // Le voci scelte si mettono dopo, sui movimenti appena scritti ritrovati dalla chiave: entrano tutti in «Da classificare» e poi si spostano.
       let classificati = 0
       let guasto: string | null = null
+      const abbinati: string[] = []
+      const nonAbbinati: string[] = []
       if (classificate) {
         // Un lotto che non va resta in «Da classificare» e gli altri vanno avanti; il primo motivo si dice nel riepilogo.
         try {
-          const piano = pianoDiClassificazione(a.entrano, scelteValide, await d.movimenti(), voci, conto.id)
+          const scrittiOra = await d.movimenti()
+          const piano = pianoDiClassificazione(a.entrano, scelteValide, scrittiOra, voci, conto.id)
+          const messi = new Set<string>()
           for (const l of piano.lotti) {
             try {
               classificati += (await d.cambiaVoceMovimenti(l.ids, l.voceId, l.personaId)).cambiati
+              l.ids.forEach((id) => messi.add(id))
             } catch (e) {
               guasto ??= erroreSegreteria(e)
+            }
+          }
+          // Solo dopo la voce e la persona: l'abbinamento vuole il bonifico già collegato. Uno che non va non ferma gli altri.
+          const chiavi = new Set(scrittiOra.filter((x) => messi.has(x.id)).map((x) => x.origineImport ?? ''))
+          for (const c of pianoDiAbbinamento(abbinamenti, tolti, chiavi, scrittiOra)) {
+            const r = ricevutaDi(c.ricevutaId)
+            const mv = a.entrano.find((x) => x.chiave === c.chiave)
+            try {
+              await d.abbinaRicevutaMovimento(c.movimentoId, c.ricevutaId)
+              abbinati.push(r ? `n. ${r.numero}/${r.anno} di ${nomeDi(r.personaId)}` : '')
+            } catch (e) {
+              nonAbbinati.push(`${nomeDi(sceltaDi(c.chiave)?.personaId)}, ${mv ? `${soldi(mv.importo)} del ${dataRicevuta(mv.data)}` : ''} (${erroreSegreteria(e)})`)
             }
           }
         } catch (e) {
           guasto ??= erroreSegreteria(e)
         }
       }
-      setScritti({ n, classificati, guasto })
+      setScritti({ n, classificati, guasto, abbinati, nonAbbinati })
     }, undefined, () => {
       setLettura(null)
       onRileggi()
@@ -193,8 +227,13 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           <span style={{ fontSize: 15 }}>
             Sono nel <b>Conto Corrente</b>
             {scritti.classificati ? <>: <b>{scritti.classificati === 1 ? '1 ha' : `${scritti.classificati} hanno`} la voce che hai scelto</b>{scritti.n > scritti.classificati ? <>, {scritti.n - scritti.classificati === 1 ? 'l’altro è' : `gli altri ${scritti.n - scritti.classificati} sono`} in «Da classificare»: la voce la scegli dopo, con Cambia voce</> : ''}.</> : <>, in «Da classificare»: la voce la scegli dopo, con Cambia voce.</>}{' '}
-            Gli incassi importati non hanno ricevuta.
+            {scritti.abbinati.length ? <><b>{scritti.abbinati.length === 1 ? '1 bonifico è già con la sua ricevuta' : `${scritti.abbinati.length} bonifici sono già con la loro ricevuta`}</b> ({scritti.abbinati.join(', ')}); gli altri incassi non hanno ricevuta.</> : 'Gli incassi importati non hanno ricevuta.'}
           </span>
+          {scritti.nonAbbinati.length > 0 && (
+            <span role="alert" className="sg-banca-avviso" style={{ fontSize: 15 }}>
+              <b>{scritti.nonAbbinati.length === 1 ? '1 bonifico non si è abbinato' : `${scritti.nonAbbinati.length} bonifici non si sono abbinati`}</b>: {scritti.nonAbbinati.join('; ')}. {scritti.nonAbbinati.length === 1 ? 'È' : 'Sono'} in «Da assegnare».
+            </span>
+          )}
           {scritti.guasto && <span role="alert" style={{ fontSize: 15, color: 'var(--rosso-testo)' }}>Alcune voci non si sono messe: {scritti.guasto}</span>}
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
             <button type="button" className="sg-btn sg-btn-pieno" onClick={onVedi}>Guarda i movimenti</button>
@@ -290,6 +329,8 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
                 {g.righe.map((r) => (
                   <RigaBanca
                     key={`${r.riga}-${r.stato}`} r={r} voci={voci} contoId={conto.id} scelta={r.movimento ? sceltaDi(r.movimento.chiave) : null} sug={r.movimento ? proposte[r.movimento.chiave] ?? null : null}
+                    abbina={r.movimento && abbinamenti[r.movimento.chiave] ? <Abbinamento a={abbinamenti[r.movimento.chiave]} tolto={tolti.has(r.movimento.chiave)} personaId={sceltaDi(r.movimento.chiave)?.personaId} ricevutaDi={ricevutaDi} nomeDi={nomeDi} dataDi={(k) => a.entrano.find((x) => x.chiave === k)?.data ?? ''}
+                      onTogli={(via) => { const k = r.movimento!.chiave; setTolti((t) => { const n = new Set(t); if (via) n.add(k); else n.delete(k); return n }) }} /> : null}
                     onScegli={(x) => r.movimento && scegli(r.movimento.chiave, x)} onCollega={(id) => r.movimento && setScelte((s) => ({ ...s, [r.movimento!.chiave]: id }))} onPersona={() => r.movimento && setPersonaDi(r.movimento.chiave)}
                   />
                 ))}
@@ -300,7 +341,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           {troppi && <p role="alert" style={{ color: 'var(--rosso-testo)', margin: 0 }}>Sono più di {MASSIMO_PER_IMPORTAZIONE} movimenti nuovi: scarica dalla banca un periodo più corto e riprova.</p>}
           <div className="row" style={{ gap: 12, justifyContent: 'space-between', flexWrap: 'wrap' }}>
             <span style={{ fontSize: 15 }} role="status">
-              {a.entrano.length > 0 ? <><b>{classificate}</b> con la voce scelta · <b>{previsto?.restano ?? 0}</b> in «Da classificare»</> : 'Niente da importare.'}
+              {a.entrano.length > 0 ? <><b>{classificate}</b> con la voce scelta · <b>{previsto?.restano ?? 0}</b> in «Da classificare»{conRicevuta > 0 && <> · <b>{conRicevuta}</b> con la ricevuta</>}</> : 'Niente da importare.'}
             </span>
             <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
               <Tasto onClick={() => setLettura(null)}>Annulla</Tasto>
@@ -340,8 +381,8 @@ function Descrizione({ mv, nota }: { mv: MovimentoBanca; nota?: string }) {
 }
 
 /** Una riga del file: data, descrizione, poi secondo lo stato la tipologia e la persona, o il movimento dell'app che le corrisponde. I tasti sempre in fondo a destra. */
-function RigaBanca({ r, voci, contoId, scelta, sug, onScegli, onCollega, onPersona }: {
-  r: RigaAnteprima; voci: VoceContabile[]; contoId: string; scelta: SceltaVoceBanca | null; sug: SuggerimentoMovimento | null
+function RigaBanca({ r, voci, contoId, scelta, sug, abbina, onScegli, onCollega, onPersona }: {
+  r: RigaAnteprima; voci: VoceContabile[]; contoId: string; scelta: SceltaVoceBanca | null; sug: SuggerimentoMovimento | null; abbina: ReactNode
   onScegli: (x: Partial<SceltaVoceBanca>) => void; onCollega: (id: string) => void; onPersona: () => void
 }) {
   const mv = r.movimento
@@ -406,7 +447,40 @@ function RigaBanca({ r, voci, contoId, scelta, sug, onScegli, onCollega, onPerso
           <Icona nome="cerca" misura={16} />
         </button>
       ) : <span />}
+      {abbina}
     </div>
+  )
+}
+
+const dataBreve = (giorno: string) => dataRicevuta(giorno).slice(0, 5)
+
+/** Sotto un bonifico che entra con la persona: la ricevuta già fatta a cui andrà, o perché non va a nessuna. */
+function Abbinamento({ a, tolto, personaId, ricevutaDi, nomeDi, dataDi, onTogli }: {
+  a: AbbinamentoBanca; tolto: boolean; personaId?: string; ricevutaDi: (id: string) => Ricevuta | undefined; nomeDi: (id?: string) => string; dataDi: (chiave: string) => string; onTogli: (via: boolean) => void
+}) {
+  const numeri = (ids: string[]) => ids.map((id) => ricevutaDi(id)).filter((r) => !!r)
+  if (a.esito === 'piu') {
+    const rr = numeri(a.ricevute)
+    return <><span className="sg-banca-abbina" data-tono="dubbio">{rr.length} ricevute possibili di {nomeDi(personaId)} (n. {rr.map((r) => r.numero).join(', ')}/{rr[0]?.anno}): la scegli in «Da assegnare»</span><span /></>
+  }
+  if (a.esito === 'contesa') {
+    const altro = a.con.length === 1 ? `il bonifico del ${dataBreve(dataDi(a.con[0]))}` : `altri ${a.con.length} bonifici`
+    return <span className="sg-banca-abbina" data-tono="dubbio">Questo e {altro} vogliono la stessa ricevuta: la scegli in «Da assegnare»</span>
+  }
+  const r = ricevutaDi(a.ricevutaId)
+  if (!r) return null
+  const di = <>n. {r.numero}/{r.anno} di <b>{nomeDi(r.personaId)}</b>{r.personaId !== personaId ? ' (nucleo)' : ''}</>
+  return (
+    <>
+      {tolto
+        ? <span className="sg-banca-abbina" data-tono="tolto">Non la abbino: resta in «Da assegnare», ci pensi tu. (Ricevuta {di})</span>
+        : <span className="sg-banca-abbina" data-tono="fatto">Va con la ricevuta {di}, {dataRicevuta(r.data)}, {soldi(r.pagato)}</span>}
+      <span className="sg-banca-tasti">
+        {tolto
+          ? <Tasto aria-label={`Abbina alla ricevuta n. ${r.numero}/${r.anno}`} onClick={() => onTogli(false)}>Abbina</Tasto>
+          : <Tasto tono="rosso" aria-label={`Togli la ricevuta n. ${r.numero}/${r.anno}`} onClick={() => onTogli(true)}>Togli</Tasto>}
+      </span>
+    </>
   )
 }
 

@@ -1386,6 +1386,11 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-banca-gruppo[data-gruppo='nuovi'] { color: var(--verde-testo); }
 .sg-banca-avviso { padding: 8px 12px; font-size: 14px; background: var(--tinta-giallo); border-left: 4px solid var(--giallo-testo); }
 .sg-banca-avviso[data-tono='fatto'] { background: var(--bg); border-left-color: var(--verde-testo); font-size: 15px; }
+/* Sotto un bonifico: la ricevuta già fatta a cui andrà, dalla descrizione all'importo; il tasto nella colonna della persona. */
+.sg-banca-abbina { grid-column: 2 / 5; font-size: 14px; line-height: 1.35; }
+.sg-banca-abbina[data-tono='fatto'] { color: var(--verde-testo); }
+.sg-banca-abbina[data-tono='tolto'] { color: var(--dim); }
+.sg-banca-abbina[data-tono='dubbio'] { color: var(--giallo-testo); }
 /* Col menu accanto, sotto i 1200px la riga non ci sta: data e importo in alto, il resto sotto a tutta larghezza. */
 @media (max-width: 1199px) {
   .sg-banca-testa { display: none; }

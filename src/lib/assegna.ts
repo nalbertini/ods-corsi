@@ -194,7 +194,7 @@ const giorni = (a: string, b: string) => Math.abs(Date.parse(`${a}T12:00:00Z`) -
 export const GIORNI_ABBINAMENTO = 30
 
 // Nome e genitore servono solo per un bonifico senza persona: chi non li ha non è mai nominato nella causale.
-type PersonaNucleo = { id: string; nucleo?: string; attiva: boolean; nome?: string; cognome?: string; genitoreNome?: string; genitoreCognome?: string }
+export type PersonaNucleo = { id: string; nucleo?: string; attiva: boolean; nome?: string; cognome?: string; genitoreNome?: string; genitoreCognome?: string }
 type MovimentoAbbinabile = { id: string; importo: number; data: string; personaId?: string; descrizione?: string }
 type RicevutaAbbinabile = Pick<Ricevuta, 'personaId' | 'pagato' | 'voci' | 'data'> & Partial<Pick<Ricevuta, 'annullataIl' | 'movimentoId' | 'numero' | 'anno'>>
 
