@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.239.0 — 12 novembre 2026
+
+### Novità
+
+- Nei corsi con due lezioni lo stesso giorno, chi è presente a una non si segna nell'altra
+
 ## 0.238.3 — 11 novembre 2026
 
 ### Modificato

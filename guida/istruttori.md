@@ -158,6 +158,14 @@ dice solo che oggi qualcuno di chi la fa compie gli anni.
 
 Non c'è niente da salvare: ogni tocco parte subito.
 
+**Il doppio turno.** Se il corso ha due lezioni lo stesso giorno, chi è già
+presente all'altra non è fra i nomi da segnare: sta in fondo, sotto **GIÀ
+PRESENTI A UN ALTRO TURNO**, con l'ora di quella lezione («GIÀ PRESENTE ALLE
+17:30»), e non si tocca. Non conta nei numeri in cima, **TUTTI PRESENTI** non
+lo prende e chiudendo non risulta assente. Se era già segnato assente qui e
+poi è venuto all'altra, l'assenza non conta più; se si toglie la presenza
+dall'altra lezione, torna com'era.
+
 ### Chiudere l'appello
 
 In fondo allo schermo, ferma e sempre in vista mentre scorrete, c'è la barra
