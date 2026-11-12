@@ -286,7 +286,8 @@ l'app ne legge solo i movimenti, e toglie dalla descrizione IBAN e codici fiscal
 Di un bonifico in uscita la banca dà solo «Distinta: …», senza dire a chi hai pagato.
 Aprendo il movimento compare **MANCANO DEI DATI**: scrivi il destinatario e premi
 **Salva il destinatario**. Diventa il titolo del movimento, e la scritta della banca resta
-nella nota (con «Dalla banca:»), per ritrovarlo sull'estratto conto.
+nella nota (con «Dalla banca:»), per ritrovarlo sull'estratto conto. Il movimento resta
+aperto: scegli subito la **VOCE** (e la persona, se serve) e premi **Salva**.
 
 Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**. In alto il conto delle
 righe del file: quante sono **nuove**, quante **forse già nell'app**, quante **già nell'app** e quante
