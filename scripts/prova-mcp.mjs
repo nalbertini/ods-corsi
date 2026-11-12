@@ -874,7 +874,9 @@ console.log('\n23b. un bonifico assegnato a un iscritto conta una volta sola, co
   ok('conti in chat: le entrate di ottobre sono quelle di BILANCIO', prova(() => rigaDi(ott, 'Entrate').includes(eur(tApp.entrate))), true)
   const [s] = await chiedi('saldi_casse', {}, db())
   ok('saldi_casse in chat: il Conto Corrente è quello di BILANCIO', prova(() => rigaDi(s, '- Conto Corrente').includes(eur(conti.previstoCassa(casseConti, app, 'c2', OGGI)))), true)
-  ok('…e i soldi senza bonifico restano: senza movimento_id la ricevuta conta', prova(() => conti.incassiPerConti(conti.incassiDaRighe([{ ...rigaRic[2], movimento_id: null }], []), casseConti).length), 1)
+  const { movimento_id: _, ...senzaColonna } = rigaRic.find((r) => r.id === 'r3')
+  ok('…e i soldi senza bonifico restano: senza movimento_id la ricevuta conta', prova(() => conti.incassiPerConti(conti.incassiDaRighe([{ ...senzaColonna, movimento_id: null }], []), casseConti).length), 1)
+  ok('…anche col database senza il 147, che la colonna non la dà', prova(() => conti.incassiPerConti(conti.incassiDaRighe([senzaColonna], []), casseConti).length), 1)
 }
 
 // ---------------------------------------------------------------------------
