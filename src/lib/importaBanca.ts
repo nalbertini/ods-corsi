@@ -1,9 +1,11 @@
-import { cosaNonVaCambioVoce, giornoChiuso, pacchetti, VOCE_QUOTA, vuolePersonaRiga, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento, type VoceContabile } from './contabilita'
+import { cosaNonVaCambioVoce, giornoChiuso, pacchetti, VOCE_CORSI, VOCE_QUOTA, vuolePersonaRiga, type ChiusuraCassa, type MovimentoManuale, type RigaMovimento, type VoceContabile } from './contabilita'
 import { STRUTTURA_CF } from './codiceFiscale'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { nomeDallaCausale } from './movimentiPersona'
 import type { ComeAbbinato } from './abbinaMovimenti'
 import type { SuggerimentoMovimento } from './suggerimentoMovimento'
+import { cosaNonVaAbbinamento, type PersonaNucleo } from './assegna'
+import type { Ricevuta } from './ricevute'
 
 /**
  * La «Lista movimenti» di BancoPosta (CSV scaricato dall'home banking), letta nel browser e pronta per
@@ -292,6 +294,47 @@ export function pianoDiClassificazione(
   }
   const aLotti = [...perVoce].flatMap(([voceId, ids]) => pacchetti(ids).map((p) => ({ ids: p, voceId })))
   return { lotti: [...aLotti, ...conPersona], restano }
+}
+
+/** A quale ricevuta già fatta va un bonifico che entra con la persona (`abbinamentiImport`). */
+export type AbbinamentoBanca =
+  | { esito: 'ricevuta'; ricevutaId: string }
+  | { esito: 'piu'; ricevute: string[] }
+  | { esito: 'contesa'; con: string[] }
+
+/**
+ * Le entrate che entrano su quota o corsi con la persona e hanno una ricevuta libera che abbina (stesse regole di
+ * «Da assegnare»: importo, tutta in bonifico, entro 30 giorni, la persona o il suo nucleo). Una candidata sola,
+ * voluta da questa riga sola, e il bonifico entra con lei; se no lo dice, e la sceglie la segreteria.
+ */
+export function abbinamentiImport(
+  entrano: MovimentoBanca[], scelte: Record<string, SceltaVoceBanca>, ricevute: Ricevuta[], persone: PersonaNucleo[], voci: VoceContabile[], contoId: string,
+): Record<string, AbbinamentoBanca> {
+  const candidate = new Map<string, string[]>()
+  for (const mv of entrano) {
+    const scelta = scelte[mv.chiave]
+    const voce = voci.find((v) => v.id === scelta?.voceId)
+    if (mv.tipo !== 'entrata' || !scelta?.personaId || (voce?.nome !== VOCE_QUOTA && voce?.nome !== VOCE_CORSI) || cosaNonVaSceltaBanca(mv, scelta, voci, contoId)) continue
+    const m = { id: mv.chiave, importo: mv.importo, data: mv.data, personaId: scelta.personaId, descrizione: mv.descrizione }
+    const sue = ricevute.filter((r) => !r.movimentoId && cosaNonVaAbbinamento(m, r, persone) === null).map((r) => r.id)
+    if (sue.length) candidate.set(mv.chiave, sue)
+  }
+  return Object.fromEntries([...candidate].map(([chiave, sue]): [string, AbbinamentoBanca] => {
+    if (sue.length > 1) return [chiave, { esito: 'piu', ricevute: sue }]
+    const con = [...candidate].filter(([k, altre]) => k !== chiave && altre.includes(sue[0])).map(([k]) => k)
+    return [chiave, con.length ? { esito: 'contesa', con } : { esito: 'ricevuta', ricevutaId: sue[0] }]
+  }))
+}
+
+/** Dopo import e classificazione, le coppie da abbinare: non le tolte dalla segreteria, non i movimenti a cui la voce non è andata (`classificati` sono i loro id) o non ritrovati. */
+export function pianoDiAbbinamento(
+  abbinamenti: Record<string, AbbinamentoBanca>, tolti: Set<string>, classificati: Set<string>, scritti: Pick<MovimentoManuale, 'id' | 'origineImport' | 'annullatoIl'>[],
+): Array<{ chiave: string; movimentoId: string; ricevutaId: string }> {
+  const perChiave = new Map(scritti.filter((x) => x.origineImport && !x.annullatoIl).map((x) => [x.origineImport, x.id]))
+  return Object.entries(abbinamenti).flatMap(([chiave, a]) => {
+    const movimentoId = perChiave.get(chiave)
+    return a.esito === 'ricevuta' && movimentoId && !tolti.has(chiave) && classificati.has(movimentoId) ? [{ chiave, movimentoId, ricevutaId: a.ricevutaId }] : []
+  })
 }
 
 /**
