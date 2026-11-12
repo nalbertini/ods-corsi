@@ -206,5 +206,5 @@ select atteso('…anon no',
     where has_function_privilege('anon', f, 'execute')), null);
 select atteso('PostgREST chiama controlla_richiesta prima di ogni richiesta',
   (select array_to_string(rolconfig, ';') from pg_roles where rolname = 'authenticator'), '…pgrst.db_pre_request=public.controlla_richiesta…');
-select atteso('niente scritto dalle prove: tre movimenti, un pagamento, un file',
-  (select count(*) from movimenti) || '|' || (select count(*) from pagamenti_diretti) || '|' || (select count(*) from storage.objects), '3|1|1');
+select atteso('niente scritto dalle prove: quattro movimenti, due pagamenti, un file',
+  (select count(*) from movimenti) || '|' || (select count(*) from pagamenti_diretti) || '|' || (select count(*) from storage.objects), '4|2|1');
