@@ -88,7 +88,7 @@ Sopra l'elenco dei corsi, a parole:
   sua voce. Nel modulo di iscrizione si può scegliere lo stesso, con scritto
   «prezzo da confermare»: lo confermi tu. Se il corso non ha davvero un prezzo
   (una prova gratuita, un corso interno) premi **Va bene senza prezzo**: il
-  rosso si spegne, e **Rimetti il rosso** lo riaccende.
+  rosso si spegne, e il corso non si fa pagare né in segreteria né online, e **Rimetti il rosso** lo riaccende.
 - **«… manca il prezzo del trimestre»** (o **dell'annuale**, o **dell'annuale
   e del trimestre**) — il corso ha la voce, ma non il prezzo di quella
   formula: chi la sceglie nel modulo trova il prezzo da confermare. Il prezzo

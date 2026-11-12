@@ -67,13 +67,13 @@ const formulaDi = (descrizione: string) => {
 const nomiDellaVoce = (v: VoceCosto) => [v.corso, ...v.prezzi.flatMap((p) => (p.etichetta ? [`${v.corso} ${p.etichetta}`] : []))]
 
 /** I nomi con cui una voce di ricevuta può chiamare un corso: il suo e quelli della sua voce di listino. */
-function nomiDel(listino: Listino, c: CorsoRef): string[] {
+export function nomiDel(listino: Listino, c: CorsoRef): string[] {
   const v = voceDelCorso(listino.corsi, c)
   return [c.nome, ...(v ? nomiDellaVoce(v) : [])].map(nomeCorso)
 }
 
 /** Un corso gratuito non si paga: senza voce nel listino, senza un prezzo, o «va bene senza prezzo». */
-function aPagamento(listino: Listino, c: CorsoRef): boolean {
+export function aPagamento(listino: Listino, c: CorsoRef): boolean {
   if (listino.senzaPrezzoVaBene?.includes(c.id)) return false
   const v = voceDelCorso(listino.corsi, c)
   return !!v && v.prezzi.some((p) => [p.annuale, p.trimestre, p.saldo].some((x) => (x ?? 0) > 0))

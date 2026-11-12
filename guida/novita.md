@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.242.9 — 12 novembre 2026
+
+### Risolto
+
+- Un corso già pagato non risulta più da pagare e non si paga di nuovo online
+- Dopo «Salva il destinatario» il movimento resta aperto per scegliere voce e persona
+
 ## 0.242.8 — 12 novembre 2026
 
 ### Risolto

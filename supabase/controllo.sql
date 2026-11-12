@@ -726,6 +726,13 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rifà `abbina_ricevuta_movimento` del 135: se si rilancia 135 dopo, va rilanciato anche questo.
   ('151-abbina-famiglia-da-classificare.sql', 'il bonifico del genitore o Da classificare si abbina alla ricevuta in Bonifico',
     position('da_classificare' in pg_get_functiondef('public.abbina_ricevuta_movimento(uuid,uuid)'::regprocedure)) > 0),
+  -- Rifà funzioni di 105, 106 e 146: rilanciando quelli, il controllo torna «manca».
+  ('152-corso-gia-pagato.sql', '«questo corso è già pagato» nel database come in segreteria (nomi del listino, voci che partono domani, fuori app fino a fine stagione)',
+    exists (select 1 from dentro where nome = 'nomi_del_corso')
+    and exists (select 1 from dentro where nome = 'corso_in_segreteria' and corpo like '%nome_corso%')
+    and exists (select 1 from dentro where nome = 'corso_importo' and corpo like '%nomi_del_corso%' and corpo like '%corso_in_segreteria%')
+    and exists (select 1 from dentro where nome = 'quota_importo' and corpo like '%fine_fuori_app%' and corpo like '%quota_in_segreteria%')
+    and exists (select 1 from dentro where nome = 'satispay_corsi_chi' and corpo like '%senzaPrezzoVaBene%' and corpo like '%corso_in_segreteria%')),
   ('153-compensi-dal-bonifico.sql', 'i compensi si pagano con un bonifico già in banca',
     to_regprocedure('public.abbina_compensi_movimento(uuid[],uuid)') is not null)
 ) as x(file, cosa, c)
