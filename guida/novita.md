@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.240.2 — 12 novembre 2026
+
+### Risolto
+
+- Nell'appello, chi entra con + PROVA si vede subito e il menu ⋯ non perde la tastiera
+
 ## 0.240.1 — 12 novembre 2026
 
 ### Risolto
