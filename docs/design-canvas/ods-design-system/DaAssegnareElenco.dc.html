@@ -24,11 +24,11 @@
 </helmet>
 <div style="display: flex; flex-direction: column; gap: 18px; width: 1000px">
   <div class="riq">
-    <span class="et">COLLEGATI PRIMA · 2</span>
-    <span style="font-size: 14px">Questi bonifici erano già collegati e la ricevuta l’hai fatta a parte. Se è la stessa, abbinala: così i soldi non si contano due volte.</span>
-    <div class="riga"><span style="flex: 1 1 260px">Bonifico del 03/10/2026 <span class="sotto">· BONIFICO DA BIANCHI MARCO QUOTA</span> → ricevuta n. 298/2026 del 04/10/2026</span><span class="num">50,00 €</span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Abbina" hint-size="110px,48px"></dc-import><span class="link">Non è questa</span></div>
-    <div class="riga"><span style="flex: 1 1 260px">Bonifico del 08/10/2026 <span class="sotto">· BONIFICO VERDI ANNA</span> → ricevuta n. 301/2026 del 09/10/2026</span><span class="num">120,00 €</span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Abbina" hint-size="110px,48px"></dc-import><span class="link">Non è questa</span></div>
-    <div><dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Abbina tutti e 2" hint-size="190px,48px"></dc-import></div>
+    <span class="et">COLLEGATI PRIMA · 3</span>
+    <span style="font-size: 14px">Questi bonifici sono già nel Conto Corrente e la ricevuta in Bonifico l’hai fatta a parte. Se è la stessa, abbinala: così i soldi non si contano due volte.</span>
+    <div class="riga" style="align-items: center"><span style="flex: 1 1 380px; display: flex; flex-direction: column; gap: 2px"><span><b>Bonifico del 03/11/2026</b> <span class="sotto">· Bianchi Marco · Da BIANCHI MARCO per corso</span></span><span>→ ricevuta n. 121/2026 del 04/11/2026 · <b>Bianchi Sara</b> <span class="sotto">· della famiglia di Bianchi Marco</span></span></span><span class="num" style="font-weight: 700">100,00 €</span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Abbina" hint-size="110px,48px"></dc-import><span class="link">Non è questa</span></div>
+    <div class="riga" style="align-items: center"><span style="flex: 1 1 380px; display: flex; flex-direction: column; gap: 2px"><span><b>Bonifico del 13/10/2026</b> <span class="sotto">· Da classificare · Da ANNA NERI BONIFICO SEPA</span></span><span class="sotto" style="color: #8f6a00">Abbinando, il bonifico va a Gialli Tommaso su «Corsi e altri pagamenti».</span><span style="padding-left: 16px">ricevuta n. 98/2026 del 14/10/2026 · <b>Gialli Tommaso</b> <span class="sotto">· 1 giorno dopo</span></span></span><span class="num" style="font-weight: 700">230,00 €</span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Abbina" hint-size="110px,48px"></dc-import><span class="link">Non è questa</span></div>
+    <div class="riga" style="flex-direction: column; align-items: stretch"><span style="display: flex; gap: 12px; flex-wrap: wrap"><span style="flex: 1 1 380px"><b>Bonifico del 06/10/2026</b> <span class="sotto">· Da classificare · Da PAOLA ROSSI BONIFICO SEPA</span></span><span class="num" style="font-weight: 700">220,00 €</span></span><span class="sotto" style="color: #8f6a00">2 ricevute possono essere questa: scegli quella giusta. Abbinando, il bonifico va alla persona della ricevuta.</span><span style="display: flex; gap: 12px; align-items: center; padding-left: 16px"><span style="flex: 1 1 360px">ricevuta n. 104/2026 del 22/10/2026 · <b>Rossi Giulia</b> <span class="sotto">· 16 giorni dopo</span></span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="È questa" hint-size="120px,48px"></dc-import></span><span style="display: flex; gap: 12px; align-items: center; padding-left: 16px"><span style="flex: 1 1 360px">ricevuta n. 118/2026 del 04/11/2026 · <b>Neri Elena</b> <span class="sotto">· 29 giorni dopo</span></span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="È questa" hint-size="120px,48px"></dc-import></span><span class="link" style="padding-left: 16px">Nessuna di queste</span></div>
   </div>
   <div style="display: flex; flex-direction: column; gap: 6px">
     <span class="et">DA ASSEGNARE · 2 ENTRATE · 620,00 €</span>
@@ -37,10 +37,12 @@
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"$preview":{"width":1000,"height":440}}'>
-// COSTRUITA: DaAssegnare di src/components/segreteria/AssegnaMovimento.tsx (../assegna-pagamento/), la scheda DA ASSEGNARE di CONTABILITÀ
-// (fra MOVIMENTI e BILANCIO). COLLEGATI PRIMA solo se ci sono abbinamenti proposti (abbinamentiProposti: stessa persona, stesso importo,
-// tutto Bonifico, entro 30 giorni); «Non è questa» è un sg-link alto 44px; «Abbina tutti e N» solo con più di uno.
+<script data-dc-script data-props='{"$preview":{"width":1000,"height":560}}'>
+// COSTRUITA: DaAssegnare di src/components/segreteria/AssegnaMovimento.tsx (../assegna-pagamento/, ../bonifico-doppio/), la scheda DA
+// ASSEGNARE di CONTABILITÀ. COLLEGATI PRIMA solo se ci sono proposte: i bonifici collegati con la ricevuta della persona o della sua
+// famiglia (abbinamentiProposti, «· della famiglia di …»), e i Da classificare con tutte le ricevute possibili dalla più vicina
+// (daClassificareDaAbbinare): una sola → frase gialla con persona e voce, «Abbina»; più → «È questa» per riga e «Nessuna di queste».
+// «Non è questa» è un sg-link alto 44px, inchiostro 600; «Abbina tutti e N» (o «Abbina i N già collegati») solo per i collegati.
 // Elenco: data, persona · descrizione, cassa, «importo · tutto» o «resta di importo», «Assegna» che apre il movimento in MOVIMENTI.
 // Vuoto: «Niente da assegnare: ogni entrata collegata su quota e corsi dice a cosa va.».
 class Component extends DCLogic { renderVals() { return {}; } }
