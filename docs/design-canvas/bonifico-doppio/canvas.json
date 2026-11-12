@@ -1,0 +1,11 @@
+{
+ "pages": [{ "id": "page-1", "name": "Contabilità · lo stesso bonifico non conta due volte" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "Oggi · COLLEGATI PRIMA vede solo la stessa persona", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "Proposta · COLLEGATI PRIMA con famiglia e Da classificare", "x": 0, "y": 780, "page": "page-1" },
+  { "file": "Ricevuta.dc.html", "title": "Proposta · il modulo ricevuta dice «forse è già in banca»", "x": 0, "y": 1800, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1000, "text": "Contabilità: lo stesso bonifico non conta due volte" }
+ ]
+}

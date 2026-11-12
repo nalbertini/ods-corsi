@@ -46,7 +46,7 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { abbinaMovimento, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
-import { assegnato, conAssegnazioni, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, personeDelNucleo, SOLO_DAL_MOVIMENTO } from './assegna'
+import { assegnato, conAssegnazioni, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, movimentoDaClassificareAbbinabile, personeDelNucleo, SOLO_DAL_MOVIMENTO, voceDaRicevuta } from './assegna'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, giaNelPagamento, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
@@ -1878,19 +1878,28 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async abbinaRicevutaMovimento(movimentoId, ricevutaId) {
-      // Come `abbina_ricevuta_movimento` (135): «Collegati prima», la ricevuta già fatta a parte diventa del movimento.
+      // Come `abbina_ricevuta_movimento` (151): «Collegati prima», la ricevuta già fatta a parte diventa del movimento;
+      // anche di una persona del nucleo, e un bonifico Da classificare prende persona e voce della ricevuta.
       const { casse, voci, movimenti } = contabilita()
       const m = movimenti.find((x) => x.id === movimentoId)
       if (!m) throw new Error('Il movimento non c’è più: ricarica la pagina.')
-      const no = cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggiARoma())
-      if (no) throw new Error(no)
+      const daClassificare = movimentoDaClassificareAbbinabile(m, casse, voci, oggiARoma())
+      if (!daClassificare) {
+        const no = cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggiARoma())
+        if (no) throw new Error(no)
+      }
       const r = (a().ricevute ?? []).find((x) => x.id === ricevutaId)
       if (!r) throw new Error('La ricevuta non c’è più: ricarica la pagina.')
-      const nonVa = cosaNonVaAbbinamento(m, r)
+      const nonVa = cosaNonVaAbbinamento(m, r, a().persone)
       if (nonVa) throw new Error(nonVa)
       if (r.movimentoId === movimentoId) return
       if (assegnato(movimentoId, a().pagamentiDiretti ?? [], a().ricevute ?? []) > 0)
         throw new Error('Il bonifico ha già dei soldi assegnati: annulla prima le ricevute e le assegnazioni.')
+      if (daClassificare) {
+        const voceId = voci.find((v) => v.tipo === 'entrata' && v.nome === voceDaRicevuta(r))?.id
+        if (!voceId) throw new Error(`Manca la voce «${voceDaRicevuta(r)}»: ricarica la pagina.`)
+        a().movimenti = movimenti.map((x) => (x.id === movimentoId ? { ...x, personaId: x.personaId ?? r.personaId, voceId } : x))
+      }
       a().ricevute = (a().ricevute ?? []).map((x) => (x.id === ricevutaId ? { ...x, movimentoId } : x))
       salva()
     },

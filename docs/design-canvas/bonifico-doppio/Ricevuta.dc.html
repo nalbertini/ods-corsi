@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta · modulo ricevuta</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: NUOVO PAGAMENTO · RICEVUTA (Ricevute.tsx), solo per chi ha l'amministrazione. Con PAGATO CON «Bonifico», se nel Conto Corrente c'è un bonifico non abbinato con lo stesso importo della ricevuta entro 30 giorni (della persona, della sua famiglia o Da classificare), il riquadro lo dice e offre «È questo: abbinalo»: fatta la ricevuta, si abbina da sola a quel bonifico. Non blocca: senza scelta la ricevuta si fa come oggi. Il riquadro di oggi «ha un bonifico collegato e non assegnato» resta per i bonifici collegati con importo diverso. Nomi e numeri inventati. -->
+<div style="display: flex; flex-direction: column; gap: 16px; width: 760px; padding: 24px; background: #ffffff; border: 2px solid #cfe6f4">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">NUOVO PAGAMENTO · RICEVUTA</span>
+  <section aria-label="Forse è già in banca" style="display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #ffffff; border: 2px solid #cfe6f4; box-shadow: inset 4px 0 0 #8f6a00">
+    <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">FORSE È GIÀ IN BANCA</span>
+    <span style="font-size: 15px; line-height: 1.4">Bonifico del 13/10/2026 da <b style="font-variant-numeric: tabular-nums">230,00 €</b>, da classificare: «Da ANNA NERI BONIFICO SEPA». Se è questo pagamento, abbinalo: così non si conta due volte.</span>
+    <label style="display: flex; gap: 10px; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600"><input type="checkbox" checked style="width: 22px; height: 22px; accent-color: #0d2a3d"> È questo: abbinalo alla ricevuta</label>
+    <span style="font-size: 13px; color: #46606f">Fatta la ricevuta, il bonifico va a Gialli Tommaso su «Corsi e altri pagamenti».</span>
+  </section>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+    <label style="display: flex; flex-direction: column; gap: 6px; font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">DATA<input value="14/10/2026" style="padding: 10px 12px; font: 16px Inter, Arial, sans-serif; color: #0d2a3d; border: 2px solid #cfe6f4; background: #ffffff"></label>
+    <label style="display: flex; flex-direction: column; gap: 6px; font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">NUMERO<input placeholder="98 (il prossimo)" style="padding: 10px 12px; font: 16px Inter, Arial, sans-serif; color: #0d2a3d; border: 2px solid #cfe6f4; background: #ffffff"></label>
+    <label style="display: flex; flex-direction: column; gap: 6px; font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">PAGATO CON<select style="padding: 10px 12px; font: 16px Inter, Arial, sans-serif; color: #0d2a3d; border: 2px solid #cfe6f4; background: #ffffff"><option>Bonifico</option></select></label>
+  </div>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">VOCI</span>
+  <div style="display: flex; gap: 12px; align-items: baseline; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px"><span style="flex: 1 1 auto">Judo ragazzi · trimestre ottobre–dicembre</span><b style="font-variant-numeric: tabular-nums">230,00 €</b></div>
+  <div style="display: flex; justify-content: flex-end"><dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Fai la ricevuta" hint-size="200px,48px"></dc-import></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":760,"height":560}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
