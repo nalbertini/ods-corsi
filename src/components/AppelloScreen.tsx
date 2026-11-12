@@ -9,7 +9,7 @@ import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, TogliProva } from './Prove'
 import { CercaPersona } from './CercaPersona'
-import { aiutoAppello, chiudiAppello, codaAppello, contoRicerca, fraseAzzera, proveInPiu, quadroAppello, statoAppello, tastoAppello } from '../lib/etichetteAppello'
+import { aiutoAppello, chiudiAppello, codaAppello, contoRicerca, fraseAzzera, fraseGuaioAttivita, fraseGuaioSegnalata, proveInPiu, quadroAppello, statoAppello, tastoAppello } from '../lib/etichetteAppello'
 import { DueTocchi } from './ds'
 import { SegnoCompleanno } from './SegnoCompleanno'
 import { GiaPresenti } from './GiaPresenti'
@@ -56,8 +56,7 @@ function CambiaAttivita({ dati, sessione, onCambiata }: { dati: Dati; sessione: 
             await dati.cambiaAttivita(sessione.id, e.target.value || null)
             onCambiata()
           } catch (er) {
-            // I testi di chi sta sotto sono già per chi usa l'app; «controlla la connessione» solo se non ce n'è uno.
-            setGuaio(er instanceof Error && er.message ? er.message : 'Non sono riuscito a cambiare l’attività: controlla la connessione e riprova.')
+            setGuaio(fraseGuaioAttivita(er))
           }
         }}
       >
@@ -166,7 +165,7 @@ export function AppelloScreen({
       if (accogli) setD((v) => v && { ...v, elenco: v.elenco.map((p) => (p.id === x.personaId ? { ...p, stato: 'presente' } : p)) })
       onSegnalate?.()
     } catch (e) {
-      setGuaioSegnalata(e instanceof Error ? e.message : 'Non è andata: riprova')
+      setGuaioSegnalata(fraseGuaioSegnalata(e))
     } finally {
       inViaggio.current.delete(x.id)
     }

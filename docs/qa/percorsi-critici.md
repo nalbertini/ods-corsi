@@ -62,7 +62,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Entra con Google (iscritti) | iscritto, personale | entrare con l'account di un altro | `prova:iscritto-supabase` | sì |
 | Entra con Google (istruttori e segreteria) | istruttore, segreteria | Google estraneo collegato in silenzio | `prova:accesso-google` | no, da fare con un account vero |
 | Pagina dell'iscritto a tab | iscritto, titolare di un nucleo | segno di regola falso, nucleo visto da chi non deve | `prova:area-tab`, `prova:iscrizione-sito` | sì |
-| Presenza segnalata dall'iscritto | iscritto, istruttore, segreteria | segnalazione persa o fuori regola che passa | `prova:iscritti`, `prova:area-tab`, `iscritto.sql` | sì |
+| Presenza segnalata dall'iscritto | iscritto, istruttore, segreteria | segnalazione persa o fuori regola che passa | `prova:iscritti`, `prova:area-tab`, `prova:istruttori-look`, `iscritto.sql` | sì |
 | Ricerca universale di segreteria | segreteria | persona non trovata, scheda sbagliata, «in regola» falso | `prova:ricerca`, `prova:indirizzi`, `prova:a11y-segreteria`, `prova:menu` | sì |
 | Accesso e ruoli (PIN, RLS) | tutti | dati visti da chi non deve | `prova:segreteria`, `prova:ruoli`, `prova:banco`, `prova:edge`, `rls.sql`, `109-privilegi-e-certificati.sql`, `segreteria.sql`, `elimina-istruttore.sql`, `email-unica.sql` | sì |
 | Scheda del personale (schede e «Altro») | segreteria | accesso tolto o persona eliminata per sbaglio, dati visti da chi non deve | `prova:schede-personale`, `prova:ruoli`, `prova:segreteria`, `prova:pericolo`, `prova:edge`, `disattiva-chiude-iscrizioni.sql`, `elimina-istruttore.sql` | sì |
