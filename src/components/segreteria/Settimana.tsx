@@ -216,12 +216,12 @@ export function Settimana({
         titolo="SETTIMANA"
         sotto={`Le lezioni dell’orario dei corsi: aprine una per l’appello, il sostituto o per annullarla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato)}: si allunga da sé, e subito da IMPOSTAZIONI → LA STAGIONE.` : ''}`}
       >
-        <button type="button" className="sg-btn sg-btn-linea" onClick={() => void apriChiusura()}>
-          Chiusura dal… al…
-        </button>
-        <button type="button" className="sg-btn sg-btn-linea" onClick={() => setNuova(true)}>
-          + Lezione straordinaria
-        </button>
+        <Tasto onClick={() => void apriChiusura()}>
+          Chiudi per un periodo
+        </Tasto>
+        <Tasto onClick={() => setNuova(true)}>
+          Aggiungi una lezione
+        </Tasto>
       </Testa>
 
       <div className="row sg-sett-barra" style={{ gap: 8, flexWrap: 'wrap' }}>
@@ -655,25 +655,29 @@ function Lezione({
 
         <Appello key={l.id} l={l} onCambiato={onCambiato} />
 
-        <div className="grow" />
-        {l.straordinaria && (
-          <button
-            type="button"
-            className="sg-btn sg-btn-linea sg-pericolo"
-            onClick={async () => {
-              if (!(await chiedi(`Togliere questa lezione straordinaria? Sparisce dal calendario e dal tablet.`, 'Togli la lezione', { pericolo: true }))) return
-              void fai(() => d.togliLezione(l.id), 'Lezione tolta', () => {
-                onChiudi()
-                onCambiato()
-              })
-            }}
-          >
-            Togli questa lezione straordinaria
-          </button>
-        )}
-        <button type="button" className="sg-btn sg-btn-pieno" onClick={onChiudi}>
-          Fatto
-        </button>
+        <div className="sg-movimento-piede">
+          <div className="row" style={{ gap: 8 }}>
+            {l.straordinaria && (
+              <Tasto
+                className="sg-pericolo"
+                onClick={async () => {
+                  if (!(await chiedi(`Eliminare questa lezione straordinaria? Sparisce dal calendario e dal tablet.`, 'Elimina la lezione', { pericolo: true }))) return
+                  void fai(() => d.togliLezione(l.id), 'Lezione tolta', () => {
+                    onChiudi()
+                    onCambiato()
+                  })
+                }}
+              >
+                Elimina la lezione
+              </Tasto>
+            )}
+          </div>
+          <div className="row" style={{ gap: 8, marginLeft: 'auto' }}>
+            <Tasto onClick={onChiudi}>
+              Chiudi
+            </Tasto>
+          </div>
+        </div>
       </section>
     </>
   )
@@ -1107,7 +1111,7 @@ function Straordinaria({
         )}
         <div className="row" style={{ gap: 10, paddingTop: 6 }}>
           <button type="button" className="sg-btn sg-btn-linea grow" onClick={onChiudi}>
-            Lascia stare
+            Chiudi
           </button>
           <Tasto type="submit" tono="pieno" className="grow" disabled={!scelto}>
             Aggiungi
@@ -1212,9 +1216,9 @@ function ChiusuraPalestra({
           </div>
         )}
         <div className="row" style={{ gap: 10, paddingTop: 6 }}>
-          <button type="button" className="sg-btn sg-btn-linea grow" onClick={onChiudi}>
-            Lascia stare
-          </button>
+          <Tasto className="grow" onClick={onChiudi}>
+            Chiudi
+          </Tasto>
           <Tasto type="submit" tono="pieno" className="grow">
             Conta le lezioni
           </Tasto>

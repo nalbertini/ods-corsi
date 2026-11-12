@@ -253,7 +253,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               l’annuale a saldo; dopo, sparisce.
             </span>
             {letto.dato.cambiato && !cambiato && (
-              <button type="button" className="sg-link" style={{ alignSelf: 'flex-start' }} disabled={lavora} onClick={rimetti}>
+              <button type="button" className="sg-link sg-pericolo" style={{ alignSelf: 'flex-start' }} disabled={lavora} onClick={rimetti}>
                 Rimetti il listino del foglio originale
               </button>
             )}
@@ -354,12 +354,12 @@ export function Listino({ d }: { d: DatiSegreteria }) {
 
           {cambiato && (
             <div className="sg-listino-salva">
+              <Tasto className="sg-pericolo" disabled={lavora} onClick={() => void butta()}>
+                Butta i cambi
+              </Tasto>
               <span className="grow" style={{ fontSize: 14, color: guaio ? 'var(--rosso-testo)' : 'var(--sec)' }}>
                 {guaio ?? 'Ci sono cambi da salvare: fino ad allora la pagina di iscrizione mostra quello di prima.'}
               </span>
-              <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
-                Butta i cambi
-              </button>
               <Tasto tono="pieno" disabled={!!guaio || lavora} onClick={salva}>
                 Salva
               </Tasto>

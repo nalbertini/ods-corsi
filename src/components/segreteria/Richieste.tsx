@@ -16,7 +16,7 @@ import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { posizione, vicina } from '../../lib/schedaFinestra'
-import { chiedi, Campo, dataLunga, Guaio, lasciare, Proposta, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, Tasto } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, lasciare, Proposta, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, Tasto, Segmenti } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 const STATI: Record<StatoRichiesta, string> = { nuova: 'Nuova', accolta: 'Accolta', rifiutata: 'Rifiutata' }
@@ -176,16 +176,22 @@ export function Richieste({
           sotto={`${nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}${
             stampare === 1 ? ' Una con il documento da stampare e cancellare.' : stampare ? ` ${stampare} con il documento da stampare e cancellare.` : ''
           }`}
-        >
-          {stampare > 0 && (
-            <button type="button" className="num sg-chip" aria-pressed={soloStampare} onClick={() => setDaStampare(!soloStampare)}>
-              Da stampare
-            </button>
-          )}
-          <button type="button" className="num sg-chip" aria-pressed={tutte && !soloStampare} onClick={() => (setDaStampare(false), setTutte(!tutte))}>
-            Anche quelle già gestite
-          </button>
-        </Testa>
+        />
+        <div className="sg-elenco-barra sg-elenco-barra-due">
+          <span className="sg-filtro-gruppo">
+            <span className="sg-etichetta" aria-hidden="true">MOSTRA</span>
+            <Segmenti
+              etichetta="Quali richieste"
+              voci={[
+                ['nuove', 'Nuove'] as const,
+                ...(stampare > 0 ? [['stampare', 'Da stampare'] as const] : []),
+                ['tutte', 'Tutte'] as const,
+              ]}
+              scelta={soloStampare ? 'stampare' : tutte ? 'tutte' : 'nuove'}
+              onScegli={(v) => (setDaStampare(v === 'stampare'), setTutte(v === 'tutte'))}
+            />
+          </span>
+        </div>
         {nonMandati > 0 && (
           <section aria-label="Avvisi">
             <Riquadro tono="prova">
@@ -214,7 +220,7 @@ export function Richieste({
                     ? 'Niente da stampare.'
                     : tutte
                       ? 'Non è ancora arrivata nessuna richiesta.'
-                      : 'Nessuna richiesta nuova. Le altre si vedono con «anche quelle già gestite».'}
+                      : 'Nessuna richiesta nuova. Le altre si vedono con «Tutte».'}
                 </p>
               )}
               {mostrate.map((x) => (
@@ -521,7 +527,7 @@ function Scheda({
               <div className="row">
                 <button
                   type="button"
-                  className="sg-btn sg-btn-linea"
+                  className="sg-btn sg-btn-linea sg-pericolo"
                   onClick={async () => {
                     if ((await chiedi(`Rifiutare il certificato di ${x.nome} ${x.cognome}? Il file si cancella per sempre: va rimandato, o portato in segreteria.`, 'Rifiuta il file', { pericolo: true })))
                       void fai(() => r.eliminaFile(x.id, 'certificato'), 'File rifiutato e cancellato', () => void file.ricarica())
@@ -549,7 +555,7 @@ function Scheda({
               ))}
               {x.personaId && (
                 <div className="row">
-                  <button type="button" className="sg-btn sg-btn-rosso" onClick={() => stampato(x.personaId!)}>
+                  <button type="button" className="sg-btn sg-btn-linea sg-pericolo" onClick={() => stampato(x.personaId!)}>
                     Stampato, cancella
                   </button>
                 </div>
@@ -620,40 +626,41 @@ function Scheda({
       {/* Accogli e Rifiuta restano in vista anche con la scheda lunga: scorre il corpo della finestra. */}
       <div className="row sg-scheda-piede-fisso" style={{ gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
         {x.stato === 'nuova' && (
-          <>
-            <button
-              type="button"
-              className={problemi.length ? 'sg-btn sg-btn-linea' : 'sg-btn sg-btn-verde'}
-              disabled={inAttesa}
-              onClick={() => accogli(accoglila(), 'Accolta: ora è in elenco e iscritta ai suoi corsi')}
-            >
-              {problemi.length ? 'Accogli lo stesso' : 'Accogli'}
-            </button>
-            <button
-              type="button"
-              className="sg-btn sg-btn-linea"
-              onClick={async () => {
-                if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.${restituire ? `\n\n${restituire}` : ''}`, 'Rifiuta la richiesta', { pericolo: true })))
-                  void fai(() => r.rifiuta(x.id), 'Richiesta rifiutata', () => {
-                    onCambiato()
-                    onConclusa()
-                  })
-              }}
-            >
-              Rifiuta
-            </button>
-          </>
+          <button
+            type="button"
+            className="sg-btn sg-btn-linea sg-pericolo"
+            onClick={async () => {
+              if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.${restituire ? `\n\n${restituire}` : ''}`, 'Rifiuta la richiesta', { pericolo: true })))
+                void fai(() => r.rifiuta(x.id), 'Richiesta rifiutata', () => {
+                  onCambiato()
+                  onConclusa()
+                })
+            }}
+          >
+            Rifiuta
+          </button>
         )}
+        <span className="grow" />
         {x.personaId && (
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => onApri(x.personaId!)}>
             Apri la scheda
+          </button>
+        )}
+        {x.stato === 'nuova' && (
+          <button
+            type="button"
+            className={problemi.length ? 'sg-btn sg-btn-linea' : 'sg-btn sg-btn-verde'}
+            disabled={inAttesa}
+            onClick={() => accogli(accoglila(), 'Accolta: ora è in elenco e iscritta ai suoi corsi')}
+          >
+            {problemi.length ? 'Accogli lo stesso' : 'Accogli'}
           </button>
         )}
       </div>
 
       {/* Lontano da «Accogli» e «Rifiuta»: cancella i file per sempre e si usa di rado. Accolta, tiene i dati della scheda. */}
       {siElimina(x) && (
-        <div className="row" style={{ justifyContent: 'flex-end', marginTop: 24 }}>
+        <div className="row" style={{ marginTop: 24 }}>
           <Tasto
             className="sg-pericolo"
             onClick={async () => {

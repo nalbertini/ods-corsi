@@ -39,7 +39,7 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   scheda, ma non è da pagare. Il genitore non iscritto e il titolare senza
   corsi non sono né in **Da pagare** né in **Corsi scaduti**.
 - **Non in regola** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
-  anche dal bottone **Chi non è in regola** delle [Statistiche](statistiche.md).
+  anche dal bottone **Visualizza chi non è in regola** delle [Statistiche](statistiche.md).
 - **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([Le tessere](#le-tessere)).
 - **Tesserati senza corso** — chi ha una tessera da atleta che vale oggi e nessun corso (può aver smesso e avere ancora la tessera dell'anno). C'è solo se il database ha le tessere.
 - **Senza documento** — chi non ha ancora la copia del documento d'identità in
@@ -424,7 +424,7 @@ Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a qu
 **Importa tessere**, in cima all'**Elenco**, apre il caricamento; **← Iscritti** torna all'elenco. Tre passi:
 
 1. **IL FOGLIO** — dal RASD, tab Tesseramenti, salva il foglio come **CSV** (da Excel: *File → Salva con nome → CSV UTF-8*). Le colonne sono **Organismo, Persona, Codice fiscale, Tipo, Codice tess., Valido dal**, con `;` o `,` come separatore. **Scegli il foglio**, poi **Controlla**.
-2. **IL CONTROLLO** — non scrive niente. Dice quante tessere sono nuove, quante ci sono già e non cambiano, e quante righe restano fuori, ognuna col motivo. **Metti N tessere** le scrive.
+2. **IL CONTROLLO** — non scrive niente. Dice quante tessere sono nuove, quante ci sono già e non cambiano, e quante righe restano fuori, ognuna col motivo. **Importa N tessere** le scrive.
 3. **NELL'APP** — le trovi nella scheda di ogni persona, sotto **TESSERE**.
 
 La persona si riconosce dal **codice fiscale e dallo stesso nome** (anche con accenti, apostrofi o nome e cognome scambiati): se il codice fiscale c'è ma il nome è un altro, la riga non entra. L'import **non crea nessuna persona**: chi non ha la scheda, o ha la scheda senza il codice fiscale, resta fuori. Si scrive il codice fiscale nella scheda e si rifà il foglio. Si può rifare quante volte si vuole: non duplica niente. La tessera vale fino al **31 dicembre** dell'anno di «Valido dal».

@@ -231,9 +231,9 @@ export function StoricoIscritto({
                   </button>
                 </div>
               )}
-              {/* Raro e senza ritorno: su una riga sua, a destra, e non più grande del PDF che si preme ogni giorno. */}
+              {/* Raro e senza ritorno: su una riga sua, a sinistra, lontano dal tasto che si preme, e non più grande del PDF che si preme ogni giorno. */}
               {!r.annullataIl && (
-                <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
+                <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-start' }}>
                   <button type="button" className="num sg-chip sg-pericolo" onClick={() => annulla(r)}>
                     Annulla ricevuta
                   </button>
@@ -325,7 +325,7 @@ function RigaDelloStorico({ riga, rata, aMano, stato, diventato, onFanne, onApri
       <span className="num" style={{ fontSize: 18, fontWeight: 700, whiteSpace: 'nowrap', textDecoration: barrato, color: riga.annullato ? 'var(--dim)' : 'var(--verde-testo)' }}>
         {euro(riga.importo)} €
       </span>
-      {/* Come per la ricevuta: quel che si preme spesso sulla riga, l'annullo raro su una riga sua; a capo, a destra come lui. */}
+      {/* Come per la ricevuta: quel che si preme spesso sulla riga, l'annullo raro su una riga sua; a capo, a sinistra. */}
       {onFanne && (
         <button type="button" className="num sg-chip" style={{ marginLeft: 'auto' }} onClick={onFanne}>
           Fanne la ricevuta
@@ -337,7 +337,7 @@ function RigaDelloStorico({ riga, rata, aMano, stato, diventato, onFanne, onApri
         </button>
       )}
       {onAnnulla && (
-        <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
+        <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-start' }}>
           <button type="button" className="num sg-chip sg-pericolo" onClick={onAnnulla}>
             Annulla pagamento
           </button>

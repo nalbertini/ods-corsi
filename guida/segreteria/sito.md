@@ -104,7 +104,7 @@ rimettono l'ultima modifica.
   diventa una **Foto**. Il testo non cambia. La pagina resta **da salvare**: se non ti
   piace, **Annulla** in alto la rimette com'era.
 - **Sul sito**: **Nascondi dal sito** toglie la pagina dal sito senza cancellarla
-  (**Mostra sul sito** la rimette); **Cancella la pagina** la toglie per sempre, e
+  (**Mostra sul sito** la rimette); **Elimina la pagina** la toglie per sempre, e
   non si cancella finché è nel menu o nel footer.
 
 Le pagine scritte prima col testo solo (la Home, i corsi) si aprono già divise in
@@ -193,8 +193,8 @@ centro**. **DOVE STANNO LE PERSONE** apre la foto intera: trascina il punto (o
 tocca) su chi deve vedersi; anche con la tastiera, le frecce lo spostano di
 poco, con Maiusc di più. Accanto si vede come la taglia il sito sul computer,
 sul telefono e, se la foto è in cima a una scheda (la prima foto di una voce
-in un elenco che il sito fa a schede), nella scheda vista dal telefono. **SALVA IL PUNTO** lo tiene, **TORNA COME PRIMA** rimette quello
-salvato, **ANNULLA** chiude senza cambiare. Il punto vale in ogni pagina dove
+in un elenco che il sito fa a schede), nella scheda vista dal telefono. **SALVA** lo tiene, **TORNA COME PRIMA** rimette quello
+salvato, **CHIUDI** chiude senza cambiare. Il punto vale in ogni pagina dove
 c'è la foto, anche nei riquadri fatti dal sito, e si vede sul sito entro
 qualche minuto. L'anteprima delle pagine nel pannello taglia ancora al centro.
 
@@ -221,7 +221,7 @@ pagine si scrivono come prima.
 **Menu e footer** ha due elenchi: **MENU IN ALTO** e **FOOTER**. Ogni voce ha
 un nome e dice dove porta: una pagina del sito o un indirizzo. Il nome arriva a 60 lettere. Le frecce
 **↑** e **↓** la spostano, **Togli** la toglie, **+ Aggiungi una voce**
-ne aggiunge una. **Salva** salva, **Butta i cambi** torna a prima. Se passi da **Pagine** a **Menu e footer** con voci a metà, l'app chiede prima.
+ne aggiunge una. **Salva** salva, **Annulla** torna a prima. Se passi da **Pagine** a **Menu e footer** con voci a metà, l'app chiede prima.
 
 Sul sito la voce che porta ai contatti non sta nel menu in alto: diventa il
 pulsante scuro **CONTATTACI**, accanto a **PROVA**. Nel piede resta tra le

@@ -54,7 +54,7 @@ In alto:
 ## Aprire una lezione
 
 Un clic su una lezione apre il riquadro a destra. Ogni cambio si salva subito;
-**Fatto** (o Esc) lo chiude, e così il tasto Indietro del browser: la griglia
+**Chiudi** (o Esc) lo chiude, e così il tasto Indietro del browser: la griglia
 resta sulla stessa settimana e sala. Le settimane sfogliate con le frecce non
 contano: Indietro riporta alla voce di prima.
 
@@ -100,20 +100,20 @@ contano: Indietro riporta alla voce di prima.
 
 ## Lezione straordinaria
 
-**+ Lezione straordinaria**, in alto a destra: una lezione in più, fuori dalle
+**Aggiungi una lezione**, in alto a destra: una lezione in più, fuori dalle
 ricorrenze — un recupero, un evento, una prova aperta.
 
 1. Scegliere il **corso**, il **giorno**, l'**ora** e i **minuti**.
 2. **Aggiungi**.
 
 Gli iscritti del corso sono già nell'appello. Se era un errore, aprirla e
-premere **Togli questa lezione straordinaria**.
+premere **Elimina la lezione**.
 Se quel giorno la palestra è chiusa, una nota gialla lo dice: la lezione si
 aggiunge lo stesso, prevista.
 
 ## Chiusura della palestra
 
-**Chiusura dal… al…**, accanto a **+ Lezione straordinaria**: per Natale,
+**Chiudi per un periodo**, accanto a **Aggiungi una lezione**: per Natale,
 Pasqua o un ponte annulla in un colpo tutte le lezioni del periodo, invece
 di annullarle una per una.
 
@@ -130,7 +130,7 @@ serve, avvisali tu.
 
 Nelle settimane chiuse, sopra la griglia, una fascia **CHIUSA** dice il
 periodo, la sala e quante lezioni ha annullato. **Togli la chiusura** (nella fascia o nell'elenco dentro
-**Chiusura dal… al…**) rimette previste le lezioni annullate dalla chiusura,
+**Chiudi per un periodo**) rimette previste le lezioni annullate dalla chiusura,
 con le presenze che avevano; quelle annullate a mano restano annullate,
 anche quelle rimesse a mano e poi annullate di nuovo. Se un giorno è chiuso
 anche da un'altra chiusura (per esempio una sala e poi tutta la palestra),

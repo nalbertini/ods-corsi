@@ -118,9 +118,9 @@ function DoveStannoLePersone({ im, salvato, usata, scheda, onSalva, onChiudi }: 
           <span className="sg-sotto sito-punto-nota">Si vedrà sul sito entro qualche minuto.</span>
           {/* Il tasto si spegne appena cliccato: il fuoco torna sulla foto, se no cadrebbe sul fondo della pagina. */}
           <Tasto className="sito-punto-torna" disabled={!cambiato || lavora} onClick={() => { setP(prima); foto.current?.focus() }}>Torna come prima</Tasto>
-          <Tasto className="sito-punto-annulla" onClick={onChiudi}>Annulla</Tasto>
+          <Tasto className="sito-punto-annulla" onClick={onChiudi}>Chiudi</Tasto>
           <Tasto className="sito-punto-salva" tono="pieno" disabled={lavora} onClick={() => void fai(() => onSalva(p), 'Punto salvato', onChiudi)}>
-            {lavora ? 'Salvo…' : 'Salva il punto'}
+            {lavora ? 'Salvo…' : 'Salva'}
           </Tasto>
           {avviso}
         </div>
@@ -170,21 +170,21 @@ export function Immagini({ d, pagine }: { d: DatiSegreteria; pagine: PaginaSito[
                 </span>
                 {punti.dato && (punto ? <span className="sg-tag" data-tipo="fatto">Persone a posto</span> : <span className="sg-sotto">Tagliata al centro</span>)}
                 <span className="sg-sotto">{usata.length ? `Usata in: ${usata.join(', ')}` : 'Non è usata in nessuna pagina'}</span>
-                {punti.dato && (
-                  <Tasto data-punto={im.nome} onClick={() => setAperta(im)}>Dove stanno le persone</Tasto>
-                )}
-                {usata.length ? (
-                  <span className="sg-tag">In uso: non si cancella</span>
-                ) : (
-                  <button type="button" className="sg-chip num sg-pericolo" disabled={lavora}
-                    onClick={async () => {
-                      if (!(await chiedi('Togliere questa immagine? Non si può rimettere: andrà caricata di nuovo. Con lei va via anche il punto delle persone: se carichi una foto al suo posto, il punto va scelto da capo.', 'Togli l’immagine', { pericolo: true, no: 'Lascia stare' }))) return
-                      void fai(() => d.cancellaImmagineSito(im.nome), 'Immagine tolta', () => Promise.all([elenco.ricarica(), punti.ricarica()]))
-                    }}
-                  >
-                    Togli
-                  </button>
-                )}
+                <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  {usata.length ? (
+                    <span className="sg-tag">In uso: non si cancella</span>
+                  ) : (
+                    <Tasto className="sg-pericolo" disabled={lavora}
+                      onClick={async () => {
+                        if (!(await chiedi('Togliere questa immagine? Non si può rimettere: andrà caricata di nuovo. Con lei va via anche il punto delle persone: se carichi una foto al suo posto, il punto va scelto da capo.', 'Togli l’immagine', { pericolo: true, no: 'Lascia stare' }))) return
+                        void fai(() => d.cancellaImmagineSito(im.nome), 'Immagine tolta', () => Promise.all([elenco.ricarica(), punti.ricarica()]))
+                      }}
+                    >
+                      Togli
+                    </Tasto>
+                  )}
+                  {punti.dato && <Tasto data-punto={im.nome} onClick={() => setAperta(im)}>Dove stanno le persone</Tasto>}
+                </div>
               </li>
             )
           })}
@@ -242,9 +242,9 @@ export function ScegliImmagine({ d, onScelta, onChiudi, perFoto = false }: { d: 
           <span>Solo decorativa: non dice niente in più</span>
         </label>
         <div className="row" style={{ gap: 10, justifyContent: 'flex-end' }}>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-            Lascia stare
-          </button>
+          <Tasto onClick={onChiudi}>
+            Chiudi
+          </Tasto>
           <button type="button" className="sg-btn sg-btn-pieno" disabled={!scelta || !!no} title={!scelta ? 'Scegli prima un’immagine' : (no ?? undefined)} onClick={() => scelta && onScelta(scelta, pulito)}>
             Inserisci
           </button>

@@ -23,7 +23,7 @@ quando è arrivata.
 Le stesse segnalazioni le vede l'istruttore della lezione, in cima al suo
 calendario e nell'appello di quella lezione (vedi la [guida degli
 istruttori](../istruttori.md#le-presenze-segnalate)): le gestisce chi arriva
-prima. **Anche quelle già gestite** mostra anche le accolte e le rifiutate,
+prima. **MOSTRA › Tutte** mostra anche le accolte e le rifiutate,
 con chi l'ha fatto e quando.
 
 Si segnalano solo le lezioni degli ultimi trenta giorni, già cominciate e

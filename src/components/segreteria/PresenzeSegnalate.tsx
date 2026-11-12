@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { SegnalataVista } from '../../lib/segnalate'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Guaio, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { Guaio, Testa, useAvviso, useCarica, useOrdina, Segmenti } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 /** Per ordinare per stato: prima quelle da vedere. */
@@ -46,9 +46,18 @@ export function PresenzeSegnalate({ d, onCambiato, onVai, schede }: { d: DatiSeg
         titolo="PRESENZE"
         sotto={daVedere.length === 1 ? 'Una da vedere.' : daVedere.length ? `${daVedere.length} da vedere.` : 'Nessuna da vedere.'}
       >
-        <button type="button" className="num sg-chip" aria-pressed={tutte} onClick={() => setTutte(!tutte)}>
-          Anche quelle già gestite
-        </button>
+        <span className="sg-filtro-gruppo">
+          <span className="sg-etichetta" aria-hidden="true">MOSTRA</span>
+          <Segmenti
+            etichetta="Quali presenze segnalate"
+            voci={[
+              ['da_vedere', 'Da vedere'],
+              ['tutte', 'Tutte'],
+            ]}
+            scelta={tutte ? 'tutte' : 'da_vedere'}
+            onScegli={(v) => setTutte(v === 'tutte')}
+          />
+        </span>
       </Testa>
       {schede}
 
@@ -71,7 +80,7 @@ export function PresenzeSegnalate({ d, onCambiato, onVai, schede }: { d: DatiSeg
           {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le segnalazioni…</p>}
           {elenco.dato !== null && lista.length === 0 && (
             <p className="sg-sotto" style={{ padding: '12px 14px' }}>
-              {tutte ? 'Nessuna presenza segnalata.' : 'Niente da vedere. Le altre si vedono con «anche quelle già gestite».'}
+              {tutte ? 'Nessuna presenza segnalata.' : 'Niente da vedere. Le già gestite si vedono con «Tutte».'}
             </p>
           )}
           {ordina(lista).map((x) => (
