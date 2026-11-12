@@ -722,6 +722,13 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from pg_trigger where tgname = 'pagamenti_satispay_unione')
     and exists (select 1 from dentro where nome = 'anteprima_unione' and corpo like '%pagamentiOnline%')),
   ('150-corso-archiviato-il.sql', 'i conti di un corso archiviato si fermano al giorno dell''archiviazione',
-    exists (select 1 from pg_trigger where tgname = 'corsi_archiviato_il' and tgrelid = 'public.corsi'::regclass))
+    exists (select 1 from pg_trigger where tgname = 'corsi_archiviato_il' and tgrelid = 'public.corsi'::regclass)),
+  -- Rifà funzioni di 105, 106 e 146: rilanciando quelli, il controllo torna «manca».
+  ('152-corso-gia-pagato.sql', '«questo corso è già pagato» nel database come in segreteria (nomi del listino, voci che partono domani, fuori app fino a fine stagione)',
+    exists (select 1 from dentro where nome = 'nomi_del_corso')
+    and exists (select 1 from dentro where nome = 'corso_in_segreteria' and corpo like '%nome_corso%')
+    and exists (select 1 from dentro where nome = 'corso_importo' and corpo like '%nomi_del_corso%' and corpo like '%corso_in_segreteria%')
+    and exists (select 1 from dentro where nome = 'quota_importo' and corpo like '%fine_fuori_app%' and corpo like '%quota_in_segreteria%')
+    and exists (select 1 from dentro where nome = 'satispay_corsi_chi' and corpo like '%senzaPrezzoVaBene%' and corpo like '%corso_in_segreteria%'))
 ) as x(file, cosa, c)
 order by file, cosa;

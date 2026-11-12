@@ -9,7 +9,7 @@ import type { VoceStorico } from './movimentiPersona'
 import { QUOTA, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { statoCorsi, type VoceCorso } from './corsiDaPagare'
 import { stagioneDi } from './costi'
-import type { CorsoRef, Listino } from './listino'
+import { nomeCorso, type CorsoRef, type Listino } from './listino'
 import { pagamentoDi, type PersonaSeg } from './segreteria'
 
 /**
@@ -281,7 +281,9 @@ export const quotaInSegreteria = (diretti: PagamentoDiretto[], personaId: string
  */
 export const corsoInSegreteria = (diretti: PagamentoDiretto[], personaId: string, nomi: string[], oggi: string): boolean =>
   attiveDi(diretti, personaId).some((d) => {
-    const formula = ['annuale', 'trimestre', 'saldo'].find((f) => nomi.some((n) => !!n.trim() && stessa(d.voce, `${f} ${n.trim()}`)))
+    // Coi nomi come `statoCorsi`: «Annuale Fitness 2 giorni», senza accenti e maiuscole (152).
+    const m = d.voce.trim().match(/^(annuale|trimestre|saldo)\s+(.+)$/i)
+    const formula = m && nomi.some((n) => !!nomeCorso(n) && nomeCorso(n) === nomeCorso(m[2])) ? m[1].toLowerCase() : undefined
     return !!formula && stagioneDi(d.data).corsi.dal === stagioneDi(oggi).corsi.dal && (formula !== 'trimestre' || oggi <= fineTrimestre(d.data))
   })
 

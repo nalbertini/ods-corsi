@@ -391,12 +391,12 @@ export function creaIscrittoSupabase(c: SupabaseClient): DatiIscritto {
       const { data, error } = await c.rpc('satispay_corsi_chi', { persona })
       if (error || !data) return null
       // `as`: la forma è quella di `satispay_corsi_chi` (106-paga-corso-satispay.sql).
-      const r = data as { adulto: boolean; accesso_proprio: boolean; come_titolare: boolean; corsi: { corso_id: string; annuale: number | null; trimestre: number | null; segreteria: boolean; a_pagamento: boolean; pagato: boolean; assegnato?: boolean }[] }
+      const r = data as { adulto: boolean; accesso_proprio: boolean; come_titolare: boolean; corsi: { corso_id: string; annuale: number | null; trimestre: number | null; segreteria: boolean; a_pagamento: boolean; pagato: boolean; assegnato?: boolean; voce?: string | null; etichette?: string[] }[] }
       return {
         adulto: r.adulto,
         haAccessoProprio: r.accesso_proprio,
         comeTitolare: r.come_titolare,
-        corsi: r.corsi.map((x) => ({ corsoId: x.corso_id, annuale: x.annuale ?? undefined, trimestre: x.trimestre ?? undefined, segreteria: x.segreteria, aPagamento: x.a_pagamento, pagato: x.pagato, assegnato: x.assegnato ?? false })),
+        corsi: r.corsi.map((x) => ({ corsoId: x.corso_id, annuale: x.annuale ?? undefined, trimestre: x.trimestre ?? undefined, segreteria: x.segreteria, aPagamento: x.a_pagamento, pagato: x.pagato, assegnato: x.assegnato ?? false, voce: x.voce ?? undefined, etichette: x.etichette ?? undefined })),
       }
     },
   }
