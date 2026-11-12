@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.242.12 — 12 novembre 2026
+
+### Modificato
+
+- Movimenti: la colonna TIPO dice la voce, senza «Dalla banca»
+
 ## 0.242.11 — 12 novembre 2026
 
 ### Risolto
