@@ -85,7 +85,12 @@ const piuLontana = <T extends { al?: string }>(voci: T[]) => [...voci].sort((a, 
  * Uno stato per iscrizione in corso a un corso a pagamento, per nome del
  * corso. undefined se le ricevute non si sono lette (`vociCorsi` assente).
  */
-export function statoCorsi(p: Pick<PersonaSeg, 'attiva' | 'pagamento' | 'iscrizioni' | 'vociCorsi' | 'satispay' | 'satispayQuota' | 'satispayCorsi'>, corsi: CorsoRef[], listino: Listino, oggi: string): StatoCorso[] | undefined {
+export function statoCorsi(
+  p: Pick<PersonaSeg, 'attiva' | 'pagamento' | 'iscrizioni' | 'vociCorsi' | 'satispay' | 'satispayQuota' | 'satispayCorsi'>,
+  corsi: Array<CorsoRef & { attivo?: boolean; archiviatoIl?: string }>,
+  listino: Listino,
+  oggi: string,
+): StatoCorso[] | undefined {
   const voci = p.vociCorsi
   if (!voci) return undefined
   if (!p.attiva) return []
@@ -98,10 +103,12 @@ export function statoCorsi(p: Pick<PersonaSeg, 'attiva' | 'pagamento' | 'iscrizi
   const ecc = p.pagamento
   const fino = ecc.fino || STAGIONE.quota.al
 
-  const iscritti = new Set(p.iscrizioni.filter((i) => i.dal <= oggi && (!i.al || i.al >= oggi)).map((i) => i.corsoId))
+  // Un corso archiviato si guarda al giorno dell'archiviazione: quel che era dovuto resta, dopo non matura più niente.
+  const alGiorno = (c: { attivo?: boolean; archiviatoIl?: string }) => (c.attivo === false && c.archiviatoIl && c.archiviatoIl < oggi ? c.archiviatoIl : oggi)
   return corsi
-    .filter((c) => iscritti.has(c.id) && aPagamento(listino, c))
+    .filter((c) => aPagamento(listino, c) && p.iscrizioni.some((i) => i.corsoId === c.id && i.dal <= alGiorno(c) && (!i.al || i.al >= oggi)))
     .map((c): StatoCorso => {
+      const oggi = alGiorno(c)
       const nomi = nomiDel(listino, c)
       const sue = voci.flatMap((v) => {
         const f = formulaDi(v.descrizione)

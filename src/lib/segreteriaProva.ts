@@ -537,6 +537,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
           istruttori: c.istruttori.map((id) => ({ id, nome: nomeIstruttore(id) })),
           capienza: c.capienza,
           attivo: c.attivo,
+          archiviatoIl: c.archiviatoIl,
           enteTessera: c.enteTessera,
           bastaUno: c.bastaUno ?? false,
           ricorrenze: c.ricorrenze
@@ -593,7 +594,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async archiviaCorso(corsoId, attivo) {
       corso(corsoId)
-      a().corsi = a().corsi.map((c) => (c.id === corsoId ? { ...c, attivo } : c))
+      // Come il trigger di `149-corso-archiviato-il.sql`.
+      a().corsi = a().corsi.map((c) => (c.id === corsoId ? { ...c, attivo, archiviatoIl: attivo ? undefined : c.attivo ? oggi() : c.archiviatoIl } : c))
       salva()
     },
 

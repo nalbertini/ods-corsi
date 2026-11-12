@@ -38,6 +38,9 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   Un corso **da controllare** non conta qui né in DA FARE: si guarda nella
   scheda, ma non è da pagare. Il genitore non iscritto e il titolare senza
   corsi non sono né in **Da pagare** né in **Corsi scaduti**.
+  Un corso archiviato conta fino al giorno in cui l'hai archiviato: chi era
+  coperto quel giorno non c'è, chi non l'aveva pagato resta (vedi
+  [Archiviare](corsi.md#archiviare)).
 - **Non in regola** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
   anche dal bottone **Visualizza chi non è in regola** delle [Statistiche](statistiche.md).
 - **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([Le tessere](#le-tessere)).
