@@ -976,7 +976,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
   color: var(--giallo-testo); border: 2px solid var(--giallo); padding: 1px 6px;
 }
 /* La riga di una prova: il tocco sul nome come le altre, e accanto TOGLI. */
-.riga-prova { display: flex; gap: 6px; align-items: stretch; }
+/* Chi entra con + PROVA si scorre fin lì (scrollIntoView): il margine tiene la riga sopra la barra CHIUDI, ferma in fondo. */
+.riga-prova { display: flex; gap: 6px; align-items: stretch; scroll-margin-bottom: 120px; }
 .riga-prova > :first-child { flex-grow: 1; min-width: 0; }
 /* Chi è appena entrato dalla ricerca: si vede un attimo, poi torna come gli altri. */
 .riga-prova[data-appena='true'] .riga-appello { outline: 2px solid var(--text); outline-offset: 2px; }

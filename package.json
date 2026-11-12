@@ -193,7 +193,7 @@
     "prova:edge": "node scripts/prova-edge.mjs",
     "prova:edge-certificato": "node scripts/prova-edge-certificato.mjs",
     "prova:a11y-axe": "node scripts/prova-a11y-axe.mjs",
-    "prova:a11y-appello-menu": "node scripts/prova-a11y-appello-menu.mjs"
+    "prova:appello-browser": "node scripts/prova-appello-browser.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.24.0",

@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------
-// Il fuoco del menu ⋯ dell'appello, in un Chromium vero, in modalità prova e
-// alla misura del telefono.
+// L'appello in un Chromium vero, in modalità prova e alla misura del telefono:
+// quel che le regex non vedono (il fuoco, cosa copre cosa).
 //
-//   npm run build && node scripts/prova-a11y-appello-menu.mjs
+//   npm run build && node scripts/prova-appello-browser.mjs
 //
 // Aperto il menu il fuoco va sul foglio e col TAB non esce: il foglio si dice
 // `aria-modal` e dietro il velo c'è l'elenco da segnare. Chiuso (CHIUDI IL
@@ -110,6 +110,20 @@ try {
   ok('con AZZERA spento, il TAB resta nel foglio', (await fuoco()).startsWith('nel foglio'), true)
   await pagina.keyboard.press('Escape')
   ok('e ESC lo richiude sul ⋯', await fuoco(), 'tasto ⋯')
+
+  // + PROVA: la riga di chi è appena entrato si vede, non resta sotto la barra
+  // CHIUDI ferma in fondo (l'ha trovato il collaudo: c'era solo «PROVE 1»).
+  await pagina.locator('.btn-prova').click()
+  await pagina.getByRole('button', { name: /NON LO TROVO/ }).click()
+  const campi = pagina.locator('input:visible')
+  await campi.nth(1).fill('Ada')
+  await campi.nth(2).fill('Lovelace')
+  await pagina.getByRole('button', { name: 'AGGIUNGI' }).click()
+  const riga = pagina.locator('.riga-prova').first()
+  await riga.waitFor()
+  await pagina.waitForTimeout(800) // lo scorrimento è morbido
+  const [r, barra] = await Promise.all([riga.boundingBox(), pagina.locator('.barra-chiudi').boundingBox()])
+  ok('+ PROVA: la riga nuova finisce sopra la barra CHIUDI', !!r && !!barra && r.y + r.height <= barra.y, true)
 
   ok('nessun errore nella pagina', errori, [])
 } finally {

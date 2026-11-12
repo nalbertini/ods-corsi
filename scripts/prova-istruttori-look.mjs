@@ -257,7 +257,7 @@ ok('.foglio-appello: foglio dal basso, raggio 12px in alto', /border-radius:\s*1
 }
 // Trovati nel collaudo a 390px: «+ PROVA» andava a capo su due righe, e chiuso il menu il fuoco ripartiva dal fondo della pagina.
 ok('.barra-chiudi .btn-prova: «+ PROVA» su una riga sola', /white-space:\s*nowrap/.test(corpo(/\.barra-chiudi \.btn-prova/)), true)
-// Il fuoco del menu ⋯ (dentro aperto, sul ⋯ chiuso, il TAB che non scappa) lo prova il browser: prova-a11y-appello-menu.mjs.
+// Il fuoco del menu ⋯ (dentro aperto, sul ⋯ chiuso, il TAB che non scappa) lo prova il browser: prova-appello-browser.mjs.
 // Dalla revisione: chiuso il foglio con AZZERA che chiede, la frase restava «Tocca di nuovo»; la lente aveva il colore scritto a mano; AZZERA spento a 0.4 non si leggeva.
 {
   const schermo = readFileSync('src/components/AppelloScreen.tsx', 'utf8')
