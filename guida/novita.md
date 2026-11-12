@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.240.1 — 12 novembre 2026
+
+### Risolto
+
+- Nell'appello gli errori dicono cosa fare, senza i testi tecnici del server
+
 ## 0.240.0 — 12 novembre 2026
 
 ### Novità
