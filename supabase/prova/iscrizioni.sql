@@ -571,11 +571,23 @@ select atteso('Lia D''Arco la manda', tenta($$select (invia_iscrizione(adulto(js
   'nome', 'Lia', 'cognome', 'D''Arco', 'codice_fiscale', cf_prova('DRCLIA', (current_date - interval '30 years')::date, true), 'email', 'lia@esempio.it', 'telefono', '347 888 0002'))) is not null)::text$$), 'true');
 select atteso('Ennio scrive Deluca', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
   'nome', 'Ennio', 'cognome', 'Deluca', 'codice_fiscale', cf_prova('DLCNNE', (current_date - interval '30 years')::date), 'email', 'ennio@esempio.it', 'telefono', '347 888 0003'))) is not null)::text$$), 'true');
+-- Un altro Luca D’Amico, con un altro codice fiscale ma il telefono di casa di Luca: è un'altra persona.
+select atteso('l''altro Luca D’Amico la manda', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Luca', 'cognome', 'D’Amico', 'codice_fiscale', cf_prova('DMCLCU', (current_date - interval '50 years')::date), 'nato_il', current_date - interval '50 years',
+  'email', 'altro.damico@esempio.it', 'telefono', '347 888 0001'))) is not null)::text$$), 'true');
+-- Rita Dalla Torre ha la sua email: la richiesta «Rita Dallatorre» con la stessa email è lei.
+select atteso('Rita scrive Dallatorre', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Rita', 'cognome', 'Dallatorre', 'codice_fiscale', cf_prova('DLLRTI', (current_date - interval '30 years')::date, true), 'email', 'rita.dt@esempio.it', 'telefono', '347 888 0005'))) is not null)::text$$), 'true');
 reset role;
+insert into persone (id, nome, cognome, ruolo, email) values ('aaaaaaaa-0000-0000-0000-000000000015', 'Rita', 'Dalla Torre', 'iscritto', 'rita.dt@esempio.it');
 set role authenticated;
 select atteso('D’Amico ritrovato dal codice delle anagrafiche',
   tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'luca.damico@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000013')::text$$), 'true');
 select atteso('Lia accolta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'lia@esempio.it')) is not null)::text$$), 'true');
+select atteso('l''altro D’Amico, col telefono di Luca ma un altro codice: una scheda nuova',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'altro.damico@esempio.it')) <> 'aaaaaaaa-0000-0000-0000-000000000013')::text$$), 'true');
+select atteso('Dallatorre ritrovata dalla stessa email',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'rita.dt@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000015')::text$$), 'true');
 select atteso('Deluca ritrovato dal nome, senza email',
   tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'ennio@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000014')::text$$), 'true');
 reset role;
@@ -588,8 +600,8 @@ set role authenticated;
 select atteso('D’Arco ritrovata dal codice della richiesta accolta',
   tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'papa.lia@esempio.it')) = (select persona_id from richieste_iscrizione where email = 'lia@esempio.it'))::text$$), 'true');
 reset role;
-select atteso('una scheda sola per D''Amico, D''Arco e De Luca',
-  (select count(*)::text from persone where nome_compatto(cognome) in ('damico', 'darco', 'deluca')), '3');
+select atteso('due Luca D''Amico, una Lia D''Arco, un Ennio De Luca, una Rita Dalla Torre',
+  (select count(*)::text from persone where nome_compatto(cognome) in ('damico', 'darco', 'deluca', 'dallatorre')), '5');
 
 \echo ''
 \echo '--- eliminare una richiesta: accolta, tiene i dati della scheda ---'

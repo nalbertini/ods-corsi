@@ -26,7 +26,7 @@
 -- ---------------------------------------------------------------------------
 
 create or replace function nome_compatto(t text) returns text
-  language sql immutable parallel safe set search_path = pg_catalog, public as $$
+  language sql immutable set search_path = pg_catalog, public as $$
   -- Gli stessi segni di `STACCA` in nomi.ts e di `somiglia` (34).
   select regexp_replace(testo_piano(t), '[''’‘ʼ´‐–—\s-]', '', 'g')
 $$;
