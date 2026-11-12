@@ -1486,7 +1486,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (!colNome.length && !senzaNome.length) throw new Error('Questo bonifico non può essere il pagamento di queste ricevute: ricarica la pagina')
       if (giornoChiuso(chiusure, [m.cassaId], m.data)) throw new Error('Quel giorno la cassa è già chiusa: scegli un altro giorno o annulla la chiusura')
       const voce = voci.find((v) => v.tipo === 'uscita' && v.diSistema && v.nome.trim().toLowerCase() === VOCE_COMPENSI.toLowerCase())?.id
-      a().movimenti = movimenti.map((x) => (x.id === m.id ? { ...x, personaId: p.id, voceId: voce ?? x.voceId } : x))
+      if (!voce) throw new Error('Manca la voce «Compensi istruttori»: va lanciato 81-compensi-pagati.sql')
+      a().movimenti = movimenti.map((x) => (x.id === m.id ? { ...x, personaId: p.id, voceId: voce } : x))
       a().ricevuteCompensi = tutte.map((r) => (scelte.includes(r.id) ? { ...r, movimentoId: m.id, pagataIl: m.data } : r))
       salva()
     },

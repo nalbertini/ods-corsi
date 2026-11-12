@@ -82,6 +82,8 @@ select uscita('2025-11-06', 29480, 'Maura Uno', 'Da classificare', 'Conto Corren
 select uscita('2026-01-15', 16000, 'Maura Uno') as oltre \gset
 select uscita('2026-01-14', 16000, 'Maura Uno') as al_limite \gset
 select uscita('2025-11-07', 29480, 'Maura Uno') as annullata \gset
+select uscita('2025-11-07', 29480, 'Maura Uno') as da_satispay \gset
+update movimenti set satispay_id = 'prova-satispay' where id = :'da_satispay';
 update movimenti set annullato_il = now() where id = :'annullata';
 select uscita('2026-01-10', 29480, 'Maura Uno', 'Compensi istruttori', 'Conto Corrente', 'aaaaaaaa-0000-0000-0000-000000000005') as gia_suo \gset
 select count(*) as prima from movimenti \gset
@@ -119,6 +121,7 @@ select atteso('dalla Cassa Contanti no', tenta(abbina(format('{%s}', :'m_nov'), 
 select atteso('collegato a un altro tecnico no', tenta(abbina(format('{%s}', :'m_nov'), :'di_ivo')), 'NEGATO: …');
 select atteso('un''entrata no', tenta(abbina(format('{%s}', :'m_nov'), :'entrata')), 'NEGATO: …');
 select atteso('annullato no', tenta(abbina(format('{%s}', :'m_nov'), :'annullata')), 'NEGATO: …');
+select atteso('da Satispay no', tenta(abbina(format('{%s}', :'m_nov'), :'da_satispay')), 'NEGATO: …');
 select atteso('un movimento che non c''è no', tenta(abbina(format('{%s}', :'m_nov'), gen_random_uuid()::text)), 'NEGATO: …');
 reset role;
 select atteso('niente è cambiato', (select count(*)::text from ricevute_compensi where movimento_id is not null), '2');

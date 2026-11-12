@@ -1159,10 +1159,17 @@ function PannelloPaga({
   const spunta = (m: (typeof proposti.colNome)[number]) => (
     <div key={m.id} className="stack" style={{ gap: 4, borderTop: '1px solid var(--line-soft)', paddingTop: 10 }}>
       <span style={{ fontSize: 15, lineHeight: 1.4 }}>
-        Bonifico in uscita del {dataRicevuta(m.data)} da <b className="num">{euro(m.importo)} €</b>: «{m.descrizione}».
+        Bonifico in uscita del {dataRicevuta(m.data)} da <b className="num">{euro(m.importo)} €</b>
+        {banca.dato?.[1].find((v) => v.id === m.voceId)?.nome === VOCE_COMPENSI ? '' : ', da classificare'}: «{m.descrizione}».
       </span>
       <label className="row" style={{ gap: 10, alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600 }}>
-        <input type="checkbox" style={{ width: 22, height: 22 }} checked={bonifico?.id === m.id} onChange={(e) => setBonificoId(e.target.checked ? m.id : null)} />
+        <input
+          type="checkbox"
+          style={{ width: 22, height: 22, accentColor: 'var(--text)' }}
+          aria-label={`È questo il bonifico del ${dataRicevuta(m.data)} da ${euro(m.importo)} €: è il pagamento di queste ricevute`}
+          checked={bonifico?.id === m.id}
+          onChange={(e) => setBonificoId(e.target.checked ? m.id : null)}
+        />
         È questo: è il pagamento di queste ricevute
       </label>
     </div>
@@ -1189,7 +1196,7 @@ function PannelloPaga({
         </label>
       ))}
       <span className="sg-sotto">Solo le sue ricevute fatte e non ancora pagate. Un bonifico che paga più mesi è un movimento solo.</span>
-      {banca.guaio && <span className="sg-sotto">Non si riesce a controllare se il bonifico è già in banca ({banca.guaio}): guarda CONTABILITÀ → MOVIMENTI prima di segnare pagato.</span>}
+      {banca.guaio && <span role="status" className="sg-sotto">Non si riesce a controllare se il bonifico è già in banca ({banca.guaio}): guarda CONTABILITÀ → MOVIMENTI prima di segnare pagato.</span>}
       {proposti.colNome.length > 0 && (
         <section className="sg-riquadro" data-avviso="true" aria-label="Forse è già in banca">
           <span className="sg-etichetta">FORSE È GIÀ IN BANCA</span>

@@ -47,7 +47,8 @@ begin
   if not found or m.annullato_il is not null then raise exception 'Il bonifico non c’è più o è annullato: ricarica la pagina' using errcode = '22023'; end if;
   -- Gli stessi controlli di `bonificiPerCompensi`, nome a parte.
   if m.tipo <> 'uscita' or m.satispay_id is not null or (select nome from casse where id = m.cassa_id) is distinct from 'Conto Corrente'
-     or (select nome from voci_contabili where id = m.voce_id and tipo = 'uscita') not in ('Compensi istruttori', 'Da classificare') then
+     -- `coalesce`: una voce che manca o non è d'uscita dà null, e `null not in (…)` non scatterebbe.
+     or coalesce((select nome from voci_contabili where id = m.voce_id and tipo = 'uscita'), '') not in ('Compensi istruttori', 'Da classificare') then
     raise exception 'Si sceglie solo un’uscita del Conto Corrente su «Compensi istruttori» o «Da classificare»' using errcode = '22023';
   end if;
   if m.persona_id is not null and m.persona_id <> tecnico then raise exception 'Il bonifico è collegato a un’altra persona' using errcode = '22023'; end if;

@@ -84,7 +84,9 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   compenso cambiato a mano e il perché, tutte in un PDF; «Firmata» e «Non torna più»
   (`supabase/80-ricevute-compensi.sql`). SEGNA PAGATO scrive l'uscita in CONTABILITÀ (anche più
   mesi in un movimento, bonifico o contanti), e il movimento annullato le rimette da pagare
-  (`supabase/81-compensi-pagati.sql`).
+  (`supabase/81-compensi-pagati.sql`). Se il bonifico è già arrivato dalla banca, SEGNA PAGATO lo
+  propone (FORSE È GIÀ IN BANCA) e lo usa come pagamento, senza una seconda uscita
+  (`supabase/153-compensi-dal-bonifico.sql`).
 - **Manca la firma**: in COMPENSI chi era previsto a una lezione tenuta in due e non ha firmato,
   con C'ERA e «Non c'era»; nei corsi alternati «a lezione basta uno» (`supabase/82-manca-la-firma.sql`).
 - **Gli iscritti di un corso**: nella scheda di un corso, DATI e ISCRITTI; in ISCRITTI una
