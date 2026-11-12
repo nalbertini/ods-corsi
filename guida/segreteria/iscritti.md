@@ -372,7 +372,8 @@ scheda è disattivata, nessuno.
   Per chi ha pagato la quota fuori dall'app (prima dell'app, con una ricevuta
   di carta) c'è **Segna come pagata**: **VALE FINO AL** (di
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
-  PAGATA**. In elenco la quota è in regola, e nella scheda si legge **Fuori app**; alla sua data
+  PAGATA**. Senza **VALE FINO AL** vale fino al 31 luglio della stagione in cui la segni.
+  In elenco la quota è in regola, e nella scheda si legge **Fuori app**; alla sua data
   scade da sola, e **Togli**, nel riquadro della quota, la toglie prima.
 - **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima quanto ha pagato in questa stagione, tra ricevute e incassi; poi un elenco solo, dal più recente, con le ricevute (e i loro pagamenti sotto) e gli incassi senza ricevuta, col tag **Senza ricevuta**. Si vedono gli ultimi 5: **Mostra altre N** apre gli altri. Quelli di tutti sono in [CONTABILITÀ → MOVIMENTI](../amministrazione/contabilita.md#movimenti).
 - **ISCRIZIONI** — i corsi che fa, uno per riquadro, con da quando e se è
