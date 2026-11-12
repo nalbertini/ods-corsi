@@ -42,9 +42,9 @@ function useAnagrafe(d: DatiSegreteria) {
 }
 type Anagrafe = NonNullable<ReturnType<typeof useAnagrafe>['dato']>
 
-/** I corsi che la persona fa adesso, come li vuole la ricevuta. */
+/** I corsi che la persona fa adesso, come li vuole la ricevuta; con l'archiviazione, che ferma i conti del corso. */
 const corsiDi = (p: PersonaSeg, a: Anagrafe, oggi: string) =>
-  p.iscrizioni.filter((i) => inCorso(i, oggi)).flatMap((i) => a.corsi.filter((c) => c.id === i.corsoId).map((c) => ({ id: c.id, nome: c.nome })))
+  p.iscrizioni.filter((i) => inCorso(i, oggi)).flatMap((i) => a.corsi.filter((c) => c.id === i.corsoId).map((c) => ({ id: c.id, nome: c.nome, attivo: c.attivo, archiviatoIl: c.archiviatoIl })))
 
 /**
  * Dentro il movimento aperto: quel che del bonifico è assegnato, le ricevute fatte da lì e quel che resta da

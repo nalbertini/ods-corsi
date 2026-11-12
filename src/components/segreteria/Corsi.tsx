@@ -383,7 +383,7 @@ function Scheda({
             type="button"
             className="sg-btn sg-btn-linea sg-pericolo"
             onClick={async () => {
-              if ((await chiedi(`Archiviare ${corso.nome}? Le lezioni future senza appello spariscono dal calendario; il registro resta.`, 'Archivia il corso'))) {
+              if ((await chiedi(`Archiviare ${corso.nome}? Le lezioni future senza appello spariscono dal calendario; il registro resta. Chi non l’ha pagato fino a oggi resta da pagare, dopo non matura più niente.`, 'Archivia il corso'))) {
                 void fai(() => d.archiviaCorso(corso.id, false), `${corso.nome} archiviato`, () => {
                   onArchiviato()
                   onCambiato()

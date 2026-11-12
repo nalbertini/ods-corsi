@@ -67,6 +67,8 @@ export interface CorsoProva {
   istruttori: string[]
   capienza?: number
   attivo: boolean
+  /** Il giorno dell'archiviazione (`corsi.archiviato_il`). */
+  archiviatoIl?: string
   /** Quale tessera chiede (FIJLKAM, FIPE…); senza, nessuna. */
   enteTessera?: string
   /** A lezione basta uno degli istruttori (`corsi.basta_uno`). */

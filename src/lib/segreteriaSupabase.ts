@@ -981,6 +981,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const chi = await insegnanti(righe.map((r) => r.id))
       // Letta a parte: senza 82-manca-la-firma.sql la colonna non c'è, e CORSI non offre la spunta.
       const uno = bastaUnoDai(await db.from('corsi').select('id, basta_uno'))
+      // Letta a parte: senza 150-corso-archiviato-il.sql la colonna non c'è, e un archiviato conta fino a oggi come prima.
+      const arch = await db.from('corsi').select('id, archiviato_il').eq('attivo', false)
+      if (arch.error && !(arch.error.code === '42703' && /archiviato_il/.test(arch.error.message ?? ''))) throw guaio(arch.error)
+      // La forma è quella della select `id, archiviato_il`.
+      const archiviatoIl = new Map(((arch.error ? [] : arch.data) as Array<{ id: string; archiviato_il: string | null }>).map((x) => [x.id, x.archiviato_il ?? undefined]))
       const g = oggi()
       return righe.map(
         (r): CorsoSeg => ({
@@ -992,6 +997,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           istruttori: [...(chi.get(r.id) ?? [])].sort((x, y) => Number(y.id === r.istruttore_id) - Number(x.id === r.istruttore_id)),
           capienza: r.capienza ?? undefined,
           attivo: r.attivo,
+          archiviatoIl: archiviatoIl.get(r.id),
           enteTessera: r.ente_tessera ?? undefined,
           bastaUno: uno ? (uno.get(r.id) ?? false) : undefined,
           ricorrenze: r.ricorrenze
