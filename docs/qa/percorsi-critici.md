@@ -79,7 +79,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Filtro «Pagato nel vecchio programma» | segreteria | segnato pagato per un incasso non suo | `prova:pagato-prima`, `prova:filtri-iscritti`, `pagato-vecchio-programma.sql` | sì |
 | Bilancio di un anno | amministrazione | movimento contato in due anni o in nessuno | `prova:bilancio` | sì |
 | Fatture dalla chat con Claude | amministrazione | movimento doppio o mai scritto, dati personali verso Claude | `prova:mcp`, `movimenti-dalla-chat.sql`, `contabilita.sql` | sì |
-| Conti letti dalla chat con Claude | amministrazione | totale diverso da BILANCIO, nomi verso Claude | `prova:mcp`, `prova:bilancio`, `prova:contabilita`, `prova:segreteria` | sì |
+| Conti letti dalla chat con Claude | amministrazione | totale diverso da BILANCIO, nomi verso Claude | `prova:mcp`, `prova:bilancio`, `prova:contabilita`, `prova:segreteria`, `claude-dalla-porta.sql` | sì |
 | Segreteria dalla chat con Claude (spenta) | segreteria | dati di un minore verso Claude | `prova:mcp`, `prova:frequenza`, `prova:segreteria`, `prova:certificati`, `75-chat-segreteria.sql`, `finto-supabase.sql` | sì, quando si accende |
 | Il token di Claude solo dalla sua porta | tutti | token che legge persone o certificati | `prova:mcp`, `claude-dalla-porta.sql`, `rls.sql`, `contabilita.sql` | sì |
 | Elenco ISCRITTI | segreteria | un guaio in elenco, un minore contato da adulto, famiglia fuori filtro | `prova:iscritti`, `prova:filtri-iscritti`, `prova:pagato-prima`, `prova:segreteria-ordine` | sì |

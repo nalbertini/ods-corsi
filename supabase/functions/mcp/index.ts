@@ -87,7 +87,7 @@ function apri(token: string) {
       }))
     },
     // Gli incassi degli iscritti: mai intestatario, ente, note o persona; delle ricevute solo le voci coi loro pagamenti.
-    // Le righe arrivano senza tipo dall'API: la forma è quella di `chat_ricevute` e `chat_pagamenti_diretti` (77).
+    // Le righe arrivano senza tipo dall'API: la forma è quella di `chat_ricevute` e `chat_pagamenti_diretti` (77, col `movimento_id` del 147).
     async incassi() {
       const [ricevute, diretti] = await Promise.all([
         tutteLeRighe((da: number, a: number) => db.rpc('chat_ricevute').order('id').range(da, a)),

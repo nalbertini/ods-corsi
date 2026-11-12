@@ -850,6 +850,8 @@ export interface IncassoPerConti {
   metodo: string
   voce: string
   annullato: boolean
+  /** Il bonifico da cui vengono (135): quei soldi sono già nel movimento, e `incassiDerivati` li lascia fuori. */
+  movimentoId?: string
 }
 
 /**
@@ -865,12 +867,14 @@ export const incassiPerConti = (incassi: IncassoPerConti[], casse: Cassa[]): Rig
  * intestatario, note né persona: il server non li legge nemmeno.
  */
 export function incassiDaRighe(
-  ricevute: Array<{ voci: Array<{ descrizione: string; pagamenti: Array<{ data: string; importo: number; metodo: string }> }>; annullata_il: string | null }>,
-  diretti: Array<{ data: string; importo: number; metodo: string; voce: string; annullato_il: string | null }>,
+  ricevute: Array<{ voci: Array<{ descrizione: string; pagamenti: Array<{ data: string; importo: number; metodo: string }> }>; annullata_il: string | null; movimento_id?: string | null }>,
+  diretti: Array<{ data: string; importo: number; metodo: string; voce: string; annullato_il: string | null; movimento_id?: string | null }>,
 ): IncassoPerConti[] {
+  // `movimento_id` manca finché il 147 non è lanciato: si conta come prima.
+  const bonifico = (id: string | null | undefined) => (id ? { movimentoId: id } : {})
   return [
-    ...ricevute.flatMap((r) => r.voci.flatMap((v) => v.pagamenti.map((p) => ({ data: p.data, importo: p.importo, metodo: p.metodo, voce: v.descrizione, annullato: r.annullata_il !== null })))),
-    ...diretti.map((d) => ({ data: d.data, importo: d.importo, metodo: d.metodo, voce: d.voce, annullato: d.annullato_il !== null })),
+    ...ricevute.flatMap((r) => r.voci.flatMap((v) => v.pagamenti.map((p) => ({ data: p.data, importo: p.importo, metodo: p.metodo, voce: v.descrizione, annullato: r.annullata_il !== null, ...bonifico(r.movimento_id) })))),
+    ...diretti.map((d) => ({ data: d.data, importo: d.importo, metodo: d.metodo, voce: d.voce, annullato: d.annullato_il !== null, ...bonifico(d.movimento_id) })),
   ]
 }
 
