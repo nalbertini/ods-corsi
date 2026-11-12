@@ -239,7 +239,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
             disabled={(!fogli.corsi && !fogli.iscritti && !fogli.risposte) || (!!fogli.risposte && !nomeChiaro)}
             onClick={() => void controlla()}
           >
-            Avanti: controlla
+            Controlla i fogli
           </button>
         </>
       )}

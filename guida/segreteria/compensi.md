@@ -59,8 +59,8 @@ Non ferma la ricevuta: si fa lo stesso. Se la ricevuta è già fatta e poi si
 segna **C'era**, la riga diventa **NON TORNA PIÙ**: si annulla e si rifà. Se è
 già **PAGATA**, prima si annulla il pagamento in CONTABILITÀ, poi si rifà la
 ricevuta del mese giusto e si ripaga. Chi nel mese ha solo lezioni senza la
-sua firma sta solo in ASPETTANO UNA FIRMA. La pastiglia **Manca la firma**, in
-alto, fa vedere solo quelle.
+sua firma sta solo in ASPETTANO UNA FIRMA. Sotto **MOSTRA**, **Manca la firma**
+fa vedere solo quelle.
 
 Nei corsi dove gli istruttori si alternano, in [Corsi](corsi.md) si spunta
 **Si alternano: a lezione basta uno**: lì, se uno ha firmato, agli altri non
@@ -112,8 +112,8 @@ c'è lo stesso, con **SOLO EXTRA**. Si segnano firmate, si ristampano e si
 pagano come quella del mese, dalla loro riga; il loro nome le apre per
 cambiarle. Finché non è pagata, **Modifica** cambia per cosa
 e quanto (e la ricevuta torna da firmare: si ristampa e si rifà firmare), e
-**Annulla** la toglie (resta nel registro, annullata). La pastiglia
-**Extra**, in alto, fa vedere solo i tecnici che ne hanno.
+**Annulla** la toglie (resta nel registro, annullata). Sotto **MOSTRA**,
+**Extra** fa vedere solo i tecnici che ne hanno; **Tutti** li rimette tutti.
 
 ## Il pagamento
 

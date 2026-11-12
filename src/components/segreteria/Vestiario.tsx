@@ -613,7 +613,7 @@ function SchedaOrdine({
                 {guaio ??
                   `Righe cambiate: il totale ${totale === o.totale ? `resta ${inEuro(totale)}` : `passa da ${inEuro(o.totale)} a ${inEuro(totale)}`}. Fino a SALVA l’ordine resta com’era.`}
               </span>
-              <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
+              <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={lavora} onClick={() => void butta()}>
                 Butta i cambi
               </button>
               <Tasto tono="pieno" disabled={!!guaio || lavora} onClick={() => void salva()}>
@@ -826,9 +826,9 @@ function NuovoOrdine({
             ))}
           </select>
         </span>
-        <button type="button" className="sg-btn sg-btn-linea" onClick={onLascia}>
-          Lascia stare
-        </button>
+        <Tasto onClick={onLascia}>
+          Chiudi
+        </Tasto>
       </div>
     </div>
   )
@@ -1272,7 +1272,7 @@ function CatalogoChiusura({
               {guaio ??
                 `Ci sono cambi da salvare: fino ad allora la pagina degli ordini mostra il catalogo di prima.${siCancella ? ` ${siCancella}` : ''}`}
             </span>
-            <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
+            <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={lavora} onClick={() => void butta()}>
               Butta i cambi
             </button>
             <Tasto tono="pieno" disabled={!!guaio || lavora} onClick={() => void salva()}>

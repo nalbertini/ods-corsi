@@ -9,8 +9,7 @@ import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
 import { centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, daPagareCompensi, extraDelPagamento, avvisoDelMese, aChePunto, azioneCarta, azioneRiga, gruppiCompensi, senzaImporto, STATI_FERMI, type AzioneCompenso, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type GruppoCompensi, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
-import { chiedi, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
-import { Chip } from '../ds'
+import { chiedi, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Segmenti, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 const GIORNI_CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
@@ -942,14 +941,8 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
               {quante(righe.length, 'tecnico', 'tecnici')} ·{' '}
               <span style={fermi.length ? { color: 'var(--rosso-testo)', fontWeight: 700 } : undefined}>{quante(fermi.length, 'fermo', 'fermi')}</span> · {euro(totaleDaPagare)} € da pagare · {euro(tutti.pagati)} € pagati
             </span>
-            <span className="row" style={{ gap: 10, flexWrap: 'wrap', marginLeft: 'auto', alignItems: 'center' }}>
-              <Chip acceso={filtro === 'manca-firma'} numero={tutti.senzaFirma.length} etichetta={`Manca la firma: ${quante(tutti.senzaFirma.length, 'lezione', 'lezioni')}`} onClick={() => setFiltro(filtro === 'manca-firma' ? null : 'manca-firma')}>
-                Manca la firma
-              </Chip>
-              <Chip acceso={filtro === 'extra'} numero={nExtra} etichetta={`Extra: ${quante(nExtra, 'ricevuta', 'ricevute')}`} onClick={() => setFiltro(filtro === 'extra' ? null : 'extra')}>
-                Extra
-              </Chip>
-              {/* Anche per chi nel mese non ha lezioni: per questo sta qui e non solo nel dialogo del tecnico. */}
+            {/* Anche per chi nel mese non ha lezioni: per questo sta qui e non solo nel dialogo del tecnico. */}
+            <span className="row" style={{ marginLeft: 'auto', alignItems: 'center' }}>
               <button type="button" className="sg-btn sg-btn-linea" onClick={() => setExtra({})}>
                 + Compenso extra
               </button>
@@ -957,6 +950,23 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
           </>
         )}
       </div>
+      {dati.dato && (
+        <div className="sg-elenco-barra sg-elenco-barra-due">
+          <span className="sg-filtro-gruppo">
+            <span className="sg-etichetta" aria-hidden="true">MOSTRA</span>
+            <Segmenti
+              etichetta="Quali compensi"
+              voci={[
+                ['tutti', 'Tutti'],
+                ['manca-firma', `Manca la firma · ${tutti.senzaFirma.length}`],
+                ['extra', `Extra · ${nExtra}`],
+              ]}
+              scelta={filtro ?? 'tutti'}
+              onScegli={(v) => setFiltro(v === 'tutti' ? null : v)}
+            />
+          </span>
+        </div>
+      )}
       {dati.guaio && <Guaio testo={dati.guaio} />}
       {dati.dato && (
         <>

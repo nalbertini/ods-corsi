@@ -75,7 +75,7 @@ MODIFICA**: la modifica resta lì, torni a finirla.
 Quattro cifre, per l'**AREA ISTRUTTORE** del [tablet di sala](../sala.md).
 
 Nella scheda, **Imposta il PIN** (o **Cambia il PIN** se c'è già) → le quattro
-cifre → **OK**. Due persone non possono avere lo stesso PIN. Il PIN lo cambia
+cifre → **Salva**. Due persone non possono avere lo stesso PIN. Il PIN lo cambia
 solo la segreteria.
 
 Messo sul tablet durante una lezione, il PIN segna anche la presenza
@@ -102,7 +102,7 @@ stesso tecnico può avere tariffe diverse in corsi diversi.
 
 Ci sono i corsi di cui è titolare e quelli in cui ha fatto lezione nell'ultimo
 anno, anche **da sostituto**. Un corso senza tariffa è segnato **✕ SENZA
-TARIFFA**: **Scrivi** → gli euro l'ora (15 o 15,50) → **OK**. **Cambia** per
+TARIFFA**: **Scrivi** → gli euro l'ora (15 o 15,50) → **Salva**. **Cambia** per
 correggerla, **togli** per toglierla. Una tariffa scritta non sparisce se il
 corso passa a un altro: resta, con «non lo insegna più».
 

@@ -297,4 +297,51 @@ ok('originiMovimento (lib/contabilita.ts) non ritorna «Dal gestionale»', /Dal 
   ok('Iscritti: dopo le due parole al telefono, «+N» in grigio', /\{tel\.altri && <span className="sg-stato-altri">\{tel\.altri\}<\/span>\}/.test(pagine.Iscritti), true)
 }
 
+{
+  console.log('\nTutta la segreteria: le etichette vaghe non tornano')
+  // Ogni tasto dice l'azione col verbo; queste erano le etichette prima del riordino.
+  const VECCHIE = [
+    ['Settimana.tsx', ['Togli questa lezione straordinaria', '+ Lezione straordinaria', 'Chiusura dal']],
+    ['Personale.tsx', [/^\s*OK\s*$/m]],
+    ['DatiTecnico.tsx', [/^\s*OK\s*$/m]],
+    ['Importa.tsx', ['Avanti: controlla']],
+    ['Tessere.tsx', ['Metti ']],
+    ['Statistiche.tsx', [/^\s*Chi non è in regola\s*$/m]],
+    ['EditorPuck.tsx', ['Cancella la pagina']],
+    ['Sito.tsx', ['Butta i cambi']],
+    ['CollegaPersona.tsx', ['Vedi i da decidere']],
+  ]
+  for (const [f, frasi] of VECCHIE) {
+    const t = leggi(D + f)
+    for (const x of frasi) ok(`${f}: niente più «${typeof x === 'string' ? x.trim() : x.source.replace(/\^\\s\*|\\s\*\$/g, '')}»`, typeof x === 'string' ? t.includes(x) : x.test(t), false)
+  }
+  // Annullare ed eliminare aprono la conferma da un tasto rosso a linea, non pieno.
+  for (const [f, re] of [
+    ['PagamentoAperto.tsx', /tono="rosso"[^>]*>\s*\{?[^<]*Annulla/],
+    ['CollegaPersona.tsx', /sg-btn-rosso(?:[^>]|=>)*>\s*Togli questo lotto/],
+    ['Richieste.tsx', /sg-btn-rosso(?:[^>]|=>)*>\s*Stampato, cancella/],
+  ]) ok(`${f}: il tasto che apre la conferma è a linea`, re.test(leggi(D + f)), false)
+  // E c'è ancora, rosso a linea, e chiede conferma: sparire non vale come «non pieno».
+  for (const [f, testo] of [
+    ['PagamentoAperto.tsx', 'Annulla il pagamento'],
+    ['PagamentoAperto.tsx', 'Annulla la ricevuta'],
+    ['CollegaPersona.tsx', 'Togli questo lotto'],
+    ['Richieste.tsx', 'Stampato, cancella'],
+    ['Settimana.tsx', 'Elimina la lezione'],
+  ]) {
+    const t = leggi(D + f)
+    const i = t.indexOf(`${testo}`, t.search(new RegExp(`>\\s*${testo}`)))
+    const prima = i < 0 ? '' : t.slice(t.lastIndexOf('<', t.lastIndexOf('sg-pericolo', i)), i)
+    ok(`${f}: «${testo}» è rosso a linea`, i >= 0 && /sg-pericolo/.test(prima) && !/tono="rosso"|sg-btn-rosso|sg-btn-pieno/.test(prima), true)
+    ok(`${f}: «${testo}» chiede conferma`, /\bchiedi\(/.test(t), true)
+  }
+  // Le presenze degli istruttori si aprono sul mese in corso, non su tutti i mesi.
+  ok('PresenzeIstruttori.tsx: il periodo parte dal mese in corso', /useState\(elencoMesi\[0\]\.chiave\)/.test(leggi(D + 'PresenzeIstruttori.tsx')), true)
+  // I filtri a casella sono diventati una riga MOSTRA con Segmenti.
+  for (const f of ['Richieste.tsx', 'Segnalazioni.tsx', 'PresenzeSegnalate.tsx', 'PresenzeIstruttori.tsx', 'Compensi.tsx']) {
+    const t = leggi(D + f)
+    ok(`${f}: c'è la riga MOSTRA con Segmenti`, />MOSTRA</.test(t) && /<Segmenti\b/.test(t), true)
+  }
+}
+
 process.exit(fallite ? 1 : 0)

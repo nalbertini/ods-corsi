@@ -52,7 +52,7 @@ medie: si conta a parte.
 - **IN REGOLA OGGI** — il certificato medico e il pagamento di chi è
   iscritto oggi; chi ha meno di 6 anni non ha l'obbligo del certificato e non
   si conta. **Da portare** (in giallo) sono quelli ancora nel termine per
-  portarlo: non è valido, ma non è ancora un guaio. **Chi non è in regola** apre [Iscritti](iscritti.md) già filtrato su chi ha il certificato o la quota da sistemare.
+  portarlo: non è valido, ma non è ancora un guaio. **Visualizza chi non è in regola** apre [Iscritti](iscritti.md) già filtrato su chi ha il certificato o la quota da sistemare.
 - **PROVE MESE PER MESE** — quante persone sono venute a provare, ognuna
   contata una volta, nel mese della sua prima prova (chi fa la settimana di
   prova non conta tre volte). Col mouse sopra dice anche le lezioni di prova

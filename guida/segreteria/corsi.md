@@ -29,7 +29,7 @@ I corsi archiviati stanno in fondo: «N corsi archiviati · mostra», e
 
 ## Nuovo corso, o cambiare un corso
 
-**NUOVO CORSO**, o un clic su un corso esistente:
+**CREA UN CORSO**, o un clic su un corso esistente:
 
 - **NOME**, **SALA**, **POSTI** — il prezzo del corso sta in [LISTINO](listino.md) e
   segue il corso se ne cambi il nome (vedi lì); la sala è quella di tutti i giorni che non

@@ -625,7 +625,7 @@ function Scheda({
                     onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   />
                   <button type="submit" className="num sg-chip sg-chip-pieno" disabled={pin.length !== 4}>
-                    OK
+                    Salva
                   </button>
                   <button type="button" className="sg-link" onClick={() => setPin(null)}>
                     lascia stare
@@ -728,7 +728,7 @@ function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: P
             onChange={(e) => setAMano(e.target.value)}
           />
           <button type="submit" className="num sg-chip sg-chip-pieno" disabled={!scritto || !!giaDi}>
-            OK
+            Salva
           </button>
           <button type="button" className="sg-link" onClick={() => setAMano(null)}>
             lascia stare

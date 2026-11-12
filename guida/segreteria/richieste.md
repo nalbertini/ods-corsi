@@ -21,9 +21,9 @@ richiamare, ma si può accogliere lo stesso. Se ha pagato col modulo:
 confermato) o, rossa, **Da restituire** (pagata e poi rifiutata). Nella
 richiesta la stessa cosa è scritta per intero, con l'importo e il giorno.
 
-Normalmente si vedono solo le nuove; **Anche quelle già gestite** mostra tutte,
-e **Da stampare** (finché ce ne sono) quelle con il documento da
-stampare.
+Sotto il titolo, **MOSTRA** sceglie cosa si vede: **Nuove** (la scelta di
+partenza), **Tutte** (anche le già gestite) e **Da stampare** (finché ce ne
+sono) quelle con il documento da stampare.
 
 Quando arriva una richiesta, la segreteria riceve anche un'email, se
 l'indirizzo è scritto in [Impostazioni](regole.md#gli-avvisi): il suo link

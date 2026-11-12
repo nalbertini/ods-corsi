@@ -151,9 +151,6 @@ export function Tariffe({ d, p, fai, onSalvato }: { d: DatiSegreteria; p: Person
                     onChange={(e) => setScrive({ ...scrive, testo: e.target.value })}
                   />
                   <span style={{ fontSize: 14 }}>€ l’ora</span>
-                  <button type="submit" className="num sg-chip sg-chip-pieno" disabled={!centesimi}>
-                    OK
-                  </button>
                   {r.centesimi !== undefined && (
                     <button
                       type="button"
@@ -167,6 +164,9 @@ export function Tariffe({ d, p, fai, onSalvato }: { d: DatiSegreteria; p: Person
                   )}
                   <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} onClick={() => setScrive(null)}>
                     lascia stare
+                  </button>
+                  <button type="submit" className="num sg-chip sg-chip-pieno" disabled={!centesimi}>
+                    Salva
                   </button>
                   {cosaNonVaEuroOra(scrive.testo) && (
                     <span id={`tariffa-${r.corsoId ?? r.corso.replace(/\W/g, "")}`} role="alert" style={{ flexBasis: '100%', fontSize: 13, color: 'var(--rosso-testo)' }}>
@@ -353,9 +353,9 @@ export function LetteraIncarico({ d, p, fai, versione }: { d: DatiSegreteria; p:
       ) : (
         <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <span className="sg-sotto">Nessuna lettera per la stagione {stagione}.</span>
-          <button type="button" className="sg-btn sg-btn-pieno" onClick={prepara}>
+          <Tasto onClick={prepara}>
             Prepara la lettera
-          </button>
+          </Tasto>
         </div>
       )}
       {altre.map((l) => (

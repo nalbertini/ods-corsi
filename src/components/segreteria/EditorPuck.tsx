@@ -13,7 +13,7 @@ import { ESTENSIONI_TESTO, indirizzoDelLink } from '../../lib/sitoTiptap'
 import AnteprimaPagina from './AnteprimaPagina'
 import { ScegliImmagine } from './ImmaginiSito'
 import { OrarioSito } from './OrarioSito'
-import { chiedi, useAvviso, useBozza } from './comune'
+import { chiedi, Tasto, useAvviso, useBozza } from './comune'
 
 /**
  * L'editor delle pagine del sito: Puck completo, col suo aspetto. Puck tiene le parti, la struttura,
@@ -174,7 +174,7 @@ function CampoSulSito() {
     await fai(() => d.nascondiPaginaSito(pagina.id, !pagina.nascosta), pagina.nascosta ? 'Di nuovo sul sito' : 'Nascosta', ricarica)
   }
   const cancella = async () => {
-    if (!(await chiedi(`Cancellare «${pagina.titolo}»? Non si può rimettere.`, 'Cancella la pagina', { pericolo: true }))) return
+    if (!(await chiedi(`Cancellare «${pagina.titolo}»? Non si può rimettere.`, 'Elimina la pagina', { pericolo: true }))) return
     await fai(() => d.cancellaPaginaSito(pagina.id), 'Pagina cancellata', async () => {
       await ricarica()
       onChiudi()
@@ -184,7 +184,7 @@ function CampoSulSito() {
     <FieldLabel label="Sul sito">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <Button variant="secondary" fullWidth disabled={lavora} onClick={() => void nascondi()}>{pagina.nascosta ? 'Mostra sul sito' : 'Nascondi dal sito'}</Button>
-        <Button variant="secondary" fullWidth disabled={lavora} onClick={() => void cancella()}>Cancella la pagina</Button>
+        <Tasto className="sg-pericolo" style={{ width: '100%' }} disabled={lavora} onClick={() => void cancella()}>Elimina la pagina</Tasto>
       </div>
     </FieldLabel>
   )

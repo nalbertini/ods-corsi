@@ -6,7 +6,7 @@ import { mesi } from '../../lib/ore'
 import { csv } from '../../lib/vestiario'
 import { SOCIETA } from '../../lib/cartaPdf'
 import { lette } from '../../lib/letture'
-import { chiedi, Guaio, suCarta, Testa, useAvviso, useCarica, useOrdina, Tasto } from './comune'
+import { chiedi, Guaio, suCarta, Testa, useAvviso, useCarica, useOrdina, Tasto, Segmenti } from './comune'
 
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 const perNome = (a: string, b: string) => a.localeCompare(b, 'it')
@@ -70,8 +70,8 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
     })
   }, [])
   const periodi = useMemo(() => [...elencoMesi, ...anni], [elencoMesi, anni])
-  // '' è «tutti i mesi»: i dodici del menu.
-  const [periodo, setPeriodo] = useState('')
+  // Si parte dal mese in corso; '' è «ultimi dodici mesi».
+  const [periodo, setPeriodo] = useState(elencoMesi[0].chiave)
   const [corso, setCorso] = useState('')
   const [istruttore, setIstruttore] = useState('')
   const [stato, setStato] = useState<StatoPresenzaIstruttore | ''>('')
@@ -225,17 +225,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
             </option>
           ))}
         </select>
-        <label htmlFor="stato-pi" className="vh">
-          Stato
-        </label>
-        <select id="stato-pi" className="sg-campo" value={stato} onChange={(e) => setStato(e.target.value as StatoPresenzaIstruttore | '')}>
-          <option value="">Tutti gli stati</option>
-          <option value="da_confermare">Da confermare</option>
-          <option value="confermata">Confermate</option>
-          <option value="rifiutata">Rifiutate</option>
-        </select>
         <Tasto
-          
           disabled={!lista.length}
           onClick={() =>
             scaricaCsv(
@@ -277,6 +267,23 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
         >
           Report PDF
         </button>
+      </div>
+
+      <div className="sg-elenco-barra sg-elenco-barra-due" style={{ padding: 0 }}>
+        <span className="sg-filtro-gruppo">
+          <span className="sg-etichetta" aria-hidden="true">MOSTRA</span>
+          <Segmenti
+            etichetta="Quali presenze"
+            voci={[
+              ['', 'Tutte'],
+              ['da_confermare', 'Da confermare'],
+              ['confermata', 'Confermate'],
+              ['rifiutata', 'Rifiutate'],
+            ]}
+            scelta={stato}
+            onScegli={setStato}
+          />
+        </span>
       </div>
 
       <p className="sg-sotto" style={{ maxWidth: 760, margin: 0 }}>

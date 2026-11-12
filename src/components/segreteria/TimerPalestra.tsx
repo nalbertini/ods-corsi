@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { nomeVoce, type AllenamentoSeg, type DatiSegreteria } from '../../lib/segreteria'
-import { Spunta } from '../Icons'
 import { italianVoices, speak } from '../../../timer/src/lib/audio'
 import { CLIPS, type ClipSpec, exerciseKey, formatoRegistrazione } from '../../../timer/src/lib/voiceClips'
 import {
@@ -121,7 +120,7 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
             onChange={(e) => setScritta(e.target.value)}
           />
           <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!daSalvare} aria-label="Salva la voce">
-            <Spunta size={18} />
+            Salva
           </button>
         </form>
         <ComeFunziona>
@@ -420,10 +419,10 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                         Togli
                       </button>
                       <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setAperto(null)}>
-                        Lascia stare
+                        Chiudi
                       </button>
-                      <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!aperto.nome.trim() || !libero(aperto.nome, e.id)} aria-label="Salva l'esercizio">
-                        <Spunta size={18} />
+                      <button type="submit" className="num sg-chip" style={{ minHeight: 44 }} disabled={!aperto.nome.trim() || !libero(aperto.nome, e.id)} aria-label="Salva l'esercizio">
+                        Salva
                       </button>
                     </form>
                   ) : (
@@ -487,9 +486,9 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                   {nuovo.disciplina ? `Vanno in «${nomeDisciplina(nuovo.disciplina, discipline)}», scelta qui sopra.` : 'Vanno senza categoria.'} Quelli che ci sono già si saltano.
                 </span>
                 <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setIncolla(null)}>
-                  Lascia stare
+                  Chiudi
                 </button>
-                <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!nomiDaTesto(incolla).length}>
+                <button type="submit" className="num sg-chip" style={{ minHeight: 44 }} disabled={!nomiDaTesto(incolla).length}>
                   Aggiungi {nomiDaTesto(incolla).length || ''}
                 </button>
               </div>
@@ -602,10 +601,10 @@ function DisciplinePalestra({ d, lista, ricarica }: { d: DatiSegreteria; lista: 
                   Togli
                 </button>
                 <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setAperta(null)}>
-                  Lascia stare
+                  Chiudi
                 </button>
-                <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!!nomeDisciplinaValido(aperta.nome, lista, x.id)} aria-label="Salva la categoria">
-                  <Spunta size={18} />
+                <button type="submit" className="num sg-chip" style={{ minHeight: 44 }} disabled={!!nomeDisciplinaValido(aperta.nome, lista, x.id)} aria-label="Salva la categoria">
+                  Salva
                 </button>
               </form>
             ) : (
@@ -626,7 +625,7 @@ function DisciplinePalestra({ d, lista, ricarica }: { d: DatiSegreteria; lista: 
         >
           <input className="sg-campo grow" aria-label="Nuova categoria" placeholder="una categoria nuova" maxLength={30} value={nuova} onChange={(e) => setNuova(e.target.value)} />
           {erroreNuova && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{erroreNuova}</span>}
-          <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!nuova.trim() || !!erroreNuova}>
+          <button type="submit" className="num sg-chip" style={{ minHeight: 44 }} disabled={!nuova.trim() || !!erroreNuova}>
             Aggiungi
           </button>
         </form>

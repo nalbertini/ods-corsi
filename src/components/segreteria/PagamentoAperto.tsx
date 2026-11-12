@@ -79,20 +79,24 @@ export function PagamentoAperto({ d, riga, fai, onChiudi, onFatto }: { d: DatiSe
       ) : (
         <span className="sg-sotto">Pagamento fatto a mano, senza ricevuta. Annullato, resta in elenco e non si conta più.</span>
       )}
-      <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-        {come === 'ricevuta' && riga.ricevuta && (
-          <Tasto icona="annulla" tono="rosso" onClick={() => void annullaRicevuta()}>
-            Annulla la ricevuta {riga.ricevuta.numero}/{riga.ricevuta.anno}
+      <div className="sg-movimento-piede">
+        <div className="sg-movimento-gruppo">
+          {come === 'ricevuta' && riga.ricevuta && (
+            <Tasto icona="annulla" className="sg-pericolo" onClick={() => void annullaRicevuta()}>
+              Annulla la ricevuta {riga.ricevuta.numero}/{riga.ricevuta.anno}
+            </Tasto>
+          )}
+          {come === 'pagamento' && (
+            <Tasto className="sg-pericolo" onClick={() => void annullaPagamento()}>
+              Annulla il pagamento
+            </Tasto>
+          )}
+        </div>
+        <div className="sg-movimento-gruppo">
+          <Tasto onClick={onChiudi}>
+            Chiudi
           </Tasto>
-        )}
-        {come === 'pagamento' && (
-          <Tasto tono="rosso" onClick={() => void annullaPagamento()}>
-            Annulla il pagamento
-          </Tasto>
-        )}
-        <Tasto onClick={onChiudi}>
-          Chiudi
-        </Tasto>
+        </div>
       </div>
     </section>
   )
@@ -167,9 +171,9 @@ export function RegistraDaPagamenti({ d, fai, onFatto, onChiudi }: { d: DatiSegr
         {!bastaPerCercare(scritto) ? 'Scrivi almeno tre lettere.' : cercato !== scritto ? ' ' : trovati.length === 0 ? 'Nessuno corrisponde: controlla come è scritto, o scrivi di più.' : trovati.length >= MASSIMO_PAGATORI ? `Ne escono al massimo ${MASSIMO_PAGATORI}: se non c’è, scrivi di più.` : ' '}
       </span>
       <div className="row">
-        <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-          No, torna indietro
-        </button>
+        <Tasto onClick={onChiudi}>
+          Chiudi
+        </Tasto>
       </div>
     </section>
   )
