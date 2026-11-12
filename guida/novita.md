@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.241.0 — 12 novembre 2026
+
+### Novità
+
+- In MOVIMENTI torna il filtro per voce, e i filtri stanno su una riga
+
 ## 0.240.2 — 12 novembre 2026
 
 ### Risolto
