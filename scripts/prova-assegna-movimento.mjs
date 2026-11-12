@@ -85,6 +85,11 @@ const bonificiLiberi = lib('bonificiLiberi')
 const euroAssegna = lib('euroAssegna')
 const cosaNonVaQuota = lib('cosaNonVaQuota')
 const dovutiDi = lib('dovutiDi')
+const pagatoAMano = lib('pagatoAMano')
+const senzaSegnoAMano = lib('senzaSegnoAMano')
+const dovutiDelNucleo = lib('dovutiDelNucleo')
+const daChiedereAMano = lib('daChiedereAMano')
+const propostaDopoIlSi = lib('propostaDopoIlSi')
 const collegatiPrima = lib('collegatiPrima')
 const ricevutaGiaFatta = lib('ricevutaGiaFatta')
 
@@ -255,6 +260,46 @@ console.log('\n3c. Lo schermo e il database dicono la stessa cosa sulla quota (d
   // Ricevuta fatta a 40 € (pagati 30): il database accetterebbe 20, ma la quota di quella ricevuta è chiusa a 10.
   ok('ricevuta a 40 € con 30 pagati: restano 10 €, quel che dice la ricevuta', await manca(persona(1000), conPrezzo(4000, 3000)), 1000)
   ok('nessuna ricevuta: la quota intera del listino', await manca({ ...persona(0), quote: [] }, []), 5000)
+}
+
+console.log('\n3d. Chi è segnato pagato a mano nella scheda: il bonifico che è quel pagamento si assegna lo stesso')
+{
+  // Il caso vero: la segreteria segna «pagato fino al 31/07/2027» a mano, poi arriva il bonifico da 660 € (quota 50 e
+  // annuale 610). Il dialogo non aveva niente da proporre e il bonifico restava per sempre in «Da assegnare».
+  const oggi = '2026-11-12'
+  const listino = { quota: 50, saldoEntro: '2026-08-31', offerte: [], corsi: [{ corso: 'Judo adulti', eta: '', orari: [], prezzi: [{ annuale: 610, trimestre: 200 }] }], senzaPrezzoVaBene: [] }
+  const corsi = [{ id: 'adulti', nome: 'Judo adulti' }]
+  const persona = (pagamento) => ({ id: 'luca', attiva: true, certificato: { scade: '2027-09-01', conFile: false }, documento: true, pagamento, natoIl: '1990-01-01', iscrizioni: [{ corsoId: 'adulti', dal: '2026-09-01' }], quote: [], vociCorsi: [] })
+  const aMano = persona({ stato: 'pagato', fino: '2027-07-31' })
+  const dovuti = (p, diretti = []) => prova(() => dovutiDi(p, corsi, listino, oggi, { diretti, ricevute: [] }).map((d) => [d.tipo, d.voce, d.manca]))
+  ok('segnato pagato a mano: per la scheda non c’è niente da pagare (com’era)', await dovuti(aMano), [])
+  ok('pagatoAMano lo riconosce', prova(() => pagatoAMano(aMano, oggi)), true)
+  ok('…non chi è da pagare', prova(() => pagatoAMano(persona({ stato: 'da_pagare' }), oggi)), false)
+  ok('…né chi era segnato fino a una data passata', prova(() => pagatoAMano(persona({ stato: 'pagato', fino: '2026-10-31' }), oggi)), false)
+  ok('…né chi ha la quota pagata con una ricevuta', prova(() => pagatoAMano({ ...aMano, quote: [{ anno: 2026, numero: 7, dal: '2026-09-01', al: '2027-07-31', mancano: 0 }], vociCorsi: [{ descrizione: 'ANNUALE JUDO ADULTI', dal: '2026-09-01', al: '2027-06-30', mancano: 0 }] }, oggi)), false)
+  ok('«È questo bonifico»: senza il segno a mano tornano quota e annuale interi',
+    await dovuti(prova(() => senzaSegnoAMano(aMano))), [['quota', 'Quota associativa 2026/27', 5000], ['corso', 'Annuale Judo adulti', 61000]])
+  ok('…e il segno nella scheda resta com’è', aMano.pagamento, { stato: 'pagato', fino: '2027-07-31' })
+  ok('…660 € si ripartiscono tutti: niente resta da assegnare',
+    prova(() => proponiRipartizione(66000, dovutiDi(senzaSegnoAMano(aMano), corsi, listino, oggi, { diretti: [], ricevute: [] })).daAssegnare), 0)
+  // Nel nucleo: Luca segnato a mano, la sorella Sofia da pagare. Il riquadro è solo per Luca, finché non risponde.
+  const sofia = { ...persona({ stato: 'da_pagare' }), id: 'sofia' }
+  const gia = { diretti: [], ricevute: [] }
+  const delNucleo = (eQuesto) => prova(() => dovutiDelNucleo([aMano, sofia], eQuesto, corsi, listino, oggi, gia).map((d) => [d.personaId, d.voce]))
+  const chiedere = (risposto, dovuti) => prova(() => daChiedereAMano([aMano, sofia], risposto, dovuti, [], listino, oggi).map((x) => [x.persona.id, x.fino]))
+  ok('nucleo: da pagare solo le cose di Sofia', delNucleo([]), [['sofia', 'Quota associativa 2026/27'], ['sofia', 'Annuale Judo adulti']])
+  ok('…il riquadro «Già pagato a mano» è per Luca, con la data del segno', chiedere([], prova(() => dovutiDelNucleo([aMano, sofia], [], corsi, listino, oggi, gia))), [['luca', '2027-07-31']])
+  ok('…detto «È questo bonifico» o «Non è questo», non si chiede più', chiedere(['luca'], []), [])
+  ok('…con «È questo bonifico» tornano anche quota e annuale di Luca', delNucleo(['luca']),
+    [['luca', 'Quota associativa 2026/27'], ['luca', 'Annuale Judo adulti'], ['sofia', 'Quota associativa 2026/27'], ['sofia', 'Annuale Judo adulti']])
+  ok('…chi ha cose da pagare non riceve il riquadro', chiedere([], [{ personaId: 'luca', tipo: 'quota', voce: 'x', manca: 1 }]), [])
+  // Il collaudo: la proposta automatica aveva già messo tutto il bonifico su Sofia, e il sì su Luca non aveva più niente
+  // da ripartire. Il bonifico è di Luca: dopo il sì va prima sulle sue cose, quel che avanza sugli altri.
+  const dopoSi = (importo) => prova(() => propostaDopoIlSi(importo, dovutiDelNucleo([aMano, sofia], ['luca'], corsi, listino, oggi, gia), 'luca').righe.map((r) => [r.personaId, r.voce, r.importo]))
+  ok('«È questo bonifico» con la sorella da pagare: 660 € tutti su Luca', dopoSi(66000),
+    [['luca', 'Quota associativa 2026/27', 5000], ['luca', 'Annuale Judo adulti', 61000]])
+  ok('…quel che avanza va alla sorella, prima la quota', dopoSi(70000),
+    [['luca', 'Quota associativa 2026/27', 5000], ['luca', 'Annuale Judo adulti', 61000], ['sofia', 'Quota associativa 2026/27', 4000]])
 }
 
 console.log('\n4. Quali movimenti si assegnano, e a chi')

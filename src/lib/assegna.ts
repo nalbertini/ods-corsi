@@ -99,6 +99,13 @@ export function proponiRipartizione(importo: number, dovuti: VoceDovuta[]): { ri
   return { righe, daAssegnare: resta }
 }
 
+/** Dopo «È questo bonifico»: il bonifico è di quella persona, quindi va prima sulle sue cose e quel che avanza sugli altri. */
+export function propostaDopoIlSi(importo: number, dovuti: VoceDovuta[], personaId: string): { righe: RigaAssegnata[]; daAssegnare: number } {
+  const sue = proponiRipartizione(importo, dovuti.filter((v) => v.personaId === personaId))
+  const altre = proponiRipartizione(sue.daAssegnare, dovuti.filter((v) => v.personaId !== personaId))
+  return { righe: [...sue.righe, ...altre.righe], daAssegnare: altre.daAssegnare }
+}
+
 const stessa = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
 
 /** Perché le righe non si scrivono, o null. `importo` è quel che del bonifico resta da assegnare. */
@@ -471,6 +478,30 @@ export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, ogg
   }
   return fuori
 }
+
+/**
+ * Segnata pagata a mano nella scheda, senza un pagamento nell'app: per `dovutiDi` non ha niente da pagare, e il
+ * bonifico che è quel pagamento resterebbe da assegnare per sempre.
+ */
+export const pagatoAMano = (p: PersonaSeg, oggi: string) => {
+  const q = pagamentoDi(p, oggi)
+  return q.come === 'pagato' && q.fonte === 'fuori_app'
+}
+
+/** La persona come se la scheda non fosse segnata a mano: le cose da pagare di «È questo bonifico». La scheda non cambia. */
+export const senzaSegnoAMano = (p: PersonaSeg): PersonaSeg => ({ ...p, pagamento: { ...p.pagamento, stato: 'da_pagare' } })
+
+/** Le cose da pagare del nucleo; per chi ha detto «È questo bonifico» come se la scheda non fosse segnata a mano. */
+export const dovutiDelNucleo = (chi: PersonaSeg[], eQuesto: string[], corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }) =>
+  chi.flatMap((p) => dovutiDi(conAssegnazioni(eQuesto.includes(p.id) ? senzaSegnoAMano(p) : p, gia.diretti, listino, oggi), corsi, listino, oggi, gia))
+
+/** A chi del nucleo chiedere «Già pagato a mano»: segnato a mano, niente da pagare, non ha ancora risposto. Con la data del segno. */
+export const daChiedereAMano = (chi: PersonaSeg[], risposto: string[], dovuti: VoceDovuta[], diretti: PagamentoDiretto[], listino: Listino, oggi: string) =>
+  chi.flatMap((p) => {
+    if (risposto.includes(p.id) || dovuti.some((v) => v.personaId === p.id)) return []
+    const conDiretti = conAssegnazioni(p, diretti, listino, oggi)
+    return pagatoAMano(conDiretti, oggi) ? [{ persona: p, fino: pagamentoDi(conDiretti, oggi).fino ?? '' }] : []
+  })
 
 /** La stagione di una quota assegnata: quella detta nel nome della voce («2026/27»), se no quella del giorno. */
 const stagioneQuota = (voce: string, giorno: string) => {

@@ -4,16 +4,17 @@ import { useMemo, useRef, useState } from 'react'
 import {
   collegatiPrima,
   conGenitori,
-  conAssegnazioni,
   daClassificareDaAbbinare,
   cosaNonVaAssegnazione,
   daAssegnare,
-  dovutiDi,
+  daChiedereAMano,
+  dovutiDelNucleo,
   elencoDaAssegnare,
   euroAssegna,
   movimentoDaClassificareAbbinabile,
   personeDelNucleo,
   proponiRipartizione,
+  propostaDopoIlSi,
   ricevutaGiaFatta,
   type RigaAssegnata,
   type VoceDovuta,
@@ -192,10 +193,14 @@ function DialogoAssegna({ d, m, resta, diretti, ricevute, anagrafe, oggi, fai, o
   const chi = personeDelNucleo(titolare, anagrafe.persone)
     .map((id) => anagrafe.persone.find((p) => p.id === id))
     .filter((p): p is PersonaSeg => !!p)
+  // Chi è segnato pagato a mano e ha detto «È questo bonifico»: le sue cose da pagare come se la scheda non fosse segnata.
+  const [questo, setQuesto] = useState<string[]>([])
+  const [nonQuesto, setNonQuesto] = useState<string[]>([])
   const dovuti = useMemo(
-    () => chi.flatMap((p) => dovutiDi(conAssegnazioni(p, diretti, anagrafe.listino, oggi), anagrafe.corsi, anagrafe.listino, oggi, { diretti, ricevute })),
-    [chi.map((p) => p.id).join(), diretti, ricevute, anagrafe, oggi],
+    () => dovutiDelNucleo(chi, questo, anagrafe.corsi, anagrafe.listino, oggi, { diretti, ricevute }),
+    [chi.map((p) => p.id).join(), diretti, ricevute, anagrafe, oggi, questo.join()],
   )
+  const daChiedere = daChiedereAMano(chi, [...questo, ...nonQuesto], dovuti, diretti, anagrafe.listino, oggi)
   const [valori, setValori] = useState<Record<string, string>>(() =>
     Object.fromEntries(proponiRipartizione(resta, dovuti).righe.map((r) => [chiaveDi(r), euro(r.importo)])),
   )
@@ -217,6 +222,13 @@ function DialogoAssegna({ d, m, resta, diretti, ricevute, anagrafe, oggi, fai, o
     setScrivendo(true)
     void fai(() => d.assegnaMovimento(m.id, righe, chiave.current), conRicevuta ? undefined : 'Bonifico assegnato', () => onFatto(conRicevuta)).finally(() => setScrivendo(false))
   }
+  // Il bonifico è di chi ha detto sì: la proposta si rifà da capo, prima sulle sue cose, se no resterebbe sui familiari.
+  const eQuesto = (p: PersonaSeg) => {
+    const conSi = [...questo, p.id]
+    setQuesto(conSi)
+    const nuove = propostaDopoIlSi(resta, dovutiDelNucleo(chi, conSi, anagrafe.corsi, anagrafe.listino, oggi, { diretti, ricevute }), p.id).righe
+    setValori(Object.fromEntries(nuove.map((r) => [chiaveDi(r), euro(r.importo)])))
+  }
   const lasciaStare = async () => {
     if (await chiedi('Lasciare stare l’assegnazione? Il bonifico resta da assegnare.', 'Sì, lascia stare', { no: 'No, resto' })) onChiudi()
   }
@@ -227,17 +239,31 @@ function DialogoAssegna({ d, m, resta, diretti, ricevute, anagrafe, oggi, fai, o
         <span className="sg-sotto">
           Il bonifico è di {euroAssegna(m.importo)}, da assegnare {euroAssegna(resta)}. Ogni importo diventa un pagamento della persona: un saldo se copre quel che manca, se no un parziale.
         </span>
-        {!dovuti.length && <span style={{ fontSize: 15 }}>Nel nucleo non c’è niente da pagare: il bonifico resta da assegnare.</span>}
+        {daChiedere.map(({ persona: p, fino: il }) => {
+          const fino = dataRicevuta(il)
+          return (
+            <div key={p.id} className="sg-riquadro stack" data-avviso="true" style={{ gap: 10 }}>
+              <span className="sg-etichetta">Già pagato a mano</span>
+              <span style={{ fontSize: 15 }}>{nome(p)} risulta già pagato fino al {fino}: è segnato a mano nella scheda, senza un pagamento nell’app.</span>
+              <span className="sg-sotto">Se questo bonifico è quel pagamento, assegnalo alla quota e ai corsi: esce da Da assegnare, con o senza ricevuta. La scheda resta pagata fino al {fino}.</span>
+              <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                <Tasto tono="pieno" onClick={() => eQuesto(p)}>È questo bonifico</Tasto>
+                <button type="button" className="sg-link" style={DITO} onClick={() => setNonQuesto([...nonQuesto, p.id])}>Non è questo</button>
+              </div>
+            </div>
+          )
+        })}
+        {!dovuti.length && !daChiedere.length && <span style={{ fontSize: 15 }}>Nel nucleo non c’è niente da pagare: il bonifico resta da assegnare.</span>}
         {chi.map((p) => {
           const suoi = letti.filter((x) => x.v.personaId === p.id)
           if (!suoi.length) return null
           return (
             <div key={p.id} className="sg-riquadro stack" style={{ gap: 10 }}>
               <span className="sg-etichetta">
-                {nome(p).toUpperCase()} · {p.id === titolare ? 'collegato al bonifico' : 'stessa famiglia'}
+                {nome(p).toUpperCase()} · {p.id === titolare ? 'collegato al bonifico' : 'stessa famiglia'}{questo.includes(p.id) ? ' · pagato a mano' : ''}
               </span>
               {suoi.map(({ v, testo, cent }) => (
-                <RigaDovuta key={chiaveDi(v)} v={v} testo={testo} cent={cent} nomePersona={p.nome} onCambia={(t) => setValori({ ...valori, [chiaveDi(v)]: t })} />
+                <RigaDovuta key={chiaveDi(v)} v={v} testo={testo} cent={cent} nomePersona={p.nome} aMano={questo.includes(p.id)} onCambia={(t) => setValori({ ...valori, [chiaveDi(v)]: t })} />
               ))}
             </div>
           )
@@ -273,7 +299,7 @@ function DialogoAssegna({ d, m, resta, diretti, ricevute, anagrafe, oggi, fai, o
   )
 }
 
-function RigaDovuta({ v, testo, cent, nomePersona, onCambia }: { v: VoceDovuta; testo: string; cent: number | null; nomePersona: string; onCambia: (t: string) => void }) {
+function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia }: { v: VoceDovuta; testo: string; cent: number | null; nomePersona: string; aMano: boolean; onCambia: (t: string) => void }) {
   const id = `as-${chiaveDi(v).replace(/[^a-z0-9]/gi, '-')}`
   const saldo = cent !== null && cent >= v.manca
   const parziale = cent !== null && cent > 0 && cent < v.manca
@@ -281,7 +307,7 @@ function RigaDovuta({ v, testo, cent, nomePersona, onCambia }: { v: VoceDovuta; 
     <div className="stack" style={{ gap: 4 }}>
       <div className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <label htmlFor={id} style={{ fontSize: 15, flex: '1 1 200px', minWidth: 0 }}>
-          {v.voce} <span className="sg-sotto">· manca {euroAssegna(v.manca)}</span>
+          {v.voce} <span className="sg-sotto">· {aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} {euroAssegna(v.manca)}</span>
         </label>
         <input id={id} className="sg-campo num" inputMode="decimal" style={{ width: 110 }} aria-invalid={testo.trim() !== '' && (cent === null || cent <= 0 || cent > v.manca)} value={testo} onChange={(e) => onCambia(e.target.value)} />
         {saldo && <Tag tipo="fatto">Saldo</Tag>}
