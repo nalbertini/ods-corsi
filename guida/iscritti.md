@@ -125,7 +125,9 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   lo stesso trimestre di prima. Se per quel corso c'è uno sconto o più corsi
   insieme, il riquadro dice **PIÙ CORSI**: il prezzo lo fa la segreteria, chiedi
   lì o paga in palestra. Tornato da Satispay vedi **PAGATO**, e la segreteria
-  prepara la ricevuta. Un corso pagato non si offre più. In prova (`?prova`) Satispay non si apre: chiede
+  prepara la ricevuta. Un corso pagato non si offre più, come lo vede la segreteria: anche se
+  la ricevuta o il bonifico lo chiamano col nome del listino («Annuale Fitness 2 giorni») o
+  il trimestre pagato comincia più avanti. In prova (`?prova`) Satispay non si apre: chiede
   conferma e il pagamento è finto.
   Il titolare del nucleo (tab FAMIGLIA, o la pagina del familiare) vede **PAGA …
   € PER** *nome* (il resto) e **PAGA LA QUOTA … PER** *nome* (e **PAGA … € PER** *nome* in CORSI) per i familiari

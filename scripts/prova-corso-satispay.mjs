@@ -299,6 +299,48 @@ console.log('\n5. la modalità prova: pagaCorsoProva')
   const schAnna = await aspetta(() => dati.scheda(anna?.id))
   const chiAnna = await aspetta(() => dati.chiPagaCorsi(anna?.id, anna?.id))
   ok('dopo la quota con Satispay il corso risulta ancora da pagare', cs.statoCorsiDi(schAnna, [], chiAnna, OGGI_ISO).filter((x) => x.corsoId === corsoA?.id).map((x) => x.come), ['da_pagare'])
+
+  // «Già pagato» come lo vede la segreteria (`statoCorsi`), anche in prova e nell'area iscritti (152-corso-gia-pagato.sql).
+  const conVoce = (descrizione, dal, al, pagato = 30000) => {
+    const r = ricevutaDel(corsoA, anna, pagato)
+    return { ...r, voci: [{ ...r.voci[0], descrizione, dal, al }] }
+  }
+  riparti([conVoce(`Annuale ${corsoA?.nome}`, undefined, undefined)])
+  await nessunaScrittura('una voce del corso senza date, pagata: per la segreteria è pagato, non si paga', T_RICEVUTA)
+  riparti([conVoce(`Trimestre ${corsoA?.nome}`, '2026-10-21', '2027-01-20')])
+  await nessunaScrittura('un trimestre pagato che parte domani: non si paga di nuovo', T_RICEVUTA)
+  riparti([conVoce(`Annuale ${corsoA?.nome} 2 giorni`, '2026-09-01', '2027-06-30')])
+  li.salvaListinoProva?.(listino([voce(corsoA, [{ etichetta: '2 giorni', annuale: 300 }]), voce(corsoB, [{ annuale: 200 }])]))
+  await nessunaScrittura('una voce col nome e l\'etichetta del listino («… 2 giorni»): non si paga', T_RICEVUTA)
+  riparti([], { stato: 'in_parte' })
+  ok('pagato «in parte» fuori dall\'app: riguarda la quota, il corso si paga', inCoda(await tocca(anna, corsoA, 'annuale')), false)
+  riparti([], { stato: 'pagato' })
+  await nessunaScrittura('pagato fuori dall\'app senza data: vale fino a fine stagione, non si paga', T_FUORI_APP)
+  riparti()
+  li.salvaListinoProva?.(listino([voce(corsoA, [{ annuale: 0, trimestre: 120 }]), voce(corsoB, [{ annuale: 200 }])]))
+  await nessunaScrittura('un annuale a 0 € nel listino non si paga, come nel database', T_NON_IN_LISTINO)
+  li.salvaListinoProva?.({ ...listinoSemplice(), senzaPrezzoVaBene: [corsoA?.id] })
+  ok('un corso «va bene senza prezzo» non è a pagamento, come per la segreteria',
+    (await aspetta(() => dati.chiPagaCorsi(anna?.id, anna?.id)))?.corsi?.find((c) => c.corsoId === corsoA?.id)?.aPagamento, false)
+  await nessunaScrittura('…e non si paga nemmeno chiamando pagaCorsoProva', T_NON_IN_LISTINO)
+  riparti()
+  li.salvaListinoProva?.(listino([voce(corsoA, [{ etichetta: '2 giorni', annuale: 300 }]), voce(corsoB, [{ annuale: 200 }])]))
+  d.pagamentiDiretti = [{ id: 'pd-etichetta', personaId: anna?.id, data: OGGI_ISO, importo: 30000, metodo: 'Bonifico', voce: `Annuale ${corsoA?.nome} 2 giorni`, creatoIl: '2026-10-20T08:00:00Z' }]
+  await nessunaScrittura('un bonifico assegnato con l\'etichetta del listino: non si paga di nuovo', 'Il corso risulta già pagato in segreteria: per quel che manca chiedi alla segreteria')
+  d.pagamentiDiretti = []
+
+  // L'area iscritti riconosce le voci coi nomi del listino, come la segreteria.
+  const statoDiAnna = async () => {
+    const sc = await aspetta(() => dati.scheda(anna?.id))
+    const ch = await aspetta(() => dati.chiPagaCorsi(anna?.id, anna?.id))
+    return prova(() => cs.statoCorsiDi(sc, d.ricevute, ch, OGGI_ISO).filter((x) => x.corsoId === corsoA?.id).map((x) => x.come))
+  }
+  riparti([conVoce(`Annuale ${corsoA?.nome} 2 giorni`, '2026-09-01', '2027-06-30')])
+  li.salvaListinoProva?.(listino([voce(corsoA, [{ etichetta: '2 giorni', trimestre: 120 }]), voce(corsoB, [{ annuale: 200 }])]))
+  ok('l\'iscritto vede pagato il corso con l\'etichetta, come la segreteria', await statoDiAnna(), ['pagato'])
+  riparti([conVoce('Annuale Nome del listino', '2026-09-01', '2027-06-30')])
+  li.salvaListinoProva?.(listino([{ ...voce(corsoA, [{ annuale: 300 }]), corso: 'Nome del listino' }, voce(corsoB, [{ annuale: 200 }])]))
+  ok('…e col nome che il corso ha nel listino', await statoDiAnna(), ['pagato'])
   li.scordaListinoProva?.()
 }
 
