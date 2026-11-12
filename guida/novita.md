@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.244.0 — 12 novembre 2026
+
+### Novità
+
+- L'import della banca abbina il bonifico alla ricevuta già fatta
+
 ## 0.243.0 — 12 novembre 2026
 
 ### Novità
