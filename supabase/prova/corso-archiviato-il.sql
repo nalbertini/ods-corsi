@@ -1,10 +1,10 @@
--- Il giorno in cui un corso è stato archiviato (149-corso-archiviato-il.sql).
+-- Il giorno in cui un corso è stato archiviato (150-corso-archiviato-il.sql).
 --
 -- I corsi da pagare guardano un corso archiviato fino a quel giorno: lo
 -- scrive il trigger, da ogni strada, e nessuno lo cambia a mano dopo.
 -- La metà di prova è `archiviaCorso` in `src/lib/segreteriaProva.ts`
 -- (scripts/prova-corsi-da-pagare.mjs).
--- Si lancia dopo finto-supabase.sql e i file dello schema (il 149 compreso).
+-- Si lancia dopo finto-supabase.sql e i file dello schema (il 150 compreso).
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -67,12 +67,12 @@ reset role;
 
 \echo ''
 \echo '--- 4. i corsi già archiviati: il giorno dell''ultima lezione ---'
--- Come prima del 149: archiviato senza giorno, con due lezioni fatte.
+-- Come prima del 150: archiviato senza giorno, con due lezioni fatte.
 alter table corsi disable trigger corsi_archiviato_il;
 update corsi set attivo = false, archiviato_il = null where id = 'cccccccc-0000-0000-0000-000000000002';
 alter table corsi enable trigger corsi_archiviato_il;
 insert into sessioni (corso_id, inizio, fine) values
   ('cccccccc-0000-0000-0000-000000000002', '2026-10-06 17:00+02', '2026-10-06 18:00+02'),
   ('cccccccc-0000-0000-0000-000000000002', '2026-09-29 17:00+02', '2026-09-29 18:00+02');
-\i supabase/149-corso-archiviato-il.sql
-select atteso('rilanciato il 149, Judo 2 ha il giorno della sua ultima lezione', giorno_di('cccccccc-0000-0000-0000-000000000002'), '2026-10-06');
+\i supabase/150-corso-archiviato-il.sql
+select atteso('rilanciato il 150, Judo 2 ha il giorno della sua ultima lezione', giorno_di('cccccccc-0000-0000-0000-000000000002'), '2026-10-06');

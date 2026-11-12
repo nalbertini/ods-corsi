@@ -712,7 +712,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('147-chat-bonifici-assegnati.sql', 'nei conti della chat un bonifico assegnato conta una volta sola',
     coalesce((select pg_get_function_result(to_regprocedure('public.chat_ricevute()'))), '') like '%movimento_id%'
     and coalesce((select pg_get_function_result(to_regprocedure('public.chat_pagamenti_diretti()'))), '') like '%movimento_id%'),
-  ('149-corso-archiviato-il.sql', 'i conti di un corso archiviato si fermano al giorno dell''archiviazione',
+  ('150-corso-archiviato-il.sql', 'i conti di un corso archiviato si fermano al giorno dell''archiviazione',
     exists (select 1 from pg_trigger where tgname = 'corsi_archiviato_il' and tgrelid = 'public.corsi'::regclass))
 ) as x(file, cosa, c)
 order by file, cosa;

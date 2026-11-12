@@ -981,7 +981,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const chi = await insegnanti(righe.map((r) => r.id))
       // Letta a parte: senza 82-manca-la-firma.sql la colonna non c'è, e CORSI non offre la spunta.
       const uno = bastaUnoDai(await db.from('corsi').select('id, basta_uno'))
-      // Letta a parte: senza 149-corso-archiviato-il.sql la colonna non c'è, e un archiviato conta fino a oggi come prima.
+      // Letta a parte: senza 150-corso-archiviato-il.sql la colonna non c'è, e un archiviato conta fino a oggi come prima.
       const arch = await db.from('corsi').select('id, archiviato_il').eq('attivo', false)
       if (arch.error && !(arch.error.code === '42703' && /archiviato_il/.test(arch.error.message ?? ''))) throw guaio(arch.error)
       // La forma è quella della select `id, archiviato_il`.

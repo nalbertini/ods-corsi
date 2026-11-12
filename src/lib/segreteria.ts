@@ -95,7 +95,7 @@ export interface CorsoSeg {
   istruttori: Istruttore[]
   capienza?: number
   attivo: boolean
-  /** Il giorno in cui è stato archiviato: i corsi da pagare contano fino a lì (`149-corso-archiviato-il.sql`). */
+  /** Il giorno in cui è stato archiviato: i corsi da pagare contano fino a lì (`150-corso-archiviato-il.sql`). */
   archiviatoIl?: string
   /** Quale tessera chiede il corso (FIJLKAM, FIPE…); senza, nessuna (`61-tessere.sql`). */
   enteTessera?: string
