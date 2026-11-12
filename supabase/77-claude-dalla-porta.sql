@@ -25,6 +25,8 @@
 -- Si lancia dopo `75-chat-segreteria.sql` e `72-movimenti-dalla-chat.sql`. Rilanciarlo non perde niente. Da quando
 -- c'è, la funzione `mcp` va ripubblicata (legge i conti da queste funzioni); prima di ripubblicarla, Claude legge i
 -- voci e casse ma i conti e la registrazione dicono che non può.
+-- Dopo il 147 (che rifà `chat_ricevute` e `chat_pagamenti_diretti` con `movimento_id`) prima
+-- `drop function chat_ricevute(), chat_pagamenti_diretti();`, poi questo, poi di nuovo il 147.
 -- ---------------------------------------------------------------------------
 
 -- Il token è di un client OAuth (Claude): il claim `client_id` c'è, anche vuoto.

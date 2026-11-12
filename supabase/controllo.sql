@@ -708,6 +708,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'corso_importo' and corpo like '%corso_in_segreteria%')
     and exists (select 1 from dentro where nome = 'satispay_corsi_chi' and corpo like '%corso_in_segreteria%')
     and exists (select 1 from dentro where nome = 'iscritto_scheda_di' and corpo like '%quota_della_segreteria%')),
+  -- Rifà due funzioni del 77: rilanciando quello, il controllo torna «manca».
+  ('147-chat-bonifici-assegnati.sql', 'nei conti della chat un bonifico assegnato conta una volta sola',
+    coalesce((select pg_get_function_result(to_regprocedure('public.chat_ricevute()'))), '') like '%movimento_id%'
+    and coalesce((select pg_get_function_result(to_regprocedure('public.chat_pagamenti_diretti()'))), '') like '%movimento_id%'),
   -- Rifà `accogli_iscrizione` di 100: rilanciando 06, 44, 45, 53, 90, 95, 99 o 100, il controllo torna «manca».
   ('148-nome-compatto.sql', 'accogliere riconosce lo stesso nome scritto con un altro apostrofo, accento o trattino',
     exists (select 1 from dentro where nome = 'nome_compatto')

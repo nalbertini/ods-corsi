@@ -169,12 +169,22 @@ select atteso('chat_movimento_per_chiave: le colonne del movimento scritto',
   'TABLE(id uuid, tipo text, data date, importo integer, descrizione text, voce_id uuid, cassa_id uuid)');
 select atteso('chat_pagamenti_diretti: i pagamenti a mano, senza persona né nota', da(:'sandro', :'claude', 'select string_agg(metodo || ''|'' || voce || ''|'' || importo, '','') from chat_pagamenti_diretti()'), 'Contanti|QUOTA ASSOCIATIVA|2000');
 select atteso('…le colonne', pg_get_function_result('chat_pagamenti_diretti()'::regprocedure),
-  'TABLE(id uuid, data date, importo integer, metodo text, voce text, annullato_il timestamp with time zone)');
+  'TABLE(id uuid, data date, importo integer, metodo text, voce text, annullato_il timestamp with time zone, movimento_id uuid)');
 select atteso('…Anna no', da('11111111-1111-1111-1111-111111111111', :'claude', 'select count(*)::text from chat_pagamenti_diretti()'), '42501 la contabilità la cura l’amministrazione');
 select atteso('chat_ricevute: le voci coi pagamenti, mai intestatario, ente o note', pg_get_function_result('chat_ricevute()'::regprocedure),
-  'TABLE(id uuid, voci jsonb, annullata_il timestamp with time zone)');
+  'TABLE(id uuid, voci jsonb, annullata_il timestamp with time zone, movimento_id uuid)');
 select atteso('…Sandro le legge', da(:'sandro', :'claude', 'select count(*)::text from chat_ricevute()'), '0');
 select atteso('…Anna no', da('11111111-1111-1111-1111-111111111111', :'claude', 'select count(*)::text from chat_ricevute()'), '42501 la contabilità la cura l’amministrazione');
+-- Un bonifico assegnato (135): il pagamento a mano punta al movimento, e la chat lo deve sapere per non contarlo due
+-- volte (147), come fa BILANCIO.
+insert into movimenti (id, tipo, data, importo, voce_id, cassa_id, descrizione, creato_da)
+  select 'eeeeeeee-0000-0000-0000-000000000004', 'entrata', current_date - 1, 6000, v.id, c.id, 'Bonifico quota', 'aaaaaaaa-0000-0000-0000-000000000003'
+    from voci_contabili v, casse c where v.tipo = 'entrata' and c.nome = 'Conto Corrente' limit 1;
+insert into pagamenti_diretti (persona_id, data, importo, metodo, voce, movimento_id)
+  values ('aaaaaaaa-0000-0000-0000-000000000007', current_date - 1, 6000, 'Bonifico', 'QUOTA ASSOCIATIVA', 'eeeeeeee-0000-0000-0000-000000000004');
+select atteso('chat_pagamenti_diretti: il pagamento del bonifico porta il suo movimento, quello a mano no',
+  da(:'sandro', :'claude', 'select string_agg(importo || ''|'' || coalesce(movimento_id::text, ''-''), '','' order by importo) from chat_pagamenti_diretti()'),
+  '2000|-,6000|eeeeeeee-0000-0000-0000-000000000004');
 
 \echo '--- 5. permessi e impostazioni ---'
 reset role;
@@ -196,5 +206,5 @@ select atteso('…anon no',
     where has_function_privilege('anon', f, 'execute')), null);
 select atteso('PostgREST chiama controlla_richiesta prima di ogni richiesta',
   (select array_to_string(rolconfig, ';') from pg_roles where rolname = 'authenticator'), '…pgrst.db_pre_request=public.controlla_richiesta…');
-select atteso('niente scritto dalle prove: tre movimenti, un pagamento, un file',
-  (select count(*) from movimenti) || '|' || (select count(*) from pagamenti_diretti) || '|' || (select count(*) from storage.objects), '3|1|1');
+select atteso('niente scritto dalle prove: quattro movimenti, due pagamenti, un file',
+  (select count(*) from movimenti) || '|' || (select count(*) from pagamenti_diretti) || '|' || (select count(*) from storage.objects), '4|2|1');
