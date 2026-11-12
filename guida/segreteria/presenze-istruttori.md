@@ -57,12 +57,12 @@ stesso si fa da [COMPENSI](compensi.md), in **MANCA LA SUA FIRMA**.
 
 Si vedono tutte, **confermate** e **da confermare** (e le rifiutate, in
 grigio), dalla lezione più recente, con chi le ha decise (o **da sé: era
-previsto**). In cima quattro filtri:
+previsto**). In cima i filtri:
 
-- **Periodo** — un mese (normalmente quello in corso), un **anno** intero
+- **Periodo** — un mese (all'apertura è quello in corso), un **anno** intero
   (quest'anno o quello prima), o gli **ultimi dodici mesi**.
 - **Corso** e **Istruttore** — solo quelli che nel mese scelto ci sono.
-- **Stato** — **Da confermare**, **Confermate** o **Rifiutate**.
+- **MOSTRA** — **Tutte**, **Da confermare**, **Confermate** o **Rifiutate**.
 
 Una presenza **rifiutata** ha anche **Elimina** (rosso, chiede conferma): la toglie dall'elenco per
 sempre. Una confermata o da confermare si rifiuta prima. Se l'istruttore

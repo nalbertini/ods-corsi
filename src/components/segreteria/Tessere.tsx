@@ -95,7 +95,7 @@ export function TessereDellaPersona({
           {segnoDiUna(t, oggi)}
           <button
             type="button"
-            className="sg-btn sg-btn-linea"
+            className="sg-btn sg-btn-linea sg-pericolo"
             aria-label={`Togli la tessera ${t.ente} n. ${t.codice}`}
             onClick={async () => {
               if (!(await chiedi(`Togliere la tessera ${t.ente} n. ${t.codice} di ${p.nome} ${p.cognome}?`, 'Sì, toglila', { pericolo: true }))) return
@@ -303,9 +303,9 @@ export function ImportaTessere({ d, ricarica }: { d: DatiSegreteria; ricarica: (
           <button type="button" className="sg-btn sg-btn-linea" onClick={ricomincia}>
             Indietro
           </button>
-          <button type="button" className="sg-btn sg-btn-pieno" disabled={aspetta || pronto.esito.nuove === 0} onClick={() => void metti()}>
-            {pronto.esito.nuove === 1 ? 'Metti 1 tessera' : `Metti ${pronto.esito.nuove} tessere`}
-          </button>
+          <Tasto tono="pieno" disabled={aspetta || pronto.esito.nuove === 0} onClick={() => void metti()}>
+            {pronto.esito.nuove === 1 ? 'Importa 1 tessera' : `Importa ${pronto.esito.nuove} tessere`}
+          </Tasto>
         </div>
       )}
       {passo === 3 && fatto && (

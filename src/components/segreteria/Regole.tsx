@@ -382,7 +382,7 @@ function FormSala({
         onChange={(e) => setSala({ ...sala, capienza: e.target.value ? Number(e.target.value) : undefined })}
       />
       <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setSala(null)}>
-        Lascia stare
+        Annulla
       </button>
       <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} aria-label="Salva la sala">
         <Spunta size={18} />
@@ -468,7 +468,7 @@ function ElencoAttivita({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
             onBlur={() => !b.id && !b.nome && setBozza(null)}
           />
           <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setBozza(null)}>
-            Lascia stare
+            Annulla
           </button>
           <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} aria-label="Salva l'attività" disabled={!!errore}>
             <Spunta size={18} />
@@ -691,7 +691,7 @@ function FormLista({
                 : (erroreDelLink(bozza.link) ?? 'Questo link non è di YouTube né di Spotify, e non sembra l’indirizzo di una radio.')}
         </span>
         <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setBozza(null)}>
-          Lascia stare
+          Annulla
         </button>
         <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!fonte} aria-label="Salva la lista">
           <Spunta size={18} />
@@ -902,9 +902,9 @@ function GiorniCertificato({ giorni, pronto, salva, children }: { giorni: number
           <span className="sg-sotto">Nel termine la persona viene alle lezioni e in DA FARE è gialla; dopo è rossa, ma la presenza si segna lo stesso.</span>
           {scritto !== null && (
             <div className="row" style={{ gap: 8 }}>
-              <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setScritto(null)}>
-                Lascia stare
-              </button>
+              <Tasto className="grow" onClick={() => setScritto(null)}>
+                Annulla
+              </Tasto>
               <Tasto tono="pieno" className="grow" disabled={!!guaio || Number(scritto) === giorni} onClick={() => void salva(Number(scritto)).then((fatto) => fatto && setScritto(null))}>
                 Salva
               </Tasto>
@@ -955,9 +955,9 @@ function AvvisiSegreteria({ d }: { d: DatiSegreteria }) {
       {campo('cc', 'IN COPIA · FACOLTATIVA')}
       {b && (
         <div className="row" style={{ gap: 8 }}>
-          <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setB(null)}>
-            Lascia stare
-          </button>
+          <Tasto className="grow" onClick={() => setB(null)}>
+            Annulla
+          </Tasto>
           <Tasto
             tono="pieno"
             className="grow"
@@ -1116,9 +1116,9 @@ function SollecitiPerEmail({ d, ora, salva }: { d: DatiSegreteria; ora: Sollecit
 
       {cambiata && (
         <div className="row" style={{ gap: 8 }}>
-          <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setBozza(null)}>
-            Lascia stare
-          </button>
+          <Tasto className="grow" onClick={() => setBozza(null)}>
+            Annulla
+          </Tasto>
           <Tasto
             tono="pieno"
             className="grow"

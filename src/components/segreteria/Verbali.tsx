@@ -381,16 +381,20 @@ function Carica({ v, verbali, oggi, fai, lavora, onChiudi, onFatto, onEliminato 
               Ho controllato: il PDF è firmato e i dati sono quelli del foglio
             </label>
           </div>
-          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-            <Tasto onClick={() => void chiudi()}>Annulla</Tasto>
-            <Tasto tono="pieno" disabled={lavora} onClick={carica}>
-              Carica
-            </Tasto>
-            {v && puoEliminare(v) && (
-              <Tasto className="sg-pericolo" disabled={lavora} onClick={() => void elimina()}>
-                Elimina la bozza
+          <div className="sg-movimento-piede">
+            <div className="sg-movimento-gruppo">
+              {v && puoEliminare(v) && (
+                <Tasto className="sg-pericolo" disabled={lavora} onClick={() => void elimina()}>
+                  Elimina la bozza
+                </Tasto>
+              )}
+            </div>
+            <div className="sg-movimento-gruppo">
+              <Tasto onClick={() => void chiudi()}>Chiudi</Tasto>
+              <Tasto tono="pieno" disabled={lavora} onClick={carica}>
+                Carica
               </Tasto>
-            )}
+            </div>
           </div>
         </div>
       </Bozza>
@@ -480,8 +484,8 @@ function Scheda({ v, verbali, persone, avvisa, onFinestra }: { v: Verbale; verba
             <span>
               {pdf.nome} · {peso(pdf.peso)}
             </span>
-            <Tasto onClick={() => void apri(pdf)}>Apri</Tasto>
-            {puoSostituirePdf(v) && <Tasto onClick={() => onFinestra({ a: 'sostituisci', id: v.id })}>Sostituisci</Tasto>}
+            <Tasto onClick={() => void apri(pdf)}>Apri il PDF</Tasto>
+            {puoSostituirePdf(v) && <Tasto onClick={() => onFinestra({ a: 'sostituisci', id: v.id })}>Sostituisci il PDF</Tasto>}
           </div>
         ) : (
           <span className="sg-sotto">Nessun PDF.</span>
@@ -489,7 +493,7 @@ function Scheda({ v, verbali, persone, avvisa, onFinestra }: { v: Verbale; verba
         {sostituiti.map((a) => (
           <div key={a.id} className="row" style={{ gap: 8, alignItems: 'center' }}>
             <span className="sg-sotto">{a.nome} · sostituito</span>
-            <Tasto onClick={() => void apri(a)}>Apri</Tasto>
+            <Tasto onClick={() => void apri(a)}>Apri il PDF</Tasto>
           </div>
         ))}
       </div>

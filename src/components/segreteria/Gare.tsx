@@ -775,7 +775,7 @@ function ModificaGara({
 
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
             {g && (
-              <Tasto className="sg-pericolo" disabled={lavora} onClick={() => void annulla()}>
+              <Tasto className={g.annullata ? undefined : 'sg-pericolo'} disabled={lavora} onClick={() => void annulla()}>
                 {g.annullata ? 'Rimetti la gara' : 'Annulla la gara'}
               </Tasto>
             )}

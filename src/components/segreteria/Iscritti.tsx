@@ -910,7 +910,7 @@ function Scheda({
           <div className="sg-scheda-testa-azioni">
             <div className="sg-scheda-testa-tasti">
               {azioni.sollecito && (
-                <button type="button" className="sg-btn sg-btn-pieno sg-scheda-testa-sollecito" aria-expanded={sollecitoAperto} aria-controls="sg-sollecito" onClick={() => setSollecitoAperto((a) => !a)}>
+                <button type="button" className={`sg-btn ${sollecitoAperto ? 'sg-btn-linea' : 'sg-btn-pieno'} sg-scheda-testa-sollecito`} aria-expanded={sollecitoAperto} aria-controls="sg-sollecito" onClick={() => setSollecitoAperto((a) => !a)}>
                   Sollecita su WhatsApp <span aria-hidden="true">{sollecitoAperto ? '▴' : '▾'}</span>
                 </button>
               )}
@@ -1429,7 +1429,7 @@ function CoppieDoppioni({
           {riga(a)}
           <div style={{ borderTop: '2px solid var(--line)', paddingTop: 10 }}>{riga(b)}</div>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-            <button type="button" className="sg-btn sg-btn-pieno" onClick={() => onUnisci(a.id, b.id)}>
+            <button type="button" className="sg-btn sg-btn-linea" onClick={() => onUnisci(a.id, b.id)}>
               Unisci…
             </button>
             <button type="button" className="sg-btn sg-btn-linea" onClick={() => onNonDoppioni(a.id, b.id)}>
@@ -1559,12 +1559,9 @@ function UnisciDoppione({
       )}
 
       <div className="sg-scheda-piede">
-        <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
-          Lascia stare
-        </button>
         <button
           type="button"
-          className="sg-btn sg-btn-rosso grow"
+          className="sg-btn sg-btn-linea sg-pericolo grow"
           disabled={!resta || !via || !passa.dato}
           onClick={async () => {
             if (!resta || !via) return
@@ -1576,6 +1573,9 @@ function UnisciDoppione({
           }}
         >
           Unisci
+        </button>
+        <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
+          Lascia stare
         </button>
       </div>
     </div>
@@ -2122,14 +2122,6 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
           <div className="row" style={{ gap: 8 }}>
             <button
               type="button"
-              className="sg-btn sg-btn-pieno grow"
-              disabled={!scadeMandato}
-              onClick={() => void fai(() => d.confermaCertificatoIscritto(p.id, scadeMandato), 'Certificato confermato', onCambiato)}
-            >
-              Conferma
-            </button>
-            <button
-              type="button"
               className="sg-btn sg-btn-linea sg-pericolo grow"
               onClick={async () => {
                 if (await chiedi(`Rifiutare il certificato mandato da ${p.nome} ${p.cognome}? Il file si cancella e dovrà rimandarlo.`, 'Rifiuta', { pericolo: true }))
@@ -2137,6 +2129,14 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
               }}
             >
               Rifiuta
+            </button>
+            <button
+              type="button"
+              className="sg-btn sg-btn-pieno grow"
+              disabled={!scadeMandato}
+              onClick={() => void fai(() => d.confermaCertificatoIscritto(p.id, scadeMandato), 'Certificato confermato', onCambiato)}
+            >
+              Conferma
             </button>
           </div>
         </div>

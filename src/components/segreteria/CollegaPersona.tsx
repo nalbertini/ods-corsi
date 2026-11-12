@@ -78,11 +78,11 @@ export function CollegaSicuri({ d, onRileggi, onVediDaDecidere, onChiudi }: { d:
         </span>
         {fermo && <div role="alert" className="sg-riquadro" style={{ borderColor: 'var(--rosso-testo)', fontSize: 15 }}>{fermo}</div>}
         <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+          {tolti === null && <button type="button" className="sg-btn sg-btn-linea sg-pericolo" onClick={() => void togli()}>Togli questo lotto</button>}
           {tolti === null && fermo && <button type="button" className="sg-btn sg-btn-pieno" onClick={rifai}>Rifai il collegamento</button>}
           {tolti === null && !fermo && (r?.daDecidere.movimenti ?? 0) > 0 && (
-            <button type="button" className="sg-btn sg-btn-pieno" onClick={onVediDaDecidere}>Vedi i da decidere · {r?.daDecidere.movimenti}</button>
+            <button type="button" className="sg-btn sg-btn-pieno" onClick={onVediDaDecidere}>Vedi i movimenti da decidere · {r?.daDecidere.movimenti}</button>
           )}
-          {tolti === null && <button type="button" className="sg-btn sg-btn-rosso" onClick={() => void togli()}>Togli questo lotto</button>}
           <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>Torna all’elenco</button>
         </div>
         {tolti === null && <span className="sg-sotto">TOGLI QUESTO LOTTO scollega solo i movimenti appena collegati. Quelli fatti a mano non si toccano.</span>}

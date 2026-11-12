@@ -127,7 +127,7 @@ function ElencoVoci({ d, dove, titolo, voci, pagine, ricarica }: { d: DatiSegret
       )}
       {cambiata && (
         <div className="row" style={{ gap: 8 }}>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => setModifica(voci)}>Butta i cambi</button>
+          <Tasto onClick={() => setModifica(voci)}>Annulla</Tasto>
           <Tasto tono="pieno" disabled={lavora || problemi.length > 0} onClick={() => void fai(() => d.salvaMenuSito(dove, modifica.map((v) => ({ ...v, etichetta: v.etichetta.trim() }))), `${titolo} salvato`, ricarica)}>Salva</Tasto>
         </div>
       )}
