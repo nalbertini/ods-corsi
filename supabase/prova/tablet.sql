@@ -40,7 +40,9 @@ insert into iscrizioni (corso_id, persona_id, dal) values
 -- quaranta minuti, ancora in corso.
 insert into sessioni (id, corso_id, inizio, fine) values
   ('eeeeeeee-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000001', now() + interval '5 minutes', now() + interval '65 minutes'),
-  ('eeeeeeee-0000-0000-0000-000000000002', 'cccccccc-0000-0000-0000-000000000001', now() - interval '1 day',    now() - interval '1 day' + interval '1 hour'),
+  -- «Ieri» è due giorni fa: con un giorno solo, dopo mezzanotte cadrebbe nello stesso giorno di Roma della …06,
+  -- e le due sarebbero un doppio turno (145). Resta nei 14 giorni del recupero.
+  ('eeeeeeee-0000-0000-0000-000000000002', 'cccccccc-0000-0000-0000-000000000001', now() - interval '2 days',   now() - interval '2 days' + interval '1 hour'),
   ('eeeeeeee-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001', now() - interval '21 days',  now() - interval '21 days' + interval '1 hour'),
   ('eeeeeeee-0000-0000-0000-000000000004', 'cccccccc-0000-0000-0000-000000000001', now() + interval '1 day',    now() + interval '1 day 1 hour'),
   ('eeeeeeee-0000-0000-0000-000000000005', 'cccccccc-0000-0000-0000-000000000002', now() + interval '5 minutes', now() + interval '65 minutes'),
@@ -134,6 +136,11 @@ set role authenticated;
 select atteso('Tommaso tocca il suo nome', segna_dal_tablet('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000005'), 'istruttore');
 reset role;
 select atteso('resta assente', (select stato::text from presenze where persona_id = 'aaaaaaaa-0000-0000-0000-000000000005'), 'assente');
+
+-- La lezione in corso (…06) e quella fra cinque minuti (…01) sono lo stesso corso lo stesso giorno: un
+-- doppio turno (145). Con la presenza alla …06 Giulia non sarebbe nell'appello della …01, che qui si prova
+-- col PIN; il doppio turno ha la sua prova, `doppio-turno.sql`.
+delete from presenze where sessione_id = 'eeeeeeee-0000-0000-0000-000000000006' and persona_id = 'aaaaaaaa-0000-0000-0000-000000000004';
 
 \echo ''
 \echo '--- 5. l''area istruttore col PIN ---'

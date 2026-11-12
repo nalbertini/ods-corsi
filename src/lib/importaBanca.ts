@@ -23,6 +23,8 @@ export interface MovimentoBanca {
   /** In centesimi. */
   importo: number
   descrizione: string
+  /** Il tipo d'operazione del file (BONIFICO SEPA, PAGAMENTO POS…): è anche in fondo alla descrizione, qui serve a mostrarlo a parte. */
+  operazione: string
   causale: string
   chiave: string
   /** Fino a due codici fiscali scritti nella causale (struttura valida): servono a proporre i figli, non si mostrano. */
@@ -143,7 +145,7 @@ export function leggiBanca(testo: string): LetturaBanca {
     const base = `${giorno.replace(/-/g, '')}:${hash}`
     const n = viste.get(base) ?? 0
     viste.set(base, n + 1)
-    movimenti.push({ riga, data: giorno, tipo, importo, descrizione: descrizione || 'Movimento della banca', causale: (c[4] ?? '').trim(), chiave: `${PREFISSO_CHIAVE_BANCA}${base}:${n}`, codiceFiscaleLetto: codiciLetti(grezzo) })
+    movimenti.push({ riga, data: giorno, tipo, importo, descrizione: descrizione || 'Movimento della banca', operazione: puliscila(c[6] ?? ''), causale: (c[4] ?? '').trim(), chiave: `${PREFISSO_CHIAVE_BANCA}${base}:${n}`, codiceFiscaleLetto: codiciLetti(grezzo) })
   }
   const date = movimenti.map((x) => x.data).sort()
   return { movimenti, scartate, dal: date[0] ?? null, al: date[date.length - 1] ?? null }
@@ -173,10 +175,11 @@ export interface RigaAnteprima {
   motivo: string
 }
 
-export type FiltroRigheBanca = 'tutte' | 'nuove' | 'duplicate' | 'da-decidere' | 'scartate'
+export type FiltroRigheBanca = 'tutte' | 'da-fare' | 'nuove' | 'duplicate' | 'da-decidere' | 'scartate'
 
 const STATI_DEL_FILTRO: Record<FiltroRigheBanca, StatoRigaBanca[]> = {
   tutte: ['nuova', 'da-controllare', 'duplicata', 'da-decidere', 'scartata'],
+  'da-fare': ['nuova', 'da-controllare', 'da-decidere'],
   nuove: ['nuova', 'da-controllare'],
   duplicate: ['duplicata'],
   'da-decidere': ['da-decidere'],
@@ -194,11 +197,31 @@ export const filtraRighe = (righe: RigaAnteprima[], filtro: FiltroRigheBanca, se
 
 export const contaRighe = (righe: RigaAnteprima[], segno: SegnoBanca = 'entrambe') => ({
   tutte: filtraRighe(righe, 'tutte', segno).length,
+  daFare: filtraRighe(righe, 'da-fare', segno).length,
   nuove: filtraRighe(righe, 'nuove', segno).length,
   duplicate: filtraRighe(righe, 'duplicate', segno).length,
   daDecidere: filtraRighe(righe, 'da-decidere', segno).length,
   scartate: filtraRighe(righe, 'scartate', segno).length,
 })
+
+/** Il filtro con cui parte la pagina: quel che resta da fare; se non c'è, le già nell'app, perché il file non sembri vuoto. */
+export const filtroIniziale = (conti: ReturnType<typeof contaRighe>): FiltroRigheBanca =>
+  conti.daFare ? 'da-fare' : conti.duplicate ? 'duplicate' : 'tutte'
+
+export type GruppoRigheBanca = 'forse' | 'nuovi' | 'gia' | 'scartate'
+
+const STATI_DEL_GRUPPO: [GruppoRigheBanca, StatoRigaBanca[]][] = [['forse', ['da-decidere']], ['nuovi', ['nuova', 'da-controllare']], ['gia', ['duplicata']], ['scartate', ['scartata']]]
+
+/** Le righe in tabella, a gruppi e ognuno nell'ordine del file: prima quelle forse già nell'app, che vanno decise. I gruppi vuoti no. */
+export const gruppiRighe = (righe: RigaAnteprima[]): { gruppo: GruppoRigheBanca; righe: RigaAnteprima[] }[] =>
+  STATI_DEL_GRUPPO.map(([gruppo, stati]) => ({ gruppo, righe: righe.filter((r) => stati.includes(r.stato)) })).filter((g) => g.righe.length)
+
+/** Il testo di una riga com'è in pagina: senza il tipo d'operazione in fondo (si mostra a parte) né il codice TRN, che non aiuta a decidere. */
+export function testoDaMostrare(mv: Pick<MovimentoBanca, 'descrizione' | 'operazione'>): string {
+  const op = mv.operazione.trim()
+  const senza = op && mv.descrizione.endsWith(` ${op}`) ? mv.descrizione.slice(0, -op.length) : mv.descrizione
+  return senza.replace(/\bTRN\s+\S+/g, ' ').replace(/\s+/g, ' ').trim() || mv.descrizione
+}
 
 /** Una riga del file com'è appena importata: un movimento a mano del conto, in «Da classificare». Serve alle regole della voce prima di scrivere. */
 export const rigaComeMovimento = (mv: MovimentoBanca, contoId: string): RigaMovimento => ({
@@ -222,15 +245,19 @@ export const cosaNonVaSceltaBanca = (mv: MovimentoBanca, scelta: SceltaVoceBanca
 export const sceltaVuolePersona = (mv: MovimentoBanca, voce: VoceContabile | undefined, contoId: string): boolean =>
   !!voce && vuolePersonaRiga(rigaComeMovimento(mv, contoId), voce.nome)
 
-/** La scelta che parte dal suggerimento: la voce, e la persona solo se è preselezionata. */
+/**
+ * La scelta che parte dal suggerimento, e che all'import vale senza conferma: la voce, e la persona preselezionata
+ * solo se il testo ne ha il nome intero. Da nome e iniziale («Elisa M.») la scheda si propone ma si assegna a mano.
+ */
 export function sceltaProposta(sug: SuggerimentoMovimento | null): SceltaVoceBanca | null {
   if (!sug?.voce) return null
-  return sug.preselezionato ? { voceId: sug.voce.voceId, personaId: sug.preselezionato } : { voceId: sug.voce.voceId }
+  const sicura = sug.candidati.find((c) => c.id === sug.preselezionato && c.come !== 'nome e iniziale')
+  return sicura ? { voceId: sug.voce.voceId, personaId: sicura.id } : { voceId: sug.voce.voceId }
 }
 
 /**
- * Cosa si scrive per ogni riga che entra: la scelta della segreteria, se no la voce suggerita. La persona
- * proposta non entra mai da sola: vale solo dopo il ✓, che la mette fra le scelte a mano.
+ * Cosa si scrive per ogni riga che entra: la scelta della segreteria, se no la proposta (la voce, e la persona se la
+ * scheda possibile è una sola). La persona proposta è già nel campo PERSONA: vale finché la segreteria non la cambia.
  */
 export function scelteDaScrivere(
   entrano: Pick<MovimentoBanca, 'chiave'>[], aMano: Record<string, SceltaVoceBanca>, proposte: Record<string, SuggerimentoMovimento | null>,
@@ -238,7 +265,7 @@ export function scelteDaScrivere(
   return Object.fromEntries(entrano.flatMap(({ chiave }) => {
     if (aMano[chiave]) return [[chiave, aMano[chiave]]]
     const p = sceltaProposta(proposte[chiave] ?? null)
-    return p ? [[chiave, { voceId: p.voceId }]] : []
+    return p ? [[chiave, p]] : []
   }))
 }
 
@@ -464,7 +491,8 @@ export function segnaCoperti(movimenti: MovimentoManuale[], coperti: CopertoBanc
 const PREFISSO_INCASSO = 'incasso:'
 /** Una ricevuta intera pagata in più rate (`ricevuta:<id>`): copre un bonifico solo che le paga tutte. */
 const PREFISSO_RICEVUTA = 'ricevuta:'
-const NOME_DIVERSO = 'Il nome nel testo non è quello della ricevuta: dimmi tu.'
+// Il nome del bonifico non è quello della ricevuta: la riga resta da decidere.
+const NOME_DIVERSO = 'Nome diverso'
 
 /** La ricevuta di un incasso `incasso:<ricevuta>:<voce>:<pagamento>` (`righeDaRicevute`); null per i pagamenti a mano e il resto. */
 const ricevutaDellIncasso = (id: string): string | null => /^incasso:(?!diretto:)([^:]+):\d+:\d+$/.exec(id)?.[1] ?? null

@@ -89,8 +89,9 @@ ha ore sue.
 
 In cima, ferma mentre scorrete l'elenco: il nome del corso, giorno, ora e sala,
 il conto grande degli iscritti presenti (`18 / 20`, con **+1 PROVA** a parte) e
-quanti iscritti restano da segnare; quando hanno tutti un segno, **CHIUDI IN
-FONDO ↓**, che si tocca e porta al tasto per chiudere. Tutti i conti sono degli iscritti: chi prova è sempre detto a
+quanti iscritti restano da segnare (**… 2 DA SEGNARE**, poi **✓ TUTTI
+SEGNATI**). A destra il tasto giallo **TUTTI PRESENTI**, e in alto il tasto
+**⋯** con le cose che si fanno di rado. Tutti i conti sono degli iscritti: chi prova è sempre detto a
 parte. Se la lezione non è ancora
 cominciata c'è scritto **… NON ANCORA COMINCIATA**: si può segnare da mezz'ora
 prima dell'inizio. Le presenze si correggono fino a 14 giorni dopo la lezione.
@@ -101,11 +102,12 @@ chiudere non ci sono. Se la lezione supera i 14 giorni mentre l'appello è
 aperto, i segni tornano com'erano e compare lo stesso riquadro.
 
 Se la segreteria ha scelto un'attività per quella lezione («Karate», «Open
-mat»), la leggete accanto all'ora. Se la lezione è vostra, sotto la testata c'è
+mat»), la leggete accanto all'ora. Se la lezione è vostra, nel menu **⋯** c'è
 **ATTIVITÀ DI QUESTA LEZIONE**: potete cambiarla, o scegliere **Nessuna
 attività**. Vale solo per quella lezione, non per le altre dello stesso giorno.
 
-Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è:
+Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è (ai primi
+appelli lo ricorda una riga sopra l'elenco):
 
 | Tocco | Segno | Significa |
 |---|---|---|
@@ -124,23 +126,24 @@ tocco non sposta mai un nome. Chi viene a provare resta in fondo, sotto
 **PROVE**. Se non si riesce a leggere lo storico, l'elenco è per cognome. Se
 riaprite una lezione passata, chi non è ancora segnato sta in cima.
 
-I due tasti in cima:
+**TUTTI PRESENTI**, il tasto giallo in cima, mette ✓ a chi non ha ancora un
+segno, e sotto dice a chi (**i 5 non segnati**): le assenze già messe restano.
+È il modo più veloce: premetelo e poi toccate una volta gli assenti. Resta
+sempre allo stesso posto e con la stessa parola. Quando tutti hanno un segno
+diventa **✓ TUTTI SEGNATI**, bianco, e non si tocca. Se invece gli iscritti
+sono tutti assenti (un appello chiuso per sbaglio, riaperto; chi prova non
+conta) torna **TUTTI PRESENTI**, e mette ✓ a tutti.
 
-- **TUTTI PRESENTI**: mette ✓ a tutti. È il modo più veloce: premetelo e poi
-  toccate una volta gli assenti. Se qualcuno è già segnato diventa **GLI ALTRI
-  PRESENTI**, e mette ✓ solo a chi non ha ancora un segno: le assenze già
-  messe restano. Quando tutti hanno un segno diventa **TUTTI SEGNATI**, e
-  non si tocca. Se invece gli iscritti sono tutti assenti (un appello chiuso per
-  sbaglio, riaperto; chi prova non conta) torna **TUTTI PRESENTI**, e mette ✓
-  a tutti.
-- **AZZERA**: toglie tutti i segni della lezione, per ricominciare. Chiede
-  **SICURO?**: toccatelo di nuovo entro qualche secondo.
+**AZZERA L'APPELLO** sta nel menu **⋯**, lontano dal pollice che segna: toglie
+tutti i segni della lezione, per ricominciare. Chiede **SÌ, TOGLI TUTTI I
+SEGNI**: toccatelo di nuovo entro qualche secondo. **CHIUDI IL MENU**, o un
+tocco fuori, torna all'elenco.
 
-Sopra l'elenco c'è **CERCA PER NOME O COGNOME**: scrivete qualche lettera e
+Sopra l'elenco c'è la ricerca (**Cerca tra 20 iscritti**): scrivete qualche lettera e
 restano solo le persone che somigliano, in qualunque ordine (anche «marco
 rossi» e «rossi marco»), senza badare a maiuscole, accenti e apostrofi. Si
-tocca il nome come sempre. I conti in cima e i tasti **TUTTI PRESENTI** e
-**AZZERA** valgono per tutta la lezione, non solo per chi si vede: cancellate
+tocca il nome come sempre. I conti in cima, **TUTTI PRESENTI** e **AZZERA
+L'APPELLO** valgono per tutta la lezione, non solo per chi si vede: cancellate
 la ricerca per vedere di nuovo tutti.
 
 **COMPLEANNO.** Se oggi è il compleanno di un iscritto, accanto al suo nome
@@ -155,24 +158,37 @@ dice solo che oggi qualcuno di chi la fa compie gli anni.
 
 Non c'è niente da salvare: ogni tocco parte subito.
 
+**Il doppio turno.** Se il corso ha due lezioni lo stesso giorno, chi è già
+presente all'altra non è fra i nomi da segnare: sta in fondo, sotto **GIÀ
+PRESENTI A UN ALTRO TURNO**, con l'ora di quella lezione («GIÀ PRESENTE ALLE
+17:30»), e non si tocca. Non conta nei numeri in cima, **TUTTI PRESENTI** non
+lo prende e chiudendo non risulta assente. Se era già segnato assente qui e
+poi è venuto all'altra, l'assenza non conta più; se si toglie la presenza
+dall'altra lezione, torna com'era.
+
 ### Chiudere l'appello
 
-In fondo all'elenco c'è il tasto giallo per chiudere. Dice:
+In fondo allo schermo, ferma e sempre in vista mentre scorrete, c'è la barra
+con **CHIUDI L'APPELLO** (e **+ PROVA**, vedi sotto). Sopra il tasto una frase
+dice cosa succede chiudendo:
 
-- **CHIUDI L'APPELLO**, con la spunta, quando tutti hanno un segno;
-- **CHIUDI · 3 ASSENTI** quando qualcuno è ancora da segnare:
-  chiudendo, chi non ha un segno risulta **assente** (se è uno in prova, il
-  tasto aggiunge **+1 PROVA**).
+- **Tutti segnati: chiudi e torna al calendario.**, e il tasto diventa giallo
+  con la spunta;
+- **3 non segnati diventeranno assenti.** quando qualcuno è ancora da segnare:
+  chiudendo, chi non ha un segno risulta **assente**. Il tasto resta scuro,
+  non rosso: in una lezione passata chiudere così è normale;
+- **Sono tutti assenti: chiudi solo se è giusto.** quando ogni iscritto è
+  segnato assente: di solito è un appello chiuso per sbaglio, e il tasto
+  giallo resta **TUTTI PRESENTI** in cima.
 
 Mentre il riquadro delle prove è aperto il tasto per chiudere non c'è: prima
 si finisce con le prove.
 
-Chiede un secondo tocco, con quanti diventerebbero assenti, se nessuno è
-segnato (**NESSUNO SEGNATO · 14 ASSENTI?**: di solito vuol dire che manca
-**TUTTI PRESENTI**), se la lezione non è ancora cominciata (**NON È
-COMINCIATA · …**) o se più di metà diventerebbe assente. Mentre chiede il
-tasto diventa bianco col bordo rosso: leggete, e toccatelo di nuovo. Un doppio tocco veloce non
-basta.
+Chiede un secondo tocco se nessuno è segnato (di solito vuol dire che manca
+**TUTTI PRESENTI**), se la lezione non è ancora cominciata o se più di metà
+diventerebbe assente. Mentre chiede, la frase dice **Sicuro? Tocca di nuovo
+per chiudere.** e il tasto **SÌ, CHIUDI · 14 ASSENTI**: leggete, e toccatelo
+di nuovo. Un doppio tocco veloce non basta.
 
 Chiuso, si torna al calendario e in cima compare com'è andata, con quanti
 presenti e quanti assenti:
@@ -196,8 +212,8 @@ no la conferma la segreteria. Una lezione con dei presenti in cui nessun
 istruttore si è segnato (né con l'appello né col PIN sul tablet) la segreteria
 la ritrova, e sceglie chi c'era.
 
-Se la lezione la fate in due (o in tre), in fondo all'appello, prima di
-**CHIUDI**, c'è **ISTRUTTORI**: chi doveva farla con voi. Appena cominciate
+Se la lezione la fate in due (o in tre), in fondo all'elenco c'è
+**ISTRUTTORI**: chi doveva farla con voi. Appena cominciate
 l'appello risultate segnati («· tu»); da lì un tocco su un collega che non si
 è segnato e risulta presente anche lui, senza PIN. Un altro tocco lo toglie, se l'avete segnato
 per sbaglio, finché la segreteria non lo conferma o lo rifiuta. Chi si è già segnato col
@@ -227,8 +243,8 @@ arriva prima.
 ## Chi viene a provare: PROVE
 
 Chi non è iscritto a questa lezione e viene a provarla (o a fare la settimana
-di prova) lo aggiungete voi, senza aspettare la segreteria: in fondo
-all'elenco c'è **AGGIUNGI CHI PROVA**. Apre una pagina a parte, con la
+di prova) lo aggiungete voi, senza aspettare la segreteria: nella barra in
+fondo, accanto a CHIUDI, c'è **+ PROVA**. Apre una pagina a parte, con la
 tastiera già pronta.
 
 1. Scrivete il **nome o il cognome**, in qualunque ordine. Dalla terza lettera
@@ -419,7 +435,7 @@ ORE NON LETTE**: premete **RIPROVA** quando la rete c'è.
 
 L'appello funziona anche senza rete. I tocchi si vedono subito e aspettano sul
 telefono. Dentro la lezione, sotto quanti restano da segnare, compare in giallo
-**… N DA INVIARE**; fuori, sopra il calendario, **N PRESENZE DA INVIARE**.
+**… N NON ANCORA INVIATE**; fuori, sopra il calendario, **N PRESENZE DA INVIARE**.
 Spariscono quando è tutto arrivato. Se toccate più volte la stessa persona
 mentre la rete non c'è, parte solo l'ultimo segno.
 

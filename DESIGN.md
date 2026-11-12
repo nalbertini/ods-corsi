@@ -202,7 +202,7 @@ Gli azzurri e l'inchiostro del sito con i segnali puri presi dagli ingranaggi de
 **Character:** Una condensata sportiva, da tabellone, inclinata di 9° come il lettering del marchio, accanto a una grottesca morbida e leggibile per nomi e frasi. I font sono serviti in locale da `public/fonts` (licenza OFL), nessuna richiesta a Google.
 
 ### Hierarchy
-- **Display** (700, 56px, 1): l'ora del tablet di sala; il conteggio dell'appello a 46px. Numeri tabellari.
+- **Display** (700, 56px, 1): l'ora del tablet di sala; il conteggio dell'appello a 46px (40px nella testa corta dell'istruttore sul telefono). Numeri tabellari.
 - **Headline** (700, 34–40px, 1): titolo di sezione della segreteria, nome della sala sul tablet, lezione aperta (38px).
 - **Titolo di gruppo** (700, 26px, 1, riga 2px `riga` sopra): un gruppo di riquadri dentro una sezione lunga (i gruppi di IMPOSTAZIONI), la scheda di un iscritto.
 - **Title** (700, 19–22px, 1.05): nome della lezione, ora, nome sul tablet (22px), tasti.
@@ -344,6 +344,14 @@ Nel modulo FIRMA A SCHERMO INTERO è a tutta larghezza, 56px, rosso a firma vuot
 
 ### Riga dell'appello (firma del sistema)
 Riga piena larga 56px: segno grande a sinistra (Saira 22px), nome Barlow 17px. Tre stati senza leggere: presente = bordo e segno verdi; assente = bordo e segno rossi, nome barrato e spento; non segnato = bordo `riga`.
+
+Nel look sito (`AppelloScreen.tsx` dell'istruttore, telefono; libreria `RigaAppello`, `TestaAppelloCorta`, `CercaAppello`, `BarraChiudiAppello`, `FoglioAppello`):
+
+- **La riga:** tessera bianca senza bordo, raggio 6px, alta 56px; lo stato è una barra inset di 8px a sinistra (`verde` presente, `rosso` assente) e un quadrato pieno da 26px col segno bianco (✓ su `verde-testo`, che col bianco passa il contrasto; ✕ su `rosso`). Il non segnato è un quadratino vuoto da 22px col bordo `blu`: pieno contro vuoto si distingue anche senza colore, al sole della palestra.
+- **La testa corta:** alta almeno 140px (va a capo, non taglia: con un titolo lungo arriva a circa 188px). Prima riga: indietro, titolo 20px con kanji e «giorno data ora · attività» sotto, timer, ⋯, tutti 44px. Seconda: il conto Inter 800 40px «/ iscritti» con «+N PROVA» accanto, lo stato e la coda «N NON ANCORA INVIATE» (alta anche vuota); a destra TUTTI PRESENTI giallo da 176×56px, sempre allo stesso posto, con sotto per chi vale. L'attività e AZZERA non stanno in testa: stanno nel menu ⋯.
+- **La ricerca:** 44px senza etichetta, bordo `riga`, lente e segnaposto «Cerca tra N iscritti»; sotto, «N su M iscritti · k in prova» o cosa fare se non trova nessuno.
+- **La barra CHIUDI:** ferma in fondo, bianca col filo in alto, una frase di 13px su cosa succede chiudendo e due tasti da 52px: + PROVA a linea `blu` da 112px (non va a capo) e CHIUDI L'APPELLO pieno inchiostro, mai rosso. Diventa il giallo della schermata solo a tutto segnato, non se sono tutti assenti; il secondo tocco ha la frase in `rosso-testo` 700 e «SÌ, CHIUDI · N ASSENTI», che sul telefono va su due righe.
+- **Il foglio ⋯:** sale dal basso su un velo scuro, raggio 12px in alto, maniglia; dentro il cambio di attività e AZZERA L'APPELLO a linea `rosso-testo` col secondo tocco (pieno `rosso`). Spento è il blocco `superficie-alta` con testo `testo-spento`, opacità 1. Il velo e Esc lo chiudono, e il fuoco torna su ⋯.
 
 ### Lezione e Striscia dei giorni
 La lezione è una riga con barra sinistra 6px nella tinta del corso, ora e nome in Saira, conteggio a destra che diventa verde a appello fatto. La striscia dei giorni è una griglia di 7 caselle alte 62px: oggi ha il numero giallo, il giorno scelto bordo `testo` e fondo `superficie-alta`, i puntini blu contano le lezioni.

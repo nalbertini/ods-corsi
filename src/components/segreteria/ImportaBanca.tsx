@@ -1,40 +1,31 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { NOME_CASSA_CONTO, oggiARoma, vociOfferte, type Cassa, type RigaMovimento, type VoceContabile } from '../../lib/contabilita'
-import { anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, leggiBanca, MASSIMO_PER_IMPORTAZIONE, pianoDiClassificazione, rigaComeMovimento, sceltaProposta, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type FiltroRigheBanca, type LetturaBanca, type MovimentoBanca, type SceltaVoceBanca, type SegnoBanca, type StatoRigaBanca } from '../../lib/importaBanca'
+import { anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, filtroIniziale, gruppiRighe, leggiBanca, PREFISSO_CHIAVE_BANCA, testoDaMostrare, MASSIMO_PER_IMPORTAZIONE, pianoDiClassificazione, rigaComeMovimento, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type FiltroRigheBanca, type GruppoRigheBanca, type LetturaBanca, type MovimentoBanca, type RigaAnteprima, type SceltaVoceBanca, type SegnoBanca } from '../../lib/importaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
-import type { PersonaPerNome } from '../../lib/movimentiPersona'
+import type { CandidatoPersona, PersonaPerNome } from '../../lib/movimentiPersona'
 import { parolaDelMovimento, suggerisciMovimento, type SuggerimentoMovimento } from '../../lib/suggerimentoMovimento'
 import { useListino } from '../Costi'
 import { erroreSegreteria } from '../../lib/chatSegreteria'
 import { CampoPersona, SchedaCandidata } from './CollegaPersona'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { Icona } from '../Icons'
-import type { NomeIcona } from '../../lib/icone'
-import { chiedi, Guaio, Segmenti, Tag, type useAvviso, Tasto, useBozza, useCarica } from './comune'
+import { chiedi, Guaio, Segmenti, type useAvviso, Tasto, useBozza, useCarica, useDialogo } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 
 const soldi = (c: number) => `${euro(c)} €`
 const movimenti = (n: number) => (n === 1 ? '1 movimento' : `${n} movimenti`)
 
-const NOME_STATO: Record<StatoRigaBanca, string> = { nuova: 'NUOVA', 'da-controllare': 'DA CONTROLLARE', duplicata: 'DUPLICATA', 'da-decidere': 'DA DECIDERE', scartata: 'SCARTATA' }
-const TONO_STATO: Record<StatoRigaBanca, 'manca' | 'aspetta' | 'fatto' | undefined> = { nuova: 'fatto', 'da-controllare': 'aspetta', duplicata: undefined, 'da-decidere': 'aspetta', scartata: 'manca' }
 const SEGNI = [['entrambe', 'Entrambe'], ['entrate', 'Entrate'], ['uscite', 'Uscite']] as const satisfies readonly (readonly [SegnoBanca, string])[]
-const FILTRI: [FiltroRigheBanca, string, 'tutte' | 'nuove' | 'duplicate' | 'daDecidere' | 'scartate'][] = [['tutte', 'Tutte', 'tutte'], ['nuove', 'Nuove', 'nuove'], ['duplicate', 'Duplicate', 'duplicate'], ['da-decidere', 'Da decidere', 'daDecidere'], ['scartate', 'Scartate', 'scartate']]
+// «Da fare» per primo: è da lì che parte la pagina (vedi filtroIniziale).
+const FILTRI: [FiltroRigheBanca, string, 'daFare' | 'duplicate' | 'scartate' | 'tutte'][] = [['da-fare', 'Da fare', 'daFare'], ['duplicate', 'Già nell’app', 'duplicate'], ['scartate', 'Scartate', 'scartate'], ['tutte', 'Tutte', 'tutte']]
 
-/** Di una voce già presente: quando, in che cassa, e il resto che la riga dice (la ricevuta, il tipo). */
-const dettaglioVoce = (v: RigaMovimento, casse: Cassa[]) => ['·', dataRicevuta(v.data), casse.find((c) => c.id === v.cassaId)?.nome, v.sotto].filter(Boolean).join(' · ').replace('· · ', '· ')
-
-/** Il tasto quadrato di 44 punti con la spunta verde: «È questa». */
-function TastoIcona({ icona, nome, onClick }: { icona: NomeIcona; nome: string; onClick: () => void }) {
-  const colore = 'var(--verde-testo)'
-  return (
-    <button type="button" aria-label={nome} title={nome} onClick={onClick} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, flex: 'none', padding: 0, background: 'var(--bg)', border: `2px solid ${colore}`, borderRadius: 6, color: colore, cursor: 'pointer' }}>
-      <Icona nome={icona} misura={20} tratto={2.5} />
-    </button>
-  )
-}
+/** Di un movimento già nell'app: quando, e il resto che la riga dice (la ricevuta, il tipo). */
+// Un movimento importato prima ha come descrizione lo stesso testo della banca: ripeterlo non dice niente, si dicono la voce e da dove viene.
+const daBanca = (v: RigaMovimento) => !!v.origineImport?.startsWith(PREFISSO_CHIAVE_BANCA)
+const dettaglioVoce = (v: RigaMovimento) => [daBanca(v) ? 'importato dalla banca' : '', dataRicevuta(v.data), v.sotto].filter(Boolean).join(' · ')
+const nomeVoce = (v: RigaMovimento) => (daBanca(v) ? v.voce : v.descrizione)
 
 /**
  * «Importa dalla banca» in MOVIMENTI: si sceglie il CSV di BancoPosta, si guarda cosa entra senza che
@@ -49,11 +40,13 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const [lettura, setLettura] = useState<LetturaBanca | null>(null)
   const [scelte, setScelte] = useState<Record<string, string>>({})
   const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null } | null>(null)
-  const [filtro, setFiltro] = useState<FiltroRigheBanca>('tutte')
+  // Null finché la segreteria non sceglie: vale il filtro di partenza, che dipende dal file.
+  const [filtro, setFiltro] = useState<FiltroRigheBanca | null>(null)
   const [segno, setSegno] = useState<SegnoBanca>('entrambe')
-  // Le voci e le persone scelte a mano; senza, vale il suggerimento (la voce sì, la persona solo confermata).
+  // Le voci e le persone scelte a mano; senza, vale la proposta (sceltaProposta: la voce, e la persona se il nome nel testo è intero).
   const [vociScelte, setVociScelte] = useState<Record<string, SceltaVoceBanca>>({})
-  const [aperta, setAperta] = useState<string | null>(null)
+  // La riga di cui è aperta la finestra della persona.
+  const [personaDi, setPersonaDi] = useState<string | null>(null)
   // Chi può aver pagato, dal solo nome nel testo: per parola cercata, perché più bonifici hanno lo stesso nome.
   const [pagatori, setPagatori] = useState<Record<string, PersonaPerNome[]>>({})
   const listino = useListino()
@@ -113,8 +106,8 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
     if (!file) return
     setScelte({})
     setVociScelte({})
-    setAperta(null)
-    setFiltro('tutte')
+    setPersonaDi(null)
+    setFiltro(null)
     setScritti(null)
     // Un file che il browser non riesce a leggere si tratta come un file sbagliato: stesso messaggio, niente scritto.
     setLettura(leggiBanca(await file.text().catch(() => '')))
@@ -180,13 +173,17 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
 
   const duplicate = a ? a.giaImportati.length + a.coperti.length : 0
   const conti = useMemo(() => contaRighe(a?.righe ?? [], segno), [a, segno])
+  // Il filtro di partenza e «Niente di nuovo» guardano tutto il file: cambiando Entrate/Uscite la vista non salta da sola.
+  const contiFile = useMemo(() => contaRighe(a?.righe ?? []), [a])
+  const filtroVisto = filtro ?? filtroIniziale(contiFile)
+  const gruppi = useMemo(() => gruppiRighe(filtraRighe(a?.righe ?? [], filtroVisto, segno)), [a, filtroVisto, segno])
   const nonLeggibile = lettura && lettura.movimenti.length === 0
   const troppi = !!a && a.entrano.length > MASSIMO_PER_IMPORTAZIONE
+  const preselezionati = a ? a.daDecidere.filter((x) => x.preselezionato) : []
+  const mvAperto = a?.entrano.find((m) => m.chiave === personaDi) ?? null
 
   return (
     <section aria-label="Importa dalla banca" className="stack" style={{ gap: 18 }}>
-      {scritti === null && <span className="sg-etichetta">NIENTE SI SCRIVE FINCHÉ NON DICI SÌ</span>}
-      <h2 className="sg-riquadro-titolo" style={{ margin: 0 }}>IL FILE DELLA BANCA</h2>
       {!conto && <p role="alert" style={{ color: 'var(--rosso-testo)' }}>Manca la cassa Conto Corrente: creala prima di importare.</p>}
 
       {scritti !== null && (
@@ -206,23 +203,43 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
       )}
 
       {ultima && (
-        <div className="sg-riquadro stack" style={{ gap: 10, padding: '14px 18px' }}>
+        <div className="sg-riquadro" style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: '10px 18px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
           <span style={{ fontSize: 15 }}>
             L’ultima importazione ha scritto <b>{movimenti(ultima.conteggio)}</b>, dal {dataRicevuta(ultima.dal)} al {dataRicevuta(ultima.al)}.
           </span>
-          <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            <Tasto tono="rosso" onClick={() => void annullaLotto()}>Annulla tutta l’importazione</Tasto>
-          </div>
+          <Tasto tono="rosso" onClick={() => void annullaLotto()}>Annulla</Tasto>
         </div>
       )}
 
-      <div className="stack" style={{ gap: 8 }}>
-        <label className="sg-btn sg-btn-pieno" style={{ alignSelf: 'flex-start', cursor: 'pointer' }}>
-          {lettura ? 'Scegli un altro file' : 'Scegli il file della banca'}
-          <input type="file" accept=".csv,.txt,text/csv,text/plain" className="vh" onChange={(e) => { void scegliFile(e.target.files?.[0]); e.target.value = '' }} />
-        </label>
-        <span className="sg-sotto">Dall’home banking di BancoPosta scarica «Lista movimenti» in formato CSV. Il file resta nel tuo browser: arrivano al database solo i movimenti, senza IBAN né codice fiscale.</span>
-      </div>
+      <section aria-label="Il file" className="stack" style={{ gap: 12 }}>
+        <div className="row" style={{ gap: 12, justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <h2 className="sg-riquadro-titolo" style={{ margin: 0 }}>IL FILE DELLA BANCA</h2>
+          {/* Prima del file è l'azione della pagina; dopo, il tasto principale è «Sì, importa». */}
+          <label className={`sg-btn ${lettura ? 'sg-btn-linea' : 'sg-btn-pieno'}`} style={{ cursor: 'pointer' }}>
+            Scegli file
+            <input type="file" accept=".csv,.txt,text/csv,text/plain" className="vh" onChange={(e) => { void scegliFile(e.target.files?.[0]); e.target.value = '' }} />
+          </label>
+        </div>
+        {a && lettura && !nonLeggibile && (
+          <>
+            <span style={{ fontSize: 15 }}>
+              <b>{a.righe.length === 1 ? '1 riga' : `${a.righe.length} righe`}</b>{a.dal && a.al ? `, dal ${dataRicevuta(a.dal)} al ${dataRicevuta(a.al)}` : ''}:{' '}
+              <b>{a.entrano.length} {a.entrano.length === 1 ? 'nuovo' : 'nuovi'}</b> + <b>{a.daDecidere.length} forse già nell’app</b> + <b>{duplicate} già nell’app</b> + <b>{a.scartate.length} {a.scartate.length === 1 ? 'scartata' : 'scartate'}</b>.
+            </span>
+            <div className="sg-saldi" role="group" aria-label="Totali di quello che entra">
+              <Totale titolo="ENTRATE CHE ENTRANO" valore={`+ ${soldi(a.totali.entrate.importo)}`} sotto={movimenti(a.totali.entrate.conteggio)} />
+              <Totale titolo="USCITE CHE ENTRANO" valore={`− ${soldi(a.totali.uscite.importo)}`} sotto={movimenti(a.totali.uscite.conteggio)} />
+              <Totale titolo="DIFFERENZA" valore={`${a.totali.differenza < 0 ? '− ' : '+ '}${soldi(Math.abs(a.totali.differenza))}`} sotto="confrontala col saldo della banca" />
+            </div>
+            {a.avvisi.map((v) => (
+              <span key={v.tipo} className="sg-banca-avviso">
+                <b>{v.conteggio === 1 ? '1 versamento di contanti' : `${v.conteggio} versamenti di contanti`}</b> ({soldi(v.totale)}): controlla che non siano già nella cassa contanti.
+              </span>
+            ))}
+          </>
+        )}
+        <span className="sg-sotto">CSV «Lista movimenti» di BancoPosta. Il file resta nel browser: arrivano solo i movimenti, senza IBAN né codice fiscale.</span>
+      </section>
 
       {nonLeggibile && (
         <div role="alert" className="sg-riquadro stack" style={{ gap: 6, padding: '14px 18px', borderColor: 'var(--rosso-testo)' }}>
@@ -233,186 +250,194 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
 
       {lettura && !nonLeggibile && coperti.guaio && <Guaio testo={coperti.guaio} />}
 
-      {a && lettura && !nonLeggibile && (
+      {a && lettura && !nonLeggibile && conto && (
         <>
-          <span style={{ fontSize: 15 }}>
-            Il file ha <b>{movimenti(a.lette)}</b>{a.dal && a.al ? `, dal ${dataRicevuta(a.dal)} al ${dataRicevuta(a.al)}` : ''}.{' '}
-            <b>{a.entrano.length === 1 ? '1 entra' : `${a.entrano.length} entrano`}</b>, <b>{duplicate === 1 ? '1 è duplicata' : duplicate === 0 ? 'nessuna è duplicata' : `${duplicate} sono duplicate`}</b>
-            {a.daDecidere.length > 0 && <>, <b>{a.daDecidere.length === 1 ? 'uno lo decidi tu' : `${a.daDecidere.length} li decidi tu`}</b></>}. Entrano nel Conto Corrente, in «Da classificare».
-          </span>
-          <div className="sg-saldi" role="group" aria-label="Totali di quello che entra">
-            <Totale titolo="ENTRATE CHE ENTRANO" valore={`+ ${soldi(a.totali.entrate.importo)}`} sotto={movimenti(a.totali.entrate.conteggio)} />
-            <Totale titolo="USCITE CHE ENTRANO" valore={`− ${soldi(a.totali.uscite.importo)}`} sotto={movimenti(a.totali.uscite.conteggio)} />
-            <Totale titolo="DIFFERENZA" valore={`${a.totali.differenza < 0 ? '− ' : '+ '}${soldi(Math.abs(a.totali.differenza))}`} sotto="confrontala col saldo della banca" />
-          </div>
-
-          {a.avvisi.length > 0 && (
-            <section aria-label="Avvisi" className="sg-riquadro stack" style={{ gap: 8, padding: '14px 18px' }}>
-              <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>AVVISI · ENTRANO, MA CONTROLLALI</span>
-              {a.avvisi.map((v) => (
-                <span key={v.tipo} style={{ fontSize: 15 }}>
-                  <b>{v.conteggio === 1 ? '1 versamento di contanti' : `${v.conteggio} versamenti di contanti`}</b> ({soldi(v.totale)}): controlla che non siano già nella cassa contanti.
-                </span>
-              ))}
-            </section>
-          )}
-
-          <section aria-label="Le righe del file" className="stack" style={{ gap: 10 }}>
+          <section aria-label="Le righe del file" className="stack" style={{ gap: 12 }}>
             <h3 className="sg-riquadro-titolo" style={{ margin: 0 }}>LE RIGHE DEL FILE</h3>
-            <span style={{ fontSize: 15 }}>
-              Ogni riga del file, nell’ordine del file. La tipologia parte dal suggerimento o da «Da classificare»; la persona serve a quote e corsi, si propone dal nome nel testo e la confermi tu.
-            </span>
-            <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="row" style={{ gap: 12, flexWrap: 'wrap', justifyContent: 'space-between' }}>
               <div className="row" style={{ gap: 8, flexWrap: 'wrap' }} role="group" aria-label="Quali righe vedere">
                 {FILTRI.map(([id, nome, n]) => (
-                  <button key={id} type="button" className="num sg-chip" aria-pressed={filtro === id} onClick={() => setFiltro(id)}>{nome} · {conti[n]}</button>
+                  <button key={id} type="button" className="num sg-chip" aria-pressed={filtroVisto === id} onClick={() => setFiltro(id)}>{nome} {conti[n]}</button>
                 ))}
               </div>
               <Segmenti etichetta="Entrate o uscite" voci={SEGNI} scelta={segno} onScegli={setSegno} />
             </div>
+            {contiFile.daFare === 0 && contiFile.duplicate > 0 && (
+              <p role="status" className="sg-banca-avviso" data-tono="fatto" style={{ margin: 0 }}>
+                <b>Niente di nuovo:</b> {contiFile.duplicate === 1 ? 'il movimento è già nell’app' : `i ${contiFile.duplicate} movimenti sono già nell’app`}. Li vedi qui sotto.
+              </p>
+            )}
             <div className="sg-banca-riga sg-banca-testa sg-etichetta" aria-hidden>
-              <span>COSA SUCCEDE</span>
               <span>DATA</span>
-              <span>NEL FILE</span>
+              <span>DESCRIZIONE</span>
               <span>TIPOLOGIA</span>
-              <span>PERSONA</span>
               <span style={{ textAlign: 'right' }}>IMPORTO</span>
+              <span>PERSONA</span>
             </div>
-            {filtraRighe(a.righe, filtro, segno).map((r) => {
-              const mv = r.movimento
-              const nuova = mv && (r.stato === 'nuova' || r.stato === 'da-controllare')
-              return (
-              <div key={`${r.riga}-${r.stato}`} className="sg-banca-riga">
-                <span><Tag tipo={TONO_STATO[r.stato]}>{NOME_STATO[r.stato]}</Tag></span>
-                <span className="num">{mv ? dataRicevuta(mv.data) : `Riga ${r.riga}`}</span>
-                <span style={{ overflowWrap: 'anywhere', minWidth: 0 }}>{mv ? mv.descrizione : <>{r.motivo} <span className="sg-sotto">({r.testo})</span></>}</span>
-                {nuova && conto ? (
-                  <VoceEPersona
-                    mv={mv} contoId={conto.id} voci={voci} scelta={sceltaDi(mv.chiave)} sug={proposte[mv.chiave] ?? null}
-                    aperta={aperta === mv.chiave} onApri={(si) => setAperta(si ? mv.chiave : null)} onScegli={(x) => scegli(mv.chiave, x)}
+            {gruppi.map((g) => (
+              <div key={g.gruppo} className="stack" role="group" aria-labelledby={`banca-gruppo-${g.gruppo}`}>
+                <div className="sg-banca-gruppo" data-gruppo={g.gruppo}>
+                  <b id={`banca-gruppo-${g.gruppo}`}>{NOME_GRUPPO[g.gruppo](g.righe.length).toUpperCase()}</b>
+                  {g.gruppo === 'forse' && (
+                    <span className="sg-banca-tasti">
+                      {preselezionati.length > 0 && (
+                        <Tasto tono="pieno" aria-label={`Conferma i ${preselezionati.length} dove nome e cognome sono nel testo`} onClick={() => setScelte((s) => ({ ...s, ...Object.fromEntries(preselezionati.flatMap((x) => (x.preselezionato ? [[x.movimento.chiave, x.preselezionato]] : []))) }))}>Conferma</Tasto>
+                      )}
+                      {g.righe.length > 1 && <Tasto aria-label={`Tutti nuovi: i ${g.righe.length} entrano come movimenti nuovi`} onClick={() => setScelte((s) => ({ ...s, ...Object.fromEntries(g.righe.flatMap((x) => (x.movimento ? [[x.movimento.chiave, 'nessuno']] : []))) }))}>Tutti nuovi</Tasto>}
+                    </span>
+                  )}
+                </div>
+                {g.righe.map((r) => (
+                  <RigaBanca
+                    key={`${r.riga}-${r.stato}`} r={r} voci={voci} contoId={conto.id} scelta={r.movimento ? sceltaDi(r.movimento.chiave) : null} sug={r.movimento ? proposte[r.movimento.chiave] ?? null : null}
+                    onScegli={(x) => r.movimento && scegli(r.movimento.chiave, x)} onCollega={(id) => r.movimento && setScelte((s) => ({ ...s, [r.movimento!.chiave]: id }))} onPersona={() => r.movimento && setPersonaDi(r.movimento.chiave)}
                   />
-                ) : (
-                  <div className="sg-banca-oltre stack" style={{ gap: 8 }}>
-                    {r.stato === 'duplicata' && r.voce && mv && (
-                      <div className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span className="stack" style={{ gap: 2, minWidth: 0 }}>
-                          <span className="sg-etichetta">GIÀ SCRITTA COME</span>
-                          <span><b>{r.voce.descrizione}</b>{r.voce.annullato ? ' (annullata)' : ''} <span className="sg-sotto">{dettaglioVoce(r.voce, casse)}</span></span>
-                        </span>
-                        {r.rifiutabile && <Tasto onClick={() => setScelte((s) => ({ ...s, [mv.chiave]: 'nessuno' }))}>È nuova</Tasto>}
-                      </div>
-                    )}
-                    {r.stato === 'da-decidere' && mv && (
-                      <>
-                        {r.motivo && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>{r.motivo}</span>}
-                        {r.candidati.map((c) => (
-                          <div key={c.id} className="row" style={{ gap: 12, justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span className="stack" style={{ gap: 2, minWidth: 0 }}>
-                              <span className="sg-etichetta">POTREBBE ESSERE</span>
-                              <span><b>{c.descrizione}</b> <span className="sg-sotto">{dettaglioVoce(c, casse)}{c.id === r.preselezionato ? ` · sembra questa: ${r.come[c.id] === 'genitore' ? 'il genitore ha il nome che c’è nel testo' : 'nome e cognome sono nel testo'}` : ''}</span></span>
-                            </span>
-                            <TastoIcona icona="conferma" nome={`È questa: collega il movimento a ${c.descrizione}`} onClick={() => setScelte((s) => ({ ...s, [mv.chiave]: c.id }))} />
-                          </div>
-                        ))}
-                        <div><Tasto onClick={() => setScelte((s) => ({ ...s, [mv.chiave]: 'nessuno' }))}>È nuova</Tasto></div>
-                      </>
-                    )}
-                  </div>
-                )}
-                <b className="num sg-banca-importo" style={{ textAlign: 'right' }}>{mv ? `${mv.tipo === 'entrata' ? '+ ' : '− '}${soldi(mv.importo)}` : '—'}</b>
-                {nuova && conto && aperta === mv.chiave && (
-                  <div className="sg-banca-aperta sg-riquadro stack" style={{ gap: 12, padding: '14px 16px' }}>
-                    {(proposte[mv.chiave]?.candidati.length ?? 0) > 1 && (
-                      <div className="stack" style={{ gap: 8 }} role="radiogroup" aria-label="Le schede col nome del testo">
-                        {proposte[mv.chiave]?.candidati.map((c) => (
-                          <SchedaCandidata key={c.id} c={{ ...c, corsi: [] }} nome={`banca-${mv.chiave}`} scelta={c.id === sceltaDi(mv.chiave)?.personaId} onScegli={() => { scegli(mv.chiave, { personaId: c.id, nomePersona: `${c.nome} ${c.cognome}` }); setAperta(null) }} />
-                        ))}
-                      </div>
-                    )}
-                    <CampoPersona d={d} scelta={null} manca="" onScegli={(p) => { scegli(mv.chiave, { personaId: p.id, nomePersona: `${p.nome} ${p.cognome}` }); setAperta(null) }} />
-                    <div><Tasto onClick={() => setAperta(null)}>Chiudi</Tasto></div>
-                  </div>
-                )}
+                ))}
               </div>
-            )})}
+            ))}
           </section>
 
-          {a.daDecidere.length > 0 && (
-            <section aria-label="Conferma" className="stack" style={{ gap: 10 }}>
-              <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>{a.daDecidere.length} DA DECIDERE · NON ENTRANO FINCHÉ NON SCEGLI</span>
-              <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-                {a.daDecidere.some((x) => x.preselezionato) && (
-                  <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setScelte((s) => ({ ...s, ...Object.fromEntries(a.daDecidere.flatMap((x) => (x.preselezionato ? [[x.movimento.chiave, x.preselezionato]] : []))) }))}>Conferma quelli che sembrano giusti ({a.daDecidere.filter((x) => x.preselezionato).length})</button>
-                )}
-                {a.daDecidere.length > 1 && (
-                  <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelte((s) => ({ ...s, ...Object.fromEntries(a.daDecidere.map((x) => [x.movimento.chiave, 'nessuno'])) }))}>Nessuno è già scritto: scrivili tutti e {a.daDecidere.length}</button>
-                )}
-              </div>
-            </section>
-          )}
-
-          <div className="stack" style={{ gap: 8 }}>
-            {a.entrano.length > 0 && (
-              <span style={{ fontSize: 15 }} role="status">
-                <b>{classificate === 1 ? '1 riga ha' : `${classificate} righe hanno`}</b> la voce scelta (e la persona, dove serve); <b>{previsto?.restano === 1 ? '1 resta' : `${previsto?.restano ?? 0} restano`} in «Da classificare»</b>: le sistemi dopo, con Cambia voce.
-              </span>
-            )}
-            {troppi && <p role="alert" style={{ color: 'var(--rosso-testo)' }}>Sono più di {MASSIMO_PER_IMPORTAZIONE} movimenti nuovi: scarica dalla banca un periodo più corto e riprova.</p>}
-            <span className="sg-sotto">Se rileggi lo stesso file, i movimenti già importati non si scrivono di nuovo.</span>
-            <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-              <button type="button" className="sg-btn sg-btn-pieno" disabled={!a.entrano.length || troppi} onClick={() => void importa()}>
-                {a.entrano.length === 1 ? 'Sì, importa il movimento' : `Sì, importa i ${a.entrano.length} movimenti`}
-              </button>
+          {troppi && <p role="alert" style={{ color: 'var(--rosso-testo)', margin: 0 }}>Sono più di {MASSIMO_PER_IMPORTAZIONE} movimenti nuovi: scarica dalla banca un periodo più corto e riprova.</p>}
+          <div className="row" style={{ gap: 12, justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 15 }} role="status">
+              {a.entrano.length > 0 ? <><b>{classificate}</b> con la voce scelta · <b>{previsto?.restano ?? 0}</b> in «Da classificare»</> : 'Niente da importare.'}
+            </span>
+            <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
               <Tasto onClick={() => setLettura(null)}>Annulla</Tasto>
+              <button type="button" className="sg-btn sg-btn-pieno" disabled={!a.entrano.length || troppi} onClick={() => void importa()}>
+                {a.entrano.length === 1 ? 'Sì, importa il movimento' : a.entrano.length ? `Sì, importa i ${a.entrano.length} movimenti` : 'Sì, importa'}
+              </button>
             </div>
           </div>
+          {mvAperto && (
+            <ScegliPersona
+              d={d} mv={mvAperto} sug={proposte[mvAperto.chiave] ?? null} scelta={sceltaDi(mvAperto.chiave)}
+              onChiudi={() => setPersonaDi(null)} onScegli={(p) => { scegli(mvAperto.chiave, p); setPersonaDi(null) }}
+            />
+          )}
         </>
       )}
     </section>
   )
 }
 
-/** La tipologia e, per una quota o un corso, la persona di una riga nuova. */
-function VoceEPersona({ mv, contoId, voci, scelta, sug, aperta, onApri, onScegli }: {
-  mv: MovimentoBanca; contoId: string; voci: VoceContabile[]; scelta: SceltaVoceBanca | null; sug: SuggerimentoMovimento | null
-  aperta: boolean; onApri: (si: boolean) => void; onScegli: (x: Partial<SceltaVoceBanca>) => void
-}) {
-  const offerte = vociOfferte(voci, mv.tipo)
-  const daClassificare = offerte.find((v) => v.nome === VOCE_DA_CLASSIFICARE)
-  const voceId = scelta?.voceId ?? daClassificare?.id ?? ''
-  const voce = voci.find((v) => v.id === voceId)
-  const vuole = sceltaVuolePersona(mv, voce, contoId)
-  const proposta = sceltaProposta(sug)?.personaId
-  const candidato = sug?.candidati.find((c) => c.id === proposta)
-  const quanti = sug?.candidati.length ?? 0
+const NOME_GRUPPO: Record<GruppoRigheBanca, (n: number) => string> = {
+  forse: (n) => `${n} forse già nell’app`,
+  nuovi: (n) => (n === 1 ? '1 movimento nuovo' : `${n} movimenti nuovi`),
+  gia: (n) => `${n} già nell’app`,
+  scartate: (n) => (n === 1 ? '1 riga scartata' : `${n} righe scartate`),
+}
+
+/** La data e la descrizione come in pagina: il tipo d'operazione sopra, il testo senza codici. */
+function Descrizione({ mv, nota }: { mv: MovimentoBanca; nota?: string }) {
   return (
-    <>
-      <select className="sg-campo" aria-label={`Tipologia di ${mv.descrizione}`} value={voceId} onChange={(e) => onScegli({ voceId: e.target.value })}>
+    <span className="sg-banca-testo">
+      {mv.operazione && <span className="sg-banca-operazione">{mv.operazione}</span>}
+      {testoDaMostrare(mv)}
+      {nota && <span className="sg-banca-nota">{nota}</span>}
+    </span>
+  )
+}
+
+/** Una riga del file: data, descrizione, poi secondo lo stato la tipologia e la persona, o il movimento dell'app che le corrisponde. I tasti sempre in fondo a destra. */
+function RigaBanca({ r, voci, contoId, scelta, sug, onScegli, onCollega, onPersona }: {
+  r: RigaAnteprima; voci: VoceContabile[]; contoId: string; scelta: SceltaVoceBanca | null; sug: SuggerimentoMovimento | null
+  onScegli: (x: Partial<SceltaVoceBanca>) => void; onCollega: (id: string) => void; onPersona: () => void
+}) {
+  const mv = r.movimento
+  const importo = <b className="num sg-banca-importo" data-tipo={mv?.tipo}>{mv ? `${mv.tipo === 'entrata' ? '+ ' : '− '}${soldi(mv.importo)}` : '—'}</b>
+  if (!mv) {
+    return (
+      <div className="sg-banca-riga">
+        <span className="num">Riga {r.riga}</span>
+        <span className="sg-banca-testo">{r.motivo}<span className="sg-banca-nota" style={{ color: 'var(--dim)', overflowWrap: 'anywhere' }}>{r.testo}</span></span>
+        <span />{importo}<span />
+      </div>
+    )
+  }
+  const data = <span className="num">{dataRicevuta(mv.data)}</span>
+  if (r.stato === 'duplicata') {
+    return (
+      <div className="sg-banca-riga">
+        {data}<Descrizione mv={mv} />
+        <span className="sg-banca-voce">{r.voce && <><b>{nomeVoce(r.voce)}{r.voce.annullato ? ' (annullata)' : ''}</b><span className="sg-sotto">{dettaglioVoce(r.voce)}</span></>}</span>
+        {importo}
+        <span className="sg-banca-tasti">{r.rifiutabile && <Tasto aria-label={`Nuovo: ${testoDaMostrare(mv)} non è quello dell’app`} onClick={() => onCollega('nessuno')}>Nuovo</Tasto>}</span>
+      </div>
+    )
+  }
+  if (r.stato === 'da-decidere') {
+    return (
+      <div className="sg-banca-riga">
+        {data}<Descrizione mv={mv} nota={r.motivo || undefined} />
+        <span className="stack" style={{ gap: 8 }}>
+          {r.candidati.map((c) => (
+            <span key={c.id} className="sg-banca-voce sg-banca-alto"><b>{c.descrizione}</b><span className="sg-sotto">{dettaglioVoce(c)}</span></span>
+          ))}
+        </span>
+        {importo}
+        <span className="stack" style={{ gap: 8 }}>
+          {r.candidati.map((c, i) => (
+            <span key={c.id} className="sg-banca-tasti">
+              <Tasto tono="pieno" aria-label={`Conferma: è ${c.descrizione}`} onClick={() => onCollega(c.id)}>Conferma</Tasto>
+              {i === 0 ? <Tasto aria-label={`Nuovo: ${testoDaMostrare(mv)} non è già nell’app`} onClick={() => onCollega('nessuno')}>Nuovo</Tasto> : <span aria-hidden />}
+            </span>
+          ))}
+        </span>
+      </div>
+    )
+  }
+  const offerte = vociOfferte(voci, mv.tipo)
+  const voceId = scelta?.voceId ?? offerte.find((v) => v.nome === VOCE_DA_CLASSIFICARE)?.id ?? ''
+  const vuole = sceltaVuolePersona(mv, voci.find((v) => v.id === voceId), contoId)
+  const candidato = sug?.candidati.find((c) => c.id === scelta?.personaId)
+  const nome = scelta?.personaId ? scelta.nomePersona ?? (candidato ? `${candidato.nome} ${candidato.cognome}` : '') : ''
+  return (
+    <div className="sg-banca-riga">
+      {data}
+      <Descrizione mv={mv} nota={r.stato === 'da-controllare' ? 'Contanti: controlla che non siano già nella cassa contanti.' : undefined} />
+      <select className="sg-campo" aria-label={`Tipologia di ${testoDaMostrare(mv)}`} value={voceId} onChange={(e) => onScegli({ voceId: e.target.value })}>
         {offerte.map((v) => <option key={v.id} value={v.id}>{v.nome}</option>)}
       </select>
-      {!vuole ? <span /> : (
-        <div className="row" style={{ gap: 8, justifyContent: 'space-between', alignItems: 'center' }}>
-          {scelta?.personaId ? (
-            <>
-              <b style={{ fontSize: 14 }}>{scelta.nomePersona ?? `${candidato?.nome ?? ''} ${candidato?.cognome ?? ''}`}</b>
-              <Tasto onClick={() => onApri(!aperta)}>Cambia</Tasto>
-            </>
-          ) : candidato ? (
-            <>
-              <b style={{ fontSize: 14 }}>{candidato.nome} {candidato.cognome}</b>
-              <span className="row" style={{ gap: 6 }}>
-                <TastoIcona icona="conferma" nome={`È questa: collega il movimento a ${candidato.nome} ${candidato.cognome}`} onClick={() => onScegli({ personaId: candidato.id, nomePersona: `${candidato.nome} ${candidato.cognome}` })} />
-                <Tasto onClick={() => onApri(!aperta)}>Cambia</Tasto>
-              </span>
-            </>
-          ) : (
-            <>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--giallo-testo)' }}>{quanti > 1 ? `${quanti} schede possibili` : 'Manca la persona'}</span>
-              <Tasto onClick={() => onApri(!aperta)}>{quanti > 1 ? 'Scegli' : 'Cerca'}</Tasto>
-            </>
-          )}
+      {importo}
+      {vuole ? (
+        <button type="button" className="sg-campo sg-banca-persona" data-manca={!nome} aria-haspopup="dialog" aria-label={nome ? `Persona: ${nome}, cambia` : `Assegna la persona di ${testoDaMostrare(mv)}`} onClick={onPersona}>
+          <span>{nome || 'Assegna'}</span>
+          <Icona nome="cerca" misura={16} />
+        </button>
+      ) : <span />}
+    </div>
+  )
+}
+
+/** La finestra della persona: in cima le schede col nome del testo, sotto la ricerca. */
+function ScegliPersona({ d, mv, sug, scelta, onChiudi, onScegli }: {
+  d: DatiSegreteria; mv: MovimentoBanca; sug: SuggerimentoMovimento | null; scelta: SceltaVoceBanca | null; onChiudi: () => void; onScegli: (x: Partial<SceltaVoceBanca>) => void
+}) {
+  const ref = useDialogo<HTMLDivElement>(onChiudi)
+  const suggerite: CandidatoPersona[] = (sug?.candidati ?? []).map((c) => ({ ...c, corsi: [] }))
+  const [qui, setQui] = useState<CandidatoPersona | null>(() => suggerite.find((c) => c.id === scelta?.personaId) ?? null)
+  const cercata = qui && !suggerite.some((c) => c.id === qui.id) ? qui : null
+  return (
+    <>
+      <button type="button" className="sg-velo" aria-label="Chiudi" onClick={onChiudi} />
+      <div ref={ref} role="dialog" aria-modal="true" tabIndex={-1} aria-labelledby="banca-persona" className="sg-dialogo" style={{ width: 'min(620px, calc(100% - 32px))', maxHeight: 'calc(100% - 32px)', overflowY: 'auto' }}>
+        <div className="stack" style={{ gap: 4 }}>
+          <h2 id="banca-persona" className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em' }}>CHI HA PAGATO?</h2>
+          <span className="sg-sotto">{dataRicevuta(mv.data)} · {testoDaMostrare(mv)} · <b className="num">{mv.tipo === 'entrata' ? '+ ' : '− '}{soldi(mv.importo)}</b></span>
         </div>
-      )}
+        {suggerite.length > 0 && (
+          <div className="stack" style={{ gap: 8 }} role="radiogroup" aria-label="Suggerite dal testo">
+            <span className="sg-etichetta">SUGGERITE DAL TESTO</span>
+            {suggerite.map((c) => <SchedaCandidata key={c.id} c={c} nome={`banca-${mv.chiave}`} scelta={c.id === qui?.id} onScegli={() => setQui(c)} />)}
+          </div>
+        )}
+        <CampoPersona d={d} scelta={cercata} manca="" onScegli={setQui} />
+        <div className="row" style={{ gap: 8, justifyContent: 'flex-end' }}>
+          <Tasto onClick={onChiudi}>Annulla</Tasto>
+          <button type="button" className="sg-btn sg-btn-pieno" disabled={!qui} onClick={() => qui && onScegli({ personaId: qui.id, nomePersona: `${qui.nome} ${qui.cognome}` })}>Assegna</button>
+        </div>
+      </div>
     </>
   )
 }

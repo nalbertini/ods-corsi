@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="width: 100%">
+<div style="display: flex; flex-direction: column; gap: 6px; width: 100%; height: 92px; padding: 8px 16px 10px; background: #ffffff; border-top: 2px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <span style="min-height: 16px; font-size: 13px; font-weight: {{pesoFrase}}; line-height: 16px; color: {{coloreFrase}}">{{frase}}</span>
+  <div style="display: flex; gap: 8px">
+    <sc-if value="{{conProva}}" hint-placeholder-val="{{ true }}">
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 112px; height: 52px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 0.1em">+ PROVA</span>
+    </sc-if>
+    <span style="display: flex; align-items: center; justify-content: center; flex-grow: 1; min-height: 52px; padding: 0 10px; border-radius: 6px; background: {{sfondo}}; color: {{colore}}; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.1em; text-align: center">{{tasto}}</span>
+  </div>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nonSegnati":{"editor":"text","default":"3"},"chiede":{"editor":"boolean","default":false},"conProva":{"editor":"boolean","default":true},"tuttiAssenti":{"editor":"boolean","default":false},"$preview":{"width":390,"height":92}}'>
+// COSTRUITO (`.barra-chiudi` nel look sito, chiudiAppello in src/lib/etichetteAppello.ts; proposta in ../appello-istruttore/): la barra ferma in fondo all'appello, sopra la BarraNavigazione. Oggi CHIUDI sta in
+// fondo all'elenco, dopo prove e istruttori, e con tanti nomi bisogna scorrere per trovarlo (cliente-ods).
+// Bianca, filo in alto 2px #cfe6f4, alta 92px. Sopra una frase di 13px che dice cosa succede chiudendo:
+// «3 non segnati diventeranno assenti» (dim #46606f), «Tutti segnati: chiudi e torna al calendario» a tutto segnato.
+// Sotto due tasti da 52px: + PROVA (linea blu 2px, 112px: aggiunge chi viene a provare, oggi e' un tasto tratteggiato in
+// fondo all'elenco) e CHIUDI L'APPELLO, pieno inchiostro #0d2a3d con testo bianco. Mai rosso: nelle lezioni passate
+// chiudere con dei non segnati e' normale, e il rosso lo faceva sembrare un errore.
+// A tutto segnato CHIUDI diventa il giallo della schermata (il tasto in testa e' spento): e' la cosa da fare adesso.
+// `chiede` = il secondo tocco, quando chiudere vuole conferma (le stesse condizioni di oggi: lezione non cominciata,
+// nessuno segnato, piu' di meta' assenti): la parola diventa «SÌ, CHIUDI · 3 ASSENTI» e la frase sopra, in rosso-testo
+// #b81d1d e grassetto, chiede «Sicuro? Tocca di nuovo per chiudere».
+// `tuttiAssenti`: di solito e' l'appello chiuso per sbaglio, quindi CHIUDI non diventa giallo (il giallo resta su TUTTI
+// PRESENTI in testa) e la frase dice «Sono tutti assenti: chiudi solo se e' giusto.».
+// Nel codice + PROVA non va a capo (nowrap, 112px) e CHIUDI si': a 390px «SÌ, CHIUDI · 14 ASSENTI» sta su due righe.
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const n = Number(p.nonSegnati ?? 3);
+    const chiede = truthy(p.chiede);
+    const tutti = n === 0;
+    const assentiTutti = truthy(p.tuttiAssenti);
+    const assenti = n === 1 ? 'UN ASSENTE' : n + ' ASSENTI';
+    return {
+      conProva: p.conProva === undefined ? true : truthy(p.conProva),
+      frase: chiede ? 'Sicuro? Tocca di nuovo per chiudere.' : assentiTutti ? 'Sono tutti assenti: chiudi solo se è giusto.' : tutti ? 'Tutti segnati: chiudi e torna al calendario.' : n === 1 ? 'Chi non è segnato diventerà assente.' : n + ' non segnati diventeranno assenti.',
+      coloreFrase: chiede ? '#b81d1d' : '#46606f', pesoFrase: chiede ? '700' : '400',
+      tasto: chiede ? 'SÌ, CHIUDI · ' + assenti : '✓ CHIUDI L’APPELLO'.slice(tutti && !assentiTutti ? 0 : 2),
+      sfondo: tutti && !chiede && !assentiTutti ? '#f4c31b' : '#0d2a3d', colore: tutti && !chiede && !assentiTutti ? '#0d2a3d' : '#ffffff',
+    };
+  }
+}
+</script>
+</body>
+</html>

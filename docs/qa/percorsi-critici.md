@@ -22,7 +22,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Pagina pubblica `/iscrizioni/` | genitore, segreteria | richiesta mai inviata, prezzo diverso dal listino | `prova:iscrizione-pagina`, `prova:iscrizione-sito`, `prova:iscrizione-passi` | sì |
 | Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste`, `prova:segreteria`, `prova:coda`, `prova:certificati`, `prova:iscritti`, `prova:scheda-finestra`, `prova:iscrizione-pagina`, `iscrizioni.sql` | sì |
 | Da dove arrivano le richieste (`?da=`) | genitore, segreteria | richiesta fermata da un'etichetta, conteggi sbagliati | `prova:richieste`, `prova:provenienza`, `prova:sito-genera`, `prova:sito-statistiche`, `provenienza-richieste.sql` | sì |
-| Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:coda`, `prova:appello-cerca`, `prova:appello-ordine`, `prova:tablet`, `prova:colleghi`, `prova:segreteria`, `prova:testi`, `prova:etichette-lezione`, `prova:appello-liste`, `prova:frequenza`, `prova:cosa-manca`, `prova:presenze-csv`, `prova:segreteria-ordine`, `presenze-istruttori.sql`, `istruttori-dalle-lezioni.sql`, `tablet-conto-prove.sql`, `tablet.sql`, `presenze-finestra.sql`, `istruttore-collega.sql`, `accessi-piu-stretti.sql`, `rls.sql` | sì |
+| Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:istruttori-look`, `prova:coda`, `prova:appello-cerca`, `prova:appello-ordine`, `prova:tablet`, `prova:colleghi`, `prova:segreteria`, `prova:testi`, `prova:etichette-lezione`, `prova:appello-liste`, `prova:frequenza`, `prova:cosa-manca`, `prova:presenze-csv`, `prova:segreteria-ordine`, `prova:turni`, `doppio-turno.sql`, `presenze-istruttori.sql`, `istruttori-dalle-lezioni.sql`, `tablet-conto-prove.sql`, `tablet.sql`, `presenze-finestra.sql`, `istruttore-collega.sql`, `accessi-piu-stretti.sql`, `rls.sql` | sì |
 | Chiusura della palestra (lezioni annullate per un periodo, e tolte) | segreteria | presenze o appelli persi, lezione rimessa com'era sbagliata | `prova:chiusure`, `prova:cosa-manca`, `prova:segreteria`, `chiusure.sql` | sì, da fare |
 | Segno COMPLEANNO su tablet e appello | tablet di sala, istruttore | data di nascita di un minore esposta | `prova:compleanni`, `prova:tablet`, `108-compleanni.sql` | sì |
 | Ore degli istruttori | segreteria | compenso sbagliato | `prova:ore`, `prova:schede-personale`, `prova:timer-istruttori`, `prova:colleghi`, `prova:segreteria`, `presenze-istruttori.sql`, `presenze-finestra.sql`, `istruttore-collega.sql` | no |
@@ -204,11 +204,11 @@ quando arriva la prova.
 - Suggerimento da classificare: il caricamento in `Contabilita.tsx` (listino
   assente → solo importo escluso; nessun abbinato → ricerca per nome) sta nel
   `.tsx`; nessuna prova, solo collaudo a mano.
-- Importa dalla banca: le righe di `ImportaBanca.tsx` (chip, «È nuova», ✓
-  della persona, frase gialla del «DA DECIDERE») e il giro di `cambiaVoceMovimenti` dopo l'importazione:
-  solo collaudo a mano. Il piano e le scelte hanno le loro prove.
+- Importa dalla banca: le righe di `ImportaBanca.tsx` (filtri, gruppi, «Conferma», «Nuovo», CHI HA PAGATO?)
+  e il giro di `cambiaVoceMovimenti` dopo l'importazione: solo collaudo a mano. Le regole hanno le loro prove.
+- Importa dalla banca, la persona proposta (nome intero, una scheda sola) entra senza conferma: c'è la prova.
 - Suggerimento da classificare: `ImportaBanca.tsx` (al massimo trenta
-  richieste; «Conferma quelli che sembrano giusti» scrive) sta nel `.tsx`:
+  richieste; «Conferma» del gruppo collega i preselezionati) sta nel `.tsx`:
   solo collaudo a mano.
 - Suggerimento da classificare: la traduzione verso il database
   (`codiceFiscaleLetto` → `codice_fiscale_letto`, `gia_iscritto` →

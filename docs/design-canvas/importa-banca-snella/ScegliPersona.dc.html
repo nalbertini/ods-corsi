@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta · scegli la persona</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: toccando il campo PERSONA di una riga si apre questa finestra (sg-dialogo: surface, bordo 2px text, padding 28, sul velo).
+     In cima il movimento, poi la ricerca; sotto, prima le schede suggerite dal nome nel testo, poi le altre che la ricerca trova. Una sola scelta. -->
+<div style="display:flex;align-items:flex-start;justify-content:center;width:1000px;min-height:820px;padding:48px 24px;background:rgba(0,0,0,.6)">
+<div role="dialog" aria-modal="true" aria-labelledby="titolo-persona" style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:620px;padding:28px;background:#ffffff;border:2px solid #0d2a3d">
+<div style="display:flex;flex-direction:column;gap:4px">
+<h2 id="titolo-persona" style="margin:0;font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-size:26px;font-weight:800;letter-spacing:.04em">CHI HA PAGATO?</h2>
+<span style="font-size:14px;color:#46606f">27/10/2026 · Da GALLI M. per quota ottobre · <b style="color:#0b7a33">+ 120,00 €</b></span>
+</div>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">CERCA</span>
+<input type="search" value="Galli" aria-label="Cerca per nome o cognome" style="width:100%;min-height:48px;padding:0 12px;background:#ffffff;border:2px solid #0d2a3d;border-radius:6px;font:inherit;font-size:16px;color:#0d2a3d"></label>
+
+<div role="radiogroup" aria-label="Le persone" style="display:flex;flex-direction:column;gap:6px">
+<span style="font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">SUGGERITE DAL TESTO · 3</span>
+<label style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px;border:2px solid #14709f;border-radius:6px;cursor:pointer"><input type="radio" name="persona" checked style="width:20px;height:20px;margin:0"><span style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0"><b style="font-size:16px">Galli Matteo</b><span style="font-size:13px;color:#46606f">Judo kids · quota trimestrale da pagare 120,00 €</span></span></label>
+<label style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px;border:2px solid #cfe6f4;border-radius:6px;cursor:pointer"><input type="radio" name="persona" style="width:20px;height:20px;margin:0"><span style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0"><b style="font-size:16px">Galli Martina</b><span style="font-size:13px;color:#46606f">Judo ragazzi · niente da pagare</span></span></label>
+<label style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px;border:2px solid #cfe6f4;border-radius:6px;cursor:pointer"><input type="radio" name="persona" style="width:20px;height:20px;margin:0"><span style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0"><b style="font-size:16px">Galli Mauro</b><span style="font-size:13px;color:#46606f">Pilates · quota annuale da pagare 350,00 €</span></span></label>
+<span style="margin-top:8px;font-size:12px;font-weight:600;letter-spacing:.08em;color:#46606f">ALTRE PERSONE</span>
+<label style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px;border:2px solid #cfe6f4;border-radius:6px;cursor:pointer"><input type="radio" name="persona" style="width:20px;height:20px;margin:0"><span style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0"><b style="font-size:16px">Gallina Sofia</b><span style="font-size:13px;color:#46606f">Danza · niente da pagare</span></span></label>
+</div>
+
+<div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px">
+<dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="110px,44px"></dc-import>
+<dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Assegna" hint-size="110px,44px"></dc-import>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1000,"height":820}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

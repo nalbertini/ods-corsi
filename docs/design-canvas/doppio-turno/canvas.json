@@ -1,0 +1,12 @@
+{
+ "pages": [{ "id": "page-1", "name": "Doppio turno · proposta" }, { "id": "page-2", "name": "Libreria" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "1 · Oggi · secondo turno: Giulia, venuta al primo, è ancora DA SEGNARE", "x": 0, "y": 140, "w": 390, "h": 760, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "2 · Proposta · Giulia sta sotto, GIÀ PRESENTE ALLE 17:30, fuori da liste e conti", "x": 520, "y": 140, "w": 390, "h": 830, "page": "page-1" },
+  { "file": "RigaAppello.dc.html", "title": "RigaAppello · stato altrove (nuovo)", "x": 0, "y": 0, "w": 360, "h": 80, "page": "page-2" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1100, "text": "Doppio turno: chi è già presente a un turno dello stesso corso e giorno non si segna nell'altro, né presente né assente" },
+  { "id": "nota", "kind": "body", "x": 1040, "y": 140, "maxW": 420, "text": "Uguale nell'appello della segreteria (sotto le tre liste DA SEGNARE / PRESENTI / ASSENTI) e nel tablet con il PIN dell'istruttore. Sul tablet di sala il nome di Giulia non c'è fra le tessere del secondo turno. Se tocca il nome in un altro modo, il tablet dice «Sei già segnata a un altro turno di oggi». Un ASSENTE messo prima resta salvato ma non conta." }
+ ]
+}
