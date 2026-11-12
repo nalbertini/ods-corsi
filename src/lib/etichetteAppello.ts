@@ -39,3 +39,28 @@ export function statoLezione(l: { manca: boolean; iniziato: boolean; fatto: bool
 }
 
 export const proveInPiu = (n: number): string => `+${n} PROVA`
+
+/**
+ * I messaggi d'errore dell'appello. Si riconoscono solo le frasi che sappiamo
+ * nostre (da `datiSupabase.ts` e `datiProva.ts`) e si dicono con cosa fare;
+ * tutto il resto è un testo del server o del browser, e non si mostra mai così
+ * com'è: `sembraItaliano` di `importa.ts` qui non basta, perché lascia fuori
+ * «Puoi cambiare l'attività solo delle tue lezioni».
+ */
+const testo = (e: unknown) => (e instanceof Error ? e.message : '')
+
+export function fraseGuaioAttivita(e: unknown): string {
+  const m = testo(e)
+  if (m.startsWith('Le attività non sono ancora attive')) return 'Le attività non sono ancora attive: chiedi alla segreteria.'
+  if (m.startsWith('Puoi cambiare l’attività solo delle tue lezioni')) return 'Puoi cambiare l’attività solo delle tue lezioni: per questa chiedi alla segreteria.'
+  return 'Non sono riuscito a cambiare l’attività: controlla la connessione e riprova.'
+}
+
+export function fraseGuaioSegnalata(e: unknown): string {
+  const m = testo(e)
+  // Accolta o rifiutata intanto da un'altra parte (la segreteria, un'altra scheda): l'appello qui è indietro.
+  const gia = /^È già stata (accolta|rifiutata)/.exec(m)
+  if (gia) return `È già stata ${gia[1]}: ricarica la pagina per vederla com’è adesso.`
+  if (m.startsWith('Non è una tua lezione')) return 'Non è una tua lezione: la vede la segreteria.'
+  return 'Non sono riuscito a salvare la scelta: controlla la connessione e riprova.'
+}

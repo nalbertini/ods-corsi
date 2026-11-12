@@ -73,6 +73,30 @@ ok('lezione fatta senza presenti: … NESSUN PRESENTE, tono aspetta', L({ fatto:
 ok('lezione in corso: … IN CORSO, tono aspetta', L({}), { testo: '… IN CORSO', tono: 'aspetta' })
 ok('+N PROVA: il + è il segno', e.proveInPiu(2), '+2 PROVA')
 
+// --- 4b. i messaggi d'errore dell'appello: mai il testo grezzo dell'API ------
+console.log('\nI messaggi d\'errore dell\'appello (src/lib/etichetteAppello.ts)')
+const RISERVA_ATTIVITA = 'Non sono riuscito a cambiare l’attività: controlla la connessione e riprova.'
+const RISERVA_SEGNALATA = 'Non sono riuscito a salvare la scelta: controlla la connessione e riprova.'
+const grezzi = [
+  new Error('new row violates row-level security policy for table "sessioni"'),
+  new Error('TypeError: Failed to fetch'),
+  new Error('JWT expired'),
+  new Error(''),
+  'una stringa',
+  null,
+]
+ok('attività: senza le attività attive, chiedi alla segreteria', vedi(() => e.fraseGuaioAttivita(new Error('Le attività non sono ancora attive: chiedi alla segreteria'))), 'Le attività non sono ancora attive: chiedi alla segreteria.')
+ok('attività: non è una tua lezione, dice a chi chiedere', vedi(() => e.fraseGuaioAttivita(new Error('Puoi cambiare l’attività solo delle tue lezioni'))), 'Puoi cambiare l’attività solo delle tue lezioni: per questa chiedi alla segreteria.')
+ok('attività: «Lezione inesistente» della prova non si mostra', vedi(() => e.fraseGuaioAttivita(new Error('Lezione inesistente'))), RISERVA_ATTIVITA)
+ok('attività: un testo del server o del browser non si mostra mai', vedi(() => grezzi.map((x) => e.fraseGuaioAttivita(x))), grezzi.map(() => RISERVA_ATTIVITA))
+ok('segnalata: già gestita, dice di ricaricare', vedi(() => e.fraseGuaioSegnalata(new Error('È già stata accolta'))), 'È già stata accolta: ricarica la pagina per vederla com’è adesso.')
+ok('segnalata: già rifiutata, lo stesso', vedi(() => e.fraseGuaioSegnalata(new Error('È già stata rifiutata'))), 'È già stata rifiutata: ricarica la pagina per vederla com’è adesso.')
+ok('segnalata: non è una tua lezione, la vede la segreteria', vedi(() => e.fraseGuaioSegnalata(new Error('Non è una tua lezione: la vede la segreteria'))), 'Non è una tua lezione: la vede la segreteria.')
+ok('segnalata: «Segnalazione inesistente» della prova non si mostra', vedi(() => e.fraseGuaioSegnalata(new Error('Segnalazione inesistente'))), RISERVA_SEGNALATA)
+ok('segnalata: un testo del server o del browser non si mostra mai', vedi(() => grezzi.map((x) => e.fraseGuaioSegnalata(x))), grezzi.map(() => RISERVA_SEGNALATA))
+// Ogni forma: e.message, e['message'], const { message } = e.
+ok('AppelloScreen.tsx non mostra nessun .message così com’è', /\bmessage\b/.test(readFileSync('src/components/AppelloScreen.tsx', 'utf8')), false)
+
 // --- 5. il CSS ---------------------------------------------------------------
 console.log('\nIl CSS dell\'area istruttore (sotto :root[data-look=\'sito\'])')
 const css = readFileSync('src/styles.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
