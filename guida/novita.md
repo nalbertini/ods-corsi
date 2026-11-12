@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.242.7 — 12 novembre 2026
+
+### Risolto
+
+- Un corso archiviato non fa più risultare «scaduto» chi l'aveva pagato, né parte il sollecito
+
 ## 0.242.6 — 12 novembre 2026
 
 ### Risolto
