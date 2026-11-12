@@ -339,22 +339,20 @@
   .sg-tre > * { grid-column: auto !important; }
 }
 .sg-scheda-campi { max-width: 720px; }
-/* La scheda di un movimento: testata (chi, quanto, quando), suggerimento a tutta larghezza, campi, piede coi tasti. Sul telefono tutto in colonna, tasti a tutta larghezza. */
-.sg-movimento-testata { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-/* I dati che non si cambiano: in fila, l'etichetta sopra e il valore sotto. */
-.sg-movimento-dati { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px 24px; padding: 14px 0; border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
-.sg-movimento-dati > div { display: flex; flex-direction: column; gap: 4px; font-size: 16px; min-width: 0; }
-.sg-movimento-importo { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: none; }
-.sg-movimento-importo b { font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+/* La scheda di un movimento: una riga coi dati che non si cambiano, l'importo grande, la persona in una card col bordo blu (e dentro quel che resta da assegnare), i campi, il piede. Sul telefono tutto in colonna, tasti a tutta larghezza. */
+.sg-movimento-cifra { font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+.sg-movimento-persona { display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; border: 2px solid var(--blu); background: var(--surface); }
+.sg-movimento-chi { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.sg-iniziali { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--blu); color: var(--surface); font-family: var(--cond); font-size: 18px; font-weight: 700; }
 .sg-sug-colonne { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .sg-movimento-piede { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 20px; border-top: 2px solid var(--line-soft); }
 .sg-movimento-gruppo { display: flex; gap: 10px; flex-wrap: wrap; }
 @media (min-width: 700px) { .sg-sug-colonne { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; } }
 @media (max-width: 699px) {
-  .sg-movimento-testata { flex-direction: column; }
-  .sg-movimento-importo { align-items: flex-start; }
-  .sg-movimento-importo b { font-size: 40px; }
-  .sg-movimento-piede, .sg-movimento-gruppo { flex-direction: column; align-items: stretch; width: 100%; }
+  .sg-movimento-cifra { font-size: 40px; }
+  .sg-movimento-gruppo { flex-direction: column; align-items: stretch; width: 100%; }
+  /* Sul telefono Salva va in cima, lontano da «Annulla movimento». */
+  .sg-movimento-piede { flex-direction: column-reverse; align-items: stretch; width: 100%; gap: 24px; }
   .sg-movimento-gruppo button { width: 100%; }
 }
 .sg-scheda-piede { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding-top: 16px; border-top: 2px solid var(--line-soft); }

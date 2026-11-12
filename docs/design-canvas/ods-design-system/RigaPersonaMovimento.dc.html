@@ -8,48 +8,56 @@
 <x-dc>
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Saira+Condensed:wght@600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
-<div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 14px; width: 100%; max-width: 560px; padding: 8px 0; border-bottom: 1px solid {{c.lineSoft}}; color: {{c.text}}; font-family: {{fam}}">
-  <span style="width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: {{c.dim}}">PERSONA</span>
+    .link { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+  </style>
+</helmet>
+<div style="width: 100%; max-width: 560px; color: {{c.text}}; font-family: {{fam}}">
   <sc-if value="{{conPersona}}" hint-placeholder-val="{{ true }}">
-    <span style="font-size: 15px; min-width: 0; overflow-wrap: anywhere">{{nome}}</span>
-    <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Apri la scheda ›</span>
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; border: 2px solid {{c.blu}}; background: {{c.surface}}">
+      <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+        <span style="display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: {{c.blu}}; color: {{c.surface}}; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 18px; font-weight: 700">{{iniziali}}</span>
+        <b style="flex: 1 1 160px; min-width: 0; font-size: 18px; overflow-wrap: anywhere">{{nome}}</b>
+        <span class="link" style="color: {{c.text}}">Apri scheda →</span>
+        <span aria-label="Altro su {{nome}}" style="display: inline-flex; align-items: center; justify-content: center; min-width: 48px; min-height: 48px; border: 2px solid {{c.blu}}; border-radius: 6px; font-size: 16px; font-weight: 600; color: {{c.blu}}">⋯</span>
+      </div>
+      <sc-if value="{{conDaAssegnare}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid {{c.lineSoft}}; padding-top: 14px">
+          <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.gialloTesto}}">DA ASSEGNARE: {{daAssegnare}}</span>
+          <span style="font-size: 14px">Di’ a cosa va: la quota, un annuale, un trimestre. Finché non lo dici, non conta come pagato.</span>
+          <div style="padding-top: 4px"><dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Assegna a quota e corsi" hint-size="240px,48px"></dc-import></div>
+        </div>
+      </sc-if>
+    </div>
   </sc-if>
   <sc-if value="{{senzaPersona}}" hint-placeholder-val="{{ false }}">
-    <span style="font-size: 15px; color: {{c.rossoTesto}}">Nessuna: di chi è?</span>
-  </sc-if>
-  <sc-if value="{{aMano}}" hint-placeholder-val="{{ true }}">
-    <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">{{cambia}}</span>
-    <sc-if value="{{scollega}}" hint-placeholder-val="{{ true }}">
-      <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Scollega</span>
-    </sc-if>
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+      <span style="font-size: 15px; color: {{c.rossoTesto}}">Nessuna persona collegata</span>
+      <dc-import name="Bottone" contesto="segreteria" variante="linea" label="Collega una persona" hint-size="200px,48px"></dc-import>
+    </div>
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Orrù Tommaso"},"aMano":{"editor":"boolean","default":true},"$preview":{"width":560,"height":64}}'>
-// COSTRUITA (`MovimentoAperto` di `Contabilita.tsx`; ../quote-persona/): la riga PERSONA del movimento aperto in CONTABILITÀ,
-// sopra i dati, sulle entrate di «Quota associativa» e «Corsi e altri pagamenti» o quando la persona c'è già. Etichetta
-// `.sg-etichetta` larga 130px, il nome a 15px (vuoto: «Nessuna: di chi è?» in rosso-testo), poi i `.sg-link` a 15px alti 44px
-// (`DITO`): «Apri la scheda ›» con la persona; sui movimenti a mano (`aMano`) «Cambia persona» / «Collega a una persona» e «Scollega».
-// Filetto sotto `line-soft`, padding 8px 0, gap 14px, a capo sul telefono.
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Conti Martina"},"daAssegnare":{"editor":"text","default":"250,00 €"},"$preview":{"width":560,"height":240}}'>
+// COSTRUITA (`MovimentoAperto` di `Contabilita.tsx`, `.sg-movimento-persona`, `.sg-movimento-chi`, `.sg-iniziali` di segreteria.css):
+// la card della persona nel movimento aperto in CONTABILITÀ, sotto la testata. Bordo 2px `blu` su `surface`, padding 16px 18px;
+// iniziali in un cerchio 44px `blu` (Cognome Nome), il nome, «Apri scheda →» (`.sg-link`, 44px) e il menu ⋯ (`MenuAzioni` con
+// `nome` = aria-label «Altro su <nome>», lista ancorata a destra) con «Cambia persona» e «Scollega».
+// DA ASSEGNARE (AssegnaMovimento) sta dentro la card, sotto un filetto `line-soft`: solo entrate con persona, voce Quota o Corsi, non in contanti.
+// Senza persona (nome vuoto): «Nessuna persona collegata» in `rosso-testo` e il tasto a linea «Collega una persona».
 const T = {
-  sito: { text: '#0d2a3d', dim: '#46606f', lineSoft: '#cfe6f4', rossoTesto: '#b81d1d' },
+  sito: { text: '#0d2a3d', blu: '#14709f', surface: '#ffffff', lineSoft: '#cfe6f4', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00' },
 };
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
-const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T.sito;
-    const nome = p.nome ?? 'Orrù Tommaso';
-    const conPersona = nome !== '';
-    const aMano = p.aMano === undefined ? true : truthy(p.aMano);
-    return {
-      c, fam: INTER, nome, conPersona, senzaPersona: !conPersona,
-      aMano, cambia: conPersona ? 'Cambia persona' : 'Collega a una persona', scollega: conPersona,
-    };
+    const nome = p.nome ?? 'Conti Martina';
+    const daAssegnare = p.daAssegnare ?? '250,00 €';
+    const iniziali = nome.split(/\s+/).filter(Boolean).slice(0, 2).map((s) => s[0].toUpperCase()).join('');
+    return { c: T.sito, fam: INTER, nome, iniziali, conPersona: nome !== '', senzaPersona: nome === '', daAssegnare, conDaAssegnare: daAssegnare !== '' };
   }
 }
 </script>

@@ -252,6 +252,9 @@ quando arriva la prova.
 - Verbali, «Carica un verbale» (`Verbali.tsx`): mostra DOVE, INIZIO, FINE e
   ordine del giorno, che la regola non chiede; se la firma cade dopo il
   caricamento resta una bozza col PDF. Solo collaudo a mano.
+- Scheda del movimento (`MovimentoAperto`): «Salva» solo con modifiche,
+  «Da assegnare» solo nella card della persona, nome del ⋯. Le regole sono
+  provate in lib; il cablaggio nel `.tsx` no. Solo collaudo a mano.
 
 ## Come si aggiorna
 

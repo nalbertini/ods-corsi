@@ -99,24 +99,28 @@ acceso, l'elenco lo dice («Non lo vedi nell'elenco: è fuori dai filtri») e **
 mese, con tutti i movimenti.
 
 Un movimento registrato **non si cambia** negli importi: toccandolo si apre in una **finestra** sopra l'elenco
-(vedi [La finestra dei dettagli](../segreteria/README.md#la-finestra-dei-dettagli)), e si può
-**annullare** (resta in elenco, annullato, e non si conta più), correggere la descrizione e
-la nota (di un giroconto, solo la nota) o **cambiare la voce** (vedi sotto). C'è un tasto
-**Salva le modifiche** solo: scrive la voce, il testo o tutti e due, quel che hai cambiato.
-**Annulla il movimento**, rosso a linea e lontano da Salva le modifiche, chiede prima di annullare. Per correggere
-importo, data o cassa si annulla e si rifà.
+(vedi [La finestra dei dettagli](../segreteria/README.md#la-finestra-dei-dettagli)). In alto c'è da dove viene
+(«Movimento dalla banca», la cassa e la data, col lucchetto: questi non si cambiano), l'**importo** grande e se è
+un'entrata o un'uscita.
 
-Nella finestra, la riga **PERSONA** dice di chi è una quota o un corso. **Apri la scheda ›** porta alla
-scheda della persona (anche per un incasso di un iscritto). Su un movimento scritto qui: **Collega a una
-persona** se manca («Nessuna: di chi è?»), **Cambia persona** e **Scollega**. MOSTRA **Da assegnare**
-trova anche le quote e i corsi senza persona, scritti prima che la persona fosse obbligatoria.
+Sotto c'è la **persona**: un riquadro col suo nome, **Apri scheda →** (porta alla scheda della persona, anche per
+un incasso di un iscritto) e **⋯**, con **Cambia persona** e **Scollega**. Se manca: «Nessuna persona collegata»
+e **Collega una persona**. Su un'entrata di quota o corsi con soldi ancora da dire a cosa vanno, nello stesso
+riquadro c'è **Da assegnare** (vedi sotto). MOSTRA **Da assegnare** trova anche le quote e i corsi senza persona,
+scritti prima che la persona fosse obbligatoria.
+
+Poi la **voce** e la **nota**. La descrizione (di un movimento della banca, il suo testo) e **Cosa è cambiato**
+stanno in **Descrizione e storico**, chiuso: si apre per leggerli o correggere la descrizione (di un giroconto,
+solo la nota). **Salva** compare solo quando hai cambiato qualcosa, e scrive quel che hai cambiato.
+**Annulla movimento**, in rosso in basso a sinistra, chiede prima di annullare: il movimento resta in elenco,
+annullato, e non si conta più. Per correggere importo, data o cassa si annulla e si rifà.
 
 ### Cambiare la voce
 
 La voce di un movimento si cambia **senza annullare e rifare**: importo, data, cassa e testo
 restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi sono gli stessi).
 
-- **Uno solo**: apri il movimento, scegli la **voce** nuova e tocca **Cambia la voce**. In fondo, **Cosa è
+- **Uno solo**: apri il movimento, scegli la **voce** nuova e tocca **Salva**. In **Descrizione e storico**, **Cosa è
   cambiato** dice chi l'ha cambiata, quando e da quale voce veniva. Un movimento scritto qui che va su
   **Quota associativa** o **Corsi e altri pagamenti** chiede la **persona**, se non ce l'ha già.
 - **Il suggerimento**: un movimento su **Da classificare** apre con un riquadro giallo,
