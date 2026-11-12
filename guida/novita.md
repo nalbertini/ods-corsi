@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.242.3 — 12 novembre 2026
+
+### Risolto
+
+- Nei conti chiesti a Claude un bonifico assegnato a un iscritto conta una volta sola, come in BILANCIO
+
 ## 0.242.2 — 12 novembre 2026
 
 ### Risolto
