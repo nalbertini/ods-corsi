@@ -8,7 +8,7 @@
 --     del bonifico, con la stessa regola di `assegna_movimento` (il titolare, o chi è attivo nel suo nucleo);
 --   · il bonifico è ancora «Da classificare», senza persona: ora si abbina se è un'entrata attiva del Conto Corrente,
 --     non di Satispay e non storico del vecchio programma di una stagione passata. Nella stessa transazione prende la
---     persona della ricevuta e la voce: «Quota associativa» se la ricevuta è solo quota, se no «Corsi e altri pagamenti»
+--     persona della ricevuta (se ne ha già una la tiene, e la ricevuta dev'essere del suo nucleo) e la voce: «Quota associativa» se la ricevuta è solo quota, se no «Corsi e altri pagamenti»
 --     (come `voceDaRicevuta` in src/lib/assegna.ts). Chi lo propone e chi clicca è l'app: qui si ricontrolla tutto.
 -- Il resto non cambia: stesso importo, tutta in Bonifico, entro 30 giorni, una ricevuta a un solo bonifico, un bonifico
 -- con soldi già assegnati non si abbina; annullando la ricevuta il bonifico resta (con la persona e la voce prese) e
@@ -23,7 +23,7 @@
 -- ---------------------------------------------------------------------------
 
 create or replace function abbina_ricevuta_movimento(movimento uuid, ricevuta uuid) returns void
-  language plpgsql security definer set search_path = public as $$
+  language plpgsql security definer set search_path = public, extensions as $$
 declare
   m movimenti;
   r ricevute;
@@ -55,6 +55,8 @@ begin
       raise exception 'La ricevuta è di un’altra persona.' using errcode = '22023';
     end if;
   end if;
+  -- Un bonifico senza persona la prende dalla ricevuta: una ricevuta senza persona non gliela può dare.
+  if m.persona_id is null and r.persona_id is null then raise exception 'La ricevuta non ha una persona.' using errcode = '22023'; end if;
   if r.pagato <> m.importo then raise exception 'La ricevuta e il bonifico non hanno lo stesso importo.' using errcode = '22023'; end if;
   if not exists (select 1 from jsonb_array_elements(r.voci) v, jsonb_array_elements(coalesce(v->'pagamenti', '[]')) pg)
      or exists (select 1 from jsonb_array_elements(r.voci) v, jsonb_array_elements(coalesce(v->'pagamenti', '[]')) pg
@@ -72,7 +74,10 @@ begin
                   and not exists (select 1 from jsonb_array_elements(r.voci) v where lower(btrim(v->>'descrizione')) <> 'quota associativa')
                  then 'Quota associativa' else 'Corsi e altri pagamenti' end;
     -- Prima persona e voce, poi la ricevuta: `movimento_assegnato_resta` (135) guarda i soldi già assegnati, che qui sono zero.
-    update movimenti set persona_id = r.persona_id, voce_id = (select id from voci_contabili where nome = voce and tipo::text = 'entrata')
+    if not exists (select 1 from voci_contabili where nome = voce and tipo::text = 'entrata') then
+      raise exception 'Manca la voce «%»: ricarica la pagina.', voce using errcode = '22023';
+    end if;
+    update movimenti set persona_id = coalesce(persona_id, r.persona_id), voce_id = (select id from voci_contabili where nome = voce and tipo::text = 'entrata')
       where id = m.id;
   end if;
   update ricevute set movimento_id = m.id where id = r.id;

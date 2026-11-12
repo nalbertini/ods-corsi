@@ -303,7 +303,7 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
   const proposti = abbinamentiProposti(liberi, ricevute, persone).filter((x) => !fuori(x.movimentoId, x.ricevutaId))
   // I Da classificare (151): le ricevute possibili tutte, dalla più vicina; una già proposta sopra non torna qui.
   const daClassificare = interi.filter((m) => movimentoDaClassificareAbbinabile(m, casse, voci, oggi))
-  const scelte = daClassificareDaAbbinare(daClassificare, ricevute, new Set(proposti.map((x) => x.ricevutaId)))
+  const scelte = daClassificareDaAbbinare(daClassificare, ricevute, new Set(proposti.map((x) => x.ricevutaId)), persone)
     .map((x) => ({ ...x, ricevute: x.ricevute.filter((r) => !fuori(x.movimentoId, r)) }))
     .filter((x) => x.ricevute.length > 0)
   const movimento = (id: string) => manuali.find((m) => m.id === id)
@@ -323,7 +323,7 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
     </span>
   )
   const nonEQuesta = (movimentoId: string, ids: string[], testo = 'Non è questa') => (
-    <button type="button" className="sg-link" style={DITO} onClick={() => scarta(movimentoId, ids)}>{testo}</button>
+    <button type="button" className="sg-link" style={{ ...DITO, color: 'var(--text)', fontWeight: 600 }} onClick={() => scarta(movimentoId, ids)}>{testo}</button>
   )
 
   return (
@@ -385,7 +385,6 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
               <Tasto tono="pieno" onClick={() => abbina(proposti)}>{scelte.length ? `Abbina i ${proposti.length} già collegati` : `Abbina tutti e ${proposti.length}`}</Tasto>
             </div>
           )}
-          {scelte.length > 0 && <span className="sg-sotto">I bonifici da classificare si abbinano uno per uno: prendono persona e voce della ricevuta.</span>}
         </div>
       )}
       <div className="stack" style={{ gap: 6 }}>

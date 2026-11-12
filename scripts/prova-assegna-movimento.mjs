@@ -388,6 +388,10 @@ console.log('\n7b. «Collegati prima»: i bonifici Da classificare')
     scelte([dc('m1', 23000, '2026-10-13')], [ric('r1', 'a', 23000, '2026-11-13'), ric('r2', 'a', 22000, '2026-10-14'), ric('r3', 'a', 23000, '2026-10-14', { annullataIl: '2026-10-15T08:00:00Z' }), ric('r4', 'a', 23000, '2026-10-14', { movimentoId: 'm9' }),
       ricevuta('r5', 'a', [voceRic('TRIMESTRE', 23000, 0, { pagamenti: [{ data: '2026-10-14', importo: 23000, metodo: 'Contanti' }] })], { data: '2026-10-14', numero: 5 })]), [])
   ok('…una ricevuta già proposta a un bonifico collegato non torna qui', scelte([dc('m1', 23000, '2026-10-13')], [ric('r98', 'tommaso', 23000, '2026-10-14')], ['r98']), [])
+  ok('…una ricevuta senza persona: no, il bonifico non avrebbe a chi andare', scelte([dc('m1', 23000, '2026-10-13')], [ric('r98', undefined, 23000, '2026-10-14')]), [])
+  const famigliaDc = [{ id: 'anna', attiva: true }, { id: 'leo', nucleo: 'anna', attiva: true }, { id: 'pietro', attiva: true }]
+  ok('…un Da classificare che ha già una persona: solo le ricevute del suo nucleo',
+    prova(() => daClassificareDaAbbinare([dc('m1', 23000, '2026-10-13', { personaId: 'anna' })], [ric('r1', 'leo', 23000, '2026-10-14'), ric('r2', 'pietro', 23000, '2026-10-14')], new Set(), famigliaDc).map((x) => [x.movimentoId, x.ricevute])), [['m1', ['r1']]])
   ok('…un bonifico senza ricevute possibili non compare', scelte([dc('m1', 23000, '2026-10-13'), dc('m2', 5000, '2026-10-13')], [ric('r98', 'tommaso', 23000, '2026-10-14')]), [['m1', ['r98']]])
 
   ok('la voce che prende il bonifico: solo quota → «Quota associativa»', prova(() => voceDaRicevuta(ricevuta('r1', 'a', [voceRic('QUOTA ASSOCIATIVA', 5000, 5000)]))), 'Quota associativa')
@@ -643,6 +647,14 @@ try {
   const dopoD = (await s.movimenti()).find((x) => x.id === mD)
   ok('…il bonifico prende la persona e la voce della ricevuta (solo quota: «Quota associativa»)', dopoD && [dopoD.personaId, dopoD.voceId], [nuovo.id, 'voce-quota'])
   ok('…e la ricevuta punta al bonifico', (await s.ricevute(nuovo.id)).find((r) => r.id === rD.id)?.movimentoId, mD)
+  ok('…i soldi contano una volta: nessun incasso della ricevuta del figlio né di quella del Da classificare',
+    B.elencoMovimenti(await s.ricevute(), await s.pagamentiDiretti(), nomi, await s.casse(), await s.movimenti(), await s.voci()).filter((r) => !r.annullato && r.origine === 'ricevuta' && [rF.id, rD.id].some((id) => r.id.includes(id))).length, 0)
+  const tot = async () => B.totali(B.elencoMovimenti(await s.ricevute(), await s.pagamentiDiretti(), nomi, await s.casse(), await s.movimenti(), await s.voci()).filter((r) => r.cassaId === 'cassa-conto')).entrate
+  const mT = await s.registraMovimento({ tipo: 'entrata', data: '2026-09-01', importo: 6100, voceId: 'voce-da-classificare-entrata', cassaId: 'cassa-conto', descrizione: 'Da GINO BLU BONIFICO SEPA' })
+  const rT = await ricevutaVecchia(nuovo, 6100, '2026-09-03')
+  const prima2 = await tot()
+  await s.abbinaRicevutaMovimento(mT, rT.id)
+  ok('…il Conto Corrente: prima dell’abbinamento 61,00 € contati due volte, dopo una', prima2 - (await tot()), 6100)
   const mDc = await s.registraMovimento({ tipo: 'entrata', data: '2026-09-01', importo: 5000, voceId: 'voce-da-classificare-entrata', cassaId: 'cassa-contanti', descrizione: 'Contanti da classificare' })
   const rDc = await ricevutaVecchia(nuovo, 5000, '2026-09-04')
   ok('…un Da classificare in Cassa Contanti, senza persona: no', await errore(() => s.abbinaRicevutaMovimento(mDc, rDc.id)), 'Collega prima il movimento a una persona.')

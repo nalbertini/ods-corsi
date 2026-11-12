@@ -428,6 +428,7 @@ select chi(:ADA);
 set role authenticated;
 select atteso('la ricevuta del figlio sul bonifico del padre (stesso nucleo): si abbina', abbina('Bonifico papà Rossi', :'rfiglio'), 'nessun errore');
 select atteso('…la ricevuta punta al bonifico', com_ricevuta(:'rfiglio'), 'bbbbbbbb-0000-0000-0000-000000000011|Bonifico papà Rossi|9000|false');
+select atteso('…e il bonifico non ha più niente da assegnare: i soldi contano una volta', resta('Bonifico papà Rossi'), '0');
 select atteso('…chi è spento nel nucleo no, come per assegnare', abbina('Bonifico papà Rossi bis', :'rgiada'), '22023 La ricevuta è di un’altra persona.');
 select atteso('un bonifico Da classificare con la ricevuta in Bonifico: si abbina', abbina('Da PAOLA NERI BONIFICO SEPA', :'rquota'), 'nessun errore');
 select atteso('…e prende persona e voce della ricevuta (solo quota)', (select persona_id::text || '|' || (select nome from voci_contabili where id = voce_id) from movimenti where id = id_mov('Da PAOLA NERI BONIFICO SEPA')),
@@ -437,6 +438,21 @@ select atteso('…in CONTABILITÀ un solo incasso: il bonifico è da assegnare a
 select atteso('un Da classificare in Cassa Contanti, senza persona: no', abbina('Contanti da classificare', :'rquota2'), '22023 Collega prima il movimento a una persona.');
 select atteso('quota e corsi insieme: il bonifico va su «Corsi e altri pagamenti»', abbina('Da GINO BLU BONIFICO SEPA', :'rmista'), 'nessun errore');
 select atteso('…', (select (select nome from voci_contabili where id = voce_id) from movimenti where id = id_mov('Da GINO BLU BONIFICO SEPA')), 'Corsi e altri pagamenti');
+reset role;
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, persona_id) values
+  ('entrata', '2026-09-01', 6100, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'Da NESSUNO BONIFICO SEPA', null),
+  ('entrata', '2026-09-01', 6200, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'Da classificare del papà', pid(10));
+select chi(:ANNA);
+set role authenticated;
+select vecchia(dati(17, jsonb_build_array(vr('TRIMESTRE JUDO', 6100, bon(6100, '2026-09-03'))), '{}', '2026-09-03')) as rsenza \gset
+select vecchia(dati(11, jsonb_build_array(vr('TRIMESTRE JUDO', 6200, bon(6200, '2026-09-03'))), '{}', '2026-09-03')) as rpapa \gset
+reset role;
+update ricevute set persona_id = null where id = :'rsenza';
+select chi(:ADA);
+set role authenticated;
+select atteso('una ricevuta senza persona su un Da classificare: no', abbina('Da NESSUNO BONIFICO SEPA', :'rsenza'), '22023 La ricevuta non ha una persona.');
+select atteso('un Da classificare già collegato al padre, ricevuta del figlio: si abbina', abbina('Da classificare del papà', :'rpapa'), 'nessun errore');
+select atteso('…e tiene il padre', (select persona_id::text from movimenti where id = id_mov('Da classificare del papà')), 'bbbbbbbb-0000-0000-0000-000000000010');
 reset role;
 select chi(:ANNA);
 set role authenticated;

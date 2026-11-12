@@ -205,6 +205,8 @@ export function cosaNonVaAbbinamento(m: MovimentoAbbinabile, r: RicevutaAbbinabi
   if (r.annullataIl) return 'La ricevuta è annullata.'
   if (r.movimentoId && r.movimentoId !== m.id) return `La ricevuta n. ${r.numero}/${r.anno} è già abbinata a un altro bonifico.`
   if (m.personaId && r.personaId !== m.personaId && !personeDelNucleo(m.personaId, persone).includes(r.personaId ?? '')) return 'La ricevuta è di un’altra persona.'
+  // Un bonifico senza persona la prende dalla ricevuta: una ricevuta senza persona non gliela può dare.
+  if (!m.personaId && !r.personaId) return 'La ricevuta non ha una persona.'
   if (r.pagato !== m.importo) return 'La ricevuta e il bonifico non hanno lo stesso importo.'
   const pagamenti = r.voci.flatMap((v) => v.pagamenti)
   if (!pagamenti.length || pagamenti.some((p) => !stessa(p.metodo, 'Bonifico'))) return 'La ricevuta non è tutta pagata con bonifico.'
@@ -238,7 +240,8 @@ export function abbinamentiProposti(
 
 /**
  * Un'entrata Da classificare del Conto Corrente si abbina a una ricevuta in Bonifico (151): prende persona e voce della
- * ricevuta. Non Satispay, non annullata, non lo storico del vecchio programma di una stagione passata.
+ * ricevuta (se ne ha già una la tiene, e la ricevuta dev'essere del suo nucleo). Non Satispay, non annullata, non lo
+ * storico del vecchio programma di una stagione passata.
  */
 export function movimentoDaClassificareAbbinabile(
   m: Pick<MovimentoManuale, 'tipo' | 'voceId' | 'cassaId' | 'annullatoIl' | 'data' | 'origineImport' | 'satispayId'>,
@@ -256,12 +259,12 @@ export function movimentoDaClassificareAbbinabile(
  * I bonifici Da classificare con le ricevute che possono essere loro, dalla data più vicina: mai una sola scelta da sé,
  * perché pagano spesso i genitori e il nome non aiuta. Le ricevute di `esclusi` (già proposte a un bonifico collegato) no.
  */
-export function daClassificareDaAbbinare(movimenti: MovimentoAbbinabile[], ricevute: Ricevuta[], esclusi: Set<string> = new Set()): Array<{ movimentoId: string; ricevute: string[] }> {
+export function daClassificareDaAbbinare(movimenti: MovimentoAbbinabile[], ricevute: Ricevuta[], esclusi: Set<string> = new Set(), persone: PersonaNucleo[] = []): Array<{ movimentoId: string; ricevute: string[] }> {
   return movimenti
     .map((m) => ({
       movimentoId: m.id,
       ricevute: ricevute
-        .filter((r) => !r.movimentoId && !esclusi.has(r.id) && cosaNonVaAbbinamento({ ...m, personaId: undefined }, r) === null)
+        .filter((r) => !r.movimentoId && !esclusi.has(r.id) && cosaNonVaAbbinamento(m, r, persone) === null)
         .sort((a, b) => giorni(a.data, m.data) - giorni(b.data, m.data) || a.data.localeCompare(b.data) || a.numero - b.numero)
         .map((r) => r.id),
     }))

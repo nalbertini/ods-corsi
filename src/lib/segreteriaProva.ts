@@ -1896,8 +1896,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (assegnato(movimentoId, a().pagamentiDiretti ?? [], a().ricevute ?? []) > 0)
         throw new Error('Il bonifico ha già dei soldi assegnati: annulla prima le ricevute e le assegnazioni.')
       if (daClassificare) {
-        const voceId = voci.find((v) => v.tipo === 'entrata' && v.nome === voceDaRicevuta(r))?.id ?? m.voceId
-        a().movimenti = movimenti.map((x) => (x.id === movimentoId ? { ...x, personaId: r.personaId, voceId } : x))
+        const voceId = voci.find((v) => v.tipo === 'entrata' && v.nome === voceDaRicevuta(r))?.id
+        if (!voceId) throw new Error(`Manca la voce «${voceDaRicevuta(r)}»: ricarica la pagina.`)
+        a().movimenti = movimenti.map((x) => (x.id === movimentoId ? { ...x, personaId: x.personaId ?? r.personaId, voceId } : x))
       }
       a().ricevute = (a().ricevute ?? []).map((x) => (x.id === ricevutaId ? { ...x, movimentoId } : x))
       salva()

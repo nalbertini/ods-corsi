@@ -862,7 +862,7 @@ export function NuovaRicevuta({
                 {daClassificare(m) ? ', da classificare' : ''}: «{m.descrizione}». Se è questo pagamento, abbinalo: così non si conta due volte.
               </span>
               <label className="row" style={{ gap: 10, alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600 }}>
-                <input type="checkbox" style={{ width: 22, height: 22 }} checked={abbinato?.id === m.id} onChange={(e) => setAbbinaA(e.target.checked ? m.id : null)} />
+                <input type="checkbox" style={{ width: 22, height: 22, accentColor: 'var(--text)' }} aria-label={`È questo il bonifico del ${dataRicevuta(m.data)} da ${euroAssegna(m.importo)}: abbinalo alla ricevuta`} checked={abbinato?.id === m.id} onChange={(e) => setAbbinaA(e.target.checked ? m.id : null)} />
                 È questo: abbinalo alla ricevuta
               </label>
               {abbinato?.id === m.id && daClassificare(m) && dati && (
