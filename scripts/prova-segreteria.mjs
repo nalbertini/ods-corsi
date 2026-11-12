@@ -949,8 +949,9 @@ console.log('\nl\'email di un iscritto e il personale')
   const g = await s.salvaPersona({ nome: 'Gaia', cognome: 'Figlia', email: 'famiglia.pers@esempio.it' })
   const nuova = await s.salvaPersonale({ nome: 'Tina', cognome: 'Nuova', email: 'tina.pers@esempio.it', ruolo: 'istruttore' })
   const diventa = await s.salvaPersonale({ nome: 'Fede', cognome: 'Figlio', email: 'famiglia.pers@esempio.it', ruolo: 'istruttore' })
-  ok('chi ha l\'email dei figli diventa personale, non un doppione: il primo iscritto', diventa, f)
-  ok('e il fratello resta iscritto', (await s.personale()).some((p) => p.id === g), false)
+  // Chi si allena e insegna ha due schede (scelta della palestra, 2026-11-12): la sua da iscritto resta.
+  ok('con l\'email dei figli, il personale ha una scheda sua: nessun iscritto la perde', [diventa !== f, diventa !== g], [true, true])
+  ok('e i due fratelli restano iscritti', (await s.personale()).some((p) => p.id === f || p.id === g), false)
   ok('modificando un\'altra scheda del personale con quell\'email si dice di chi è', await errore(() => s.salvaPersonale({ id: nuova, nome: 'Tina', cognome: 'Nuova', email: 'famiglia.pers@esempio.it', ruolo: 'istruttore' })), 'Questa email è già di Fede Figlio')
 }
 

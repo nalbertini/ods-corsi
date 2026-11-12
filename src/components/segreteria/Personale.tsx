@@ -351,7 +351,7 @@ function Aggiungi({
       <span className="sg-scheda-campi" style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
         {d.modo === 'prova'
           ? 'In prova l’account non serve e nessuna email parte: la persona compare subito negli istruttori dei corsi.'
-          : 'Con l’invito le arriva una mail con un link: lo apre, sceglie la sua password ed entra. Il link scade dopo un’ora; se scade, «Manda l’invito» nella sua scheda ne manda un altro. Se la persona è già in elenco come iscritta, diventa istruttore invece di un doppione.'}
+          : 'Con l’invito le arriva una mail con un link: lo apre, sceglie la sua password ed entra. Il link scade dopo un’ora; se scade, «Manda l’invito» nella sua scheda ne manda un altro. Se la persona è anche iscritta, la sua scheda da iscritta resta: questa è la seconda, del personale.'}
       </span>
       <div className="sg-scheda-piede">
         <button type="button" className="sg-btn sg-btn-linea" onClick={onLasciaStare}>
