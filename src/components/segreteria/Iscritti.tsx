@@ -1472,7 +1472,6 @@ function UnisciDoppione({
   const [resta, via] = lei && scambiate ? [lei, p] : [p, lei]
   const passa = useCarica(async () => (resta && via ? d.anteprimaUnione(resta.id, via.id) : null), [d, resta?.id, via?.id])
   const nome = (x: PersonaSeg) => `${x.cognome} ${x.nome}`
-
   const colonna = (t: string, x: PersonaSeg) => (
     <div className="stack" style={{ gap: 2, minWidth: 0 }}>
       <span className="sg-etichetta">{t}</span>

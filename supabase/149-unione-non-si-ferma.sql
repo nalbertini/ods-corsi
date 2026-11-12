@@ -12,9 +12,10 @@
 --     rifiutata) e questa no, prende il suo stato;
 --   · `pagamenti_satispay` in attesa (103, 105, 106), uno per quota, corso o
 --     saldo: quello che Satispay o PayPal non hanno mai visto (nessun
---     `satispay_id` né `paypal_id`) si chiude «non andato», come fanno già
---     105 e 106 quando cambia l'importo. Se li hanno visti tutti e due, uno
---     può ancora arrivare pagato: l'unione si ferma e dice di aspettare.
+--     `satispay_id` né `paypal_id` dopo un quarto d'ora: l'id arriva qualche
+--     secondo dopo la riga) si chiude «non andato», come fanno già 105 e 106
+--     quando cambia l'importo. Se no, uno può ancora arrivare pagato:
+--     l'unione si ferma e dice di aspettare.
 --
 -- E `anteprima_unione` (29) conta anche tessere, gare, movimenti della
 -- contabilità e pagamenti online (non quelli non andati).
@@ -50,16 +51,19 @@ create or replace function pagamenti_satispay_unione() returns trigger
   language plpgsql set search_path = public as $$
 declare
   altro pagamenti_satispay;
+  -- Prima, la riga c'è ma Satispay o PayPal stanno ancora dando l'id (`satispay_creato`, `carta_creato`).
+  vecchio constant timestamptz := now() - interval '15 minutes';
 begin
   if new.stato <> 'attesa' or new.persona_id is null then return new; end if;
+  -- Bloccata: chi la sta per segnare pagata o creata aspetta la fine dell'unione.
   select * into altro from pagamenti_satispay p
    where p.persona_id = new.persona_id and p.stato = 'attesa' and p.id <> new.id
      and ((new.voce = 'quota' and p.voce = 'quota') or p.corso_id = new.corso_id or p.saldo_di = new.saldo_di)
-   limit 1;
+   limit 1 for update;
   if altro.id is null then return new; end if;
-  if new.satispay_id is null and new.paypal_id is null then
+  if new.satispay_id is null and new.paypal_id is null and new.creato_il < vecchio then
     new.stato := 'non-andato';
-  elsif altro.satispay_id is null and altro.paypal_id is null then
+  elsif altro.satispay_id is null and altro.paypal_id is null and altro.creato_il < vecchio then
     update pagamenti_satispay set stato = 'non-andato' where id = altro.id;
   else
     raise exception 'Tutte e due le schede hanno un pagamento online in corso per la stessa cosa: aspetta che arrivi pagato o che scada, poi riprova'

@@ -501,19 +501,34 @@ insert into persone (id, nome, cognome, ruolo) values
   ('aaaaaaaa-0000-0000-0000-000000000080', 'Pia', 'Zeta', 'iscritto'),
   ('aaaaaaaa-0000-0000-0000-000000000081', 'Pia', 'Zeta', 'iscritto'),
   ('aaaaaaaa-0000-0000-0000-000000000082', 'Ugo', 'Zeta', 'iscritto'),
-  ('aaaaaaaa-0000-0000-0000-000000000083', 'Ugo', 'Zeta', 'iscritto');
+  ('aaaaaaaa-0000-0000-0000-000000000083', 'Ugo', 'Zeta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000086', 'Ivo', 'Zeta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000087', 'Ivo', 'Zeta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000088', 'Eva', 'Zeta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000089', 'Eva', 'Zeta', 'iscritto');
 -- Lezione 1: tutte e due l'hanno segnata, quella del doppione la segreteria l'ha già accolta. Lezione 2: solo il doppione.
 insert into presenze_segnalate (sessione_id, persona_id, stato, gestita_il) values
   ('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000080', 'da_vedere', null),
   ('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000081', 'accolta', now()),
   ('eeeeeeee-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000081', 'da_vedere', null);
--- La quota in attesa su tutte e due; quella del doppione Satispay non l'ha mai vista.
-insert into pagamenti_satispay (chi, importo, stato, persona_id, voce, satispay_id) values
-  ('Zeta Pia', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000080', 'quota', 'S-PIA-1'),
-  ('Zeta Pia', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000081', 'quota', null),
+-- La quota in attesa su tutte e due; quella del doppione Satispay non l'ha mai vista, ed è di un'ora fa.
+insert into pagamenti_satispay (chi, importo, stato, persona_id, voce, satispay_id, creato_il) values
+  ('Zeta Pia', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000080', 'quota', 'S-PIA-1', now()),
+  ('Zeta Pia', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000081', 'quota', null, now() - interval '1 hour'),
 -- Ugo: tutte e due già da Satispay, e una delle due può ancora arrivare pagata.
-  ('Zeta Ugo', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000082', 'quota', 'S-UGO-1'),
-  ('Zeta Ugo', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000083', 'quota', 'S-UGO-2');
+  ('Zeta Ugo', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000082', 'quota', 'S-UGO-1', now()),
+  ('Zeta Ugo', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000083', 'quota', 'S-UGO-2', now()),
+-- Ivo: quella del doppione è appena nata, e l'id di Satispay sta arrivando.
+  ('Zeta Ivo', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000086', 'quota', 'S-IVO-1', now()),
+  ('Zeta Ivo', 3000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000087', 'quota', null, now() - interval '10 seconds');
+-- Eva: il corso in attesa; questa volta è quello di chi resta che nessuno ha mai visto.
+insert into pagamenti_satispay (chi, importo, stato, persona_id, corso_id, satispay_id, creato_il) values
+  ('Zeta Eva', 9000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000088', 'cccccccc-0000-0000-0000-000000000001', null, now() - interval '1 hour'),
+  ('Zeta Eva', 9000, 'attesa', 'aaaaaaaa-0000-0000-0000-000000000089', 'cccccccc-0000-0000-0000-000000000001', 'S-EVA-2', now());
+-- Ed Eva ha già gestito la sua segnalazione: quella del doppione, da vedere, non le cambia lo stato.
+insert into presenze_segnalate (sessione_id, persona_id, stato, gestita_il) values
+  ('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000088', 'rifiutata', now()),
+  ('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000089', 'da_vedere', null);
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('Pia unita', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000080', 'aaaaaaaa-0000-0000-0000-000000000081')$$), 'fatto');
@@ -529,6 +544,18 @@ select atteso('Ugo: due pagamenti in corso, si dice di aspettare',
   rifiuta($$select unisci_persone('aaaaaaaa-0000-0000-0000-000000000082', 'aaaaaaaa-0000-0000-0000-000000000083')$$),
   'RIFIUTATO: Tutte e due le schede hanno un pagamento online in corso…');
 select atteso('e le due schede di Ugo restano', (select count(*)::text from persone where nome = 'Ugo' and cognome = 'Zeta'), '2');
+select atteso('Ivo: un pagamento appena nato non si chiude, si aspetta',
+  rifiuta($$select unisci_persone('aaaaaaaa-0000-0000-0000-000000000086', 'aaaaaaaa-0000-0000-0000-000000000087')$$),
+  'RIFIUTATO: Tutte e due le schede hanno un pagamento online in corso…');
+select atteso('e resta in attesa', (select stato from pagamenti_satispay where persona_id = 'aaaaaaaa-0000-0000-0000-000000000087'), 'attesa');
+select atteso('Eva unita', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000088', 'aaaaaaaa-0000-0000-0000-000000000089')$$), 'fatto');
+reset role;
+select atteso('il corso: si chiude quello di chi resta, mai visto, e resta in attesa quello che Satispay conosce',
+  (select string_agg(coalesce(satispay_id, '-') || ' ' || stato, ', ' order by satispay_id nulls last) from pagamenti_satispay where persona_id = 'aaaaaaaa-0000-0000-0000-000000000088'),
+  'S-EVA-2 attesa, - non-andato');
+select atteso('la segnalazione già gestita di chi resta non cambia',
+  (select string_agg(stato, ', ') from presenze_segnalate where persona_id = 'aaaaaaaa-0000-0000-0000-000000000088'), 'rifiutata');
+set role authenticated;
 reset role;
 
 \echo ''
