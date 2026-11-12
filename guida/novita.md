@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.242.2 — 12 novembre 2026
+
+### Risolto
+
+- Chi ha pagato in segreteria con un bonifico, prima della ricevuta, non risulta più da pagare nell'area iscritti e non paga due volte
+
 ## 0.242.1 — 12 novembre 2026
 
 ### Risolto
