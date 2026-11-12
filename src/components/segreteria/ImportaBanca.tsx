@@ -460,8 +460,9 @@ function Abbinamento({ a, tolto, personaId, ricevutaDi, nomeDi, dataDi, onTogli 
 }) {
   const numeri = (ids: string[]) => ids.map((id) => ricevutaDi(id)).filter((r) => !!r)
   if (a.esito === 'piu') {
-    const rr = numeri(a.ricevute)
-    return <><span className="sg-banca-abbina" data-tono="dubbio">{rr.length} ricevute possibili di {nomeDi(personaId)} (n. {rr.map((r) => r.numero).join(', ')}/{rr[0]?.anno}): la scegli in «Da assegnare»</span><span /></>
+    const rr = numeri(a.ricevute).sort((x, y) => x.anno - y.anno || x.numero - y.numero)
+    const n = rr.map((r) => `${r.numero}/${r.anno}`)
+    return <><span className="sg-banca-abbina" data-tono="dubbio">{rr.length} ricevute possibili di {nomeDi(personaId)} (n. {n.slice(0, -1).join(', ')} e {n.at(-1)}): la scegli in «Da assegnare»</span><span /></>
   }
   if (a.esito === 'contesa') {
     const altro = a.con.length === 1 ? `il bonifico del ${dataBreve(dataDi(a.con[0]))}` : `altri ${a.con.length} bonifici`

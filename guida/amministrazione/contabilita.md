@@ -319,6 +319,18 @@ In fondo l'app dice quante righe avranno la voce scelta e quante restano in **Da
 una quota senza persona, per esempio, entra lo stesso e resta lì. Se esci dalla pagina con delle
 scelte fatte, l'app chiede prima.
 
+Un bonifico in entrata su **Quota associativa** o **Corsi e altri pagamenti**, con la persona, entra
+già **con la sua ricevuta** se ne hai fatta una sola che gli va: in **Bonifico**, non ancora legata a
+un movimento, stesso importo, entro 30 giorni, della persona o della sua famiglia (come per
+[**Abbina**](#assegnare-un-bonifico-a-quota-e-corsi)). Sotto la riga, in verde, «Va con la ricevuta
+n. … di …», con la data e l'importo, e «(nucleo)» se è di un altro della famiglia. **Togli** la lascia
+fuori: il bonifico entra senza, resta in **Da assegnare** e lo abbini tu; **Abbina** la rimette.
+Con **più ricevute possibili**, o se due bonifici del file vogliono la stessa, la riga lo dice in
+giallo e non si abbina niente: la scegli dopo in **Da assegnare**. Se cambi persona o voce, la
+proposta si rifà. In fondo l'app dice anche quanti bonifici entrano con la ricevuta, e dopo
+l'importazione il riepilogo elenca le ricevute abbinate (numero e persona) e, in giallo, i bonifici
+che non si sono abbinati, col motivo.
+
 I movimenti entrano col segno **DALLA BANCA**, nella voce scelta o in **Da classificare**:
 quelle rimaste le sistemi dopo, con **Cambia voce**. Rileggere lo stesso file non duplica niente,
 nemmeno un movimento annullato. Se qualcosa non torna, **Annulla**, accanto all'ultima importazione in cima alla pagina,
