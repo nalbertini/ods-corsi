@@ -16,7 +16,7 @@ import { insegna, segniDi, siElimina, type RuoloPersonale } from './ruoli'
 import type { IndiziDoppioni } from './doppioni'
 import { archivio, certificatiInAttesaProva, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, scordaInAttesa, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttoreAssenteProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
-import { memoria, nomeAttivita } from './datiProva'
+import { iscrittiDellAppello, memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
 // La chiusura della cassa ha già il nome `cosaNonVaChiusura`.
 import { cosaNonVaChiusura as cosaNonVaPeriodo, type ContoChiusura } from './chiusure'
@@ -395,7 +395,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       attivitaId: attivitaDi(l) ?? undefined,
       attivita: nomeAttivita(attivitaDi(l)),
       attivitaCambiata: attivitaCambiata({ attivitaId: attivitaDi(l), straordinaria: l.straordinaria, inizio: l.inizio.toISOString(), segnati: c.segnati }, { attivitaId: l.ricorrenza?.attivitaId }),
-      iscritti: iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)).length,
+      iscritti: iscrittiDellAppello(l).length,
       capienza: l.corso.capienza,
       ...c,
     }
@@ -849,18 +849,26 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async frequenze() {
       const adesso = Date.now()
-      const f = new Map<string, { presenti: number; dovute: number }>()
+      // Come `frequenze` (145): una riga per persona, corso e giorno, il doppio turno vale una lezione.
+      const giorni = new Map<string, { personaId: string; presente: boolean; giustificato: boolean }>()
       for (const l of lezioniFra(new Date(adesso - 30 * GIORNO), new Date(adesso))) {
         if (l.inizio.getTime() >= adesso || comeE(l).stato === 'annullata') continue
         const segni = memoria.segnate[l.id] ?? {}
         for (const p of iscrittiIl(l.corso.id, chiaveGiorno(l.inizio))) {
-          const s = segni[p.id]
-          if (s === 'giustificato') continue
-          const x = f.get(p.id) ?? { presenti: 0, dovute: 0 }
-          x.dovute++
-          if (s === 'presente') x.presenti++
-          f.set(p.id, x)
+          const chiave = `${p.id}|${l.corso.id}|${chiaveGiorno(l.inizio)}`
+          const g = giorni.get(chiave) ?? { personaId: p.id, presente: false, giustificato: false }
+          g.presente ||= segni[p.id] === 'presente'
+          g.giustificato ||= segni[p.id] === 'giustificato'
+          giorni.set(chiave, g)
         }
+      }
+      const f = new Map<string, { presenti: number; dovute: number }>()
+      for (const g of giorni.values()) {
+        if (!g.presente && g.giustificato) continue
+        const x = f.get(g.personaId) ?? { presenti: 0, dovute: 0 }
+        x.dovute++
+        if (g.presente) x.presenti++
+        f.set(g.personaId, x)
       }
       return f
     },
@@ -871,7 +879,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const x: StoricoSeg[] = []
       for (const l of lezioniFra(new Date(adesso - 120 * GIORNO), new Date(adesso))) {
         if (!corsi.has(l.corso.id) || l.inizio.getTime() >= adesso || comeE(l).stato === 'annullata') continue
-        if (!iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)).some((p) => p.id === personaId)) continue
+        if (!iscrittiDellAppello(l).some((p) => p.id === personaId)) continue
         x.push({ sessioneId: l.id, inizio: l.inizio.toISOString(), corso: l.corso.nome, stato: memoria.segnate[l.id]?.[personaId] ?? null })
       }
       return x.slice(-quante)
@@ -2405,7 +2413,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             istruttori: k.istruttori.map(nomeIstruttore).join(', '),
             inizio: l.inizio.toISOString(),
             stato: k.stato,
-            appello: iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)).map((p) => ({ personaId: p.id, nome: p.nome, cognome: p.cognome, stato: segni[p.id] ?? null })),
+            appello: iscrittiDellAppello(l).map((p) => ({ personaId: p.id, nome: p.nome, cognome: p.cognome, stato: segni[p.id] ?? null })),
           }
         })
     },
@@ -2475,7 +2483,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         .map((l) => {
           const k = comeE(l)
           const segni = memoria.segnate[l.id] ?? {}
-          const appello = iscrittiIl(l.corso.id, chiaveGiorno(l.inizio))
+          const appello = iscrittiDellAppello(l)
           const g = chiaveGiorno(l.inizio)
           const conta = (stato: string) => appello.filter((p) => segni[p.id] === stato).length
           // Come il database: presenti senza essere iscritti quel giorno (anche da disattivati), che in sala c'erano.

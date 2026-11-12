@@ -430,6 +430,8 @@ export function DueTocchi({
   chiede,
   disabled,
   etichetta,
+  pieno,
+  onChiede,
   onFai,
   children,
 }: {
@@ -438,6 +440,10 @@ export function DueTocchi({
   disabled?: boolean
   /** Per un tasto con un'icona: il nome da leggere finché non chiede. */
   etichetta?: string
+  /** Il tasto pieno della schermata (`data-pieno`): il CSS lo colora, il tasto non sa perché. */
+  pieno?: boolean
+  /** Per chi accanto al tasto dice cosa succede: la frase cambia mentre il tasto chiede. */
+  onChiede?: (sicuro: boolean) => void
   onFai: () => void
   children: ReactNode
 }) {
@@ -458,11 +464,17 @@ export function DueTocchi({
   useEffect(() => {
     if (!chiede) setSicuro(false)
   }, [chiede])
+  const chiedendo = sicuro && !!chiede
+  useEffect(() => {
+    onChiede?.(chiedendo)
+    // Si avvisa quando cambia la domanda, non quando cambia chi ascolta.
+  }, [chiedendo])
   return (
     <button
       type="button"
       className={className}
       data-sicuro={sicuro}
+      data-pieno={pieno || undefined}
       disabled={disabled}
       aria-label={sicuro && chiede ? undefined : etichetta}
       onClick={() => {

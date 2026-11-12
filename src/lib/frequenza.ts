@@ -6,6 +6,7 @@
  */
 import { perCognome, type Persona, type StatoPresenza } from './sala'
 import type { RigaRegistro } from './segreteria'
+import { unisciTurni } from './turni'
 
 export interface SessioneStorico { id: string; corsoId: string; inizio: string; stato: string }
 export interface PresenzaStorico { sessioneId: string; personaId: string; stato: StatoPresenza }
@@ -75,13 +76,16 @@ export const GIORNI_RECENTI = 60
  */
 export const sottoPersi = () => `${DI_FILA} assenze di fila o più, negli ultimi ${GIORNI_RECENTI} giorni`
 
+// `unisciTurni` riconosce i turni dal corso e dal giorno: l'id serve solo a tenerli distinti.
+const conId = (r: LezioneRegistro, i: number) => ({ ...r, id: `${r.corsoId}|${r.inizio}|${i}` })
+
 export const conAppello = (r: Pick<RigaRegistro, 'appello'>) => r.appello.some((p) => p.stato !== null)
 
-/** Presenti su lezioni dovute: i giustificati non contano né sopra né sotto. */
+/** Presenti su lezioni dovute: i giustificati non contano né sopra né sotto. Il doppio turno vale una lezione (`turni.ts`). */
 export function conto(righe: readonly LezioneRegistro[]) {
   let presenti = 0
   let dovute = 0
-  for (const r of righe) {
+  for (const r of unisciTurni(righe.map(conId))) {
     if (r.stato === 'annullata' || !conAppello(r)) continue
     for (const p of r.appello) {
       if (p.stato === 'giustificato') continue
@@ -101,7 +105,7 @@ export const percento = (x: { presenti: number; dovute: number }) => (x.dovute ?
  */
 export function chiSiStaPerdendo(righe: readonly LezioneRegistro[], corso?: string) {
   const perPersona = new Map<string, { nome: string; segni: Array<{ stato: string | null; corso: string; inizio: string }> }>()
-  for (const r of [...righe].sort((a, b) => a.inizio.localeCompare(b.inizio))) {
+  for (const r of unisciTurni(righe.map(conId))) {
     if (r.stato === 'annullata' || !conAppello(r)) continue
     if (corso && r.corsoId !== corso) continue
     for (const x of r.appello) {

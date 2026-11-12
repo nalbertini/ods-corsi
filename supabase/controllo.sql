@@ -688,6 +688,17 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rifà `banca_segna_coperti` (114, 134): rilanciando quelli, il controllo torna «manca».
   ('144-banca-ricevuta-a-rate.sql', 'un bonifico della banca che paga una ricevuta in più rate la copre intera, senza contare due volte',
     exists (select 1 from pg_indexes where indexname = 'banca_coperti_una_ricevuta')
-    and exists (select 1 from dentro where nome = 'banca_segna_coperti' and corpo like '%^ricevuta:%'))
+    and exists (select 1 from dentro where nome = 'banca_segna_coperti' and corpo like '%^ricevuta:%')),
+  -- Rifà funzioni di 04, 05, 22 e 101: rilanciando quelli, il controllo torna «manca».
+  ('145-doppio-turno.sql', 'chi è presente a un turno non è nell''appello dell''altro dello stesso giorno',
+    exists (select 1 from dentro where nome = 'presente_altrove')
+    and exists (select 1 from dentro where nome = 'elenco_sala' and corpo like '%presente_altrove%')
+    and exists (select 1 from dentro where nome = 'lezioni_sala' and corpo like '%presente_altrove%')
+    and exists (select 1 from dentro where nome = 'appello_con_pin' and corpo like '%presente_altrove%')
+    and exists (select 1 from dentro where nome = 'segna_con_pin' and corpo like '%presente_altrove%')
+    and exists (select 1 from dentro where nome = 'segna_dal_tablet' and corpo like '%altro_turno%')
+    and exists (select 1 from dentro where nome = 'statistiche' and corpo like '%presente_altrove%')
+    and exists (select 1 from dentro where nome = 'iscritto_presenze' and corpo like '%presente_altrove%')
+    and exists (select 1 from dentro where nome = 'frequenze' and corpo like '%bool_or%'))
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -7,6 +7,7 @@ import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from '.
 import { attivitaPerMenu, mancaAttivita, type ComePresenzaIstruttore } from './segreteria'
 import type { StatoPresenzaIstruttore } from './tablet'
 import { contiDellAppello, giornoDi, valeIl } from './sala'
+import { presentiAltrove, type Turno } from './turni'
 import { contaPresenze, lezioniContate, ordinaPerPresenze } from './frequenza'
 import { Coda } from './coda'
 import { eFuoriFinestra } from './finestra'
@@ -174,8 +175,12 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       segnate.get(r.sessione_id)!.set(r.persona_id, r.stato)
     }
 
-    return sessioni.map((s) => {
-      const delCorso = iscrittiIl(iscrizioni, s.corso_id, giornoDi(s.inizio))
+    const turni = sessioni.map((s) => ({ id: s.id, corsoId: s.corso_id, inizio: s.inizio, stato: s.stato }))
+    const segni = (pres ?? []).map((r) => ({ sessioneId: r.sessione_id, personaId: r.persona_id, stato: r.stato as StatoPresenza }))
+    return sessioni.map((s, i) => {
+      // shortcut: vede solo i turni della stessa lista (un giorno, una settimana); una lista filtrata per istruttore può non avere l'altro turno.
+      const altrove = presentiAltrove(turni[i], turni, segni)
+      const delCorso = iscrittiIl(iscrizioni, s.corso_id, giornoDi(s.inizio)).filter((p) => !altrove.has(p.id))
       return {
         id: s.id,
         corsoId: s.corso_id,
@@ -337,10 +342,12 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
         }
       }
 
+      // Per l'appello aperto basta com'era: se l'altro turno non si legge, l'elenco resta quello di prima.
+      const altrove = await presentiAgliAltriTurni(db, { id: sessioneId, corsoId: riga.corso_id, inizio: riga.inizio }, stati).catch(() => new Map<string, string>())
       const iscrittiQui = new Set(delCorso.map((p) => p.id))
       const conti = await presenzeDelleLezioni({ id: sessioneId, corsoId: riga.corso_id, inizio: riga.inizio })
       const elenco = ordinaPerPresenze([
-        ...delCorso.map((p) => ({ ...p, stato: stati.get(p.id) ?? null })),
+        ...delCorso.filter((p) => !altrove.has(p.id)).map((p) => ({ ...p, stato: stati.get(p.id) ?? null })),
         ...[...prove.values()]
           .filter((p) => !iscrittiQui.has(p.id))
           .map((p) => ({ ...p, stato: stati.get(p.id) ?? null, prova: true })),
@@ -351,7 +358,11 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
         festeggiatiDa(db.rpc('compleanni_lezione', { sessione: sessioneId })),
         festeggiatiDa(db.rpc('compleanni_istruttori_lezione', { sessione: sessioneId })),
       ])
-      return { sessione: { ...viste, compleannoIstruttore: inFesta.length > 0 }, note: riga.note ?? undefined, elenco, compleanni } as DettaglioSessione
+      const giaPresenti = delCorso.filter((p) => altrove.has(p.id)).map((p) => ({ ...p, inizio: altrove.get(p.id)! }))
+      // `conta` vede solo questa lezione: i conti dell'intestazione si rifanno senza chi è presente all'altro turno.
+      const qui = delCorso.filter((p) => !altrove.has(p.id))
+      const sessione = { ...viste, compleannoIstruttore: inFesta.length > 0, iscritti: qui.length, ...contiDellAppello(qui, stati) }
+      return { sessione, note: riga.note ?? undefined, elenco, compleanni, altrove: giaPresenti } as DettaglioSessione
     },
 
     async segna(sessioneId, personaId, stato) {
@@ -474,6 +485,25 @@ async function scriviPresenza(
   if (error) throw error
 }
 
+/**
+ * Chi è presente a un altro turno dello stesso corso e giorno (`turni.ts`), e non è presente qui
+ * (`stati`: i segni di questa lezione, coda compresa). Un errore di lettura si rilancia: TUTTI PRESENTI
+ * resta in coda e riprova, invece di segnare presente anche chi lo è già all'altro turno.
+ */
+async function presentiAgliAltriTurni(db: SupabaseClient, turno: Turno, stati: ReadonlyMap<string, StatoPresenza>): Promise<Map<string, string>> {
+  const t = Date.parse(turno.inizio)
+  const giorno = 24 * 3600 * 1000
+  const { data: sessioni, error } = await db.from('sessioni').select('id, corso_id, inizio, stato').eq('corso_id', turno.corsoId).neq('id', turno.id)
+    .gt('inizio', new Date(t - giorno).toISOString()).lt('inizio', new Date(t + giorno).toISOString())
+  if (error) throw error
+  if (!sessioni?.length) return new Map()
+  const { data: presenze, error: e } = await db.from('presenze').select('sessione_id, persona_id, stato').in('sessione_id', sessioni.map((s) => s.id)).eq('stato', 'presente')
+  if (e) throw e
+  const turni = [turno, ...sessioni.map((s) => ({ id: s.id, corsoId: s.corso_id, inizio: s.inizio, stato: s.stato }))]
+  const qui = [...stati].map(([personaId, stato]) => ({ sessioneId: turno.id, personaId, stato }))
+  return presentiAltrove(turno, turni, [...qui, ...(presenze ?? []).map((p) => ({ sessioneId: p.sessione_id, personaId: p.persona_id, stato: p.stato as StatoPresenza }))])
+}
+
 async function scriviTutti(db: SupabaseClient, sessioneId: string, stato: StatoPresenza) {
   // Senza rete postgrest non solleva, restituisce l'errore: va rilanciato, se
   // no la coda crede fatta un'operazione che non è mai arrivata.
@@ -484,7 +514,8 @@ async function scriviTutti(db: SupabaseClient, sessioneId: string, stato: StatoP
   // disattivata non si segna presente, neanche con TUTTI PRESENTI.
   const { data: righe, error: e } = await db.from('iscrizioni').select(ISCRIZIONE).eq('corso_id', sess.corso_id)
   if (e) throw e
-  const iscritti = [...iscrittiIl((righe ?? []) as unknown as RigaIscrizione[], sess.corso_id, giornoDi(sess.inizio)), ...(await proveDi(db, sessioneId))]
+  const altrove = await presentiAgliAltriTurni(db, { id: sessioneId, corsoId: sess.corso_id, inizio: sess.inizio }, new Map())
+  const iscritti = [...iscrittiIl((righe ?? []) as unknown as RigaIscrizione[], sess.corso_id, giornoDi(sess.inizio)).filter((p) => !altrove.has(p.id)), ...(await proveDi(db, sessioneId))]
   if (!iscritti.length) return
   const { error } = await db.from('presenze').upsert(
     iscritti.map((p) => ({ sessione_id: sessioneId, persona_id: p.id, stato })),

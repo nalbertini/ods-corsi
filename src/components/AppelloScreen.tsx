@@ -9,9 +9,10 @@ import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, TogliProva } from './Prove'
 import { CercaPersona } from './CercaPersona'
-import { codaAppello, NON_ANCORA_COMINCIATA, proveInPiu, statoAppello, tastoAppello } from '../lib/etichetteAppello'
-import { DueTocchi, EtichettaAttivita } from './ds'
+import { aiutoAppello, chiudiAppello, codaAppello, contoRicerca, fraseAzzera, proveInPiu, quadroAppello, statoAppello, tastoAppello } from '../lib/etichetteAppello'
+import { DueTocchi } from './ds'
 import { SegnoCompleanno } from './SegnoCompleanno'
+import { GiaPresenti } from './GiaPresenti'
 import { vociAttivita } from '../lib/segreteria'
 import type { SegnalataVista } from '../lib/segnalate'
 
@@ -217,11 +218,33 @@ export function AppelloScreen({
   // volta sola, così non cambia sotto il dito mentre li si segna.
   const primi = useRef<Set<string> | null>(null)
   const toccataIl = useRef(new Map<string, number>())
-  const fine = useRef<HTMLDivElement>(null)
-  const vaiAChiudere = () => {
-    fine.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-    fine.current?.querySelector('button')?.focus({ preventScroll: true })
-  }
+  // Il menu ⋯: le cose che si fanno di rado (AZZERA, l'attività) lontano dal pollice che segna.
+  const [menu, setMenu] = useState(false)
+  const foglio = useRef<HTMLDivElement>(null)
+  const tastoMenu = useRef<HTMLButtonElement>(null)
+  const menuAperto = useRef(false)
+  // Mentre un tasto chiede il secondo tocco, la frase accanto lo dice.
+  const [sicuroAzzera, setSicuroAzzera] = useState(false)
+  const [sicuroChiudi, setSicuroChiudi] = useState(false)
+  useEffect(() => {
+    // Chiuso il foglio, il fuoco torna sul ⋯: con la tastiera o il lettore di schermo non si riparte dal fondo della pagina.
+    if (menu) foglio.current?.focus()
+    else if (menuAperto.current) tastoMenu.current?.focus()
+    // DueTocchi smontato col foglio non dice più «non chiedo»: la frase di AZZERA va rimessa a mano.
+    if (!menu) setSicuroAzzera(false)
+    menuAperto.current = menu
+  }, [menu])
+  // «Un tocco sul nome…» solo ai primi appelli: dopo è rumore sopra la lista.
+  // Contato una volta per apertura; senza memoria del browser si mostra sempre.
+  // In sviluppo StrictMode chiama due volte l'inizializzatore e conta 2: nell'app pubblicata conta 1.
+  const [aiuto] = useState(() => {
+    try {
+      return aiutoAppello(localStorage)
+    } catch {
+      // localStorage stesso può mancare (Safari privato vecchio): l'aiuto si mostra.
+      return true
+    }
+  })
   const ricarica = useCallback(() => {
     let vivo = true
     setGuaio(null)
@@ -281,7 +304,10 @@ export function AppelloScreen({
   }
   if (!d) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Sto leggendo la lezione…</p>
 
-  const segnati = d.elenco.filter((p) => p.stato !== null).length
+  // Un conto solo, dappertutto: gli iscritti, e chi prova detto a parte,
+  // come sulla scheda del calendario e nell'esito. Chiudendo diventano
+  // assenti tutti i non segnati, anche chi prova.
+  const { segnati, nonSegnati, tuttiSegnati, tuttiAssenti, mancano, proveMancano, futura, chiede } = quadroAppello({ elenco: d.elenco, inizio: d.sessione.inizio, adesso: Date.now() })
   const iscritti = d.elenco.filter((p) => !p.prova)
   const festeggiati = new Set(d.compleanni ?? [])
   const inProva = d.elenco.filter((p) => p.prova)
@@ -318,8 +344,6 @@ export function AppelloScreen({
   // quando nessun iscritto c'è e sono tutti segnati assenti: allora le ✕ sono
   // di una chiusura sbagliata. Solo gli iscritti: chi prova entra presente, e
   // contandolo il recupero spariva proprio dopo aver aggiunto una prova.
-  const tuttiAssenti = iscritti.length > 0 && iscritti.every((p) => p.stato === 'assente')
-  const segnatiIscritti = iscritti.filter((p) => p.stato !== null).length
   const tuttiGliAltri = () => {
     if (segnati === 0 || tuttiAssenti) {
       setD((v) => v && { ...v, elenco: v.elenco.map((p) => ({ ...p, stato: 'presente' })) })
@@ -359,31 +383,15 @@ export function AppelloScreen({
     onChiudi?.(d.sessione, { presenti: presentiIscritti, assenti: iscritti.length - presentiIscritti, prove: presentiProve })
   }
 
-  // Un conto solo, dappertutto: gli iscritti, e chi prova detto a parte,
-  // come sulla scheda del calendario e nell'esito. Chiudendo diventano
-  // assenti tutti i non segnati, anche chi prova.
-  const tuttiSegnati = segnati === d.elenco.length
-  const mancano = iscritti.filter((p) => p.stato === null).length
-  const proveMancano = inProva.filter((p) => p.stato === null).length
   const presentiIscritti = iscritti.filter((p) => p.stato === 'presente').length
-  const futura = new Date(d.sessione.inizio).getTime() > Date.now()
   // Fuori finestra l'istruttore vede i segni e basta: il server rifiuterebbe ogni tocco.
   const finestra = appelloAperto(d.sessione.inizio, senzaLimiti)
   const soloLettura = finestra !== 'aperta' || rifiutata
-  const stato = statoAppello({ soloLettura, tuttiSegnati, tuttiAssenti, mancano, proveMancano, haChiudi: !!onChiudi })
-  const assentiDetti = `${mancano === 1 ? 'UN ASSENTE' : `${mancano} ASSENTI`}${proveMancano ? ` · +${proveMancano} PROVA` : ''}`
-  // Quando chiudere vuole un secondo tocco, e cosa chiede: prima di tutto
-  // quanti diventerebbero assenti, che è il fatto che conta.
-  const domanda =
-    segnati === 0 && !tuttiSegnati
-      ? `${futura ? 'NON È COMINCIATA' : 'NESSUNO SEGNATO'} · ${assentiDetti}?`
-      : futura
-        ? tuttiSegnati
-          ? 'NON È COMINCIATA: CHIUDI?'
-          : `NON È COMINCIATA · ${assentiDetti}?`
-        : mancano * 2 > iscritti.length
-          ? `SICURO? ${assentiDetti}`
-          : undefined
+  const stato = statoAppello({ soloLettura, tuttiSegnati, tuttiAssenti, mancano, proveMancano, futura })
+  const tasto = tastoAppello({ nonSegnati, tuttiAssenti, tuttiSegnati })
+  // `chiede`: chiudere vuole un secondo tocco quando è probabilmente uno sbaglio,
+  // di solito TUTTI PRESENTI dimenticato, e la segreteria riceverebbe assenze finte.
+  const barra = chiudiAppello({ nonSegnati, chiede: sicuroChiudi, tuttiAssenti })
 
   if (aggiungendo) {
     const giaQui = new Map<string, 'iscritto' | 'prova'>(d.elenco.map((p) => [p.id, p.prova ? 'prova' : 'iscritto']))
@@ -395,13 +403,13 @@ export function AppelloScreen({
       {/* In cima e ferma mentre si scorre l'elenco: quale lezione, quanti
           sono, e il gesto più frequente, sempre sotto il pollice. */}
       <div className="appello-testa">
-        <div className="row pad" style={{ gap: 10, paddingTop: 12 }}>
+        <div className="row pad" style={{ gap: 8, paddingTop: 10 }}>
           {onIndietro && (
             <DueTocchi className="icon-btn" etichetta="Torna al calendario" onFai={onIndietro}>
               <Back />
             </DueTocchi>
           )}
-          <span className="stack grow" style={{ gap: 3, minWidth: 0 }}>
+          <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
             <span className="ob appello-titolo">{d.sessione.corso.toUpperCase()}</span>
             <span className="chi-kanji" style={{ fontSize: 13, color: 'var(--dim)' }}>
               <Kanji segni={d.sessione.kanji} />
@@ -412,10 +420,6 @@ export function AppelloScreen({
               </span>
               {d.sessione.compleannoIstruttore && <SegnoCompleanno misura="telefono" />}
             </span>
-            {/* Il nome intero, qui c'è posto: nel calendario si accorcia. */}
-            <EtichettaAttivita nome={d.sessione.attivita} intera />
-            {/* Si può già segnare (chi lo sa prima, un recupero), ma si vede. */}
-            {futura && !soloLettura && <span className="num appello-futura">{NON_ANCORA_COMINCIATA}</span>}
           </span>
           {/* Il timer della lezione: si apre con i timer del corso in cima. */}
           {/* Dentro l'app: l'appello resta montato sotto, e tornando è dov'era. */}
@@ -424,52 +428,89 @@ export function AppelloScreen({
               <Cronometro size={20} />
             </button>
           )}
+          {!soloLettura && (
+            <button ref={tastoMenu} type="button" className="icon-btn appello-menu" aria-label="Altro: azzera l’appello, cambia l’attività" aria-haspopup="dialog" aria-expanded={menu} onClick={() => setMenu(true)}>
+              ⋯
+            </button>
+          )}
         </div>
 
-        <div className="row pad" style={{ gap: 10, paddingTop: 12, alignItems: 'baseline' }}>
-          <span className="num conto-appello">{presentiIscritti}</span>
-          <span className="num" style={{ fontSize: 22, color: 'var(--dim)', whiteSpace: 'nowrap' }}>/ {iscritti.length}</span>
-          {presentiProve > 0 && <span className="num appello-prove">{proveInPiu(presentiProve)}</span>}
-          <span className="grow" />
-          <span className="stack" style={{ alignItems: 'flex-end', gap: 2, alignSelf: 'center' }}>
-            {/* Con tutti segnati il tasto qui sotto lo dice già: qui il passo dopo. */}
-            {stato.tasto ? (
-              // Si legge come un invito, e allora si tocca: porta al tasto in fondo.
-              <button type="button" className="num appello-stato appello-vai" data-fatto="true" onClick={vaiAChiudere}>
-                {stato.testo}
-              </button>
-            ) : (
-              <span className="num appello-stato" data-fatto={stato.tono === 'fatto'} data-manca={stato.tono === 'manca' || undefined}>
-                {stato.testo}
-              </span>
-            )}
+        <div className="row pad" style={{ gap: 12, paddingTop: 10 }}>
+          <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+            <span className="row" style={{ gap: 6, alignItems: 'baseline', whiteSpace: 'nowrap' }}>
+              <span className="num conto-appello">{presentiIscritti}</span>
+              <span className="num" style={{ fontSize: 20, color: 'var(--dim)' }}>/ {iscritti.length}</span>
+              {presentiProve > 0 && <span className="num appello-prove">{proveInPiu(presentiProve)}</span>}
+            </span>
+            <span className="num appello-stato" data-fatto={stato.tono === 'fatto'} data-manca={stato.tono === 'manca' || undefined}>
+              {stato.testo}
+            </span>
             {/* Sempre al suo posto, anche vuota: la testa non cambia altezza. */}
             <span className="num appello-coda" role="status">
               {codaAppello(inCoda)}
             </span>
           </span>
+          {/* Sempre lo stesso tasto e allo stesso posto: un altro comparso al
+              suo posto (CHIUDI) prendeva il secondo tocco di chi ritocca «per
+              sicurezza». Con tutti assenti torna TUTTI PRESENTI anche se tutti
+              hanno un segno: è l'appello chiuso per sbaglio, riaperto. */}
+          {!soloLettura && (
+            <button
+              type="button"
+              className="btn btn-go appello-tasto"
+              data-fatto={(tuttiSegnati && !tuttiAssenti) || undefined}
+              disabled={!d.elenco.length || tasto.spento}
+              onClick={tuttiGliAltri}
+            >
+              <span>{tasto.testo}</span>
+              {tasto.sotto && <span className="appello-tasto-sotto">{tasto.sotto}</span>}
+            </button>
+          )}
         </div>
-        {!soloLettura && <div className="row pad" style={{ gap: 8, paddingTop: 10 }}>
-          {/* Sempre lo stesso tasto: un altro comparso al suo posto (CHIUDI)
-              prendeva il secondo tocco di chi ritocca «per sicurezza». Con
-              tutti assenti torna TUTTI PRESENTI anche se tutti hanno un
-              segno: è l'appello chiuso per sbaglio, riaperto. */}
-          <button
-            className="btn btn-go grow"
-            data-fatto={(tuttiSegnati && !tuttiAssenti) || undefined}
-            style={{ fontSize: 17, padding: '0 10px', letterSpacing: '0.1em' }}
-            disabled={!d.elenco.length || (tuttiSegnati && !tuttiAssenti)}
-            onClick={tuttiGliAltri}
-          >
-            <Icona nome="fatto" />
-            {tastoAppello({ segnatiIscritti, tuttiAssenti, tuttiSegnati })}
-          </button>
-          <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO?" onFai={azzera}>
-            <Icona nome="ricomincia" />
-            AZZERA
-          </DueTocchi>
-        </div>}
       </div>
+
+      {menu && !soloLettura && (
+        <div className="foglio-appello-velo" onClick={() => setMenu(false)} onKeyDown={(e) => e.key === 'Escape' && setMenu(false)}>
+          <div
+            ref={foglio}
+            tabIndex={-1}
+            className="foglio-appello"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Altro dell’appello"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="foglio-appello-maniglia" aria-hidden="true" />
+            <span className="foglio-appello-titolo">
+              {`${d.sessione.corso} · ${giornoPerEsteso(d.sessione.inizio)} ${oraDi(d.sessione.inizio)}`.toUpperCase()}
+            </span>
+            {soloDi && d.sessione.insegnanti?.includes(soloDi) && <CambiaAttivita dati={dati} sessione={d.sessione} onCambiata={() => {
+              setGiro((g) => g + 1)
+              onAttivitaCambiata?.()
+            }} />}
+            <div className="stack foglio-appello-azzera" style={{ gap: 6 }}>
+              <DueTocchi
+                className="btn btn-azzera"
+                disabled={segnati === 0}
+                chiede="SÌ, TOGLI TUTTI I SEGNI"
+                onChiede={setSicuroAzzera}
+                onFai={() => {
+                  azzera()
+                  setMenu(false)
+                }}
+              >
+                AZZERA L’APPELLO
+              </DueTocchi>
+              <span className="foglio-appello-frase">
+                {fraseAzzera(sicuroAzzera)}
+              </span>
+            </div>
+            <button type="button" className="btn btn-chiudi-menu" onClick={() => setMenu(false)}>
+              CHIUDI IL MENU
+            </button>
+          </div>
+        </div>
+      )}
 
       {soloLettura && (
         <div className="pad" style={{ paddingTop: 12 }}>
@@ -479,11 +520,6 @@ export function AppelloScreen({
           </div>
         </div>
       )}
-
-      {soloDi && d.sessione.insegnanti?.includes(soloDi) && <CambiaAttivita dati={dati} sessione={d.sessione} onCambiata={() => {
-        setGiro((g) => g + 1)
-        onAttivitaCambiata?.()
-      }} />}
 
       {segnalate.length > 0 && !soloLettura && (
         <>
@@ -523,38 +559,33 @@ export function AppelloScreen({
         </>
       )}
 
-      <div className="rule">
-        <span className="rule-label">ISCRITTI</span>
-        <div className="rule-line" />
-        <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{iscritti.length}</span>
-      </div>
-
       {/* Sempre uguale, anche dopo il primo segno: se sparisse, i nomi
-          salirebbero sotto il dito e il tocco dopo andrebbe a un altro. */}
-      <div className="pad" style={{ paddingBottom: 10 }}>
-        <label htmlFor="appello-cerca" className="sg-etichetta">
-          CERCA PER NOME O COGNOME
+          salirebbero sotto il dito e il tocco dopo andrebbe a un altro. Il
+          conto degli iscritti è già nella testa: qui basta il segnaposto. */}
+      <div className="pad" style={{ paddingTop: 12, paddingBottom: 10 }}>
+        <label className="cerca-appello">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M16 16l5 5" />
+          </svg>
+          <input
+            type="search"
+            aria-label="Cerca per nome o cognome"
+            placeholder={`Cerca tra ${iscritti.length} iscritti`}
+            autoComplete="off"
+            autoCorrect="off"
+            value={cerca}
+            onChange={(e) => setCerca(e.target.value)}
+          />
         </label>
-        <input
-          id="appello-cerca"
-          className="campo"
-          style={{ minHeight: 44, width: '100%', marginTop: 4 }}
-          type="search"
-          autoComplete="off"
-          autoCorrect="off"
-          value={cerca}
-          onChange={(e) => setCerca(e.target.value)}
-        />
         {cercando && (
           <span role="status" style={{ fontSize: 13, color: 'var(--dim)' }}>
-            {iscrittiTrovati.length + proveTrovate.length
-              ? `${iscrittiTrovati.length} su ${iscritti.length} iscritti${proveTrovate.length ? ` · ${proveTrovate.length} in prova` : ''}`
-              : 'Nessuno si chiama così: controlla come è scritto.'}
+            {contoRicerca({ iscrittiTrovati: iscrittiTrovati.length, iscritti: iscritti.length, proveTrovate: proveTrovate.length })}
           </span>
         )}
       </div>
 
-      {!soloLettura && <p className="pad appello-aiuto">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>}
+      {!soloLettura && aiuto && <p className="pad appello-aiuto">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>}
       <div className="pad elenco-appello">
         {iscrittiTrovati.map((p) => (
           <button
@@ -573,6 +604,17 @@ export function AppelloScreen({
           </button>
         ))}
       </div>
+
+      {!!d.altrove?.length && !cercando && (
+        <>
+          <div className="rule">
+            <span className="rule-label">GIÀ PRESENTI A UN ALTRO TURNO</span>
+            <div className="rule-line" />
+            <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{d.altrove.length}</span>
+          </div>
+          <GiaPresenti chi={d.altrove} className="pad elenco-appello" />
+        </>
+      )}
 
       {proveTrovate.length > 0 && (
         <>
@@ -613,15 +655,6 @@ export function AppelloScreen({
           </div>
         </>
       )}
-
-      {/* Chi viene a provare si cerca fra tutte le persone in una pagina a
-          parte (`CercaPersona`); qui sotto il tasto, in fondo, dove entra. */}
-      {!soloLettura && <div className="pad" style={{ paddingTop: 4 }}>
-        <button type="button" className="btn btn-dashed" style={{ minHeight: 52, fontSize: 16 }} onClick={() => setAggiungendo(true)}>
-          <Icona nome="aggiungi" />
-          AGGIUNGI CHI PROVA
-        </button>
-      </div>}
 
       {colleghi.length > 0 && (
         <>
@@ -665,26 +698,29 @@ export function AppelloScreen({
         </>
       )}
 
+      {/* Ferma in fondo, sempre in vista: con tanti nomi CHIUDI in fondo
+          all'elenco andava cercato. Mai rossa: in una lezione passata chiudere
+          con dei non segnati è normale. Chi viene a provare si cerca fra tutte
+          le persone in una pagina a parte (`CercaPersona`). */}
       {onChiudi && !soloLettura && (
-        <div className="pad stack appello-fine" ref={fine}>
-          {/* Verde quando è tutto segnato; rosso quando chiudere vuol dire
-              segnare assenti, e il tasto lo dice. Chiede un secondo tocco una
-              lezione non ancora cominciata, e una dove nessuno è segnato o
-              più di metà diventerebbe assente: di solito è TUTTI PRESENTI
-              dimenticato, e la segreteria riceverebbe assenze finte. */}
-          <DueTocchi
-            className={`btn ${tuttiSegnati ? 'btn-go' : 'btn-primary'}`}
-            chiede={domanda}
-            onFai={chiudi}
-          >
-            {tuttiSegnati && <Icona nome="conferma" />}
-            {tuttiSegnati ? 'CHIUDI L’APPELLO' : `CHIUDI · ${assentiDetti}`}
-          </DueTocchi>
-          <span className="appello-aiuto">
-            {tuttiSegnati
-              ? 'Torna al calendario. Se c’è rete parte subito, se no appena torna.'
-              : `${d.elenco.length - segnati === 1 ? 'Chi non è segnato risulta assente' : `I ${d.elenco.length - segnati} non segnati risultano assenti`}. Si può sempre riaprire e correggere.`}
+        <div className="barra-chiudi">
+          <span className="barra-chiudi-frase" data-chiede={sicuroChiudi || undefined}>
+            {barra.frase}
           </span>
+          <div className="row" style={{ gap: 8 }}>
+            <button type="button" className="btn btn-prova" onClick={() => setAggiungendo(true)}>
+              + PROVA
+            </button>
+            <DueTocchi
+              className="btn btn-chiudi grow"
+              pieno={barra.pieno}
+              chiede={chiede ? chiudiAppello({ nonSegnati, chiede: true }).tasto : undefined}
+              onChiede={setSicuroChiudi}
+              onFai={chiudi}
+            >
+              {barra.tasto}
+            </DueTocchi>
+          </div>
         </div>
       )}
     </>

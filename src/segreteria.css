@@ -1363,19 +1363,35 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sg-lista-testa.sg-riga-verbale { display: none; }
 }
 
-/* «Importa dalla banca»: una riga del file ha stato, data, testo, tipologia, persona e importo; la voce già presente prende il posto di tipologia e persona. */
-.sg-banca-riga { display: grid; grid-template-columns: 150px 90px minmax(160px, 1fr) 200px 220px 104px; gap: 16px; align-items: center; min-height: 76px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
-.sg-banca-testa { min-height: 0; padding: 6px 0; border-bottom: 2px solid var(--text); }
-.sg-banca-oltre { grid-column: span 2; }
-.sg-banca-aperta { grid-column: 1 / -1; }
-/* Col menu accanto, sotto i 1400px il testo della banca non ci sta: la riga va in colonna. */
-@media (max-width: 1399px) {
+/* «Importa dalla banca»: data, descrizione, tipologia, importo e, in fondo a destra, la persona o i tasti della riga. */
+.sg-banca-riga { display: grid; grid-template-columns: 84px minmax(160px, 1fr) 190px 104px 216px; gap: 12px; align-items: center; min-height: 56px; padding: 6px 12px; border-bottom: 1px solid var(--line-soft); }
+.sg-banca-riga > :first-child { font-size: 14px; }
+.sg-banca-testa { min-height: 0; padding: 6px 12px; border-bottom: 2px solid var(--text); }
+.sg-banca-importo { text-align: right; font-size: 15px; }
+.sg-banca-importo[data-tipo='entrata'] { color: var(--verde-testo); }
+.sg-banca-testo { min-width: 0; font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
+.sg-banca-operazione { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--dim); }
+.sg-banca-nota { display: block; font-size: 13px; color: var(--giallo-testo); }
+.sg-banca-voce { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; font-size: 14px; }
+.sg-banca-alto { min-height: 48px; }
+.sg-banca-tasti { display: flex; gap: 8px; justify-content: flex-end; }
+.sg-banca-tasti > * { width: 104px; justify-content: center; }
+.sg-banca-persona { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; min-height: 44px; text-align: left; font-weight: 600; cursor: pointer; }
+.sg-banca-persona > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Più forte del bordo blu di .sg-campo nel look sito. */
+.sg-banca-persona.sg-banca-persona[aria-haspopup][data-manca='true'] { border-color: var(--giallo-testo); color: var(--giallo-testo); }
+/* La fascia di un gruppo: il nome a sinistra, i tasti del gruppo nella colonna dei tasti delle righe. */
+.sg-banca-gruppo { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 6px 12px; background: var(--bg); border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+.sg-banca-gruppo[data-gruppo='forse'] { background: var(--tinta-giallo); color: var(--giallo-testo); }
+.sg-banca-gruppo[data-gruppo='nuovi'] { color: var(--verde-testo); }
+.sg-banca-avviso { padding: 8px 12px; font-size: 14px; background: var(--tinta-giallo); border-left: 4px solid var(--giallo-testo); }
+.sg-banca-avviso[data-tono='fatto'] { background: var(--bg); border-left-color: var(--verde-testo); font-size: 15px; }
+/* Col menu accanto, sotto i 1200px la riga non ci sta: data e importo in alto, il resto sotto a tutta larghezza. */
+@media (max-width: 1199px) {
   .sg-banca-testa { display: none; }
-  /* Lo stato da solo in alto («DA CONTROLLARE» è lungo), sotto data e importo, poi il resto. */
-  .sg-banca-riga { grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; }
-  .sg-banca-riga > :first-child { grid-column: 1 / -1; justify-self: start; }
-  .sg-banca-riga > :nth-child(2) { text-align: left; }
-  .sg-banca-riga > :not(:nth-child(-n+2)):not(.sg-banca-importo) { grid-column: 1 / -1; order: 3; }
+  .sg-banca-riga { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; }
+  .sg-banca-riga > :not(:first-child):not(.sg-banca-importo) { grid-column: 1 / -1; order: 3; }
+  .sg-banca-tasti { justify-content: flex-start; }
 }
 
 /* IMPORTAZIONI: le fonti in una tabella a quattro colonne, come nel design. */
@@ -1396,14 +1412,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sg-fonte-tasti { justify-content: flex-start; }
 }
 
-/* IMPORTA L'ESTRATTO CONTO: i passi numerati e il riquadro dove si lascia il file. */
-.sg-passi { list-style: none; margin: 0; padding: 0; max-width: 920px; }
-.sg-passi > li { display: flex; gap: 16px; padding: 20px 24px; font-size: 16px; }
-.sg-passi > li + li { border-top: 1px solid var(--line); }
-.sg-passo-numero { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 999px; background: var(--su-colore); color: var(--su-rosso); font-weight: 700; }
-.sg-trascina { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); font-size: 15px; text-align: center; }
-/* Al telefono non si trascina niente: resta solo «Scegli il file». */
-@media (hover: none) { .sg-trascina-testo { display: none; } }
 /* Con un filtro sulle righe restano solo entrate e uscite (striscia() in filtriMovimenti). */
 .sg-totali[data-quanti='2'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .sg-totali[data-quanti='2'] > div:nth-child(n) { border-top: 0; }

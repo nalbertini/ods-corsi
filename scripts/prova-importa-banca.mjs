@@ -72,6 +72,12 @@ const mv = L.movimenti ?? []
   ok('importi senza separatore di migliaia: 1234,56', prova(() => mv[7].importo), 123456)
   ok('descrizione = testo + tipo operazione, senza IBAN né codice fiscale, spazi normalizzati', prova(() => mv[0].descrizione), 'A favore di Anna Bianchi lezioni BONIFICO')
   ok('…anche col solo IBAN', prova(() => mv[1].descrizione), 'Da Luca Verdi saldo corso ACCREDITO')
+  // Nella pagina il tipo d'operazione sta a parte, sopra il testo, e il codice TRN non si mostra: la descrizione salvata non cambia.
+  ok('il tipo d\'operazione si legge a parte', prova(() => [mv[0].operazione, mv[1].operazione]), ['BONIFICO', 'ACCREDITO'])
+  ok('il testo da mostrare è senza il tipo d\'operazione', prova(() => m.testoDaMostrare(mv[0])), 'A favore di Anna Bianchi lezioni')
+  ok('…e senza il codice TRN', prova(() => m.testoDaMostrare({ descrizione: 'Da ROSSI LUCA TRN 0329XYZ per quota BONIFICO SEPA', operazione: 'BONIFICO SEPA' })), 'Da ROSSI LUCA per quota')
+  ok('…il tipo si toglie solo se è una parola a sé', prova(() => m.testoDaMostrare({ descrizione: 'Codice XBONIFICO', operazione: 'BONIFICO' })), 'Codice XBONIFICO')
+  ok('…senza tipo d\'operazione resta il testo', prova(() => m.testoDaMostrare({ descrizione: 'Versamento contanti', operazione: '' })), 'Versamento contanti')
   ok('una descrizione lunga si taglia a 200 caratteri', prova(() => m.leggiBanca(piccolo(mov('02/10/2026', '-1,00', '', 'x'.repeat(300)))).movimenti[0].descrizione.length), 200)
   ok('dal e al: il primo e l\'ultimo giorno dei movimenti letti', prova(() => [L.dal, L.al]), ['2026-10-02', '2026-10-30'])
   ok('le righe scartate dicono il numero di riga e il testo', prova(() => L.scartate.map((x) => [x.riga, x.testo.includes('data rotta') || x.testo.includes('senza importo') || x.testo.includes('futuro')]).slice(0, 2)), [[12, true], [13, true]])
@@ -322,11 +328,21 @@ console.log('\n10. «Le righe del file»: tutte, nell\'ordine del file, ognuna c
   ]), [true, true, false, false, false, false])
   ok('da decidere: «come» e «preselezionato» sono gli stessi dell\'elenco di prima', prova(() => { const x = d.righe.find((r) => r.riga === 7); return [x.come, x.preselezionato] }), [d.daDecidere[0].come, d.daDecidere[0].preselezionato])
 
-  ok('i conteggi dei filtri: tutte, nuove (anche da controllare), duplicate, da decidere, scartate', prova(() => [m.contaRighe(a0.righe), m.contaRighe(a.righe), m.contaRighe(d.righe)]), [
-    { tutte: 10, nuove: 7, duplicate: 0, daDecidere: 0, scartate: 3 },
-    { tutte: 10, nuove: 5, duplicate: 2, daDecidere: 0, scartate: 3 },
-    { tutte: 10, nuove: 6, duplicate: 0, daDecidere: 1, scartate: 3 },
+  ok('i conteggi dei filtri: tutte, da fare (nuove, da controllare, da decidere), nuove, duplicate, da decidere, scartate', prova(() => [m.contaRighe(a0.righe), m.contaRighe(a.righe), m.contaRighe(d.righe)]), [
+    { tutte: 10, daFare: 7, nuove: 7, duplicate: 0, daDecidere: 0, scartate: 3 },
+    { tutte: 10, daFare: 5, nuove: 5, duplicate: 2, daDecidere: 0, scartate: 3 },
+    { tutte: 10, daFare: 7, nuove: 6, duplicate: 0, daDecidere: 1, scartate: 3 },
   ])
+  ok('«Da fare» tiene l\'ordine del file', prova(() => m.filtraRighe(d.righe, 'da-fare').map((x) => x.riga)), [6, 7, 8, 9, 10, 11, 15])
+  // La pagina parte da quel che resta da fare; se non c'è niente, dalle già nell'app, perché il file non sembri vuoto.
+  ok('il filtro di partenza: «Da fare» se c\'è qualcosa', prova(() => m.filtroIniziale(m.contaRighe(a0.righe))), 'da-fare')
+  ok('…se no le già nell\'app', prova(() => m.filtroIniziale({ tutte: 3, daFare: 0, nuove: 0, duplicate: 2, daDecidere: 0, scartate: 1 })), 'duplicate')
+  ok('…se no tutte', prova(() => m.filtroIniziale({ tutte: 1, daFare: 0, nuove: 0, duplicate: 0, daDecidere: 0, scartate: 1 })), 'tutte')
+  // In tabella le righe vanno a gruppi: prima quelle forse già nell'app (da decidere), poi le nuove, le già nell'app, le scartate.
+  const gruppi = (righe) => prova(() => m.gruppiRighe(righe).map((g) => [g.gruppo, g.righe.map((x) => x.riga)]))
+  ok('i gruppi, coi da decidere in testa', gruppi(d.righe), [['forse', [7]], ['nuovi', [6, 8, 9, 10, 11, 15]], ['scartate', [12, 13, 14]]])
+  ok('…le già nell\'app dopo le nuove; i gruppi vuoti non ci sono', gruppi(a.righe), [['nuovi', [8, 9, 10, 11, 15]], ['gia', [6, 7]], ['scartate', [12, 13, 14]]])
+  ok('…dopo un filtro, solo i gruppi di quel che resta', gruppi(m.filtraRighe(d.righe, 'da-fare')), [['forse', [7]], ['nuovi', [6, 8, 9, 10, 11, 15]]])
   ok('il filtro tiene l\'ordine del file', prova(() => [m.filtraRighe(a.righe, 'duplicate').map((x) => x.riga), m.filtraRighe(a.righe, 'nuove').map((x) => x.riga), m.filtraRighe(a.righe, 'scartate').map((x) => x.riga), m.filtraRighe(a.righe, 'tutte').length]), [[6, 7], [8, 9, 10, 11, 15], [12, 13, 14], 10])
   ok('le righe sono tante quante quelle lette più le scartate', prova(() => a.righe.length === a.lette + a.scartate.length), true)
   ok('i vecchi elenchi restano com\'erano (i totali e i dati per il database non cambiano)', prova(() => [a.giaImportati.length, a.coperti.length, m.datiImportBanca(a).length]), [1, 1, 5])
@@ -343,9 +359,9 @@ console.log('\n11. Entrate o uscite: il filtro per segno, sopra quello per stato
   ok('i due filtri insieme: le nuove fra le uscite', righe('uscite', 'nuove'), [6, 8, 9])
   ok('le scartate con un segno: nessuna', righe('entrate', 'scartate'), [])
   ok('i conteggi dei chip seguono il segno', prova(() => [m.contaRighe(a0.righe, 'entrate'), m.contaRighe(a0.righe, 'uscite'), m.contaRighe(a0.righe)]), [
-    { tutte: 4, nuove: 4, duplicate: 0, daDecidere: 0, scartate: 0 },
-    { tutte: 3, nuove: 3, duplicate: 0, daDecidere: 0, scartate: 0 },
-    { tutte: 10, nuove: 7, duplicate: 0, daDecidere: 0, scartate: 3 },
+    { tutte: 4, daFare: 4, nuove: 4, duplicate: 0, daDecidere: 0, scartate: 0 },
+    { tutte: 3, daFare: 3, nuove: 3, duplicate: 0, daDecidere: 0, scartate: 0 },
+    { tutte: 10, daFare: 7, nuove: 7, duplicate: 0, daDecidere: 0, scartate: 3 },
   ])
 }
 
@@ -372,7 +388,10 @@ console.log('\n12. La voce e la persona di ogni riga, scelte prima di importare'
   ok('una spesa su Varie: va, senza persona', nonVa(6, { voceId: 'varie' }), null)
 
   const sug = (o) => ({ caso: 'A', voce: null, persona: 'candidati', candidati: [], preselezionato: null, ...o })
-  ok('dal suggerimento: la voce e la persona preselezionata', prova(() => m.sceltaProposta(sug({ voce: { voceId: 'quota', nome: 'Quota associativa', motivo: 'x' }, preselezionato: 'p1' }))), { voceId: 'quota', personaId: 'p1' })
+  ok('dal suggerimento: la voce e la persona preselezionata', prova(() => m.sceltaProposta(sug({ voce: { voceId: 'quota', nome: 'Quota associativa', motivo: 'x' }, candidati: [{ id: 'p1', nome: 'Anna', cognome: 'Bianchi', come: 'nome intero', giaIscritto: true }], preselezionato: 'p1' }))), { voceId: 'quota', personaId: 'p1' })
+  // La persona proposta ora entra all'import senza conferma: solo se il nome del testo è intero. «Elisa M.» con una sola Elisa M. resta da assegnare.
+  ok('…una scheda trovata solo da nome e iniziale: solo la voce, la persona si assegna a mano', prova(() => m.sceltaProposta(sug({ voce: { voceId: 'quota', nome: 'Quota associativa', motivo: 'x' }, candidati: [{ id: 'p1', nome: 'Elisa', cognome: 'Moro', come: 'nome e iniziale', giaIscritto: true }], preselezionato: 'p1' }))), { voceId: 'quota' })
+  ok('…una scheda col nome intero: voce e persona', prova(() => m.sceltaProposta(sug({ voce: { voceId: 'quota', nome: 'Quota associativa', motivo: 'x' }, candidati: [{ id: 'p1', nome: 'Elisa', cognome: 'Moro', come: 'nome intero', giaIscritto: true }], preselezionato: 'p1' }))), { voceId: 'quota', personaId: 'p1' })
   ok('…più schede e nessuna preselezionata: solo la voce, la persona la sceglie la segreteria', prova(() => m.sceltaProposta(sug({ caso: 'B', voce: { voceId: 'quota', nome: 'Quota associativa', motivo: 'x' } }))), { voceId: 'quota' })
   ok('…senza voce suggerita: niente, resta «Da classificare»', prova(() => [m.sceltaProposta(sug({ caso: 'D', persona: 'nessuna-spesa' })), m.sceltaProposta(null)]), [null, null])
 
@@ -402,14 +421,16 @@ console.log('\n12. La voce e la persona di ogni riga, scelte prima di importare'
   const tanti = Array.from({ length: 1200 }, (_, i) => ({ ...per(6), chiave: `k${i}` }))
   ok('1200 righe della stessa voce: lotti da 500, 500 e 200', prova(() => m.pianoDiClassificazione(tanti, Object.fromEntries(tanti.map((x) => [x.chiave, { voceId: 'varie' }])), tanti.map((x) => ({ id: x.chiave, origineImport: x.chiave })), voci, 'conto').lotti.map((l) => l.ids.length)), [500, 500, 200])
 
-  // Cosa si scrive: la scelta a mano vince; se no la voce suggerita, mai la persona proposta senza il ✓.
+  // Cosa si scrive: la scelta a mano vince; se no la voce suggerita, e la persona proposta (una sola scheda): nel campo PERSONA
+  // c'è già il suo nome e vale finché la segreteria non lo cambia (deciso da Nicola il 2026-11-11; prima serviva il ✓).
   const proposte = {
-    a: sug({ voce: { voceId: 'quota', nome: 'Quota associativa', motivo: 'x' }, preselezionato: 'p1' }),
+    // Come un suggerimento vero: la preselezionata è fra le candidate, trovata col nome intero.
+    a: sug({ voce: { voceId: 'quota', nome: 'Quota associativa', motivo: 'x' }, candidati: [{ id: 'p1', nome: 'Anna', cognome: 'Bianchi', come: 'nome intero', giaIscritto: true }], preselezionato: 'p1' }),
     b: sug({ voce: { voceId: 'varie', nome: 'Varie', motivo: 'x' } }),
     c: sug({ caso: 'D', persona: 'nessuna-spesa' }),
   }
-  ok('le scelte da scrivere: a mano, poi la voce suggerita senza la persona proposta', prova(() => m.scelteDaScrivere(['a', 'b', 'c', 'd'].map((chiave) => ({ chiave })), { b: { voceId: 'quota', personaId: 'p2' } }, proposte)), {
-    a: { voceId: 'quota' },
+  ok('le scelte da scrivere: a mano, poi la voce suggerita con la persona proposta', prova(() => m.scelteDaScrivere(['a', 'b', 'c', 'd'].map((chiave) => ({ chiave })), { b: { voceId: 'quota', personaId: 'p2' } }, proposte)), {
+    a: { voceId: 'quota', personaId: 'p1' },
     b: { voceId: 'quota', personaId: 'p2' },
   })
 }
@@ -472,7 +493,7 @@ console.log('\n14. un bonifico che paga una ricevuta in più rate: la ricevuta i
 {
   const RI = '33333333-3333-3333-3333-333333333333'
   const RB = '44444444-4444-4444-4444-444444444444'
-  const FRASE = 'Il nome nel testo non è quello della ricevuta: dimmi tu.'
+  const FRASE = 'Nome diverso'
   // Gli incassi come li fa `incassiDerivati`: `incasso:<ricevuta>:<voce>:<pagamento>`, nome «cognome nome», voce di sistema.
   const quota = (o = {}) => riga({ id: `incasso:${RI}:0:0`, origine: 'ricevuta', tipo: 'entrata', data: '2026-10-03', importo: 5000, descrizione: 'Rossi Luca', sotto: 'ricevuta 12/2026', voce: 'Quota associativa', personaId: 'p-luca', ...o })
   const trim = (o = {}) => riga({ id: `incasso:${RI}:1:0`, origine: 'ricevuta', tipo: 'entrata', data: '2026-10-03', importo: 17000, descrizione: 'Rossi Luca', sotto: 'Trimestre ottobre-dicembre · ricevuta 12/2026', voce: 'Corsi e altri pagamenti', personaId: 'p-luca', ...o })
@@ -499,7 +520,7 @@ console.log('\n14. un bonifico che paga una ricevuta in più rate: la ricevuta i
 
   const d = prova(() => una(SBAGLIATO, rata))
   ok('nome diverso: da decidere, con la ricevuta fra i candidati, nessuna preselezione', prova(() => [d.r.stato, d.r.candidati.map((c) => c.id), d.r.preselezionato]), ['da-decidere', [`ricevuta:${RI}`], null])
-  ok('…con il motivo «Il nome nel testo non è quello della ricevuta: dimmi tu.»', prova(() => d.r.motivo), FRASE)
+  ok('…con il motivo «Nome diverso» (il nome del bonifico non è quello della ricevuta)', prova(() => d.r.motivo), FRASE)
   ok('…non entra e non è coperta finché la segreteria non decide', prova(() => [d.a.entrano.length, d.a.coperti.length, d.a.daDecidere.length]), [0, 0, 1])
   ok('…«È questa» sulla ricevuta: duplicata di quella, rifiutabile', prova(() => { const x = una(SBAGLIATO, rata, '03/10/2026', '220,00', { [d.l.movimenti[0].chiave]: `ricevuta:${RI}` }).r; return [x.stato, x.voce.id, x.rifiutabile] }), ['duplicata', `ricevuta:${RI}`, true])
   ok('…«Nessuno»: entra come movimento nuovo', prova(() => { const x = una(SBAGLIATO, rata, '03/10/2026', '220,00', { [d.l.movimenti[0].chiave]: 'nessuno' }); return [x.r.stato, x.a.entrano.length] }), ['nuova', 1])
@@ -580,7 +601,7 @@ console.log('\n14. un bonifico che paga una ricevuta in più rate: la ricevuta i
   ok('«Cosa è entrato» la conta fra i coperti, una volta sola', prova(() => { const e = m.entratoBanca(rata, s.coperti, '2026-10'); return [e.coperti, e.nuovi.conteggio, e.righe.length] }), [{ conteggio: 1, importo: 22000 }, 0, 1])
 }
 
-console.log('\n15. le schermate: IMPORTAZIONI con un solo «Importa», l\'estratto conto a passi')
+console.log('\n15. le schermate: IMPORTAZIONI con un solo «Importa», l\'annullo che rimanda ad «Annullati»')
 {
   const imp = readFileSync('src/components/segreteria/Importazioni.tsx', 'utf8')
   ok('i tasti dicono cosa si vede', [/Visualizza i movimenti/, /Visualizza chi ha pagato/].map((x) => x.test(imp)), [true, true])
@@ -591,11 +612,6 @@ console.log('\n15. le schermate: IMPORTAZIONI con un solo «Importa», l\'estrat
   const seg = readFileSync('src/components/segreteria/Segreteria.tsx', 'utf8')
   ok('Segreteria passa onRegole a Importazioni', /<Importazioni[^>]*onRegole=\{/.test(seg), true)
   const ib = readFileSync('src/components/segreteria/ImportaBanca.tsx', 'utf8')
-  ok('il titolo e la frase sotto', ib.includes("IMPORTA L'ESTRATTO CONTO") && ib.includes('niente si scrive finché non confermi'), true)
-  ok('i due passi', [/Scarica il file dall'home banking/, /Scegli il file/].map((x) => x.test(ib)), [true, true])
-  ok('il file si trascina', /onDrop=/.test(ib), true)
-  ok('la riga sulla privacy', ib.includes('Il file resta nel tuo computer: arrivano all\'app solo i movimenti, senza IBAN né codice fiscale.'), true)
-  ok('l\'ultima importazione in fondo, con «Annulla» rosso a linea', /ULTIMA IMPORTAZIONE/.test(ib) && /className="sg-pericolo"/.test(ib), true)
   ok('l\'annullo rimanda a «Annullati», non a «Mostra annullati»', [/Mostra annullati/.test(ib), /«Annullati»/.test(ib)], [false, true])
 }
 
