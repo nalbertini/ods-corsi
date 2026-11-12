@@ -34,6 +34,8 @@ export interface CorsoPagabile {
   aPagamento: boolean
   /** Arrivato con Satispay e non ancora in una ricevuta. */
   pagato: boolean
+  /** Già in segreteria, da un bonifico assegnato o un pagamento a mano, non ancora in una ricevuta (146). */
+  assegnato?: boolean
 }
 
 export interface ChiPagaCorsi extends Pick<ChiPaga, 'adulto' | 'haAccessoProprio' | 'comeTitolare'> {
@@ -128,5 +130,8 @@ export function statoCorsiDi(scheda: SchedaIscritto, ricevute: Ricevuta[], chi: 
       listino,
       oggi,
     ) ?? []
+  ).map((s) =>
+    // I soldi già in segreteria coprono il corso come una ricevuta in parte: per il resto si chiede lì, non si paga qui.
+    DA_PAGARE.includes(s.come) && chi.corsi.some((x) => x.corsoId === s.corsoId && x.assegnato) ? { ...s, come: 'in_parte' } : s,
   )
 }

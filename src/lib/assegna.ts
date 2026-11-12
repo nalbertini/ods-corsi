@@ -266,6 +266,36 @@ export function quoteConAssegnazioni(quote: QuotaRicevuta[], quota: { prezzo: nu
   return [...quote, { anno: Number(quota.dal.slice(0, 4)), numero: 0, dal: quota.dal, al: quota.al, mancano: Math.max(0, base - messo) }]
 }
 
+/** Le righe attive di `pagamenti_diretti` (bonifici assegnati e pagamenti a mano, non ancora ricevuta) di una persona. */
+const attiveDi = (diretti: PagamentoDiretto[], personaId: string) => diretti.filter((d) => d.personaId === personaId && !d.annullatoIl)
+
+/** I centesimi già in segreteria sulla quota di questa stagione, come `quota_in_segreteria` (146): l'area iscritti non li fa pagare di nuovo. */
+export const quotaInSegreteria = (diretti: PagamentoDiretto[], personaId: string, oggi: string): number =>
+  attiveDi(diretti, personaId)
+    .filter((d) => eQuota(d.voce) && annoQuota(d.voce, d.data) === annoQuota('', oggi))
+    .reduce((s, d) => s + d.importo, 0)
+
+/** C'è già qualcosa in segreteria sull'annuale, il trimestre o il saldo del corso, in questa stagione (`corso_in_segreteria`, 146). */
+export const corsoInSegreteria = (diretti: PagamentoDiretto[], personaId: string, nomi: string[], oggi: string): boolean =>
+  attiveDi(diretti, personaId).some(
+    (d) =>
+      annoQuota('', d.data) === annoQuota('', oggi) &&
+      nomi.some((n) => !!n.trim() && ['annuale', 'trimestre', 'saldo'].some((f) => stessa(d.voce, `${f} ${n.trim()}`))),
+  )
+
+/**
+ * Le quote dell'iscritto con quel che la segreteria ha già, come `quota_della_segreteria` (146): una quota in più,
+ * numero 0, con quel che manca dopo le ricevute della stessa stagione (se no dal prezzo). Come `quoteConAssegnazioni`.
+ */
+export function quoteConSegreteria(quote: QuotaRicevuta[], prezzo: number, diretti: PagamentoDiretto[], personaId: string, oggi: string): QuotaRicevuta[] {
+  const messo = quotaInSegreteria(diretti, personaId, oggi)
+  if (!messo) return quote
+  const q = stagioneDi(oggi).quota
+  const prima = quote.filter((x) => !!x.dal && x.dal <= q.al && (x.al ?? '9999-12-31') >= q.dal).map((x) => x.mancano)
+  const base = prima.length ? Math.min(...prima) : prezzo
+  return [...quote, { anno: annoQuota('', oggi), numero: 0, dal: q.dal, al: q.al, mancano: Math.max(0, base - messo) }]
+}
+
 /** Due periodi si toccano. Senza le date del prezzo vale la sola descrizione; una voce senza date non si sa di quando sia. */
 const stessoPeriodo = (v: { dal?: string; al?: string }, p: { dal?: string; al?: string }) =>
   !p.dal || (!!v.dal && v.dal <= (p.al ?? '9999-12-31') && (v.al ?? '9999-12-31') >= p.dal)
