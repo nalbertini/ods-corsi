@@ -1064,6 +1064,11 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
       {manuale && !riga.annullato && sug && sug.caso !== 'D' && !daSolo && (
         <div className="stack" style={{ gap: 14, padding: '16px 18px', border: '2px solid var(--giallo)', background: 'var(--bg)' }}>
           <span className="sg-etichetta">SUGGERITO · CONFERMA TU</span>
+              {/* Il testo accanto al suggerimento: si confronta senza aprire lo storico. */}
+              <div className="stack" style={{ gap: 4 }}>
+                <span className="sg-etichetta">{origine === 'Dalla banca' ? 'TESTO DELLA BANCA' : 'DESCRIZIONE'}</span>
+                <span style={{ fontSize: 15, overflowWrap: 'anywhere' }}>{riga.descrizione}</span>
+              </div>
               <div className="sg-sug-colonne">
               <div className="stack" style={{ gap: 4 }}>
                 <span className="sg-etichetta">VOCE</span>
