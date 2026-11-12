@@ -133,9 +133,8 @@
 .sg-elenco-casella input { width: 22px; height: 22px; margin: 0; accent-color: var(--text); cursor: pointer; }
 .sg-elenco-stato { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; min-height: 48px; padding: 8px 16px; background: var(--bg); border-block: 1px solid var(--line); font-size: 14px; }
 .sg-elenco-barra-due { gap: 12px 24px; padding-top: 0; }
-/* MOVIMENTI ha tutti i filtri in una riga: la ricerca cede spazio e una voce lunga si taglia con «…» (il nome intero è nel menu). */
+/* MOVIMENTI ha tutti i filtri in una riga: la ricerca cede spazio (la voce lunga si taglia, in styles.css). */
 .sg-elenco-barra-movimenti .sg-elenco-cerca { flex-basis: 140px; min-width: 140px; }
-.sg-elenco-barra-movimenti .sg-filtro-menu-valore { max-width: 160px; }
 .sg-periodo, .sg-filtro-gruppo { display: inline-flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; }
 .sg-tasto-quadro { width: 44px; min-width: 44px; padding: 0; justify-content: center; }
 /* I quattro totali del periodo: cifre grandi con l'etichetta sopra, si leggono come un estratto conto. */
