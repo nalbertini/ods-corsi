@@ -1471,7 +1471,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async abbinaCompensiMovimento(ids, movimentoId) {
-      // Le stesse regole di `abbina_compensi_movimento` (152): quelle di `paga_compensi` sulle ricevute, poi il movimento.
+      // Le stesse regole di `abbina_compensi_movimento` (153): quelle di `paga_compensi` sulle ricevute, poi il movimento.
       const scelte = [...new Set(ids)]
       if (!scelte.length) throw new Error('Scegli almeno una ricevuta da pagare')
       const tutte = a().ricevuteCompensi ?? []

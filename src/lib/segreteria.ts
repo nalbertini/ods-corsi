@@ -814,7 +814,7 @@ export interface DatiSegreteria {
   segnaFirmataCompenso(id: string, firmata: boolean): Promise<void>
   /** Paga una o più ricevute dello stesso tecnico con un movimento solo in CONTABILITÀ (`paga_compensi`). */
   pagaCompensi(ids: string[], data: string, cassaId: string): Promise<void>
-  /** Paga le ricevute con un'uscita già nel Conto Corrente, invece di scriverne una (`abbina_compensi_movimento`, 152). */
+  /** Paga le ricevute con un'uscita già nel Conto Corrente, invece di scriverne una (`abbina_compensi_movimento`, 153). */
   abbinaCompensiMovimento(ids: string[], movimentoId: string): Promise<void>
   /**
    * Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). Con `pagamentoId` la fa da un pagamento
