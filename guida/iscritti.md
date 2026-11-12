@@ -114,6 +114,10 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   calcola l'app. Anche qui vedi **PAGATO** al ritorno, e la segreteria prepara
   la ricevuta, che trovi in DOCUMENTI, sotto RICEVUTE. Il bonifico per ora
   si fa in palestra.
+  Quel che hai già pagato in segreteria (un bonifico, o in palestra) conta
+  subito, anche prima che sia pronta la ricevuta: la quota risulta **Pagata**,
+  o pagata in parte, e qui non si paga di nuovo; per quel che manca, chiedi in
+  segreteria. Lo stesso per un corso.
   Se sei iscritto a un corso a pagamento e non l'hai ancora pagato (o è finito il
   trimestre), sotto c'è la sezione **CORSI**: un riquadro per corso, col nome, la
   formula (**ANNUALE** o **TRIMESTRE**), la cifra e **PAGA … € CON SATISPAY**. La
