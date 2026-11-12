@@ -46,7 +46,7 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { abbinaMovimento, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
-import { assegnato, conAssegnazioni, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, movimentoDaClassificareAbbinabile, personeDelNucleo, SOLO_DAL_MOVIMENTO, voceDaRicevuta } from './assegna'
+import { assegnato, conAssegnazioni, conGenitori, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, movimentoDaClassificareAbbinabile, personeDelNucleo, SOLO_DAL_MOVIMENTO, voceDaRicevuta } from './assegna'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, giaNelPagamento, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
@@ -1890,7 +1890,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       }
       const r = (a().ricevute ?? []).find((x) => x.id === ricevutaId)
       if (!r) throw new Error('La ricevuta non c’è più: ricarica la pagina.')
-      const nonVa = cosaNonVaAbbinamento(m, r, a().persone)
+      const nonVa = cosaNonVaAbbinamento(m, r, conGenitori(a().persone, await this.genitori()))
       if (nonVa) throw new Error(nonVa)
       if (r.movimentoId === movimentoId) return
       if (assegnato(movimentoId, a().pagamentiDiretti ?? [], a().ricevute ?? []) > 0)

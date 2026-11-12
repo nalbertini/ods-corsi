@@ -227,7 +227,9 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   (il genitore paga, la ricevuta è del figlio). **Abbina** li lega senza scrivere niente di nuovo, così i
   soldi non si contano due volte; **Non è questa** la toglie dalla proposta.
 - Anche un bonifico ancora **Da classificare** compare in COLLEGATI PRIMA, con le ricevute che possono
-  essere sue, dalla data più vicina: scegli quella giusta con **È questa** (o **Abbina**, se è una sola),
+  essere sue, dalla data più vicina: solo quelle di chi la causale nomina con nome e cognome interi (la
+  persona della ricevuta, qualcuno della sua famiglia o il genitore scritto nella sua anagrafica). Se la
+  causale non nomina nessuno, il bonifico non compare: collegalo a mano. Poi scegli quella giusta con **È questa** (o **Abbina**, se è una sola),
   o **Nessuna di queste**. Non si abbina mai da solo, e nemmeno con «Abbina tutti»: abbinato, il bonifico
   prende la persona della ricevuta e la voce (**Quota associativa** se la ricevuta è solo quota, se no
   **Corsi e altri pagamenti**).
@@ -240,7 +242,7 @@ Nella scheda della persona, in **QUOTA E PAGAMENTI**, un bonifico collegato e no
 **Assegnato · senza ricevuta** e **Apri in contabilità**. Se fai la ricevuta dalla scheda mentre c'è un
 bonifico collegato da assegnare, il modulo lo dice: se è quello, falla dal bonifico.
 Con **PAGATO CON Bonifico**, se nel Conto Corrente c'è già un bonifico libero con lo stesso importo
-entro 30 giorni (della persona, della sua famiglia o Da classificare), il modulo lo mostra in **FORSE È
+entro 30 giorni (della persona, della sua famiglia o Da classificare con il loro nome nella causale), il modulo lo mostra in **FORSE È
 GIÀ IN BANCA**: spunta **È questo: abbinalo alla ricevuta** e, fatta la ricevuta, il bonifico si abbina
 da solo. Non è obbligatorio, e lo vede solo chi ha CONTABILITÀ: per gli altri resta COLLEGATI PRIMA.
 
