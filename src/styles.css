@@ -903,6 +903,10 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .riga-appello[data-stato='assente'] .segno { color: var(--rosso-testo); }
 .riga-appello[data-stato='assente'] .nome-appello { color: var(--dim); text-decoration: line-through; }
 .riga-appello:disabled { cursor: default; }
+/* Già presente a un altro turno dello stesso giorno (`GiaPresenti.tsx`): si legge e basta, senza barra né bordo di stato. */
+.riga-appello[data-stato='altrove'] { cursor: default; }
+.riga-appello[data-stato='altrove'] .segno, .riga-appello[data-stato='altrove'] .nome-appello { color: var(--dim); }
+.appello-altrove { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--dim); }
 .riga-appello:disabled .nome-appello { color: var(--sec); }
 .elenco-appello { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
 

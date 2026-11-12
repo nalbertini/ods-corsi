@@ -12,7 +12,7 @@ import { QUOTA_SPENTA } from './quotaSatispay'
 import { CORSO_SPENTO, prezzoDelCorso, type ChiPagaCorsi, type Formula } from './corsoSatispay'
 import { acceso } from './metodiPagamento'
 import { segnalaProva, segnalateDi } from './segnalateProva'
-import { comeE, iscrittiIl, lezioniFra, memoria, nomeIstruttore, salaDelGiorno } from './datiProva'
+import { altroveDi, comeE, iscrittiIl, lezioniFra, memoria, nomeIstruttore, salaDelGiorno } from './datiProva'
 import { chiaveGiorno, perCognome } from './sala'
 
 /**
@@ -110,6 +110,8 @@ export function creaIscrittoProva(): DatiIscritto {
       for (const l of lezioniFra(new Date(adesso - giorni * GIORNO), new Date(adesso))) {
         if (l.inizio.getTime() >= adesso || comeE(l).stato === 'annullata') continue
         if (!suo(personaId, l.corso.id, chiaveGiorno(l.inizio))) continue
+        // Come `iscritto_presenze` (145): il turno dove non è venuto, se è venuto all'altro, non c'è.
+        if (altroveDi(l).has(personaId)) continue
         x.push({ sessioneId: l.id, inizio: l.inizio.toISOString(), corso: l.corso.nome, stato: memoria.segnate[l.id]?.[personaId] ?? null })
       }
       return x.reverse()

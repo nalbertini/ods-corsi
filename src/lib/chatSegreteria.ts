@@ -1,6 +1,7 @@
 import { periodoInParole } from './bilancio'
 import { giornoRoma } from './contabilita'
 import { chiSiStaPerdendo, conAppello, DI_FILA, GIORNI_RECENTI, type LezioneRegistro } from './frequenza'
+import { togliAltrove, unisciTurni } from './turni'
 import { MSG_ACCEDI } from './movimentiDallaChat'
 import { dataRicevuta, euro } from './ricevute'
 import type { StatoPresenza, StatoSessione } from './sala'
@@ -181,14 +182,15 @@ export function testoIscritti(iscritti: IscrittoChat[], corso: CorsoChat, oggi: 
 }
 
 /** Le righe del registro in lezioni, con la chiave al posto della persona: quel che `frequenza.ts` sa contare. */
-function lezioni(appelli: AppelloChat[]): Array<LezioneRegistro & { sessioneId: string }> {
+function lezioni(appelli: AppelloChat[]): Array<LezioneRegistro & { sessioneId: string; id: string }> {
   const perSessione = new Map<string, LezioneRegistro & { sessioneId: string }>()
   for (const r of appelli) {
     const l = perSessione.get(r.sessioneId) ?? { sessioneId: r.sessioneId, corsoId: r.corsoId, corso: r.corso, inizio: r.inizio, stato: r.stato, appello: [] }
     if (r.chiave !== null) l.appello.push({ personaId: r.chiave, nome: r.nome ?? '', cognome: r.cognome ?? '', stato: r.presenza })
     perSessione.set(r.sessioneId, l)
   }
-  return [...perSessione.values()].sort((a, b) => a.inizio.localeCompare(b.inizio))
+  // Il doppio turno (`turni.ts`): chi è presente a un turno non sta nell'appello dell'altro.
+  return togliAltrove([...perSessione.values()].map((l) => ({ ...l, id: l.sessioneId }))).sort((a, b) => a.inizio.localeCompare(b.inizio))
 }
 
 type ConChiave = AppelloChat & { chiave: string }
@@ -203,8 +205,10 @@ export function testoPresenze(appelli: AppelloChat[], prove: ProvaChat[], corso:
   const chi = persone(appelli.filter((r) => r.corsoId === corso.id && fatte.some((l) => l.sessioneId === r.sessioneId)))
   const adulti = [...chi.values()].filter(eAdulto).sort(perCognome)
   // Come PRESENZE: presenti su lezioni dovute, i giustificati fuori.
+  // Per persona il doppio turno vale una lezione, come in PRESENZE.
+  const perGiorno = unisciTurni(fatte)
   const di = (chiave: string) => {
-    const segni = fatte.flatMap((l) => l.appello.filter((p) => p.personaId === chiave && p.stato !== 'giustificato'))
+    const segni = perGiorno.flatMap((l) => l.appello.filter((p) => p.personaId === chiave && p.stato !== 'giustificato'))
     return `${segni.filter((p) => p.stato === 'presente').length} su ${segni.length}`
   }
   const presenti = fatte.reduce((s, l) => s + l.appello.filter((p) => p.stato === 'presente').length, 0)

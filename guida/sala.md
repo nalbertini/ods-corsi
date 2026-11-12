@@ -163,6 +163,11 @@ Non serve ritoccare il nome. Una presenza che arriva dopo la fine della
 lezione risulta **SEGNATO DOPO**.
 
 Chi non trova il suo nome non è iscritto a quel corso: va detto alla segreteria.
+Se il corso ha due lezioni lo stesso giorno, chi si è già segnato all'altra non
+c'è fra i nomi: è giusto così, conta quella. Se il nome arriva toccato lo
+stesso (da un elenco rimasto aperto), il tablet dice **… È GIÀ PRESENTE A
+UN'ALTRA LEZIONE DI OGGI** e non segna niente; lo stesso vale nell'area
+istruttore col PIN.
 
 **COMPLEANNO.** Se la segreteria ha acceso l'avviso per quella sala, il nome di
 chi compie gli anni oggi porta un segno giallo con la torta e la scritta

@@ -227,6 +227,8 @@ export function creaTabletProva(): DatiTablet {
       if (t >= inizio - REGOLE.primaMin * MIN && t <= fine + REGOLE.dopoMin * MIN) da = 'tablet'
       else if (inizio <= t && inizio >= t - REGOLE.recuperoGiorni * 24 * 60 * MIN) da = 'recupero'
       else throw new Error('fuori orario: la lezione non si può segnare adesso')
+      // Come `segna_dal_tablet` (145): già presente a un altro turno di oggi, qui non si scrive.
+      if (d.altrove?.some((x) => x.id === personaId)) return 'altro_turno'
       const p = d.elenco.find((x) => x.id === personaId && !x.prova)
       if (!p) throw new Error('non è iscritto a questo corso')
       if (p.stato === 'presente') return 'gia'
@@ -275,6 +277,8 @@ export function creaTabletProva(): DatiTablet {
     async correggi(pin, sessioneId, personaId, stato, prova) {
       const d = await lezione(sessioneId)
       if (!daPin(pin)) return false
+      // Come `segna_con_pin` (145): già presente a un altro turno di oggi, il segno qui non si scrive.
+      if (stato !== null && d.altrove?.some((x) => x.id === personaId)) return true
       const p = d.elenco.find((x) => x.id === personaId && !!x.prova === !!prova)
       if (!p) throw new Error(prova ? 'non è fra le prove di questa lezione' : 'non è iscritto a questo corso')
       if (prova && stato === null) throw new Error('una prova si segna presente o assente')

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { attivitaDelGiorno, COME_IL_GIORNO, NESSUNA_ATTIVITA, sceltaAttivitaLezione, vociAttivita, type DatiSegreteria, type LezioneSeg } from '../../lib/segreteria'
 import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/sala'
+import { GiaPresenti } from '../GiaPresenti'
 import { chiaveGiorno, giornoPerEsteso, lunedi, oraDi, perEsteso } from '../../lib/sala'
 import { dati, type Dati } from '../../lib/dati'
 import { Back, ICONE_MENU } from '../Icons'
@@ -751,6 +752,7 @@ function Attivita({
 function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
   const [strato, setStrato] = useState<Dati | null>(null)
   const [elenco, setElenco] = useState<DettaglioSessione['elenco'] | null>(null)
+  const [altrove, setAltrove] = useState<NonNullable<DettaglioSessione['altrove']>>([])
   const [guaio, setGuaio] = useState<string | null>(null)
   const [conProve, setConProve] = useState(false)
   // Il tasto premuto si decide quando l'elenco arriva e poi non cambia da solo: se
@@ -775,6 +777,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
         if (!vivo) return
         setStrato(x)
         setElenco(det?.elenco ?? [])
+        setAltrove(det?.altrove ?? [])
         setLista(tastoIniziale(det?.elenco ?? []))
       })
       .catch((e: unknown) => vivo && setGuaio(messaggio(e, 'Non riesco a leggere l\'appello')))
@@ -978,6 +981,16 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
             <span role="status" className="vh">
               {annunciato}
             </span>
+          </>
+        )}
+        {altrove.length > 0 && (
+          <>
+            <Riga titolo="GIÀ PRESENTI A UN ALTRO TURNO">
+              <span className="num" style={{ fontSize: 14, fontWeight: 700 }}>
+                {altrove.length}
+              </span>
+            </Riga>
+            <GiaPresenti chi={altrove} className="sg-elenco-appello" />
           </>
         )}
         {prove.length > 0 && (

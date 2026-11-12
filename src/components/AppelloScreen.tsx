@@ -12,6 +12,7 @@ import { CercaPersona } from './CercaPersona'
 import { codaAppello, NON_ANCORA_COMINCIATA, proveInPiu, statoAppello, tastoAppello } from '../lib/etichetteAppello'
 import { DueTocchi, EtichettaAttivita } from './ds'
 import { SegnoCompleanno } from './SegnoCompleanno'
+import { GiaPresenti } from './GiaPresenti'
 import { vociAttivita } from '../lib/segreteria'
 import type { SegnalataVista } from '../lib/segnalate'
 
@@ -573,6 +574,17 @@ export function AppelloScreen({
           </button>
         ))}
       </div>
+
+      {!!d.altrove?.length && !cercando && (
+        <>
+          <div className="rule">
+            <span className="rule-label">GIÀ PRESENTI A UN ALTRO TURNO</span>
+            <div className="rule-line" />
+            <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{d.altrove.length}</span>
+          </div>
+          <GiaPresenti chi={d.altrove} className="pad elenco-appello" />
+        </>
+      )}
 
       {proveTrovate.length > 0 && (
         <>

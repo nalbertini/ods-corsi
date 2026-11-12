@@ -11,12 +11,13 @@ export type Fascia =
   /** `annulla`: l'ha segnato questo tablet da meno di due minuti, e si può ancora togliere. */
   | { tipo: 'gia'; p: NomeSala; annulla: boolean }
   | { tipo: 'istruttore'; p: NomeSala }
+  | { tipo: 'altro_turno'; p: NomeSala }
   /** ANNULLA è andato: lo si dice, il segno che sparisce da solo non basta. */
   | { tipo: 'annullato'; p: NomeSala }
   | { tipo: 'errore'; testo: string }
 
 /** Quanto resta in basso la fascia, in millisecondi. */
-const DURATA: Record<Fascia['tipo'], number> = { fatto: 10_000, gia: 6000, istruttore: 6000, annullato: 3000, errore: 10_000 }
+const DURATA: Record<Fascia['tipo'], number> = { fatto: 10_000, gia: 6000, istruttore: 6000, altro_turno: 6000, annullato: 3000, errore: 10_000 }
 
 /**
  * Di fascia sullo schermo ce n'è una sola: con due lezioni aperte ogni elenco
@@ -108,10 +109,10 @@ export function useTocchi(d: DatiTablet, lezione: LezioneSala, onCambiato?: () =
     const viaggio = d
       .segna(lezione.id, p.personaId)
       .then((esito) => {
-        if (esito === 'istruttore') {
+        if (esito === 'istruttore' || esito === 'altro_turno') {
           segnato(p.personaId, false)
           dimenticaTocco(lezione.id, p.personaId)
-          mostra({ tipo: 'istruttore', p })
+          mostra({ tipo: esito, p })
           return false
         }
         if (esito === 'gia') {
@@ -243,6 +244,17 @@ export function FasciaTocco({
           <span className="stack grow" style={{ gap: 2 }}>
             <span className="ob tb-fascia-titolo">L'ISTRUTTORE HA GIÀ SEGNATO {fascia.p.nome.toUpperCase()}</span>
             <span className="tb-sotto">Se c'eri, diglielo: lo corregge lui dall'area istruttore.</span>
+          </span>
+          <button type="button" className="tb-btn tb-btn-linea tb-btn-grande" onClick={() => onChiudi()}>
+            VA BENE
+          </button>
+        </>
+      )}
+      {fascia.tipo === 'altro_turno' && (
+        <>
+          <span className="stack grow" style={{ gap: 2 }}>
+            <span className="ob tb-fascia-titolo">{fascia.p.nome.toUpperCase()} È GIÀ PRESENTE A UN’ALTRA LEZIONE DI OGGI</span>
+            <span className="tb-sotto">Qui non serve segnarsi: conta quella.</span>
           </span>
           <button type="button" className="tb-btn tb-btn-linea tb-btn-grande" onClick={() => onChiudi()}>
             VA BENE
