@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from 'react'
 import {
   abbinamentiProposti,
+  conGenitori,
   conAssegnazioni,
   daClassificareDaAbbinare,
   cosaNonVaAssegnazione,
@@ -291,7 +292,9 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
   }
   const [scartati, setScartati] = useState<string[]>([])
   const anagrafe = useAnagrafe(d)
-  const persone = anagrafe.dato?.persone ?? []
+  // Il genitore serve a riconoscere la causale dei Da classificare; se non si legge, si propone solo col nome intero.
+  const genitori = useCarica(() => d.genitori().catch(() => new Map()), [d])
+  const persone = conGenitori(anagrafe.dato?.persone ?? [], genitori.dato ?? new Map())
   const chi = (id?: string) => {
     const p = persone.find((x) => x.id === id)
     return p ? `${p.cognome} ${p.nome}` : '…'

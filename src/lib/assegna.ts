@@ -12,6 +12,7 @@ import { statoCorsi, type VoceCorso } from './corsiDaPagare'
 import { stagioneDi } from './costi'
 import { nomeCorso, type CorsoRef, type Listino } from './listino'
 import { pagamentoDi, type PersonaSeg } from './segreteria'
+import { nomeOGenitore } from './abbinaMovimenti'
 
 /**
  * I soldi sempre con i centesimi, come nel canvas: «50,00 €». Il punto delle migliaia anche a quattro cifre
@@ -192,14 +193,17 @@ const giorni = (a: string, b: string) => Math.abs(Date.parse(`${a}T12:00:00Z`) -
 /** Una ricevuta fatta prima a parte si abbina a un bonifico entro tanti giorni. */
 export const GIORNI_ABBINAMENTO = 30
 
-type PersonaNucleo = { id: string; nucleo?: string; attiva: boolean }
-type MovimentoAbbinabile = { id: string; importo: number; data: string; personaId?: string }
+// Nome e genitore servono solo per un bonifico senza persona: chi non li ha non è mai nominato nella causale.
+type PersonaNucleo = { id: string; nucleo?: string; attiva: boolean; nome?: string; cognome?: string; genitoreNome?: string; genitoreCognome?: string }
+type MovimentoAbbinabile = { id: string; importo: number; data: string; personaId?: string; descrizione?: string }
 type RicevutaAbbinabile = Pick<Ricevuta, 'personaId' | 'pagato' | 'voci' | 'data'> & Partial<Pick<Ricevuta, 'annullataIl' | 'movimentoId' | 'numero' | 'anno'>>
 
 /**
  * Perché la ricevuta non è quella del bonifico, o null. I controlli sul movimento li fa `cosaNonVaMovimentoDaAssegnare`
  * (o `movimentoDaClassificareAbbinabile`). La ricevuta è della persona del bonifico o del suo nucleo, come per «Assegna»
- * (`personeDelNucleo`); senza `persone` vale solo la stessa persona. Un bonifico Da classificare non ha persona: va bene chiunque.
+ * (`personeDelNucleo`); senza `persone` vale solo la stessa persona. Un bonifico Da classificare senza persona va solo se la
+ * causale nomina, con nome e cognome interi, qualcuno del nucleo della ricevuta o il suo genitore (`nomeOGenitore`, come
+ * `abbina_testo_banca`): se no lo stesso importo basta a proporre la ricevuta di una famiglia che non c'entra.
  */
 export function cosaNonVaAbbinamento(m: MovimentoAbbinabile, r: RicevutaAbbinabile, persone: PersonaNucleo[] = []): string | null {
   if (r.annullataIl) return 'La ricevuta è annullata.'
@@ -207,12 +211,20 @@ export function cosaNonVaAbbinamento(m: MovimentoAbbinabile, r: RicevutaAbbinabi
   if (m.personaId && r.personaId !== m.personaId && !personeDelNucleo(m.personaId, persone).includes(r.personaId ?? '')) return 'La ricevuta è di un’altra persona.'
   // Un bonifico senza persona la prende dalla ricevuta: una ricevuta senza persona non gliela può dare.
   if (!m.personaId && !r.personaId) return 'La ricevuta non ha una persona.'
+  if (!m.personaId && !personeDelNucleo(r.personaId ?? '', persone).some((id) => {
+    const p = persone.find((x) => x.id === id)
+    return !!p && nomeOGenitore({ nome: p.nome ?? '', cognome: p.cognome ?? '', genitoreNome: p.genitoreNome ?? null, genitoreCognome: p.genitoreCognome ?? null }, m.descrizione ?? '') !== null
+  })) return 'La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.'
   if (r.pagato !== m.importo) return 'La ricevuta e il bonifico non hanno lo stesso importo.'
   const pagamenti = r.voci.flatMap((v) => v.pagamenti)
   if (!pagamenti.length || pagamenti.some((p) => !stessa(p.metodo, 'Bonifico'))) return 'La ricevuta non è tutta pagata con bonifico.'
   if (giorni(r.data, m.data) > GIORNI_ABBINAMENTO) return `La ricevuta e il bonifico distano più di ${GIORNI_ABBINAMENTO} giorni.`
   return null
 }
+
+/** Le persone con il nome del genitore della loro anagrafica (`genitori()`), per la causale di un bonifico senza persona. */
+export const conGenitori = <P extends { id: string }>(persone: P[], genitori: Map<string, { genitoreNome?: string; genitoreCognome?: string }>) =>
+  persone.map((p) => ({ ...p, genitoreNome: genitori.get(p.id)?.genitoreNome, genitoreCognome: genitori.get(p.id)?.genitoreCognome }))
 
 /**
  * «Collegati prima»: per i bonifici collegati prima di questo cambio, la ricevuta già fatta a parte che è la sua.
@@ -256,8 +268,8 @@ export function movimentoDaClassificareAbbinabile(
 }
 
 /**
- * I bonifici Da classificare con le ricevute che possono essere loro, dalla data più vicina: mai una sola scelta da sé,
- * perché pagano spesso i genitori e il nome non aiuta. Le ricevute di `esclusi` (già proposte a un bonifico collegato) no.
+ * I bonifici Da classificare con le ricevute che possono essere loro (la causale nomina la famiglia), dalla data più vicina:
+ * mai una sola scelta da sé, perché lo stesso nome può tornare in più ricevute. Le ricevute di `esclusi` (già proposte a un bonifico collegato) no.
  */
 export function daClassificareDaAbbinare(movimenti: MovimentoAbbinabile[], ricevute: Ricevuta[], esclusi: Set<string> = new Set(), persone: PersonaNucleo[] = []): Array<{ movimentoId: string; ricevute: string[] }> {
   return movimenti
