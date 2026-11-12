@@ -183,9 +183,10 @@ for (const s of [...new Set(giallePiene)]) {
   ok(`${s}: nel look è giallo scritto (var(--giallo-testo)), mai fondo giallo`, !!g && !GIALLO_PIENO.test(g) && /var\(--giallo-testo\)/.test(g), true)
 }
 
-for (const [t, segno, colore] of [['manca', '✕', 'rosso-testo'], ['aspetta', '…', 'giallo-testo'], ['sostituto', '…', 'giallo-testo'], ['fatto', '✓', 'verde-testo']]) {
+// Niente segno davanti alla parola (deciso da Nicola il 2026-11-11): lo stato lo dicono il bordo, il colore e la parola.
+for (const [t, colore] of [['manca', 'rosso-testo'], ['aspetta', 'giallo-testo'], ['sostituto', 'giallo-testo'], ['fatto', 'verde-testo']]) {
   const c = `.sg-tag[data-tipo='${t}']`
-  ok(`${c}::before: segno ${segno}`, new RegExp(`content:\\s*['"]${segno}`).test(esatto(c + '::before')), true)
+  ok(`${c}::before: nessun segno`, /content:/.test(esatto(c + '::before')), false)
   ok(`${c}: fondo bianco, bordo e testo var(--${colore})`, ha(c, /background(-color)?:\s*var\(--surface\)/) && ha(c, new RegExp(`border(-color)?:[^;]*var\\(--${colore}\\)`)) && ha(c, new RegExp(`(?<![-\\w])color:\\s*var\\(--${colore}\\)`)), true)
 }
 ok(".sg-tag[data-tipo='presto'] (numero del menu): nessun segno", /content:/.test(esatto(".sg-tag[data-tipo='presto']::before")), false)
@@ -269,9 +270,10 @@ arriva('--faint su bianco (segnaposto del campo di ricerca): 4,5:1', T['--faint'
 
 // --- 11. i segni delle schede e le tessere di SETTIMANA ------------------------
 console.log('\nSegni delle schede, lezioni e righe scelte')
-for (const [t, segno] of [['rosso', '✕'], ['giallo', '…'], ['verde', '✓']])
-  ok(`.sg-segno-regola[data-tono='${t}']::before: segno ${segno}`, new RegExp(`content:\\s*['"]${segno}`).test(esatto(`.sg-segno-regola[data-tono='${t}']::before`)), true)
-ok(".sg-segno-regola[data-tono='spento']: nessun segno", /content:/.test(esatto(".sg-segno-regola[data-tono='spento']::before")), false)
+for (const t of ['rosso', 'giallo', 'verde', 'spento'])
+  ok(`.sg-segno-regola[data-tono='${t}']::before: nessun segno`, /content:/.test(esatto(`.sg-segno-regola[data-tono='${t}']::before`)), false)
+ok(".sg-chip[aria-pressed='true']::before (filtro scelto): nessun segno", /content:/.test(esatto(".sg-chip[aria-pressed='true']::before")), false)
+ok("Segmenti, la voce scelta: nessun segno (in nessun look)", rOra.some((r) => r.selettori.some((x) => x.endsWith(".sg-segmenti > button[aria-pressed='true']::before")) && /content:/.test(r.corpo)), false)
 ok('.sg-lezione: senza bordo da 2px (resta la tinta in alto)', ha('.sg-lezione', /(?<![-\w])border:\s*0\s*;/) && ha('.sg-lezione', /border-top:\s*4px solid var\(--tinta\)/), true)
 ok('.sg-lezione[data-manca]: barra rossa a sinistra', ha(".sg-lezione[data-manca='true']", /inset 4px 0 0 var\(--rosso\)/), true)
 ok('.sg-lezione[data-annullata]: niente opacità (4,5:1)', ha(".sg-lezione[data-annullata='true']", /opacity:\s*1/), true)

@@ -55,8 +55,8 @@
 //   importo 18px 700 in `verde-testo`.
 // tag: uno o piu' .sg-tag separati da | , ognuno «parola» o «parola:tono» (tono neutro, giallo, rosso, verde; senza tono vale tagTono).
 //   Bianchi con bordo 1.5px e testo del tono, padding 1px 8px,
-//   0.02em, raggio 6px e il segno davanti: ✕ rosso (data-tipo manca), … giallo (aspetta), ✓ verde (fatto); il giallo «presto»
-//   (Manca 30,00 €) ha il testo inchiostro e nessun segno.
+//   0.02em, raggio 6px, la parola senza segno davanti; il giallo «presto»
+//   (Manca 30,00 €) ha il testo inchiostro.
 // annullato: barrato e in `dim`, non in rosso: e' storia, non qualcosa che manca.
 // tasti: i .sg-chip sulla riga, separati da |; tastiSotto: quelli su una riga loro, a destra (flexBasis 100%, come «Annulla ricevuta»
 //   oggi). Ogni tasto e' «testo» o «testo:pericolo» (.sg-pericolo, riga 3435: bordo e testo `rosso-testo`) o «testo:spento»
@@ -90,8 +90,7 @@ class Component extends DCLogic {
         testo: tono === 'rosso' ? c.suRosso : tono === 'giallo' || tono === 'verde' ? c.suColore : c.bg,
       };
       const colore = { rosso: c.rossoTesto, giallo: c.gialloTesto, verde: c.verdeTesto, neutro: c.dim }[tono] || c.dim;
-      const segno = { rosso: '✕ ', verde: '✓ ' }[tono] || '';
-      return { parola: segno + parola, padding: '1px 8px', bordo: `1.5px solid ${colore}`, carattere: INTER, spazio: '0.02em', fondo: c.surface, testo: tono === 'giallo' ? c.suColore : colore };
+      return { parola, padding: '1px 8px', bordo: `1.5px solid ${colore}`, carattere: INTER, spazio: '0.02em', fondo: c.surface, testo: tono === 'giallo' ? c.suColore : colore };
     });
     const tasto = (x) => {
       const [testo, modo] = x.split(':');
