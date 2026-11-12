@@ -10,7 +10,7 @@ import { giorniConLezioni } from './calendarioSettimana'
 import { unisciGare } from './gare'
 import { codicePulito, cosaNonVaNucleo, GENITORE_GIA_IN_ELENCO, GENITORE_SENZA_CF, GENITORE_SENZA_NOME, nuovoTitolare, type DatiGenitore } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
-import { nomeProprio } from './nomi'
+import { nomeProprio, personaleDaRiprendere } from './nomi'
 import { numeriDiProva } from './sitoStatistiche'
 import { insegna, segniDi, siElimina, type RuoloPersonale } from './ruoli'
 import type { IndiziDoppioni } from './doppioni'
@@ -2549,18 +2549,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const cognome = nomeProprio(dati.cognome)
       const email = dati.email?.trim() || undefined
       if (!nome) throw new Error('Serve almeno il nome')
-      // Gli iscritti dividono le email: il conflitto è con chi ha l'accesso, se no si prende il primo iscritto.
-      const stesse = email ? a().persone.filter((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase()) : []
-      const altro = stesse.find((p) => p.ruolo !== 'iscritto') ?? stesse[0]
-      // Come nel database: un'iscritta con la stessa email diventa personale, non un doppione.
-      if (altro && altro.ruolo !== 'iscritto') throw new Error(`Questa email è già di ${nomeDi(altro)}`)
-      if (altro && !dati.id) {
-        a().persone = a().persone.map((p) => (p.id === altro.id ? { ...p, ...ruoloDi(dati), attiva: true } : p))
-        salva()
-        return altro.id
+      if (dati.id) {
+        // Come l'indice unico di 99-email-unica.sql: l'email non dev'essere di un altro del personale.
+        const altro = email && a().persone.find((p) => p.id !== dati.id && p.ruolo !== 'iscritto' && p.email?.toLowerCase() === email.toLowerCase())
+        if (altro) throw new Error(`Questa email è già di ${nomeDi(altro)}`)
       }
-      // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla.
-      const senza = !dati.id && a().persone.find((p) => p.ruolo !== 'iscritto' && !p.email && p.nome.toLowerCase() === nome.toLowerCase() && p.cognome.toLowerCase() === cognome.toLowerCase())
+      // Come nel database: si riprende il personale senza email con lo stesso nome, mai un iscritto.
+      const senza = !dati.id && personaleDaRiprendere(a().persone, { nome, cognome, email })
       if (senza) {
         a().persone = a().persone.map((p) => (p.id === senza.id ? { ...p, email, ...ruoloDi(dati), attiva: true } : p))
         salva()

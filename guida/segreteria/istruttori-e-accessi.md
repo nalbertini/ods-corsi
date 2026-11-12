@@ -18,6 +18,12 @@ TABLET**.
   di accesso, ed è la stessa per ricevute e avvisi: una sola persona di
   personale per indirizzo. Un iscritto con lo stesso indirizzo di un istruttore
   non diventa lui: l'accesso si lega al ruolo di chi lo ha.
+- Chi insegna e si allena anche come allievo ha due schede: questa, del
+  personale, e quella fra gli [iscritti](iscritti.md), con corsi, quote e
+  certificato. Aggiungendo una persona qui l'app non prende mai la scheda di un
+  iscritto, neanche con la stessa email o lo stesso nome. Riprende invece chi è
+  già nel personale senza email con lo stesso nome, anche scritto in un altro
+  modo (D'Amico e D’Amico): gli dà l'email, senza farne un secondo.
 
 ## La scheda di una persona
 
