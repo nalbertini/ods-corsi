@@ -637,7 +637,7 @@ console.log('\n16. all\'import, il bonifico collegato a una persona entra già a
   const abb = (entrano, scelte, ricevute, p = persone) => prova(() => m.abbinamentiImport(entrano, scelte, ricevute, p, voci, 'conto'))
   const unico = (o, r = ric('324', 'irene'), scelta = corsi) => abb([riga1(KI, o)], { [KI]: scelta }, [r])
   const scritti = [{ id: 'mov-1', origineImport: KI }]
-  const piano = (a, tolti = new Set(), classificate = new Set([KI]), s = scritti) => prova(() => m.pianoDiAbbinamento(a, tolti, classificate, s))
+  const piano = (a, tolti = new Set(), classificate = new Set(['mov-1']), s = scritti) => prova(() => m.pianoDiAbbinamento(a, tolti, classificate, s))
 
   const a1 = abb([riga1(KI)], { [KI]: corsi }, [ric('324', 'irene')])
   ok('Irene, 220,00 €, una ricevuta 324 del 09/11 tutta Bonifico: il bonifico va alla 324', a1, { [KI]: { esito: 'ricevuta', ricevutaId: '324' } })
@@ -653,12 +653,13 @@ console.log('\n16. all\'import, il bonifico collegato a una persona entra già a
   const K2 = 'k-irene-bis'
   const gemelle = abb([riga1(KI), riga1(K2, { riga: 2 })], { [KI]: corsi, [K2]: corsi }, [ric('324', 'irene')])
   ok('due righe dello stesso file per una sola ricevuta: tutte e due «contesa», con la chiave dell\'altra', gemelle, { [KI]: { esito: 'contesa', con: [K2] }, [K2]: { esito: 'contesa', con: [KI] } })
-  ok('…e il piano è vuoto', piano(gemelle, new Set(), new Set([KI, K2]), [...scritti, { id: 'mov-2', origineImport: K2 }]), [])
+  ok('…e il piano è vuoto', piano(gemelle, new Set(), new Set(['mov-1', 'mov-2']), [...scritti, { id: 'mov-2', origineImport: K2 }]), [])
 
   console.log('  — quando non si abbina')
   ok('importo diverso: niente', unico({ importo: 21000 }), {})
   ok('ricevuta con un pagamento in Contanti: niente', unico({}, ric('324', 'irene', { voci: [{ descrizione: 'Annuale Danza', quantita: 1, prezzo: 22000, pagamenti: [{ data: '2026-11-09', importo: 12000, metodo: 'Bonifico' }, { data: '2026-11-09', importo: 10000, metodo: 'Contanti' }] }] })), {})
   ok('date a più di 30 giorni: niente', unico({ data: '2026-10-05' }), {})
+  ok('…a 31 giorni: niente', unico({ data: '2026-10-09' }), {})
   ok('…a 30 giorni giusti: sì', unico({ data: '2026-10-10' }), { [KI]: { esito: 'ricevuta', ricevutaId: '324' } })
   ok('ricevuta annullata: niente', unico({}, ric('324', 'irene', { annullataIl: '2026-11-10T10:00:00Z' })), {})
   ok('ricevuta già abbinata a un movimento: niente', unico({}, ric('324', 'irene', { movimentoId: 'altro-mov' })), {})
@@ -668,13 +669,15 @@ console.log('\n16. all\'import, il bonifico collegato a una persona entra già a
   ok('scelta senza persona: niente', unico({}, ric('324', 'irene'), { voceId: 'v-corsi' }), {})
   ok('una voce d\'entrata diversa (Gare): niente', unico({}, ric('324', 'irene'), { voceId: 'v-gare', personaId: 'irene' }), {})
   ok('un\'uscita: niente', unico({ tipo: 'uscita' }, ric('324', 'irene'), { voceId: 'v-spese', personaId: 'irene' }), {})
+  ok('un\'uscita messa su Quota associativa: niente', unico({ tipo: 'uscita' }, ric('324', 'irene'), { voceId: 'v-quota', personaId: 'irene' }), {})
   ok('cambiando persona nella scelta (a una senza ricevuta) l\'abbinamento sparisce', unico({}, ric('324', 'irene'), { voceId: 'v-corsi', personaId: 'altra' }), {})
 
   console.log('  — il piano')
   ok('riga non classificata (la classificazione è fallita): fuori dal piano', piano(a1, new Set(), new Set()), [])
-  ok('riga che non si ritrova tra gli scritti: fuori dal piano', piano(a1, new Set(), new Set([KI]), []), [])
-  ok('riga ritrovata solo annullata: fuori dal piano', piano(a1, new Set(), new Set([KI]), [{ id: 'mov-1', origineImport: KI, annullatoIl: '2026-11-11T10:00:00Z' }]), [])
-  ok('…se c\'è anche una copia non annullata, vale quella', piano(a1, new Set(), new Set([KI]), [{ id: 'mov-0', origineImport: KI, annullatoIl: '2026-11-11T10:00:00Z' }, { id: 'mov-1', origineImport: KI }]), [{ chiave: KI, movimentoId: 'mov-1', ricevutaId: '324' }])
+  ok('la voce è andata a un altro movimento, non a questo: fuori dal piano', piano(a1, new Set(), new Set(['mov-9'])), [])
+  ok('riga che non si ritrova tra gli scritti: fuori dal piano', piano(a1, new Set(), new Set(['mov-1']), []), [])
+  ok('riga ritrovata solo annullata: fuori dal piano', piano(a1, new Set(), new Set(['mov-1']), [{ id: 'mov-1', origineImport: KI, annullatoIl: '2026-11-11T10:00:00Z' }]), [])
+  ok('…se c\'è anche una copia non annullata, vale quella', piano(a1, new Set(), new Set(['mov-1']), [{ id: 'mov-0', origineImport: KI, annullatoIl: '2026-11-11T10:00:00Z' }, { id: 'mov-1', origineImport: KI }]), [{ chiave: KI, movimentoId: 'mov-1', ricevutaId: '324' }])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

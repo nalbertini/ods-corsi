@@ -326,14 +326,14 @@ export function abbinamentiImport(
   }))
 }
 
-/** Dopo import e classificazione, le coppie da abbinare: non le tolte dalla segreteria, non le righe rimaste in «Da classificare» o non ritrovate. */
+/** Dopo import e classificazione, le coppie da abbinare: non le tolte dalla segreteria, non i movimenti a cui la voce non è andata (`classificati` sono i loro id) o non ritrovati. */
 export function pianoDiAbbinamento(
-  abbinamenti: Record<string, AbbinamentoBanca>, tolti: Set<string>, classificate: Set<string>, scritti: Pick<MovimentoManuale, 'id' | 'origineImport' | 'annullatoIl'>[],
+  abbinamenti: Record<string, AbbinamentoBanca>, tolti: Set<string>, classificati: Set<string>, scritti: Pick<MovimentoManuale, 'id' | 'origineImport' | 'annullatoIl'>[],
 ): Array<{ chiave: string; movimentoId: string; ricevutaId: string }> {
   const perChiave = new Map(scritti.filter((x) => x.origineImport && !x.annullatoIl).map((x) => [x.origineImport, x.id]))
   return Object.entries(abbinamenti).flatMap(([chiave, a]) => {
     const movimentoId = perChiave.get(chiave)
-    return a.esito === 'ricevuta' && movimentoId && !tolti.has(chiave) && classificate.has(chiave) ? [{ chiave, movimentoId, ricevutaId: a.ricevutaId }] : []
+    return a.esito === 'ricevuta' && movimentoId && !tolti.has(chiave) && classificati.has(movimentoId) ? [{ chiave, movimentoId, ricevutaId: a.ricevutaId }] : []
   })
 }
 

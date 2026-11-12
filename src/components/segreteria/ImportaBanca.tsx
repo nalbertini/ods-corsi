@@ -169,9 +169,11 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
             }
           }
           // Solo dopo la voce e la persona: l'abbinamento vuole il bonifico già collegato. Uno che non va non ferma gli altri.
-          const chiavi = new Set(scrittiOra.filter((x) => messi.has(x.id)).map((x) => x.origineImport ?? ''))
-          for (const c of pianoDiAbbinamento(abbinamenti, tolti, chiavi, scrittiOra)) {
-            const r = ricevutaDi(c.ricevutaId)
+          // Le ricevute rilette ora: una fatta o legata da un'altra parte dopo l'anteprima cambia la proposta.
+          const oraRicevute = await d.ricevute()
+          const oraAbbinamenti = abbinamentiImport(a.entrano, scelteValide, oraRicevute, persone, voci, conto.id)
+          for (const c of pianoDiAbbinamento(oraAbbinamenti, tolti, messi, scrittiOra)) {
+            const r = oraRicevute.find((x) => x.id === c.ricevutaId)
             const mv = a.entrano.find((x) => x.chiave === c.chiave)
             try {
               await d.abbinaRicevutaMovimento(c.movimentoId, c.ricevutaId)
