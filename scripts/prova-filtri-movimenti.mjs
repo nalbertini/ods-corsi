@@ -135,6 +135,30 @@ console.log('\n8. i totali con MOSTRA Annullati: in elenco ma fuori dai saldi')
   ok('con Tutti solo il valido', tutti.righe?.map((x) => x.riga.id), ['a'])
 }
 
+console.log('\n8c. lo storico prima del «dal» della cassa: si vede e si può sistemare, ma non sposta i saldi')
+{
+  const casse = [{ id: 'c1', nome: 'Conto Corrente', saldoIniziale: 1000, dal: '2025-01-01' }]
+  const ctx = { ids: new Set(), esiti: {} }
+  const righe = [
+    riga('nuova', { data: '2025-03-01', importo: 200 }),
+    riga('vecchia', { data: '2023-05-10', importo: 70, voce: 'Pagamento istruttori' }),
+    riga('vecchia-entrata', { tipo: 'entrata', data: '2024-02-01', importo: 30, voce: 'Da classificare' }),
+    riga('vecchia-annullata', { data: '2023-06-01', importo: 5, annullato: true }),
+    riga('vecchio-giro', { tipo: 'giroconto', data: '2023-01-01', importo: 9, voce: null, cassaAId: 'c2' }),
+  ]
+  const tutti = { ...base, mese: 0, anno: 0 }
+  const e = prova(() => m.estrattoMostra(righe, casse, tutti, ctx))
+  ok('con Tutti gli anni ci sono anche le righe vecchie, dalla più recente; non i giroconti', e.righe?.map((x) => x.riga.id), ['nuova', 'vecchia-entrata', 'vecchia'])
+  ok('…con il loro importo, come in BILANCIO', [e.entrate, e.uscite], [30, 270])
+  ok('…ma il saldo finale resta quello della cassa', e.saldoFinale, 800)
+  ok('…e la striscia tiene solo entrate e uscite', prova(() => m.striscia(e, tutti).map((x) => x.nome)), ['ENTRATE', 'USCITE'])
+  ok('il 2023 da solo', prova(() => m.estrattoMostra(righe, casse, { ...base, mese: 0, anno: 2023 }, ctx).righe.map((x) => x.riga.id)), ['vecchia'])
+  ok('la VOCE trova le vecchie', prova(() => m.estrattoMostra(righe, casse, { ...tutti, voce: 'Pagamento istruttori' }, ctx).righe.map((x) => x.riga.id)), ['vecchia'])
+  ok('Da assegnare trova le vecchie da classificare', prova(() => m.estrattoMostra(righe, casse, m.conMostra(base, 'da_assegnare'), ctx).righe.map((x) => x.riga.id)), ['vecchia-entrata'])
+  ok('Annullati trova anche le vecchie annullate, a zero', prova(() => m.estrattoMostra(righe, casse, { ...tutti, mostra: 'annullati' }, ctx).righe.map((x) => [x.riga.id, x.uscita])), [['vecchia-annullata', 0]])
+  ok('nel solo 2025 la striscia ha di nuovo i saldi', prova(() => m.striscia(m.estrattoMostra(righe, casse, { ...base, mese: 0, anno: 2025 }, ctx), { ...base, mese: 0, anno: 2025 }).length), 4)
+}
+
 console.log('\n8a. VOCE: un menu delle voci dei movimenti, che segue TIPO')
 {
   const righe = [riga('a', { voce: 'Tasse' }), riga('b', { voce: 'Affitto sala' }), riga('c', { tipo: 'entrata', voce: 'Affitto sala' }), riga('d', { tipo: 'entrata', voce: 'Contributi comunali' }), riga('g', { tipo: 'giroconto', voce: null }), riga('e', { voce: 'Tasse', annullato: true })]

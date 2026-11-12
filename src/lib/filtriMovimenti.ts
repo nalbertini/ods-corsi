@@ -1,4 +1,4 @@
-import { estrattoConto, filtraMovimenti, type Cassa, type EstrattoConto, type RigaMovimento } from './contabilita'
+import { estrattoConto, filtraMovimenti, type Cassa, type EstrattoConto, type RigaEstratto, type RigaMovimento } from './contabilita'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { soldi } from './satispay'
 import { senzaPersona, type EsitoCollegamento } from './movimentiPersona'
@@ -123,8 +123,19 @@ export const filtriPer = (r: Pick<RigaMovimento, 'data'>): FiltriElenco => ({ te
  * Gli annullati sono in elenco ma valgono zero, quindi i loro totali sono zero.
  */
 export function estrattoMostra(righe: RigaMovimento[], casse: Cassa[], f: FiltriElenco, ctx: ContestoAssegna): EstrattoConto {
-  const e = estrattoConto(righe, casse, { ...intervalloFiltri(f), testo: f.testo, tipo: f.tipo, voce: f.voce, annullati: f.mostra === 'annullati' })
-  const viste = e.righe.filter((x) => passaMostra(x.riga, f.mostra, ctx))
+  const filtri = { ...intervalloFiltri(f), testo: f.testo, tipo: f.tipo, voce: f.voce, annullati: f.mostra === 'annullati' }
+  const e = estrattoConto(righe, casse, filtri)
+  // Lo storico prima del «dal» della cassa: BILANCIO lo conta, quindi qui si vede e si sistema, ma fuori dai saldi (`storico`).
+  const dal = new Map(casse.map((c) => [c.id, c.dal] as const))
+  const storico: RigaEstratto[] = filtraMovimenti(righe, filtri)
+    .filter((r) => (r.tipo === 'entrata' || r.tipo === 'uscita') && !!dal.get(r.cassaId) && r.data < (dal.get(r.cassaId) ?? ''))
+    .map((riga) => {
+      const quanto = riga.annullato ? 0 : riga.importo
+      return { riga, entrata: riga.tipo === 'entrata' ? quanto : 0, uscita: riga.tipo === 'uscita' ? quanto : 0, saldo: e.saldoIniziale, storico: true }
+    })
+  const viste = [...e.righe, ...storico]
+    .filter((x) => passaMostra(x.riga, f.mostra, ctx))
+    .sort((x, y) => y.riga.data.localeCompare(x.riga.data) || x.riga.id.localeCompare(y.riga.id))
   return { ...e, righe: viste, entrate: viste.reduce((s, x) => s + x.entrata, 0), uscite: viste.reduce((s, x) => s + x.uscita, 0) }
 }
 
@@ -134,14 +145,14 @@ const saldo = (c: number) => (c < 0 ? `− ${soldi(-c)}` : soldi(c))
 
 /**
  * La striscia sopra l'elenco. I saldi sono delle casse, entrate e uscite delle righe
- * viste: con MOSTRA, TIPO o una ricerca insieme non tornerebbero, quindi restano
- * solo entrate e uscite.
+ * viste: con MOSTRA, TIPO, VOCE, una ricerca o lo storico prima del «dal» insieme
+ * non tornerebbero, quindi restano solo entrate e uscite.
  */
 export function striscia(e: EstrattoConto, f: FiltriElenco): { nome: string; cifra: string; entrata?: boolean }[] {
   const righe = [
     { nome: 'ENTRATE', cifra: conSegno('+', e.entrate), entrata: e.entrate > 0 },
     { nome: 'USCITE', cifra: conSegno('−', e.uscite) },
   ]
-  if (f.mostra !== 'tutti' || f.tipo || f.voce || f.testo.trim()) return righe
+  if (f.mostra !== 'tutti' || f.tipo || f.voce || f.testo.trim() || e.righe.some((x) => x.storico)) return righe
   return [{ nome: 'SALDO INIZIALE', cifra: saldo(e.saldoIniziale) }, ...righe, { nome: 'SALDO FINALE', cifra: saldo(e.saldoFinale) }]
 }
