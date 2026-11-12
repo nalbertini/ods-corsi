@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.240.0 — 12 novembre 2026
+
+### Novità
+
+- L'appello è più comodo da usare con tanti nomi
+
+### Modificato
+
+- Importa dalla banca più snella: righe a gruppi, tasti a destra, meno testo
+
 ## 0.239.0 — 12 novembre 2026
 
 ### Novità
