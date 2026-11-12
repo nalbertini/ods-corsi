@@ -617,60 +617,60 @@ console.log('\n15. le schermate: IMPORTAZIONI con un solo «Importa», l\'annull
 
 console.log('\n16. all\'import, il bonifico collegato a una persona entra già abbinato alla ricevuta libera (abbinamentiImport, pianoDiAbbinamento)')
 {
-  // Il caso vero: ricevuta 324/2026 di Irene, 09/11, 220,00 € tutta in Bonifico; bonifico del 06/11 di 220,00 €.
-  const riga1 = (chiave, o = {}) => ({ riga: 1, data: '2026-11-06', tipo: 'entrata', importo: 22000, descrizione: 'Da Rus Irene corso', operazione: 'BONIFICO', causale: '26', chiave, codiceFiscaleLetto: [], ...o })
+  // Il caso vero: ricevuta 324/2026 di Elena, 09/11, 220,00 € tutta in Bonifico; bonifico del 06/11 di 220,00 €.
+  const riga1 = (chiave, o = {}) => ({ riga: 1, data: '2026-11-06', tipo: 'entrata', importo: 22000, descrizione: 'Da Russo Elena corso', operazione: 'BONIFICO', causale: '26', chiave, codiceFiscaleLetto: [], ...o })
   const ric = (id, personaId, o = {}) => ({
-    id, anno: 2026, numero: Number(id), data: '2026-11-09', ente: 'ODS', personaId, intestatario: { nome: 'Irene', cognome: 'Rus' }, anticipo: 0,
+    id, anno: 2026, numero: Number(id), data: '2026-11-09', ente: 'ODS', personaId, intestatario: { nome: 'Elena', cognome: 'Russo' }, anticipo: 0,
     voci: [{ descrizione: 'Annuale Danza', quantita: 1, prezzo: 22000, pagamenti: [{ data: '2026-11-09', importo: 22000, metodo: 'Bonifico' }] }],
     totale: 22000, pagato: 22000, creataIl: '2026-11-09T10:00:00Z', ...o,
   })
-  const persona = (id, nucleo, attiva = true) => ({ id, nucleo, attiva, nome: id, cognome: 'Rus' })
-  const persone = [persona('irene'), persona('fratello', 'irene'), persona('spento', 'irene', false), persona('altra'), persona('altra-figlia', 'altra')]
+  const persona = (id, nucleo, attiva = true) => ({ id, nucleo, attiva, nome: id, cognome: 'Russo' })
+  const persone = [persona('elena'), persona('fratello', 'elena'), persona('spento', 'elena', false), persona('altra'), persona('altra-figlia', 'altra')]
   const voci = [
     { id: 'v-quota', nome: 'Quota associativa', tipo: 'entrata', diSistema: true, attiva: true },
     { id: 'v-corsi', nome: 'Corsi e altri pagamenti', tipo: 'entrata', diSistema: true, attiva: true },
     { id: 'v-gare', nome: 'Gare', tipo: 'entrata', diSistema: true, attiva: true },
     { id: 'v-spese', nome: 'Commissioni bancarie', tipo: 'uscita', diSistema: false, attiva: true },
   ]
-  const corsi = { voceId: 'v-corsi', personaId: 'irene' }
-  const KI = 'k-irene'
+  const corsi = { voceId: 'v-corsi', personaId: 'elena' }
+  const KI = 'k-elena'
   const abb = (entrano, scelte, ricevute, p = persone) => prova(() => m.abbinamentiImport(entrano, scelte, ricevute, p, voci, 'conto'))
-  const unico = (o, r = ric('324', 'irene'), scelta = corsi) => abb([riga1(KI, o)], { [KI]: scelta }, [r])
+  const unico = (o, r = ric('324', 'elena'), scelta = corsi) => abb([riga1(KI, o)], { [KI]: scelta }, [r])
   const scritti = [{ id: 'mov-1', origineImport: KI }]
   const piano = (a, tolti = new Set(), classificate = new Set(['mov-1']), s = scritti) => prova(() => m.pianoDiAbbinamento(a, tolti, classificate, s))
 
-  const a1 = abb([riga1(KI)], { [KI]: corsi }, [ric('324', 'irene')])
-  ok('Irene, 220,00 €, una ricevuta 324 del 09/11 tutta Bonifico: il bonifico va alla 324', a1, { [KI]: { esito: 'ricevuta', ricevutaId: '324' } })
+  const a1 = abb([riga1(KI)], { [KI]: corsi }, [ric('324', 'elena')])
+  ok('Elena, 220,00 €, una ricevuta 324 del 09/11 tutta Bonifico: il bonifico va alla 324', a1, { [KI]: { esito: 'ricevuta', ricevutaId: '324' } })
   ok('…e nel piano c\'è la coppia chiave, movimento, ricevuta', piano(a1), [{ chiave: KI, movimentoId: 'mov-1', ricevutaId: '324' }])
-  ok('anche con la voce Quota associativa', unico({}, ric('324', 'irene'), { voceId: 'v-quota', personaId: 'irene' }), { [KI]: { esito: 'ricevuta', ricevutaId: '324' } })
+  ok('anche con la voce Quota associativa', unico({}, ric('324', 'elena'), { voceId: 'v-quota', personaId: 'elena' }), { [KI]: { esito: 'ricevuta', ricevutaId: '324' } })
 
-  const due = abb([riga1(KI)], { [KI]: corsi }, [ric('324', 'irene'), ric('325', 'irene')])
+  const due = abb([riga1(KI)], { [KI]: corsi }, [ric('324', 'elena'), ric('325', 'elena')])
   ok('due ricevute libere che abbinano: «piu», con tutte e due', due, { [KI]: { esito: 'piu', ricevute: ['324', '325'] } })
   ok('…e il piano è vuoto: la sceglie la segreteria in «Da assegnare»', piano(due), [])
 
   ok('«Togli» si applica solo al piano: l\'abbinamento resta, il piano è vuoto', [piano(a1, new Set([KI])), a1[KI]?.esito], [[], 'ricevuta'])
 
-  const K2 = 'k-irene-bis'
-  const gemelle = abb([riga1(KI), riga1(K2, { riga: 2 })], { [KI]: corsi, [K2]: corsi }, [ric('324', 'irene')])
+  const K2 = 'k-elena-bis'
+  const gemelle = abb([riga1(KI), riga1(K2, { riga: 2 })], { [KI]: corsi, [K2]: corsi }, [ric('324', 'elena')])
   ok('due righe dello stesso file per una sola ricevuta: tutte e due «contesa», con la chiave dell\'altra', gemelle, { [KI]: { esito: 'contesa', con: [K2] }, [K2]: { esito: 'contesa', con: [KI] } })
   ok('…e il piano è vuoto', piano(gemelle, new Set(), new Set(['mov-1', 'mov-2']), [...scritti, { id: 'mov-2', origineImport: K2 }]), [])
 
   console.log('  — quando non si abbina')
   ok('importo diverso: niente', unico({ importo: 21000 }), {})
-  ok('ricevuta con un pagamento in Contanti: niente', unico({}, ric('324', 'irene', { voci: [{ descrizione: 'Annuale Danza', quantita: 1, prezzo: 22000, pagamenti: [{ data: '2026-11-09', importo: 12000, metodo: 'Bonifico' }, { data: '2026-11-09', importo: 10000, metodo: 'Contanti' }] }] })), {})
+  ok('ricevuta con un pagamento in Contanti: niente', unico({}, ric('324', 'elena', { voci: [{ descrizione: 'Annuale Danza', quantita: 1, prezzo: 22000, pagamenti: [{ data: '2026-11-09', importo: 12000, metodo: 'Bonifico' }, { data: '2026-11-09', importo: 10000, metodo: 'Contanti' }] }] })), {})
   ok('date a più di 30 giorni: niente', unico({ data: '2026-10-05' }), {})
   ok('…a 31 giorni: niente', unico({ data: '2026-10-09' }), {})
   ok('…a 30 giorni giusti: sì', unico({ data: '2026-10-10' }), { [KI]: { esito: 'ricevuta', ricevutaId: '324' } })
-  ok('ricevuta annullata: niente', unico({}, ric('324', 'irene', { annullataIl: '2026-11-10T10:00:00Z' })), {})
-  ok('ricevuta già abbinata a un movimento: niente', unico({}, ric('324', 'irene', { movimentoId: 'altro-mov' })), {})
+  ok('ricevuta annullata: niente', unico({}, ric('324', 'elena', { annullataIl: '2026-11-10T10:00:00Z' })), {})
+  ok('ricevuta già abbinata a un movimento: niente', unico({}, ric('324', 'elena', { movimentoId: 'altro-mov' })), {})
   ok('ricevuta di un fratello del nucleo (attivo): sì', unico({}, ric('324', 'fratello')), { [KI]: { esito: 'ricevuta', ricevutaId: '324' } })
   ok('ricevuta di una persona disattivata del nucleo: niente', unico({}, ric('324', 'spento')), {})
   ok('ricevuta di un\'altra famiglia: niente', unico({}, ric('324', 'altra-figlia')), {})
-  ok('scelta senza persona: niente', unico({}, ric('324', 'irene'), { voceId: 'v-corsi' }), {})
-  ok('una voce d\'entrata diversa (Gare): niente', unico({}, ric('324', 'irene'), { voceId: 'v-gare', personaId: 'irene' }), {})
-  ok('un\'uscita: niente', unico({ tipo: 'uscita' }, ric('324', 'irene'), { voceId: 'v-spese', personaId: 'irene' }), {})
-  ok('un\'uscita messa su Quota associativa: niente', unico({ tipo: 'uscita' }, ric('324', 'irene'), { voceId: 'v-quota', personaId: 'irene' }), {})
-  ok('cambiando persona nella scelta (a una senza ricevuta) l\'abbinamento sparisce', unico({}, ric('324', 'irene'), { voceId: 'v-corsi', personaId: 'altra' }), {})
+  ok('scelta senza persona: niente', unico({}, ric('324', 'elena'), { voceId: 'v-corsi' }), {})
+  ok('una voce d\'entrata diversa (Gare): niente', unico({}, ric('324', 'elena'), { voceId: 'v-gare', personaId: 'elena' }), {})
+  ok('un\'uscita: niente', unico({ tipo: 'uscita' }, ric('324', 'elena'), { voceId: 'v-spese', personaId: 'elena' }), {})
+  ok('un\'uscita messa su Quota associativa: niente', unico({ tipo: 'uscita' }, ric('324', 'elena'), { voceId: 'v-quota', personaId: 'elena' }), {})
+  ok('cambiando persona nella scelta (a una senza ricevuta) l\'abbinamento sparisce', unico({}, ric('324', 'elena'), { voceId: 'v-corsi', personaId: 'altra' }), {})
 
   console.log('  — il piano')
   ok('riga non classificata (la classificazione è fallita): fuori dal piano', piano(a1, new Set(), new Set()), [])
