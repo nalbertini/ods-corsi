@@ -13,9 +13,9 @@ prova tiene stanno in «Scoperti», in fondo.
 
 | Percorso | Chi | Se cade | Prove | Collaudo |
 | --- | --- | --- | --- | --- |
-| Quota associativa con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo diverso dal listino, quota pagata due volte o per un altro | `prova:quota-satispay`, `prova:edge`, `scripts/prova-iscritto-supabase.mjs`, `quota-satispay.sql` | sì |
-| Corso con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo sbagliato, corso pagato due volte o per un altro | `prova:corso-satispay`, `prova:edge`, `scripts/prova-iscritto-supabase.mjs`, `corso-satispay.sql` | sì |
-| Saldo della quota con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | resto calcolato male o pagato due volte, nucleo sbagliato | `prova:saldo-satispay`, `prova:satispay`, `prova:edge`, `saldo-satispay.sql` | sì |
+| Quota associativa con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo diverso dal listino, quota pagata due volte o per un altro | `prova:quota-satispay`, `prova:pagato-in-segreteria`, `prova:edge`, `scripts/prova-iscritto-supabase.mjs`, `quota-satispay.sql`, `pagato-in-segreteria.sql` | sì |
+| Corso con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo sbagliato, corso pagato due volte o per un altro | `prova:corso-satispay`, `prova:pagato-in-segreteria`, `prova:edge`, `scripts/prova-iscritto-supabase.mjs`, `corso-satispay.sql`, `pagato-in-segreteria.sql` | sì |
+| Saldo della quota con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | resto calcolato male o pagato due volte, nucleo sbagliato | `prova:saldo-satispay`, `prova:satispay`, `prova:pagato-in-segreteria`, `prova:edge`, `saldo-satispay.sql`, `pagato-in-segreteria.sql` | sì |
 | Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:campi`, `prova:listino`, `prova:moduli`, `prova:fogli-moduli`, `prova:richieste`, `prova:ricevuta`, `prova:avvisi-segreteria`, `iscrizioni.sql`, `listino.sql`, `orari-aperti.sql`, `rls.sql` | sì |
 | Aspetto del modulo di iscrizione | genitore | modulo illeggibile o col colore del sito sbagliato | `prova:iscrizione-sito`, `prova:campi`, `prova:iscrizione-pagina`, `prova:tema`, `prova:iscrizione-passi` | sì |
 | Modulo di iscrizione da tastiera e a 320px | genitore, segreteria | chi usa la tastiera non riesce a iscriversi | `prova:accessibilita-iscrizione` | sì |

@@ -6,7 +6,7 @@
 import { NOME_CASSA_CONTANTI, VOCE_CORSI, VOCE_QUOTA, type Cassa, type MovimentoManuale, type VoceContabile } from './contabilita'
 import type { PagamentoDiretto } from './pagamenti'
 import type { VoceStorico } from './movimentiPersona'
-import { QUOTA, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { QUOTA, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { statoCorsi, type VoceCorso } from './corsiDaPagare'
 import { stagioneDi } from './costi'
 import type { CorsoRef, Listino } from './listino'
@@ -264,6 +264,38 @@ export function quoteConAssegnazioni(quote: QuotaRicevuta[], quota: { prezzo: nu
   const base = prima.length ? Math.min(...prima) : quota.prezzo
   // Numero 0: non c'è una ricevuta, ci sono i bonifici. La scheda lo dice così.
   return [...quote, { anno: Number(quota.dal.slice(0, 4)), numero: 0, dal: quota.dal, al: quota.al, mancano: Math.max(0, base - messo) }]
+}
+
+/** Le righe attive di `pagamenti_diretti` (bonifici assegnati e pagamenti a mano, non ancora ricevuta) di una persona. */
+const attiveDi = (diretti: PagamentoDiretto[], personaId: string) => diretti.filter((d) => d.personaId === personaId && !d.annullatoIl)
+
+/** I centesimi già in segreteria sulla quota di questa stagione, come `quota_in_segreteria` (146): l'area iscritti non li fa pagare di nuovo. */
+export const quotaInSegreteria = (diretti: PagamentoDiretto[], personaId: string, oggi: string): number =>
+  attiveDi(diretti, personaId)
+    .filter((d) => eQuota(d.voce) && annoQuota(d.voce, d.data) === annoQuota('', oggi))
+    .reduce((s, d) => s + d.importo, 0)
+
+/**
+ * C'è già qualcosa in segreteria sull'annuale, il trimestre o il saldo del corso, nella stagione dei corsi di oggi (dal
+ * 1° luglio); un trimestre solo per i suoi tre mesi (`fineTrimestre`). Come `corso_in_segreteria` (146).
+ */
+export const corsoInSegreteria = (diretti: PagamentoDiretto[], personaId: string, nomi: string[], oggi: string): boolean =>
+  attiveDi(diretti, personaId).some((d) => {
+    const formula = ['annuale', 'trimestre', 'saldo'].find((f) => nomi.some((n) => !!n.trim() && stessa(d.voce, `${f} ${n.trim()}`)))
+    return !!formula && stagioneDi(d.data).corsi.dal === stagioneDi(oggi).corsi.dal && (formula !== 'trimestre' || oggi <= fineTrimestre(d.data))
+  })
+
+/**
+ * Le quote dell'iscritto con quel che la segreteria ha già, come `quota_della_segreteria` (146): una quota in più,
+ * numero 0, con quel che manca dopo le ricevute della stessa stagione (se no dal prezzo). Come `quoteConAssegnazioni`.
+ */
+export function quoteConSegreteria(quote: QuotaRicevuta[], prezzo: number, diretti: PagamentoDiretto[], personaId: string, oggi: string): QuotaRicevuta[] {
+  const messo = quotaInSegreteria(diretti, personaId, oggi)
+  if (!messo) return quote
+  const q = stagioneDi(oggi).quota
+  const prima = quote.filter((x) => !!x.dal && x.dal <= q.al && (x.al ?? '9999-12-31') >= q.dal).map((x) => x.mancano)
+  const base = prima.length ? Math.min(...prima) : prezzo
+  return [...quote, { anno: annoQuota('', oggi), numero: 0, dal: q.dal, al: q.al, mancano: Math.max(0, base - messo) }]
 }
 
 /** Due periodi si toccano. Senza le date del prezzo vale la sola descrizione; una voce senza date non si sa di quando sia. */

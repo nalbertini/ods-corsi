@@ -286,15 +286,16 @@ console.log('\nPagare quota e corso dal telefono')
     adulto: true, accesso_proprio: true, come_titolare: false,
     corsi: [
       { corso_id: 'c1', annuale: 30000, trimestre: 12000, segreteria: false, a_pagamento: true, pagato: false },
-      { corso_id: 'c2', annuale: null, trimestre: null, segreteria: true, a_pagamento: false, pagato: true },
+      // `assegnato` arriva con la 146: senza (c1, un database di prima) vale false.
+      { corso_id: 'c2', annuale: null, trimestre: null, segreteria: true, a_pagamento: false, pagato: true, assegnato: true },
     ],
   }
   {
     const { c, richieste } = clientePaga(null, { data: chiCorsi, error: null })
     ok('chiPagaCorsi: chiama satispay_corsi_chi, snake_case in camelCase, i prezzi null diventano assenti', [await prova(() => dati(c).chiPagaCorsi('p1', 'io')), richieste.rpc], [
       { ok: { adulto: true, haAccessoProprio: true, comeTitolare: false, corsi: [
-        { corsoId: 'c1', annuale: 30000, trimestre: 12000, segreteria: false, aPagamento: true, pagato: false },
-        { corsoId: 'c2', segreteria: true, aPagamento: false, pagato: true },
+        { corsoId: 'c1', annuale: 30000, trimestre: 12000, segreteria: false, aPagamento: true, pagato: false, assegnato: false },
+        { corsoId: 'c2', segreteria: true, aPagamento: false, pagato: true, assegnato: true },
       ] } },
       [['satispay_corsi_chi', { persona: 'p1' }]],
     ])
