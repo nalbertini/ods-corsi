@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaDatiProva } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { carattereControllo, lettereCognome, lettereNome } from './src/lib/codiceFiscale'; export * as doppioni from './src/lib/doppioni'; export * as segreteriaLib from './src/lib/segreteria'; export * as importaLib from './src/lib/importa'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaDatiProva } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { carattereControllo, lettereCognome, lettereNome } from './src/lib/codiceFiscale'; export * as doppioni from './src/lib/doppioni'; export * as segreteriaLib from './src/lib/segreteria'; export * as importaLib from './src/lib/importa'; export * as nomiLib from './src/lib/nomi'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -75,6 +75,7 @@ const senzaEmail = lib(m.segreteriaLib, 'senzaEmail')
 const erroreDellEmail = lib(m.segreteriaLib, 'erroreDellEmail')
 const cosaManca = lib(m.segreteriaLib, 'cosaManca')
 const testoResoconto = lib(m.importaLib, 'testoResoconto')
+const personaleDaRiprendere = lib(m.nomiLib, 'personaleDaRiprendere')
 
 // Gli esempi della modalità prova, prima che le altre sezioni aggiungano persone loro.
 m.seminaEsempi()
@@ -348,6 +349,35 @@ console.log('\n13. cosa manca nella scheda: l\'email per ricevute e avvisi è qu
   ok('né telefono né email', manca({}), [{ cosa: 'Telefono, email per ricevute e avvisi' }])
   ok('con l\'email manca solo il telefono', manca({ email: 'a@b.it' }), [{ cosa: 'Telefono' }])
   ok('con tutti e due non manca niente', manca({ email: 'a@b.it', telefono: '333 1' }), [])
+}
+
+console.log('\n14. chi entra nel personale non prende mai la scheda di un iscritto')
+// Scelta della palestra (2026-11-12): chi si allena e insegna ha due schede,
+// una da iscritto e una del personale. Prima si prendeva la scheda più
+// vecchia con la stessa email, anche quella del figlio.
+{
+  const lista = [
+    { id: 'i1', nome: 'Luca', cognome: 'Bianchi', email: 'famiglia@esempio.it', ruolo: 'iscritto' },
+    { id: 'p1', nome: 'Luca', cognome: "D'Amico", ruolo: 'istruttore' },
+    { id: 'p2', nome: 'Maria', cognome: 'Ma_a', ruolo: 'staff' },
+    { id: 'p3', nome: 'Carla', cognome: 'Rossi', email: 'carla@esempio.it', ruolo: 'istruttore' },
+  ]
+  const riprende = (n) => { try { return personaleDaRiprendere(lista, n)?.id ?? 'nuova' } catch (e) { return e.message } }
+  ok('l\'email di un iscritto: scheda nuova', riprende({ nome: 'Anna', cognome: 'Bianchi', email: 'Famiglia@esempio.it' }), 'nuova')
+  ok('neanche se ha lo stesso nome', riprende({ nome: 'Luca', cognome: 'Bianchi', email: 'famiglia@esempio.it' }), 'nuova')
+  ok('il personale senza email, scritto con l\'apostrofo curvo: la sua', riprende({ nome: 'luca', cognome: 'D’Amico', email: 'luca@esempio.it' }), 'p1')
+  ok('% e _ non sono jolly', riprende({ nome: 'Maria', cognome: 'Mara' }), 'nuova')
+  ok('l\'email di un altro del personale: no', riprende({ nome: 'Dina', cognome: 'Rossi', email: 'CARLA@esempio.it' }), 'Questa email è già di Carla Rossi')
+}
+{
+  const fam = 'bianchi.famiglia@esempio.it'
+  const luca = await s.salvaPersona({ nome: 'Luca', cognome: 'Famigliola', email: fam })
+  const anna = await s.salvaPersona({ nome: 'Anna', cognome: 'Famigliola', email: fam })
+  const istr = await s.salvaPersonale({ nome: 'Anna', cognome: 'Famigliola', email: fam, ruolo: 'istruttore' })
+  ok('modalità prova: Anna istruttrice ha una scheda nuova', [istr !== luca, istr !== anna], [true, true])
+  ok('e i due iscritti restano iscritti', [(await di(luca))?.nome, (await di(anna))?.nome], ['Luca', 'Anna'])
+  const p = await s.salvaPersonale({ nome: 'Ugo', cognome: "D'Ascia", ruolo: 'istruttore' })
+  ok('modalità prova: riscritto con l\'apostrofo curvo e l\'email, la stessa scheda', await s.salvaPersonale({ nome: 'Ugo', cognome: 'D’Ascia', email: 'ugo@esempio.it', ruolo: 'istruttore' }), p)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

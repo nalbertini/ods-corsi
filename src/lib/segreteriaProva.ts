@@ -10,7 +10,7 @@ import { giorniConLezioni } from './calendarioSettimana'
 import { unisciGare } from './gare'
 import { codicePulito, cosaNonVaNucleo, GENITORE_GIA_IN_ELENCO, GENITORE_SENZA_CF, GENITORE_SENZA_NOME, nuovoTitolare, type DatiGenitore } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
-import { nomeProprio } from './nomi'
+import { nomeProprio, personaleDaRiprendere } from './nomi'
 import { numeriDiProva } from './sitoStatistiche'
 import { insegna, segniDi, siElimina, type RuoloPersonale } from './ruoli'
 import type { IndiziDoppioni } from './doppioni'
@@ -2551,18 +2551,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const cognome = nomeProprio(dati.cognome)
       const email = dati.email?.trim() || undefined
       if (!nome) throw new Error('Serve almeno il nome')
-      // Gli iscritti dividono le email: il conflitto è con chi ha l'accesso, se no si prende il primo iscritto.
-      const stesse = email ? a().persone.filter((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase()) : []
-      const altro = stesse.find((p) => p.ruolo !== 'iscritto') ?? stesse[0]
-      // Come nel database: un'iscritta con la stessa email diventa personale, non un doppione.
-      if (altro && altro.ruolo !== 'iscritto') throw new Error(`Questa email è già di ${nomeDi(altro)}`)
-      if (altro && !dati.id) {
-        a().persone = a().persone.map((p) => (p.id === altro.id ? { ...p, ...ruoloDi(dati), attiva: true } : p))
-        salva()
-        return altro.id
+      if (dati.id) {
+        // Come l'indice unico di 99-email-unica.sql: l'email non dev'essere di un altro del personale.
+        const altro = email && a().persone.find((p) => p.id !== dati.id && p.ruolo !== 'iscritto' && p.email?.toLowerCase() === email.toLowerCase())
+        if (altro) throw new Error(`Questa email è già di ${nomeDi(altro)}`)
       }
-      // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla.
-      const senza = !dati.id && a().persone.find((p) => p.ruolo !== 'iscritto' && !p.email && p.nome.toLowerCase() === nome.toLowerCase() && p.cognome.toLowerCase() === cognome.toLowerCase())
+      // Come nel database: si riprende il personale senza email con lo stesso nome, mai un iscritto.
+      const senza = !dati.id && personaleDaRiprendere(a().persone, { nome, cognome, email })
       if (senza) {
         a().persone = a().persone.map((p) => (p.id === senza.id ? { ...p, email, ...ruoloDi(dati), attiva: true } : p))
         salva()
@@ -2656,6 +2651,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
         prove: (a().prove ?? []).filter((x) => x.personaId === via).length,
         iscrizioni: a().iscrizioni.filter((x) => x.personaId === via).length,
         ricevute: (a().ricevute ?? []).filter((x) => x.personaId === via).length,
+        tessere: (a().tessere ?? []).filter((x) => x.personaId === via).length,
+        gare: (a().gareAtleti ?? []).filter((x) => x.personaId === via).length,
+        movimenti: (a().movimenti ?? []).filter((x) => x.personaId === via).length,
+        // In prova non ci sono pagamenti online.
+        pagamentiOnline: 0,
       }
     },
 
@@ -2763,7 +2763,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
         a().anagrafiche = { ...altre, [resta]: { ...suaA, ...Object.fromEntries(Object.entries(mia).filter(([, x]) => piena(x))), cambiataIl: new Date().toISOString() } }
       }
       spostaRichieste(via, resta)
-      a().segnalate = (a().segnalate ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      // Una segnalazione per lezione, come `presenze_segnalate_unione` (149): resta quella di chi resta, con lo stato dell'altra se solo quella è già gestita.
+      const segnalate = a().segnalate ?? []
+      a().segnalate = segnalate.flatMap((x) => {
+        const altra = segnalate.find((y) => y.sessioneId === x.sessioneId && y.personaId === (x.personaId === via ? resta : via))
+        if (x.personaId === via) return altra ? [] : [{ ...x, personaId: resta }]
+        if (x.personaId === resta && altra && x.stato === 'da_vedere' && altra.stato !== 'da_vedere') return [{ ...x, stato: altra.stato, gestitaIl: altra.gestitaIl, gestitaDa: altra.gestitaDa }]
+        return [x]
+      })
       const gare = unisciGare({ gare: a().gare ?? [], atleti: a().gareAtleti ?? [] }, via, resta)
       a().gare = gare.gare
       a().gareAtleti = gare.atleti

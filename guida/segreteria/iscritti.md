@@ -393,8 +393,8 @@ scheda è disattivata, nessuno.
   aggiunge di nuovo. Scegliete l'altra scheda (in cima chi ha lo stesso
   cognome, comunque scritto: D'Amico, Damico; già scelta se è l'unico
   possibile doppione, vedi **POSSIBILI DOPPIONI**). Si vede quale resta, quale se
-  ne va, i campi che non tornano e quante presenze, prove, iscrizioni e
-  ricevute passano; **TIENI L'ALTRA** scambia le due. Della scheda che resta
+  ne va, i campi che non tornano e quante presenze, prove, iscrizioni,
+  ricevute, tessere, gare, movimenti e pagamenti online passano; **TIENI L'ALTRA** scambia le due. Della scheda che resta
   vale quello che c'è scritto; dall'altra si prende solo quello che manca, e
   di certificato e quota la scadenza più lontana (e del certificato, il file
   di quella scheda: se ce n'è uno per parte resta uno solo, l'altro si
@@ -405,7 +405,11 @@ scheda è disattivata, nessuno.
   torna indietro.
   Non si uniscono due schede con due codici fiscali diversi, anche solo
   quello del modulo di iscrizione (sono due persone). Il file del certificato
-  non ferma l'unione: passa a chi resta. Unite quando gli appelli del giorno sono
+  non ferma l'unione: passa a chi resta. Una lezione segnalata dall'area
+  iscritti su tutte e due le schede resta una. Se tutte e due hanno un
+  pagamento online in corso per la stessa cosa, l'app dice di aspettare che
+  arrivi pagato o che scada; uno che Satispay non ha mai visto si chiude da
+  sé. Unite quando gli appelli del giorno sono
   arrivati: un appello fatto senza rete che arriva dopo sulla scheda che se
   ne va si perde.
 

@@ -42,7 +42,7 @@ import type { LetturaSito } from './sitoStatistiche'
 import type { DaDove } from './provenienza'
 
 export type { ListaMusica } from './musica'
-import type { IndiziDoppioni } from './doppioni'
+import type { AnteprimaUnione, IndiziDoppioni } from './doppioni'
 import type { EsitoImportTessere, RigaIncrocio, RigaRasd, TesseraSeg, TipoTessera } from './tessere'
 import { parolaTessera } from './tessere'
 
@@ -1015,7 +1015,7 @@ export interface DatiSegreteria {
    * Quante presenze, prove, iscrizioni e ricevute della scheda `via` passano
    * a `resta` unendole; dice di no come `unisciPersone`, senza cambiare niente.
    */
-  anteprimaUnione(resta: string, via: string): Promise<{ presenze: number; prove: number; iscrizioni: number; ricevute: number }>
+  anteprimaUnione(resta: string, via: string): Promise<AnteprimaUnione>
   /** Unisce due schede della stessa persona: `via` se ne va, tutto il suo passa a `resta` (`29-unisci-doppioni.sql`). */
   unisciPersone(resta: string, via: string): Promise<void>
   /** Codici fiscali, nascite e coppie «non sono doppioni», per i possibili doppioni di ISCRITTI (`doppioni.ts`). */

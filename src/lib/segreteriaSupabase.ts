@@ -1,7 +1,7 @@
 import { cosaNonVaSolleciti } from './sollecitiCertificato'
 import { indirizziDaSalvare } from './avvisoSegreteria'
 import { daSenzaIstruttore } from './ore'
-import type { IndiziDoppioni } from './doppioni'
+import type { AnteprimaUnione, IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import { giorniConLezioni } from './calendarioSettimana'
@@ -11,7 +11,7 @@ import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, cosaNonVaExtra, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cosaNonVaGiorniCertificato, GIORNI_CERTIFICATO, termineCertificato, cosaNonVaAnagrafica, emailNonValida, SERVE_IL_99, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
-import { nomeProprio } from './nomi'
+import { nomeProprio, personaleDaRiprendere } from './nomi'
 import { spentiDa } from './metodiPagamento'
 import { genitoriDa, type RigaGenitore } from './sollecito'
 import { tutteLeRighe } from './tutteLeRighe'
@@ -2483,24 +2483,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         ok(await db.from('persone').update(riga).eq('id', p.id))
         return p.id
       }
-      // Un'iscritta con la stessa email diventa personale, invece di un doppione.
-      if (email) {
-        // Gli iscritti dividono l'email: più righe sono normali, e conta chi ha un accesso.
-        const stesse = ok(await db.from('persone').select('id, ruolo').eq('email', email).order('creata_il')) as Array<{ id: string; ruolo: string }>
-        if (stesse.some((x) => x.ruolo !== 'iscritto')) throw new Error('Questa email è già di una persona del personale')
-        const c = stesse[0]
-        if (c) {
-          ok(await db.from('persone').update({ ...ruolo, attiva: true }).eq('id', c.id))
-          return c.id
-        }
-      }
-      // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla.
-      const senza = ok(
-        await db.from('persone').select('id').in('ruolo', [...RUOLI_DEL_PERSONALE]).is('email', null).ilike('nome', riga.nome).ilike('cognome', riga.cognome).limit(1),
-      ) as Array<{ id: string }>
-      if (senza[0]) {
-        ok(await db.from('persone').update({ email, ...ruolo, attiva: true }).eq('id', senza[0].id))
-        return senza[0].id
+      // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla. Mai un iscritto: vedi `personaleDaRiprendere`.
+      const personale = ok(await db.from('persone').select('id, nome, cognome, email, ruolo').in('ruolo', [...RUOLI_DEL_PERSONALE]).order('creata_il')) as Array<{ id: string; nome: string; cognome: string; email: string | null; ruolo: string }>
+      const stessa = personaleDaRiprendere(personale, riga)
+      if (stessa) {
+        ok(await db.from('persone').update({ email, ...ruolo, attiva: true }).eq('id', stessa.id))
+        return stessa.id
       }
       return (ok(await db.from('persone').insert(riga).select('id').single()) as { id: string }).id
     },
@@ -2530,7 +2518,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async anteprimaUnione(resta, via) {
-      return ok(await db.rpc('anteprima_unione', { resta, via })) as { presenze: number; prove: number; iscrizioni: number; ricevute: number }
+      return ok(await db.rpc('anteprima_unione', { resta, via })) as AnteprimaUnione
     },
 
     async unisciPersone(resta, via) {

@@ -716,6 +716,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('148-nome-compatto.sql', 'accogliere riconosce lo stesso nome scritto con un altro apostrofo, accento o trattino',
     exists (select 1 from dentro where nome = 'nome_compatto')
     and exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%nome_compatto(p.cognome) = nome_compatto(r.cognome)%')),
+  -- Rifà `anteprima_unione` del 29: rilanciando quello, il controllo torna «manca».
+  ('149-unione-non-si-ferma.sql', 'unire due schede non si ferma su presenze segnalate e pagamenti online in attesa; l''anteprima conta di più',
+    exists (select 1 from pg_trigger where tgname = 'presenze_segnalate_unione')
+    and exists (select 1 from pg_trigger where tgname = 'pagamenti_satispay_unione')
+    and exists (select 1 from dentro where nome = 'anteprima_unione' and corpo like '%pagamentiOnline%')),
   ('150-corso-archiviato-il.sql', 'i conti di un corso archiviato si fermano al giorno dell''archiviazione',
     exists (select 1 from pg_trigger where tgname = 'corsi_archiviato_il' and tgrelid = 'public.corsi'::regclass))
 ) as x(file, cosa, c)
