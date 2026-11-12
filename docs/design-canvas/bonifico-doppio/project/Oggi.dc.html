@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Oggi · COLLEGATI PRIMA</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI (com'è DaAssegnare in AssegnaMovimento.tsx): solo i bonifici già collegati, con la ricevuta della STESSA persona. Il bonifico del genitore con la ricevuta del figlio e i bonifici Da classificare non compaiono: restano due righe nel Conto Corrente. Nomi e numeri inventati. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 1000px">
+  <section aria-label="Collegati prima" style="display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #ffffff; border: 2px solid #cfe6f4">
+    <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">COLLEGATI PRIMA · 1</span>
+    <span style="font-size: 14px">Questi bonifici erano già collegati e la ricevuta l’hai fatta a parte. Se è la stessa, abbinala: così i soldi non si contano due volte.</span>
+    <div style="display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px"><span style="flex: 1 1 260px">Bonifico del 06/11/2026 <span style="font-size: 13px; color: #46606f">· Da VERDI LUCA BONIFICO SEPA</span> → ricevuta n. 124/2026 del 09/11/2026</span><span style="font-variant-numeric: tabular-nums">220,00 €</span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Abbina" hint-size="110px,48px"></dc-import><a href="#" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; color: #0d2a3d; text-underline-offset: 3px">Non è questa</a></div>
+  </section>
+  <span style="font-size: 14px; color: #b81d1d">Non compaiono, e contano due volte: il bonifico di Bianchi Marco (100,00 €) con la ricevuta n. 121 della figlia; il bonifico Da classificare «Da ANNA NERI» (230,00 €) con la ricevuta n. 98 di Gialli Tommaso.</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1000,"height":360}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

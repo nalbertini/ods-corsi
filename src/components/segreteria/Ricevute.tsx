@@ -36,7 +36,7 @@ import {
 } from '../../lib/ricevute'
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { chiaveGiorno } from '../../lib/sala'
-import { bonificiDaAssegnare, cosaNonVaRicevutaDaMovimento, euroAssegna, vociDaMovimento } from '../../lib/assegna'
+import { bonificiDaAssegnare, bonificiLiberi, bonificiPerRicevuta, cosaNonVaRicevutaDaMovimento, euroAssegna, movimentoDaClassificareAbbinabile, voceDaRicevuta, vociDaMovimento } from '../../lib/assegna'
 import { nuovoId } from '../../lib/prove'
 import { avvisoDopoRicevuta, avvisoManda, confermaEmail, daMandare, domandaManda, genitoreDellaMail, restaDopoManda, restaDopoRicevuta, siRiprova, statoPosta, ultimaMandata } from '../../lib/ricevuteEmail'
 import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, suCarta, useAvviso, useBozza, useCarica, Tasto } from './comune'
@@ -647,6 +647,13 @@ export function NuovaRicevuta({
     () => (daPagamento || daMovimento ? Promise.resolve([]) : Promise.all([d.storicoPersona(p.id), d.pagamentiDiretti(), d.ricevute()]).then(([st, tutti, ric]) => bonificiDaAssegnare(st, tutti, ric, oggi))),
     [d, p.id],
   )
+  // I bonifici già nel Conto Corrente che possono essere questi soldi (151): chi ha CONTABILITÀ (`onMovimento`) può
+  // abbinare la ricevuta al bonifico appena fatta, e i soldi contano una volta sola. Gli altri non leggono i movimenti.
+  const inBanca = useCarica(
+    () => (!onMovimento || daPagamento || daMovimento ? Promise.resolve(null) : Promise.all([d.movimenti(), d.pagamentiDiretti(), d.ricevute(), d.casse(), d.voci(), d.persone()])),
+    [d, p.id, !!onMovimento],
+  )
+  const [abbinaA, setAbbinaA] = useState<string | null>(null)
   useEffect(() => {
     // Da un pagamento a mano il modo è quello del modulo: se c'è anche un Satispay, lo dice `cosaNonVaMetodo`.
     if (sp && !daPagamento) setMetodo(metodoDi(sp))
@@ -726,6 +733,14 @@ export function NuovaRicevuta({
   const guaio =
     typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati, oggi, prossimo.dato ?? undefined) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null) ?? (daPagamento?.pagamentoId ? cosaNonVaDaPagamento(dati.voci, dati.data, daPagamento) : null) ?? (daMovimento ? cosaNonVaRicevutaDaMovimento(dati.voci, dati.data, daMovimento.data, daMovimento.sue) : null) ?? contantiInGiornoChiuso(dati.voci.flatMap((v) => v.pagamenti), dati.data, chiusaFino.dato ?? null, daPagamento?.pagamentoId ? daPagamento : undefined)) : null
   const c = dati ? conti(dati) : null
+  const pagatoQui = dati ? dati.voci.reduce((t, v) => t + v.pagamenti.reduce((u, x) => u + x.importo, 0), 0) : 0
+  const possibili =
+    inBanca.dato && dati && metodo === 'Bonifico' && pagatoQui > 0
+      ? bonificiPerRicevuta(bonificiLiberi(inBanca.dato[0], inBanca.dato[1], inBanca.dato[2], inBanca.dato[3], inBanca.dato[4], oggi), { personaId: p.id, data: dati.data, voci: dati.voci, pagato: pagatoQui }, inBanca.dato[5])
+      : []
+  // Il bonifico scelto vale finché è ancora fra i possibili: cambiati importo o data, la scelta cade.
+  const abbinato = possibili.find((m) => m.id === abbinaA)
+  const daClassificare = (m: Parameters<typeof movimentoDaClassificareAbbinabile>[0]) => !!inBanca.dato && movimentoDaClassificareAbbinabile(m, inBanca.dato[3], inBanca.dato[4], oggi)
 
   // Lo sconto famiglia: dove è, o perché non è qui.
   const scontata = voci.find((b) => b.pieno !== undefined)
@@ -782,6 +797,13 @@ export function NuovaRicevuta({
     void fai(
       async () => {
         const r = daMovimento ? await d.emettiRicevutaDaMovimento(dati, daMovimento.movimentoId) : await d.emettiRicevuta(dati, conSatispay?.id, daPagamento?.pagamentoId)
+        // La ricevuta c'è: se l'abbinamento non va, si dice e si rifà da DA ASSEGNARE, senza perdere PDF e mail.
+        const nonAbbinato = abbinato
+          ? await d.abbinaRicevutaMovimento(abbinato.id, r.id).then(
+              () => '',
+              () => ' Il bonifico però non si è abbinato: abbinalo da CONTABILITÀ › DA ASSEGNARE, se no conta due volte.',
+            )
+          : ''
         // Fatta la ricevuta, PDF e mail vanno ognuno per conto suo: se uno non va, l'altro parte lo stesso.
         // Senza carta intestata il PDF non esce: l'avviso dice di riscaricarlo dallo storico, che chiede se stamparlo senza.
         const carta = await cartaSePuoi()
@@ -794,7 +816,7 @@ export function NuovaRicevuta({
         // La ricevuta c'è comunque: se la mail non parte l'avviso non è rosso, e dalla posta che non risponde si riprova da qui.
         const esito = daMandare(p.email ?? null, spuntata) ? await d.mandaRicevuta(r.id) : null
         dillo(
-          avvisoDopoRicevuta(r, esito, scaricato),
+          avvisoDopoRicevuta(r, esito, scaricato) + nonAbbinato,
           restaDopoRicevuta(esito, scaricato),
           siRiprova(esito) ? { etichetta: 'Manda per email', fa: () => void chiediEManda(d, r, p.email, null, fai, dillo, onFatta) } : undefined,
         )
@@ -830,7 +852,27 @@ export function NuovaRicevuta({
           Non si riesce a controllare se c’è un bonifico collegato da assegnare ({bonifici.guaio}): guarda lo storico della scheda prima di fare la ricevuta.
         </span>
       )}
-      {(bonifici.dato ?? []).map((x) => (
+      {possibili.length > 0 && (
+        <section className="sg-riquadro" data-avviso="true" aria-label="Forse è già in banca">
+          <span className="sg-etichetta">FORSE È GIÀ IN BANCA</span>
+          {possibili.map((m) => (
+            <div key={m.id} className="stack" style={{ gap: 4 }}>
+              <span style={{ fontSize: 15, lineHeight: 1.4 }}>
+                Bonifico del {dataRicevuta(m.data)} da <b className="num">{euroAssegna(m.importo)}</b>
+                {daClassificare(m) ? ', da classificare' : ''}: «{m.descrizione}». Se è questo pagamento, abbinalo: così non si conta due volte.
+              </span>
+              <label className="row" style={{ gap: 10, alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600 }}>
+                <input type="checkbox" style={{ width: 22, height: 22 }} checked={abbinato?.id === m.id} onChange={(e) => setAbbinaA(e.target.checked ? m.id : null)} />
+                È questo: abbinalo alla ricevuta
+              </label>
+              {abbinato?.id === m.id && daClassificare(m) && dati && (
+                <span className="sg-sotto">Fatta la ricevuta, il bonifico va a {p.cognome} {p.nome} su «{voceDaRicevuta(dati)}».</span>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
+      {(bonifici.dato ?? []).filter((x) => !possibili.some((m) => m.id === x.movimentoId)).map((x) => (
         <section key={x.movimentoId} className="sg-riquadro" data-avviso="true" aria-label="Bonifico da assegnare">
           <span style={{ fontSize: 15, lineHeight: 1.4 }}>
             {chi} ha un bonifico del {dataRicevuta(x.data)} da {euroAssegna(x.importo)} collegato e {x.daAssegnare === x.importo ? 'non assegnato' : `con ${euroAssegna(x.daAssegnare)} ancora da assegnare`}. Se è questo pagamento, fai la ricevuta da lì: così non si conta due volte.

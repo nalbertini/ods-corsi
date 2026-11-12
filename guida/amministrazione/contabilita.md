@@ -221,10 +221,16 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
 - Nella finestra, **ASSEGNATO A** elenca a chi e a cosa sono andati i soldi, con la ricevuta (e il
   **PDF**) o il tag **Senza ricevuta**.
 - La scheda **DA ASSEGNARE** elenca tutte le entrate collegate che hanno ancora soldi senza una voce,
-  col totale; **Assegna** apre il movimento. In cima, **COLLEGATI PRIMA**: i bonifici collegati prima
-  di questo passaggio per cui la ricevuta l'hai già fatta a parte (stessa persona, stesso importo,
-  pagata tutta con bonifico, entro 30 giorni). **Abbina** li lega senza scrivere niente di nuovo, così i
+  col totale; **Assegna** apre il movimento. In cima, **COLLEGATI PRIMA**: i bonifici già nel Conto
+  Corrente per cui la ricevuta in Bonifico l'hai fatta a parte (stesso importo, pagata tutta con
+  bonifico, entro 30 giorni). La ricevuta può essere della persona del bonifico o della sua famiglia
+  (il genitore paga, la ricevuta è del figlio). **Abbina** li lega senza scrivere niente di nuovo, così i
   soldi non si contano due volte; **Non è questa** la toglie dalla proposta.
+- Anche un bonifico ancora **Da classificare** compare in COLLEGATI PRIMA, con le ricevute che possono
+  essere sue, dalla data più vicina: scegli quella giusta con **È questa** (o **Abbina**, se è una sola),
+  o **Nessuna di queste**. Non si abbina mai da solo, e nemmeno con «Abbina tutti»: abbinato, il bonifico
+  prende la persona della ricevuta e la voce (**Quota associativa** se la ricevuta è solo quota, se no
+  **Corsi e altri pagamenti**).
 - **Per correggere** si annulla la ricevuta (i soldi tornano da assegnare) e si riassegna. Finché un
   movimento ha dei soldi assegnati non si scollega, non cambia persona né va su una voce senza persona, e
   il suo lotto di Importa banca non si annulla: l'app dice cosa annullare prima.
@@ -233,6 +239,10 @@ Nella scheda della persona, in **QUOTA E PAGAMENTI**, un bonifico collegato e no
 («da assegnare dal bonifico del …») con **Assegna ›**; un pagamento assegnato senza ricevuta ha
 **Assegnato · senza ricevuta** e **Apri in contabilità**. Se fai la ricevuta dalla scheda mentre c'è un
 bonifico collegato da assegnare, il modulo lo dice: se è quello, falla dal bonifico.
+Con **PAGATO CON Bonifico**, se nel Conto Corrente c'è già un bonifico libero con lo stesso importo
+entro 30 giorni (della persona, della sua famiglia o Da classificare), il modulo lo mostra in **FORSE È
+GIÀ IN BANCA**: spunta **È questo: abbinalo alla ricevuta** e, fatta la ricevuta, il bonifico si abbina
+da solo. Non è obbligatorio, e lo vede solo chi ha CONTABILITÀ: per gli altri resta COLLEGATI PRIMA.
 
 ### Giroconto
 

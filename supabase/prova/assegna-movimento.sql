@@ -20,7 +20,9 @@
 -- (stessi casi, stessi messaggi).
 --   · 136-assegna-una-volta.sql: la chiave dell'assegnazione (ripetuta non conta due volte, su un altro bonifico è un
 --     errore) e il tetto della quota per persona e stagione (sezioni 13, 14 e 15).
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 136-assegna-una-volta.sql. Nomi tutti inventati.
+--   · 151-abbina-famiglia-da-classificare.sql: si abbina anche la ricevuta del nucleo, e un bonifico Da classificare
+--     prende persona e voce della ricevuta (sezione 9b).
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 151-abbina-famiglia-da-classificare.sql. Nomi tutti inventati.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -403,6 +405,42 @@ select atteso('l''abbinamento non ha cambiato i previsti', previsto('Conto Corre
   :'conto9' || '/' || :'contanti9');
 select annulla_ricevuta(:'ra'::uuid);
 select atteso('annullata la ricevuta abbinata, il bonifico torna da assegnare', resta('Collegato prima A'), '12000');
+reset role;
+
+\echo ''
+\echo '--- 9b. 151: la ricevuta della famiglia e i bonifici Da classificare ---'
+insert into voci_contabili (nome, tipo) values ('Da classificare', 'entrata') on conflict do nothing;
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, persona_id) values
+  ('entrata', '2026-09-01', 9000, id_voce('Corsi e altri pagamenti', 'entrata'), id_cassa('Conto Corrente'), 'Bonifico papà Rossi', pid(10)),
+  ('entrata', '2026-09-01', 9000, id_voce('Corsi e altri pagamenti', 'entrata'), id_cassa('Conto Corrente'), 'Bonifico papà Rossi bis', pid(10)),
+  ('entrata', '2026-09-01', 7000, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'Da PAOLA NERI BONIFICO SEPA', null),
+  ('entrata', '2026-09-01', 7000, id_voce('Da classificare', 'entrata'), id_cassa('Cassa Contanti'), 'Contanti da classificare', null),
+  ('entrata', '2026-09-01', 22000, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'Da GINO BLU BONIFICO SEPA', null);
+select chi(:ANNA);
+set role authenticated;
+select vecchia(dati(11, jsonb_build_array(vr('TRIMESTRE JUDO', 9000, bon(9000, '2026-09-02'))), '{}', '2026-09-02')) as rfiglio \gset
+select vecchia(dati(13, jsonb_build_array(vr('TRIMESTRE JUDO', 9000, bon(9000, '2026-09-02'))), '{}', '2026-09-02')) as rgiada \gset
+select vecchia(dati(17, jsonb_build_array(vr('QUOTA ASSOCIATIVA', 7000, bon(7000, '2026-09-04'))), '{}', '2026-09-04')) as rquota \gset
+select vecchia(dati(17, jsonb_build_array(vr('QUOTA ASSOCIATIVA', 7000, bon(7000, '2026-09-04'))), '{}', '2026-09-04')) as rquota2 \gset
+select vecchia(dati(19, jsonb_build_array(vr('QUOTA ASSOCIATIVA', 5000, bon(5000, '2026-09-05')), vr('TRIMESTRE JUDO', 17000, bon(17000, '2026-09-05'))), '{}', '2026-09-05')) as rmista \gset
+reset role;
+select chi(:ADA);
+set role authenticated;
+select atteso('la ricevuta del figlio sul bonifico del padre (stesso nucleo): si abbina', abbina('Bonifico papà Rossi', :'rfiglio'), 'nessun errore');
+select atteso('…la ricevuta punta al bonifico', com_ricevuta(:'rfiglio'), 'bbbbbbbb-0000-0000-0000-000000000011|Bonifico papà Rossi|9000|false');
+select atteso('…chi è spento nel nucleo no, come per assegnare', abbina('Bonifico papà Rossi bis', :'rgiada'), '22023 La ricevuta è di un’altra persona.');
+select atteso('un bonifico Da classificare con la ricevuta in Bonifico: si abbina', abbina('Da PAOLA NERI BONIFICO SEPA', :'rquota'), 'nessun errore');
+select atteso('…e prende persona e voce della ricevuta (solo quota)', (select persona_id::text || '|' || (select nome from voci_contabili where id = voce_id) from movimenti where id = id_mov('Da PAOLA NERI BONIFICO SEPA')),
+  'bbbbbbbb-0000-0000-0000-000000000017|Quota associativa');
+select atteso('…la ricevuta punta al bonifico', com_ricevuta(:'rquota'), 'bbbbbbbb-0000-0000-0000-000000000017|Da PAOLA NERI BONIFICO SEPA|7000|false');
+select atteso('…in CONTABILITÀ un solo incasso: il bonifico è da assegnare a zero', resta('Da PAOLA NERI BONIFICO SEPA'), '0');
+select atteso('un Da classificare in Cassa Contanti, senza persona: no', abbina('Contanti da classificare', :'rquota2'), '22023 Collega prima il movimento a una persona.');
+select atteso('quota e corsi insieme: il bonifico va su «Corsi e altri pagamenti»', abbina('Da GINO BLU BONIFICO SEPA', :'rmista'), 'nessun errore');
+select atteso('…', (select (select nome from voci_contabili where id = voce_id) from movimenti where id = id_mov('Da GINO BLU BONIFICO SEPA')), 'Corsi e altri pagamenti');
+reset role;
+select chi(:ANNA);
+set role authenticated;
+select atteso('la segreteria non abbina nemmeno un Da classificare', left(abbina('Contanti da classificare', :'rquota2'), 5), '42501');
 reset role;
 
 \echo ''

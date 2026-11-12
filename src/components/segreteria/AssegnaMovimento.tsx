@@ -4,16 +4,19 @@ import { useMemo, useRef, useState } from 'react'
 import {
   abbinamentiProposti,
   conAssegnazioni,
+  daClassificareDaAbbinare,
   cosaNonVaAssegnazione,
   cosaNonVaMovimentoDaAssegnare,
   daAssegnare,
   dovutiDi,
   elencoDaAssegnare,
   euroAssegna,
+  movimentoDaClassificareAbbinabile,
   personeDelNucleo,
   proponiRipartizione,
   type RigaAssegnata,
   type VoceDovuta,
+  voceDaRicevuta,
 } from '../../lib/assegna'
 import { oggiARoma, type Cassa, type MovimentoManuale, type VoceContabile } from '../../lib/contabilita'
 import { listinoUsabile } from '../../lib/listino'
@@ -287,42 +290,102 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
     return p ? `${p.cognome} ${p.nome}` : '…'
   }
   const [scartati, setScartati] = useState<string[]>([])
+  const anagrafe = useAnagrafe(d)
+  const persone = anagrafe.dato?.persone ?? []
+  const chi = (id?: string) => {
+    const p = persone.find((x) => x.id === id)
+    return p ? `${p.cognome} ${p.nome}` : '…'
+  }
+  const fuori = (movimentoId: string, ricevutaId: string) => scartati.includes(`${movimentoId}|${ricevutaId}`)
   // Solo i bonifici che non hanno ancora niente assegnato: abbinare una ricevuta a uno già diviso conterebbe due volte.
-  const liberi = manuali.filter((m) => cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggi) === null && daAssegnare(m, diretti, ricevute) === m.importo)
-  const proposti = abbinamentiProposti(liberi, ricevute).filter((x) => !scartati.includes(`${x.movimentoId}|${x.ricevutaId}`))
+  const interi = manuali.filter((m) => daAssegnare(m, diretti, ricevute) === m.importo)
+  const liberi = interi.filter((m) => cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggi) === null)
+  const proposti = abbinamentiProposti(liberi, ricevute, persone).filter((x) => !fuori(x.movimentoId, x.ricevutaId))
+  // I Da classificare (151): le ricevute possibili tutte, dalla più vicina; una già proposta sopra non torna qui.
+  const daClassificare = interi.filter((m) => movimentoDaClassificareAbbinabile(m, casse, voci, oggi))
+  const scelte = daClassificareDaAbbinare(daClassificare, ricevute, new Set(proposti.map((x) => x.ricevutaId)))
+    .map((x) => ({ ...x, ricevute: x.ricevute.filter((r) => !fuori(x.movimentoId, r)) }))
+    .filter((x) => x.ricevute.length > 0)
   const movimento = (id: string) => manuali.find((m) => m.id === id)
   const ricevuta = (id: string) => ricevute.find((r) => r.id === id)
-  const abbina = (xs: typeof proposti) =>
+  const abbina = (xs: Array<{ movimentoId: string; ricevutaId: string }>) =>
     void fai(async () => {
       for (const x of xs) await d.abbinaRicevutaMovimento(x.movimentoId, x.ricevutaId)
     }, xs.length > 1 ? `${xs.length} bonifici abbinati` : 'Bonifico abbinato', onCambiato)
+  const scarta = (movimentoId: string, ids: string[]) => setScartati([...scartati, ...ids.map((r) => `${movimentoId}|${r}`)])
+  const dopo = (mv: MovimentoManuale, r: Ricevuta) => {
+    const n = Math.round(Math.abs(Date.parse(`${r.data}T12:00:00Z`) - Date.parse(`${mv.data}T12:00:00Z`)) / 86_400_000)
+    return n === 0 ? 'lo stesso giorno' : `${n} ${n === 1 ? 'giorno' : 'giorni'} ${r.data > mv.data ? 'dopo' : 'prima'}`
+  }
+  const bonifico = (mv: MovimentoManuale) => (
+    <span style={{ fontSize: 15 }}>
+      <b>Bonifico del {dataRicevuta(mv.data)}</b> <span className="sg-sotto">· {mv.personaId ? chi(mv.personaId) : 'Da classificare'} · {mv.descrizione}</span>
+    </span>
+  )
+  const nonEQuesta = (movimentoId: string, ids: string[], testo = 'Non è questa') => (
+    <button type="button" className="sg-link" style={DITO} onClick={() => scarta(movimentoId, ids)}>{testo}</button>
+  )
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      {proposti.length > 0 && (
+      {proposti.length + scelte.length > 0 && (
         <div className="sg-riquadro stack" style={{ gap: 10 }}>
-          <span className="sg-etichetta">COLLEGATI PRIMA · {proposti.length}</span>
-          <span style={{ fontSize: 14 }}>Questi bonifici erano già collegati e la ricevuta l’hai fatta a parte. Se è la stessa, abbinala: così i soldi non si contano due volte.</span>
+          <span className="sg-etichetta">COLLEGATI PRIMA · {proposti.length + scelte.length}</span>
+          <span style={{ fontSize: 14 }}>Questi bonifici sono già nel Conto Corrente e la ricevuta in Bonifico l’hai fatta a parte. Se è la stessa, abbinala: così i soldi non si contano due volte.</span>
           {proposti.map((x) => {
             const mv = movimento(x.movimentoId)
             const r = ricevuta(x.ricevutaId)
             if (!mv || !r) return null
             return (
-              <div key={`${x.movimentoId}|${x.ricevutaId}`} className="row" style={{ gap: 10, alignItems: 'baseline', flexWrap: 'wrap', borderTop: '1px solid var(--line-soft)', paddingTop: 8 }}>
-                <span style={{ fontSize: 15, flex: '1 1 260px', minWidth: 0 }}>
-                  Bonifico del {dataRicevuta(mv.data)} <span className="sg-sotto">· {mv.descrizione}</span> → ricevuta n. {r.numero}/{r.anno} del {dataRicevuta(r.data)}
+              <div key={`${x.movimentoId}|${x.ricevutaId}`} className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap', borderTop: '1px solid var(--line-soft)', paddingTop: 10 }}>
+                <span className="stack" style={{ gap: 2, flex: '1 1 380px', minWidth: 0, overflowWrap: 'anywhere' }}>
+                  {bonifico(mv)}
+                  <span style={{ fontSize: 15 }}>
+                    → ricevuta n. {r.numero}/{r.anno} del {dataRicevuta(r.data)} · <b>{chi(r.personaId)}</b>
+                    {r.personaId !== mv.personaId && <span className="sg-sotto"> · della famiglia di {chi(mv.personaId)}</span>}
+                  </span>
                 </span>
-                <span className="num" style={{ fontSize: 15 }}>{euroAssegna(mv.importo)}</span>
+                <span className="num" style={{ fontSize: 15, fontWeight: 700 }}>{euroAssegna(mv.importo)}</span>
                 <Tasto onClick={() => abbina([x])}>Abbina</Tasto>
-                <button type="button" className="sg-link" style={DITO} onClick={() => setScartati([...scartati, `${x.movimentoId}|${x.ricevutaId}`])}>Non è questa</button>
+                {nonEQuesta(x.movimentoId, [x.ricevutaId])}
+              </div>
+            )
+          })}
+          {scelte.map((x) => {
+            const mv = movimento(x.movimentoId)
+            const rr = x.ricevute.map(ricevuta).filter((r): r is Ricevuta => !!r)
+            if (!mv || !rr.length) return null
+            const una = rr.length === 1
+            return (
+              <div key={x.movimentoId} className="stack" style={{ gap: 8, borderTop: '1px solid var(--line-soft)', paddingTop: 10 }}>
+                <span className="row" style={{ gap: 12, alignItems: 'baseline', flexWrap: 'wrap' }}>
+                  <span style={{ flex: '1 1 380px', minWidth: 0, overflowWrap: 'anywhere' }}>{bonifico(mv)}</span>
+                  <span className="num" style={{ fontSize: 15, fontWeight: 700 }}>{euroAssegna(mv.importo)}</span>
+                </span>
+                {una ? (
+                  <span className="sg-sotto" data-tono="aspetta">Abbinando, il bonifico va a {chi(rr[0].personaId)} su «{voceDaRicevuta(rr[0])}».</span>
+                ) : (
+                  <span className="sg-sotto" data-tono="aspetta">{rr.length} ricevute possono essere questa: scegli quella giusta. Abbinando, il bonifico va alla persona della ricevuta.</span>
+                )}
+                {rr.map((r) => (
+                  <div key={r.id} className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap', paddingLeft: 16 }}>
+                    <span style={{ fontSize: 15, flex: '1 1 360px', minWidth: 0, overflowWrap: 'anywhere' }}>
+                      ricevuta n. {r.numero}/{r.anno} del {dataRicevuta(r.data)} · <b>{chi(r.personaId)}</b> <span className="sg-sotto">· {dopo(mv, r)}</span>
+                    </span>
+                    <Tasto onClick={() => abbina([{ movimentoId: x.movimentoId, ricevutaId: r.id }])}>{una ? 'Abbina' : 'È questa'}</Tasto>
+                    {una && nonEQuesta(x.movimentoId, [r.id])}
+                  </div>
+                ))}
+                {!una && <div style={{ paddingLeft: 16 }}>{nonEQuesta(x.movimentoId, rr.map((r) => r.id), 'Nessuna di queste')}</div>}
               </div>
             )
           })}
           {proposti.length > 1 && (
             <div>
-              <Tasto tono="pieno" onClick={() => abbina(proposti)}>Abbina tutti e {proposti.length}</Tasto>
+              <Tasto tono="pieno" onClick={() => abbina(proposti)}>{scelte.length ? `Abbina i ${proposti.length} già collegati` : `Abbina tutti e ${proposti.length}`}</Tasto>
             </div>
           )}
+          {scelte.length > 0 && <span className="sg-sotto">I bonifici da classificare si abbinano uno per uno: prendono persona e voce della ricevuta.</span>}
         </div>
       )}
       <div className="stack" style={{ gap: 6 }}>
