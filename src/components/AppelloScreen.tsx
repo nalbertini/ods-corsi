@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { conMioAppello, righeIstruttori, type Dati, type IstruttoreLezione } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
 import { appelloAperto, eFuoriFinestra, etichettaFuoriFinestra, fraseFuoriFinestra } from '../lib/finestra'
@@ -11,10 +11,27 @@ import { MarchioProva, TogliProva } from './Prove'
 import { CercaPersona } from './CercaPersona'
 import { aiutoAppello, chiudiAppello, codaAppello, contoRicerca, fraseAzzera, fraseGuaioAttivita, fraseGuaioSegnalata, proveInPiu, quadroAppello, statoAppello, tastoAppello } from '../lib/etichetteAppello'
 import { DueTocchi } from './ds'
+import { useDialogo } from './segreteria/comune'
 import { SegnoCompleanno } from './SegnoCompleanno'
 import { GiaPresenti } from './GiaPresenti'
 import { vociAttivita } from '../lib/segreteria'
 import type { SegnalataVista } from '../lib/segnalate'
+
+/**
+ * Il foglio del menu ⋯, dal basso sopra il velo. È un dialogo come gli altri
+ * dell'app (`useDialogo`): il fuoco ci entra, col TAB non scappa sull'elenco
+ * dietro il velo, ESC lo chiude, e chiuso torna sul ⋯.
+ */
+function FoglioAppello({ onChiudi, children }: { onChiudi: () => void; children: ReactNode }) {
+  const foglio = useDialogo<HTMLDivElement>(onChiudi)
+  return (
+    <div className="foglio-appello-velo" onClick={onChiudi}>
+      <div ref={foglio} tabIndex={-1} className="foglio-appello" role="dialog" aria-modal="true" aria-label="Altro dell’appello" onClick={(e) => e.stopPropagation()}>
+        {children}
+      </div>
+    </div>
+  )
+}
 
 /**
  * Cosa si fa in questa lezione, scelto fra le attività della palestra: lo
@@ -219,19 +236,12 @@ export function AppelloScreen({
   const toccataIl = useRef(new Map<string, number>())
   // Il menu ⋯: le cose che si fanno di rado (AZZERA, l'attività) lontano dal pollice che segna.
   const [menu, setMenu] = useState(false)
-  const foglio = useRef<HTMLDivElement>(null)
-  const tastoMenu = useRef<HTMLButtonElement>(null)
-  const menuAperto = useRef(false)
   // Mentre un tasto chiede il secondo tocco, la frase accanto lo dice.
   const [sicuroAzzera, setSicuroAzzera] = useState(false)
   const [sicuroChiudi, setSicuroChiudi] = useState(false)
   useEffect(() => {
-    // Chiuso il foglio, il fuoco torna sul ⋯: con la tastiera o il lettore di schermo non si riparte dal fondo della pagina.
-    if (menu) foglio.current?.focus()
-    else if (menuAperto.current) tastoMenu.current?.focus()
     // DueTocchi smontato col foglio non dice più «non chiedo»: la frase di AZZERA va rimessa a mano.
     if (!menu) setSicuroAzzera(false)
-    menuAperto.current = menu
   }, [menu])
   // «Un tocco sul nome…» solo ai primi appelli: dopo è rumore sopra la lista.
   // Contato una volta per apertura; senza memoria del browser si mostra sempre.
@@ -428,7 +438,7 @@ export function AppelloScreen({
             </button>
           )}
           {!soloLettura && (
-            <button ref={tastoMenu} type="button" className="icon-btn appello-menu" aria-label="Altro: azzera l’appello, cambia l’attività" aria-haspopup="dialog" aria-expanded={menu} onClick={() => setMenu(true)}>
+            <button type="button" className="icon-btn appello-menu" aria-label="Altro: azzera l’appello, cambia l’attività" aria-haspopup="dialog" aria-expanded={menu} onClick={() => setMenu(true)}>
               ⋯
             </button>
           )}
@@ -469,46 +479,36 @@ export function AppelloScreen({
       </div>
 
       {menu && !soloLettura && (
-        <div className="foglio-appello-velo" onClick={() => setMenu(false)} onKeyDown={(e) => e.key === 'Escape' && setMenu(false)}>
-          <div
-            ref={foglio}
-            tabIndex={-1}
-            className="foglio-appello"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Altro dell’appello"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="foglio-appello-maniglia" aria-hidden="true" />
-            <span className="foglio-appello-titolo">
-              {`${d.sessione.corso} · ${giornoPerEsteso(d.sessione.inizio)} ${oraDi(d.sessione.inizio)}`.toUpperCase()}
+        <FoglioAppello onChiudi={() => setMenu(false)}>
+          <span className="foglio-appello-maniglia" aria-hidden="true" />
+          <span className="foglio-appello-titolo">
+            {`${d.sessione.corso} · ${giornoPerEsteso(d.sessione.inizio)} ${oraDi(d.sessione.inizio)}`.toUpperCase()}
+          </span>
+          {soloDi && d.sessione.insegnanti?.includes(soloDi) && <CambiaAttivita dati={dati} sessione={d.sessione} onCambiata={() => {
+            setGiro((g) => g + 1)
+            onAttivitaCambiata?.()
+          }} />}
+          <div className="stack foglio-appello-azzera" style={{ gap: 6 }}>
+            <DueTocchi
+              className="btn btn-azzera"
+              disabled={segnati === 0}
+              chiede="SÌ, TOGLI TUTTI I SEGNI"
+              onChiede={setSicuroAzzera}
+              onFai={() => {
+                azzera()
+                setMenu(false)
+              }}
+            >
+              AZZERA L’APPELLO
+            </DueTocchi>
+            <span className="foglio-appello-frase">
+              {fraseAzzera(sicuroAzzera)}
             </span>
-            {soloDi && d.sessione.insegnanti?.includes(soloDi) && <CambiaAttivita dati={dati} sessione={d.sessione} onCambiata={() => {
-              setGiro((g) => g + 1)
-              onAttivitaCambiata?.()
-            }} />}
-            <div className="stack foglio-appello-azzera" style={{ gap: 6 }}>
-              <DueTocchi
-                className="btn btn-azzera"
-                disabled={segnati === 0}
-                chiede="SÌ, TOGLI TUTTI I SEGNI"
-                onChiede={setSicuroAzzera}
-                onFai={() => {
-                  azzera()
-                  setMenu(false)
-                }}
-              >
-                AZZERA L’APPELLO
-              </DueTocchi>
-              <span className="foglio-appello-frase">
-                {fraseAzzera(sicuroAzzera)}
-              </span>
-            </div>
-            <button type="button" className="btn btn-chiudi-menu" onClick={() => setMenu(false)}>
-              CHIUDI IL MENU
-            </button>
           </div>
-        </div>
+          <button type="button" className="btn btn-chiudi-menu" onClick={() => setMenu(false)}>
+            CHIUDI IL MENU
+          </button>
+        </FoglioAppello>
       )}
 
       {soloLettura && (
