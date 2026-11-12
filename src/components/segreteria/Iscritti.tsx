@@ -21,7 +21,7 @@ import type { Ricercata } from '../../lib/ricerca'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, fratelliDaProporre, maggiorenneDal, nucleoPerRicevuta, propostaGenitore, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { minorenne } from '../../lib/richieste'
 import { euro, voceQuota } from '../../lib/ricevute'
-import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
+import { altraDellaCoppia, campiDiversi, coppieDoppioni, cosaPassa, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 import { StoricoPersona } from './CollegaPersona'
 import { PagatoPrima } from './PagatoPrima'
 import { CellaSollecito, SollecitoWhatsApp, useSollecito } from './Sollecito'
@@ -1472,18 +1472,6 @@ function UnisciDoppione({
   const [resta, via] = lei && scambiate ? [lei, p] : [p, lei]
   const passa = useCarica(async () => (resta && via ? d.anteprimaUnione(resta.id, via.id) : null), [d, resta?.id, via?.id])
   const nome = (x: PersonaSeg) => `${x.cognome} ${x.nome}`
-  const quanto = (n: { presenze: number; prove: number; iscrizioni: number; ricevute: number }) => {
-    const tutte: [number, string, string][] = [
-      [n.presenze, 'presenza', 'presenze'],
-      [n.prove, 'prova', 'prove'],
-      [n.iscrizioni, 'iscrizione', 'iscrizioni'],
-      [n.ricevute, 'ricevuta', 'ricevute'],
-    ]
-    const voci = tutte
-      .filter(([q]) => q > 0)
-      .map(([q, uno, tanti]) => `${q} ${q === 1 ? uno : tanti}`)
-    return voci.length ? `Passano ${voci.join(', ')}.` : 'L’altra scheda non ha presenze, prove, iscrizioni né ricevute.'
-  }
   const colonna = (t: string, x: PersonaSeg) => (
     <div className="stack" style={{ gap: 2, minWidth: 0 }}>
       <span className="sg-etichetta">{t}</span>
@@ -1550,7 +1538,7 @@ function UnisciDoppione({
           ) : (
             (
               <span className="sg-sotto">
-                {quanto(passa.dato)} Una presenza per lezione e un’iscrizione per corso; del certificato, la scadenza più lontana col suo file, e della quota, quella più lontana. Resta attiva
+                {cosaPassa(passa.dato)} Una presenza per lezione e un’iscrizione per corso; del certificato, la scadenza più lontana col suo file, e della quota, quella più lontana. Resta attiva
                 se una delle due lo era.
               </span>
             )

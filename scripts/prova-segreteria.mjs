@@ -1491,7 +1491,18 @@ console.log('\nunire due schede')
   const ilTitolare = await errore(() => s.unisciPersone(resta, titolare))
   ok('nemmeno chi ne è titolare', ilTitolare, "Gina Damico è titolare di un nucleo familiare: prima rendi titolare qualcun altro o togli gli altri dal nucleo")
 
-  ok('l\'anteprima dice cosa passa', await s.anteprimaUnione(resta, via), { presenze: 3, prove: 1, iscrizioni: 3, ricevute: 1 })
+  // La stessa lezione segnalata dall'area iscritti su tutte e due: quella del doppione già accolta.
+  m.archivio.dati.segnalate = [
+    ...(m.archivio.dati.segnalate ?? []),
+    { id: 'seg-r', sessioneId: l1.id, personaId: resta, il: '2026-09-01T10:00:00Z', stato: 'da_vedere' },
+    { id: 'seg-v', sessioneId: l1.id, personaId: via, il: '2026-09-01T11:00:00Z', stato: 'accolta', gestitaIl: '2026-09-02T10:00:00Z', gestitaDa: 'i-anna' },
+  ]
+  const passa = await s.anteprimaUnione(resta, via)
+  ok('l\'anteprima dice cosa passa', passa, { presenze: 3, prove: 1, iscrizioni: 3, ricevute: 1, tessere: 0, gare: 0, movimenti: 0, pagamentiOnline: 0 })
+  ok('e lo dice a parole', m.cosaPassa(passa), 'Passano 3 presenze, 1 prova, 3 iscrizioni, 1 ricevuta.')
+  ok('anche tessere, gare, movimenti e pagamenti online', m.cosaPassa({ presenze: 0, prove: 0, iscrizioni: 0, ricevute: 0, tessere: 2, gare: 1, movimenti: 1, pagamentiOnline: 2 }),
+    'Passano 2 tessere, 1 gara, 1 movimento, 2 pagamenti online.')
+  ok('niente da passare', m.cosaPassa({ presenze: 0, prove: 0, iscrizioni: 0, ricevute: 0 }), 'L’altra scheda non ha presenze, prove, iscrizioni, ricevute, tessere, gare, movimenti né pagamenti online.')
   ok('e non cambia niente', !!(await di(via)), true)
 
   await s.unisciPersone(resta, via)
@@ -1502,6 +1513,8 @@ console.log('\nunire due schede')
     [m.memoria.segnate[l1.id][resta], m.memoria.segnate[l2.id][resta], m.memoria.segnate[l3.id][resta]], ['presente', 'giustificato', 'presente'])
   ok('del doppione nessuna presenza', Object.values(m.memoria.segnate).some((x) => via in x), false)
   ok('la prova passa', (m.archivio.dati.prove ?? []).filter((x) => x.sessioneId === l3.id).map((x) => x.personaId), [resta])
+  ok('una segnalazione per lezione, e resta lo stato di quella già gestita',
+    (m.archivio.dati.segnalate ?? []).filter((x) => x.sessioneId === l1.id && [resta, via].includes(x.personaId)).map((x) => [x.id, x.personaId === resta, x.stato]), [['seg-r', true, 'accolta']])
   ok('le iscrizioni: una per corso, dalla più vecchia alla fine più lontana',
     r.iscrizioni.map((i) => [i.corsoId, i.dal, i.al ?? null]).sort((x, y) => x[0].localeCompare(y[0])),
     [['judo-2', '2026-09-14', '2027-06-30'], ['lotta-2', '2025-09-01', null], ['pesistica', '2026-02-01', '2026-12-31']])
