@@ -261,34 +261,37 @@ Aprendo il movimento compare **MANCANO DEI DATI**: scrivi il destinatario e prem
 **Salva il destinatario**. Diventa il titolo del movimento, e la scritta della banca resta
 nella nota (con «Dalla banca:»), per ritrovarlo sull'estratto conto.
 
-Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**. Dice
-quanti movimenti ci sono, quanti entrano e per quanto, e sotto elenca **tutte le righe
-del file**, nuove o già importate, una per riga: data, testo della banca, tipologia, persona,
-importo e uno **stato** in parole. Con i filtri sopra l'elenco (**Tutte**, **Nuove**, **Duplicate**,
-**Da decidere**, **Scartate**) vedi solo quelle che ti interessano, e accanto **Entrambe**,
-**Entrate** o **Uscite** tiene solo i soldi che entrano o che escono (le scartate, senza
-importo, restano fuori).
+Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**. In alto il conto delle
+righe del file: quante sono **nuove**, quante **forse già nell'app**, quante **già nell'app** e quante
+**scartate**, poi quanto entra e per quanto. Sotto, le righe: data, descrizione (il tipo d'operazione
+della banca in piccolo sopra, il testo senza codici TRN), tipologia, importo e, in fondo a destra,
+la persona o i tasti della riga. I filtri sopra l'elenco sono **Da fare** (la pagina parte da qui:
+le nuove e quelle da decidere), **Già nell'app**, **Scartate** e **Tutte**; accanto **Entrambe**,
+**Entrate** o **Uscite** tiene solo i soldi che entrano o che escono (le scartate, senza importo,
+restano fuori). Se il file non ha niente di nuovo, la pagina lo dice e mostra le già nell'app.
 
-- **Nuova**: entra come movimento nuovo.
-- **Da controllare**: entra, ma ricontrollala dopo (per esempio un versamento).
-- **Duplicata**: c'è già, anche come ricevuta o pagamento a mano in bonifico o POS: non si scrive una seconda volta. Al posto di tipologia e persona, **GIÀ SCRITTA COME** dice la voce già presente a cui si riferisce (descrizione, data, cassa, tipo e numero). Se l'abbinamento l'ha fatto l'anteprima e non è giusto, **È nuova** fa entrare la riga come movimento nuovo. Sulle righe già importate in una volta precedente il tasto non c'è, per non scrivere due volte lo stesso pagamento.
-- **Una ricevuta pagata in più rate**: se la ricevuta ha più pagamenti dello stesso giorno sul Conto Corrente (per esempio quota 50,00 + trimestre 170,00 in bonifico) e dalla banca arriva un bonifico solo con la somma (220,00), la ricevuta intera è una voce sola: **GIÀ SCRITTA COME** dice la persona, il numero della ricevuta e le rate («quota 50,00 + trimestre 170,00»). È **Duplicata** da sola solo se nel testo della banca ci sono nome e cognome di chi ha la ricevuta; se no è **Da decidere**, con la frase «Il nome nel testo non è quello della ricevuta: dimmi tu.». Si somma solo dentro una ricevuta: un bonifico che paga le ricevute di più persone entra come **Nuova** e si divide con **Assegna a quota e corsi**. Un bonifico importato come nuovo prima di questa regola si sistema annullando il movimento in **MOVIMENTI**: la ricevuta resta e i soldi contano una volta.
-- **Da decidere**: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo) e più di un possibile pagamento. Sotto **POTREBBE ESSERE** scegli quello giusto con la **spunta verde** (**È questa**), oppure **È nuova**. Finché non scegli, non entra. Se il testo ha nome e cognome di una persona (o del suo genitore), quella scheda è in evidenza con «Sembra questo»; se il nome è di una e il genitore di un'altra, sono in evidenza tutte e due e scegli tu: **Conferma quelli che sembrano giusti** li conferma tutti insieme, e una riga con una sola scheda così non cambia finché non confermi.
-- **Scartata**: la data o l'importo sono illeggibili, o la data è nel futuro. Il motivo è scritto nella riga. Correggila nel file e riprova.
+Le righe sono a gruppi:
 
-Sopra l'elenco, gli **avvisi**: i **versamenti di contanti** entrano, ma controlla che non siano già nella cassa contanti. I versamenti **«Da Satispay Europe S.A.»** entrano come gli altri: sono l'incasso di Satispay, sulla voce **Incassi Satispay** (vedi [Satispay](#satispay)). Le duplicate si ricontrollano dopo l'importazione in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
+- **Forse già nell'app**, per prime: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo). Accanto c'è il movimento dell'app che potrebbe essere (per esempio «Rossi Luca · ricevuta n. 119 · 26/10/2026»): **Conferma** se è quello, **Nuovo** se è un movimento diverso; finché non scegli, la riga non entra. **Nome diverso** vuol dire che nel testo della banca c'è un nome che non è quello della ricevuta. Sulla fascia del gruppo, **Conferma** collega insieme le righe dove nome e cognome (o il genitore) sono nel testo, **Tutti nuovi** le fa entrare tutte come movimenti nuovi.
+- **Movimenti nuovi**: entrano. Un **versamento di contanti** ha sotto la riga gialla «controlla che non siano già nella cassa contanti».
+- **Già nell'app**: c'è già, anche come ricevuta o pagamento a mano in bonifico o POS, e non si scrive una seconda volta. Accanto c'è il movimento dell'app a cui corrisponde. Se l'abbinamento l'ha fatto l'anteprima e non è giusto, **Nuovo** fa entrare la riga come movimento nuovo; sulle righe già importate in una volta precedente il tasto non c'è, per non scrivere due volte lo stesso pagamento.
+- **Una ricevuta pagata in più rate**: se la ricevuta ha più pagamenti dello stesso giorno sul Conto Corrente (per esempio quota 50,00 + trimestre 170,00 in bonifico) e dalla banca arriva un bonifico solo con la somma (220,00), la ricevuta intera è una voce sola, con le rate nel dettaglio. È **già nell'app** da sola solo se nel testo della banca ci sono nome e cognome di chi ha la ricevuta; se no è **forse già nell'app**, con **Nome diverso**. Si somma solo dentro una ricevuta: un bonifico che paga le ricevute di più persone entra come nuovo e si divide con **Assegna a quota e corsi**. Un bonifico importato come nuovo prima di questa regola si sistema annullando il movimento in **MOVIMENTI**: la ricevuta resta e i soldi contano una volta.
+- **Scartate**: la data o l'importo sono illeggibili, o la data è nel futuro. Il motivo è scritto nella riga. Correggila nel file e riprova.
+
+I versamenti **«Da Satispay Europe S.A.»** entrano come gli altri: sono l'incasso di Satispay, sulla voce **Incassi Satispay** (vedi [Satispay](#satispay)). Le righe già nell'app si ricontrollano dopo l'importazione in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
 
 Sulle righe che entrano scegli la **tipologia**: parte da quella che l'app propone (come per
 i movimenti da classificare) o da **Da classificare**. Per una quota o un corso serve anche la
-**persona**: sulle entrate l'app propone quella col nome che c'è nel testo, e conta solo
-quando la confermi con la **spunta verde**; **Cambia**, **Cerca** o **Scegli** (se più schede
-hanno quel nome) la cercano a mano. In fondo l'app dice quante righe avranno la voce scelta e
-quante restano in **Da classificare**: una quota senza persona, per esempio, entra lo stesso e
-resta lì. Se esci dalla pagina con delle scelte fatte, l'app chiede prima.
+**persona**, in fondo alla riga: se nel testo c'è il nome di una sola scheda, l'app la mette già lì
+e all'importazione vale quella. Premendo il campo (o **Assegna**, se è vuoto) si apre **CHI HA
+PAGATO?**: in cima le schede col nome del testo, sotto la ricerca; scegli e premi **Assegna**.
+In fondo l'app dice quante righe avranno la voce scelta e quante restano in **Da classificare**:
+una quota senza persona, per esempio, entra lo stesso e resta lì. Se esci dalla pagina con delle
+scelte fatte, l'app chiede prima.
 
 I movimenti entrano col segno **DALLA BANCA**, nella voce scelta o in **Da classificare**:
 quelle rimaste le sistemi dopo, con **Cambia voce**. Rileggere lo stesso file non duplica niente,
-nemmeno un movimento annullato. Se qualcosa non torna, **Annulla tutta l'importazione**
+nemmeno un movimento annullato. Se qualcosa non torna, **Annulla**, accanto all'ultima importazione in cima alla pagina,
 toglie in un colpo i movimenti dell'ultima importazione; uno annullato per sbaglio si
 recupera da **Annullati**. Solo l'amministrazione importa; la segreteria può poi
 classificare. Una volta sola al massimo 1000 movimenti.
