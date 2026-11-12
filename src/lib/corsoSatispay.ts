@@ -130,8 +130,8 @@ export function statoCorsiDi(scheda: SchedaIscritto, ricevute: Ricevuta[], chi: 
       listino,
       oggi,
     ) ?? []
-  ).map((s) =>
-    // I soldi già in segreteria coprono il corso come una ricevuta in parte: per il resto si chiede lì, non si paga qui.
-    DA_PAGARE.includes(s.come) && chi.corsi.some((x) => x.corsoId === s.corsoId && x.assegnato) ? { ...s, come: 'in_parte' } : s,
+  ).filter(
+    // Coi soldi già in segreteria il corso non si paga qui (come con una ricevuta in parte): per il resto si chiede lì.
+    (s) => !(DA_PAGARE.includes(s.come) && chi.corsi.some((x) => x.corsoId === s.corsoId && x.assegnato)),
   )
 }

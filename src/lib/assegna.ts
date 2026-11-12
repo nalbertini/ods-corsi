@@ -6,7 +6,7 @@
 import { NOME_CASSA_CONTANTI, VOCE_CORSI, VOCE_QUOTA, type Cassa, type MovimentoManuale, type VoceContabile } from './contabilita'
 import type { PagamentoDiretto } from './pagamenti'
 import type { VoceStorico } from './movimentiPersona'
-import { QUOTA, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { QUOTA, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { statoCorsi, type VoceCorso } from './corsiDaPagare'
 import { stagioneDi } from './costi'
 import type { CorsoRef, Listino } from './listino'
@@ -275,13 +275,15 @@ export const quotaInSegreteria = (diretti: PagamentoDiretto[], personaId: string
     .filter((d) => eQuota(d.voce) && annoQuota(d.voce, d.data) === annoQuota('', oggi))
     .reduce((s, d) => s + d.importo, 0)
 
-/** C'è già qualcosa in segreteria sull'annuale, il trimestre o il saldo del corso, in questa stagione (`corso_in_segreteria`, 146). */
+/**
+ * C'è già qualcosa in segreteria sull'annuale, il trimestre o il saldo del corso, nella stagione dei corsi di oggi (dal
+ * 1° luglio); un trimestre solo per i suoi tre mesi (`fineTrimestre`). Come `corso_in_segreteria` (146).
+ */
 export const corsoInSegreteria = (diretti: PagamentoDiretto[], personaId: string, nomi: string[], oggi: string): boolean =>
-  attiveDi(diretti, personaId).some(
-    (d) =>
-      annoQuota('', d.data) === annoQuota('', oggi) &&
-      nomi.some((n) => !!n.trim() && ['annuale', 'trimestre', 'saldo'].some((f) => stessa(d.voce, `${f} ${n.trim()}`))),
-  )
+  attiveDi(diretti, personaId).some((d) => {
+    const formula = ['annuale', 'trimestre', 'saldo'].find((f) => nomi.some((n) => !!n.trim() && stessa(d.voce, `${f} ${n.trim()}`)))
+    return !!formula && stagioneDi(d.data).corsi.dal === stagioneDi(oggi).corsi.dal && (formula !== 'trimestre' || oggi <= fineTrimestre(d.data))
+  })
 
 /**
  * Le quote dell'iscritto con quel che la segreteria ha già, come `quota_della_segreteria` (146): una quota in più,

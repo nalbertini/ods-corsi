@@ -42,13 +42,18 @@ create or replace function quota_in_segreteria(persona uuid) returns int
      and stagione_quota(d.voce, d.data) = stagione_quota('', (now() at time zone 'Europe/Rome')::date)
 $$;
 
--- Le voci di un corso come le scrivono ricevute e assegnazioni: «Annuale Judo», «Trimestre Judo», «Saldo Judo».
+-- Le voci di un corso come le scrivono ricevute e assegnazioni: «Annuale Judo», «Trimestre Judo», «Saldo Judo». La
+-- stagione è quella dei corsi, dal 1° luglio (`stagioneDi`, src/lib/costi.ts); un trimestre vale tre mesi dalla sua
+-- data, come `fineTrimestre` (src/lib/ricevute.ts), così non ferma i trimestri dopo.
 create or replace function corso_in_segreteria(persona uuid, nomi text[]) returns boolean
   language sql stable security definer set search_path = public, pg_temp as $$
-  select exists (select 1 from pagamenti_diretti d
+  with o as (select (now() at time zone 'Europe/Rome')::date as oggi)
+  select exists (select 1 from pagamenti_diretti d, o
    where d.persona_id = persona and d.annullato_il is null
      and lower(btrim(d.voce)) in (select f || ' ' || lower(btrim(n)) from unnest(nomi) n, unnest(array['annuale', 'trimestre', 'saldo']) f where n is not null)
-     and stagione_quota('', d.data) = stagione_quota('', (now() at time zone 'Europe/Rome')::date))
+     and extract(year from d.data)::int - case when extract(month from d.data) >= 7 then 0 else 1 end
+       = extract(year from o.oggi)::int - case when extract(month from o.oggi) >= 7 then 0 else 1 end
+     and (lower(btrim(d.voce)) not like 'trimestre %' or o.oggi <= ((d.data - 1) + interval '3 months')::date))
 $$;
 
 -- Come `quoteConAssegnazioni`: si parte da quel che manca dopo le ricevute della stessa stagione, se no dal listino.

@@ -40,7 +40,8 @@ create or replace function cid(n int) returns uuid language sql immutable as $$
   select ('cccccccc-0000-0000-0000-0000000000' || lpad(n::text, 2, '0'))::uuid
 $$;
 -- Una riga di `pagamenti_diretti`: un bonifico assegnato o un pagamento a mano, per il database sono la stessa cosa.
-create or replace function pd(persona uuid, voce text, importo int, giorno date default current_date - 3, annullata boolean default false)
+-- Di oggi, se non si dice: così è sempre della stagione di oggi, anche il 1° agosto o il 1° luglio.
+create or replace function pd(persona uuid, voce text, importo int, giorno date default current_date, annullata boolean default false)
   returns void language sql as $$
   insert into pagamenti_diretti (persona_id, data, importo, metodo, voce, annullato_il)
   values (persona, giorno, importo, 'Bonifico', voce, case when annullata then now() end)
@@ -49,20 +50,24 @@ $$;
 create or replace function st() returns int language sql stable as $$ select stagione_quota('', current_date) $$;
 
 -- --- chi c'è ----------------------------------------------------------------
-insert into auth.users (id, email, email_confirmed_at) values ('33333333-3333-3333-3333-333333333333', 'luca@fam.it', now());
+insert into auth.users (id, email, email_confirmed_at) values ('33333333-3333-3333-3333-333333333333', 'luca@fam.it', now()),
+  ('11111111-1111-1111-1111-111111111111', 'anna@ods.it', now()), ('22222222-2222-2222-2222-222222222222', 'ivo@ods.it', now());
 insert into persone (id, nome, cognome, ruolo, email, utente_id) values
-  (pid(3), 'Luca', 'Fam', 'iscritto', 'luca@fam.it', '33333333-3333-3333-3333-333333333333');
+  (pid(3), 'Luca', 'Fam', 'iscritto', 'luca@fam.it', '33333333-3333-3333-3333-333333333333'),
+  (pid(1), 'Anna', 'Segreteria', 'staff', 'anna@ods.it', '11111111-1111-1111-1111-111111111111'),
+  (pid(2), 'Ivo', 'Istruttore', 'istruttore', 'ivo@ods.it', '22222222-2222-2222-2222-222222222222');
 -- Il nucleo di Luca, tutti adulti senza account suo: paga Luca.
 insert into persone (id, nome, cognome, ruolo, nucleo) values
   (pid(21), 'Ada', 'Fam', 'iscritto', pid(3)), (pid(22), 'Bea', 'Fam', 'iscritto', pid(3)),
   (pid(23), 'Cico', 'Fam', 'iscritto', pid(3)), (pid(24), 'Dina', 'Fam', 'iscritto', pid(3)),
   (pid(25), 'Ezio', 'Fam', 'iscritto', pid(3)), (pid(26), 'Fede', 'Fam', 'iscritto', pid(3)),
-  (pid(27), 'Gil', 'Fam', 'iscritto', pid(3)), (pid(28), 'Ines', 'Fam', 'iscritto', pid(3));
-insert into anagrafiche (persona_id, nato_il) select pid(n), current_date - interval '40 years' from unnest(array[3,21,22,23,24,25,26,27,28]) n;
+  (pid(27), 'Gil', 'Fam', 'iscritto', pid(3)), (pid(28), 'Ines', 'Fam', 'iscritto', pid(3)),
+  (pid(29), 'Lino', 'Fam', 'iscritto', pid(3)), (pid(30), 'Meri', 'Fam', 'iscritto', pid(3));
+insert into anagrafiche (persona_id, nato_il) select pid(n), current_date - interval '40 years' from unnest(array[3,21,22,23,24,25,26,27,28,29,30]) n;
 insert into corsi (id, nome) values (cid(1), 'Judo');
 update impostazioni set listino = jsonb_build_object('quota', 50, 'saldoEntro', (current_date + 30)::text, 'corsi', jsonb_build_array(
   jsonb_build_object('corsoId', cid(1), 'corso', 'Judo', 'prezzi', jsonb_build_array(jsonb_build_object('annuale', 300, 'trimestre', 120))))) where id;
-insert into iscrizioni (corso_id, persona_id, dal) select cid(1), pid(n), current_date - 100 from unnest(array[21,22,23,24,25,26,27,28]) n;
+insert into iscrizioni (corso_id, persona_id, dal) select cid(1), pid(n), current_date - 100 from unnest(array[21,22,23,24,25,26,27,28,29,30]) n;
 
 -- Ada: la quota tutta da un bonifico assegnato. Bea: metà. Cico: la quota della stagione passata, scritta nel nome.
 -- Ezio: un bonifico tolto (annullato). Ines: niente, per vedere che il resto va come prima.
@@ -79,6 +84,9 @@ select pd(pid(24), 'QUOTA ASSOCIATIVA', 1000);
 -- Fede: l'annuale di Judo da un bonifico, in parte. Gil: l'annuale di Judo di più di un anno fa.
 select pd(pid(26), 'Annuale Judo', 10000);
 select pd(pid(27), 'ANNUALE JUDO', 30000, current_date - 400);
+-- Lino: un trimestre di più di tre mesi fa, finito. Meri: l'annuale pagato dal 1° luglio, che è già della stagione dei corsi.
+select pd(pid(29), 'Trimestre Judo', 12000, current_date - 100);
+select pd(pid(30), 'Annuale Judo', 30000, make_date(extract(year from current_date)::int - case when extract(month from current_date) >= 7 then 0 else 1 end, 7, 1));
 
 \echo ''
 \echo '--- 1. la quota pagata in segreteria non si paga di nuovo online ---'
@@ -128,6 +136,9 @@ select atteso('…né il trimestre', riga($$select corso_importo(pid(26), cid(1)
   'NEGATO: Il corso risulta già pagato in segreteria: per quel che manca chiedi alla segreteria');
 select atteso('Gil, il bonifico è di più di un anno fa: si paga', riga($$select corso_importo(pid(27), cid(1), 'annuale')::text$$), '30000');
 select atteso('Ines, niente: si paga', riga($$select corso_importo(pid(28), cid(1), 'annuale')::text$$), '30000');
+select atteso('Lino, il trimestre di più di tre mesi fa è finito: si paga', riga($$select corso_importo(pid(29), cid(1), 'trimestre')::text$$), '12000');
+select atteso('Meri, l''annuale dal 1° luglio è dei corsi di adesso: non si paga di nuovo', riga($$select corso_importo(pid(30), cid(1), 'annuale')::text$$),
+  'NEGATO: Il corso risulta già pagato in segreteria: per quel che manca chiedi alla segreteria');
 set role authenticated;
 select atteso('Luca vede Judo di Fede assegnato, senza importi',
   riga($$select (c->>'assegnato') || ' ' || coalesce(c->>'annuale', 'null') || ' ' || coalesce(c->>'trimestre', 'null') from satispay_corsi_chi(pid(26)) x, jsonb_array_elements(x->'corsi') c$$),
@@ -146,11 +157,30 @@ select chi('33333333-3333-3333-3333-333333333333');
 set role authenticated;
 select atteso('…e con la select non ne vede nessuna', riga($$select count(*)::text from pagamenti_diretti$$), '0');
 reset role;
+-- La segreteria, un istruttore e il tablet (nessuna persona) non arrivano a quel che la segreteria ha per Fede e Ada.
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria: satispay_corsi_chi di Fede niente, scheda di Ada niente',
+  riga($$select coalesce(satispay_corsi_chi(pid(26))::text, 'null') || ' ' || (select count(*) from iscritto_scheda(pid(21)))$$), 'null 0');
+reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('l''istruttore: lo stesso, e nessuna riga di pagamenti_diretti',
+  riga($$select coalesce(satispay_corsi_chi(pid(26))::text, 'null') || ' ' || (select count(*) from iscritto_scheda(pid(21))) || ' ' || (select count(*) from pagamenti_diretti)$$), 'null 0 0');
+reset role;
+select chi('');
+set role authenticated;
+select atteso('il tablet: lo stesso',
+  riga($$select coalesce(satispay_corsi_chi(pid(26))::text, 'null') || ' ' || (select count(*) from iscritto_scheda(pid(21)))$$), 'null 0');
+reset role;
 select atteso('anon non legge la scheda', has_function_privilege('anon', 'iscritto_scheda(uuid)', 'execute')::text, 'false');
 select atteso('i conti interni non si chiamano da fuori',
   has_function_privilege('authenticated', 'quota_importo(uuid)', 'execute')::text || ' ' ||
   has_function_privilege('authenticated', 'corso_importo(uuid,uuid,text)', 'execute')::text || ' ' ||
   has_function_privilege('authenticated', 'saldo_mancano(uuid,uuid)', 'execute')::text, 'false false false');
+select atteso('…né le tre nuove, da nessuno',
+  (select string_agg(has_function_privilege(r, f, 'execute')::text, ' ') from unnest(array['anon', 'authenticated']) r,
+     unnest(array['quota_in_segreteria(uuid)', 'corso_in_segreteria(uuid,text[])', 'quota_della_segreteria(uuid)']) f), 'false false false false false false');
 
 \echo ''
 \echo 'TUTTO A POSTO'

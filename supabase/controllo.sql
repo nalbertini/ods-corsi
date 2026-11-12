@@ -700,7 +700,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'statistiche' and corpo like '%presente_altrove%')
     and exists (select 1 from dentro where nome = 'iscritto_presenze' and corpo like '%presente_altrove%')
     and exists (select 1 from dentro where nome = 'frequenze' and corpo like '%bool_or%')),
-  -- Rifà funzioni di 103, 106 e 141: rilanciando quelli, il controllo torna «manca».
+  -- Rifà funzioni di 103, 105, 106 e 141: rilanciando quelli, il controllo torna «manca».
   ('146-pagato-in-segreteria.sql', 'quel che la segreteria ha già (bonifico assegnato, pagamento a mano) conta anche per l''iscritto',
     exists (select 1 from dentro where nome = 'quota_della_segreteria')
     and exists (select 1 from dentro where nome = 'quota_importo' and corpo like '%quota_in_segreteria%')
