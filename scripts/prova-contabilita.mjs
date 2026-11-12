@@ -17,7 +17,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/contabilita'; export { righeDaRicevute, righeDirette, intervalloDi } from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro, dataRicevuta } from './src/lib/ricevute'",
+      "export * from './src/lib/contabilita'; export { righeDaRicevute, righeDirette, intervalloDi } from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro, dataRicevuta } from './src/lib/ricevute'; export { iniziali } from './src/lib/sitoLayout'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1429,10 +1429,27 @@ console.log('\n95. il dettaglio di un movimento ha un solo «Salva»: scrive sol
   const corpo = da >= 0 ? tsx.slice(da, tsx.indexOf('function Voci(')) : ''
   ok('un solo tasto: niente più «Cambia la voce» e «Salva il testo»', [/>\s*Cambia la voce\s*</, /Salva il testo/].map((x) => x.test(corpo)), [false, false])
   ok('il tasto Salva usa cosaSalvoMovimento', /cosaSalvoMovimento\(/.test(corpo), true)
-  ok('«Annulla» è rosso a linea (sg-pericolo)', /className="sg-pericolo"[^>]*>[^<]*Annulla/.test(corpo) || /<Tasto[^>]*className="sg-pericolo"/.test(corpo), true)
+  ok('«Annulla movimento» è un link rosso discreto (sg-link sg-pericolo)', /className="sg-link sg-pericolo"[^\n]*\n\s*Annulla movimento/.test(corpo), true)
   ok('niente più il riquadro SUGGERITO senza suggerimento (caso D)', /caso === 'D'/.test(corpo), false)
   ok('la frase col lucchetto', /Importo, data e cassa non si cambiano: per correggerli annulla il movimento e rifallo\./.test(corpo), true)
   ok('la conferma dice che resta in elenco ma non conta più nei saldi', /resta in elenco[^`]*non conta più nei saldi/i.test(corpo), true)
+}
+
+console.log('\n96. la scheda di un movimento mette in evidenza la persona')
+{
+  ok('le iniziali: due al massimo, maiuscole', prova(() => [m.iniziali('Rossi Mario'), m.iniziali('de Luca Anna Maria'), m.iniziali('Bianchi')]), ['RM', 'DL', 'B'])
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  const da = tsx.indexOf('function MovimentoAperto(')
+  const corpo = da >= 0 ? tsx.slice(da, tsx.indexOf('function Voci(')) : ''
+  const comune = readFileSync('src/components/segreteria/comune.tsx', 'utf8')
+  ok('il ⋯ ha un nome per chi legge lo schermo', [/nome=\{`Altro su /.test(corpo), /aria-label=\{nome\}/.test(comune)], [true, true])
+  ok('Salva solo quando qualcosa è cambiato', /\{!nienteDaSalvare && \([^{}]*<Tasto tono="pieno"[^\n]*onClick=\{salva\}/.test(corpo), true)
+  const card = corpo.slice(corpo.indexOf('<div className="sg-movimento-persona">'), corpo.indexOf('!riga.personaId && ('))
+  ok('Da assegnare sta dentro la card della persona', /<AssegnaMovimento /.test(card), true)
+  ok('«Collega una persona» solo senza persona', /!riga\.personaId && \([\s\S]*?Collega una persona/.test(corpo) && !/Collega una persona/.test(card), true)
+  ok('descrizione e storico in un details chiuso', /<details className="sg-spiega">/.test(corpo), true)
+  ok('il pannello Collega sta subito sotto la persona, e chiuso ridà il fuoco', [/Collega una persona<\/Tasto>\}\s*<\/div>\s*\)\}\s*\{collegando && <CollegaAPersona/.test(corpo), /onChiudi=\{chiudiCollega\}/.test(corpo)], [true, true])
+  ok('il lucchetto non prende il fuoco', /tabIndex=\{0\}[^\n]*lucchetto/.test(corpo), false)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

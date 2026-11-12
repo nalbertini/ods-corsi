@@ -2293,6 +2293,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .contents { display: contents; }
 /* «Altro» sta sul bordo destro: la lista si apre verso sinistra, se no esce dalla finestra. */
 .sg-scheda-testa .sg-menu-azioni-lista { left: auto; right: 0; }
+/* Il ⋯ della persona sta a destra nella scheda di un movimento: la lista si apre verso sinistra. Qui e non in segreteria.css perché la classe è di MenuAzioni. */
+.sg-movimento-persona .sg-menu-azioni-lista { left: auto; right: 0; min-width: 200px; }
 /* Le cifre grandi non vanno a capo: l'euro resterebbe da solo. */
 .sg-numero > .num { white-space: nowrap; }
 .sg-colonne { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; }

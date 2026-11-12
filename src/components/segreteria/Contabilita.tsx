@@ -81,6 +81,7 @@ import { Bilancio } from './Bilancio'
 import { rigaDaSistemare } from '../../lib/bilancio'
 import { firmato, leggiSaldoBanca, type CampoSaldoBanca, cosaNonVaVerifica, improntaMese, meseInLettere, mesePrima, quadratura, riepilogoDifferenza, righeBanca, saldoInizialeProposto, segniDelConto, SENZA_SALDO_BANCA, type Quadratura, type RigaApp, type SaldoBanca, type StatoQuadratura } from '../../lib/quadraturaBanca'
 import { segnaIncassiCoperti } from '../../lib/importaBanca'
+import { iniziali as inizialiDi } from '../../lib/sitoLayout'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import { NOME_CASSA_SATISPAY } from '../../lib/satispayScarico'
 import { cosaNonVaMovimentoDaAssegnare, elencoDaAssegnare } from '../../lib/assegna'
@@ -419,7 +420,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
       {collegando === 'mano' && sceltiRighe.length > 0 && <InVista><CollegaAPersona d={d} righe={sceltiRighe} fai={fai} onFatto={collegamentoFatto} onChiudi={chiudiCollega} /></InVista>}
       {aperto && (
         <SchedaPiena key={aperto.id} etichetta={`Movimento: ${aperto.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
-          <MovimentoAperto d={d} voci={voci} righe={righe} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} nomePersona={aperto.personaId ? nomiPersone.get(aperto.personaId) : undefined} fai={fai} avvisa={avvisa} casse={casse} manuali={manuali} diretti={diretti} ricevute={ricevute} onChiudi={() => void torna()} onFatto={() => { fatto(); void esitiLetti.ricarica() }} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onPersona={onPersona} />
+          <MovimentoAperto d={d} voci={voci} righe={righe} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} nomePersona={aperto.personaId ? nomiPersone.get(aperto.personaId) : undefined} fai={fai} avvisa={avvisa} casse={casse} manuali={manuali} diretti={diretti} ricevute={ricevute} onFatto={() => { fatto(); void esitiLetti.ricarica() }} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onPersona={onPersona} />
         </SchedaPiena>
       )}
 
@@ -898,10 +899,8 @@ function NuovoGiroconto({ d, casse, chiusure, fai, onFatto, onChiudi }: { d: Dat
   )
 }
 
-/** Un movimento aperto dall'elenco: a mano si annulla e se ne correggono descrizione e nota; un incasso degli iscritti si guarda e basta. */
-// Un link che si tocca col dito: alto 44px, come «mostra tutte» nei previsti.
-
-function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePersona, fai, avvisa, casse, manuali, diretti, ricevute, onChiudi, onFatto, onRileggi, onPersona }: { d: DatiSegreteria; voci: VoceContabile[]; righe: RigaMovimento[]; riga: RigaMovimento; chiusure: ChiusuraCassa[]; cassa: string; cassaA: string; nomePersona?: string; fai: Fai; avvisa: Avvisa; casse: Cassa[]; manuali: MovimentoManuale[]; diretti: PagamentoDiretto[]; ricevute: Ricevuta[]; onChiudi: () => void; onFatto: () => void; onRileggi: () => void; onPersona?: (personaId: string) => void }) {
+/** Un movimento aperto dall'elenco: a mano si annulla e se ne correggono voce, descrizione e nota; un incasso degli iscritti si guarda e basta. Si chiude con la ✕ della scheda. */
+function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePersona, fai, avvisa, casse, manuali, diretti, ricevute, onFatto, onRileggi, onPersona }: { d: DatiSegreteria; voci: VoceContabile[]; righe: RigaMovimento[]; riga: RigaMovimento; chiusure: ChiusuraCassa[]; cassa: string; cassaA: string; nomePersona?: string; fai: Fai; avvisa: Avvisa; casse: Cassa[]; manuali: MovimentoManuale[]; diretti: PagamentoDiretto[]; ricevute: Ricevuta[]; onFatto: () => void; onRileggi: () => void; onPersona?: (personaId: string) => void }) {
   const manuale = riga.origine === 'movimento'
   // Un bonifico collegato su quota o corsi si assegna da qui; con una ricevuta fatta da lì, si annulla prima quella.
   const comeManuale = manuale ? manuali.find((m) => m.id === riga.id) : undefined
@@ -928,6 +927,9 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
   const personaId = personaScelta?.id ?? riga.personaId
   const voceGuaio = voceId && voceId !== voceAttuale?.id ? cosaNonVaCambioVoce([riga.id], [riga], voci, voceId, personaId) : null
   const [collegando, setCollegando] = useState(false)
+  // Chiuso «Collega», il fuoco torna sulla persona: se no finisce in cima alla pagina.
+  const quiPersona = useRef<HTMLDivElement>(null)
+  const chiudiCollega = () => { setCollegando(false); requestAnimationFrame(() => quiPersona.current?.focus()) }
   // Il suggerimento: la voce dalle righe uguali, la persona dal nome nel testo. Propone e basta: si scrive solo con «Conferma».
   const cerca = manuale && cercaPersonaDelMovimento(riga)
   const parola = manuale ? parolaDelMovimento(riga) : null
@@ -983,52 +985,57 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
   const origine = originiMovimento(riga)
   const tipoParola = riga.tipo === 'giroconto' ? 'Giroconto' : riga.tipo === 'entrata' ? 'Entrata' : 'Uscita'
   const vuoleChi = riga.tipo !== 'giroconto' && vuolePersona(riga.tipo, riga.voce ?? undefined)
+  const lucchetto = `Importo, data e cassa non si cambiano: per correggerli annulla il movimento e rifallo.${giro ? ' La descrizione di un giroconto la scrive il sistema.' : ''}`
+  const siCambia = manuale && !riga.annullato
+  // La persona si cambia o si scollega solo su una riga a mano: un incasso degli iscritti cambia nella scheda della persona.
+  const azioniPersona = siCambia && !collegando
+  const descrizioneSiCorregge = siCambia && !giro
   return (
     <div className="stack" style={{ gap: 20 }}>
-      <div className="sg-movimento-testata">
-        <div className="stack" style={{ gap: 6, minWidth: 0 }}>
-          <span className="sg-etichetta">{manuale ? `MOVIMENTO${origine ? ` · ${origine.toUpperCase()}` : ''}` : 'INCASSO DI UN ISCRITTO'}</span>
-          <h2 className="sg-riquadro-titolo ob" style={{ margin: 0 }}>{riga.descrizione}</h2>
-        </div>
-        <div className="sg-movimento-importo">
-          <SegnoStato tono={riga.tipo === 'entrata' ? 'verde' : 'nota'} parola={tipoParola} />
-          <b className="num">{soldi(riga.importo)}</b>
-        </div>
-      </div>
-      <div className="stack" style={{ gap: 10 }}>
-        <div className="sg-movimento-dati">
-          <div><span className="sg-etichetta">DATA</span><span>{dataRicevuta(riga.data)}</span></div>
-          <div><span className="sg-etichetta">CASSA</span><span>{riga.tipo === 'giroconto' ? `Da ${cassa} a ${cassaA}` : cassa}</span></div>
-          {!cambiabile(riga) && riga.tipo !== 'giroconto' && <div><span className="sg-etichetta">VOCE</span><span>{riga.voce ?? '—'}</span></div>}
-          {riga.tipo !== 'giroconto' && (
-            <div>
-              <span className="sg-etichetta">PERSONA</span>
-              <span className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'baseline' }}>
-                {riga.personaId ? (
-                  <span style={{ overflowWrap: 'anywhere' }}>{nomePersona ?? '…'}</span>
-                ) : (
-                  <span style={vuoleChi ? { color: 'var(--rosso-testo)' } : undefined}>Nessuna{manuale && !riga.annullato && !collegando ? ' ·' : ''}</span>
-                )}
-                {riga.personaId && onPersona && (
-                  <button type="button" className="sg-link" style={DITO} onClick={() => onPersona(riga.personaId ?? '')}>Apri la scheda ›</button>
-                )}
-                {manuale && !riga.annullato && !collegando && (
-                  <>
-                    <button type="button" className="sg-link" style={vuoleChi && !riga.personaId ? { ...DITO, color: 'var(--rosso-testo)' } : DITO} onClick={() => setCollegando(true)}>{riga.personaId ? 'Cambia persona' : 'Collega a una persona'}</button>
-                    {riga.personaId && <button type="button" className="sg-link" style={DITO} onClick={() => void scollega()}>Scollega</button>}
-                  </>
-                )}
-              </span>
-            </div>
+      <div className="stack" style={{ gap: 8 }}>
+        <span className="sg-sotto row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          {manuale ? `Movimento${origine ? ` ${origine.toLowerCase()}` : ''}` : 'Incasso di un iscritto'} · {riga.tipo === 'giroconto' ? `da ${cassa} a ${cassaA}` : cassa} · {dataRicevuta(riga.data)}
+          {!cambiabile(riga) && riga.tipo !== 'giroconto' && ` · ${riga.voce ?? 'senza voce'}`}
+          {siCambia && (
+            // Il perché del lucchetto: al passaggio del mouse (title) e a chi legge lo schermo (aria-label).
+            <span title={lucchetto} role="img" aria-label={lucchetto} style={{ display: 'inline-flex' }}>
+              <Icona nome="lucchetto" misura={16} />
+            </span>
           )}
+        </span>
+        <div className="row" style={{ gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+          <b className="num sg-movimento-cifra">{soldi(riga.importo)}</b>
+          <SegnoStato tono={riga.tipo === 'entrata' ? 'verde' : 'nota'} parola={tipoParola} />
         </div>
-        {manuale && !riga.annullato && (
-          <span className="sg-sotto row" style={{ gap: 8, alignItems: 'center' }}>
-            <Icona nome="lucchetto" misura={16} />
-            Importo, data e cassa non si cambiano: per correggerli annulla il movimento e rifallo.{giro ? ' La descrizione di un giroconto la scrive il sistema.' : ''}
-          </span>
-        )}
       </div>
+      <div ref={quiPersona} tabIndex={-1} className="stack" style={{ gap: 14, outline: 'none' }}>
+      {riga.tipo !== 'giroconto' && riga.personaId && (
+        <div className="sg-movimento-persona">
+          <div className="sg-movimento-chi">
+            <span className="sg-iniziali" aria-hidden="true">{nomePersona ? inizialiDi(nomePersona) : '…'}</span>
+            <b style={{ fontSize: 20, overflowWrap: 'anywhere', flex: '1 1 160px', minWidth: 0 }}>{nomePersona ?? '…'}</b>
+            <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+              {onPersona && <button type="button" className="sg-link" style={DITO} onClick={() => onPersona(riga.personaId ?? '')}>Apri scheda →</button>}
+              {azioniPersona && (
+                <MenuAzioni etichetta="⋯" nome={`Altro su ${nomePersona ?? 'la persona'}`}>
+                  <button type="button" role="menuitem" onClick={() => setCollegando(true)}>Cambia persona</button>
+                  <button type="button" role="menuitem" onClick={() => void scollega()}>Scollega</button>
+                </MenuAzioni>
+              )}
+            </div>
+          </div>
+          {daAssegnareQui && !collegando && <AssegnaMovimento d={d} m={daAssegnareQui} diretti={diretti} ricevute={ricevute} fai={fai} avvisa={avvisa} onFatto={onFatto} onRileggi={onRileggi} />}
+        </div>
+      )}
+      {riga.tipo !== 'giroconto' && !riga.personaId && (
+        <div className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={vuoleChi && !collegando ? { color: 'var(--rosso-testo)' } : { color: 'var(--dim)' }}>Nessuna persona collegata</span>
+          {azioniPersona && <Tasto onClick={() => setCollegando(true)}>Collega una persona</Tasto>}
+        </div>
+      )}
+      {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={chiudiCollega} />}
+      </div>
+      {!manuale && <span style={{ fontSize: 16, overflowWrap: 'anywhere' }}>{riga.descrizione}</span>}
       {mancaDestinatario(riga) && !riga.annullato && (
         <div className="stack" style={{ gap: 14, padding: '18px 20px', border: '2px solid var(--giallo)', background: 'var(--bg)' }}>
           <span className="sg-etichetta">MANCANO DEI DATI</span>
@@ -1090,19 +1097,14 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
         <>
           <div className="sg-due sg-scheda-campi" style={{ maxWidth: 'none' }}>
             {cambiabile(riga) && (
-              <Campo id="ma-voce" etichetta="VOCE" largo nota={{ testo: 'Si può cambiare anche se il giorno è già chiuso: i soldi restano uguali.', guaio: false }}>
-                <select id="ma-voce" className="sg-campo" aria-describedby="ma-voce-nota" value={voceId} onChange={(e) => setVoceId(e.target.value)}>
+              <Campo id="ma-voce" etichetta="VOCE" largo>
+                <select id="ma-voce" className="sg-campo" value={voceId} onChange={(e) => setVoceId(e.target.value)}>
                   {!voceId && <option value="">Scegli la voce</option>}
                   {voceAttuale && !offerte.some((v) => v.id === voceAttuale.id) && <option value={voceAttuale.id}>{voceAttuale.nome}</option>}
                   {offerte.map((v) => (
                     <option key={v.id} value={v.id}>{v.nome}</option>
                   ))}
                 </select>
-              </Campo>
-            )}
-            {!giro && (
-              <Campo id="ma-descrizione" etichetta="DESCRIZIONE" largo>
-                <input id="ma-descrizione" className="sg-campo" maxLength={200} value={descrizione} onChange={(e) => setDescrizione(e.target.value)} />
               </Campo>
             )}
             <Campo id="ma-nota" etichetta="NOTA" largo>
@@ -1117,41 +1119,55 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           {dallaChat && <span className="sg-sotto">{dallaChat}</span>}
         </>
       )}
-      {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={() => setCollegando(false)} />}
-      {daAssegnareQui && !collegando && <AssegnaMovimento d={d} m={daAssegnareQui} diretti={diretti} ricevute={ricevute} fai={fai} avvisa={avvisa} onFatto={onFatto} onRileggi={onRileggi} />}
       {!manuale && <span className="sg-sotto">Si cambia nella scheda della persona, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
       {manuale && riga.annullato && <span className="sg-sotto"><SegnoStato tono="rosso" parola="Annullato" /> Resta in elenco ma non conta più nei saldi.</span>}
-      {manuale && !giro && (traccia.guaio || (traccia.dato?.length ?? 0) > 0) && (
-        <div className="stack" style={{ gap: 6 }}>
-          <span className="sg-etichetta">COSA È CAMBIATO</span>
-          {traccia.guaio && <span className="sg-sotto">{traccia.guaio}</span>}
-          {traccia.dato?.map((c, i) => (
-            <span key={i} style={{ fontSize: 15 }}>{dataRicevuta(giornoRoma(c.quando))} · {c.chi}: <span style={{ color: 'var(--dim)' }}>{c.prima}</span> → {c.dopo}</span>
-          ))}
+      {manuale && (
+        // Il testo com'è arrivato e la storia dei cambi: servono di rado, e chiusi non ripetono quel che la testata dice già.
+        <details className="sg-spiega">
+          <summary>{origine === 'Dalla banca' ? 'TESTO DELLA BANCA E STORICO' : 'DESCRIZIONE E STORICO'}</summary>
+          <div className="stack" style={{ gap: 14, paddingTop: 8 }}>
+            {descrizioneSiCorregge ? (
+              <Campo id="ma-descrizione" etichetta="DESCRIZIONE" largo>
+                <input id="ma-descrizione" className="sg-campo" maxLength={200} value={descrizione} onChange={(e) => setDescrizione(e.target.value)} />
+              </Campo>
+            ) : (
+              <span style={{ fontSize: 15, overflowWrap: 'anywhere' }}>{riga.descrizione}</span>
+            )}
+            {!giro && (
+              <div className="stack" style={{ gap: 6 }}>
+                <span className="sg-etichetta">COSA È CAMBIATO</span>
+                {traccia.guaio && <span className="sg-sotto">{traccia.guaio}</span>}
+                {traccia.dato?.length === 0 && <span className="sg-sotto">Niente, finora.</span>}
+                {traccia.dato?.map((c, i) => (
+                  <span key={i} style={{ fontSize: 15 }}>{dataRicevuta(giornoRoma(c.quando))} · {c.chi}: <span style={{ color: 'var(--dim)' }}>{c.prima}</span> → {c.dopo}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </details>
+      )}
+      {siCambia && (!chiuso || !nienteDaSalvare) && (
+        <div className="sg-movimento-piede">
+          <div className="sg-movimento-gruppo">
+            {!chiuso && ricevutaDelMovimento && (
+              <span className="sg-sotto">Annulla prima la ricevuta n. {ricevutaDelMovimento.numero}/{ricevutaDelMovimento.anno}: poi si annulla il movimento.</span>
+            )}
+            {!chiuso && !ricevutaDelMovimento && (
+              <button type="button" className="sg-link sg-pericolo" style={DITO} disabled={chiedendo} onClick={() => void annulla()}>
+                Annulla movimento
+              </button>
+            )}
+          </div>
+          {/* Il Salva c'è solo quando c'è qualcosa da salvare: per chiudere c'è la ✕ in alto. */}
+          {!nienteDaSalvare && (
+            <div className="sg-movimento-gruppo">
+              <Tasto tono="pieno" disabled={(cosa.voce && !!voceGuaio) || (cosa.testo && !descrizione.trim())} onClick={salva}>
+                Salva
+              </Tasto>
+            </div>
+          )}
         </div>
       )}
-      <div className="sg-movimento-piede">
-        <div className="sg-movimento-gruppo">
-          {manuale && !riga.annullato && !chiuso && ricevutaDelMovimento && (
-            <span className="sg-sotto">Annulla prima la ricevuta n. {ricevutaDelMovimento.numero}/{ricevutaDelMovimento.anno}: poi si annulla il movimento.</span>
-          )}
-          {manuale && !riga.annullato && !chiuso && !ricevutaDelMovimento && (
-            <Tasto className="sg-pericolo" disabled={chiedendo} onClick={() => void annulla()}>
-              Annulla il movimento
-            </Tasto>
-          )}
-        </div>
-        <div className="sg-movimento-gruppo">
-          <Tasto onClick={onChiudi}>
-            Chiudi
-          </Tasto>
-          {manuale && !riga.annullato && (
-            <Tasto tono="pieno" disabled={nienteDaSalvare || (cosa.voce && !!voceGuaio) || (cosa.testo && !descrizione.trim())} onClick={salva}>
-              Salva le modifiche
-            </Tasto>
-          )}
-        </div>
-      </div>
     </div>
   )
 }

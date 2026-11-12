@@ -112,8 +112,10 @@ export function AssegnaMovimento({ d, m, diretti, ricevute, fai, avvisa, onFatto
     }
   }
 
+  // Sta dentro la card della persona, sotto una linea: senza niente da dire non c'è, nemmeno la linea.
+  if (!anagrafe.guaio && !righe.length && !fatte.length && resta <= 0 && !assegnando) return null
   return (
-    <div className="stack" style={{ gap: 10, padding: '8px 0', borderBottom: '1px solid var(--line-soft)' }}>
+    <div className="stack" style={{ gap: 12, paddingTop: 14, borderTop: '1px solid var(--line-soft)' }}>
       {anagrafe.guaio && <Guaio testo={`Non si leggono le persone a cui assegnarlo: ${anagrafe.guaio}`} />}
       {(righe.length > 0 || fatte.length > 0) && (
         <div className="stack" style={{ gap: 6 }}>
@@ -148,10 +150,10 @@ export function AssegnaMovimento({ d, m, diretti, ricevute, fai, avvisa, onFatto
         </div>
       )}
       {resta > 0 && (
-        <div className="sg-riquadro" data-avviso="true">
+        <div className="stack" style={{ gap: 6 }}>
           <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>DA ASSEGNARE: {euroAssegna(resta)}</span>
           <span style={{ fontSize: 14 }}>Di’ a cosa va: la quota, un annuale, un trimestre. Finché non lo dici, non conta come pagato.</span>
-          <div>
+          <div style={{ paddingTop: 4 }}>
             <Tasto tono="pieno" disabled={!anagrafe.dato} onClick={() => setAssegnando(true)}>Assegna a quota e corsi</Tasto>
           </div>
         </div>
