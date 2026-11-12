@@ -44,7 +44,9 @@ Si parte dal **mese corrente**. Filtri ed elenco stanno in un riquadro solo. In 
 - la **ricerca** nella descrizione, nel nome o nell'importo (non bada a maiuscole, accenti e
   spazi in più) e il **periodo**: i menu **Mese** e **Anno**, con le frecce **‹** e **›** per il mese
   prima e quello dopo. **›** si ferma al mese corrente; con **Tutti i mesi** le frecce non ci sono.
-  **Tutti gli anni** guarda tutto lo storico; un mese scelto senza anno è di quest'anno;
+  **Tutti gli anni** guarda tutto lo storico; un mese scelto senza anno è di quest'anno. Ci sono anche i
+  movimenti di prima della data di partenza di una cassa (lo storico importato): contano in BILANCIO e
+  si sistemano come gli altri, ma non nei saldi, quindi con loro la striscia tiene solo ENTRATE e USCITE;
 - **MOSTRA**: **Da assegnare · N** (quel che resta da sistemare: una quota o un corso senza persona,
   un omonimo da decidere, soldi ancora da assegnare, la voce **Da classificare**; guarda tutto lo
   storico, il periodo passa a tutti gli anni), **Tutti** o **Annullati** (solo quelli annullati,

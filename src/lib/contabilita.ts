@@ -480,6 +480,8 @@ export interface RigaEstratto {
   uscita: number
   /** Il saldo delle casse scelte dopo questo movimento. */
   saldo: number
+  /** Prima del «dal» della cassa: si vede in MOVIMENTI e conta in BILANCIO, ma non nel saldo. */
+  storico?: boolean
 }
 
 export interface EstrattoConto {
