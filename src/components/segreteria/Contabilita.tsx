@@ -16,21 +16,18 @@ import {
   cosaNonVaMovimento,
   cosaNonVaSaldoTesto,
   cosaNonVaVoce,
+  cosaSalvoMovimento,
   csvMovimenti,
   dalDellaChiusura,
   descrizioneRiga,
   differenzaInParole,
   elencoMovimenti,
   esitoCambioVoce,
-  FILTRI_INIZIALI,
-  filtriAccesi,
-  filtriAttivi,
   giornoChiuso,
   giornoRoma,
   importoPerCassa,
   NOME_CASSA_CONTANTI,
   NOME_CASSA_CONTO,
-  nonSiVedra,
   oggiARoma,
   pacchetti,
   riepilogoCambioVoce,
@@ -54,12 +51,10 @@ import {
   type Cassa,
   type ChiusuraCassa,
   type MovimentoManuale,
-  type FiltriElenco,
   type IconaConti,
   iconaCassa,
   lineaVoce,
   tipoMovimento,
-  togliFiltro,
   type RigaMovimento,
   type VoceContabile,
   ultimaChiusura,
@@ -70,15 +65,14 @@ import {
   SCEGLI_LA_PERSONA,
   UNA_RIGA_ALLA_VOLTA,
   vociPerLaScelta,
-  estrattoConto,
 } from '../../lib/contabilita'
-import { filtraPerPersona, cosaNonVaCollegato, collegatoAMano, senzaPersona, type CandidatoPersona, type FiltroPersona } from '../../lib/movimentiPersona'
+import { cosaNonVaCollegato, collegatoAMano, type CandidatoPersona } from '../../lib/movimentiPersona'
+import { anniConMovimenti, conMostra, conPeriodo, estrattoMostra, filtraMostra, filtriIniziali, filtriPer, nomeMese, nonSiVedra, puoSpostare, spostaMese, striscia, testoConto, type FiltriElenco } from '../../lib/filtriMovimenti'
 import { fraseDallaChat } from '../../lib/collega'
-import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { ImportaBanca } from './ImportaBanca'
 import { Campo, chiedi, DITO, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, SegnoStato, suCarta, Testa, useAvviso, useBozza, useCarica, Tasto, TestaColonna } from './comune'
-import { ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
+import { Icona, ICONE_CONTI, ICONE_SCHEDE } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri, SchedaCandidata } from './CollegaPersona'
 import { useListino } from '../Costi'
 import { cercaPersonaDelMovimento, confermaDi, motivoCandidati, parolaDelMovimento, suggerisciMovimento } from '../../lib/suggerimentoMovimento'
@@ -89,7 +83,7 @@ import { firmato, leggiSaldoBanca, type CampoSaldoBanca, cosaNonVaVerifica, impr
 import { segnaIncassiCoperti } from '../../lib/importaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import { NOME_CASSA_SATISPAY } from '../../lib/satispayScarico'
-import { cosaNonVaMovimentoDaAssegnare } from '../../lib/assegna'
+import { cosaNonVaMovimentoDaAssegnare, elencoDaAssegnare } from '../../lib/assegna'
 import type { PagamentoDiretto } from '../../lib/pagamenti'
 import type { Ricevuta } from '../../lib/ricevute'
 import { AssegnaMovimento, DaAssegnare } from './AssegnaMovimento'
@@ -243,41 +237,11 @@ function Saldo({ nome, icona, valore, sotto, rosso }: { nome: string; icona: Ico
   )
 }
 
-/** Le casse dell'estratto conto, a scelta multipla: nessuna spuntata = tutte. */
-function FiltroCasse({ casse, scelte, onChange }: { casse: Cassa[]; scelte: string[]; onChange: (v: string[]) => void }) {
-  const testo = scelte.length === 0 ? 'Tutte' : casse.filter((c) => scelte.includes(c.id)).map((c) => c.nome).join(', ')
-  return (
-    <span className="sg-filtro-menu sg-casse" data-acceso={scelte.length > 0}>
-      <details className="sg-filtro-casse">
-        <summary className="sg-filtro-menu-tasto">
-          <span className="sg-filtro-menu-etichetta">Casse</span>
-          <span className="sg-filtro-menu-valore">{testo}</span>
-          <span aria-hidden="true">▾</span>
-        </summary>
-        <div className="sg-filtro-casse-lista" role="group" aria-label="Casse">
-          {casse.map((c) => (
-            <label key={c.id} className="sg-elenco-casella">
-              <input type="checkbox" checked={scelte.includes(c.id)} onChange={(e) => onChange(e.target.checked ? [...scelte, c.id] : scelte.filter((x) => x !== c.id))} />
-              {c.nome}
-            </label>
-          ))}
-        </div>
-      </details>
-      {scelte.length > 0 && (
-        <button type="button" className="sg-filtro-menu-togli" aria-label="Togli il filtro Casse" onClick={() => onChange([])}>✕</button>
-      )}
-    </span>
-  )
-}
-
 function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCambiato, movimento, apriRiga, onPersona, manuali, diretti, ricevute }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; avvisa: Avvisa; onCambiato: () => void; movimento?: string; apriRiga?: { id: string } | null; onPersona?: (personaId: string) => void; manuali: MovimentoManuale[]; diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }) {
   const oggi = oggiARoma()
-  const [f, setF] = useState<FiltriElenco>(FILTRI_INIZIALI)
-  const { testo, periodo, tipo, voce, persona, annullati } = f
+  const [f, setF] = useState<FiltriElenco>(() => filtriIniziali(oggi))
   const metti = (x: Partial<FiltriElenco>) => setF((y) => ({ ...y, ...x }))
   const [perVoci, setPerVoci] = useState(false)
-  // Le casse dell'estratto conto: vuote = tutte. Stanno qui e non in FiltriElenco perché sono più d'una.
-  const [cassaIds, setCassaIds] = useState<string[]>([])
   const [scrivo, setScrivo] = useState<'movimento' | 'giroconto' | 'banca' | null>(null)
   // Dopo aver scritto un movimento che i filtri nascondono: se no sembra perso.
   const [appena, setAppena] = useState<RigaMovimento | null>(null)
@@ -298,16 +262,16 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
   const idPersone = useMemo(() => [...new Set(righe.map((r) => r.personaId).filter((x): x is string => !!x))].sort().join(','), [righe])
   const nomiLetti = useCarica(() => (idPersone ? d.nomiPersone(idPersone.split(',')) : Promise.resolve([])), [d, idPersone])
   const nomiPersone = useMemo(() => new Map((nomiLetti.dato ?? []).map((p) => [p.id, `${p.cognome} ${p.nome}`] as const)), [nomiLetti.dato])
-  const daDecidere = (esitiLetti.dato ?? []).filter((e) => e.esito === 'omonimi').length
-  const senzaScheda = (esitiLetti.dato ?? []).filter((e) => e.esito === 'nessuna').length
-  const collegatiTutti = filtraPerPersona(righe, 'collegati', {}).length
-
-  const { dal, al } = intervalloDi(periodo, oggi, '', '')
-  const estratto = estrattoConto(righe, casse, { testo, dal, al, tipo, voce, annullati, cassaIds })
-  const trovate = filtraPerPersona(estratto.righe.map((x) => x.riga), persona, esiti)
+  // «Da assegnare» guarda anche i soldi ancora da dividere fra le quote: quel che dice la scheda Da assegnare.
+  const idDaAssegnare = useMemo(() => new Set(elencoDaAssegnare(manuali, diretti, ricevute, casse, voci, oggi).righe.map((r) => r.movimentoId)), [manuali, diretti, ricevute, casse, voci, oggi])
+  const ctx = { ids: idDaAssegnare, esiti }
+  const quantiDaAssegnare = filtraMostra(righe, 'da_assegnare', ctx).length
+  const estratto = estrattoMostra(righe, casse, f, ctx)
+  const totali = striscia(estratto, f)
+  const trovate = estratto.righe.map((x) => x.riga)
   const dellEstratto = new Map(estratto.righe.map((x) => [x.riga.id, x] as const))
   // Cambiando i filtri la scelta si svuota e l'elenco riparte dalle prime righe: quel che si è scelto non si perde di vista.
-  const chiave = [testo, periodo, tipo, cassaIds.join(','), voce, annullati, persona].join('|')
+  const chiave = [f.testo, f.mese, f.anno, f.mostra, f.tipo].join('|')
   useEffect(() => {
     setScelti(new Set())
     setViste(RIGHE_ELENCO)
@@ -345,9 +309,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
   }
   const nonSiCollega = sceltiRighe.map((r) => cosaNonVaCollegato(r)).find(Boolean) ?? null
   const alterna = (id: string) => setScelti((x) => { const y = new Set(x); if (y.has(id)) y.delete(id); else y.add(id); return y })
-  const nomiVoci = [...new Set(voci.map((v) => v.nome))].sort((x, y) => Number(y === 'Da classificare') - Number(x === 'Da classificare') || x.localeCompare(y, 'it'))
   const conti = residui(casse, righe)
-  const mese = new Date(`${oggi}T12:00:00`).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }).replace(/^./, (c) => c.toUpperCase())
   const nomeCassa = (id?: string) => casse.find((c) => c.id === id)?.nome ?? ''
   const chiudi = () => {
     setScrivo(null)
@@ -359,21 +321,19 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
     onCambiato()
     window.setTimeout(() => statoElenco.current?.focus(), 0)
   }
-  const azzera = () => {
-    setF(FILTRI_INIZIALI)
-    setCassaIds([])
+  const mostralo = (r: RigaMovimento) => {
+    setF(filtriPer(r))
     setAppena(null)
     window.setTimeout(() => statoElenco.current?.focus(), 0)
   }
-  const attivi = filtriAttivi(f) + (cassaIds.length ? 1 : 0)
-  const accesi = filtriAccesi(f, { nomeCassa: (id) => nomeCassa(id), mese })
+  const iniziali = filtriIniziali(oggi)
   // Con il modulo aperto è lui la pagina: l'elenco e i filtri restano com'erano (lo stato sta qui) e si ritrovano tornando.
   const tornaDalModulo = async () => {
     if (!(await lasciare())) return
     chiudi()
     window.setTimeout(() => statoElenco.current?.focus(), 0)
   }
-  const fuori = !!appena && (nonSiVedra(appena, { testo, dal, al, tipo, voce, persona }) || (cassaIds.length > 0 && ![appena.cassaId, appena.cassaAId].some((c) => c && cassaIds.includes(c))))
+  const fuori = !!appena && nonSiVedra(appena, f)
   // Le azioni stanno nella testata, in vista anche col dettaglio aperto: prima si chiede se lasciare la correzione.
   const apri = async (cosa: 'movimento' | 'giroconto' | 'banca') => {
     if (!(await lasciare())) return
@@ -404,7 +364,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
   if (scrivo === 'banca') {
     return (
       <SchedaPiena etichetta="Importa dalla banca" torna="I movimenti" onTorna={() => void tornaDalModulo()}>
-        <ImportaBanca d={d} casse={casse} voci={voci} righe={righe} fai={fai} onRileggi={onCambiato} onVedi={() => { chiudi(); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', voce: 'Da classificare' }) }} />
+        <ImportaBanca d={d} casse={casse} voci={voci} righe={righe} fai={fai} onRileggi={onCambiato} onVedi={() => { chiudi(); setF(conMostra(iniziali, 'da_assegnare')) }} />
       </SchedaPiena>
     )
   }
@@ -455,7 +415,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
       </div>
 
       {cambio && idScelti.length > 0 && sceltaRiep.tipo !== 'misto' && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={cambioFinito} onChiudi={() => setCambio(false)} /></InVista>}
-      {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', persona: 'da_decidere' }) }} onChiudi={chiudiCollega} /></InVista>}
+      {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); setF(conMostra(iniziali, 'da_assegnare')) }} onChiudi={chiudiCollega} /></InVista>}
       {collegando === 'mano' && sceltiRighe.length > 0 && <InVista><CollegaAPersona d={d} righe={sceltiRighe} fai={fai} onFatto={collegamentoFatto} onChiudi={chiudiCollega} /></InVista>}
       {aperto && (
         <SchedaPiena key={aperto.id} etichetta={`Movimento: ${aperto.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
@@ -466,46 +426,60 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
       {fuori && (
         <div className="row sg-riquadro" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, flexWrap: 'wrap' }} role="status">
           <span style={{ fontSize: 15, fontWeight: 600 }}>Non lo vedi nell’elenco: è fuori dai filtri.</span>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={azzera}>Togli i filtri</button>
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => appena && mostralo(appena)}>Mostralo</button>
         </div>
       )}
 
       <section className="sg-elenco" aria-label="Filtri ed elenco dei movimenti">
         <div className="sg-elenco-barra" role="group" aria-label="Filtri dei movimenti">
           <label htmlFor="cerca-movimenti" className="vh">
-            Cerca nella descrizione
+            Cerca nella descrizione, nel nome o nell’importo
           </label>
-          <input id="cerca-movimenti" className="sg-campo sg-elenco-cerca" type="search" placeholder="Cerca nella descrizione" value={testo} onChange={(e) => metti({ testo: e.target.value })} />
-          <Segmenti
-            etichetta="Periodo"
-            voci={[
-              ['mese', mese],
-              ['scorso', 'Mese scorso'],
-              ['anno', 'Tutto l’anno'],
-              ['tutto', 'Tutto'],
-            ]}
-            scelta={periodo}
-            onScegli={(v) => metti({ periodo: v })}
-          />
-          <FiltroMenu id="filtro-tipo" nome="Tipo" value={tipo} opzioni={[['', 'Tutti'], ['entrata', 'Entrate'], ['uscita', 'Uscite']]} onChange={(v) => metti({ tipo: v })} />
-          <FiltroCasse casse={casse} scelte={cassaIds} onChange={setCassaIds} />
-          <FiltroMenu id="filtro-voce" nome="Voce" value={voce} opzioni={[['', 'Tutte'], ...nomiVoci.map((n) => [n, n] as const)]} onChange={(v) => metti({ voce: v })} />
-          {esitiLetti.dato && (
-            // I numeri contano tutto lo storico: scegliendo un filtro il periodo diventa Tutto, se no «0 trovati» confonde.
-            <FiltroMenu
-              id="filtro-persona"
-              nome="Persona"
-              value={persona}
-              opzioni={[['', 'Tutte'], ['collegati', `Collegati · ${collegatiTutti}`], ['da_decidere', `Da decidere · ${daDecidere}`], ['senza_scheda', `Senza scheda · ${senzaScheda}`], ['senza_persona', `Quote e corsi senza persona · ${righe.filter(senzaPersona).length}`]]}
-              // Le opzioni sono quelle di FiltroPersona scritte qui sopra: il valore non può essere altro.
-              onChange={(v) => metti(v ? { persona: v as FiltroPersona, periodo: 'tutto' } : { persona: '' })}
+          <input id="cerca-movimenti" className="sg-campo sg-elenco-cerca" type="search" placeholder="Cerca nella descrizione, nel nome o nell’importo" value={f.testo} onChange={(e) => metti({ testo: e.target.value })} />
+          <div role="group" aria-label="Periodo" className="sg-periodo">
+            <button type="button" className="sg-btn sg-btn-linea sg-tasto-quadro" aria-label="Mese prima" disabled={!puoSpostare(f, -1, oggi)} onClick={() => setF(spostaMese(f, -1))}><Icona nome="indietro" /></button>
+            <FiltroMenu id="filtro-mese" nome="Mese" value={String(f.mese)} opzioni={[['0', 'Tutti i mesi'], ...Array.from({ length: 12 }, (_, i) => [String(i + 1), nomeMese(i + 1).replace(/^./, (c) => c.toUpperCase())] as const)]} onChange={(v) => setF(conPeriodo(f, { mese: Number(v) }, oggi))} />
+            <FiltroMenu id="filtro-anno" nome="Anno" value={String(f.anno)} opzioni={[['0', 'Tutti gli anni'], ...anniConMovimenti(righe, oggi).map((a) => [String(a), String(a)] as const)]} onChange={(v) => setF(conPeriodo(f, { anno: Number(v) }, oggi))} />
+            <button type="button" className="sg-btn sg-btn-linea sg-tasto-quadro" aria-label="Mese dopo" disabled={!puoSpostare(f, 1, oggi)} onClick={() => setF(spostaMese(f, 1))}><Icona nome="avanti" /></button>
+          </div>
+        </div>
+        <div className="sg-elenco-barra sg-elenco-barra-due">
+          <span className="sg-filtro-gruppo">
+            <span className="sg-etichetta" aria-hidden="true">MOSTRA</span>
+            <Segmenti
+              etichetta="Quali movimenti"
+              voci={[
+                ['da_assegnare', `Da assegnare · ${quantiDaAssegnare}`],
+                ['tutti', 'Tutti'],
+                ['annullati', 'Annullati'],
+              ]}
+              scelta={f.mostra}
+              onScegli={(v) => setF(conMostra(f, v))}
             />
-          )}
-          <label className="sg-elenco-casella">
-            <input type="checkbox" checked={annullati} onChange={(e) => metti({ annullati: e.target.checked })} />
-            Mostra annullati
-          </label>
+          </span>
+          <span className="sg-filtro-gruppo">
+            <span className="sg-etichetta" aria-hidden="true">TIPO</span>
+            <Segmenti
+              etichetta="Entrate o uscite"
+              voci={[
+                ['entrata', 'Entrate'],
+                ['uscita', 'Uscite'],
+                ['', 'Tutti'],
+              ]}
+              scelta={f.tipo}
+              onScegli={(v) => metti({ tipo: v })}
+            />
+          </span>
+        </div>
+        {esitiLetti.guaio && <span className="sg-sotto" role="status" style={{ padding: '0 16px 12px' }}>{esitiLetti.guaio}</span>}
+
+        <div className="sg-elenco-stato">
+          <span role="status" ref={statoElenco} tabIndex={-1}>
+            <b>{testoConto(trovate.length, f)}</b>
+            {idScelti.length > 0 && ` · ${idScelti.length} ${idScelti.length === 1 ? 'scelto' : 'scelti'}`}
+          </span>
           <span style={{ flex: 1 }} />
+          <span className="sg-etichetta" aria-hidden="true">VISTA</span>
           <Segmenti
             etichetta="Vista"
             voci={[
@@ -516,29 +490,10 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
             onScegli={(v) => setPerVoci(v === 'voce')}
           />
         </div>
-        {esitiLetti.guaio && <span className="sg-sotto" role="status" style={{ padding: '0 16px 12px' }}>{esitiLetti.guaio}</span>}
-
-        <div className="sg-elenco-stato">
-          <span role="status" ref={statoElenco} tabIndex={-1}>
-            <b>{trovate.length === 1 ? '1 movimento' : `${trovate.length} movimenti`}</b>
-            {idScelti.length > 0 && ` · ${idScelti.length} ${idScelti.length === 1 ? 'scelto' : 'scelti'}`}
-          </span>
-          {accesi.map((a) => (
-            <span key={a.chiave} className="sg-pillola">
-              <span className="sg-pillola-testo">{a.testo}</span>
-              <button type="button" aria-label={`Togli il filtro ${a.testo}`} onClick={() => setF(togliFiltro(f, a.chiave))}>✕</button>
-            </span>
+        <div className="sg-totali" role="group" aria-label="Totali del periodo" data-quanti={totali.length}>
+          {totali.map((t) => (
+            <div key={t.nome}><span className="sg-etichetta">{t.nome}</span><b className="num" style={{ color: t.entrata ? 'var(--verde-testo)' : undefined }}>{t.cifra}</b></div>
           ))}
-          {attivi > 0 && (
-            <button type="button" className="sg-link" onClick={azzera}>Togli i filtri</button>
-          )}
-          <span style={{ flex: 1 }} />
-          <span className="sg-elenco-somme">
-            <span>Saldo iniziale <b className="num">{soldiConSegno(estratto.saldoIniziale)}</b></span>
-            <span>Entrate <b className="num" style={{ color: estratto.entrate > 0 ? 'var(--verde-testo)' : undefined }}>+ {soldi(estratto.entrate)}</b></span>
-            <span>Uscite <b className="num">− {soldi(estratto.uscite)}</b></span>
-            <span>Saldo finale <b className="num">{soldiConSegno(estratto.saldoFinale)}</b></span>
-          </span>
         </div>
 
       {perVoci ? (
@@ -960,7 +915,8 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
   const [chiedendo, setChiedendo] = useState(false)
   const [destinatario, setDestinatario] = useState('')
   useBozza(destinatario.trim() !== '', 'Il destinatario')
-  const testoDestinatario = testoConDestinatario(riga.descrizione, riga.nota, destinatario)
+  // La nota com'è nel campo qui sotto: salvando il destinatario non si perde la correzione.
+  const testoDestinatario = testoConDestinatario(riga.descrizione, nota, destinatario)
   // La voce si cambia anche nei giorni chiusi: non tocca i soldi. La traccia dice chi l'ha cambiata e quando.
   const offerte = riga.tipo === 'entrata' || riga.tipo === 'uscita' ? vociOfferte(voci, riga.tipo) : []
   const voceAttuale = voci.find((v) => v.nome === riga.voce && v.tipo === riga.tipo)
@@ -1000,39 +956,78 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
     if (si) void fai(() => d.scollegaMovimentiPersona([riga.id]), 'Movimento scollegato', onFatto)
   }
   const traccia = useCarica(() => (manuale && !giro ? d.cambiVoceMovimento(riga.id) : Promise.resolve([])), [d, riga.id, manuale, giro])
-  useBozza(descrizione !== riga.descrizione || nota !== (riga.nota ?? ''), 'La correzione')
   const annulla = async () => {
     if (chiedendo) return
     setChiedendo(true)
-    const domanda = `Annullare «${riga.descrizione}» da ${soldi(riga.importo)} del ${dataRicevuta(riga.data)}? Resta in elenco, annullato, e non si conta più.${diretti.some((x) => x.movimentoId === riga.id && !x.annullatoIl) ? ' Anche quel che è assegnato si annulla: quei pagamenti tornano da fare.' : ''}`
+    const domanda = `Annullare «${riga.descrizione}» da ${soldi(riga.importo)} del ${dataRicevuta(riga.data)}? Resta in elenco, annullato, ma non conta più nei saldi.${diretti.some((x) => x.movimentoId === riga.id && !x.annullatoIl) ? ' Anche quel che è assegnato si annulla: quei pagamenti tornano da fare.' : ''}`
     const si = await chiedi(domanda, 'Sì, annulla il movimento', { no: 'No, lascialo', pericolo: true })
     setChiedendo(false)
     if (!si) return
     void fai(() => d.annullaMovimento(riga.id), 'Movimento annullato', onFatto)
   }
-  const chip = [
-    dataRicevuta(riga.data),
-    riga.tipo === 'giroconto' ? 'Giroconto' : riga.tipo === 'entrata' ? 'Entrata' : 'Uscita',
-    riga.tipo === 'giroconto' ? `Da ${cassa} a ${cassaA}` : cassa,
-    ...(cambiabile(riga) ? [] : [`Voce ${riga.voce ?? '—'}`]),
-  ]
+  // Un solo «Salva»: scrive la voce, il testo o tutti e due, solo quel che è cambiato.
+  const cosa = cosaSalvoMovimento(riga, { voceCambiata: !!voceId && voceId !== voceAttuale?.id, descrizione, nota })
+  const nienteDaSalvare = !cosa.voce && !cosa.testo
+  useBozza(!nienteDaSalvare, 'La correzione')
+  const salva = () => void fai(async () => {
+    if (cosa.voce) await d.cambiaVoceMovimenti([riga.id], voceId, conPersona ? personaId : undefined)
+    if (!cosa.testo) return
+    try {
+      await d.correggiTestoMovimento(riga.id, descrizione, nota.trim() || undefined)
+    } catch (e) {
+      // La voce è già scritta: l'elenco la deve mostrare anche se il testo non è passato.
+      if (cosa.voce) onRileggi()
+      throw e
+    }
+  }, 'Movimento salvato', onFatto)
+  const origine = originiMovimento(riga)
+  const tipoParola = riga.tipo === 'giroconto' ? 'Giroconto' : riga.tipo === 'entrata' ? 'Entrata' : 'Uscita'
+  const vuoleChi = riga.tipo !== 'giroconto' && vuolePersona(riga.tipo, riga.voce ?? undefined)
   return (
     <div className="stack" style={{ gap: 20 }}>
       <div className="sg-movimento-testata">
         <div className="stack" style={{ gap: 6, minWidth: 0 }}>
-          <div className="row" style={{ gap: 10, alignItems: 'center' }}>
-            <span className="sg-etichetta">{manuale ? 'IL MOVIMENTO' : 'INCASSO DI UN ISCRITTO'}</span>
-            {originiMovimento(riga) && <SegnoStato tono="nota" parola={originiMovimento(riga) ?? ''} />}
-          </div>
-          <span className="sg-riquadro-titolo ob">{riga.descrizione}</span>
-          <div className="row" style={{ gap: 8, flexWrap: 'wrap', paddingTop: 6 }}>
-            {chip.map((c) => <span key={c} className="sg-movimento-chip">{c}</span>)}
-          </div>
+          <span className="sg-etichetta">{manuale ? `MOVIMENTO${origine ? ` · ${origine.toUpperCase()}` : ''}` : 'INCASSO DI UN ISCRITTO'}</span>
+          <h2 className="sg-riquadro-titolo ob" style={{ margin: 0 }}>{riga.descrizione}</h2>
         </div>
         <div className="sg-movimento-importo">
-          <span className="sg-etichetta">{riga.tipo === 'giroconto' ? 'GIROCONTO' : riga.tipo === 'entrata' ? 'ENTRATA' : 'USCITA'}</span>
+          <SegnoStato tono={riga.tipo === 'entrata' ? 'verde' : 'nota'} parola={tipoParola} />
           <b className="num">{soldi(riga.importo)}</b>
         </div>
+      </div>
+      <div className="stack" style={{ gap: 10 }}>
+        <div className="sg-movimento-dati">
+          <div><span className="sg-etichetta">DATA</span><span>{dataRicevuta(riga.data)}</span></div>
+          <div><span className="sg-etichetta">CASSA</span><span>{riga.tipo === 'giroconto' ? `Da ${cassa} a ${cassaA}` : cassa}</span></div>
+          {!cambiabile(riga) && riga.tipo !== 'giroconto' && <div><span className="sg-etichetta">VOCE</span><span>{riga.voce ?? '—'}</span></div>}
+          {riga.tipo !== 'giroconto' && (
+            <div>
+              <span className="sg-etichetta">PERSONA</span>
+              <span className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'baseline' }}>
+                {riga.personaId ? (
+                  <span style={{ overflowWrap: 'anywhere' }}>{nomePersona ?? '…'}</span>
+                ) : (
+                  <span style={vuoleChi ? { color: 'var(--rosso-testo)' } : undefined}>Nessuna{manuale && !riga.annullato && !collegando ? ' ·' : ''}</span>
+                )}
+                {riga.personaId && onPersona && (
+                  <button type="button" className="sg-link" style={DITO} onClick={() => onPersona(riga.personaId ?? '')}>Apri la scheda ›</button>
+                )}
+                {manuale && !riga.annullato && !collegando && (
+                  <>
+                    <button type="button" className="sg-link" style={vuoleChi && !riga.personaId ? { ...DITO, color: 'var(--rosso-testo)' } : DITO} onClick={() => setCollegando(true)}>{riga.personaId ? 'Cambia persona' : 'Collega a una persona'}</button>
+                    {riga.personaId && <button type="button" className="sg-link" style={DITO} onClick={() => void scollega()}>Scollega</button>}
+                  </>
+                )}
+              </span>
+            </div>
+          )}
+        </div>
+        {manuale && !riga.annullato && (
+          <span className="sg-sotto row" style={{ gap: 8, alignItems: 'center' }}>
+            <Icona nome="lucchetto" misura={16} />
+            Importo, data e cassa non si cambiano: per correggerli annulla il movimento e rifallo.{giro ? ' La descrizione di un giroconto la scrive il sistema.' : ''}
+          </span>
+        )}
       </div>
       {mancaDestinatario(riga) && !riga.annullato && (
         <div className="stack" style={{ gap: 14, padding: '18px 20px', border: '2px solid var(--giallo)', background: 'var(--bg)' }}>
@@ -1042,7 +1037,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           <Campo id="ma-destinatario" etichetta="DESTINATARIO" largo>
             <input id="ma-destinatario" className="sg-campo" maxLength={200} placeholder="A chi hai fatto il bonifico" value={destinatario} onChange={(e) => setDestinatario(e.target.value)} />
           </Campo>
-          {testoDestinatario.nota.length > 300 && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>La nota è troppo lunga per tenere anche la scritta della banca: accorciala qui sotto con «Salva il testo», poi scrivi il destinatario.</span>}
+          {testoDestinatario.nota.length > 300 && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>La nota è troppo lunga per tenere anche la scritta della banca: accorciala qui sotto e salva, poi scrivi il destinatario.</span>}
           <div className="row sg-movimento-gruppo">
             <Tasto disabled={!destinatario.trim() || testoDestinatario.nota.length > 300} onClick={() => void fai(() => d.correggiTestoMovimento(riga.id, testoDestinatario.descrizione, testoDestinatario.nota), 'Destinatario salvato', onFatto)}>
               Salva il destinatario
@@ -1050,13 +1045,9 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           </div>
         </div>
       )}
-      {manuale && !riga.annullato && sug && !daSolo && (
-        <div className="stack" style={{ gap: 14, padding: '16px 18px', border: `2px solid ${sug.caso === 'D' ? 'var(--line)' : 'var(--giallo)'}`, background: 'var(--bg)' }}>
-          <span className="sg-etichetta">{sug.caso === 'D' ? 'SUGGERITO' : 'SUGGERITO · CONFERMA TU'}</span>
-          {sug.caso === 'D' ? (
-            <span className="sg-sotto">Non c'è un suggerimento: scegli la voce qui sotto.</span>
-          ) : (
-            <>
+      {manuale && !riga.annullato && sug && sug.caso !== 'D' && !daSolo && (
+        <div className="stack" style={{ gap: 14, padding: '16px 18px', border: '2px solid var(--giallo)', background: 'var(--bg)' }}>
+          <span className="sg-etichetta">SUGGERITO · CONFERMA TU</span>
               <div className="sg-sug-colonne">
               <div className="stack" style={{ gap: 4 }}>
                 <span className="sg-etichetta">VOCE</span>
@@ -1088,21 +1079,19 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
               {sug.persona === 'candidati' && <span className="sg-sotto">Collega la voce e la persona. Non crea una ricevuta: la quota resta da pagare finché non registri l’incasso nella scheda della persona.</span>}
               {sugGuaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{sugGuaio}</span>}
               <div className="row sg-movimento-gruppo">
-                <button type="button" className="sg-btn sg-btn-pieno" disabled={!confermaSug || !!sugGuaio} onClick={() => confermaSug && void fai(() => d.cambiaVoceMovimenti([riga.id], confermaSug.voceId, confermaSug.personaId), `Voce cambiata in «${sug.voce?.nome ?? ''}»`, onFatto)}>
+                <button type="button" className="sg-btn sg-btn-linea" disabled={!confermaSug || !!sugGuaio} onClick={() => confermaSug && void fai(() => d.cambiaVoceMovimenti([riga.id], confermaSug.voceId, confermaSug.personaId), `Voce cambiata in «${sug.voce?.nome ?? ''}»`, onFatto)}>
                   {sug.persona === 'candidati' ? 'Conferma voce e persona' : 'Conferma la voce'}
                 </button>
                 <button type="button" className="sg-btn sg-btn-linea" onClick={scegliTu}>Scegli tu</button>
               </div>
-            </>
-          )}
         </div>
       )}
       {manuale && !riga.annullato && (
         <>
           <div className="sg-due sg-scheda-campi" style={{ maxWidth: 'none' }}>
             {cambiabile(riga) && (
-              <Campo id="ma-voce" etichetta="VOCE" largo>
-                <select id="ma-voce" className="sg-campo" value={voceId} onChange={(e) => setVoceId(e.target.value)}>
+              <Campo id="ma-voce" etichetta="VOCE" largo nota={{ testo: 'Si può cambiare anche se il giorno è già chiuso: i soldi restano uguali.', guaio: false }}>
+                <select id="ma-voce" className="sg-campo" aria-describedby="ma-voce-nota" value={voceId} onChange={(e) => setVoceId(e.target.value)}>
                   {!voceId && <option value="">Scegli la voce</option>}
                   {voceAttuale && !offerte.some((v) => v.id === voceAttuale.id) && <option value={voceAttuale.id}>{voceAttuale.nome}</option>}
                   {offerte.map((v) => (
@@ -1117,7 +1106,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
               </Campo>
             )}
             <Campo id="ma-nota" etichetta="NOTA" largo>
-              <textarea id="ma-nota" className="sg-campo" rows={2} maxLength={300} value={nota} onChange={(e) => setNota(e.target.value)} />
+              <textarea id="ma-nota" className="sg-campo" rows={2} maxLength={300} placeholder="Facoltativa: chi la legge capisce il perché." value={nota} onChange={(e) => setNota(e.target.value)} />
             </Campo>
           </div>
           {conPersona && !riga.personaId && (
@@ -1126,32 +1115,12 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
           {chiuso && <span className="sg-sotto">{chiuso}</span>}
           {voceGuaio && voceGuaio !== SCEGLI_LA_PERSONA && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{voceGuaio}</span>}
           {dallaChat && <span className="sg-sotto">{dallaChat}</span>}
-          <span className="sg-sotto">Importo, data e cassa non si cambiano: si annulla e si rifà.{giro ? ' La descrizione di un giroconto la scrive il sistema.' : ' La voce sì, anche se il giorno è già chiuso: i soldi non cambiano.'}</span>
         </>
-      )}
-      {(riga.personaId || (riga.tipo !== 'giroconto' && vuolePersona(riga.tipo, riga.voce ?? undefined))) && (
-        <div className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline', flexWrap: 'wrap' }}>
-          <span className="sg-etichetta" style={{ width: 130, flexShrink: 0 }}>PERSONA</span>
-          {riga.personaId ? (
-            <span style={{ fontSize: 15, minWidth: 0, overflowWrap: 'anywhere' }}>{nomePersona ?? '…'}</span>
-          ) : (
-            <span style={{ fontSize: 15, color: 'var(--rosso-testo)' }}>Nessuna: di chi è?</span>
-          )}
-          {riga.personaId && onPersona && (
-            <button type="button" className="sg-link" style={DITO} onClick={() => onPersona(riga.personaId ?? '')}>Apri la scheda ›</button>
-          )}
-          {manuale && !riga.annullato && !collegando && (
-            <>
-              <button type="button" className="sg-link" style={DITO} onClick={() => setCollegando(true)}>{riga.personaId ? 'Cambia persona' : 'Collega a una persona'}</button>
-              {riga.personaId && <button type="button" className="sg-link" style={DITO} onClick={() => void scollega()}>Scollega</button>}
-            </>
-          )}
-        </div>
       )}
       {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={() => setCollegando(false)} />}
       {daAssegnareQui && !collegando && <AssegnaMovimento d={d} m={daAssegnareQui} diretti={diretti} ricevute={ricevute} fai={fai} avvisa={avvisa} onFatto={onFatto} onRileggi={onRileggi} />}
       {!manuale && <span className="sg-sotto">Si cambia nella scheda della persona, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
-      {manuale && riga.annullato && <span className="sg-sotto"><SegnoStato tono="rosso" parola="Annullato" /> Resta in elenco e non si conta più.</span>}
+      {manuale && riga.annullato && <span className="sg-sotto"><SegnoStato tono="rosso" parola="Annullato" /> Resta in elenco ma non conta più nei saldi.</span>}
       {manuale && !giro && (traccia.guaio || (traccia.dato?.length ?? 0) > 0) && (
         <div className="stack" style={{ gap: 6 }}>
           <span className="sg-etichetta">COSA È CAMBIATO</span>
@@ -1162,30 +1131,25 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
         </div>
       )}
       <div className="sg-movimento-piede">
-        {manuale && !riga.annullato && (
-          <div className="sg-movimento-gruppo">
-            {cambiabile(riga) && (
-              <button type="button" className="sg-btn sg-btn-pieno" disabled={!voceId || voceId === voceAttuale?.id || !!voceGuaio} onClick={() => void fai(() => d.cambiaVoceMovimenti([riga.id], voceId, conPersona ? personaId : undefined), `Voce cambiata in «${offerte.find((v) => v.id === voceId)?.nome ?? ''}»`, onFatto)}>
-                Cambia la voce
-              </button>
-            )}
-            <Tasto disabled={!descrizione.trim()} onClick={() => void fai(() => d.correggiTestoMovimento(riga.id, descrizione, nota.trim() || undefined), 'Testo corretto', onFatto)}>
-              Salva il testo
-            </Tasto>
-          </div>
-        )}
         <div className="sg-movimento-gruppo">
           {manuale && !riga.annullato && !chiuso && ricevutaDelMovimento && (
             <span className="sg-sotto">Annulla prima la ricevuta n. {ricevutaDelMovimento.numero}/{ricevutaDelMovimento.anno}: poi si annulla il movimento.</span>
           )}
           {manuale && !riga.annullato && !chiuso && !ricevutaDelMovimento && (
-            <Tasto tono="rosso" disabled={chiedendo} onClick={() => void annulla()}>
+            <Tasto className="sg-pericolo" disabled={chiedendo} onClick={() => void annulla()}>
               Annulla il movimento
             </Tasto>
           )}
+        </div>
+        <div className="sg-movimento-gruppo">
           <Tasto onClick={onChiudi}>
             Chiudi
           </Tasto>
+          {manuale && !riga.annullato && (
+            <Tasto tono="pieno" disabled={nienteDaSalvare || (cosa.voce && !!voceGuaio) || (cosa.testo && !descrizione.trim())} onClick={salva}>
+              Salva le modifiche
+            </Tasto>
+          )}
         </div>
       </div>
     </div>
