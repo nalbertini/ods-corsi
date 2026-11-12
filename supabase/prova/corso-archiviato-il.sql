@@ -59,6 +59,12 @@ select atteso('un altro cambio al corso archiviato non lo sposta', tenta($$updat
 select atteso('resta il giorno dell''archiviazione', giorno_di('cccccccc-0000-0000-0000-000000000001'), (current_date - 30)::text);
 select atteso('un corso in calendario non si dà un giorno a mano', tenta($$update corsi set archiviato_il = current_date where id = 'cccccccc-0000-0000-0000-000000000002'$$) || ' ' || giorno_di('cccccccc-0000-0000-0000-000000000002'), 'FATTO (1 righe) nessuno');
 
+reset role;
+set role anon;
+select atteso('anon non archivia', tenta($$update corsi set attivo = false where id = 'cccccccc-0000-0000-0000-000000000002'$$), 'NEGATO: permission denied for table corsi');
+reset role;
+set role authenticated;
+
 \echo ''
 \echo '--- 3. di nuovo in calendario, niente giorno ---'
 select atteso('la segreteria lo rimette in calendario', tenta($$update corsi set attivo = true where id = 'cccccccc-0000-0000-0000-000000000001'$$), 'FATTO (1 righe)');

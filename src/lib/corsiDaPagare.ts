@@ -108,7 +108,8 @@ export function statoCorsi(
   return corsi
     .filter((c) => aPagamento(listino, c) && p.iscrizioni.some((i) => i.corsoId === c.id && i.dal <= alGiorno(c) && (!i.al || i.al >= oggi)))
     .map((c): StatoCorso => {
-      const oggi = alGiorno(c)
+      // Il termine dell'annuale (`oltre`) resta quello di oggi: si guarda a quel giorno solo quel che copre.
+      const giorno = alGiorno(c)
       const nomi = nomiDel(listino, c)
       const sue = voci.flatMap((v) => {
         const f = formulaDi(v.descrizione)
@@ -116,17 +117,17 @@ export function statoCorsi(
       })
       const base = { corsoId: c.id, corso: c.nome }
       // Anche un trimestre che parte domani, già pagato, copre: non si sollecita chi ha pagato in anticipo.
-      const pagata = piuLontana(sue.filter((v) => v.mancano === 0 && (!v.al || v.al >= oggi)))
+      const pagata = piuLontana(sue.filter((v) => v.mancano === 0 && (!v.al || v.al >= giorno)))
       if (pagata) return { ...base, come: 'pagato', formula: pagata.formula, al: pagata.al }
-      const parte = sue.filter((v) => v.mancano > 0 && (!v.dal || v.dal <= oggi) && (!v.al || v.al >= oggi)).sort((a, b) => a.mancano - b.mancano)[0]
+      const parte = sue.filter((v) => v.mancano > 0 && (!v.dal || v.dal <= giorno) && (!v.al || v.al >= giorno)).sort((a, b) => a.mancano - b.mancano)[0]
       if (parte) {
         const entro = parte.formula === 'annuale' && parte.data ? entroAnnuale(parte.data) : undefined
         return { ...base, come: 'in_parte', formula: parte.formula, al: parte.al, mancano: parte.mancano, ...(entro ? { entro, oltre: oggi > entro } : {}) }
       }
-      if (ecc.stato === 'pagato' && fino >= oggi) return { ...base, come: 'fuori_app', al: fino }
+      if (ecc.stato === 'pagato' && fino >= giorno) return { ...base, come: 'fuori_app', al: fino }
       // La quota pagata dall'area iscritti è dentro `satispay` ma non è l'iscrizione di prima: i corsi no.
       if ((p.satispay ?? 0) - (p.satispayQuota ?? 0) > 0 || p.satispayCorsi?.includes(c.id)) return { ...base, come: 'satispay' }
-      const finita = piuLontana(sue.filter((v) => v.al && v.al < oggi))
+      const finita = piuLontana(sue.filter((v) => v.al && v.al < giorno))
       if (finita) return { ...base, come: 'scaduto', formula: finita.formula, al: finita.al }
       if (ecc.stato === 'pagato' && ecc.fino) return { ...base, come: 'fuori_scaduto', al: ecc.fino }
       return { ...base, come: aMano ? 'da_controllare' : 'da_pagare' }

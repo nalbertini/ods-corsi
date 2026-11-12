@@ -32,21 +32,22 @@ begin
   elsif old.attivo then
     new.archiviato_il := (now() at time zone 'Europe/Rome')::date;
   else
-    -- Già archiviato: il giorno non cambia (senza giorno, lo dà il recupero qui sotto).
-    new.archiviato_il := coalesce(old.archiviato_il, new.archiviato_il);
+    -- Già archiviato: il giorno non cambia, né si scrive a mano.
+    new.archiviato_il := coalesce(old.archiviato_il, (now() at time zone 'Europe/Rome')::date);
   end if;
   return new;
 end $$;
 revoke all on function corso_archiviato_il() from public, anon, authenticated;
 
-drop trigger if exists corsi_archiviato_il on corsi;
-create trigger corsi_archiviato_il before update on corsi
-  for each row execute function corso_archiviato_il();
 
--- I corsi già archiviati: il giorno dell'ultima lezione.
+-- I corsi già archiviati: il giorno dell'ultima lezione. Prima del trigger, che lo terrebbe fermo.
+drop trigger if exists corsi_archiviato_il on corsi;
 update corsi c set archiviato_il = coalesce(
     (select max((s.inizio at time zone 'Europe/Rome')::date) from sessioni s where s.corso_id = c.id),
     (now() at time zone 'Europe/Rome')::date)
   where not c.attivo and c.archiviato_il is null;
+
+create trigger corsi_archiviato_il before update on corsi
+  for each row execute function corso_archiviato_il();
 
 notify pgrst, 'reload schema';
