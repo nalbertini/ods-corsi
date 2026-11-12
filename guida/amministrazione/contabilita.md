@@ -226,6 +226,11 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   bonifico, entro 30 giorni). La ricevuta può essere della persona del bonifico o della sua famiglia
   (il genitore paga, la ricevuta è del figlio). **Abbina** li lega senza scrivere niente di nuovo, così i
   soldi non si contano due volte; **Non è questa** la toglie dalla proposta.
+- Lo stesso lo vedi **dal movimento**: se il bonifico non ha ancora niente assegnato e c'è la sua
+  ricevuta fatta a parte (la stessa che proporrebbe COLLEGATI PRIMA), al posto di **DA ASSEGNARE** c'è
+  **C'È GIÀ LA RICEVUTA**: «C'è già la ricevuta n. … del … da …: è questa?». **Abbina** la lega al
+  bonifico, che resta aperto con la ricevuta in **ASSEGNATO A**; **Non è questa** torna a **DA
+  ASSEGNARE**, finché non chiudi la finestra.
 - Anche un bonifico ancora **Da classificare** compare in COLLEGATI PRIMA, con le ricevute che possono
   essere sue, dalla data più vicina: solo quelle di chi la causale nomina con nome e cognome interi (la
   persona della ricevuta, qualcuno della sua famiglia o il genitore scritto nella sua anagrafica). Se la

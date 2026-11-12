@@ -2,12 +2,11 @@
 // parziale, e dal bonifico la ricevuta, una per persona. Le regole stanno in `src/lib/assegna.ts`: qui si mostrano.
 import { useMemo, useRef, useState } from 'react'
 import {
-  abbinamentiProposti,
+  collegatiPrima,
   conGenitori,
   conAssegnazioni,
   daClassificareDaAbbinare,
   cosaNonVaAssegnazione,
-  cosaNonVaMovimentoDaAssegnare,
   daAssegnare,
   dovutiDi,
   elencoDaAssegnare,
@@ -15,6 +14,7 @@ import {
   movimentoDaClassificareAbbinabile,
   personeDelNucleo,
   proponiRipartizione,
+  ricevutaGiaFatta,
   type RigaAssegnata,
   type VoceDovuta,
   voceDaRicevuta,
@@ -54,7 +54,7 @@ const corsiDi = (p: PersonaSeg, a: Anagrafe, oggi: string) =>
  * Dentro il movimento aperto: quel che del bonifico è assegnato, le ricevute fatte da lì e quel che resta da
  * assegnare. Si mostra solo per le entrate che `cosaNonVaMovimentoDaAssegnare` lascia passare.
  */
-export function AssegnaMovimento({ d, m, diretti, ricevute, fai, avvisa, onFatto, onRileggi }: { d: DatiSegreteria; m: Movimento; diretti: PagamentoDiretto[]; ricevute: Ricevuta[]; fai: Fai; avvisa: Avvisa; onFatto: () => void; onRileggi: () => void }) {
+export function AssegnaMovimento({ d, m, manuali, casse, voci, diretti, ricevute, fai, avvisa, onFatto, onRileggi }: { d: DatiSegreteria; m: Movimento; manuali: MovimentoManuale[]; casse: Cassa[]; voci: VoceContabile[]; diretti: PagamentoDiretto[]; ricevute: Ricevuta[]; fai: Fai; avvisa: Avvisa; onFatto: () => void; onRileggi: () => void }) {
   const oggi = oggiARoma()
   const anagrafe = useAnagrafe(d)
   const [assegnando, setAssegnando] = useState(false)
@@ -66,6 +66,9 @@ export function AssegnaMovimento({ d, m, diretti, ricevute, fai, avvisa, onFatto
   const persone = anagrafe.dato?.persone ?? []
   const personaDi = (id: string) => persone.find((p) => p.id === id)
   const senzaRicevuta = [...new Set(righe.map((x) => x.personaId))]
+  // La ricevuta già fatta a parte che è di questo bonifico, come in «Collegati prima»: se la si abbina, non si assegna due volte.
+  const [nonEQuesta, setNonEQuesta] = useState(false)
+  const giaFatta = nonEQuesta ? undefined : ricevute.find((r) => r.id === ricevutaGiaFatta(m.id, manuali, diretti, ricevute, casse, voci, oggi, persone))
 
   const ricevuta = (chi: string[], sue: PagamentoDiretto[]) => setCoda({ chi, diretti: sue })
   const dopoAssegna = async (conRicevuta: boolean) => {
@@ -153,7 +156,21 @@ export function AssegnaMovimento({ d, m, diretti, ricevute, fai, avvisa, onFatto
           )}
         </div>
       )}
-      {resta > 0 && (
+      {giaFatta && (
+        <div className="stack" style={{ gap: 6 }}>
+          <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>C’È GIÀ LA RICEVUTA</span>
+          <span style={{ fontSize: 15 }}>
+            C’è già la ricevuta n. {giaFatta.numero}/{giaFatta.anno} del {dataRicevuta(giaFatta.data).slice(0, 5)} da {euroAssegna(giaFatta.pagato)}
+            {giaFatta.personaId !== m.personaId ? `, intestata a ${nome(personaDi(giaFatta.personaId ?? ''))}` : ''}: è questa?
+          </span>
+          <span className="sg-sotto">Se è la stessa, abbinala: il bonifico prende quella ricevuta e i soldi non si contano due volte.</span>
+          <div className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap', paddingTop: 4 }}>
+            <Tasto tono="pieno" onClick={() => void fai(() => d.abbinaRicevutaMovimento(m.id, giaFatta.id), 'Bonifico abbinato', onRileggi)}>Abbina</Tasto>
+            <button type="button" className="sg-link" style={{ ...DITO, color: 'var(--text)', fontWeight: 600 }} onClick={() => setNonEQuesta(true)}>Non è questa</button>
+          </div>
+        </div>
+      )}
+      {resta > 0 && !giaFatta && (
         <div className="stack" style={{ gap: 6 }}>
           <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>DA ASSEGNARE: {euroAssegna(resta)}</span>
           <span style={{ fontSize: 14 }}>Di’ a cosa va: la quota, un annuale, un trimestre. Finché non lo dici, non conta come pagato.</span>
@@ -300,10 +317,9 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
     return p ? `${p.cognome} ${p.nome}` : '…'
   }
   const fuori = (movimentoId: string, ricevutaId: string) => scartati.includes(`${movimentoId}|${ricevutaId}`)
+  const proposti = collegatiPrima(manuali, diretti, ricevute, casse, voci, oggi, persone).filter((x) => !fuori(x.movimentoId, x.ricevutaId))
   // Solo i bonifici che non hanno ancora niente assegnato: abbinare una ricevuta a uno già diviso conterebbe due volte.
   const interi = manuali.filter((m) => daAssegnare(m, diretti, ricevute) === m.importo)
-  const liberi = interi.filter((m) => cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggi) === null)
-  const proposti = abbinamentiProposti(liberi, ricevute, persone).filter((x) => !fuori(x.movimentoId, x.ricevutaId))
   // I Da classificare (151): le ricevute possibili tutte, dalla più vicina; una già proposta sopra non torna qui.
   const daClassificare = interi.filter((m) => movimentoDaClassificareAbbinabile(m, casse, voci, oggi))
   const scelte = daClassificareDaAbbinare(daClassificare, ricevute, new Set(proposti.map((x) => x.ricevutaId)), persone)

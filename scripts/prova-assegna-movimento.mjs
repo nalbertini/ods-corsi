@@ -85,6 +85,8 @@ const bonificiLiberi = lib('bonificiLiberi')
 const euroAssegna = lib('euroAssegna')
 const cosaNonVaQuota = lib('cosaNonVaQuota')
 const dovutiDi = lib('dovutiDi')
+const collegatiPrima = lib('collegatiPrima')
+const ricevutaGiaFatta = lib('ricevutaGiaFatta')
 
 const B = await impacchetta(`
   export { elencoMovimenti, totali, previstoCassa, residui, incassiDerivati, righeMovimenti } from './src/lib/contabilita'
@@ -442,6 +444,32 @@ console.log('\n7b. «Collegati prima»: i bonifici Da classificare')
   const liberi = prova(() => bonificiLiberi([dc('m1', 23000, '2026-10-12'), coll('m2', 23000, '2026-10-12', 'anna'), coll('m3', 23000, '2026-10-12', 'anna'), dc('m4', 23000, '2026-10-12', { cassaId: 'contanti' }), coll('m5', 23000, '2026-10-12', undefined)],
     [diretto('d1', 'anna', 1000, 'Quota', { movimentoId: 'm3' })], [], casse, vociDc, oggi).map((m) => m.id))
   ok('i bonifici liberi: il Da classificare e il collegato intero; non quello già in parte assegnato, i contanti, il collegato senza persona', liberi, ['m1', 'm2'])
+}
+
+console.log('\n7c. Nel bonifico aperto: la ricevuta già fatta, la stessa di «Collegati prima»')
+{
+  // Il caso vero: il bonifico di Rus Irene del 06/11 da 220 € e la ricevuta n. 324 del 09/11, tutta in Bonifico, fatta a parte.
+  const oggi = '2026-11-12'
+  const ric = (id, personaId, importo, data, o = {}) => ricevuta(id, personaId, [voceRic('QUOTA E TRIMESTRE', importo, importo, { pagamenti: [{ data, importo, metodo: 'Bonifico' }] })], { data, numero: Number(id.slice(1)), ...o })
+  const irene = movimento('m1', 22000, { data: '2026-11-06', personaId: 'irene' })
+  const r324 = ric('r324', 'irene', 22000, '2026-11-09')
+  const famiglia = [{ id: 'irene', attiva: true }, { id: 'marco', nucleo: 'irene', attiva: true }]
+  const gia = (m, manuali, diretti, ricevute) => prova(() => ricevutaGiaFatta(m, manuali, diretti, ricevute, casse, voci, oggi, famiglia) ?? null)
+  ok('il bonifico senza niente assegnato e la ricevuta libera che lo abbina: la propone', gia('m1', [irene], [], [r324]), 'r324')
+  ok('…anche la ricevuta del figlio dello stesso nucleo', gia('m1', [irene], [], [ric('r330', 'marco', 22000, '2026-11-09')]), 'r330')
+  ok('…con una parte già assegnata: niente, abbinarla conterebbe due volte', gia('m1', [irene], [diretto('d1', 'irene', 5000, 'Quota associativa 2026/27', { movimentoId: 'm1' })], [r324]), null)
+  ok('…la ricevuta già abbinata a un altro bonifico, o annullata: niente', [gia('m1', [irene], [], [ric('r324', 'irene', 22000, '2026-11-09', { movimentoId: 'm9' })]), gia('m1', [irene], [], [ric('r324', 'irene', 22000, '2026-11-09', { annullataIl: '2026-11-10T08:00:00Z' })])], [null, null])
+  ok('…importo diverso, o pagata in contanti: niente',
+    [gia('m1', [irene], [], [ric('r324', 'irene', 21000, '2026-11-09')]), gia('m1', [irene], [], [ricevuta('r324', 'irene', [voceRic('QUOTA', 22000, 0, { pagamenti: [{ data: '2026-11-09', importo: 22000, metodo: 'Contanti' }] })], { data: '2026-11-09', numero: 324 })])], [null, null])
+  ok('…un bonifico in contanti o su un’altra voce non si assegna, e non propone niente',
+    [gia('m1', [{ ...irene, cassaId: 'contanti' }], [], [r324]), gia('m1', [{ ...irene, voceId: 'v-gare' }], [], [r324])], [null, null])
+  ok('…con le persone non ancora lette vale solo la stessa persona: la ricevuta del figlio no', prova(() => ricevutaGiaFatta('m1', [irene], [], [ric('r330', 'marco', 22000, '2026-11-09')], casse, voci, oggi) ?? null), null)
+  ok('…il bonifico che ha già la sua ricevuta abbinata non ne propone un’altra',
+    gia('m1', [irene], [], [ric('r320', 'irene', 22000, '2026-11-07', { movimentoId: 'm1' }), r324]), null)
+  // Due bonifici uguali e una ricevuta: va al più vicino di data, come in «Collegati prima»; l'altro non la propone.
+  const prima = movimento('m0', 22000, { data: '2026-10-20', personaId: 'irene' })
+  ok('una ricevuta e due bonifici: la propone solo il più vicino di data', [gia('m1', [prima, irene], [], [r324]), gia('m0', [prima, irene], [], [r324])], ['r324', null])
+  ok('collegatiPrima: le stesse coppie della scheda Da assegnare', prova(() => collegatiPrima([prima, irene], [], [r324], casse, voci, oggi, famiglia)), [{ movimentoId: 'm1', ricevutaId: 'r324' }])
 }
 
 console.log('\n8. Dopo un’assegnazione, quota e corsi lo sanno (parziale e saldo)')

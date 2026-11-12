@@ -251,6 +251,20 @@ export function abbinamentiProposti(
 }
 
 /**
+ * «Collegati prima» della scheda Da assegnare: i bonifici collegati senza niente ancora assegnato (abbinare una ricevuta
+ * a uno già diviso conterebbe due volte), ciascuno con la ricevuta già fatta che è la sua.
+ */
+export function collegatiPrima(manuali: MovimentoManuale[], diretti: PagamentoDiretto[], ricevute: Ricevuta[], casse: Cassa[], voci: VoceContabile[], oggi: string, persone: PersonaNucleo[] = []) {
+  const liberi = manuali.filter((m) => daAssegnare(m, diretti, ricevute) === m.importo && cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggi) === null)
+  return abbinamentiProposti(liberi, ricevute, persone)
+}
+
+/** Nel bonifico aperto, la ricevuta già fatta da proporgli: la stessa coppia di «Collegati prima», o undefined. */
+export function ricevutaGiaFatta(movimentoId: string, manuali: MovimentoManuale[], diretti: PagamentoDiretto[], ricevute: Ricevuta[], casse: Cassa[], voci: VoceContabile[], oggi: string, persone: PersonaNucleo[] = []): string | undefined {
+  return collegatiPrima(manuali, diretti, ricevute, casse, voci, oggi, persone).find((x) => x.movimentoId === movimentoId)?.ricevutaId
+}
+
+/**
  * Un'entrata Da classificare del Conto Corrente si abbina a una ricevuta in Bonifico (151): prende persona e voce della
  * ricevuta (se ne ha già una la tiene, e la ricevuta dev'essere del suo nucleo). Non Satispay, non annullata, non lo
  * storico del vecchio programma di una stagione passata.

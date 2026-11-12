@@ -1033,7 +1033,7 @@ function MovimentoAperto({ d, voci, righe, riga, chiusure, cassa, cassaA, nomePe
               )}
             </div>
           </div>
-          {daAssegnareQui && !collegando && <AssegnaMovimento d={d} m={daAssegnareQui} diretti={diretti} ricevute={ricevute} fai={fai} avvisa={avvisa} onFatto={onFatto} onRileggi={onRileggi} />}
+          {daAssegnareQui && !collegando && <AssegnaMovimento d={d} m={daAssegnareQui} manuali={manuali} casse={casse} voci={voci} diretti={diretti} ricevute={ricevute} fai={fai} avvisa={avvisa} onFatto={onFatto} onRileggi={onRileggi} />}
         </div>
       )}
       {riga.tipo !== 'giroconto' && !riga.personaId && (
