@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.242.8 — 12 novembre 2026
+
+### Risolto
+
+- Lo stesso bonifico non conta più due volte in CONTABILITÀ, anche se la ricevuta è di un familiare o il bonifico è da classificare
+
 ## 0.242.7 — 12 novembre 2026
 
 ### Risolto
