@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.242.10 — 12 novembre 2026
+
+### Risolto
+
+- COLLEGATI PRIMA propone un bonifico Da classificare solo con la ricevuta di chi la causale nomina
+
 ## 0.242.9 — 12 novembre 2026
 
 ### Risolto
