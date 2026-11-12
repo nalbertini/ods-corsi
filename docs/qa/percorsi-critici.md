@@ -72,7 +72,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Quadratura del Conto Corrente con l'estratto BancoPosta | amministrazione (scrive e verifica), segreteria (non la vede) | saldo sbagliato, mese «verificato» che non torna, saldo visto da chi non deve | `prova:quadratura`, `prova:importa-banca`, `quadratura-banca.sql` | sì, da fare |
 | Importazioni: Satispay e banca sullo stesso movimento a mano | amministrazione | stesso incasso contato due volte, o perso | `prova:importazioni`, `prova:satispay-scarico`, `prova:importa-banca`, `importazioni.sql`, `satispay-scarico.sql`, `importa-banca.sql` | sì |
 | Bonifico o POS già in una ricevuta (anche a rate) o in un pagamento | amministrazione | incasso contato due volte, o import fermo sulla riga | `prova:importa-banca`, `prova:quadratura`, `prova:importazioni`, `importazioni.sql` | sì, da fare |
-| Ricevuta in Bonifico abbinata al bonifico (familiare, Da classificare col nome) | amministrazione | incasso contato due volte, ricevuta di un'altra famiglia | `prova:assegna-movimento`, `assegna-movimento.sql` | sì |
+| Ricevuta in Bonifico abbinata al bonifico (familiare, Da classificare col nome; proposta anche nel bonifico aperto, stessa coppia di «Collegati prima») | amministrazione | incasso contato due volte, ricevuta di un'altra famiglia | `prova:assegna-movimento`, `assegna-movimento.sql` | sì |
 | Voci da classificare in IMPORTAZIONI | amministrazione | voce persa dalla lista, totale sbagliato | `prova:importazioni`, `prova:suggerimento-movimento` | sì, da fare |
 | Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:segreteria`, `prova:contabilita`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
 | Quote e corsi scritti a mano hanno la persona | amministrazione (scrive), segreteria (vede la scheda) | quota che non si ritrova nella scheda | `prova:contabilita`, `prova:movimenti-persona`, `prova:segreteria`, `prova:suggerimento-movimento`, `quote-persona.sql`, `cambia-voce.sql`, `movimenti-persona.sql` | sì |
@@ -253,6 +253,7 @@ quando arriva la prova.
 - Verbali, «Carica un verbale» (`Verbali.tsx`): mostra DOVE, INIZIO, FINE e
   ordine del giorno, che la regola non chiede; se la firma cade dopo il
   caricamento resta una bozza col PDF. Solo collaudo a mano.
+- Bonifico aperto, «C'è già la ricevuta» (`AssegnaMovimento.tsx`): la regola (`ricevutaGiaFatta`, `collegatiPrima`) è provata, il riquadro con «Abbina» / «Non è questa» no. Solo collaudo a mano.
 - Scheda del movimento (`MovimentoAperto`): «Salva» solo con modifiche,
   «Da assegnare» solo nella card della persona, nome del ⋯. Le regole sono
   provate in lib; il cablaggio nel `.tsx` no. Solo collaudo a mano.

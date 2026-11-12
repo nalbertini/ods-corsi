@@ -1,0 +1,11 @@
+{
+ "pages": [{ "id": "page-1", "name": "Contabilità · nel bonifico la ricevuta già fatta" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "Oggi · il bonifico chiede solo di assegnare", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "Proposta · C’È GIÀ LA RICEVUTA", "x": 680, "y": 300, "page": "page-1" },
+  { "file": "Abbinato.dc.html", "title": "Proposta · dopo Abbina", "x": 1360, "y": 300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1960, "text": "Contabilità: nel bonifico la ricevuta già fatta" }
+ ]
+}

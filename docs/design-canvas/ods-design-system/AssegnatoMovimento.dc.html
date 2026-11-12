@@ -29,20 +29,32 @@
     <div class="riga"><span style="flex: 1 1 240px">Rossi Sofia <span class="sotto">· Trimestre Danza moderna</span></span><span class="num">80,00 €</span><dc-import name="Badge" tipo="tag" label="Senza ricevuta" tono="giallo" hint-size="140px,28px"></dc-import></div>
     <div><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Fai la ricevuta" hint-size="170px,48px"></dc-import></div>
   </div>
+  <sc-if value="{{giaFatta}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+    <span class="et" style="color: #8f6a00">C’È GIÀ LA RICEVUTA</span>
+    <span style="font-size: 15px">C’è già la ricevuta n. 324/2026 del 09/11 da 220,00 €: è questa?</span>
+    <span class="sotto">Se è la stessa, abbinala: il bonifico prende quella ricevuta e i soldi non si contano due volte.</span>
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 4px"><dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Abbina" hint-size="110px,48px"></dc-import><span class="link">Non è questa</span></div>
+  </div>
+  </sc-if>
+  <sc-if value="{{daAssegnare}}" hint-placeholder-val="{{ true }}">
   <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #cfe6f4; padding-top: 14px">
     <span class="et" style="color: #8f6a00">DA ASSEGNARE: 20,00 €</span>
     <span style="font-size: 14px">Di’ a cosa va: la quota, un annuale, un trimestre. Finché non lo dici, non conta come pagato.</span>
     <div><dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Assegna a quota e corsi" hint-size="240px,48px"></dc-import></div>
   </div>
+  </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"$preview":{"width":640,"height":360}}'>
+<script data-dc-script data-props='{"giaFatta":{"editor":"boolean","default":false},"$preview":{"width":640,"height":360}}'>
 // COSTRUITA: AssegnaMovimento di src/components/segreteria/AssegnaMovimento.tsx (../assegna-pagamento/), nella finestra del movimento
 // di CONTABILITÀ dentro la card della persona (RigaPersonaMovimento), solo per le entrate su Quota associativa e Corsi e altri pagamenti collegate,
 // non sui contanti né sullo storico delle stagioni passate. ASSEGNATO A: una riga per assegnazione (persona · voce, importo, la ricevuta
 // col link PDF o il tag Senza ricevuta); «Fai la ricevuta» (con più persone senza ricevuta: «Fai la ricevuta di <nome>»).
+// Con `giaFatta` (../bonifico-ricevuta-fatta/): il bonifico senza niente assegnato e la sua ricevuta fatta a parte (`ricevutaGiaFatta`, la stessa coppia di
+// COLLEGATI PRIMA): al posto di DA ASSEGNARE, C'È GIÀ LA RICEVUTA con la frase, «Abbina» pieno e «Non è questa», che torna a DA ASSEGNARE.
 // DA ASSEGNARE: non piu' un riquadro, un blocco sotto un filetto `line-soft` (padding-top 14px), etichetta `giallo-testo`, solo se resta qualcosa. La ricevuta si apre come SchedaPiena «Ricevuta di <nome>».
-class Component extends DCLogic { renderVals() { return {}; } }
+class Component extends DCLogic { renderVals() { const g = this.props.giaFatta ?? false; return { giaFatta: g, daAssegnare: !g }; } }
 </script>
 </body>
 </html>

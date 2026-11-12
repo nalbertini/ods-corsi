@@ -463,6 +463,9 @@ console.log('\n7c. Nel bonifico aperto: la ricevuta già fatta, la stessa di «C
     [gia('m1', [irene], [], [ric('r324', 'irene', 21000, '2026-11-09')]), gia('m1', [irene], [], [ricevuta('r324', 'irene', [voceRic('QUOTA', 22000, 0, { pagamenti: [{ data: '2026-11-09', importo: 22000, metodo: 'Contanti' }] })], { data: '2026-11-09', numero: 324 })])], [null, null])
   ok('…un bonifico in contanti o su un’altra voce non si assegna, e non propone niente',
     [gia('m1', [{ ...irene, cassaId: 'contanti' }], [], [r324]), gia('m1', [{ ...irene, voceId: 'v-gare' }], [], [r324])], [null, null])
+  ok('…con le persone non ancora lette vale solo la stessa persona: la ricevuta del figlio no', prova(() => ricevutaGiaFatta('m1', [irene], [], [ric('r330', 'marco', 22000, '2026-11-09')], casse, voci, oggi) ?? null), null)
+  ok('…il bonifico che ha già la sua ricevuta abbinata non ne propone un’altra',
+    gia('m1', [irene], [], [ric('r320', 'irene', 22000, '2026-11-07', { movimentoId: 'm1' }), r324]), null)
   // Due bonifici uguali e una ricevuta: va al più vicino di data, come in «Collegati prima»; l'altro non la propone.
   const prima = movimento('m0', 22000, { data: '2026-10-20', personaId: 'irene' })
   ok('una ricevuta e due bonifici: la propone solo il più vicino di data', [gia('m1', [prima, irene], [], [r324]), gia('m0', [prima, irene], [], [r324])], ['r324', null])
