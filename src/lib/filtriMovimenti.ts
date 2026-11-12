@@ -4,7 +4,7 @@ import { soldi } from './satispay'
 import { senzaPersona, type EsitoCollegamento } from './movimentiPersona'
 
 /**
- * I filtri di CONTABILITÀ › MOVIMENTI: il periodo a mese e anno, MOSTRA e TIPO.
+ * I filtri di CONTABILITÀ › MOVIMENTI: il periodo a mese e anno, MOSTRA, TIPO e VOCE.
  * Stanno in un file loro e non in `contabilita.ts` perché guardano anche le persone
  * (`movimentiPersona` importa da `contabilita`: lì farebbero un giro).
  */
@@ -19,6 +19,8 @@ export interface FiltriElenco {
   anno: number
   mostra: Mostra
   tipo: '' | 'entrata' | 'uscita'
+  /** Il nome della voce; '' = tutte. */
+  voce: string
 }
 
 /** Quel che serve per dire «da assegnare» oltre alla riga: i movimenti con soldi ancora da assegnare e gli esiti del collegamento. */
@@ -33,7 +35,7 @@ export const nomeMese = (m: number) => NOMI_MESI[m - 1] ?? ''
 const meseDi = (data: string) => ({ mese: Number(data.slice(5, 7)), anno: Number(data.slice(0, 4)) })
 
 /** La partenza: il mese corrente, quel che si guarda quasi sempre. */
-export const filtriIniziali = (oggi: string): FiltriElenco => ({ testo: '', ...meseDi(oggi), mostra: 'tutti', tipo: '' })
+export const filtriIniziali = (oggi: string): FiltriElenco => ({ testo: '', ...meseDi(oggi), mostra: 'tutti', tipo: '', voce: '' })
 
 const due = (n: number) => String(n).padStart(2, '0')
 
@@ -92,6 +94,17 @@ export const filtraMostra = (righe: RigaMovimento[], mostra: Mostra, ctx: Contes
 /** Da assegnare guarda tutto lo storico: una quota senza persona di marzo non deve restare nascosta dal mese. */
 export const conMostra = (f: FiltriElenco, mostra: Mostra): FiltriElenco => (mostra === 'da_assegnare' ? { ...f, mostra, mese: 0, anno: 0 } : { ...f, mostra })
 
+/** Il menu VOCE: le voci che i movimenti hanno davvero (anche lo storico e quelle spente), del TIPO scelto. */
+export function vociDelFiltro(righe: Pick<RigaMovimento, 'tipo' | 'voce'>[], tipo: FiltriElenco['tipo']): string[] {
+  const nomi = righe.flatMap((r) => (r.voce && (r.tipo === 'entrata' || r.tipo === 'uscita') && (!tipo || r.tipo === tipo) ? [r.voce] : []))
+  return [...new Set(nomi)].sort((a, b) => a.localeCompare(b, 'it'))
+}
+
+/** TIPO cambiato: una voce che con quel tipo non c'è si toglie, se no l'elenco resta vuoto senza dire perché. */
+export function conTipo(righe: Pick<RigaMovimento, 'tipo' | 'voce'>[], f: FiltriElenco, tipo: FiltriElenco['tipo']): FiltriElenco {
+  return { ...f, tipo, voce: f.voce && !vociDelFiltro(righe, tipo).includes(f.voce) ? '' : f.voce }
+}
+
 /**
  * Un movimento appena scritto che i filtri nascondono: la schermata lo dice, se no sembra perso.
  * Senza il contesto: di un movimento nuovo si sa solo se è senza persona o da classificare.
@@ -99,18 +112,18 @@ export const conMostra = (f: FiltriElenco, mostra: Mostra): FiltriElenco => (mos
 export function nonSiVedra(r: RigaMovimento, f: FiltriElenco): boolean {
   if (f.mostra === 'annullati') return true
   if (f.mostra === 'da_assegnare' && !daAssegnare(r, { ids: new Set(), esiti: {} })) return true
-  return filtraMovimenti([r], { ...intervalloFiltri(f), testo: f.testo, tipo: f.tipo }).length === 0
+  return filtraMovimenti([r], { ...intervalloFiltri(f), testo: f.testo, tipo: f.tipo, voce: f.voce }).length === 0
 }
 
 /** Il tasto «Mostralo»: il mese del movimento, con tutti i movimenti. */
-export const filtriPer = (r: Pick<RigaMovimento, 'data'>): FiltriElenco => ({ testo: '', ...meseDi(r.data), mostra: 'tutti', tipo: '' })
+export const filtriPer = (r: Pick<RigaMovimento, 'data'>): FiltriElenco => ({ testo: '', ...meseDi(r.data), mostra: 'tutti', tipo: '', voce: '' })
 
 /**
  * L'estratto conto con MOSTRA: il saldo resta quello vero delle casse, MOSTRA nasconde righe.
  * Gli annullati sono in elenco ma valgono zero, quindi i loro totali sono zero.
  */
 export function estrattoMostra(righe: RigaMovimento[], casse: Cassa[], f: FiltriElenco, ctx: ContestoAssegna): EstrattoConto {
-  const e = estrattoConto(righe, casse, { ...intervalloFiltri(f), testo: f.testo, tipo: f.tipo, annullati: f.mostra === 'annullati' })
+  const e = estrattoConto(righe, casse, { ...intervalloFiltri(f), testo: f.testo, tipo: f.tipo, voce: f.voce, annullati: f.mostra === 'annullati' })
   const viste = e.righe.filter((x) => passaMostra(x.riga, f.mostra, ctx))
   return { ...e, righe: viste, entrate: viste.reduce((s, x) => s + x.entrata, 0), uscite: viste.reduce((s, x) => s + x.uscita, 0) }
 }
@@ -129,6 +142,6 @@ export function striscia(e: EstrattoConto, f: FiltriElenco): { nome: string; cif
     { nome: 'ENTRATE', cifra: conSegno('+', e.entrate), entrata: e.entrate > 0 },
     { nome: 'USCITE', cifra: conSegno('−', e.uscite) },
   ]
-  if (f.mostra !== 'tutti' || f.tipo || f.testo.trim()) return righe
+  if (f.mostra !== 'tutti' || f.tipo || f.voce || f.testo.trim()) return righe
   return [{ nome: 'SALDO INIZIALE', cifra: saldo(e.saldoIniziale) }, ...righe, { nome: 'SALDO FINALE', cifra: saldo(e.saldoFinale) }]
 }

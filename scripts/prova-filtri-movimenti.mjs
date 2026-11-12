@@ -7,7 +7,7 @@
 // frecce, MOSTRA (Da assegnare | Tutti | Annullati), TIPO (Entrate | Uscite |
 // Tutti), la riga «N movimenti a …» e quando un movimento appena scritto resta
 // fuori dall'elenco. In fondo, che Contabilita.tsx usi questi filtri e non più
-// casse, persona, voce, «Mostra annullati» e le pillole.
+// casse, persona, «Mostra annullati» e le pillole; la VOCE c'è, in una riga sola.
 // ---------------------------------------------------------------------------
 import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
@@ -47,7 +47,7 @@ const riga = (id, o = {}) => ({ id, origine: 'movimento', tipo: 'uscita', data: 
 
 console.log('1. la partenza: il mese corrente, tutti i movimenti non annullati, entrate e uscite')
 const base = prova(() => m.filtriIniziali(OGGI))
-ok('i filtri di partenza', base, { testo: '', mese: 11, anno: 2026, mostra: 'tutti', tipo: '' })
+ok('i filtri di partenza', base, { testo: '', mese: 11, anno: 2026, mostra: 'tutti', tipo: '', voce: '' })
 
 console.log('\n2. il periodo: un mese, un anno intero o tutto')
 ok('novembre 2026', prova(() => m.intervalloFiltri(base)), { dal: '2026-11-01', al: '2026-11-30' })
@@ -117,9 +117,11 @@ console.log('\n7. un movimento appena scritto fuori dai filtri: la schermata lo 
   ok('con MOSTRA Annullati no', prova(() => m.nonSiVedra(nuovo, { ...base, mostra: 'annullati' })), true)
   ok('con MOSTRA Da assegnare un affitto no', prova(() => m.nonSiVedra(nuovo, { ...base, mostra: 'da_assegnare' })), true)
   ok('…uno «Da classificare» sì', prova(() => m.nonSiVedra({ ...nuovo, voce: 'Da classificare' }, { ...base, mostra: 'da_assegnare' })), false)
+  ok('con la VOCE Tasse un affitto no', prova(() => m.nonSiVedra(nuovo, { ...base, voce: 'Tasse' })), true)
+  ok('…con la VOCE Affitto sala sì', prova(() => m.nonSiVedra(nuovo, { ...base, voce: 'Affitto sala' })), false)
   ok('cercando «cena» no', prova(() => m.nonSiVedra(nuovo, { ...base, testo: 'cena' })), true)
   ok('un giroconto con TIPO Uscite no: sposta fra le casse, non esce', prova(() => m.nonSiVedra({ ...nuovo, tipo: 'giroconto', voce: null, cassaAId: 'c2' }, { ...base, tipo: 'uscita' })), true)
-  ok('il tasto «Mostralo» porta al suo mese, con tutti i movimenti', prova(() => m.filtriPer({ ...nuovo, data: '2025-03-04' })), { testo: '', mese: 3, anno: 2025, mostra: 'tutti', tipo: '' })
+  ok('il tasto «Mostralo» porta al suo mese, con tutti i movimenti', prova(() => m.filtriPer({ ...nuovo, data: '2025-03-04' })), { testo: '', mese: 3, anno: 2025, mostra: 'tutti', tipo: '', voce: '' })
 }
 
 console.log('\n8. i totali con MOSTRA Annullati: in elenco ma fuori dai saldi')
@@ -133,6 +135,18 @@ console.log('\n8. i totali con MOSTRA Annullati: in elenco ma fuori dai saldi')
   ok('con Tutti solo il valido', tutti.righe?.map((x) => x.riga.id), ['a'])
 }
 
+console.log('\n8a. VOCE: un menu delle voci dei movimenti, che segue TIPO')
+{
+  const righe = [riga('a', { voce: 'Tasse' }), riga('b', { voce: 'Affitto sala' }), riga('c', { tipo: 'entrata', voce: 'Affitto sala' }), riga('d', { tipo: 'entrata', voce: 'Contributi comunali' }), riga('g', { tipo: 'giroconto', voce: null }), riga('e', { voce: 'Tasse', annullato: true })]
+  ok('le voci in ordine, una volta sola, senza i giroconti', prova(() => m.vociDelFiltro(righe, '')), ['Affitto sala', 'Contributi comunali', 'Tasse'])
+  ok('con TIPO Entrate solo quelle di entrata', prova(() => m.vociDelFiltro(righe, 'entrata')), ['Affitto sala', 'Contributi comunali'])
+  const casse = [{ id: 'c1', nome: 'Cassa Contanti', saldoIniziale: 0 }]
+  const f = { ...base, voce: 'Tasse' }
+  ok('con la VOCE Tasse restano solo le tasse', prova(() => m.estrattoMostra(righe, casse, f, { ids: new Set(), esiti: {} }).righe.map((x) => x.riga.id)), ['a'])
+  ok('cambiando TIPO una voce che non c\'è più si toglie', prova(() => m.conTipo(righe, f, 'entrata')), { ...f, tipo: 'entrata', voce: '' })
+  ok('…una che c\'è resta', prova(() => m.conTipo(righe, { ...base, voce: 'Affitto sala' }, 'entrata')), { ...base, voce: 'Affitto sala', tipo: 'entrata' })
+}
+
 console.log('\n8b. la striscia dei totali torna sempre: i saldi solo senza filtri sulle righe')
 {
   const casse = [{ id: 'c1', nome: 'Cassa Contanti', saldoIniziale: 1000 }]
@@ -143,13 +157,14 @@ console.log('\n8b. la striscia dei totali torna sempre: i saldi solo senza filtr
   // Il saldo è delle casse, entrate e uscite delle righe viste: insieme non tornerebbero.
   ok('con TIPO Uscite solo entrate e uscite', nomi({ ...base, tipo: 'uscita' }), ['ENTRATE', 'USCITE'])
   ok('cercando un testo solo entrate e uscite', nomi({ ...base, testo: 'cena' }), ['ENTRATE', 'USCITE'])
+  ok('con una VOCE solo entrate e uscite', nomi({ ...base, voce: 'Affitto sala' }), ['ENTRATE', 'USCITE'])
   ok('con Da assegnare solo entrate e uscite', nomi(m.conMostra(base, 'da_assegnare')), ['ENTRATE', 'USCITE'])
   ok('con Annullati solo entrate e uscite', nomi({ ...base, mostra: 'annullati' }), ['ENTRATE', 'USCITE'])
   const cifre = prova(() => m.striscia(m.estrattoMostra(righe, casse, { ...base, tipo: 'entrata' }, ctx), { ...base, tipo: 'entrata' }).map((x) => x.cifra))
   ok('zero uscite: la cifra senza il meno', typeof cifre?.[1] === 'string' && !cifre[1].includes('−'), true)
 }
 
-console.log('\n9. Contabilita.tsx: i filtri nuovi, niente casse, persona, voce, annullati e pillole')
+console.log('\n9. Contabilita.tsx: i filtri nuovi, con la voce, niente casse, persona, annullati e pillole')
 {
   const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
   const da = tsx.indexOf('function Movimenti(')
@@ -158,7 +173,9 @@ console.log('\n9. Contabilita.tsx: i filtri nuovi, niente casse, persona, voce, 
   ok('i filtri partono da filtriIniziali(oggi)', /useState<FiltriElenco>\(\(\) => filtriIniziali\(oggi\)\)/.test(corpo), true)
   ok('MOSTRA e TIPO sono a segmenti', /<Segmenti[^>]*Quali movimenti/.test(corpo) && /<Segmenti[^>]*Entrate o uscite/.test(corpo), true)
   ok('il periodo ha le frecce Mese prima e Mese dopo', /Mese prima/.test(corpo) && /Mese dopo/.test(corpo), true)
-  ok('niente più casse, persona, voce e «Mostra annullati»', [/<FiltroCasse /, /id="filtro-persona"/, /id="filtro-voce"/, /Mostra annullati/].map((r) => r.test(corpo)), [false, false, false, false])
+  ok('niente più casse, persona e «Mostra annullati»', [/<FiltroCasse /, /id="filtro-persona"/, /Mostra annullati/].map((r) => r.test(corpo)), [false, false, false])
+  ok('c\'è il menu VOCE, con le voci di vociDelFiltro', /id="filtro-voce"/.test(corpo) && /vociDelFiltro\(/.test(corpo), true)
+  ok('i filtri stanno su una riga sola', (corpo.match(/className="sg-elenco-barra/g) ?? []).length, 1)
   ok('niente più pillole né «Togli i filtri»', [/filtriAccesi\(/, /togliFiltro\(/, /Togli i filtri/].map((r) => r.test(corpo)), [false, false, false])
   ok('«Vedi i da decidere» porta a MOSTRA Da assegnare', /onVediDaDecidere=\{[^}]*conMostra\([^)]*'da_assegnare'\)/.test(corpo), true)
   ok('anche «Vedi» dopo l\'importazione della banca', /onVedi=\{[^}]*conMostra\([^)]*'da_assegnare'\)/.test(corpo), true)

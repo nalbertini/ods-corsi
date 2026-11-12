@@ -2098,6 +2098,8 @@ a.sg-btn { text-decoration: none; }
 .sg-filtro-menu-tasto { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; white-space: nowrap; }
 .sg-filtro-menu-tasto label { color: var(--dim); }
 .sg-filtro-menu-valore { font-weight: 600; min-width: 0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+/* In MOVIMENTI i filtri stanno in una riga: una voce lunga si taglia prima (il nome intero è nel menu). */
+.sg-elenco-barra-movimenti .sg-filtro-menu-valore { max-width: 160px; }
 .sg-filtro-menu select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
 .sg-filtro-menu:focus-within { outline: 3px solid var(--text); outline-offset: 3px; }
 .sg-filtro-menu[data-acceso='true'] { background: var(--surface-2); }
