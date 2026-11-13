@@ -30,12 +30,17 @@
     <div class="riga" style="align-items: center"><span style="flex: 1 1 380px; display: flex; flex-direction: column; gap: 2px"><span><b>Bonifico del 13/10/2026</b> <span class="sotto">· Da classificare · Da ANNA NERI BONIFICO SEPA</span></span><span class="sotto" style="color: #8f6a00">Abbinando, il bonifico va a Gialli Tommaso su «Corsi e altri pagamenti».</span><span style="padding-left: 16px">ricevuta n. 98/2026 del 14/10/2026 · <b>Gialli Tommaso</b> <span class="sotto">· 1 giorno dopo</span></span></span><span class="num" style="font-weight: 700">230,00 €</span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Abbina" hint-size="110px,48px"></dc-import><span class="link">Non è questa</span></div>
     <div class="riga" style="flex-direction: column; align-items: stretch"><span style="display: flex; gap: 12px; flex-wrap: wrap"><span style="flex: 1 1 380px"><b>Bonifico del 06/10/2026</b> <span class="sotto">· Da classificare · Da PAOLA ROSSI BONIFICO SEPA</span></span><span class="num" style="font-weight: 700">220,00 €</span></span><span class="sotto" style="color: #8f6a00">2 ricevute possono essere questa: scegli quella giusta. Abbinando, il bonifico va alla persona della ricevuta.</span><span style="display: flex; gap: 12px; align-items: center; padding-left: 16px"><span style="flex: 1 1 360px">ricevuta n. 104/2026 del 22/10/2026 · <b>Rossi Giulia</b> <span class="sotto">· 16 giorni dopo</span></span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="È questa" hint-size="120px,48px"></dc-import></span><span style="display: flex; gap: 12px; align-items: center; padding-left: 16px"><span style="flex: 1 1 360px">ricevuta n. 118/2026 del 04/11/2026 · <b>Neri Elena</b> <span class="sotto">· 29 giorni dopo</span></span><dc-import name="Bottone" contesto="segreteria" variante="linea" label="È questa" hint-size="120px,48px"></dc-import></span><span class="link" style="padding-left: 16px">Nessuna di queste</span></div>
   </div>
-  <div class="riq" style="box-shadow: inset 4px 0 0 #0b7a33">
+  <div class="riq">
     <span class="et">SI ASSEGNANO DA SOLI · 2 BONIFICI · 400,00 €</span>
     <span style="font-size: 14px">Per questi la persona è sicura e l’importo è esattamente quel che deve: niente resto, niente corso pagato a metà, niente annuale o trimestre da scegliere, un solo modo di dividere. Si assegnano senza ricevuta, come «Assegna senza ricevuta».</span>
     <div class="riga"><span class="num" style="width: 90px">06/11/2026</span><span style="flex: 1 1 320px"><b>Rus Irene</b> <span class="sotto">· Da CRISTINA SILVI per Iscrizione IRENE RUS</span></span><span>→ Annuale Avviamento Arti Marziali</span><span class="num" style="font-weight: 700; width: 100px; text-align: right">220,00 €</span></div>
     <div class="riga"><span class="num" style="width: 90px">04/11/2026</span><span style="flex: 1 1 320px"><b>Riccardi Leonardo</b> <span class="sotto">· Da DELLE ROSE SERENA per Iscrizione Leonardo</span></span><span>→ Quota associativa 2026/27 + Trimestre Judo Kids (Riccardi Sofia)</span><span class="num" style="font-weight: 700; width: 100px; text-align: right">180,00 €</span></div>
-    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 4px"><dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Assegna i 2" hint-size="140px,48px"></dc-import><span class="sotto">Qui ci sono tutti, uno per riga. Uno solo si annulla anche dal movimento.</span></div>
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 4px"><dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Assegna i 2" hint-size="140px,48px"></dc-import></div>
+  </div>
+  <div class="riq">
+    <span class="et">ASSEGNATI DA SOLI</span>
+    <span role="status" style="font-size: 15px">Assegnati 2 bonifici: la ricevuta si fa dal movimento, quando serve.</span>
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 4px"><dc-import name="Bottone" contesto="segreteria" variante="pericolo" label="Togli questo lotto" hint-size="190px,48px"></dc-import><span class="sotto">«Togli questo lotto» li rimette tutti in Da assegnare; uno solo si annulla anche dal movimento.</span></div>
   </div>
   <div style="display: flex; flex-direction: column; gap: 6px">
     <span class="et">DA ASSEGNARE · 2 ENTRATE · 620,00 €</span>
@@ -44,17 +49,19 @@
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"$preview":{"width":1000,"height":780}}'>
+<script data-dc-script data-props='{"$preview":{"width":1000,"height":900}}'>
 // COSTRUITA: DaAssegnare di src/components/segreteria/AssegnaMovimento.tsx (../assegna-pagamento/, ../bonifico-doppio/), la scheda DA
 // ASSEGNARE di CONTABILITÀ. COLLEGATI PRIMA solo se ci sono proposte: i bonifici collegati con la ricevuta della persona o della sua
 // famiglia (abbinamentiProposti, «· della famiglia di …»), e i Da classificare con tutte le ricevute possibili dalla più vicina
 // (daClassificareDaAbbinare): una sola → frase gialla con persona e voce, «Abbina»; più → «È questa» per riga e «Nessuna di queste».
 // «Non è questa» è un sg-link alto 44px, inchiostro 600; «Abbina tutti e N» (o «Abbina i N già collegati») solo per i collegati.
 // Elenco: data, persona · descrizione, cassa, «importo · tutto» o «resta di importo», «Assegna» che apre il movimento in MOVIMENTI.
-// SI ASSEGNANO DA SOLI (../collega-e-assegna/, daSoli di src/lib/assegna.ts): dopo COLLEGATI PRIMA, bordo sinistro 4px verde-testo,
-// tutti i bonifici con un solo modo di dividerli, data · persona · causale · → voci (familiare fra parentesi) · importo; «Assegna i N»
-// pieno con conferma, poi la frase dell'esito e «Togli questo lotto» (sg-pericolo). L'elenco sotto ha solo gli altri, col perché in
-// giallo (data-tono aspetta) sotto la persona.
+// SI ASSEGNANO DA SOLI (../collega-e-assegna/, daSoli di src/lib/assegna.ts): dopo COLLEGATI PRIMA, riquadro neutro, tutti i bonifici
+// con un solo modo di dividerli, data · persona · causale · → voci (familiare fra parentesi) · importo; «Assegna i N» pieno con
+// conferma, durante «Assegno… n su N» spento (aria-live). Dopo, titolo ASSEGNATI DA SOLI se non ne restano, l'esito (role status),
+// «Togli questo lotto» (Tasto sg-pericolo) e la sua frase; un errore in role alert con «Riprova: quelli già assegnati non si ripetono»;
+// tolto il lotto, «Tolto il lotto: i N bonifici sono tornati da assegnare». L'elenco sotto ha solo gli altri, col perché in giallo
+// (data-tono aspetta) sotto la persona.
 // Vuoto: «Niente da assegnare: ogni entrata collegata su quota e corsi dice a cosa va.».
 class Component extends DCLogic { renderVals() { return {}; } }
 </script>

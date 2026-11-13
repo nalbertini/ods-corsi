@@ -129,9 +129,35 @@ ok('Satispay o contanti, uscite, senza persona, annullati: fuori, senza perché'
 ])), { pronti: [], perche: {} })
 ok('del vecchio programma, di una stagione passata: fuori', elenco(contesto([mov('p1', 66000, 'sofia', { origineImport: 'prima-nota:1', data: '2025-10-01' })])).pronti, [])
 ok('già assegnato in parte: fuori, si finisce a mano', elenco(contesto([mov('m5', 66000, 'sofia')], { diretti: [{ id: 'd1', personaId: 'sofia', data: '2026-11-04', importo: 5000, metodo: 'Bonifico', voce: 'Quota associativa 2026/27', movimentoId: 'm5', creatoIl: '2026-11-04T10:00:00Z' }] })), { pronti: [], perche: {} })
+ok('già assegnato per intero (un giro rifatto dopo una rete caduta): fuori, non si riscrive', elenco(contesto([mov('m9', 66000, 'sofia')], { diretti: [
+  { id: 'd2', personaId: 'sofia', data: '2026-11-04', importo: 5000, metodo: 'Bonifico', voce: 'Quota associativa 2026/27', movimentoId: 'm9', creatoIl: '2026-11-04T10:00:00Z' },
+  { id: 'd3', personaId: 'sofia', data: '2026-11-04', importo: 61000, metodo: 'Bonifico', voce: 'Annuale Judo adulti', movimentoId: 'm9', creatoIl: '2026-11-04T10:00:00Z' },
+] })), { pronti: [], perche: {} })
 ok('con la ricevuta già fatta a parte: resta, va abbinata', elenco(contesto([mov('m6', 66000, 'sofia')], {
   ricevute: [{ id: 'r1', anno: 2026, numero: 9, data: '2026-11-05', personaId: 'sofia', pagato: 66000, metodo: 'Bonifico', voci: [{ descrizione: 'Annuale Judo adulti', quantita: 1, prezzo: 66000, pagamenti: [{ data: '2026-11-05', importo: 66000, metodo: 'Bonifico' }] }], creataIl: '2026-11-05T10:00:00Z' }],
 })).perche, { m6: 'C’è già la ricevuta: abbinala in COLLEGATI PRIMA.' })
+
+ok('due bonifici uguali della stessa persona: se ne assegna uno, l\'altro resta col perché (non si conta due volte)', elenco(contesto([mov('m7', 66000, 'sofia'), mov('m8', 66000, 'sofia', { data: '2026-11-05' })])),
+  { pronti: [['m7', [['sofia', 'Quota associativa 2026/27', 5000], ['sofia', 'Annuale Judo adulti', 61000]]]], perche: { m8: 'Nel nucleo non c’è niente da pagare: decidi tu a cosa va.' } })
+ok('un bonifico della banca di una stagione passata: fuori, anche se l\'importo torna', elenco(contesto([mov('b1', 66000, 'sofia', { data: '2025-10-01', origineImport: 'banca:x' })])), { pronti: [], perche: {} })
+
+// ---- dopo un collegamento ------------------------------------------------------
+console.log('Dopo un collegamento')
+const finto = (o = {}) => {
+  const fatti = []
+  return {
+    fatti,
+    movimenti: async () => [mov('m1', 66000, 'sofia'), mov('m2', 66000, 'anna')], pagamentiDiretti: async () => [], ricevute: async () => [],
+    casse: async () => [CONTO, CONTANTI], voci: async () => voci, persone: async () => contesto([]).persone, corsi: async () => corsi, listino: async () => ({ listino }),
+    assegnaMovimento: async (id) => { fatti.push(id) }, ...o,
+  }
+}
+const dd = finto()
+ok('senza movimenti chiesti non legge e non scrive niente', await provaAsync(async () => (await fn(A, 'assegna', 'assegnaDopoIlCollegamento')(dd, [], oggi)).chiavi), [])
+const r3 = await provaAsync(() => fn(A, 'assegna', 'assegnaDopoIlCollegamento')(dd, ['m2'], oggi))
+ok('assegna solo quelli appena collegati', [dd.fatti, r3.chiavi?.length], [['m2'], 1])
+ok('un guasto nel leggere non lancia: lo dice', await provaAsync(async () => (await fn(A, 'assegna', 'assegnaDopoIlCollegamento')(finto({ movimenti: async () => { throw new Error('Il server non risponde') } }), ['m1'], oggi)).errore), 'Il server non risponde')
+ok('…e dice quanti restano da scegliere', await provaAsync(async () => (await fn(A, 'assegna', 'assegnaDopoIlCollegamento')(finto(), ['m1', 'm2', 'm3'], oggi)).restano), 1)
 
 // ---- scrivere, e togliere il lotto ---------------------------------------------
 console.log('Assegnare e togliere il lotto')

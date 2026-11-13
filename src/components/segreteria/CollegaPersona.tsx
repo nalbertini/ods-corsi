@@ -37,11 +37,17 @@ export function CollegaSicuri({ d, onRileggi, onVediDaDecidere, onChiudi }: { d:
     const sicuri = await d.esitiCollegamentiPersona().then((xs) => xs.filter((e) => e.esito === 'sicuro').map((e) => e.id)).catch(() => [] as string[])
     const x = await collegaTuttiISicuri(d, lotto.current, totale, (n) => setLavoro(fatti.current + n))
     fatti.current += x.collegati
-    if (x.collegati > 0) chiavi.current.push(...(await assegnaDopoIlCollegamento(d, sicuri, oggiARoma())).chiavi)
+    let nonAssegnati: string | undefined
+    if (x.collegati > 0) {
+      const y = await assegnaDopoIlCollegamento(d, sicuri, oggiARoma())
+      chiavi.current.push(...y.chiavi)
+      nonAssegnati = y.errore
+    }
     setLavoro(null)
     onRileggi()
     void riep.ricarica()
     if (x.errore) setFermo(`Collegati ${fatti.current} su ${totale}. ${x.errore} Rifai il collegamento: quelli già fatti non si ripetono.`)
+    else if (nonAssegnati) setFermo(`Collegati tutti, ma non si sono assegnati da soli: ${nonAssegnati} Li trovi in «Da assegnare».`)
     // Anche a metà strada: quelli già collegati si possono togliere con il lotto.
     if (fatti.current > 0) setFatto({ collegati: fatti.current, lotto: lotto.current })
   }
@@ -245,6 +251,7 @@ export function CollegaAPersona({ d, righe, fai, onFatto, onChiudi }: { d: DatiS
             setLavoro(fatti)
           }
           // Collegati: quelli della stagione in corso con un solo modo di dividerli si assegnano da soli (sicuro.ts).
+          // Se non va restano collegati, in «Da assegnare»: lo dice il riquadro di quella scheda, non qui.
           await assegnaDopoIlCollegamento(d, ids, oggiARoma())
         } finally {
           setLavoro(null)

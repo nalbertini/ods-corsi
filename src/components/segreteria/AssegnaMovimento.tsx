@@ -467,7 +467,7 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
         </div>
       )}
       {(da.pronti.length > 0 || lotto) && (
-        <section aria-label="Si assegnano da soli" className="sg-riquadro stack" style={{ gap: 10, boxShadow: 'inset 4px 0 0 var(--verde-testo)' }}>
+        <section aria-label="Si assegnano da soli" className="sg-riquadro stack" style={{ gap: 10 }}>
           <span className="sg-etichetta">{da.pronti.length ? `SI ASSEGNANO DA SOLI · ${da.pronti.length} ${da.pronti.length === 1 ? 'BONIFICO' : 'BONIFICI'} · ${euroAssegna(sommaPronti)}` : 'ASSEGNATI DA SOLI'}</span>
           {da.pronti.length > 0 && (
             <span style={{ fontSize: 14 }}>
@@ -488,14 +488,14 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
             </span>
           )}
           {lotto?.errore && <div role="alert" className="sg-riquadro" style={{ borderColor: 'var(--rosso-testo)', fontSize: 15 }}>{lotto.errore} Riprova: quelli già assegnati non si ripetono.</div>}
-          <div className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap', paddingTop: 4 }}>
+          <div className="row" aria-live="polite" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap', paddingTop: 4 }}>
             {da.pronti.length > 0 && (
               <Tasto tono="pieno" disabled={lavoro !== null} onClick={() => void assegnaTutti()}>
                 {lavoro !== null ? `Assegno… ${lavoro} su ${da.pronti.length}` : da.pronti.length === 1 ? 'Assegna' : `Assegna i ${da.pronti.length}`}
               </Tasto>
             )}
             {lotto && lotto.tolti === undefined && lotto.chiavi.length > 0 && (
-              <button type="button" className="sg-btn sg-btn-linea sg-pericolo" onClick={() => void togliLotto()}>Togli questo lotto</button>
+              <Tasto className="sg-pericolo" onClick={() => void togliLotto()}>Togli questo lotto</Tasto>
             )}
             {lotto && lotto.tolti === undefined && lotto.chiavi.length > 0 && <span className="sg-sotto">«Togli questo lotto» li rimette tutti in Da assegnare; uno solo si annulla anche dal movimento.</span>}
           </div>

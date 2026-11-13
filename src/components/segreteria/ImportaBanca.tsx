@@ -40,7 +40,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const righe = useMemo(() => (coperti.dato ? segnaIncassiCoperti(tutte, coperti.dato.righe ?? []) : null), [tutte, coperti.dato])
   const [lettura, setLettura] = useState<LetturaBanca | null>(null)
   const [scelte, setScelte] = useState<Record<string, string>>({})
-  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[]; senzaAbbinare: string | null; incassi: number; assegnati: number; daScegliere: number } | null>(null)
+  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[]; senzaAbbinare: string | null; incassi: number; assegnati: number; daScegliere: number; senzaAssegnare: string | null } | null>(null)
   // Le ricevute libere a cui può andare un bonifico che entra con la persona; se non si leggono, si importa senza abbinare.
   const archivio = useCarica(async () => {
     const [ricevute, persone] = await Promise.all([d.ricevute(), d.persone()])
@@ -158,6 +158,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
       let senzaAbbinare: string | null = null
       let assegnati = 0
       let daScegliere = 0
+      let senzaAssegnare: string | null = null
       if (classificate) {
         // Un lotto che non va resta in «Da classificare» e gli altri vanno avanti; il primo motivo si dice nel riepilogo.
         try {
@@ -199,12 +200,13 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           const collegati = piano.lotti.filter((l) => !!l.personaId).flatMap((l) => l.ids).filter((id) => messi.has(id) && !conRicevuta.has(id))
           const x = await assegnaDopoIlCollegamento(d, collegati, oggiARoma())
           assegnati = x.chiavi.length
-          daScegliere = collegati.length - assegnati
+          daScegliere = x.restano
+          if (x.errore) senzaAssegnare = x.errore
         } catch (e) {
           guasto ??= erroreSegreteria(e)
         }
       }
-      setScritti({ n, classificati, guasto, abbinati, nonAbbinati, senzaAbbinare, incassi: a.entrano.filter((m) => m.tipo === 'entrata').length, assegnati, daScegliere })
+      setScritti({ n, classificati, guasto, abbinati, nonAbbinati, senzaAbbinare, incassi: a.entrano.filter((m) => m.tipo === 'entrata').length, assegnati, daScegliere, senzaAssegnare })
     }, undefined, () => {
       setLettura(null)
       onRileggi()
@@ -252,7 +254,12 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           {scritti.assegnati + scritti.daScegliere > 0 && (
             <span style={{ fontSize: 15 }}>
               {scritti.assegnati > 0 && <><b>{scritti.assegnati === 1 ? '1 bonifico è già assegnato' : `${scritti.assegnati} bonifici sono già assegnati`}</b> a quota e corsi, senza ricevuta: la ricevuta si fa dal movimento, quando serve. </>}
-              {scritti.daScegliere > 0 && <>{scritti.daScegliere === 1 ? '1 bonifico con la persona resta' : `${scritti.daScegliere} bonifici con la persona restano`} in «Da assegnare»: c’è da scegliere.</>}
+              {scritti.daScegliere > 0 && <>{scritti.daScegliere === 1 ? '1 bonifico con la persona resta' : `${scritti.daScegliere} bonifici con la persona restano`} in «Da assegnare»{scritti.senzaAssegnare ? '' : ': c’è da scegliere'}.</>}
+            </span>
+          )}
+          {scritti.senzaAssegnare && (
+            <span role="alert" className="sg-banca-avviso">
+              <b>Non si sono assegnati da soli</b>: {scritti.senzaAssegnare}. Li trovi in «Da assegnare», dove si assegnano con un tocco.
             </span>
           )}
           {scritti.senzaAbbinare && (

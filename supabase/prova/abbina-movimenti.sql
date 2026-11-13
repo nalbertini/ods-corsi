@@ -8,7 +8,7 @@
 --     collegato a lei); il nome di battesimo con una parola del corso a cui è iscritta; il cognome proprio o del
 --     genitore, che da solo propone solo se nessuno ha di più (di uno solo; di più, gli iscritti quel giorno, se no in
 --     qualunque momento). Rende solo id, nome, cognome, `come` (il segnale più forte), `gia_iscritto` (iscrizione che
---     copre il giorno del movimento, non oggi) e `sicuro` (il primo, alto e staccato dal secondo; mai per nome e corso):
+--     copre il giorno del movimento, non oggi) e `sicuro` (il primo, alto e staccato dal secondo; mai per nome e corso; un già iscritto solo col nome intero, 155):
 --     mai il punteggio. In ordine di punteggio, a pari prima chi non è iscritto. Al massimo 8, solo persone attive.
 --   * `abbina_testo_banca(testo, movimenti)`: per «Importa banca → Da decidere», quali dei movimenti già scritti
 --     (causale «Cliente NOME per …», o persona collegata) sono di chi è nel testo, per nome o per genitore. Rende solo
