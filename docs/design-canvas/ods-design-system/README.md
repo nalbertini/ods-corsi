@@ -381,7 +381,7 @@ blocco `:root[data-look='sito']` di `src/styles.css`. L'aspetto è uno solo. Il 
   un'icona per voce e un filetto fra i gruppi. I titoli dei gruppi sono maiuscoli per stile, Inter 12px 600.
 - **DA FARE** (`daFareTesti.ts`): il tasto dice il gesto («Fai gli appelli», «Chiedi i certificati»), e solo quello della prima riga è giallo.
 - **ISCRITTI** (`filtriIscritti.ts`): ricerca, corso e tre filtri in vista (Senza certificato valido, Da pagare, Non in regola), poi «Altri filtri (N) ▾».
-- **SETTIMANA** (`etichetteLezione.ts`): i tag della lezione sono in parole (Senza appello, Appello fatto, Manca l’istruttore, Sostituto, ✎ Cambiata a mano, Straordinaria, Annullata).
+- **SETTIMANA** (`etichetteLezione.ts`): i tag della lezione sono in parole (Senza appello, Manca l’istruttore, Sostituto, ✎ Cambiata a mano, Straordinaria, Annullata). L’appello fatto non ha tag: lo dice il conto verde.
 - **COSA MANCA**: cinque caselle in una riga, cifra Big Shoulders 44px, titolo Inter 14px, senza la nota.
 - **Fuori dal look**: il fuoco da tastiera (contorno 3px blu, bianco nel menu) non è riprodotto. L'area degli istruttori ora è nel look (vedi sotto, «L'area istruttore nel look del sito»): la pagina TIMER ha il look anche lei (`TimerSala` con `sito`), e I MIEI e ORE ereditano i token ma non sono ridisegnati (PR 2).
 
