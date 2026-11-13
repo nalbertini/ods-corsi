@@ -1570,14 +1570,20 @@ export function timbroDocumento(documento: boolean): Timbro {
   }
 }
 
+/** Il prezzo della quota per il timbro: i centesimi del listino, 'leggo' mentre si legge, undefined se non si è letto. */
+export type PrezzoQuota = number | 'leggo'
+
+/** Dalla lettura del listino (come la dà useCarica) al prezzo per il timbro: una lettura fallita non è «sto leggendo». */
+export function prezzoQuotaDi<T>(lettura: { dato: T | null; guaio: string | null }, prezzo: (dato: T) => number): PrezzoQuota | undefined {
+  if (lettura.dato !== null) return prezzo(lettura.dato)
+  return lettura.guaio ? undefined : 'leggo'
+}
+
 /**
  * I tre timbri in cima alla scheda: certificato, quota, documento. Il
  * documento si vede ma non conta per «in regola» (vedi `inRegola`). Chi è
  * disattivato li ha spenti, con le stesse parole.
  */
-/** Il prezzo della quota per il timbro: i centesimi del listino, 'leggo' mentre si legge, undefined se non si è letto. */
-export type PrezzoQuota = number | 'leggo'
-
 export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string, prezzoQuota?: PrezzoQuota): TimbriScheda {
   const t = {
     certificato: timbroCertificato(p.certificato, oggi, p.natoIl),

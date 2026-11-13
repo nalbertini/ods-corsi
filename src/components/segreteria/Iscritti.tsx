@@ -4,7 +4,7 @@ import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, PrezzoQuota, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, timbriScheda, vienePoco, azioniTestata, vociQuota } from '../../lib/segreteria'
+import { avvisiGesto, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, prezzoQuotaDi, timbriScheda, vienePoco, azioniTestata, vociQuota } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -415,7 +415,7 @@ export function Iscritti({
             tutti={tutti}
             corsi={perId}
             statiCorsi={statiDi(persona)}
-            prezzoQuota={listino.dato ? voceQuota(listino.dato.listino).voce(oggi).prezzo : listino.guaio ? undefined : 'leggo'}
+            prezzoQuota={prezzoQuotaDi(listino, (l) => voceQuota(l.listino).voce(oggi).prezzo)}
             attivi={attivi}
             f={freq.dato?.get(persona.id)}
             tessere={conTessereLette ? tessere.dato!.elenco : undefined}
