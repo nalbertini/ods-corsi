@@ -1,3 +1,4 @@
+import { schedaUnica } from './sicuro'
 import { inEuro } from './vestiario'
 import { VOCE_CORSI, VOCE_DIFFERENZA, VOCE_INCASSI_SATISPAY, VOCE_QUOTA, VOCE_VARIE, vociOfferte, vuolePersonaRiga, type RigaMovimento, type VoceContabile } from './contabilita'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
@@ -154,7 +155,7 @@ export function suggerisciMovimento(riga: RigaMovimento, righe: RigaMovimento[],
       }
   if (!candidati.length) return { caso: voce ? 'C' : 'D', ...senza, persona: voce ? 'da-scegliere' : 'nessuna-senza-persona' }
   // Con una persona da proporre la voce non resta vuota: l'importo la dice, se non bastano le righe uguali.
-  return { caso: candidati.length === 1 ? 'A' : 'B', voce: voce ?? voceDaImporto(riga, voci, listino), persona: 'candidati', candidati, preselezionato: abbinati.length ? preselezionato : candidati.length === 1 ? candidati[0].id : null }
+  return { caso: candidati.length === 1 ? 'A' : 'B', voce: voce ?? voceDaImporto(riga, voci, listino), persona: 'candidati', candidati, preselezionato: abbinati.length ? preselezionato : schedaUnica(candidati.map((c) => c.id)) ? candidati[0].id : null }
 }
 
 /** Cosa scrive «Conferma»; `null` se non si può ancora (manca la voce o la persona): il tasto resta spento. */

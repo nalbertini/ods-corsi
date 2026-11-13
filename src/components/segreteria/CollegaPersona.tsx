@@ -3,7 +3,7 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { LIMITE_CAMBIO_VOCE, pacchetti, type RigaMovimento } from '../../lib/contabilita'
 import { collegaTuttiISicuri, cosaNonVaCollegato, dividiStorico, type CandidatoPersona, type VoceStorico } from '../../lib/movimentiPersona'
 import { dataRicevuta, euro } from '../../lib/ricevute'
-import { bonificiDaAssegnare, euroAssegna } from '../../lib/assegna'
+import { assegnaDopoIlCollegamento, bonificiDaAssegnare, euroAssegna, togliLottoAssegnazioni } from '../../lib/assegna'
 import { oggiARoma } from '../../lib/contabilita'
 import { chiedi, dataLunga, Guaio, messaggio, useCarica, type useAvviso } from './comune'
 
@@ -19,6 +19,8 @@ export function CollegaSicuri({ d, onRileggi, onVediDaDecidere, onChiudi }: { d:
   const [lavoro, setLavoro] = useState<number | null>(null)
   const [fermo, setFermo] = useState<string | null>(null)
   const [fatto, setFatto] = useState<{ collegati: number; lotto: string } | null>(null)
+  // Le chiavi delle assegnazioni fatte da sole dopo il collegamento: TOGLI QUESTO LOTTO toglie prima quelle.
+  const chiavi = useRef<string[]>([])
   const [tolti, setTolti] = useState<number | null>(null)
   const r = riep.dato
   const totale = r?.sicuri.movimenti ?? 0
@@ -31,12 +33,21 @@ export function CollegaSicuri({ d, onRileggi, onVediDaDecidere, onChiudi }: { d:
     if (lavoro !== null || !r) return
     setFermo(null)
     setLavoro(fatti.current)
+    // Quelli che il giro collega, letti prima: dopo si assegnano da soli se è sicuro (solo la stagione in corso, sicuro.ts).
+    const sicuri = await d.esitiCollegamentiPersona().then((xs) => xs.filter((e) => e.esito === 'sicuro').map((e) => e.id)).catch(() => [] as string[])
     const x = await collegaTuttiISicuri(d, lotto.current, totale, (n) => setLavoro(fatti.current + n))
     fatti.current += x.collegati
+    let nonAssegnati: string | undefined
+    if (x.collegati > 0) {
+      const y = await assegnaDopoIlCollegamento(d, sicuri, oggiARoma())
+      chiavi.current.push(...y.chiavi)
+      nonAssegnati = y.errore
+    }
     setLavoro(null)
     onRileggi()
     void riep.ricarica()
     if (x.errore) setFermo(`Collegati ${fatti.current} su ${totale}. ${x.errore} Rifai il collegamento: quelli già fatti non si ripetono.`)
+    else if (nonAssegnati) setFermo(`Collegati tutti, ma non si sono assegnati da soli: ${nonAssegnati} Li trovi in «Da assegnare».`)
     // Anche a metà strada: quelli già collegati si possono togliere con il lotto.
     if (fatti.current > 0) setFatto({ collegati: fatti.current, lotto: lotto.current })
   }
@@ -55,6 +66,9 @@ export function CollegaSicuri({ d, onRileggi, onVediDaDecidere, onChiudi }: { d:
     )
     if (!si) return
     try {
+      // Prima le assegnazioni: un movimento con soldi assegnati non cambia persona (135).
+      await togliLottoAssegnazioni(d, chiavi.current)
+      chiavi.current = []
       setTolti((await d.togliLottoCollegamenti(fatto.lotto)).tolti)
       onRileggi()
     } catch (e) {
@@ -73,7 +87,7 @@ export function CollegaSicuri({ d, onRileggi, onVediDaDecidere, onChiudi }: { d:
         </span>
         <span className="sg-sotto">
           {tolti === null
-            ? 'I totali non sono cambiati. Ogni collegamento resta scritto: chi, quando, a quale persona.'
+            ? `I totali non sono cambiati. Ogni collegamento resta scritto: chi, quando, a quale persona.${chiavi.current.length ? ` Di questi, ${chiavi.current.length === 1 ? '1 della stagione in corso è anche assegnato' : `${chiavi.current.length} della stagione in corso sono anche assegnati`} a quota e corsi, senza ricevuta; quelli delle stagioni passate restano solo collegati.` : ''}`
             : 'Sono tornati senza persona. Quelli collegati o cambiati a mano dopo sono rimasti dove sono.'}
         </span>
         {fermo && <div role="alert" className="sg-riquadro" style={{ borderColor: 'var(--rosso-testo)', fontSize: 15 }}>{fermo}</div>}
@@ -85,7 +99,7 @@ export function CollegaSicuri({ d, onRileggi, onVediDaDecidere, onChiudi }: { d:
           )}
           <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>Torna all’elenco</button>
         </div>
-        {tolti === null && <span className="sg-sotto">TOGLI QUESTO LOTTO scollega solo i movimenti appena collegati. Quelli fatti a mano non si toccano.</span>}
+        {tolti === null && <span className="sg-sotto">TOGLI QUESTO LOTTO scollega solo i movimenti appena collegati, e toglie anche le assegnazioni fatte nel giro. Quelli fatti a mano non si toccano.</span>}
       </section>
     )
 
@@ -236,6 +250,9 @@ export function CollegaAPersona({ d, righe, fai, onFatto, onChiudi }: { d: DatiS
             fatti += lotto.length
             setLavoro(fatti)
           }
+          // Collegati: quelli della stagione in corso con un solo modo di dividerli si assegnano da soli (sicuro.ts).
+          // Se non va restano collegati, in «Da assegnare»: lo dice il riquadro di quella scheda, non qui.
+          await assegnaDopoIlCollegamento(d, ids, oggiARoma())
         } finally {
           setLavoro(null)
         }

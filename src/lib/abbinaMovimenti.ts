@@ -1,8 +1,9 @@
 import { normalizzaNome } from './movimentiPersona'
+import { personaSicura } from './sicuro'
 
 /**
  * Chi può aver pagato un movimento non identificato (banca o Satispay), con le stesse regole del database
- * (`supabase/121-punteggio-movimenti.sql`, che le applica senza mostrare a chi amministra codici, genitori, date e
+ * (`supabase/121-punteggio-movimenti.sql` e `155-sicuro-nome-intero.sql`, che le applicano senza mostrare a chi amministra codici, genitori, date e
  * punteggi). Ogni persona attiva prende i punti dei suoi segnali, sommati:
  *  - nome e cognome interi nel testo, 4; un codice fiscale letto dalla causale (suo o del genitore), 4;
  *  - nome e cognome interi del genitore nel testo, 3; lo storico, 3: un altro movimento con le stesse parole (le cifre
@@ -14,8 +15,9 @@ import { normalizzaNome } from './movimentiPersona'
  *    sola, o fra chi lo ha è lei l'iscritta il giorno del movimento (se nessuno, in qualunque momento); se no pesa solo
  *    contro il primo.
  * In ordine di punteggio, a pari prima chi non è iscritto il giorno del movimento. Il primo è «sicuro», e l'app lo
- * preseleziona, se ha almeno 4, almeno 2 più del secondo e non è già iscritto (l'iscrizione che l'ha fatta trovare è
- * a favore, non conta). I pesi vengono dalla misura sui movimenti già collegati.
+ * preseleziona, con la regola unica di `personaSicura` (`sicuro.ts`): almeno 4, almeno 2 più del secondo e non già
+ * iscritto, se non col nome intero (l'iscrizione che l'ha fatta trovare è a favore, non conta). I pesi vengono dalla
+ * misura sui movimenti già collegati.
  */
 
 export type ComeAbbinato = 'nome intero' | 'genitore' | 'codice fiscale' | 'storico' | 'corso e cognome' | 'nome e corso' | 'cognome'
@@ -136,7 +138,7 @@ export function abbinaMovimento(
   const primo = elencati[0]
   if (primo) {
     const secondo = Math.max(0, ...punti.filter((x) => x !== primo).map((x) => x.v))
-    primo.a.sicuro = primo.v >= 4 && primo.v - secondo >= 2 && !primo.a.giaIscritto
+    primo.a.sicuro = personaSicura({ punti: primo.v, secondo, giaIscritto: primo.a.giaIscritto, come: primo.a.come })
   }
   return ordinaAbbinati(elencati.map((x) => x.a))
 }

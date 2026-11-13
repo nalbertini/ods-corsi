@@ -2,8 +2,10 @@
 // parziale, e dal bonifico la ricevuta, una per persona. Le regole stanno in `src/lib/assegna.ts`: qui si mostrano.
 import { useMemo, useRef, useState } from 'react'
 import {
+  assegnaDaSoli,
   collegatiPrima,
   conGenitori,
+  daSoli,
   daClassificareDaAbbinare,
   cosaNonVaAssegnazione,
   daAssegnare,
@@ -17,6 +19,7 @@ import {
   propostaDopoIlSi,
   ricevutaGiaFatta,
   type RigaAssegnata,
+  togliLottoAssegnazioni,
   type VoceDovuta,
   voceDaRicevuta,
 } from '../../lib/assegna'
@@ -26,7 +29,7 @@ import { nucleoPerRicevuta } from '../../lib/nucleo'
 import type { PagamentoDiretto } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro, type Ricevuta } from '../../lib/ricevute'
 import { inCorso, type DatiSegreteria, type PersonaSeg } from '../../lib/segreteria'
-import { Bozza, chiedi, DITO, Guaio, lasciare, SchedaPiena, suCarta, Tag, Tasto, useAvviso, useBozza, useCarica } from './comune'
+import { Bozza, chiedi, DITO, Guaio, lasciare, messaggio, SchedaPiena, suCarta, Tag, Tasto, useAvviso, useBozza, useCarica } from './comune'
 import { NuovaRicevuta, scarica } from './Ricevute'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -326,7 +329,7 @@ function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia }: { v: VoceD
  */
 export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, onApri, onCambiato }: { d: DatiSegreteria; manuali: MovimentoManuale[]; diretti: PagamentoDiretto[]; ricevute: Ricevuta[]; casse: Cassa[]; voci: VoceContabile[]; fai: Fai; onApri: (movimentoId: string) => void; onCambiato: () => void }) {
   const oggi = oggiARoma()
-  const { righe, totale } = elencoDaAssegnare(manuali, diretti, ricevute, casse, voci, oggi)
+  const { righe } = elencoDaAssegnare(manuali, diretti, ricevute, casse, voci, oggi)
   const ids = [...new Set(righe.map((r) => r.personaId))].sort().join(',')
   const nomi = useCarica(() => (ids ? d.nomiPersone(ids.split(',')) : Promise.resolve([])), [d, ids])
   const nomeDi = (id: string) => {
@@ -353,6 +356,37 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
     .filter((x) => x.ricevute.length > 0)
   const movimento = (id: string) => manuali.find((m) => m.id === id)
   const ricevuta = (id: string) => ricevute.find((r) => r.id === id)
+  // I bonifici con un solo modo di dividerli si assegnano da soli (sicuro.ts); gli altri dicono perché no.
+  const da = anagrafe.dato
+    ? daSoli({ manuali, diretti, ricevute, casse, voci, persone: anagrafe.dato.persone, corsi: anagrafe.dato.corsi, listino: anagrafe.dato.listino, oggi })
+    : { pronti: [], perche: {} as Record<string, string> }
+  const pronti = new Set(da.pronti.map((x) => x.movimentoId))
+  const restano = righe.filter((r) => !pronti.has(r.movimentoId))
+  const [lavoro, setLavoro] = useState<number | null>(null)
+  const [lotto, setLotto] = useState<{ chiavi: string[]; tolti?: number; errore?: string } | null>(null)
+  const sommaPronti = da.pronti.reduce((s, x) => s + x.importo, 0)
+  const aCosa = (x: { personaId: string; righe: RigaAssegnata[] }) => x.righe.map((r) => (r.personaId === x.personaId ? r.voce : `${r.voce} (${chi(r.personaId)})`)).join(' + ')
+  const assegnaTutti = async () => {
+    const n = da.pronti.length
+    const si = await chiedi(`Assegnare ${n === 1 ? 'il bonifico' : `i ${n} bonifici`} (${euroAssegna(sommaPronti)}) come nel riquadro, persona per persona? Senza ricevuta: la fai dal movimento quando serve.`, n === 1 ? 'Sì, assegna' : `Sì, assegna i ${n}`)
+    if (!si) return
+    setLavoro(0)
+    const x = await assegnaDaSoli(d, da.pronti, setLavoro)
+    setLavoro(null)
+    setLotto({ chiavi: [...(lotto && lotto.tolti === undefined ? lotto.chiavi : []), ...x.chiavi], errore: x.errore })
+    onCambiato()
+  }
+  const togliLotto = async () => {
+    if (!lotto) return
+    const si = await chiedi(`Togli le assegnazioni dei ${lotto.chiavi.length} bonifici appena assegnati? Tornano in «Da assegnare». Quelli già diventati ricevuta non si toccano.`, 'Sì, togli questo lotto', { pericolo: true })
+    if (!si) return
+    try {
+      setLotto({ chiavi: lotto.chiavi, tolti: (await togliLottoAssegnazioni(d, lotto.chiavi)).tolti })
+    } catch (e) {
+      setLotto({ ...lotto, errore: messaggio(e, 'Non è cambiato niente: riprova.') })
+    }
+    onCambiato()
+  }
   const abbina = (xs: Array<{ movimentoId: string; ricevutaId: string }>) =>
     void fai(async () => {
       for (const x of xs) await d.abbinaRicevutaMovimento(x.movimentoId, x.ricevutaId)
@@ -432,19 +466,55 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
           )}
         </div>
       )}
+      {(da.pronti.length > 0 || lotto) && (
+        <section aria-label="Si assegnano da soli" className="sg-riquadro stack" style={{ gap: 10 }}>
+          <span className="sg-etichetta">{da.pronti.length ? `SI ASSEGNANO DA SOLI · ${da.pronti.length} ${da.pronti.length === 1 ? 'BONIFICO' : 'BONIFICI'} · ${euroAssegna(sommaPronti)}` : 'ASSEGNATI DA SOLI'}</span>
+          {da.pronti.length > 0 && (
+            <span style={{ fontSize: 14 }}>
+              Per questi la persona è sicura e l’importo è esattamente quel che deve: niente resto, niente corso pagato a metà, niente annuale o trimestre da scegliere, un solo modo di dividere. Si assegnano senza ricevuta, come «Assegna senza ricevuta».
+            </span>
+          )}
+          {da.pronti.map((x) => (
+            <div key={x.movimentoId} className="row" style={{ gap: 12, alignItems: 'baseline', flexWrap: 'wrap', borderTop: '1px solid var(--line-soft)', paddingTop: 8, fontSize: 15 }}>
+              <span className="num" style={{ width: 90 }}>{dataRicevuta(x.data)}</span>
+              <span style={{ flex: '1 1 320px', minWidth: 0, overflowWrap: 'anywhere' }}><b>{chi(x.personaId)}</b> <span className="sg-sotto">· {x.descrizione}</span></span>
+              <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>→ {aCosa(x)}</span>
+              <span className="num" style={{ fontWeight: 700, width: 100, textAlign: 'right' }}>{euroAssegna(x.importo)}</span>
+            </div>
+          ))}
+          {lotto && (lotto.tolti === undefined || !da.pronti.length) && (
+            <span role="status" style={{ fontSize: 15 }}>
+              {lotto.tolti !== undefined ? `Tolto il lotto: ${lotto.chiavi.length === 1 ? 'il bonifico è tornato' : `i ${lotto.chiavi.length} bonifici sono tornati`} da assegnare.` : `Assegnati ${lotto.chiavi.length} ${lotto.chiavi.length === 1 ? 'bonifico' : 'bonifici'}: la ricevuta si fa dal movimento, quando serve.`}
+            </span>
+          )}
+          {lotto?.errore && <div role="alert" className="sg-riquadro" style={{ borderColor: 'var(--rosso-testo)', fontSize: 15 }}>{lotto.errore} Riprova: quelli già assegnati non si ripetono.</div>}
+          <div className="row" aria-live="polite" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap', paddingTop: 4 }}>
+            {da.pronti.length > 0 && (
+              <Tasto tono="pieno" disabled={lavoro !== null} onClick={() => void assegnaTutti()}>
+                {lavoro !== null ? `Assegno… ${lavoro} su ${da.pronti.length}` : da.pronti.length === 1 ? 'Assegna' : `Assegna i ${da.pronti.length}`}
+              </Tasto>
+            )}
+            {lotto && lotto.tolti === undefined && lotto.chiavi.length > 0 && (
+              <Tasto className="sg-pericolo" onClick={() => void togliLotto()}>Togli questo lotto</Tasto>
+            )}
+            {lotto && lotto.tolti === undefined && lotto.chiavi.length > 0 && <span className="sg-sotto">«Togli questo lotto» li rimette tutti in Da assegnare; uno solo si annulla anche dal movimento.</span>}
+          </div>
+        </section>
+      )}
       <div className="stack" style={{ gap: 6 }}>
         <span className="sg-etichetta">
-          DA ASSEGNARE · {righe.length} {righe.length === 1 ? 'ENTRATA' : 'ENTRATE'} · {euroAssegna(totale)}
+          DA ASSEGNARE · {restano.length} {restano.length === 1 ? 'ENTRATA' : 'ENTRATE'} · {euroAssegna(restano.reduce((s, r) => s + r.daAssegnare, 0))}
         </span>
-        {!righe.length && <span className="sg-sotto">Niente da assegnare: ogni entrata collegata su quota e corsi dice a cosa va.</span>}
-        {righe.map((r) => {
+        {!restano.length && <span className="sg-sotto">{righe.length ? 'Gli altri si assegnano da soli, qui sopra.' : 'Niente da assegnare: ogni entrata collegata su quota e corsi dice a cosa va.'}</span>}
+        {restano.map((r) => {
           const mv = movimento(r.movimentoId)
           const cassa = casse.find((c) => c.id === mv?.cassaId)?.nome ?? ''
           return (
             <div key={r.movimentoId} className="row" style={{ gap: 12, alignItems: 'baseline', flexWrap: 'wrap', borderTop: '1px solid var(--line-soft)', paddingTop: 8 }}>
               <span className="num" style={{ fontSize: 15, width: 90 }}>{dataRicevuta(r.data)}</span>
-              <span style={{ fontSize: 15, flex: '1 1 220px', minWidth: 0, overflowWrap: 'anywhere' }}>
-                {nomeDi(r.personaId)} <span className="sg-sotto">· {mv?.descrizione}</span>
+              <span className="stack" style={{ gap: 2, fontSize: 15, flex: '1 1 220px', minWidth: 0, overflowWrap: 'anywhere' }}>
+                <span>{nomeDi(r.personaId)} <span className="sg-sotto">· {mv?.descrizione}</span></span>
+                {da.perche[r.movimentoId] && <span className="sg-sotto" data-tono="aspetta">{da.perche[r.movimentoId]}</span>}
               </span>
               <span className="sg-sotto">{cassa}</span>
               <span className="num" style={{ fontSize: 15 }}>{r.daAssegnare === r.importo ? `${euroAssegna(r.importo)} · tutto` : `${euroAssegna(r.daAssegnare)} di ${euroAssegna(r.importo)}`}</span>

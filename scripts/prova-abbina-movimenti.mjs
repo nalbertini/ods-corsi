@@ -100,7 +100,7 @@ ok('non iscritti (Bruno: finita; Carlo: comincia dopo) prima, poi iscritti (Anna
 ok('conta il giorno del movimento: Dora, iscritta fino al 15/10, il 20 non lo è e il 15 sì', [elenca(abbina('Da Ferri Dora', [], '2026-10-20')), elenca(abbina('Da Ferri Dora', [], '2026-10-15'))], ['Dora Ferri (nome intero)', 'Dora Ferri (nome intero, già iscritto)'])
 ok('l\'iscrizione comincia il suo primo giorno e finisce l\'ultimo, compresi', [elenca(abbina('Da Ferri Carlo', [], '2026-11-01')), elenca(abbina('Da Ferri Carlo', [], '2026-10-31'))], ['Carlo Ferri (nome intero, già iscritto)', 'Carlo Ferri (nome intero)'])
 ok('un iscritto non si esclude mai: si propone col segno', elenca(abbina('Da Ferri Ennio BONIFICO SEPA')), 'Ennio Ferri (nome intero, già iscritto)')
-ok('…ma da solo non è mai preselezionato', abbina('Da Ferri Ennio BONIFICO SEPA').preselezionato, null)
+ok('…e col nome intero è preselezionato anche se già iscritto (deciso da Nicola il 13/11/2026)', abbina('Da Ferri Ennio BONIFICO SEPA').preselezionato, 'ennio')
 ok('non iscritto e iscritto insieme: due candidati, si sceglie a mano', abbina('Da Ferri Bruno, Ferri Anna').preselezionato, null)
 ok('l\'ordine vale anche per il genitore e il codice', prova(() => elenca(a.abbinaMovimento({ testo: 'Da VACCARO ANDREA', data: '2026-10-09', codiciFiscali: [] }, persone.map((p) => (p.id === 'elia' ? { ...p, iscrizioni: [{ dal: '2026-09-01', al: null }] } : p))))), 'Sofia Bruno (genitore); Elia Bruno (genitore, già iscritto)')
 ok('al massimo otto', prova(() => a.abbinaMovimento({ testo: 'Da Rosa Pini BONIFICO SEPA', data: '2026-10-09', codiciFiscali: [] }, persone).candidati.length), 8)
@@ -186,7 +186,7 @@ console.log('\n9. l\'importo dice il corso, il corso dice chi cercare')
   ok('…col solo cognome del genitore si propone, senza preselezione', ab('Bonifico Verdi retta', ['c-judo']), [[['bianchi', 'corso e cognome', false]], null])
   ok('più iscritti al corso con lo stesso cognome: si sceglie, nessuno preselezionato', ab('Bonifico Rossi retta', ['c-judo', 'c-karate']), [[['rossi2', 'corso e cognome', false], ['rossi1', 'corso e cognome', false]], null])
   ok('iscrizione finita prima del movimento, o persona non attiva: il corso non vale (Neri resta per il cognome, di lui solo)', [ab('Neri retta', ['c-judo']), ab('Gigi Rossi retta', ['c-judo'])[0].length], [[[['neri', 'cognome', false]], null], 1])
-  ok('nome e cognome interi pesano più dell\'importo, che non sparisce', ab('Anna Rossi retta', ['c-judo']), [[['rossi2', 'nome intero', true], ['rossi1', 'corso e cognome', false]], null])
+  ok('nome e cognome interi pesano più dell\'importo, che non sparisce; col nome intero è preselezionata anche se già iscritta', ab('Anna Rossi retta', ['c-judo']), [[['rossi2', 'nome intero', true], ['rossi1', 'corso e cognome', false]], 'rossi2'])
 }
 
 console.log('\n10. lo storico: un movimento con le stesse parole già collegato a qualcuno')

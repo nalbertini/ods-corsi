@@ -10,9 +10,10 @@ import type { VoceStorico } from './movimentiPersona'
 import { QUOTA, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { statoCorsi, type VoceCorso } from './corsiDaPagare'
 import { stagioneDi } from './costi'
-import { nomeCorso, type CorsoRef, type Listino } from './listino'
-import { pagamentoDi, type PersonaSeg } from './segreteria'
+import { listinoUsabile, nomeCorso, type CorsoRef, type Listino } from './listino'
+import { pagamentoDi, type DatiSegreteria, type PersonaSeg } from './segreteria'
 import { nomeOGenitore } from './abbinaMovimenti'
+import { ripartizioneSicura } from './sicuro'
 
 /**
  * I soldi sempre con i centesimi, come nel canvas: «50,00 €». Il punto delle migliaia anche a quattro cifre
@@ -559,4 +560,133 @@ export function bonificiDaAssegnare(storico: VoceStorico[], diretti: PagamentoDi
     .map((v) => ({ movimentoId: v.id, data: v.data, importo: v.importo, daAssegnare: daAssegnare(v, diretti, ricevute) }))
     .filter((x) => x.daAssegnare > 0)
     .sort((a, b) => a.data.localeCompare(b.data) || a.movimentoId.localeCompare(b.movimentoId))
+}
+
+/** Quel che serve per dire quali bonifici si assegnano da soli: i dati di CONTABILITÀ e le schede con corsi e listino. */
+export interface ContestoDaSoli {
+  manuali: MovimentoManuale[]
+  diretti: PagamentoDiretto[]
+  ricevute: Ricevuta[]
+  casse: Cassa[]
+  voci: VoceContabile[]
+  persone: PersonaSeg[]
+  corsi: CorsoRef[]
+  listino: Listino
+  oggi: string
+}
+
+/** Un bonifico che si assegna da solo, con le sue righe. */
+export interface ProntoDaSolo {
+  movimentoId: string
+  personaId: string
+  data: string
+  importo: number
+  descrizione: string
+  righe: RigaAssegnata[]
+}
+
+/**
+ * I bonifici collegati che si assegnano da soli (fra `ids`, se detti: quelli appena collegati), e per gli altri il
+ * perché in parole della segreteria. Solo le entrate che `cosaNonVaMovimentoDaAssegnare` lascia passare e ancora
+ * intere: uno già assegnato in parte si finisce a mano, e uno con la ricevuta già fatta va abbinato (COLLEGATI PRIMA),
+ * se no i soldi si contano due volte. Poi la regola unica (`ripartizioneSicura`): un solo modo di dividerlo fra le
+ * cose che il nucleo deve, nessuno segnato pagato a mano da chiedere. Senza ricevuta: quella resta a mano.
+ */
+export function daSoli(c: ContestoDaSoli, ids?: string[]): { pronti: ProntoDaSolo[]; perche: Record<string, string> } {
+  const voluti = ids ? new Set(ids) : null
+  const conRicevuta = new Set(collegatiPrima(c.manuali, c.diretti, c.ricevute, c.casse, c.voci, c.oggi, c.persone).map((x) => x.movimentoId))
+  const pronti: ProntoDaSolo[] = []
+  const perche: Record<string, string> = {}
+  const inizio = stagioneDi(c.oggi).dal
+  // Le righe dei bonifici già scelti nel giro contano per quelli dopo: due bonifici uguali non pagano due volte lo stesso corso.
+  const diretti = [...c.diretti]
+  for (const m of [...c.manuali].sort((a, b) => a.data.localeCompare(b.data) || a.id.localeCompare(b.id))) {
+    if (voluti && !voluti.has(m.id)) continue
+    if (!m.personaId || cosaNonVaMovimentoDaAssegnare(m, c.casse, c.voci, c.oggi) !== null || daAssegnare(m, c.diretti, c.ricevute) !== m.importo) continue
+    // Di una stagione passata, da qualunque parte venga: andrebbe sulle cose da pagare di adesso.
+    if (m.data < inizio) continue
+    if (conRicevuta.has(m.id)) {
+      perche[m.id] = 'C’è già la ricevuta: abbinala in COLLEGATI PRIMA.'
+      continue
+    }
+    const chi = personeDelNucleo(m.personaId, c.persone).flatMap((id) => c.persone.filter((p) => p.id === id))
+    const gia = { diretti, ricevute: c.ricevute }
+    const dovuti = dovutiDelNucleo(chi, [], c.corsi, c.listino, c.oggi, gia)
+    if (daChiedereAMano(chi, [], dovuti, diretti, c.listino, c.oggi).length) {
+      perche[m.id] = 'È segnato pagato a mano: di’ tu se è questo bonifico.'
+      continue
+    }
+    const r = ripartizioneSicura(m.importo, dovuti)
+    if ('righe' in r && cosaNonVaAssegnazione(r.righe, m.importo, dovuti) === null) {
+      pronti.push({ movimentoId: m.id, personaId: m.personaId, data: m.data, importo: m.importo, descrizione: m.descrizione, righe: r.righe })
+      diretti.push(...r.righe.map((x, i) => ({ id: `${m.id}-${i}`, personaId: x.personaId, data: m.data, importo: x.importo, metodo: 'Bonifico', voce: x.voce, movimentoId: m.id, creatoIl: m.data })))
+      continue
+    }
+    perche[m.id] = 'motivo' in r ? fraseNonDaSolo(r.motivo, m.importo, r.dovuto) : 'Decidi tu a cosa va.'
+  }
+  return { pronti, perche }
+}
+
+const fraseNonDaSolo = (motivo: 'niente' | 'piu modi' | 'in parte' | 'di piu', importo: number, dovuto: number): string =>
+  motivo === 'niente' ? 'Nel nucleo non c’è niente da pagare: decidi tu a cosa va.'
+    : motivo === 'piu modi' ? `Ci sono più modi di dividere ${euroAssegna(importo)}: scegli tu.`
+      : motivo === 'in parte' ? `Pagato in parte: ${euroAssegna(importo)} di ${euroAssegna(dovuto)}. Decidi tu su cosa.`
+        : `È più di quel che deve (${euroAssegna(dovuto)}): decidi tu dove va il resto.`
+
+/**
+ * Scrive i bonifici che si assegnano da soli, uno per volta, ognuno con una chiave sua (136). Un giro rifatto dopo
+ * una rete caduta non scrive due volte perché `daSoli` rilegge e salta i bonifici già assegnati, non per la chiave,
+ * che è nuova a ogni giro. Le chiavi sono il lotto, per «Togli questo lotto»: uno scritto ma con la risposta persa
+ * non c'è, e si annulla dal movimento. Non lancia mai: un guaio ferma il giro e lo dice, e quelli già scritti restano.
+ */
+export async function assegnaDaSoli(
+  d: Pick<DatiSegreteria, 'assegnaMovimento'>,
+  pronti: Array<Pick<ProntoDaSolo, 'movimentoId' | 'righe'>>,
+  suProgresso?: (fatti: number) => void,
+): Promise<{ chiavi: string[]; errore?: string }> {
+  const chiavi: string[] = []
+  for (const p of pronti) {
+    const chiave = crypto.randomUUID()
+    try {
+      await d.assegnaMovimento(p.movimentoId, p.righe, chiave)
+    } catch (e) {
+      return { chiavi, errore: e instanceof Error && e.message ? e.message : 'Non si è assegnato: riprova.' }
+    }
+    chiavi.push(chiave)
+    suProgresso?.(chiavi.length)
+  }
+  return { chiavi }
+}
+
+/**
+ * «Togli questo lotto»: annulla le assegnazioni scritte con quelle chiavi che sono ancora attive. Una diventata ricevuta
+ * è già annullata e resta della ricevuta: si toglie annullando la ricevuta.
+ */
+export async function togliLottoAssegnazioni(d: Pick<DatiSegreteria, 'pagamentiDiretti' | 'annullaPagamentoDiretto'>, chiavi: string[]): Promise<{ tolti: number }> {
+  const lotto = new Set(chiavi)
+  const attive = (await d.pagamentiDiretti()).filter((x) => !!x.chiave && lotto.has(x.chiave) && !x.annullatoIl)
+  for (const x of attive) await d.annullaPagamentoDiretto(x.id)
+  return { tolti: attive.length }
+}
+
+/**
+ * Dopo un collegamento (import della banca, «Collega i casi sicuri», a mano): legge i dati freschi e assegna da sé quei
+ * movimenti, se è sicuro. Non lancia: chi chiama ha già collegato, e un'assegnazione mancata resta in «Da assegnare».
+ */
+export async function assegnaDopoIlCollegamento(
+  d: Pick<DatiSegreteria, 'assegnaMovimento' | 'movimenti' | 'pagamentiDiretti' | 'ricevute' | 'casse' | 'voci' | 'persone' | 'corsi' | 'listino'>,
+  ids: string[],
+  oggi: string,
+): Promise<{ chiavi: string[]; restano: number; errore?: string }> {
+  if (!ids.length) return { chiavi: [], restano: 0 }
+  try {
+    const [manuali, diretti, ricevute, casse, voci, persone, corsi, letto] = await Promise.all([
+      d.movimenti(), d.pagamentiDiretti(), d.ricevute(), d.casse(), d.voci(), d.persone(), d.corsi(), d.listino(),
+    ])
+    const { pronti } = daSoli({ manuali, diretti, ricevute, casse, voci, persone, corsi, listino: listinoUsabile(letto.listino, corsi), oggi }, ids)
+    const x = await assegnaDaSoli(d, pronti)
+    return { ...x, restano: ids.length - x.chiavi.length }
+  } catch (e) {
+    return { chiavi: [], restano: ids.length, errore: e instanceof Error && e.message ? e.message : 'Non si è assegnato: riprova.' }
+  }
 }
