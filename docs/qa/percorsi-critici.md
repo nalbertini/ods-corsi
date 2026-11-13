@@ -273,6 +273,9 @@ quando arriva la prova.
 - Scheda del movimento (`MovimentoAperto`): «Salva» solo con modifiche,
   «Assegna a quota e corsi» solo nella card della persona, nome del ⋯. Le regole sono
   provate in lib; il cablaggio nel `.tsx` no. Solo collaudo a mano.
+- Disposizione dei timbri della scheda (`.sg-timbri`: righe da tre, sotto i
+  1000px uno per riga): nessuna prova la guarda, il dato resta giusto anche se
+  si spezza. Solo collaudo a mano sul telefono.
 
 ## Come si aggiorna
 

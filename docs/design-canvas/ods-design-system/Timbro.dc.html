@@ -28,7 +28,7 @@
 // disegnato da `Timbri` in src/components/segreteria/Iscritti.tsx, con le parole di `timbriScheda`.
 // Nell'app stanno in righe da tre larghi uguale (.sg-timbri, flex a capo, gap 12px, alti quanto il piu' alto della riga):
 // oltre il terzo, quelli dell'ultima riga si allargano a riempirla (4 = 3 + 1 largo, 5 = 3 + 2). Sotto i 1000px uno per
-// riga a tutta larghezza, compatti (`telefono`: padding 8px 14px, gap 2px; parola 18px sotto i 480px). `../quota-senza-doppioni/`: CERTIFICATO MEDICO (MANCA · SENZA NON ENTRA), QUOTA ASSOCIATIVA
+// riga a tutta larghezza, compatti (padding 8px 14px, gap 2px; sotto i 480px anche la parola a 18px: `telefono` e' questo, il telefono). `../quota-senza-doppioni/`: CERTIFICATO MEDICO (MANCA · SENZA NON ENTRA), QUOTA ASSOCIATIVA
 // (PAGATA · FINO AL …, o DA PAGARE · 50,00 € in rosso) e un timbro per ogni corso da pagare (`timbriCorsi`,
 // «JUDO 3 · MANCANO» / «350,00 €»). Verde solo se non manca niente. Il documento non ha piu' un timbro: sta in
 // COSA MANCA. Le righe sono in maiuscolo come le altre. Qui un timbro solo, largo e alto quanto il contenitore.
@@ -36,8 +36,8 @@
 // 12px 14px, gap 4px. Titolo Saira 12px 0.2em `dim`; la parola Saira 22px, interlinea 1.05, nel colore-testo dello
 // stato (rosso-testo, giallo-testo, verde-testo, `dim`); le righe 14px 0.12em. Una riga gialla ha il bordo 2px giallo
 // e il testo giallo-testo.
-// Look del sito (`:root[data-look='sito'] .sg-timbro`, styles.css riga 381 e 462-463): fondo bianco, raggio 6px, giallo = giallo-testo.
-// telefono: il timbro compatto dello stretto. tono: lo stato. righe: "testo:tono" separati da | (tono giallo o vuoto). Non riprodotti: bordo `text` al
+// Look del sito (`:root[data-look='sito'] .sg-timbro`, src/styles.css): fondo bianco, raggio 6px, giallo = giallo-testo.
+// telefono: il timbro sotto i 480px (compatto, parola 18px). tono: lo stato. righe: "testo:tono" separati da | (tono giallo o vuoto). Non riprodotti: bordo `text` al
 // passaggio del mouse e il fuoco da tastiera.
 const T = {
   sito: { bg: '#ffffff', surface: '#ffffff', surface2: '#eef5fa', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a', giallo: '#8f6a00', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', tasto: '#0d2a3d', menu: '#0d2a3d' },
