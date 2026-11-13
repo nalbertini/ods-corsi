@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.249.0 — 13 novembre 2026
+
+### Novità
+
+- In «Chi ha pagato e per cosa?» quota, corsi e abbigliamento a un tocco, e il bonifico salda l'ordine del vestiario
+
 ## 0.248.2 — 13 novembre 2026
 
 ### Risolto
