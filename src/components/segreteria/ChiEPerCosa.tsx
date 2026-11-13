@@ -78,6 +78,8 @@ export function ChiEPerCosa({
   // PAGA ANCHE e gli ordini del vestiario: le voci scelte a mano, e la persona di cui è aperto «Altro corso…».
   const [aggiunte, setAggiunte] = useState<VoceDovuta[]>([])
   const [menuDi, setMenuDi] = useState<string | null>(null)
+  // Le altre persone della famiglia aperte o chiuse a mano: vince sul «aperta se ha un importo».
+  const [aperti, setAperti] = useState<Record<string, boolean>>({})
   const situazione = useMemo(
     () => (chi && dati.dato ? chiEPerCosa(chi.id, importo, { ...dati.dato, oggi }, questo, testo) : null),
     [chi?.id, dati.dato, importo, oggi, questo.join(), testo],
@@ -112,6 +114,7 @@ export function ChiEPerCosa({
     setNonLaRicevuta(false)
     setAggiunte([])
     setMenuDi(null)
+    setAperti({})
   }
   const ricevuta = chi && !nonLaRicevuta ? ricevutaDi?.(chi.id) : undefined
 
@@ -219,10 +222,10 @@ export function ChiEPerCosa({
               )
             })}
             <span className="sg-etichetta">COSA PAGA</span>
-            {situazione.nucleo.map(({ persona: p, pagamenti }) => (
-              // Una persona sola: il nome è già sopra, niente riquadro. Con la famiglia, un riquadro per persona col nome.
-              <div key={p.id} className={situazione.nucleo.length > 1 ? 'sg-riquadro stack' : 'stack'} style={{ gap: 8 }}>
-                {situazione.nucleo.length > 1 && <span><b style={{ fontSize: 16 }}>{nome(p)}</b> <span className="sg-sotto">· {p.id === chi.id ? 'chi ha pagato' : 'stessa famiglia'}</span></span>}
+            {/* Chi ha pagato per primo e aperto; il resto della famiglia chiuso, aperto da sé se ha già un importo. */}
+            {[...situazione.nucleo].sort((a, b) => Number(b.persona.id === chi.id) - Number(a.persona.id === chi.id)).map(({ persona: p, pagamenti }) => {
+              const corpo = (
+                <>
                 {!dovuti.some((v) => v.personaId === p.id) && <span className="sg-sotto">Niente da pagare: corsi e quota a posto.</span>}
                 {letti.filter((x) => x.v.personaId === p.id).map(({ v, testo: t, cent }) => (
                   <RigaDovuta key={chiaveDi(v)} v={v} testo={t} cent={cent} nomePersona={p.nome} aMano={questo.includes(p.id)} onCambia={(x) => setValori({ ...mostrati, [chiaveDi(v)]: x })} onTogli={aggiunte.some((x) => chiaveDi(x) === chiaveDi(v)) ? () => togli(v) : undefined} />
@@ -249,8 +252,27 @@ export function ChiEPerCosa({
                     ))}
                   </>
                 )}
-              </div>
-            ))}
+                </>
+              )
+              // Una persona sola: il nome è già sopra, niente riquadro.
+              if (situazione.nucleo.length === 1) return <div key={p.id} className="stack" style={{ gap: 8 }}>{corpo}</div>
+              if (p.id === chi.id) {
+                return (
+                  <div key={p.id} className="sg-riquadro stack" style={{ gap: 8 }}>
+                    <span><b style={{ fontSize: 16 }}>{nome(p)}</b> <span className="sg-sotto">· chi ha pagato</span></span>
+                    {corpo}
+                  </div>
+                )
+              }
+              const assegnato = letti.filter((x) => x.v.personaId === p.id).reduce((t, x) => t + (x.cent ?? 0), 0)
+              const aperto = aperti[p.id] ?? (assegnato > 0 || questo.includes(p.id))
+              return (
+                <details key={p.id} className="sg-riquadro sg-spiega" open={aperto} onToggle={(e) => { const o = e.currentTarget.open; if (o !== aperto) setAperti({ ...aperti, [p.id]: o }) }}>
+                  <summary>{nome(p).toUpperCase()} · STESSA FAMIGLIA{assegnato > 0 ? ` · ${euroAssegna(assegnato)}` : ''}</summary>
+                  <div className="stack" style={{ gap: 8 }}>{corpo}</div>
+                </details>
+              )
+            })}
             {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
           </>
         )}
