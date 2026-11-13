@@ -3,8 +3,8 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { LIMITE_CAMBIO_VOCE, pacchetti, type RigaMovimento } from '../../lib/contabilita'
 import { collegaTuttiISicuri, cosaNonVaCollegato, dividiStorico, type CandidatoPersona, type VoceStorico } from '../../lib/movimentiPersona'
 import { dataRicevuta, euro } from '../../lib/ricevute'
-import { bonificiDaAssegnare, euroAssegna } from '../../lib/assegna'
-import { oggiARoma } from '../../lib/contabilita'
+import { daMostrareInContabilita } from '../../lib/schedeIscritto'
+import type { PagamentoDiretto } from '../../lib/pagamenti'
 import { chiedi, dataLunga, Guaio, messaggio, useCarica, type useAvviso } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -279,45 +279,19 @@ export function CollegaAPersona({ d, righe, fai, onFatto, onChiudi }: { d: DatiS
 }
 
 /**
- * Nella scheda di una persona: i movimenti di CONTABILITÀ a suo nome. Quelli scritti a mano (una quota, un corso)
- * stanno fra i pagamenti ma non si sommano: non sono ricevute, e la quota resta da pagare. Quelli del vecchio
- * programma stanno a parte: lo stesso incasso può comparire anche nei pagamenti dell'app, nei giorni in cui le due
- * cose si sono sovrapposte. Se non ce ne sono, il blocco non compare.
+ * In fondo a PAGAMENTI: i movimenti di CONTABILITÀ a suo nome che PAGAMENTI non dice già (un bonifico assegnato o da
+ * assegnare ha la sua riga lassù), e lo storico del vecchio programma, a parte: lo stesso incasso può comparire anche
+ * nei pagamenti dell'app, nei giorni in cui le due cose si sono sovrapposte. Lo storico lo legge StoricoIscritto, che
+ * ne ha bisogno anche per i bonifici: qui si mostra soltanto. Se non c'è niente, il blocco non compare.
  */
 const RIGHE_STORICO = 5
-export function StoricoPersona({ d, personaId, onMovimento }: { d: DatiSegreteria; personaId: string; onMovimento?: (id: string) => void }) {
-  const st = useCarica(() => d.storicoPersona(personaId), [d, personaId])
+export function StoricoPersona({ storico, diretti, giaDetti, onMovimento }: { storico: VoceStorico[]; diretti: PagamentoDiretto[]; giaDetti: ReadonlyArray<{ movimentoId: string }>; onMovimento?: (id: string) => void }) {
   const [tutte, setTutte] = useState(false)
-  const { inContabilita, vecchioProgramma: righe } = dividiStorico(st.dato ?? [])
-  // Pagamenti e ricevute di tutti (un bonifico si divide anche sui fratelli) si leggono solo se c'è un bonifico che può
-  // averne bisogno: le schede senza bonifici non pagano la lettura.
-  const oggi = oggiARoma()
-  const candidati = bonificiDaAssegnare(st.dato ?? [], [], [], oggi).map((b) => b.movimentoId).join()
-  const conti = useCarica(
-    () => (candidati ? Promise.all([d.pagamentiDiretti(), d.ricevute()]) : Promise.resolve(null)),
-    [d, candidati],
-  )
-  const daAssegnare = conti.dato ? bonificiDaAssegnare(st.dato ?? [], conti.dato[0], conti.dato[1], oggi) : []
-  if (st.guaio) return <span className="sg-sotto" role="status">Lo storico dal vecchio programma non si legge: {st.guaio}</span>
+  const divisi = dividiStorico(storico)
+  const inContabilita = daMostrareInContabilita(divisi.inContabilita, diretti, giaDetti)
+  const righe = divisi.vecchioProgramma
   return (
     <>
-      {conti.guaio && (
-        <span className="sg-sotto" role="status">
-          Non si riesce a controllare se ci sono bonifici da assegnare: {conti.guaio}
-        </span>
-      )}
-      {daAssegnare.length > 0 && (
-        <div className="sg-riquadro" data-avviso="true" role="note">
-          {daAssegnare.map((x) => (
-            <span key={x.movimentoId} className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap', fontSize: 14 }}>
-              <span className="grow"><b className="num">{euroAssegna(x.daAssegnare)}</b> da assegnare dal bonifico del {dataRicevuta(x.data)}: finché non dici a cosa va, non conta come pagato.</span>
-              {onMovimento && (
-                <button type="button" className="num sg-chip" onClick={() => onMovimento(x.movimentoId)}>Assegna ›</button>
-              )}
-            </span>
-          ))}
-        </div>
-      )}
       {inContabilita.length > 0 && (
         <section className="stack" style={{ gap: 8 }} aria-label="Scritti in contabilità">
           <span className="sg-etichetta" style={{ fontSize: 13, letterSpacing: '0.2em' }}>SCRITTI IN CONTABILITÀ · {inContabilita.length}</span>

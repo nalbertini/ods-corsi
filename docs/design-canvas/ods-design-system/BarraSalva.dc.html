@@ -13,6 +13,7 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
+</helmet>
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; background: {{c.surface}}; border: 2px solid {{c.giallo}}; color: {{c.text}}">
   <span style="flex-grow: 1; min-width: 0; font-size: 14px; color: {{coloreFrase}}">{{frase}}</span>
   <sc-if value="{{haButta}}" hint-placeholder-val="{{ true }}">

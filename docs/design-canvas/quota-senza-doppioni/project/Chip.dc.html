@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Inter (qui da Google Fonts, in app file locale OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<span style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; background: {{sfondo}}; border: 2px solid {{bordo}}; border-radius: {{raggio}}; color: {{colore}}; font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: {{corpo}}; font-weight: {{peso}}; letter-spacing: {{spazio}}; white-space: nowrap; max-width: 100%; overflow: hidden; opacity: {{opacita}}"><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis">{{segno}}{{label}}</span><sc-if value="{{haNumero}}" hint-placeholder-val="{{ false }}"><span style="flex: none; padding: {{riempNumero}}; border: {{bordoNumero}}; border-radius: {{raggio}}; background: {{fondoNumero}}; color: {{testoNumero}}; font-size: 12px; letter-spacing: {{spazio}}">{{numero}}</span></sc-if></span>
+</x-dc>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"DA PAGARE"},"acceso":{"editor":"boolean","default":false},"pieno":{"editor":"boolean","default":false},"disabled":{"editor":"boolean","default":false},"numero":{"editor":"text","default":""},"tonoNumero":{"editor":"enum","options":["neutro","rosso","giallo"],"default":"neutro"},"$preview":{"width":180,"height":50}}'>
+// Riproduzione 1:1 di .sg-chip di src/styles.css (righe 1462-1467), il tasto piccolo della segreteria: filtri sopra le tabelle
+// (Iscritti.tsx, Richieste.tsx), CAMBIA e ↑ SU / ↓ GIÙ del LISTINO, SCHEDA di PRESENZE. Alto 44px, padding 0 12px, bordo 2px `line`,
+// Saira 13px 700 0.12em, testo `sec`. acceso = aria-pressed (bordo e testo `text`, fondo `surface-2`); pieno = .sg-chip-pieno (fondo
+// `text`, testo `bg`); disabled = opacita' 0.4. numero: un .sg-tag dentro il chip (tonoNumero neutro / rosso / giallo, come Badge tag). Un nome lungo si taglia con «…» (max-width 100%), il numero resta.
+// Look del sito (`:root[data-look='sito']`): Inter 15px 600 senza spaziatura, raggio 6px, bordo blu #14709f; il filtro scelto e' blu pieno con testo
+// bianco e il segno ✓ davanti (non solo un altro colore); `pieno` e' lo stesso blu. Il numero e' un tag bianco con bordo.
+// Look del sito e disabled: blocco `surface-2` #cfe6f4, testo `dim` #46606f, bordo trasparente, niente opacita' (styles.css, `.sg-chip:disabled` del look sito).
+const T = {
+  sito: { bg: '#ffffff', surface2: '#ffffff', line: '#14709f', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#b81d1d', giallo: '#8f6a00', suColore: '#0d2a3d', suRosso: '#b81d1d', blu: '#14709f' },
+};
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T.sito;
+    const acceso = truthy(p.acceso), pieno = truthy(p.pieno);
+    const numero = p.numero ?? '';
+    const tn = p.tonoNumero || 'neutro';
+        const spento = truthy(p.disabled);
+    const blu = (pieno || acceso) && !spento;
+    return {
+      cond: INTER, label: p.label ?? 'DA PAGARE',
+      corpo: '15px', peso: 600, spazio: '0', raggio: '6px',
+      segno: acceso ? '✓ ' : '',
+      sfondo: spento ? '#cfe6f4' : (blu ? c.blu : c.bg),
+      bordo: spento ? 'transparent' : (blu ? c.blu : c.line),
+      colore: spento ? c.dim : (blu ? '#ffffff' : c.text),
+      opacita: spento && !'0.4',
+      numero, haNumero: numero !== '',
+      riempNumero: '1px 8px', bordoNumero: '1.5px solid ' + (tn === 'rosso' ? c.rosso : tn === 'giallo' ? c.giallo : c.suColore),
+      fondoNumero: c.bg,
+      testoNumero: c.suColore,
+    };
+  }
+}
+</script>
+</body>
+</html>

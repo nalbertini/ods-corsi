@@ -1488,7 +1488,7 @@ export interface TimbriScheda {
 const dataCorta = (g: string) => `${g.slice(8, 10)}/${g.slice(5, 7)}`
 
 /** «12/10/2026»: nei timbri l'anno c'è, la scheda si legge anche fra un anno. */
-const dataTimbro = (g: string) => `${dataCorta(g)}/${g.slice(0, 4)}`
+export const dataTimbro = (g: string) => `${dataCorta(g)}/${g.slice(0, 4)}`
 
 /**
  * «AL 31/07/2027», ma «ALL’11/07/2027»: l'1, l'8 e l'11 cominciano per
@@ -1525,7 +1525,8 @@ function timbroCertificato(c: CertificatoSeg, oggi: string, natoIl?: string): Ti
   // Nel termine viene alle lezioni: giallo, con la data. Dopo, rosso: la presenza si segna lo stesso.
   if (stato === 'atteso' && c.entro) return { tono: 'giallo', parola: `DA PORTARE ENTRO IL ${dataTimbro(c.entro)}`, inElenco: 'Da portare', righe }
   if (!c.scade && c.entro) return { tono: 'rosso', parola: `DOVEVA PORTARLO ENTRO IL ${dataTimbro(c.entro)}`, inElenco: 'Doveva portarlo', righe }
-  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', inElenco: 'Manca il certificato', righe: [...(mancaLaData({ certificato: c, natoIl }) ? [{ testo: 'MANCA LA DATA DI NASCITA' }] : []), ...righe] }
+  // La data di nascita mancante la dice COSA MANCA: qui solo quel che conta alla porta.
+  if (!c.scade) return { tono: 'rosso', parola: 'MANCA', inElenco: 'Manca il certificato', righe: [{ testo: 'SENZA NON ENTRA' }, ...righe] }
   if (stato === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'Certificato scaduto', righe }
   if (stato === 'in_scadenza') {
     if (c.scade === oggi) return { tono: 'giallo', parola: 'SCADE OGGI', inElenco: 'Scade oggi', righe }
@@ -1547,7 +1548,7 @@ export function rigaFuoriApp(s: Pick<StatoPaga, 'fonte' | 'fino'>): string | nul
   return s.fino ? `fuori app · fino ${alGiorno(s.fino).toLowerCase()}` : 'fuori app'
 }
 
-function timbroQuota(s: StatoPaga): Timbro {
+function timbroQuota(s: StatoPaga, prezzo?: number): Timbro {
   const fuori = rigaFuoriApp(s)
   const fino = s.fino ? [{ testo: `FINO ${alGiorno(s.fino)}` }] : []
   const daFino = fuori ? [{ testo: fuori.toUpperCase() }] : [...(s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : []), ...fino]
@@ -1555,7 +1556,8 @@ function timbroQuota(s: StatoPaga): Timbro {
   if (s.come === 'in_parte')
     return { tono: 'giallo', parola: 'IN PARTE', inElenco: 'Pagata in parte', righe: s.fonte === 'ricevuta' ? [{ testo: `MANCANO ${euro(s.mancano ?? 0)} €` }, ...(s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : [])] : daFino }
   if (s.come === 'scaduto') return { tono: 'rosso', parola: 'QUOTA SCADUTA', inElenco: 'Quota scaduta', righe: s.fino ? [{ testo: `VALEVA FINO ${alGiorno(s.fino)}` }] : [] }
-  return { tono: 'rosso', parola: 'DA PAGARE', inElenco: 'Da pagare', righe: [{ testo: 'NESSUNA RICEVUTA' }] }
+  // Col listino la scheda dice quanto chiedere (centesimi, come voceQuota).
+  return { tono: 'rosso', parola: 'DA PAGARE', inElenco: 'Da pagare', righe: [{ testo: prezzo === undefined ? 'NESSUNA RICEVUTA' : `${euro(prezzo)} €` }] }
 }
 
 export function timbroDocumento(documento: boolean): Timbro {
@@ -1572,10 +1574,10 @@ export function timbroDocumento(documento: boolean): Timbro {
  * documento si vede ma non conta per «in regola» (vedi `inRegola`). Chi è
  * disattivato li ha spenti, con le stesse parole.
  */
-export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): TimbriScheda {
+export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string, prezzoQuota?: number): TimbriScheda {
   const t = {
     certificato: timbroCertificato(p.certificato, oggi, p.natoIl),
-    quota: timbroQuota(pagamentoDi(p, oggi)),
+    quota: timbroQuota(pagamentoDi(p, oggi), prezzoQuota),
     documento: timbroDocumento(p.documento),
   }
   if (p.attiva) return t
@@ -1592,6 +1594,16 @@ export type VoceAltro = 'unisci' | 'esporta' | 'disattiva' | 'riattiva'
 export function vociAltro(p: Pick<PersonaSeg, 'attiva'>, inModifica: boolean): VoceAltro[] {
   if (inModifica) return []
   return ['unisci', 'esporta', p.attiva ? 'disattiva' : 'riattiva']
+}
+
+/**
+ * La quota nel menu «Altro»: la sezione QUOTA non c'è più, la si paga con la
+ * ricevuta. Restano l'eccezione «pagata fuori dall'app», da segnare se non è
+ * pagata, e da togliere se c'è.
+ */
+export function vociQuota(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay' | 'saldo'>, oggi: string): Array<'segna' | 'togli'> {
+  if (p.pagamento.stato !== 'da_pagare') return ['togli']
+  return pagamentoDi(p, oggi).come === 'pagato' ? [] : ['segna']
 }
 
 /**
@@ -2223,17 +2235,21 @@ export function sottoNome(natoIl: string | null, creataIl: string, oggi: Date): 
  * Le righe di COSA MANCA in cima alla scheda. Prima quello che blocca la
  * ricevuta, con le stesse regole di `mancanoDatiSocio` (un codice sbagliato
  * vale come vuoto); poi la data di nascita, che decide se è minorenne; poi i
- * contatti in una riga sola. L'email di accesso e l'indirizzo non mancano: la
- * prima la sceglie chi entra, il secondo la ricevuta lo lascia vuoto.
- * Con `a` null (i dati anagrafici non si leggono) restano solo i contatti.
+ * contatti in una riga sola; per ultimo il documento, che non ha più un timbro
+ * suo. L'email di accesso e l'indirizzo non mancano: la prima la sceglie chi
+ * entra, il secondo la ricevuta lo lascia vuoto.
+ * Con `a` null (i dati anagrafici non si leggono) restano contatti e documento.
  */
 export type RigaCheManca = { cosa: string; perche?: string }
 
-export function cosaManca(p: Pick<PersonaSeg, 'nome' | 'cognome' | 'natoIl' | 'email' | 'telefono'>, a: Anagrafica | null, oggi: Date): RigaCheManca[] {
+export function cosaManca(p: Pick<PersonaSeg, 'nome' | 'cognome' | 'natoIl' | 'email' | 'telefono'> & { documento?: boolean }, a: Anagrafica | null, oggi: Date): RigaCheManca[] {
   const maiuscola = (t: string) => t[0].toUpperCase() + t.slice(1)
-  const contatti = [!p.telefono?.trim() && 'telefono', !p.email?.trim() && 'email per ricevute e avvisi'].filter((x): x is string => !!x)
-  const righeContatti = contatti.length ? [{ cosa: maiuscola(contatti.join(', ')) }] : []
-  if (!a) return righeContatti
+  const senzaTel = !p.telefono?.trim()
+  const senzaEmail = !p.email?.trim()
+  // Ne basta uno dei due: senza tutti e due la riga chiede «o».
+  const righeContatti = senzaTel || senzaEmail ? [{ cosa: senzaTel && senzaEmail ? 'Telefono o email' : senzaTel ? 'Telefono' : 'Email', perche: 'per ricevute e avvisi' }] : []
+  const documento = p.documento === false ? [{ cosa: 'Documento d’identità', perche: 'da portare in segreteria, non serve per entrare' }] : []
+  if (!a) return [...righeContatti, ...documento]
   // Come `intestatarioDaRichiesta`: senza il nome del genitore il suo codice non conta.
   const genitore = [a.genitoreNome, a.genitoreCognome].filter(Boolean).join(' ')
   const { blocca } = mancanoDatiSocio(
@@ -2245,6 +2261,6 @@ export function cosaManca(p: Pick<PersonaSeg, 'nome' | 'cognome' | 'natoIl' | 'e
     cosa: x.campo === 'genitore' ? 'Nome del genitore' : maiuscola(x.testo.replace(/^il /, '').replace(' del socio', '')),
     perche: 'serve per la ricevuta',
   }))
-  const data = natoIlDi(p, a, oggi) ? [] : [{ cosa: 'Data di nascita' }]
-  return [...ricevuta, ...data, ...righeContatti]
+  const data = natoIlDi(p, a, oggi) ? [] : [{ cosa: 'Data di nascita', perche: 'serve anche per il certificato' }]
+  return [...ricevuta, ...data, ...righeContatti, ...documento]
 }

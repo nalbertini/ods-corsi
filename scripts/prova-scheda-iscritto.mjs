@@ -22,7 +22,7 @@ const { outputFiles } = await build({
   stdin: { contents: "export * from './src/lib/segreteria'", resolveDir: '.', loader: 'ts' },
   bundle: true, format: 'esm', write: false, logLevel: 'error', define: { 'import.meta.env': '{}' },
 })
-const { vociAltro, azioniTestata } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+const { vociAltro, azioniTestata, vociQuota } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 
 console.log('\nLe voci del menu «Altro»')
 const voci = (attiva, inModifica) => (typeof vociAltro === 'function' ? vociAltro({ attiva }, inModifica) : 'vociAltro non esiste')
@@ -39,6 +39,13 @@ ok('niente da sollecitare: solo Altro', azioni(attiva, false, {}), { sollecito: 
 ok('in modifica: il tasto resta, Altro no', azioni(attiva, true, { modifica: true }), { sollecito: true, altro: [] })
 ok('durante l\'unione: né tasto né Altro', azioni(attiva, true, { unendo: true }), { sollecito: false, altro: [] })
 ok('durante il pagamento: né tasto né Altro', azioni(attiva, true, { pagando: true }), { sollecito: false, altro: [] })
+
+console.log('\nLe voci della quota nel menu «Altro» (la sezione QUOTA non c\'è più)')
+const vq = (pagamento, quote = []) => (typeof vociQuota === 'function' ? vociQuota({ pagamento, quote }, '2026-11-13') : 'vociQuota non esiste')
+ok('quota da pagare: «Segna la quota pagata»', vq({ stato: 'da_pagare' }), ['segna'])
+ok('quota pagata con una ricevuta: niente', vq({ stato: 'da_pagare' }, [{ dal: '2026-09-01', al: '2027-07-31', mancano: 0, numero: 3, anno: 2026 }]), [])
+ok('pagata fuori dall\'app: «Togli»', vq({ stato: 'pagato', fino: '2027-07-31' }), ['togli'])
+ok('pagata fuori dall\'app e anche con la ricevuta: «Togli», non serve più', vq({ stato: 'pagato', fino: '2027-07-31' }, [{ dal: '2026-09-01', al: '2027-07-31', mancano: 0, numero: 3, anno: 2026 }]), ['togli'])
 
 console.log('\nLa scheda (sorgente)')
 const isc = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')

@@ -39,7 +39,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Ricevuta da un pagamento a mano | segreteria, amministrazione | incasso contato due volte o perso | `prova:pagamenti`, `prova:satispay`, `pagamento-una-volta.sql`, `pagamento-diventa-ricevuta.sql`, `ricevuta-pagamento-perso.sql` | sì |
 | Contanti di un giorno di cassa chiusa | segreteria, amministrazione | chiusura rotta senza che nessuno lo sappia | `prova:contabilita`, `prova:pagamenti`, `ricevuta-cassa-chiusa.sql` | sì |
 | Ricevute e pagamenti | segreteria, amministrazione | quota o ricevuta sbagliata, ricevuta doppia | `prova:ricevuta`, `prova:segreteria`, `prova:pagamenti`, `prova:satispay`, `prova:righe-dovute`, `ricevute.sql`, `satispay.sql` | sì |
-| Bonifico collegato assegnato a quota e corsi | amministrazione, segreteria | bonifico contato due volte o fermo, quota sopra il listino, soldi persi | `prova:assegna-movimento`, `prova:pagamenti`, `prova:ricevuta`, `prova:pagato-prima`, `assegna-movimento.sql`, `pagato-vecchio-programma.sql` | sì |
+| Bonifico collegato assegnato a quota e corsi | amministrazione, segreteria | bonifico contato due volte o fermo, quota sopra il listino, soldi persi | `prova:assegna-movimento`, `prova:pagamenti`, `prova:ricevuta`, `prova:pagato-prima`, `prova:schede-iscritto`, `assegna-movimento.sql`, `pagato-vecchio-programma.sql` | sì |
 | Corsi da pagare | segreteria | corso scaduto che non si vede, sollecito a chi ha pagato | `prova:dafare`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `prova:conteggi-dovuti`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:scheda`, `prova:sollecito`, `prova:tessere`, `corso-archiviato-il.sql` | sì |
 | Annuale a rate (la quota non è una rata) | segreteria, amministrazione | quota contata come rata, annuale scaduto non visto, versamento doppio | `prova:ricevuta`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `annuale-tre-rate.sql` | sì |
 | Ricevuta per email alla famiglia | segreteria, amministrazione, famiglie | ricevuta all'indirizzo sbagliato o annullata che parte | `prova:ricevute-email`, `prova:edge`, `prova:cornice-mail`, `prova:avvisi-segreteria`, `ricevute-email.sql` | sì |
@@ -75,7 +75,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Bonifico o POS già in una ricevuta (anche a rate) o in un pagamento | amministrazione | incasso contato due volte, o import fermo sulla riga | `prova:importa-banca`, `prova:quadratura`, `prova:importazioni`, `importazioni.sql` | sì, da fare |
 | Ricevuta in Bonifico abbinata al bonifico (familiare, Da classificare col nome) | amministrazione | incasso contato due volte, ricevuta di un'altra famiglia | `prova:assegna-movimento`, `assegna-movimento.sql` | sì |
 | Voci da classificare in IMPORTAZIONI | amministrazione | voce persa dalla lista, totale sbagliato | `prova:importazioni`, `prova:suggerimento-movimento` | sì, da fare |
-| Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:segreteria`, `prova:contabilita`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
+| Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:segreteria`, `prova:contabilita`, `prova:schede-iscritto`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
 | Quote e corsi scritti a mano hanno la persona | amministrazione (scrive), segreteria (vede la scheda) | quota che non si ritrova nella scheda | `prova:contabilita`, `prova:movimenti-persona`, `prova:segreteria`, `prova:suggerimento-movimento`, `quote-persona.sql`, `cambia-voce.sql`, `movimenti-persona.sql` | sì |
 | Movimento da classificare: voce (anche dall'importo) e persona proposte | amministrazione (conferma), segreteria | persona o voce sbagliata scritta con un clic | `prova:suggerimento-movimento`, `prova:abbina-movimenti`, `prova:importa-banca`, `abbina-movimenti.sql` | sì, da fare |
 | Filtro «Pagato nel vecchio programma» | segreteria | segnato pagato per un incasso non suo | `prova:pagato-prima`, `prova:filtri-iscritti`, `pagato-vecchio-programma.sql` | sì |
@@ -96,6 +96,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Il Banco | segreteria | un guaio che non si vede | `prova:banco`, `prova:ruoli`, `prova:conteggi-dovuti` | sì |
 | Scheda dell'iscritto a quattro schede | segreteria | un guaio nascosto su una scheda chiusa | `prova:scheda-iscritto`, `prova:schede-iscritto`, `prova:scheda` | sì |
 | COSA MANCA nella scheda dell'iscritto | segreteria | ricevuta bloccata senza CF, minore trattato da adulto | `prova:scheda-persona`, `prova:segreteria`, `prova:ricevuta` | sì |
+| Timbri di quota e corsi, Segna/Togli nella scheda iscritto | segreteria | importo sbagliato sul timbro, quota segnata o tolta per errore | `prova:scheda`, `prova:schede-iscritto`, `prova:scheda-iscritto`, `prova:segreteria`, `prova:corsi-da-pagare` | sì |
 | Aspetto della segreteria e dell'amministrazione | segreteria, amministrazione | colori illeggibili, aspetto diverso dal sito | `prova:look`, `prova:menu`, `prova:banco`, `prova:sito-aspetto`, `prova:testi`, `prova:etichette-lezione`, `prova:segreteria`, `prova:richieste`, `prova:ricevuta`, `prova:pagamenti`, `prova:tessere`, `prova:certificati`, `prova:sito`, `prova:tema`, `prova:icone`, `scripts/prova-look.mjs` | sì |
 | Aspetto dell'area istruttori | istruttore | stato dell'appello letto male | `prova:istruttori-look`, `prova:look`, `prova:coda`, `prova:appello-cerca`, `prova:timer-istruttori`, `prova:icone` | sì |
 | Aspetto dei tasti del tablet di sala | sala, istruttore | un tasto che si legge come un altro | `prova:look`, `prova:tablet`, `prova:coda`, `prova:musica`, `prova:icone` | sì |
@@ -240,6 +241,8 @@ quando arriva la prova.
 - Gare: «non ancora disponibile» finché `117-gare.sql` non è lanciato: nessuna
   prova.
 - Gare: `gareDellaSettimana` è provata, il collegamento in `Settimana.tsx` no.
+- Pagati di stagione (`Ricevute.tsx`): «un bonifico da assegnare non conta» sta nel `.tsx`, che passa solo i pagamenti a mano. Nessuna prova lo tiene (DA FARE: regola in `src/lib`).
+- Scheda iscritto: il cablaggio di «Segna/Togli» nel menu Altro (`Iscritti.tsx`) e il prezzo della quota che arriva dal listino (`prezzoQuota`) stanno nel `.tsx`; le regole sono provate, il collegamento no. Solo collaudo a mano.
 
 - Tasti grandi del tablet: `Tablet.tsx` e `TabletPin.tsx` usano `TRATTO_TABLET`,
   ma `prova:icone` controlla solo la costante. Il tratto a 1,75 passa tutte le

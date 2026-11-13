@@ -26,9 +26,11 @@
 <script data-dc-script data-props='{"titolo":{"editor":"text","default":"CERTIFICATO"},"parola":{"editor":"text","default":"SCADUTO"},"tono":{"editor":"enum","options":["rosso","giallo","verde","spento"],"default":"rosso"},"righe":{"editor":"text","default":"il 12 marzo:giallo"},"$preview":{"width":240,"height":120}}'>
 // Riproduzione 1:1 del timbro in cima alla scheda di un iscritto: .sg-timbro e figli (src/styles.css)
 // disegnato da `Timbri` in src/components/segreteria/Iscritti.tsx, con le parole di `timbriScheda`.
-// Nell'app sono in fila tutti larghi uguale (.sg-timbri: grid-auto-flow column, grid-auto-columns minmax(0, 1fr),
-// gap 12px, alti quanto il piu' alto; sotto i 1000px una colonna): CERTIFICATO, QUOTA, DOCUMENTO e, per chi ha un
-// corso che la chiede, TESSERA. Qui un timbro solo, largo e alto quanto il contenitore.
+// Nell'app sono in una griglia di 3 colonne larghe uguale (.sg-timbri, gap 12px, alti quanto il piu' alto; sotto i
+// 1000px una colonna; `../quota-senza-doppioni/`): CERTIFICATO MEDICO (MANCA · SENZA NON ENTRA), QUOTA ASSOCIATIVA
+// (PAGATA · FINO AL …, o DA PAGARE · 50,00 € in rosso) e un timbro per ogni corso da pagare (`timbriCorsi`,
+// «JUDO 3 · MANCANO» / «350,00 €»). Verde solo se non manca niente. Il documento non ha piu' un timbro: sta in
+// COSA MANCA. Le righe sono in maiuscolo come le altre. Qui un timbro solo, largo e alto quanto il contenitore.
 // Fondo `bg`, bordo 2px del colore dello stato (rosso / giallo / verde; spento = `line`) e 4px a sinistra, padding
 // 12px 14px, gap 4px. Titolo Saira 12px 0.2em `dim`; la parola Saira 22px, interlinea 1.05, nel colore-testo dello
 // stato (rosso-testo, giallo-testo, verde-testo, `dim`); le righe 14px 0.12em. Una riga gialla ha il bordo 2px giallo

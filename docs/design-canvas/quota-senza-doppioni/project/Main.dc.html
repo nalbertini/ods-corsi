@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta · quota e pagamenti senza doppioni</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .riga { display: flex; align-items: center; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; }
+    .sotto { font-size: 14px; color: #46606f; margin: 0; }
+    .riga-is { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 2px solid #cfe6f4; border-radius: 6px; }
+    .riga-is .nome { font-family: 'Saira Condensed', 'Arial Narrow', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.06em; }
+    .mov { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border: 2px solid #cfe6f4; border-radius: 6px; background: #f6fbfe; }
+    .mov-testa { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    /* Le parti sotto l'importo, allineate alla sua colonna: si legge 180 = 50 + 130. */
+    .mov-parti { display: flex; flex-direction: column; gap: 4px; padding-left: 14px; border-left: 2px solid #cfe6f4; margin-right: 194px; }
+    .parte { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+    .cifra { font-size: 18px; font-weight: 700; color: #0b7a33; white-space: nowrap; }
+    .manca { display: flex; flex-direction: column; gap: 4px; border: 2px solid #b81d1d; border-radius: 6px; padding: 12px 16px; }
+    .manca .et { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #b81d1d; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .nota-tavola { font-size: 13px; color: #46606f; margin: 0; max-width: 760px; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #8f6a00">PROPOSTA · QUOTA E PAGAMENTI, SENZA DOPPIONI</span>
+  <p class="nota-tavola">1) In alto i tre timbri di quel che serve per entrare: certificato, quota associativa, corso (uno per corso, con quanto manca e entro quando). Il documento d’identità sta solo in COSA MANCA. Lo stato dei corsi non si ripete sotto: la scheda ha solo PAGAMENTI, con «+ Fai la ricevuta»; «Segna come pagata» (fuori dall’app) va in «Altro ▾». 2) Il bollino della scheda dice quanto manca, non «corso scaduto». 3) Un bonifico è UNA riga: l'importo arrivato, sotto come è stato diviso, un solo «Apri in contabilità» (da lì la ricevuta e l'annullo). 4) «Scritti in contabilità» e la nota sparisce quando il movimento è tutto assegnato. 5) La data di nascita è chiesta solo in COSA MANCA, che dice anche a cosa serve.</p>
+
+  <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-top: -8px">
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">TALARICO ANTONY</h2>
+        <span style="font-size: 13px; color: #46606f">In elenco dal 6 ottobre 2026</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-right: -12px">
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="principale" label="Sollecita su WhatsApp ▾" hint-size="230px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Altro ▾" hint-size="110px,44px"></dc-import>
+      </div>
+    </div>
+
+    <div class="manca">
+      <span class="et">✕ COSA MANCA</span>
+      <span style="font-size: 15px"><b>Codice fiscale</b> <span style="color: #46606f">· serve per la ricevuta</span></span>
+      <span style="font-size: 15px"><b>Data di nascita</b> <span style="color: #46606f">· serve anche per il certificato</span></span>
+      <span style="font-size: 15px"><b>Telefono o email</b> <span style="color: #46606f">· per ricevute e avvisi</span></span>
+      <span style="font-size: 15px"><b>Documento d’identità</b> <span style="color: #46606f">· da portare in segreteria, non serve per entrare</span></span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch">
+      <dc-import name="Timbro" tema="sito" titolo="CERTIFICATO MEDICO" parola="MANCA" tono="rosso" righe="senza non entra" hint-size="100%,96px"></dc-import>
+      <dc-import name="Timbro" tema="sito" titolo="QUOTA ASSOCIATIVA" parola="PAGATA" tono="verde" righe="fino al 31/07/2027" hint-size="100%,96px"></dc-import>
+      <dc-import name="Timbro" tema="sito" titolo="JUDO 3 · MANCANO" parola="350,00 €" tono="giallo" righe="entro il 31/12/2026|pagati 130 € su 480 €" hint-size="100%,96px"></dc-import>
+    </div>
+    <dc-import name="SchedeIscritto" tema="sito" acceso="QUOTA E PAGAMENTI" segnoDocumenti="rosso" segnoQuota="giallo" parolaQuota="MANCANO 350 €" chiare="{{ true }}" hint-size="100%,44px"></dc-import>
+
+    <div class="riga"><span class="et">PAGAMENTI</span><span class="filo"></span><dc-import name="Chip" tema="sito" label="+ Aggiungi incasso" hint-size="190px,40px"></dc-import><dc-import name="Chip" tema="sito" label="+ Fai la ricevuta" pieno="{{ true }}" hint-size="180px,40px"></dc-import></div>
+    <p class="sotto" style="margin-top: -8px">180,00 € pagati in questa stagione.</p>
+    <div class="mov">
+      <div class="mov-testa">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex: 1 1 0; min-width: 160px">
+          <span style="font-size: 15px; font-weight: 600">9 ottobre 2026 · Bonifico</span>
+          <span style="font-size: 12px; color: #46606f">da D’Augelli Sabrina Carmela</span>
+        </div>
+        <dc-import name="Badge" tema="sito" tipo="tag" tono="giallo" label="Senza ricevuta" hint-size="120px,24px"></dc-import>
+        <span class="cifra">180,00 €</span>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Apri in contabilità" hint-size="180px,44px"></dc-import>
+      </div>
+      <div class="mov-parti">
+        <div class="parte"><span>Quota associativa 2026/27</span><span style="font-weight: 600">50,00 €</span></div>
+        <div class="parte"><span>Annuale Judo 3</span><span style="font-weight: 600">130,00 €</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":860,"height":1300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

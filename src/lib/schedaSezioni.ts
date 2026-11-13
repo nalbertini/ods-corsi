@@ -1,6 +1,7 @@
 // La scheda iscritto divisa in schede: quali sono, dove portano i timbri, come
 // si muove la tastiera e quali segni mettono sulla linguetta. Il .tsx mostra e chiama.
 import { timbriScheda, type CorsoSeg, type PersonaSeg } from './segreteria'
+import { euro } from './ricevute'
 import { timbroTessera } from './tessere'
 import type { StatoCorso } from './corsiDaPagare'
 
@@ -70,8 +71,8 @@ export function segniSchede(
   corsi: Array<Pick<CorsoSeg, 'id' | 'nome'> & { enteTessera?: string | null }>,
   oggi: string,
   stato: { aperta: IdScheda; inModifica: boolean },
-  /** I corsi da pagare (`corsiDaPagare`): con la quota a posto, la QUOTA dice «CORSO SCADUTO». */
-  scoperti: ReadonlyArray<Pick<StatoCorso, 'come'>> = [],
+  /** I corsi da pagare (`corsiDaPagare`): con la quota a posto, la QUOTA dice quanto manca. */
+  scoperti: ReadonlyArray<Pick<StatoCorso, 'come' | 'mancano' | 'totale'>> = [],
 ): SegniSchede {
   const t = timbriScheda(p, oggi)
   // Senza le tessere lette (il database non le ha ancora) il timbro non c'è, come nella scheda.
@@ -84,10 +85,14 @@ export function segniSchede(
   const quota = peggiore([t.quota.tono])
   // Il giallo solo se nessuno è scaduto (pagato in parte, da controllare): uno scaduto è rosso come la quota.
   const corso = p.attiva && scoperti.length ? (scoperti.every((s) => s.come === 'in_parte' || s.come === 'da_controllare') ? 'giallo' : 'rosso') : null
+  // Quel che resta degli in parte più l'annuale di chi non ha pagato niente. Se un corso non ha cifra
+  // (scaduto, da controllare, senza annuale) la somma sarebbe parziale: si dice solo DA PAGARE.
+  const cifre = scoperti.map((x) => (x.come === 'in_parte' ? x.mancano : x.come === 'da_pagare' ? x.totale : undefined))
+  const mancano = cifre.every((c) => c !== undefined) ? cifre.reduce((s: number, c) => s + (c ?? 0), 0) : 0
   return {
     persona: stato.inModifica && stato.aperta !== 'persona' ? { parola: 'IN MODIFICA', tono: 'giallo' } : null,
     documenti: doc ? { parola: 'DA SISTEMARE', tono: doc } : null,
-    quota: quota ? { parola: 'DA PAGARE', tono: quota } : corso ? { parola: 'CORSO SCADUTO', tono: corso } : null,
+    quota: quota ? { parola: 'DA PAGARE', tono: quota } : corso ? { parola: mancano ? `MANCANO ${euro(mancano)} €` : 'DA PAGARE', tono: corso } : null,
     corsi: null,
   }
 }

@@ -90,9 +90,16 @@ ok('disattivata (timbri grigi): nessun segno di timbro', segni({ ...inRegola, at
 
 console.log('\nI corsi scaduti sulla QUOTA')
 const scoperti = (p, sc) => f('segniSchede', p, corsi, OGGI, { aperta: 'persona', inModifica: false }, sc).quota
-ok('quota a posto e un corso scaduto: QUOTA rossa, «CORSO SCADUTO»', scoperti(inRegola, [{ corsoId: 'judo', corso: 'Judo 3', come: 'scaduto' }]), { parola: 'CORSO SCADUTO', tono: 'rosso' })
-ok('quota a posto e un corso pagato in parte: QUOTA gialla', scoperti(inRegola, [{ corsoId: 'judo', corso: 'Judo 3', come: 'in_parte', mancano: 4000 }]), { parola: 'CORSO SCADUTO', tono: 'giallo' })
+ok('quota a posto e un corso scaduto (somma 0): QUOTA rossa, «DA PAGARE»', scoperti(inRegola, [{ corsoId: 'judo', corso: 'Judo 3', come: 'scaduto' }]), { parola: 'DA PAGARE', tono: 'rosso' })
+ok('quota a posto e un corso pagato in parte: QUOTA gialla, quanto manca', scoperti(inRegola, [{ corsoId: 'judo', corso: 'Judo 3', come: 'in_parte', mancano: 4000 }]), { parola: 'MANCANO 40,00 €', tono: 'giallo' })
+ok('un in_parte con mancano 35000: «MANCANO 350,00 €»', scoperti(inRegola, [{ corsoId: 'judo', corso: 'Judo 3', come: 'in_parte', mancano: 35000, totale: 48000 }]), { parola: 'MANCANO 350,00 €', tono: 'giallo' })
+ok('in parte e da pagare col totale: la somma, rossa', scoperti(inRegola, [{ corsoId: 'judo', corso: 'Judo 3', come: 'in_parte', mancano: 35000, totale: 48000 }, { corsoId: 'mga', corso: 'MGA', come: 'da_pagare', totale: 30000 }]), { parola: 'MANCANO 650,00 €', tono: 'rosso' })
+ok('da pagare senza totale: somma 0, «DA PAGARE»', scoperti(inRegola, [{ corsoId: 'mga', corso: 'MGA', come: 'da_pagare' }]), { parola: 'DA PAGARE', tono: 'rosso' })
+ok('da controllare: somma 0, «DA PAGARE» gialla', scoperti(inRegola, [{ corsoId: 'mga', corso: 'MGA', come: 'da_controllare' }]), { parola: 'DA PAGARE', tono: 'giallo' })
 ok('quota da pagare e corso scaduto: vale «DA PAGARE»', scoperti({ ...inRegola, pagamento: { stato: 'da_pagare' } }, [{ corsoId: 'judo', corso: 'Judo 3', come: 'scaduto' }]), { parola: 'DA PAGARE', tono: 'rosso' })
+// Una cifra parziale mentirebbe: se un corso non ha cifra, la linguetta dice solo «DA PAGARE».
+ok('in parte e uno scaduto: «DA PAGARE», non la somma parziale', scoperti(inRegola, [{ corsoId: 'judo', corso: 'Judo 3', come: 'in_parte', mancano: 4000 }, { corsoId: 'mga', corso: 'MGA', come: 'scaduto' }]), { parola: 'DA PAGARE', tono: 'rosso' })
+ok('in parte e un da pagare senza totale: «DA PAGARE»', scoperti(inRegola, [{ corsoId: 'judo', corso: 'Judo 3', come: 'in_parte', mancano: 4000 }, { corsoId: 'mga', corso: 'MGA', come: 'da_pagare' }]), { parola: 'DA PAGARE', tono: 'rosso' })
 ok('nessun corso scoperto: nessun segno', scoperti(inRegola, []), null)
 
 console.log('\nIN MODIFICA su PERSONA')

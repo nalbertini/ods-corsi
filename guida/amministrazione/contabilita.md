@@ -249,9 +249,9 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   movimento ha dei soldi assegnati non si scollega, non cambia persona né va su una voce senza persona, e
   il suo lotto di Importa banca non si annulla: l'app dice cosa annullare prima.
 
-Nella scheda della persona, in **QUOTA E PAGAMENTI**, un bonifico collegato e non assegnato è in giallo
-(«da assegnare dal bonifico del …») con **Assegna ›**; un pagamento assegnato senza ricevuta ha
-**Assegnato · senza ricevuta** e **Apri in contabilità**. Se fai la ricevuta dalla scheda mentre c'è un
+Nella scheda della persona, in **QUOTA E PAGAMENTI**, un bonifico collegato e non assegnato è una riga
+gialla, **Da assegnare**, con **Assegna ›**; assegnato, è una riga sola con l'importo arrivato e sotto come
+è stato diviso, il tag **Senza ricevuta** finché non c'è, e **Apri in contabilità**. Se fai la ricevuta dalla scheda mentre c'è un
 bonifico collegato da assegnare, il modulo lo dice: se è quello, falla dal bonifico.
 Con **PAGATO CON Bonifico**, se nel Conto Corrente c'è già un bonifico libero con lo stesso importo
 entro 30 giorni (della persona, della sua famiglia o Da classificare con il loro nome nella causale), il modulo lo mostra in **FORSE È
