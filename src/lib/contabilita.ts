@@ -571,7 +571,9 @@ export function filtraMovimenti(righe: RigaMovimento[], f: FiltroMovimenti): Rig
     if (f.tipo && r.tipo !== f.tipo) return false
     if (f.cassaId && r.cassaId !== f.cassaId && r.cassaAId !== f.cassaId) return false
     if (f.voce && r.voce !== f.voce) return false
-    return !testo || cercabile(`${r.descrizione} ${r.voce} ${r.sotto ?? ''} ${(r.personaId && f.nomePersona?.(r.personaId)) || ''}`).includes(testo)
+    // L'importo due volte, «1.502,00» e «1502,00»: chi cerca la cifra la scrive in tutti e due i modi.
+    const cifra = euro(r.importo)
+    return !testo || cercabile(`${r.descrizione} ${r.voce} ${r.sotto ?? ''} ${(r.personaId && f.nomePersona?.(r.personaId)) || ''} ${cifra} ${cifra.replace(/\./g, '')}`).includes(testo)
   })
 }
 
