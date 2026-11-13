@@ -4,7 +4,7 @@ import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { nomeDallaCausale } from './movimentiPersona'
 import type { ComeAbbinato } from './abbinaMovimenti'
 import type { SuggerimentoMovimento } from './suggerimentoMovimento'
-import { cosaNonVaAbbinamento, type PersonaNucleo } from './assegna'
+import { cosaNonVaAbbinamento, tipologiaDaRighe, type PersonaNucleo, type RigaAssegnata } from './assegna'
 import type { Ricevuta } from './ricevute'
 
 /**
@@ -235,6 +235,8 @@ export const rigaComeMovimento = (mv: MovimentoBanca, contoId: string): RigaMovi
 export interface SceltaVoceBanca {
   voceId: string
   personaId?: string
+  /** Per cosa paga, dalla finestra «Chi ha pagato e per cosa?»: si assegna appena il movimento è scritto. */
+  righe?: RigaAssegnata[]
   /** Solo per mostrarla: il database tiene l'id. */
   nomePersona?: string
 }
@@ -294,6 +296,35 @@ export function pianoDiClassificazione(
   }
   const aLotti = [...perVoce].flatMap(([voceId, ids]) => pacchetti(ids).map((p) => ({ ids: p, voceId })))
   return { lotti: [...aLotti, ...conPersona], restano }
+}
+
+/**
+ * La scelta della finestra «Chi ha pagato e per cosa?»: la tipologia la dice quel che paga (`tipologiaDaRighe`); con
+ * «Solo la persona» resta quella proposta, o «Corsi e altri pagamenti».
+ */
+export function sceltaDaFinestra(x: { personaId: string; nomePersona: string; righe: RigaAssegnata[] }, voci: VoceContabile[], voceIdOra?: string): SceltaVoceBanca {
+  const tipologia = tipologiaDaRighe(x.righe)
+  const voceId = (tipologia ? voci.find((v) => v.nome === tipologia)?.id : voceIdOra) ?? voci.find((v) => v.nome === VOCE_CORSI)?.id ?? ''
+  return { voceId, personaId: x.personaId, nomePersona: x.nomePersona, ...(x.righe.length ? { righe: x.righe } : {}) }
+}
+
+/** Dopo import e classificazione, le righe da assegnare: quelle scelte nella finestra, sui movimenti scritti con la loro voce, non se vanno con la ricevuta già fatta. */
+export function pianoDiAssegnazione(
+  scelte: Record<string, SceltaVoceBanca>, classificati: Set<string>, conRicevuta: Set<string>, scritti: Pick<MovimentoManuale, 'id' | 'origineImport' | 'annullatoIl'>[],
+): Array<{ chiave: string; movimentoId: string; righe: RigaAssegnata[] }> {
+  const perChiave = new Map(scritti.filter((x) => x.origineImport && !x.annullatoIl).map((x) => [x.origineImport, x.id]))
+  return Object.entries(scelte).flatMap(([chiave, s]) => {
+    const movimentoId = perChiave.get(chiave)
+    return s.righe?.length && movimentoId && classificati.has(movimentoId) && !conRicevuta.has(movimentoId) ? [{ chiave, movimentoId, righe: s.righe }] : []
+  })
+}
+
+/** La ricevuta già fatta che può essere questo bonifico, se per quella persona ce n'è una sola (le regole di `abbinamentiImport`). */
+export function ricevutaDellaPersona(mv: Pick<MovimentoBanca, 'chiave' | 'importo' | 'data' | 'descrizione' | 'tipo'>, personaId: string, ricevute: Ricevuta[], persone: PersonaNucleo[]): string | undefined {
+  if (mv.tipo !== 'entrata') return undefined
+  const m = { id: mv.chiave, importo: mv.importo, data: mv.data, personaId, descrizione: mv.descrizione }
+  const sue = ricevute.filter((r) => !r.movimentoId && cosaNonVaAbbinamento(m, r, persone) === null)
+  return sue.length === 1 ? sue[0].id : undefined
 }
 
 /** A quale ricevuta già fatta va un bonifico che entra con la persona (`abbinamentiImport`). */

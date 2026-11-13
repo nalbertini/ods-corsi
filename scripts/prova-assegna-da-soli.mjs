@@ -135,7 +135,7 @@ ok('già assegnato per intero (un giro rifatto dopo una rete caduta): fuori, non
 ] })), { pronti: [], perche: {} })
 ok('con la ricevuta già fatta a parte: resta, va abbinata', elenco(contesto([mov('m6', 66000, 'sofia')], {
   ricevute: [{ id: 'r1', anno: 2026, numero: 9, data: '2026-11-05', personaId: 'sofia', pagato: 66000, metodo: 'Bonifico', voci: [{ descrizione: 'Annuale Judo adulti', quantita: 1, prezzo: 66000, pagamenti: [{ data: '2026-11-05', importo: 66000, metodo: 'Bonifico' }] }], creataIl: '2026-11-05T10:00:00Z' }],
-})).perche, { m6: 'C’è già la ricevuta: abbinala in COLLEGATI PRIMA.' })
+})).perche, { m6: 'C’è già la ricevuta: abbinala qui sopra.' })
 
 ok('due bonifici uguali della stessa persona: se ne assegna uno, l\'altro resta col perché (non si conta due volte)', elenco(contesto([mov('m7', 66000, 'sofia'), mov('m8', 66000, 'sofia', { data: '2026-11-05' })])),
   { pronti: [['m7', [['sofia', 'Quota associativa 2026/27', 5000], ['sofia', 'Annuale Judo adulti', 61000]]]], perche: { m8: 'Nel nucleo non c’è niente da pagare: decidi tu a cosa va.' } })
@@ -158,6 +158,67 @@ const r3 = await provaAsync(() => fn(A, 'assegna', 'assegnaDopoIlCollegamento')(
 ok('assegna solo quelli appena collegati', [dd.fatti, r3.chiavi?.length], [['m2'], 1])
 ok('un guasto nel leggere non lancia: lo dice', await provaAsync(async () => (await fn(A, 'assegna', 'assegnaDopoIlCollegamento')(finto({ movimenti: async () => { throw new Error('Il server non risponde') } }), ['m1'], oggi)).errore), 'Il server non risponde')
 ok('…e dice quanti restano da scegliere', await provaAsync(async () => (await fn(A, 'assegna', 'assegnaDopoIlCollegamento')(finto(), ['m1', 'm2', 'm3'], oggi)).restano), 1)
+
+// ---- chi ha pagato e per cosa: la stessa logica dovunque ---------------------------
+console.log('Chi ha pagato e per cosa')
+const chiEPerCosa = fn(A, 'assegna', 'chiEPerCosa')
+const tipologiaDaRighe = fn(A, 'assegna', 'tipologiaDaRighe')
+const situa = (personaId, importo, o = {}) => prova(() => {
+  const r = chiEPerCosa(personaId, importo, { ...contesto([]), ...o })
+  return { chi: r.nucleo.map((x) => [x.persona.id, x.dovuti.map((v) => [v.voce, v.manca]), x.pagamenti.length]), proposta: r.proposta.map((y) => [y.personaId, y.voce, y.importo]), sicura: r.sicura, chiedere: r.daChiedere }
+})
+ok('la persona e il suo nucleo: cosa deve, i pagamenti, la proposta già sicura', situa('sofia', 66000),
+  { chi: [['sofia', [['Quota associativa 2026/27', 5000], ['Annuale Judo adulti', 61000]], 0]], proposta: [['sofia', 'Quota associativa 2026/27', 5000], ['sofia', 'Annuale Judo adulti', 61000]], sicura: true, chiedere: [] })
+ok('non sicura: la proposta c\'è lo stesso (prima la quota), da correggere a mano', situa('sofia', 18000), { chi: [['sofia', [['Quota associativa 2026/27', 5000], ['Annuale Judo adulti', 61000]], 0]], proposta: [['sofia', 'Quota associativa 2026/27', 5000], ['sofia', 'Annuale Judo adulti', 13000]], sicura: false, chiedere: [] })
+ok('segnato pagato a mano: si chiede, e non è sicura', situa('luca', 66000), { chi: [['luca', [], 0]], proposta: [], sicura: false, chiedere: ['luca'] })
+ok('i pagamenti già fatti, dal più recente, senza gli annullati', prova(() => chiEPerCosa('sofia', 5000, { ...contesto([]), diretti: [
+  { id: 'x1', personaId: 'sofia', data: '2026-09-10', importo: 20000, metodo: 'Bonifico', voce: 'Trimestre Judo adulti', creatoIl: '2026-09-10T10:00:00Z' },
+  { id: 'x2', personaId: 'sofia', data: '2026-10-01', importo: 5000, metodo: 'Contanti', voce: 'Gara', creatoIl: '2026-10-01T10:00:00Z' },
+  { id: 'x3', personaId: 'sofia', data: '2026-10-02', importo: 7000, metodo: 'Contanti', voce: 'Gara', creatoIl: '2026-10-02T10:00:00Z', annullatoIl: '2026-10-03T10:00:00Z' },
+] }).nucleo[0].pagamenti.map((x) => [x.data, x.voce, x.importo])), [['2026-10-01', 'Gara', 5000], ['2026-09-10', 'Trimestre Judo adulti', 20000]])
+ok('il riquadro «Si assegnano da soli» usa la stessa logica: stessa proposta', prova(() => daSoli(contesto([mov('m1', 66000, 'sofia')])).pronti[0].righe), prova(() => chiEPerCosa('sofia', 66000, contesto([])).proposta))
+ok('la tipologia viene da quel che paga: solo quota → «Quota associativa»', prova(() => tipologiaDaRighe([{ personaId: 'a', voce: 'Quota associativa 2026/27', importo: 5000 }])), 'Quota associativa')
+ok('…con un corso → «Corsi e altri pagamenti»', prova(() => tipologiaDaRighe([{ personaId: 'a', voce: 'Quota associativa 2026/27', importo: 5000 }, { personaId: 'a', voce: 'Annuale Judo adulti', importo: 61000 }])), 'Corsi e altri pagamenti')
+ok('…senza righe nessuna (resta quella che c\'è)', prova(() => tipologiaDaRighe([])), null)
+
+console.log('Import: chi e per cosa scelti prima di importare')
+const B = await carica('importaBanca')
+const pianoDiAssegnazione = fn(B, 'importaBanca', 'pianoDiAssegnazione')
+const scrittiImport = [{ id: 'mv1', origineImport: 'k1' }, { id: 'mv2', origineImport: 'k2' }, { id: 'mv3', origineImport: 'k3' }, { id: 'vecchio', origineImport: 'k4', annullatoIl: '2026-11-01T10:00:00Z' }]
+const righe1 = [{ personaId: 'sofia', voce: 'Annuale Judo adulti', importo: 61000 }]
+ok('si assegnano le righe scelte nella finestra, sui movimenti appena scritti e classificati', prova(() => pianoDiAssegnazione(
+  { k1: { voceId: 'v-corsi', personaId: 'sofia', righe: righe1 }, k2: { voceId: 'v-corsi', personaId: 'anna' }, k3: { voceId: 'v-corsi', personaId: 'sofia', righe: righe1 }, k4: { voceId: 'v-corsi', personaId: 'sofia', righe: righe1 } },
+  new Set(['mv1', 'mv2']), new Set(), scrittiImport)), [{ chiave: 'k1', movimentoId: 'mv1', righe: righe1 }])
+ok('…non quelli che vanno con la ricevuta già fatta', prova(() => pianoDiAssegnazione({ k1: { voceId: 'v-corsi', personaId: 'sofia', righe: righe1 } }, new Set(['mv1']), new Set(['mv1']), scrittiImport)), [])
+ok('la scelta della finestra porta la tipologia giusta', prova(() => fn(B, 'importaBanca', 'sceltaDaFinestra')({ personaId: 'sofia', nomePersona: 'Sofia Test', righe: righe1 }, voci)), { voceId: 'v-corsi', personaId: 'sofia', nomePersona: 'Sofia Test', righe: righe1 })
+ok('…«Solo la persona»: la tipologia resta quella proposta', prova(() => fn(B, 'importaBanca', 'sceltaDaFinestra')({ personaId: 'sofia', nomePersona: 'Sofia Test', righe: [] }, voci, 'v-quota')), { voceId: 'v-quota', personaId: 'sofia', nomePersona: 'Sofia Test' })
+
+console.log('Scrivere chi e per cosa da MOVIMENTI')
+const scriviChiEPerCosa = fn(A, 'assegna', 'scriviChiEPerCosa')
+const chiamate = []
+const dScrivi = {
+  cambiaVoceMovimenti: async (ids, voceId, personaId) => { chiamate.push(['voce', ids, voceId, personaId]); return { cambiati: 1, giaCosi: 0 } },
+  collegaMovimentiPersona: async (ids, personaId) => { chiamate.push(['persona', ids, personaId]); return { collegati: 1, giaCosi: 0 } },
+  assegnaMovimento: async (id, righe, chiave) => { chiamate.push(['assegna', id, righe.length, typeof chiave]) },
+}
+const sc = (mov0, scelta) => provaAsync(async () => { chiamate.length = 0; await scriviChiEPerCosa(dScrivi, mov0, scelta, [...voci, { id: 'v-dacl', nome: 'Da classificare', tipo: 'entrata', diSistema: true, attiva: true }]); return [...chiamate] })
+ok('un Da classificare: tipologia e persona insieme, poi le righe', await sc({ id: 'm1', voceId: 'v-dacl', personaId: undefined }, { personaId: 'sofia', righe: righe1 }),
+  [['voce', ['m1'], 'v-corsi', 'sofia'], ['assegna', 'm1', 1, 'string']])
+ok('già sulla tipologia giusta e con un\'altra persona: solo la persona, poi le righe', await sc({ id: 'm2', voceId: 'v-corsi', personaId: 'anna' }, { personaId: 'sofia', righe: righe1 }),
+  [['persona', ['m2'], 'sofia'], ['assegna', 'm2', 1, 'string']])
+ok('tutto già giusto: solo le righe', await sc({ id: 'm3', voceId: 'v-corsi', personaId: 'sofia' }, { personaId: 'sofia', righe: righe1 }), [['assegna', 'm3', 1, 'string']])
+ok('«Solo la persona»: la tipologia resta (o «Corsi e altri pagamenti» se era da classificare), niente righe', await sc({ id: 'm4', voceId: 'v-dacl', personaId: undefined }, { personaId: 'sofia', righe: [] }),
+  [['voce', ['m4'], 'v-corsi', 'sofia']])
+
+console.log('Quali entrate aprono la finestra in MOVIMENTI')
+const apre = (m, o = {}) => prova(() => fn(A, 'assegna', 'apreChiEPerCosa')(m, [CONTO, CONTANTI], [...voci, { id: 'v-dacl', nome: 'Da classificare', tipo: 'entrata', diSistema: true, attiva: true }, { id: 'v-varie', nome: 'Varie', tipo: 'entrata', diSistema: false, attiva: true }], o.diretti ?? [], [], oggi))
+ok('un\'entrata Da classificare del conto: sì', apre(mov('d1', 22000, undefined, { voceId: 'v-dacl' })), true)
+ok('…ma non il versamento di Satispay', apre(mov('d2', 22000, undefined, { voceId: 'v-dacl', descrizione: 'SATISPAY EUROPE SA versamento' })), false)
+ok('quota o corsi ancora intera, con o senza persona: sì', [apre(mov('d3', 22000, 'sofia')), apre(mov('d4', 22000, undefined))], [true, true])
+ok('già assegnata in parte, contanti, uscita, altra voce, annullata: no', [
+  apre(mov('d5', 22000, 'sofia'), { diretti: [{ id: 'z', personaId: 'sofia', data: '2026-11-04', importo: 100, metodo: 'Bonifico', voce: 'Quota', movimentoId: 'd5', creatoIl: 'x' }] }),
+  apre(mov('d6', 22000, 'sofia', { cassaId: 'contanti' })), apre(mov('d7', 22000, 'sofia', { tipo: 'uscita' })), apre(mov('d8', 22000, 'sofia', { voceId: 'v-varie' })), apre(mov('d9', 22000, 'sofia', { annullatoIl: 'x' })),
+], [false, false, false, false, false])
 
 // ---- scrivere, e togliere il lotto ---------------------------------------------
 console.log('Assegnare e togliere il lotto')

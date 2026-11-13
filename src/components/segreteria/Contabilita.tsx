@@ -58,6 +58,7 @@ import {
   type RigaMovimento,
   type VoceContabile,
   ultimaChiusura,
+  VOCE_CORSI,
   VOCE_DIFFERENZA,
   vociOfferte,
   vuolePersona,
@@ -84,15 +85,16 @@ import { segnaIncassiCoperti } from '../../lib/importaBanca'
 import { iniziali as inizialiDi } from '../../lib/sitoLayout'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import { NOME_CASSA_SATISPAY } from '../../lib/satispayScarico'
-import { cosaNonVaMovimentoDaAssegnare, elencoDaAssegnare } from '../../lib/assegna'
+import { apreChiEPerCosa, cosaNonVaMovimentoDaAssegnare, daSoli, elencoDaAssegnare, ricevutaGiaFatta, scriviChiEPerCosa } from '../../lib/assegna'
+import { listinoUsabile } from '../../lib/listino'
+import { ChiEPerCosa } from './ChiEPerCosa'
 import type { PagamentoDiretto } from '../../lib/pagamenti'
 import type { Ricevuta } from '../../lib/ricevute'
 import { AssegnaMovimento, DaAssegnare } from './AssegnaMovimento'
 
-type Scheda = 'movimenti' | 'da_assegnare' | 'bilancio' | 'voci' | 'casse'
+type Scheda = 'movimenti' | 'bilancio' | 'voci' | 'casse'
 const SCHEDE: readonly (readonly [Scheda, string])[] = [
   ['movimenti', 'Movimenti'],
-  ['da_assegnare', 'Da assegnare'],
   ['bilancio', 'Bilancio'],
   ['voci', 'Voci'],
   ['casse', 'Casse'],
@@ -193,7 +195,6 @@ export function Contabilita({ d, movimento, onPersona, onImportazioni }: { d: Da
       {pronto && (
         <>
           <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} avvisa={avvisa} onCambiato={rileggi} movimento={movimento} apriRiga={apri} onPersona={onPersona} manuali={manuali.dato ?? []} diretti={incassi.dato?.diretti ?? []} ricevute={incassi.dato?.ricevute ?? []} /></div>
-          <div hidden={scheda !== 'da_assegnare'}><DaAssegnare d={d} manuali={manuali.dato ?? []} diretti={incassi.dato?.diretti ?? []} ricevute={incassi.dato?.ricevute ?? []} casse={casse.dato ?? []} voci={voci.dato ?? []} fai={fai} onCambiato={rileggi} onApri={(id) => { setApri({ id }); setScheda('movimenti') }} /></div>
           <div hidden={scheda !== 'bilancio'}><Bilancio d={d} casse={casse.dato ?? []} righe={elenco} oggi={oggiARoma()} fai={fai} /></div>
           <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
           <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} chiusure={dateChiusure} guaioChiusure={chiusure.guaio ?? undefined} righe={elenco} fai={fai} onCambiato={rileggi} onApri={(id) => { setApri({ id }); setScheda('movimenti') }} onImportazioni={onImportazioni} /></div>
@@ -248,6 +249,25 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
   const [appena, setAppena] = useState<RigaMovimento | null>(null)
   // Arrivando dalla scheda di una persona («Apri in contabilità») il movimento è già aperto.
   const [aperto, setAperto] = useState<RigaMovimento | null>(() => righe.find((r) => r.id === movimento) ?? null)
+  // CHI HA PAGATO E PER COSA?, dalla riga: la stessa finestra dell'import e del movimento.
+  const [chiPerCosa, setChiPerCosa] = useState<MovimentoManuale | null>(null)
+  const anagrafe = useCarica(async () => {
+    if (f.mostra !== 'da_assegnare') return null
+    const [persone, corsi, letto] = await Promise.all([d.persone(), d.corsi(), d.listino()])
+    return { persone, corsi, listino: listinoUsabile(letto.listino, corsi) }
+  }, [d, f.mostra])
+  const perche = useMemo(() => (anagrafe.dato ? daSoli({ manuali, diretti, ricevute, casse, voci, ...anagrafe.dato, oggi }).perche : {}), [anagrafe.dato, manuali, diretti, ricevute, casse, voci, oggi])
+  const apreFinestra = (r: RigaMovimento) => {
+    const m = r.origine === 'movimento' ? manuali.find((x) => x.id === r.id) : undefined
+    return !!m && apreChiEPerCosa(m, casse, voci, diretti, ricevute, oggi)
+  }
+  // La ricevuta già fatta per la persona scelta: le regole di «Collegati prima», come se il movimento fosse già suo.
+  const ricevutaPer = (m: MovimentoManuale, personaId: string) => {
+    const corsi = voci.find((v) => v.nome === VOCE_CORSI)?.id
+    const comeSuo = manuali.map((x) => (x.id === m.id ? { ...x, personaId, voceId: x.voceId && voci.find((v) => v.id === x.voceId)?.nome !== VOCE_DA_CLASSIFICARE ? x.voceId : corsi } : x))
+    const id = ricevutaGiaFatta(m.id, comeSuo, diretti, ricevute, casse, voci, oggi, anagrafe.dato?.persone ?? [])
+    return ricevute.find((x) => x.id === id)
+  }
   // Solo al clic su «Apri ›»: le righe che si rileggono non devono riaprire niente.
   useEffect(() => {
     if (apriRiga) setAperto(righe.find((r) => r.id === apriRiga.id) ?? null)
@@ -497,6 +517,27 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
             <div key={t.nome}><span className="sg-etichetta">{t.nome}</span><b className="num" style={{ color: t.entrata ? 'var(--verde-testo)' : undefined }}>{t.cifra}</b></div>
           ))}
         </div>
+      {/* Da assegnare: in cima i bonifici che si assegnano da soli e quelli con la ricevuta già fatta (era la scheda DA ASSEGNARE). */}
+      {f.mostra === 'da_assegnare' && (
+        <DaAssegnare d={d} manuali={manuali} diretti={diretti} ricevute={ricevute} casse={casse} voci={voci} fai={fai} onCambiato={onCambiato} soloRiquadri onApri={(id) => { const r = righe.find((x) => x.id === id); if (r) setAperto(r) }} />
+      )}
+      {chiPerCosa && (
+        <ChiEPerCosa
+          d={d} data={chiPerCosa.data} testo={chiPerCosa.descrizione} importo={chiPerCosa.importo} personaIniziale={chiPerCosa.personaId} gia={{ diretti, ricevute }}
+          ricevutaDi={(id) => ricevutaPer(chiPerCosa, id)}
+          onRicevuta={(id, p) => {
+            const m = chiPerCosa
+            setChiPerCosa(null)
+            void fai(async () => { await scriviChiEPerCosa(d, m, { personaId: p.personaId, righe: [] }, voci); await d.abbinaRicevutaMovimento(m.id, id) }, 'Bonifico abbinato alla ricevuta', onCambiato)
+          }}
+          onConferma={(x) => {
+            const m = chiPerCosa
+            setChiPerCosa(null)
+            void fai(() => scriviChiEPerCosa(d, m, x, voci), x.righe.length ? 'Bonifico assegnato' : 'Persona collegata', onCambiato)
+          }}
+          onChiudi={() => setChiPerCosa(null)}
+        />
+      )}
 
       {perVoci ? (
         <div role="table" aria-label="Totali per voce" className="sg-tabella">
@@ -561,6 +602,12 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
                     {persona && <span>{persona}</span>}
                     {r.sotto && <span className={persona ? 'sg-sotto-extra' : undefined}>{r.sotto}</span>}
                   </span>
+                  {perche[r.id] && <span className="sg-sotto" data-tono="aspetta" style={{ display: 'block', fontWeight: 400 }}>{perche[r.id]}</span>}
+                  {apreFinestra(r) && (
+                    <span style={{ display: 'block', paddingTop: 4 }} onClick={(e) => e.stopPropagation()}>
+                      <Tasto tono={r.personaId ? 'linea' : 'pieno'} onClick={() => setChiPerCosa(manuali.find((m) => m.id === r.id) ?? null)}>Chi e per cosa</Tasto>
+                    </span>
+                  )}
                 </span>
                 <span role="cell" className="sg-cella-icona">
                   <IconaConto nome={tipoMovimento(r).icona} />
