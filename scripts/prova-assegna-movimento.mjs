@@ -302,6 +302,27 @@ console.log('\n3d. Chi è segnato pagato a mano nella scheda: il bonifico che è
     [['luca', 'Quota associativa 2026/27', 5000], ['luca', 'Annuale Judo adulti', 61000], ['sofia', 'Quota associativa 2026/27', 4000]])
 }
 
+console.log('\n3e. La causale dice «trimestrale»: si propone il trimestre, non l’annuale')
+{
+  // Il caso vero: «Quota associativa + trimestrale judo adulti», 240 € (quota 50 e trimestre 190). Il dialogo
+  // proponeva l'annuale da 500 € e lasciava 310 € da pagare che non c'erano.
+  const oggi = '2026-10-14'
+  const listino = { quota: 50, saldoEntro: '2026-08-31', offerte: [], corsi: [{ corso: 'Judo adulti', eta: '', orari: [], prezzi: [{ annuale: 500, trimestre: 190 }] }], senzaPrezzoVaBene: [] }
+  const corsi = [{ id: 'adulti', nome: 'Judo adulti' }]
+  const susanna = { id: 'susanna', attiva: true, certificato: { scade: '2027-09-01', conFile: false }, documento: true, pagamento: { stato: 'da_pagare' }, natoIl: '1990-01-01', iscrizioni: [{ corsoId: 'adulti', dal: '2026-09-01' }], quote: [], vociCorsi: [] }
+  const gia = { diretti: [], ricevute: [] }
+  const dovuti = (testo) => prova(() => dovutiDi(susanna, corsi, listino, oggi, gia, testo).map((d) => [d.voce, d.manca]))
+  ok('«trimestrale» nella causale: il trimestre del corso', dovuti('Quota associativa + trimestrale judo adulti Susanna Santamarina'),
+    [['Quota associativa 2026/27', 5000], ['Trimestre Judo adulti', 19000]])
+  ok('…anche «trimestre», in maiuscolo', dovuti('QUOTA E 1 TRIMESTRE JUDO')[1], ['Trimestre Judo adulti', 19000])
+  ok('…senza la parola resta l’annuale (com’era)', dovuti('Quota e corso judo')[1], ['Annuale Judo adulti', 50000])
+  ok('…un corso senza prezzo del trimestre resta sull’annuale',
+    prova(() => dovutiDi(susanna, corsi, { ...listino, corsi: [{ ...listino.corsi[0], prezzi: [{ annuale: 500 }] }] }, oggi, gia, 'trimestrale')[1].voce), 'Annuale Judo adulti')
+  ok('…240 €: quota e trimestre pieni, niente resta da pagare sull’annuale',
+    prova(() => proponiRipartizione(24000, dovutiDi(susanna, corsi, listino, oggi, gia, 'quota + trimestrale judo')).righe.map((r) => [r.voce, r.importo])),
+    [['Quota associativa 2026/27', 5000], ['Trimestre Judo adulti', 19000]])
+}
+
 console.log('\n4. Quali movimenti si assegnano, e a chi')
 {
   const no = (m, oggi = '2026-10-20') => prova(() => cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggi))

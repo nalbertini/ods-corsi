@@ -69,8 +69,8 @@ export function ChiEPerCosa({
   const [nonQuesto, setNonQuesto] = useState<string[]>([])
   const [nonLaRicevuta, setNonLaRicevuta] = useState(false)
   const situazione = useMemo(
-    () => (chi && dati.dato ? chiEPerCosa(chi.id, importo, { ...dati.dato, oggi }, questo) : null),
-    [chi?.id, dati.dato, importo, oggi, questo.join()],
+    () => (chi && dati.dato ? chiEPerCosa(chi.id, importo, { ...dati.dato, oggi }, questo, testo) : null),
+    [chi?.id, dati.dato, importo, oggi, questo.join(), testo],
   )
   const [valori, setValori] = useState<Record<string, string> | null>(null)
   const mostrati = valori ?? valoriDa(situazione?.proposta ?? [])

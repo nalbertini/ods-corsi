@@ -223,7 +223,8 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   **No, dividi il bonifico** torna alle cose da pagare.
 - Gli importi sono già proposti (un bonifico solo per due fratelli si divide fra tutti e due): prima la
   quota, poi i corsi dal più vecchio; se c'è un solo modo di dividere, la finestra lo dice («Un solo modo
-  di dividere: già messo»). Gli importi si correggono a mano; accanto a ognuno il tag **Saldo** o **Parziale**, e sotto
+  di dividere: già messo»). Per un corso ancora da pagare propone l'**annuale**, o il **trimestre** se il
+  testo del bonifico dice «trimestrale» o «trimestre». Gli importi si correggono a mano; accanto a ognuno il tag **Saldo** o **Parziale**, e sotto
   quanto resterà. **Svuota tutto** azzera la proposta. Non si assegna più di quel che manca a ogni voce,
   né più del bonifico.
 - **Conferma** scrive persona, tipologia e assegnazione, senza ricevuta: la ricevuta si fa dopo, dal
