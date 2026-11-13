@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta dopo AVANTI</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA, dopo AVANTI a modulo vuoto. Si scende al primo campo che manca (NOME), rosso solo lui; gli altri diventano rossi solo dopo che ci si è passati sopra. Data e luogo non contano e non sono rossi: li riempie il codice fiscale. La riga MANCANO 8 · VAI A: NOME torna nella barra; ▾ apre l elenco. -->
+<div style="display: flex; flex-direction: column; width: 390px; height: 664px; overflow: hidden; background: #eef5fa">
+  <dc-import name="IntestaPasso" titolo="DATI" hint-size="100%,58px"></dc-import>
+  <dc-import name="Avanzamento" numero="1" totale="7" titolo="" hint-size="100%,45px"></dc-import>
+  <main style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 14px; padding: 14px 20px 0">
+      <dc-import name="Campo" etichetta="NOME" manca="{{ true }}" nota="Manca: scrivi il nome" acceso="{{ true }}" hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="COGNOME"  hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="CODICE FISCALE" codice="{{ true }}" hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="DATA DI NASCITA" tipo="sola-lettura" segnaposto="Lo dice il codice fiscale" hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="LUOGO DI NASCITA" tipo="sola-lettura" segnaposto="Lo dice il codice fiscale" hint-size="100%,90px"></dc-import>
+  </main>
+  <dc-import name="BarraPasso" compatta="{{ true }}" manca="NOME|COGNOME|CODICE FISCALE|VIA E NUMERO|CAP|COMUNE|EMAIL|TELEFONO" hint-size="100%,146px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":664}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

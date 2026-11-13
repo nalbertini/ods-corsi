@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta col codice</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA, col codice fiscale giusto. Data e luogo si riempiono da soli, restano visibili e correggibili, con la nota «lo dice il codice fiscale». Se il luogo non si ricava (nato all estero) il campo resta da scrivere e allora conta. Mancano solo i 5 campi di DOVE ABITI e COME TI TROVIAMO. -->
+<div style="display: flex; flex-direction: column; width: 390px; height: 664px; overflow: hidden; background: #eef5fa">
+  <dc-import name="IntestaPasso" titolo="DATI" hint-size="100%,58px"></dc-import>
+  <dc-import name="Avanzamento" numero="1" totale="7" titolo="" hint-size="100%,45px"></dc-import>
+  <main style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 14px; padding: 14px 20px 0">
+      <dc-import name="Campo" etichetta="NOME" valore="Giulia" hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="COGNOME" valore="Bianchi" hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="CODICE FISCALE" codice="{{ true }}" valore="BNCGLI88E52L219X" hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="DATA DI NASCITA" valore="12/05/1988" nota="38 anni: lo dice il codice fiscale" notaTono="avviso" hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="LUOGO DI NASCITA" valore="Torino" nota="Lo dice il codice fiscale: correggilo se è sbagliato" notaTono="avviso" hint-size="100%,90px"></dc-import>
+  </main>
+  <dc-import name="BarraPasso" compatta="{{ true }}" manca="VIA E NUMERO|CAP|COMUNE|EMAIL|TELEFONO" hint-size="100%,146px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":664}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

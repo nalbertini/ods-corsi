@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta a riposo</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA, a riposo. Niente testata del sito nei passi (al primo passo si esce con INDIETRO); RICHIESTA DI ISCRIZIONE e il nome del passo in una fascia sola (IntestaPasso con titolo), sotto le tappe senza titolo: ~103px invece di ~236. La barra mostra la riga del mancante solo dopo AVANTI: a riposo solo INDIETRO e AVANTI. Data e luogo di nascita non si scrivono finché non c è il codice fiscale: «Lo dice il codice fiscale». -->
+<div style="display: flex; flex-direction: column; width: 390px; height: 664px; overflow: hidden; background: #eef5fa">
+  <dc-import name="IntestaPasso" titolo="DATI" hint-size="100%,58px"></dc-import>
+  <dc-import name="Avanzamento" numero="1" totale="7" titolo="" hint-size="100%,45px"></dc-import>
+  <main style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 14px; padding: 14px 20px 0">
+      <dc-import name="Campo" etichetta="NOME"  hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="COGNOME"  hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="CODICE FISCALE" codice="{{ true }}" hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="DATA DI NASCITA" tipo="sola-lettura" segnaposto="Lo dice il codice fiscale" hint-size="100%,90px"></dc-import>
+      <dc-import name="Campo" etichetta="LUOGO DI NASCITA" tipo="sola-lettura" segnaposto="Lo dice il codice fiscale" hint-size="100%,90px"></dc-import>
+  </main>
+  <dc-import name="BarraPasso" hint-size="100%,90px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":664}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
