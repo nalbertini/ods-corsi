@@ -248,7 +248,7 @@ Poi la scheda è divisa in quattro schede, e se ne vede una alla volta. Ogni lin
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
 - **QUOTA E PAGAMENTI** — i pagamenti: lo stato di quota e corsi lo dicono i timbri in alto. **+ AGGIUNGI INCASSO** e **+ FAI LA RICEVUTA** stanno accanto a **PAGAMENTI**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Ogni pagamento si vede una volta sola.
   Un bonifico che l'amministrazione ha già **assegnato** (vedi [Assegnare un bonifico](../amministrazione/contabilita.md#assegnare-un-bonifico-a-quota-e-corsi))
-  è una riga sola, **… · Bonifico**, con chi l'ha fatto, l'importo arrivato e sotto come è stato diviso
+  è una riga sola, **… · Bonifico**, con chi l'ha fatto (il nome della causale della banca: se non c'è, la riga non lo dice), l'importo arrivato e sotto come è stato diviso
   (quota, corsi). Senza ricevuta ha il tag **Senza ricevuta**: la ricevuta, e l'annullo, si fanno dal
   movimento, con **Apri in contabilità** (per chi vede CONTABILITÀ). Un bonifico non ancora assegnato è una
   riga gialla, **Da assegnare**, con **Assegna ›**: finché non lo si assegna non conta come pagato, né nel
