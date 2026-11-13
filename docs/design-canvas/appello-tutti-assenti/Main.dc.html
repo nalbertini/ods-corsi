@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Oggi</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI: appello chiuso con nessuno segnato e riaperto. Tutti assenti; per rimediare si tocca ogni nome o AZZERA dal menu (due tocchi). -->
+<div style="position: relative; display: flex; flex-direction: column; width: 390px; height: 760px; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+  <dc-import name="TestaAppelloCorta" corso="Judo 3" kanji="龍" quando="Ven 13/11 18:00 · Tatami" presenti="0" iscritti="16" stato="assenti" bassa="{{ true }}" hint-size="100%,90px"></dc-import>
+  
+  <div style="padding: 10px 16px 8px"><dc-import name="CercaAppello" iscritti="16" hint-size="100%,44px"></dc-import></div>
+  <div style="display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; overflow: hidden; padding: 0 16px 8px">
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Barbieri Aurora" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Barbieri Elena" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Costa Lorenzo" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="De Luca Ginevra" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Esposito Tommaso" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Fontana Giulia" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Galli Matteo" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Greco Sofia" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Lombardi Pietro" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Marino Alice" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Moretti Leonardo" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Ricci Chiara" stato="assente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Romano Davide" stato="assente" hint-size="100%,48px"></dc-import>
+  </div>
+  <dc-import name="BarraChiudiAppello" non-segnati="16" tutti-assenti="{{ true }}" corta="{{ true }}" hint-size="100%,74px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

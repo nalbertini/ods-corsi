@@ -19,7 +19,8 @@ const ok = (cosa, avuto, voluto) => {
   if (!va) guai++
 }
 
-const LIMITE = 190_000 // byte del CSS iniziale: sopra, una regola nuova va nel CSS dell'area
+// Alzato da 190.000 il 2026-11-13, col sì dell'utente: l'appello dell'istruttore si carica subito, un CSS d'area non lo alleggerirebbe.
+const LIMITE = 192_000 // byte del CSS iniziale: sopra, una regola nuova va nel CSS dell'area
 const SEGRETERIA = 'src/components/segreteria'
 const dentro = (d, f) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? dentro(join(d, e.name), f) : f(join(d, e.name)) ? [join(d, e.name)] : []))
 

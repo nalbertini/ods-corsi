@@ -17,7 +17,7 @@
   </style>
 </helmet>
 <div style="width: 100%">
-<div style="display: flex; flex-direction: column; width: 100%; min-height: 140px; padding-bottom: 8px; background: #eef5fa; border-bottom: 2px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<div style="display: flex; flex-direction: column; width: 100%; min-height: {{altezza}}; padding-bottom: 8px; background: #eef5fa; border-bottom: 2px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
   <div style="display: flex; align-items: center; gap: 8px; padding: 10px 16px 0">
     <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-size: 22px; line-height: 1">&#8249;</span>
     <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
@@ -36,6 +36,7 @@
       <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-size: 22px; font-weight: 700; line-height: 1; letter-spacing: 1px">&#8943;</span>
     </sc-if>
   </div>
+  <sc-if value="{{alta}}" hint-placeholder-val="{{ true }}">
   <div style="display: flex; align-items: center; gap: 12px; padding: 10px 16px 0">
     <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
       <span style="display: flex; align-items: baseline; gap: 6px; white-space: nowrap">
@@ -57,10 +58,19 @@
       </span>
     </sc-if>
   </div>
+  </sc-if>
+  <sc-if value="{{bassa}}" hint-placeholder-val="{{ false }}">
+  <!-- COSTRUITO bassa (.appello-riga-conto, fitto in AppelloScreen.tsx): niente TUTTI PRESENTI, il conto in una riga sola. -->
+  <div style="display: flex; align-items: baseline; gap: 10px; padding: 4px 16px 0; white-space: nowrap; font-variant-numeric: tabular-nums">
+    <span style="font-size: 22px; font-weight: 800; line-height: 1">{{presenti}}<span style="font-size: 15px; font-weight: 400; color: #46606f"> / {{iscritti}}</span></span>
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; color: {{coloreStato}}">{{statoTesto}}</span>
+    <span style="margin-left: auto; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: #8f6a00">{{codaTesto}}</span>
+  </div>
+  </sc-if>
 </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"kanji":{"editor":"text","default":"柔"},"quando":{"editor":"text","default":"Mar 17:30 · Sala 1"},"presenti":{"editor":"text","default":"7"},"iscritti":{"editor":"text","default":"12"},"prove":{"editor":"text","default":"0"},"stato":{"editor":"enum","options":["mancano","segnati","assenti","lettura","futura"],"default":"mancano"},"mancano":{"editor":"text","default":"5"},"coda":{"editor":"text","default":""},"senzaTimer":{"editor":"boolean","default":false},"$preview":{"width":390,"height":140}}'>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"kanji":{"editor":"text","default":"柔"},"quando":{"editor":"text","default":"Mar 17:30 · Sala 1"},"presenti":{"editor":"text","default":"7"},"iscritti":{"editor":"text","default":"12"},"prove":{"editor":"text","default":"0"},"stato":{"editor":"enum","options":["mancano","segnati","assenti","lettura","futura"],"default":"mancano"},"mancano":{"editor":"text","default":"5"},"coda":{"editor":"text","default":""},"senzaTimer":{"editor":"boolean","default":false},"bassa":{"editor":"boolean","default":false},"$preview":{"width":390,"height":140}}'>
 // COSTRUITO (AppelloScreen.tsx, look sito; proposta in ../appello-istruttore/): la testa dell'appello piu' bassa, 140px contro i 224 di TestaAppello, perche' sul
 // telefono i nomi partano piu' in alto (cliente-ods: «se ne vedono quattro»). Due righe invece di tre.
 // 1. indietro · titolo 20px (la misura che la testa ha gia' sotto i 420px) con kanji e «giorno ora · sala» su una riga
@@ -72,6 +82,9 @@
 //    vale («i 5 non segnati»). Spento a tutto segnato: bianco col bordo verde, «✓ TUTTI SEGNATI». In lettura non c'e'.
 // AZZERA non c'e' piu' accanto al giallo: sta nel menu ⋯, lontano dal pollice che segna. Anche l'attivita' (oggi il
 // select ATTIVITA' sotto la testa) si cambia solo dal menu: si cambia di rado (deciso dall'utente il 2026-11-11).
+// COSTRUITO (`.appello-testa[data-fitto]`, `.appello-riga-conto`; proposta in `../appello-telefono-spazio/`): sul telefono la testa
+// e' sempre `bassa`: niente TUTTI PRESENTI, conto (22px) / iscritti (15px), stato e coda su una riga sola, e la data su una riga
+// tagliata con «…». La testa sta a 90px (l'utente: «succede pochissimo che siano tutti presenti», 2026-11-13).
 // Il giallo pieno resta uno per schermata. Colori di TestaAppello.
 // Nel codice la riga sotto il titolo e' «mercoledi' 11 novembre 18:00 · Pesi» e va a capo invece di tagliarsi: per questo
 // l'altezza e' minima (min-height 140px), e con un titolo lungo la testa arriva a circa 188px.
@@ -85,7 +98,9 @@ class Component extends DCLogic {
     const segnati = stato === 'segnati' || stato === 'assenti';
     const STATI = { segnati: '✓ TUTTI SEGNATI', assenti: '✕ TUTTI ASSENTI', lettura: '… SOLO LETTURA', futura: '… NON ANCORA COMINCIATA' };
     const coda = String(p.coda ?? '');
+    const bassa = truthy(p.bassa);
     return {
+      alta: !bassa, bassa, altezza: bassa ? '90px' : '140px',
       corso: String(p.corso ?? 'Judo kids').toUpperCase(),
       kanji: p.kanji ?? '柔',
       quando: p.quando ?? 'Mar 17:30 · Sala 1',

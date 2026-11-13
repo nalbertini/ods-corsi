@@ -72,8 +72,11 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 
 Toccate una lezione per aprire l'appello. Sul telefono il calendario lascia il
 posto all'appello; la freccia in alto a sinistra riporta al calendario, dove lo
-avevate lasciato. Su un tablet in orizzontale o un computer stanno affiancati:
-calendario a sinistra, appello a destra.
+avevate lasciato. Mentre l'appello è aperto, sul telefono spariscono la testata
+e la barra delle pagine: lo schermo è tutto per i nomi (una decina alla volta),
+e resta solo la striscia dell'allenamento, se ne avete uno in corso. Su un
+tablet in orizzontale o un computer stanno affiancati: calendario a sinistra,
+appello a destra.
 
 ### Le pagine
 
@@ -90,7 +93,9 @@ ha ore sue.
 In cima, ferma mentre scorrete l'elenco: il nome del corso, giorno, ora e sala,
 il conto grande degli iscritti presenti (`18 / 20`, con **+1 PROVA** a parte) e
 quanti iscritti restano da segnare (**… 2 DA SEGNARE**, poi **✓ TUTTI
-SEGNATI**). A destra il tasto giallo **TUTTI PRESENTI**, e in alto il tasto
+SEGNATI**). Sul tablet in orizzontale e sul computer, a destra, il tasto giallo
+**TUTTI PRESENTI**; sul telefono il conto sta su una riga sola e il tasto non
+c'è (vedi sotto). In alto il tasto
 **⋯** con le cose che si fanno di rado. Tutti i conti sono degli iscritti: chi prova è sempre detto a
 parte. Se la lezione non è ancora
 cominciata c'è scritto **… NON ANCORA COMINCIATA**: si può segnare da mezz'ora
@@ -107,7 +112,8 @@ mat»), la leggete accanto all'ora. Se la lezione è vostra, nel menu **⋯** c'
 attività**. Vale solo per quella lezione, non per le altre dello stesso giorno.
 
 Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è (ai primi
-appelli lo ricorda una riga sopra l'elenco):
+appelli, sul tablet in orizzontale e sul computer, lo ricorda una riga sopra
+l'elenco):
 
 | Tocco | Segno | Significa |
 |---|---|---|
@@ -126,13 +132,20 @@ tocco non sposta mai un nome. Chi viene a provare resta in fondo, sotto
 **PROVE**. Se non si riesce a leggere lo storico, l'elenco è per cognome. Se
 riaprite una lezione passata, chi non è ancora segnato sta in cima.
 
-**TUTTI PRESENTI**, il tasto giallo in cima, mette ✓ a chi non ha ancora un
+**TUTTI PRESENTI**, il tasto giallo in cima sul tablet in orizzontale e sul
+computer, mette ✓ a chi non ha ancora un
 segno, e sotto dice a chi (**i 5 non segnati**): le assenze già messe restano.
 È il modo più veloce: premetelo e poi toccate una volta gli assenti. Resta
 sempre allo stesso posto e con la stessa parola. Quando tutti hanno un segno
 diventa **✓ TUTTI SEGNATI**, bianco, e non si tocca. Se invece gli iscritti
 sono tutti assenti (un appello chiuso per sbaglio, riaperto; chi prova non
 conta) torna **TUTTI PRESENTI**, e mette ✓ a tutti.
+
+Sul telefono **TUTTI PRESENTI** in cima non c'è: capita di rado che vengano
+tutti, e il posto serve a vedere più nomi. Si tocca ogni presente. Se però gli
+iscritti sono tutti assenti (un appello chiuso per sbaglio, riaperto), sopra
+l'elenco compare la striscia **✕ Sono tutti assenti** con il tasto giallo
+**TUTTI PRESENTI**: un tocco e tutti hanno la ✓.
 
 **AZZERA L'APPELLO** sta nel menu **⋯**, lontano dal pollice che segna: toglie
 tutti i segni della lezione, per ricominciare. Chiede **SÌ, TOGLI TUTTI I
@@ -169,8 +182,8 @@ dall'altra lezione, torna com'era.
 ### Chiudere l'appello
 
 In fondo allo schermo, ferma e sempre in vista mentre scorrete, c'è la barra
-con **CHIUDI L'APPELLO** (e **+ PROVA**, vedi sotto). Sopra il tasto una frase
-dice cosa succede chiudendo:
+con **CHIUDI L'APPELLO** (e **+ PROVA**, vedi sotto). Sul tablet in orizzontale
+e sul computer, sopra il tasto, una frase dice cosa succede chiudendo:
 
 - **Tutti segnati: chiudi e torna al calendario.**, e il tasto diventa giallo
   con la spunta;
@@ -181,14 +194,24 @@ dice cosa succede chiudendo:
   segnato assente: di solito è un appello chiuso per sbaglio, e il tasto
   giallo resta **TUTTI PRESENTI** in cima.
 
+Sul telefono la frase sta dentro il tasto, in piccolo sotto **CHIUDI
+L'APPELLO**: «3 non segnati → assenti», «Sono tutti assenti», oppure niente
+quando sono tutti segnati.
+
 Mentre il riquadro delle prove è aperto il tasto per chiudere non c'è: prima
 si finisce con le prove.
 
 Chiede un secondo tocco se nessuno è segnato (di solito vuol dire che manca
 **TUTTI PRESENTI**), se la lezione non è ancora cominciata o se più di metà
 diventerebbe assente. Mentre chiede, la frase dice **Sicuro? Tocca di nuovo
-per chiudere.** e il tasto **SÌ, CHIUDI · 14 ASSENTI**: leggete, e toccatelo
+per chiudere.** (sul telefono «Sicuro? Tocca di nuovo», dentro il tasto) e il
+tasto **SÌ, CHIUDI · 14 ASSENTI**: leggete, e toccatelo
 di nuovo. Un doppio tocco veloce non basta.
+
+Sul telefono, se nessuno è segnato, mentre chiede al posto di **+ PROVA**
+compare il giallo **TUTTI PRESENTI** e sotto **SÌ, CHIUDI** si legge «Tutti
+assenti? Tocca di nuovo»: se erano tutti presenti toccate il giallo, se erano
+davvero tutti assenti toccate di nuovo **SÌ, CHIUDI**.
 
 Chiuso, si torna al calendario e in cima compare com'è andata, con quanti
 presenti e quanti assenti:

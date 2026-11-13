@@ -500,7 +500,9 @@
 :root[data-look='sito'] .appello-coda { letter-spacing: 0.04em; font-size: 12px; white-space: nowrap; }
 :root[data-look='sito'] .appello-titolo { font-size: 20px; }
 /* Il tasto principale della schermata: sempre in vista, perché la testa resta ferma. */
-:root[data-look='sito'] .appello-testa .btn-go { background: var(--giallo); color: var(--su-colore); border-radius: 6px; letter-spacing: 0.04em; }
+:root[data-look='sito'] .appello-testa .btn-go,
+:root[data-look='sito'] .striscia-assenti .btn-go,
+:root[data-look='sito'] .barra-chiudi .btn-rimedio { background: var(--giallo); color: var(--su-colore); border-radius: 6px; letter-spacing: 0.04em; }
 /* TUTTI PRESENTI sempre allo stesso posto e con la stessa parola; sotto, per chi vale. */
 :root[data-look='sito'] .appello-tasto { width: 176px; min-height: 56px; flex-shrink: 0; flex-direction: column; gap: 1px; padding: 0 8px; }
 :root[data-look='sito'] .appello-tasto-sotto { font-family: var(--body); font-size: 12px; font-weight: 600; letter-spacing: 0; line-height: 1.1; text-transform: none; }
@@ -2684,3 +2686,30 @@ label.sg-btn { cursor: pointer; }
 .sg-segno-elenco[data-tono='spento'] { color: var(--dim); }
 /* Il link dentro una frase resta testo: l'eccezione «in linea» di WCAG 2.5.8. */
 .sg-sotto .sg-link { display: inline; min-height: 0; font-size: inherit; }
+
+/* L'appello fitto sul telefono (`fitto` in AppelloScreen, proposta in docs/design-canvas/appello-telefono-spazio/):
+   più nomi a schermo, circa dieci invece di quattro. La testa scende a 90px perché il conto sta su una riga sola
+   senza TUTTI PRESENTI; le righe a 48px restano sopra i 44 del tocco; la frase sotto CHIUDI entra nel tasto. */
+:root[data-look='sito'] .appello-testa[data-fitto] { min-height: 90px; padding-bottom: 6px; }
+:root[data-look='sito'] h1.appello-titolo { margin: 0; }
+:root[data-look='sito'] .appello-riga-conto { align-items: baseline; white-space: nowrap; }
+:root[data-look='sito'] .appello-riga-conto .conto-appello { font-size: 22px; line-height: 1; }
+:root[data-look='sito'] .elenco-appello[data-fitto] { gap: 6px; }
+:root[data-look='sito'] [data-fitto] .riga-appello { min-height: 48px; }
+:root[data-look='sito'] .barra-chiudi[data-fitto] { gap: 4px; padding: 10px 16px calc(var(--safe-b) + 10px); }
+/* Appello chiuso con tutti assenti: sul telefono il TUTTI PRESENTI in testa non c'è, la striscia lo rimette a un tocco. */
+:root[data-look='sito'] .striscia-assenti { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 8px 8px 8px 12px; background: var(--surface); border: 2px solid var(--line); border-left: 4px solid var(--rosso); border-radius: 6px; }
+:root[data-look='sito'] .striscia-assenti-testo { flex-grow: 1; min-width: 0; font-size: 14px; font-weight: 700; line-height: 1.2; color: var(--rosso-testo); }
+/* Il corpo da 22px di .btn qui mandava a capo «Sono tutti assenti» a 360px: la striscia è un avviso, non la testa. */
+:root[data-look='sito'] .striscia-assenti .btn { font-size: 16px; letter-spacing: 0.06em; min-height: 44px; padding: 0 10px; white-space: nowrap; }
+:root[data-look='sito'] .barra-chiudi .btn-rimedio { font-size: 17px; width: 150px; flex-shrink: 0; padding: 0 8px; white-space: nowrap; }
+/* Col rimedio accanto CHIUDI ha 40px in meno: a 22px andava su quattro righe a 360px. */
+:root[data-look='sito'] .barra-chiudi .btn-rimedio ~ .btn-chiudi { font-size: 17px; line-height: 1.1; padding: 0 8px; }
+@media (max-width: 380px) {
+  :root[data-look='sito'] .barra-chiudi .btn-rimedio { width: 136px; font-size: 16px; }
+}
+:root[data-look='sito'] .btn-chiudi-sotto { font-family: var(--body); font-size: 12px; font-weight: 600; letter-spacing: 0; line-height: 1.1; text-transform: none; }
+/* Nell'appello fitto la data resta su una riga: a 375px andava a capo e la testa passava da 90 a 104px. */
+:root[data-look='sito'] .appello-testa[data-fitto] .chi-kanji > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A tutto schermo sul telefono manca la Testata, che teneva lo spazio della barra di stato (tacca, PWA). */
+:root[data-look='sito'] .app[data-tutto-schermo] { padding-top: var(--safe-t); }

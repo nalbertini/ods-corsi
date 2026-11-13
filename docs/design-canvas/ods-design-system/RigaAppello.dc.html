@@ -19,7 +19,7 @@
 <div style="width: 100%">
 <sc-if value="{{sito}}" hint-placeholder-val="{{ false }}">
 <div style="display: flex; align-items: stretch; gap: 6px; width: 100%">
-  <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0; min-height: 56px; padding: 0 14px; background: #ffffff; border-radius: 6px; box-shadow: {{barra}}; color: #0d2a3d; text-align: left">
+  <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0; min-height: {{alta}}; padding: 0 14px; background: #ffffff; border-radius: 6px; box-shadow: {{barra}}; color: #0d2a3d; text-align: left">
     <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 26px; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 22px; font-weight: 700; line-height: 1; color: {{coloreSegnoSito}}">
       <sc-if value="{{conAnello}}" hint-placeholder-val="{{ false }}">
         <span style="width: 22px; height: 22px; border: 2px solid #14709f; border-radius: 4px"></span>
@@ -63,7 +63,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Rossi Giulia"},"stato":{"editor":"enum","options":["niente","presente","assente","altrove"],"default":"niente"},"ora":{"editor":"text","default":"18:00"},"prova":{"editor":"boolean","default":false},"lettura":{"editor":"boolean","default":false},"marcato":{"editor":"boolean","default":false},"$preview":{"width":320,"height":70}}'>
+<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Rossi Giulia"},"stato":{"editor":"enum","options":["niente","presente","assente","altrove"],"default":"niente"},"ora":{"editor":"text","default":"18:00"},"prova":{"editor":"boolean","default":false},"lettura":{"editor":"boolean","default":false},"marcato":{"editor":"boolean","default":false},"fitta":{"editor":"boolean","default":false},"$preview":{"width":320,"height":70}}'>
 // Riproduzione 1:1 della riga dell'appello: .riga-appello e .nome-appello (src/styles.css righe 413-429) usate in
 // src/components/AppelloScreen.tsx (righe 365-382). Tre stati, tre colori, e il segno grande a sinistra:
 // presente = bordo e segno verdi (--verde, non -testo: il segno e' grande); assente = bordo rosso, segno in
@@ -81,6 +81,9 @@
 // di 8px invece di 4 e il segno bianco in un quadrato pieno da 26px (✓ su verde-testo #0b7a33, che col bianco passa il
 // contrasto; ✕ su rosso #e4292a). Il non
 // segnato resta il quadratino vuoto blu: pieno contro vuoto si distingue anche senza colore.
+// COSTRUITO (`[data-fitto] .riga-appello` nel look sito, `fitto` in AppelloScreen.tsx; proposta in `../appello-telefono-spazio/`) `fitta`:
+// sul telefono (sotto i 960px) la riga e' alta 48px invece di 56 e le righe stanno a 6px l'una dall'altra, per vedere circa
+// dieci nomi invece di quattro. Resta sopra i 44px del tocco; l'eccezione alla Regola del Dito di Fretta l'ha decisa l'utente il 2026-11-13.
 // Alta 56px perche' la si tocca in piedi e di fretta (La Regola del Dito di Fretta, DESIGN.md).
 const T = {
   sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', verde: '#12913f', rosso: '#e4292a', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33' },
@@ -95,7 +98,7 @@ class Component extends DCLogic {
     const marcato = truthy(p.marcato);
     const largo = marcato ? '8px' : '4px';
     return {
-      compleanno: truthy(p.compleanno),
+      compleanno: truthy(p.compleanno), alta: truthy(p.fitta) ? '48px' : '56px',
       sito, nonSito: !sito, conTogli: truthy(p.prova) && !truthy(p.lettura),
       barra: stato === 'presente' ? 'inset ' + largo + ' 0 0 #12913f' : stato === 'assente' ? 'inset ' + largo + ' 0 0 #e4292a' : 'none',
       conPieno: marcato && (stato === 'presente' || stato === 'assente'), sfondoPieno: stato === 'presente' ? '#0b7a33' : '#e4292a',

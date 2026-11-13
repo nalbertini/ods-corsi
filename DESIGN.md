@@ -156,7 +156,7 @@ Il sistema rifiuta l'aspetto da SaaS generico: niente card morbide con ombra, ni
 - Cinque colori del marchio, ciascuno con un solo significato (rosso azione/errore, verde fatto/presente, giallo avviso/prova, blu informazione, testo).
 - Saira Condensed obliqua 9° per tasti e titoli, Barlow per il testo corrente.
 - Raggio zero ovunque, tranne il timbro kanji.
-- Misure dettate dal tocco: righe da 56px, tasti tablet da 60–96px.
+- Misure dettate dal tocco: righe da 56px (48px nell'appello sul telefono), tasti tablet da 60–96px.
 - Etichette spaziate (0.12–0.24em) in maiuscolo come struttura della pagina.
 
 ## Colors
@@ -202,7 +202,7 @@ Gli azzurri e l'inchiostro del sito con i segnali puri presi dagli ingranaggi de
 **Character:** Una condensata sportiva, da tabellone, inclinata di 9° come il lettering del marchio, accanto a una grottesca morbida e leggibile per nomi e frasi. I font sono serviti in locale da `public/fonts` (licenza OFL), nessuna richiesta a Google.
 
 ### Hierarchy
-- **Display** (700, 56px, 1): l'ora del tablet di sala; il conteggio dell'appello a 46px (40px nella testa corta dell'istruttore sul telefono). Numeri tabellari.
+- **Display** (700, 56px, 1): l'ora del tablet di sala; il conteggio dell'appello a 46px (40px nella testa corta dell'istruttore, 22px sulla riga sola dell'appello sul telefono). Numeri tabellari.
 - **Headline** (700, 34–40px, 1): titolo di sezione della segreteria, nome della sala sul tablet, lezione aperta (38px).
 - **Titolo di gruppo** (700, 26px, 1, riga 2px `riga` sopra): un gruppo di riquadri dentro una sezione lunga (i gruppi di IMPOSTAZIONI), la scheda di un iscritto.
 - **Title** (700, 19–22px, 1.05): nome della lezione, ora, nome sul tablet (22px), tasti.
@@ -227,6 +227,8 @@ La segreteria è un'app da scrivania: menu fisso di 240px a sinistra, corpo con 
 Ritmo: gap 4px tra caselle sorelle (giorni, schede), 6–8px tra righe d'elenco, 10–14px dentro le card, 18–28px tra sezioni. Le altezze rispettano `dvh` e le safe area (`--safe-t`, `--safe-b`).
 
 **La Regola del Dito di Fretta.** Nessun bersaglio sotto 44px; le righe dell'appello stanno a 56px, i tasti del tablet a 60–96px. Le misure non sono estetica.
+
+L'eccezione, decisa dall'utente il 2026-11-13: sotto i 960px l'appello dell'istruttore va a tutto schermo, senza testata né barra delle pagine, con le righe a 48px (6px fra l'una e l'altra), la testa a 90px col conto su una riga sola e senza TUTTI PRESENTI, e la frase sui non segnati dentro CHIUDI come seconda riga (Inter 12px 600 minuscolo, l'unico testo di un tasto che non è maiuscolo). Così si vedono circa dieci nomi invece di quattro.
 
 ## Elevation & Depth
 
@@ -352,6 +354,7 @@ Nel look sito (`AppelloScreen.tsx` dell'istruttore, telefono; libreria `RigaAppe
 - **La testa corta:** alta almeno 140px (va a capo, non taglia: con un titolo lungo arriva a circa 188px). Prima riga: indietro, titolo 20px con kanji e «giorno data ora · attività» sotto, timer, ⋯, tutti 44px. Seconda: il conto Inter 800 40px «/ iscritti» con «+N PROVA» accanto, lo stato e la coda «N NON ANCORA INVIATE» (alta anche vuota); a destra TUTTI PRESENTI giallo da 176×56px, sempre allo stesso posto, con sotto per chi vale. L'attività e AZZERA non stanno in testa: stanno nel menu ⋯.
 - **La ricerca:** 44px senza etichetta, bordo `riga`, lente e segnaposto «Cerca tra N iscritti»; sotto, «N su M iscritti · k in prova» o cosa fare se non trova nessuno.
 - **La barra CHIUDI:** ferma in fondo, bianca col filo in alto, una frase di 13px su cosa succede chiudendo e due tasti da 52px: + PROVA a linea `blu` da 112px (non va a capo) e CHIUDI L'APPELLO pieno inchiostro, mai rosso. Diventa il giallo della schermata solo a tutto segnato, non se sono tutti assenti; il secondo tocco ha la frase in `rosso-testo` 700 e «SÌ, CHIUDI · N ASSENTI», che sul telefono va su due righe.
+- **Il rimedio a tutti assenti (solo telefono, dove TUTTI PRESENTI non sta in testa):** con tutti gli iscritti assenti, sopra l'elenco una striscia bianca col filo sinistro `rosso` da 4px, «✕ Sono tutti assenti» in `rosso-testo` 14px 700 e il giallo TUTTI PRESENTI da 44px (Big Shoulders 16px). Al secondo tocco di CHIUDI con nessuno segnato il giallo TUTTI PRESENTI (150px, 17px) prende il posto di + PROVA, e la seconda riga di CHIUDI dice «Tutti assenti? Tocca di nuovo». Libreria `RimediaAssenti` e `BarraChiudiAppello` (`rimedia`).
 - **Il foglio ⋯:** sale dal basso su un velo scuro, raggio 12px in alto, maniglia; dentro il cambio di attività e AZZERA L'APPELLO a linea `rosso-testo` col secondo tocco (pieno `rosso`). Spento è il blocco `superficie-alta` con testo `testo-spento`, opacità 1. Il velo e Esc lo chiudono, e il fuoco torna su ⋯.
 
 ### Lezione e Striscia dei giorni

@@ -1,0 +1,121 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-13T22:30:00Z"
+  },
+  "title": "Appello telefono · rimediare a tutti assenti",
+  "launch": {
+    "view": "canvas",
+    "page": "proposta"
+  },
+  "pages": [
+    {
+      "id": "proposta",
+      "name": "Proposta"
+    },
+    {
+      "id": "libreria",
+      "name": "Libreria"
+    }
+  ],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 760,
+      "title": "Oggi · tutti assenti, nessun rimedio veloce",
+      "page": "proposta"
+    },
+    "PropostaA.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 760,
+      "title": "A · striscia sopra l'elenco",
+      "page": "proposta"
+    },
+    "PropostaB.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 760,
+      "title": "B · tasto nella riga del conto",
+      "page": "proposta"
+    },
+    "PropostaC.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 760,
+      "title": "C · prevenire, al secondo tocco di CHIUDI",
+      "page": "proposta"
+    },
+    "RimediaAssenti.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 358,
+      "h": 64,
+      "page": "libreria"
+    },
+    "TestaAppelloCorta.dc.html": {
+      "x": 0,
+      "y": 144,
+      "w": 390,
+      "h": 102,
+      "page": "libreria"
+    },
+    "BarraChiudiAppello.dc.html": {
+      "x": 0,
+      "y": 326,
+      "w": 390,
+      "h": 92,
+      "page": "libreria"
+    },
+    "CercaAppello.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 358,
+      "h": 44,
+      "page": "libreria"
+    },
+    "RigaAppello.dc.html": {
+      "x": 470,
+      "y": 124,
+      "w": 320,
+      "h": 70,
+      "page": "libreria"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "PropostaA.dc.html",
+    "PropostaB.dc.html",
+    "PropostaC.dc.html",
+    "RimediaAssenti.dc.html",
+    "TestaAppelloCorta.dc.html",
+    "BarraChiudiAppello.dc.html",
+    "CercaAppello.dc.html",
+    "RigaAppello.dc.html"
+  ],
+  "notes": {
+    "titolo": {
+      "x": 0,
+      "y": -260,
+      "text": "Appello sul telefono: rimediare a «tutti assenti»",
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "proposta"
+    },
+    "cosa": {
+      "x": 1880,
+      "y": 0,
+      "w": 340,
+      "page": "proposta",
+      "fill": "blue",
+      "text": "Judo 3, 16 iscritti, telefono 390×760.\n\nOggi: CHIUDI con nessuno segnato (due tocchi) segna tutti assenti. Riaperto, si rimedia toccando 16 nomi o con AZZERA dal menu ⋯.\n\nA e B rimediano dopo, e solo con tutti assenti. C previene: al secondo tocco di CHIUDI offre TUTTI PRESENTI accanto a SÌ, CHIUDI. A e C si possono tenere insieme.\n\nTutti i tasti nuovi: un tocco, 44px o più, giallo (uno per schermata)."
+    }
+  },
+  "designSystems": []
+}

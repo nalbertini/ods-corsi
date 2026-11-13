@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.254.0 — 13 novembre 2026
+
+### Novità
+
+- Sul telefono, se l'appello è tutto assente, un tocco rimette tutti presenti
+
+## 0.253.0 — 13 novembre 2026
+
+### Novità
+
+- L'appello sul telefono mostra più nomi senza dover scorrere
+
 ## 0.252.1 — 13 novembre 2026
 
 ### Risolto
