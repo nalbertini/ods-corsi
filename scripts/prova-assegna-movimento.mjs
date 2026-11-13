@@ -91,6 +91,7 @@ const vociDaAggiungere = lib('vociDaAggiungere')
 const cercaCorsi = lib('cercaCorsi')
 const ordiniDelNucleo = lib('ordiniDelNucleo')
 const voceOrdine = lib('voceOrdine')
+const chiaveVoce = lib('chiaveVoce')
 const importoProposto = lib('importoProposto')
 const pagatoAMano = lib('pagatoAMano')
 const senzaSegnoAMano = lib('senzaSegnoAMano')
@@ -541,9 +542,10 @@ console.log('\n3h. Gli ordini del vestiario da saldare, per il nucleo di chi ha 
   ok('la riga dell’ordine: Abbigliamento con la data, manca il totale meno il pagato, in centesimi', prova(() => voceOrdine('nic', ordine('o9', 'Daniela', 'Ferretti', '', ['Nicole Scelsi'], 70, { pagato: 63 }))),
     { personaId: 'nic', voce: 'Abbigliamento, ordine del 28/09/2026', tipo: 'abbigliamento', dal: '2026-09-28', manca: 700, ordine: { id: 'o9', di: 'Ferretti Daniela' } })
   const v = prova(() => voceOrdine('nic', daniela))
-  ok('…si assegna portando l’ordine con sé', prova(() => righeDaCampi([v], { [`nic\u0000${v.voce}`]: '40,00' }, 4000)),
+  ok('…si assegna portando l’ordine con sé', prova(() => righeDaCampi([v], { [`nic\u0000${v.voce}\u0000o1`]: '40,00' }, 4000)),
     { righe: [{ personaId: 'nic', voce: 'Abbigliamento, ordine del 28/09/2026', importo: 4000, ordine: 'o1' }], guaio: null })
-  ok('…non oltre quel che manca all’ordine', prova(() => righeDaCampi([v], { [`nic\u0000${v.voce}`]: '45,00' }, 5000).guaio),
+  ok('…due ordini dello stesso giorno hanno due campi', prova(() => new Set([v, voceOrdine('nic', { ...daniela, id: 'o1b' })].map(chiaveVoce)).size), 2)
+  ok('…non oltre quel che manca all’ordine', prova(() => righeDaCampi([v], { [`nic\u0000${v.voce}\u0000o1`]: '45,00' }, 5000).guaio),
     'A «Abbigliamento, ordine del 28/09/2026» mancano 40,00 €: metti 40,00 € o meno, il resto rimane da assegnare.')
 }
 
@@ -1214,6 +1216,13 @@ try {
   ok('25,00 € su 40,00 €: si assegna', await errore(() => s.assegnaMovimento(m2, [riga(o2, 2500)])), 'nessun errore')
   const parziale = (await tutti()).find((o) => o.id === o2)
   ok('…ma l’ordine resta com’era: da saldare, niente pagato', parziale && [parziale.saldato, parziale.pagato], [false, 0])
+  ok('…e per la finestra mancano 15,00 €', (await letto(o2)) && Math.round(((await letto(o2)).totale - (await letto(o2)).pagato) * 100), 1500)
+  const m4 = await bonifico(2000)
+  ok('altri 20,00 €: oltre quel che manca', await errore(() => s.assegnaMovimento(m4, [riga(o2, 2000)])), 'All’ordine del vestiario mancano 15,00 €: metti 15,00 € o meno, il resto rimane da assegnare.')
+  ok('15,00 € lo completano', await errore(() => s.assegnaMovimento(m4, [riga(o2, 1500)])), 'nessun errore')
+  ok('…ed è saldato', (await tutti()).find((o) => o.id === o2)?.saldato, true)
+  ok('annullato il bonifico che l’ha saldato: l’ordine torna da saldare', [await errore(() => s.annullaMovimento(m1)), (await tutti()).find((o) => o.id === o1)?.saldato], ['nessun errore', false])
+  ok('…e torna fra quelli della finestra', Boolean(await letto(o1)), true)
   const m3 = await bonifico(4000)
   ok('un ordine che non c’è: rifiutato, e niente si scrive', [await errore(() => s.assegnaMovimento(m3, [riga('sparito', 4000)])), (await s.pagamentiDiretti()).filter((x) => x.movimentoId === m3).length],
     ['L’ordine del vestiario è già saldato o annullato: togli la riga e riapri la finestra.', 0])

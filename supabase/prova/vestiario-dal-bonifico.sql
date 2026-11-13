@@ -41,13 +41,14 @@ end $$;
 insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, persona_id)
 select 'entrata', '2026-10-14', imp, (select id from voci_contabili where nome = 'Corsi e altri pagamenti' and tipo = 'entrata'),
   (select id from casse where nome = 'Conto Corrente'), descr, 'bbbbbbbb-0000-0000-0000-000000000010'
-from (values (4000, 'Bonifico tuta'), (5000, 'Bonifico secondo'), (4000, 'Bonifico terzo')) v(imp, descr);
+from (values (4000, 'Bonifico tuta'), (5000, 'Bonifico secondo'), (4000, 'Bonifico terzo'), (2000, 'Bonifico quarto'), (4000, 'Bonifico quinto')) v(imp, descr);
 insert into raccolte_vestiario (id, chiude) values ('cccccccc-0000-0000-0000-000000000001', '2026-10-01');
 insert into ordini_vestiario (id, raccolta_id, nome, cognome, telefono, email, totale, saldato, annullato, pagato, creato_il) values
   ('dddddddd-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000001', 'Daniela', 'Ferretti', '333 1234123', 'daniela@esempio.it', 40, false, false, 0, '2026-09-28 10:00+02'),
   ('dddddddd-0000-0000-0000-000000000002', 'cccccccc-0000-0000-0000-000000000001', 'Daniela', 'Ferretti', '333 1234123', null, 40, false, false, 0, '2026-09-29 10:00+02'),
   ('dddddddd-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001', 'Daniela', 'Ferretti', '333 1234123', null, 40, true, false, 40, '2026-09-20 10:00+02'),
-  ('dddddddd-0000-0000-0000-000000000004', 'cccccccc-0000-0000-0000-000000000001', 'Daniela', 'Ferretti', '333 1234123', null, 40, false, true, 0, '2026-09-21 10:00+02');
+  ('dddddddd-0000-0000-0000-000000000004', 'cccccccc-0000-0000-0000-000000000001', 'Daniela', 'Ferretti', '333 1234123', null, 40, false, true, 0, '2026-09-21 10:00+02'),
+  ('dddddddd-0000-0000-0000-000000000005', 'cccccccc-0000-0000-0000-000000000001', 'Daniela', 'Ferretti', '333 1234123', null, 40, false, false, 0, '2026-09-22 10:00+02');
 insert into righe_vestiario (ordine_id, per_chi, capo, taglia, quanti, prezzo, posizione)
 select id, 'Nicole Scelsi', 'Tuta lotta', '152', 1, 40, 1 from ordini_vestiario;
 
@@ -77,13 +78,13 @@ create or replace function righe_di(m text) returns int language sql stable secu
 \echo '--- 1. Chi legge gli ordini da saldare ---'
 select chi(:ANNA);
 set role authenticated;
-select atteso('la segreteria li legge: i due da saldare, dal più recente', (select string_agg(x->>'id', ',') from jsonb_array_elements(ordini_vestiario_da_saldare()) x),
-  'dddddddd-0000-0000-0000-000000000002,dddddddd-0000-0000-0000-000000000001');
+select atteso('la segreteria li legge: i tre da saldare, dal più recente', (select string_agg(x->>'id', ',') from jsonb_array_elements(ordini_vestiario_da_saldare()) x),
+  'dddddddd-0000-0000-0000-000000000002,dddddddd-0000-0000-0000-000000000001,dddddddd-0000-0000-0000-000000000005');
 select atteso('…con le righe e senza email', (select (x->'righe'->0->>'per_chi') || '|' || (x ? 'email')::text from jsonb_array_elements(ordini_vestiario_da_saldare()) x limit 1), 'Nicole Scelsi|false');
 reset role;
 select chi(:ADA);
 set role authenticated;
-select atteso('l’amministrazione li legge', jsonb_array_length(ordini_vestiario_da_saldare())::text, '2');
+select atteso('l’amministrazione li legge', jsonb_array_length(ordini_vestiario_da_saldare())::text, '3');
 reset role;
 select chi(:MAURA);
 set role authenticated;
@@ -107,7 +108,7 @@ select atteso('oltre quel che manca all’ordine: rifiutato', ass('Bonifico seco
 select atteso('…e niente scritto', righe_di('Bonifico secondo')::text, '0');
 select atteso('40,00 € sull’ordine da 40,00 €: si assegna', ass('Bonifico tuta', jsonb_build_array(riga(4000, :O1) || '{"chiave":"eeeeeeee-0000-4000-8000-000000000001"}')), 'nessun errore');
 select atteso('…l’ordine è saldato, con bonifico, oggi', ordine(1), 'true|40.00|bonifico|true');
-select atteso('…e non è più da saldare', jsonb_array_length(ordini_vestiario_da_saldare())::text, '1');
+select atteso('…e non è più da saldare', jsonb_array_length(ordini_vestiario_da_saldare())::text, '2');
 select atteso('la stessa chiamata ripetuta: niente di nuovo', ass('Bonifico tuta', jsonb_build_array(riga(4000, :O1) || '{"chiave":"eeeeeeee-0000-4000-8000-000000000001"}')), 'nessun errore');
 select atteso('…una riga sola', righe_di('Bonifico tuta')::text, '1');
 select atteso('lo stesso ordine da un altro bonifico: rifiutato', ass('Bonifico secondo', jsonb_build_array(riga(4000, :O1))), :GIA);
@@ -117,10 +118,31 @@ select atteso('un ordine che non c’è: rifiutato', ass('Bonifico secondo', jso
 select atteso('…e niente scritto', righe_di('Bonifico secondo')::text, '0');
 select atteso('25,00 € su 40,00 €: si assegna', ass('Bonifico secondo', jsonb_build_array(riga(2500, :O2))), 'nessun errore');
 select atteso('…ma l’ordine resta com’era', ordine(2), 'false|0.00|-|-');
+select atteso('…e la lista dice quel che è già assegnato', (select x->>'assegnato' from jsonb_array_elements(ordini_vestiario_da_saldare()) x where x->>'id' = :O2), '2500');
+select atteso('altri 20,00 € sullo stesso ordine: oltre quel che manca (15,00 €)', ass('Bonifico quarto', jsonb_build_array(riga(2000, :O2))),
+  '22023 All’ordine del vestiario mancano 15,00 €: metti 15,00 € o meno, il resto rimane da assegnare.');
+select atteso('15,00 € lo completano: saldato', ass('Bonifico quarto', jsonb_build_array(riga(1500, :O2))), 'nessun errore');
+select atteso('…con pagato il totale', ordine(2), 'true|40.00|bonifico|true');
+select atteso('lo stesso ordine scritto in due modi nella stessa chiamata conta una volta: 20+20 su 40 lo salda',
+  ass('Bonifico quinto', jsonb_build_array(riga(2000, 'dddddddd-0000-0000-0000-000000000005'), riga(2000, 'DDDDDDDD-0000-0000-0000-000000000005'))), 'nessun errore');
+select atteso('…saldato', ordine(5), 'true|40.00|bonifico|true');
 select atteso('una riga senza ordine: come prima', ass('Bonifico terzo', jsonb_build_array(jsonb_build_object('persona_id', 'bbbbbbbb-0000-0000-0000-000000000010', 'voce', 'Abbigliamento', 'importo', 4000))), 'nessun errore');
 reset role;
 
 select chi(:ANNA);
 set role authenticated;
 select atteso('la segreteria non assegna i bonifici (come nel 135)', ass('Bonifico terzo', jsonb_build_array(riga(100, :O2))), '42501 …');
+reset role;
+
+\echo ''
+\echo '--- 3. I soldi lasciano l''ordine: torna da saldare ---'
+select chi(:ADA);
+set role authenticated;
+select atteso('annullato il bonifico che l’ha saldato', rifiuto(format('select annulla_movimento(%L)', id_mov('Bonifico tuta'))), 'nessun errore');
+select atteso('…l’ordine torna da saldare, senza niente di pagato', ordine(1), 'false|0.00|-|-');
+select atteso('annullato il secondo dei due bonifici', rifiuto(format('select annulla_movimento(%L)', id_mov('Bonifico quarto'))), 'nessun errore');
+select atteso('…l’ordine torna da saldare, e il primo resta assegnato', ordine(2) || '|' || (select x->>'assegnato' from jsonb_array_elements(ordini_vestiario_da_saldare()) x where x->>'id' = :O2),
+  'false|0.00|-|-|2500');
+select atteso('…mancano di nuovo 15,00 €', ass('Bonifico secondo', jsonb_build_array(riga(1600, :O2))),
+  '22023 All’ordine del vestiario mancano 15,00 €: metti 15,00 € o meno, il resto rimane da assegnare.');
 reset role;

@@ -47,7 +47,7 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { abbinaMovimento, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
-import { assegnato, conAssegnazioni, conGenitori, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, euroAssegna, movimentoDaClassificareAbbinabile, ORDINE_NON_DA_SALDARE, personeDelNucleo, SOLO_DAL_MOVIMENTO, voceDaRicevuta } from './assegna'
+import { assegnato, conAssegnazioni, conGenitori, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, euroAssegna, mancaOrdine, movimentoDaClassificareAbbinabile, ORDINE_NON_DA_SALDARE, personeDelNucleo, SOLO_DAL_MOVIMENTO, voceDaRicevuta } from './assegna'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, giaNelPagamento, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
@@ -142,6 +142,20 @@ const metti = (messaggio: string, files: File[]) => {
 
 export function creaSegreteriaProva(): DatiSegreteria {
   const a = () => archivio.dati
+  // Quel che i bonifici hanno assegnato a un ordine del vestiario: righe attive, o finite in una ricevuta attiva (157).
+  const assegnatoAllOrdine = (id: string) => (a().pagamentiDiretti ?? [])
+    .filter((d) => d.ordineVestiario === id && (!d.annullatoIl || (a().ricevute ?? []).some((r) => r.id === d.ricevutaId && !r.annullataIl)))
+    .reduce((t, d) => t + d.importo, 0)
+  // Come `vestiario_riapri` (157): i soldi che lasciano un ordine saldato dal bonifico lo rimettono da saldare.
+  // shortcut: in prova il pagato torna a zero (DatiVestiario non sa scriverne uno a metà), il database toglie solo i bonifici.
+  async function riapriOrdini(righe: PagamentoDiretto[]) {
+    const ids = new Set(righe.flatMap((r) => (r.ordineVestiario ? [r.ordineVestiario] : [])))
+    if (!ids.size) return
+    const v = await datiVestiario()
+    const tutti = (await Promise.all((await v.raccolte()).map((r) => v.ordini(r.id)))).flat()
+    for (const o of tutti) if (ids.has(o.id) && o.saldato && o.pagatoCon === 'bonifico') await v.segnaSaldato(o.id, null)
+  }
+
   const oggi = () => chiaveGiorno(new Date())
   const ieri = () => chiaveGiorno(new Date(Date.now() - GIORNO))
   const salva = () => archivio.salva()
@@ -1588,6 +1602,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
         return comEra
       })
       salva()
+      // Una ricevuta del bonifico: i suoi soldi tornano da assegnare, e lasciano l'ordine.
+      if (r.movimentoId) await riapriOrdini((a().pagamentiDiretti ?? []).filter((y) => y.ricevutaId === id))
     },
 
     // Le stesse regole di `controlla_invio_ricevuta` e della Edge Function, senza rete: nessuna mail parte davvero.
@@ -1868,17 +1884,20 @@ export function creaSegreteriaProva(): DatiSegreteria {
         ?? cosaNonVaQuota(righe, m.data, a().pagamentiDiretti ?? [], a().ricevute ?? [], Math.round(listino.quota * 100))
       if (nonVa) throw new Error(nonVa)
       // Come il 157: l'ordine del vestiario della riga dev'essere ancora da saldare, e la riga non va oltre quel che gli manca.
+      // Le righe dello stesso ordine si sommano, come nel 157; quel che i bonifici hanno già assegnato conta.
       const daSaldare = righe.some((r) => r.ordine) ? (await this.ordiniVestiarioDaSaldare()) ?? [] : []
       const saldati: string[] = []
-      for (const r of righe.filter((x) => x.ordine)) {
-        const o = daSaldare.find((x) => x.id === r.ordine)
+      const perOrdine = new Map<string, number>()
+      for (const r of righe) if (r.ordine) perOrdine.set(r.ordine.toLowerCase(), (perOrdine.get(r.ordine.toLowerCase()) ?? 0) + r.importo)
+      for (const [id, nuovo] of perOrdine) {
+        const o = daSaldare.find((x) => x.id.toLowerCase() === id)
         if (!o) throw new Error(ORDINE_NON_DA_SALDARE)
-        const manca = Math.round((o.totale - o.pagato) * 100)
-        if (r.importo > manca) throw new Error(`All’ordine del vestiario mancano ${euroAssegna(manca)}: metti ${euroAssegna(manca)} o meno, il resto rimane da assegnare.`)
-        if (r.importo === manca) saldati.push(o.id)
+        const manca = mancaOrdine(o)
+        if (nuovo > manca) throw new Error(`All’ordine del vestiario mancano ${euroAssegna(manca)}: metti ${euroAssegna(manca)} o meno, il resto rimane da assegnare.`)
+        if (nuovo === manca) saldati.push(o.id)
       }
       const creatoIl = new Date().toISOString()
-      const nuove: PagamentoDiretto[] = righe.map((r) => ({ id: `pd-${unico()}`, personaId: r.personaId, data: m.data, importo: r.importo, metodo: 'Bonifico', voce: r.voce.trim(), movimentoId, creatoIl, ...(k ? { chiave: k } : {}) }))
+      const nuove: PagamentoDiretto[] = righe.map((r) => ({ id: `pd-${unico()}`, personaId: r.personaId, data: m.data, importo: r.importo, metodo: 'Bonifico', voce: r.voce.trim(), movimentoId, creatoIl, ...(k ? { chiave: k } : {}), ...(r.ordine ? { ordineVestiario: daSaldare.find((x) => x.id.toLowerCase() === r.ordine?.toLowerCase())?.id } : {}) }))
       a().pagamentiDiretti = [...(a().pagamentiDiretti ?? []), ...nuove]
       salva()
       // Coperto tutto, l'ordine è saldato con bonifico; in parte resta com'è e si segna in VESTIARIO.
@@ -1889,7 +1908,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async ordiniVestiarioDaSaldare() {
       const v = await datiVestiario()
       const tutti = (await Promise.all((await v.raccolte()).map((r) => v.ordini(r.id)))).flat()
-      return tutti.filter((o) => !o.saldato && !o.annullato)
+      // Come `ordini_vestiario_da_saldare` (157): nel pagato anche quel che i bonifici hanno già assegnato.
+      return tutti
+        .filter((o) => !o.saldato && !o.annullato)
+        .map((o) => ({ ...o, pagato: o.pagato + assegnatoAllOrdine(o.id) / 100 }))
+        .filter((o) => mancaOrdine(o) > 0)
     },
 
     async emettiRicevutaDaMovimento(dati, movimentoId) {
@@ -1973,10 +1996,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const quando = new Date().toISOString()
       a().movimenti = contabilita().movimenti.map((x) => (x.id === id ? { ...x, annullatoIl: quando } : x))
       // Le assegnazioni senza ricevuta vanno via col movimento: senza i soldi, la quota non è pagata.
+      const via = (a().pagamentiDiretti ?? []).filter((y) => y.movimentoId === id && !y.annullatoIl)
       a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => (y.movimentoId === id && !y.annullatoIl ? { ...y, annullatoIl: quando } : y))
       // Come il trigger `compensi_tornano`: il pagamento annullato rimette le sue ricevute da pagare.
       a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((r) => (r.movimentoId === id ? { ...r, movimentoId: null, pagataIl: null } : r))
       salva()
+      await riapriOrdini(via)
     },
 
     async importaMovimentiBanca(dati) {
@@ -2010,8 +2035,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const quando = new Date().toISOString()
       const dentro = new Set(ids)
       a().movimenti = contabilita().movimenti.map((m) => (lotto(m) ? { ...m, annullatoIl: quando } : m))
+      const via = (a().pagamentiDiretti ?? []).filter((y) => y.movimentoId && dentro.has(y.movimentoId) && !y.annullatoIl)
       a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => (y.movimentoId && dentro.has(y.movimentoId) && !y.annullatoIl ? { ...y, annullatoIl: quando } : y))
       salva()
+      await riapriOrdini(via)
       return n
     },
 
@@ -2388,6 +2415,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (!x || x.annullatoIl) throw new Error('Pagamento inesistente o già annullato')
       a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => (y.id === id ? { ...y, annullatoIl: new Date().toISOString() } : y))
       salva()
+      await riapriOrdini([x])
     },
 
     async enteRicevute() {

@@ -747,6 +747,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rifà `assegna_movimento` del 136: se si rilancia 135 o 136 dopo, va rilanciato anche questo.
   ('157-vestiario-dal-bonifico.sql', 'il bonifico salda l''ordine del vestiario che copre tutto',
     to_regprocedure('public.ordini_vestiario_da_saldare()') is not null
-    and exists (select 1 from dentro where nome = 'assegna_movimento' and corpo like '%ordini_vestiario%'))
+    and exists (select 1 from dentro where nome = 'assegna_movimento' and corpo like '%ordine_vestiario_assegnato%')
+    and exists (select 1 from information_schema.columns where table_name = 'pagamenti_diretti' and column_name = 'ordine_vestiario'))
 ) as x(file, cosa, c)
 order by file, cosa;

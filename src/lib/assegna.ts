@@ -626,7 +626,7 @@ export function ordiniDelNucleo(nucleo: Array<Pick<PersonaSeg, 'nome' | 'cognome
     return (perNome || perChi) && !(tel[0] && tel[1] && tel[0] !== tel[1])
   }
   return ordini
-    .filter((o) => !o.saldato && !o.annullato && o.totale > o.pagato && !scelti.includes(o.id) && nucleo.some((p) => suo(p, o)))
+    .filter((o) => !o.saldato && !o.annullato && mancaOrdine(o) > 0 && !scelti.includes(o.id) && nucleo.some((p) => suo(p, o)))
     .sort((a, b) => b.arrivato.localeCompare(a.arrivato))
 }
 
@@ -635,9 +635,19 @@ export function voceOrdine(personaId: string, o: Ordine): VoceDovuta {
   const dal = o.arrivato.slice(0, 10)
   return {
     personaId, voce: `${VOCE_ABBIGLIAMENTO}, ordine del ${dal.split('-').reverse().join('/')}`, tipo: 'abbigliamento', dal,
-    manca: Math.round((o.totale - o.pagato) * 100), ordine: { id: o.id, di: `${o.cognome} ${o.nome}` },
+    manca: mancaOrdine(o), ordine: { id: o.id, di: `${o.cognome} ${o.nome}` },
   }
 }
+
+/**
+ * Quel che manca a un ordine, in centesimi. Il `pagato` letto per la finestra comprende già quel che i bonifici gli
+ * hanno assegnato senza saldarlo (`ordiniVestiarioDaSaldare`).
+ */
+export const mancaOrdine = (o: Pick<Ordine, 'totale' | 'pagato'>) => Math.round((o.totale - o.pagato) * 100)
+
+/** Il campo di una voce nella finestra: persona e voce, e l'ordine (due ordini dello stesso giorno hanno la stessa voce). */
+export const chiaveVoce = (x: { personaId: string; voce: string; ordine?: { id: string } | string }) =>
+  `${x.personaId}\u0000${x.voce}${x.ordine ? `\u0000${typeof x.ordine === 'string' ? x.ordine : x.ordine.id}` : ''}`
 
 export const VOCE_ABBIGLIAMENTO = 'Abbigliamento'
 
@@ -976,7 +986,7 @@ export function ricevutaPerChi(
 /** Gli importi scritti nella finestra, per voce (`personaId` e voce uniti da \u0000): le righe e cosa non va, in parole. */
 export function righeDaCampi(dovuti: VoceDovuta[], valori: Record<string, string>, importo: number): { righe: RigaAssegnata[]; guaio: string | null } {
   const letti = dovuti.map((v) => {
-    const t = valori[`${v.personaId}\u0000${v.voce}`] ?? ''
+    const t = valori[chiaveVoce(v)] ?? ''
     return { v, cent: t.trim() ? centesimi(t) : 0 }
   })
   const nonSiCapisce = letti.find((x) => x.cent === null)

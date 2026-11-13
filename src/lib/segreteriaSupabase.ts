@@ -65,6 +65,8 @@ interface OrdineDaSaldareDb {
   telefono: string
   totale: number
   pagato: number
+  /** In centesimi: quel che i bonifici gli hanno già assegnato senza saldarlo. */
+  assegnato: number
   creato_il: string
   righe: Array<{ id: string; per_chi: string; capo: string; taglia: string; quanti: number; prezzo: number }>
 }
@@ -1672,7 +1674,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return x.map((o): Ordine => ({
         id: o.id, raccolta: o.raccolta_id, nome: o.nome, cognome: o.cognome, telefono: o.telefono, email: null,
         righe: o.righe.map((g) => ({ id: g.id, perChi: g.per_chi, capo: g.capo, taglia: g.taglia, quanti: g.quanti, prezzo: Number(g.prezzo) })),
-        totale: Number(o.totale), saldato: false, annullato: false, pagato: Number(o.pagato), pagatoCon: null, pagatoIl: null, arrivato: o.creato_il, dalBanco: false,
+        // Nel pagato anche quel che i bonifici hanno già assegnato: la finestra guarda quel che manca davvero (`mancaOrdine`).
+        totale: Number(o.totale), saldato: false, annullato: false, pagato: Number(o.pagato) + Number(o.assegnato ?? 0) / 100, pagatoCon: null, pagatoIl: null, arrivato: o.creato_il, dalBanco: false,
       }))
     },
 

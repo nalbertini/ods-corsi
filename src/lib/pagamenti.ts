@@ -30,6 +30,8 @@ export interface PagamentoDiretto {
   chiave?: string
   /** La ricevuta in cui è finito (`89-pagamento-diventa-ricevuta.sql`): annullato, ma non perso. */
   ricevutaId?: string
+  /** L'ordine del vestiario che paga, da «È questo ordine» (`157-vestiario-dal-bonifico.sql`). */
+  ordineVestiario?: string
   /**
    * Con «Fai anche la ricevuta»: la chiave della ricevuta, che resta col pagamento ripreso dopo «Lascia stare».
    * Il pagamento la tiene: una ricevuta con quella chiave non entra finché lui è attivo (128-ricevuta-pagamento-perso.sql).

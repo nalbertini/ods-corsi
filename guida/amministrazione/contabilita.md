@@ -252,8 +252,11 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   tutti e due: la scelta è tua. **È questo ordine** lo fa diventare una riga «Abbigliamento, ordine del
   …», con quel che manca all'ordine e l'importo che non va oltre il bonifico. Se la riga copre tutto
   (**Saldo**), con **Conferma** l'ordine in VESTIARIO diventa saldato con bonifico. Se copre una parte
-  (**Parziale**), l'ordine resta com'è e si segna a mano in VESTIARIO. Un ordine scelto per una persona
-  sparisce dalle altre.
+  (**Parziale**), l'ordine resta com'è e si segna a mano in VESTIARIO; il bonifico dopo vede quel che manca
+  ancora, e se lo copre salda l'ordine. Un ordine scelto per una persona sparisce dalle altre. Se poi annulli
+  il bonifico (o la sua ricevuta), l'ordine torna da saldare. Un abbigliamento assegnato **a mano** prima di
+  questa novità non è legato all'ordine: l'ordine può ricomparire fra quelli da saldare, guarda in VESTIARIO
+  prima di sceglierlo.
 - **Conferma** scrive persona, tipologia e assegnazione, senza ricevuta: la ricevuta si fa dopo, dal
   movimento, con **Fai la ricevuta**. Dal movimento c'è anche **Conferma e fai la ricevuta**, che apre la
   ricevuta già compilata (data del bonifico, modo **Bonifico**). All'import si scrive tutto quando

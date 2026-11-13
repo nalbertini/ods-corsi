@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
-import { cercaCorsi, chiEPerCosa, euroAssegna, importoProposto, ordiniDelNucleo, righeDaCampi, tipologiaDaRighe, vociDaAggiungere, voceOrdine, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
-import type { Ordine } from '../../lib/vestiario'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { cercaCorsi, chiaveVoce, chiEPerCosa, mancaOrdine, euroAssegna, importoProposto, ordiniDelNucleo, righeDaCampi, tipologiaDaRighe, vociDaAggiungere, voceOrdine, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
+import { cifreTelefono, type Ordine } from '../../lib/vestiario'
 import type { NomeIcona } from '../../lib/icone'
 import { listinoUsabile } from '../../lib/listino'
 import { VOCE_PIU_CORSI } from '../../lib/nucleo'
@@ -15,7 +15,7 @@ import { DITO, Guaio, Tag, Tasto, useBozza, useCarica, useDialogo } from './comu
 
 // Cognome e nome, come negli elenchi.
 const nome = (p?: Pick<PersonaSeg, 'nome' | 'cognome'>) => (p ? `${p.cognome} ${p.nome}` : '…')
-const chiaveDi = (x: { personaId: string; voce: string }) => `${x.personaId}\u0000${x.voce}`
+const chiaveDi = chiaveVoce
 const valoriDa = (righe: RigaAssegnata[]) => Object.fromEntries(righe.map((r) => [chiaveDi(r), euro(r.importo)]))
 
 /** Quel che la finestra ha deciso: chi ha pagato e le righe (vuote con «Solo la persona»). */
@@ -268,7 +268,7 @@ export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia, onTog
 function Scelta({ forte, dopo, icona, corso, onClick }: { forte: string; dopo?: string; icona?: NomeIcona; corso?: string; onClick: () => void }) {
   return (
     // Col corso nel nome: «Annuale 340,00 €» da solo, letto ad alta voce, non dice di quale corso.
-    <Tasto icona={icona ?? null} data-bozza aria-label={corso ? `${corso} · ${forte} · ${dopo ?? ''}` : undefined} onClick={onClick}>
+    <Tasto icona={icona ?? null} data-bozza aria-label={corso ? `${corso}: ${forte}${dopo ? ` ${dopo}` : ''}` : undefined} onClick={onClick}>
       <span><b>{forte}</b>{dopo && <span className="sg-sotto num"> {dopo}</span>}</span>
     </Tasto>
   )
@@ -288,9 +288,13 @@ function PagaAnche({ scelte, ordini, personaId, cerca, onCerca, onScegli }: {
   onScegli: (v: VoceDovuta) => void
 }) {
   const [testo, setTesto] = useState('')
+  // Chiusa la ricerca, il fuoco torna su «Altro corso…»: se no cade sulla pagina e chi usa la tastiera si perde.
+  const altro = useRef<HTMLButtonElement>(null)
+  const torna = useRef(false)
+  useEffect(() => { if (!cerca && torna.current) { torna.current = false; altro.current?.focus() } }, [cerca])
   const trovati = cercaCorsi(scelte.altri, testo)
   const filetto = { borderTop: '1px solid var(--line-soft)', paddingTop: 10 }
-  const chiudi = () => { setTesto(''); onCerca(false) }
+  const chiudi = () => { setTesto(''); torna.current = true; onCerca(false) }
   return (
     <>
       {ordini.length > 0 && (
@@ -299,7 +303,7 @@ function PagaAnche({ scelte, ordini, personaId, cerca, onCerca, onScegli }: {
           {ordini.map((o) => {
             const capi = [...new Set(o.righe.map((r) => `${r.capo} ${r.taglia}`))].join(', ')
             const per = [...new Set(o.righe.map((r) => r.perChi))].join(', ')
-            const tel = o.telefono.replace(/\D/g, '').slice(-3)
+            const tel = cifreTelefono(o.telefono).slice(-3)
             return (
               <div key={o.id} className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span className="stack" style={{ gap: 2, flex: '1 1 260px', minWidth: 0 }}>
@@ -307,7 +311,7 @@ function PagaAnche({ scelte, ordini, personaId, cerca, onCerca, onScegli }: {
                   <span className="sg-sotto">{capi}{tel && ` · tel. …${tel}`}</span>
                 </span>
                 <span className="stack" style={{ alignItems: 'flex-end' }}>
-                  <span className="num" style={{ fontSize: 15, fontWeight: 600 }}>mancano {euroAssegna(Math.round((o.totale - o.pagato) * 100))}</span>
+                  <span className="num" style={{ fontSize: 15, fontWeight: 600 }}>mancano {euroAssegna(mancaOrdine(o))}</span>
                   <span className="sg-sotto num">di {euroAssegna(Math.round(o.totale * 100))}</span>
                 </span>
                 <Tasto icona={null} data-bozza onClick={() => onScegli(voceOrdine(personaId, o))}>È questo ordine</Tasto>
@@ -331,7 +335,7 @@ function PagaAnche({ scelte, ordini, personaId, cerca, onCerca, onScegli }: {
         <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           {scelte.abbigliamento && <Scelta icona="vestiario" forte="Abbigliamento" dopo="a mano" onClick={() => scelte.abbigliamento && onScegli(scelte.abbigliamento)} />}
           {!cerca && scelte.altri.length > 0 && (
-            <button type="button" className="sg-link" style={{ ...DITO, gap: 6, textDecoration: 'none' }} onClick={() => onCerca(true)}>
+            <button ref={altro} type="button" className="sg-link" style={{ ...DITO, gap: 6, textDecoration: 'none' }} onClick={() => onCerca(true)}>
               <Icona nome="cerca" /><span style={{ textDecoration: 'underline', textUnderlineOffset: 3 }}>Altro corso…</span>
             </button>
           )}
@@ -345,10 +349,10 @@ function PagaAnche({ scelte, ordini, personaId, cerca, onCerca, onScegli }: {
               </label>
               <button type="button" className="sg-link" style={DITO} onClick={chiudi}>Chiudi</button>
             </div>
-            <span className="sg-sotto" role="status">{trovati.length ? (testo.trim() ? `${trovati.length === 1 ? '1 corso' : `${trovati.length} corsi`} con «${testo.trim()}»` : '') : `Nessun corso con «${testo.trim()}»`}</span>
+            <span className="sg-sotto" role="status">{!testo.trim() ? '' : trovati.length ? `${trovati.length === 1 ? '1 corso' : `${trovati.length} corsi`} con «${testo.trim()}»` : `Nessun corso con «${testo.trim()}»`}</span>
             {trovati.map((g) => (
               <div key={g.corso} className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap', borderTop: '1px solid var(--line-soft)', paddingTop: 8 }}>
-                <span style={{ width: 150, fontSize: 15, fontWeight: 600 }}>{g.corso}</span>
+                <span style={{ flex: '1 1 220px', minWidth: 0, fontSize: 15, fontWeight: 600 }}>{g.corso}</span>
                 {g.voci.map((v) => <Scelta key={v.dovuta.voce} corso={g.corso} forte={v.formula} dopo={euroAssegna(v.dovuta.manca)} onClick={() => { onScegli(v.dovuta); chiudi() }} />)}
               </div>
             ))}
