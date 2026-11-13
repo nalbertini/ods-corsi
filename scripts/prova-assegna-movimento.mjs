@@ -88,6 +88,7 @@ const dovutiDi = lib('dovutiDi')
 const righeDaCampi = lib('righeDaCampi')
 const tipologiaDaRighe = lib('tipologiaDaRighe')
 const vociDaAggiungere = lib('vociDaAggiungere')
+const importoProposto = lib('importoProposto')
 const pagatoAMano = lib('pagatoAMano')
 const senzaSegnoAMano = lib('senzaSegnoAMano')
 const dovutiDelNucleo = lib('dovutiDelNucleo')
@@ -360,6 +361,9 @@ console.log('\n3f. Una voce dal listino, anche per un corso a cui non è iscritt
     { righe: [{ personaId: 'leo', voce: 'Quota associativa 2026/27', importo: 5000 }, { personaId: 'leo', voce: 'Trimestre Judo kids', importo: 13000 }], guaio: null })
   ok('…più del prezzo del listino non va', prova(() => righeDaCampi([trimestre], { [chiave(trimestre)]: '140,00' }, 18000).guaio),
     'A «Trimestre Judo kids» mancano 130,00 €: metti 130,00 € o meno, il resto rimane da assegnare.')
+  ok('la voce aggiunta parte da quel che resta del bonifico: 180 € con 50 già messi → 130 €', prova(() => importoProposto(13000, 18000, 5000)), 13000)
+  ok('…non oltre il prezzo del listino', prova(() => importoProposto(13000, 18000, 0)), 13000)
+  ok('…e niente se il bonifico è già tutto assegnato', prova(() => importoProposto(13000, 18000, 18000)), 0)
   ok('…e la tipologia diventa «Corsi e altri pagamenti»', prova(() => tipologiaDaRighe([{ personaId: 'leo', voce: 'Quota associativa 2026/27', importo: 5000 }, { personaId: 'leo', voce: 'Trimestre Judo kids', importo: 13000 }])), 'Corsi e altri pagamenti')
 }
 

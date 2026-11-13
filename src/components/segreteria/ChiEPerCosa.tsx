@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { chiEPerCosa, euroAssegna, righeDaCampi, tipologiaDaRighe, vociDaAggiungere, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
+import { chiEPerCosa, euroAssegna, importoProposto, righeDaCampi, tipologiaDaRighe, vociDaAggiungere, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
 import { listinoUsabile } from '../../lib/listino'
 import type { CandidatoPersona } from '../../lib/movimentiPersona'
 import type { PagamentoDiretto } from '../../lib/pagamenti'
@@ -100,16 +100,14 @@ export function ChiEPerCosa({
   useBozza(valori !== null, 'Chi ha pagato e per cosa')
   const tipologia = tipologiaDaRighe(righe)
   const daChiedere = (situazione?.daChiedere ?? []).filter((id) => !nonQuesto.includes(id))
-  // La voce aggiunta parte da quel che resta del bonifico, non oltre il prezzo del listino.
   const aggiungi = (v: VoceDovuta) => {
     setAggiunte([...aggiunte, v])
-    setValori({ ...mostrati, [chiaveDi(v)]: euro(Math.max(0, Math.min(v.manca, importo - totale))) })
+    setValori({ ...mostrati, [chiaveDi(v)]: euro(importoProposto(v.manca, importo, totale)) })
     setMenuDi(null)
   }
   const togli = (v: VoceDovuta) => {
     setAggiunte(aggiunte.filter((x) => chiaveDi(x) !== chiaveDi(v)))
-    const { [chiaveDi(v)]: _via, ...resto } = mostrati
-    setValori(resto)
+    setValori(Object.fromEntries(Object.entries(mostrati).filter(([k]) => k !== chiaveDi(v))))
   }
   const conferma = (eRicevuta: boolean) => chi && !guaio && righe.length && onConferma({ personaId: chi.id, nomePersona: nome(chi), righe, chiave: chiave.current }, eRicevuta)
 
@@ -229,10 +227,13 @@ export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia, onTog
   return (
     <div className="stack" style={{ gap: 4 }}>
       <div className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <label htmlFor={id} style={{ fontSize: 15, flex: '1 1 200px', minWidth: 0 }}>
-          {v.voce} <span className="sg-sotto">· {v.aggiunta ? 'dal listino' : aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} {euroAssegna(v.manca)}</span>
-          {onTogli && <>{' '}<span className="sg-sotto">·</span>{' '}<button type="button" className="sg-link" style={{ ...DITO, fontSize: 13 }} aria-label={`Togli ${v.voce}`} onClick={onTogli}>Togli</button></>}
-        </label>
+        {/* «Togli» accanto al testo ma fuori dal label: il nome del campo resta la voce. */}
+        <span style={{ fontSize: 15, flex: '1 1 200px', minWidth: 0 }}>
+          <label htmlFor={id}>
+            {v.voce} <span className="sg-sotto">· {v.aggiunta ? 'dal listino' : aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} {euroAssegna(v.manca)}</span>
+          </label>
+          {onTogli && <>{' '}<span className="sg-sotto">·</span>{' '}<button type="button" className="sg-link sg-pericolo" style={{ ...DITO, fontSize: 13 }} data-bozza aria-label={`Togli ${v.voce}`} onClick={onTogli}>Togli</button></>}
+        </span>
         <input id={id} className="sg-campo num" inputMode="decimal" style={{ width: 110 }} aria-invalid={testo.trim() !== '' && (cent === null || cent <= 0 || cent > v.manca)} value={testo} onChange={(e) => onCambia(e.target.value)} />
         {/* Un posto fisso per il tag: i campi delle righe restano in colonna. */}
         <span style={{ width: 90, display: 'flex' }}>

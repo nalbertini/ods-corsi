@@ -227,6 +227,12 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   testo del bonifico dice «trimestrale» o «trimestre». Gli importi si correggono a mano; accanto a ognuno il tag **Saldo** o **Parziale**, e sotto
   quanto resterà. **Svuota tutto** azzera la proposta. Non si assegna più di quel che manca a ogni voce,
   né più del bonifico.
+- Se il bonifico paga una cosa che non è fra quelle da pagare (un corso a cui la persona non è ancora
+  iscritta nell'app, o il trimestre al posto dell'annuale), **Aggiungi una voce dal listino**, in fondo
+  al riquadro di ogni persona, apre l'elenco delle voci del listino divise per corso, prima i suoi. La
+  voce scelta diventa una riga come le altre, con «dal listino» e il prezzo: l'importo parte da quel che
+  resta del bonifico e non supera il prezzo. **Togli** la toglie. Se la persona non è iscritta a quel
+  corso, la finestra lo dice: l'iscrizione si fa dalla scheda.
 - **Conferma** scrive persona, tipologia e assegnazione, senza ricevuta: la ricevuta si fa dopo, dal
   movimento, con **Fai la ricevuta**. Dal movimento c'è anche **Conferma e fai la ricevuta**, che apre la
   ricevuta già compilata (data del bonifico, modo **Bonifico**). All'import si scrive tutto quando

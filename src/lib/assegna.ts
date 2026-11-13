@@ -513,9 +513,7 @@ export function vociDaAggiungere(
       if (giaQui.has(v.descrizione.trim().toLowerCase())) continue
       // L'etichetta del listino è «Fitness 2 giorni · trimestre · 130,00 €»: un gruppo per riga di prezzo, e nel
       // gruppo basta la formula. Più righe di un corso in un gruppo solo davano voci uguali.
-      const pezzi = x.etichetta.split(' · ')
-      const nome = pezzi[0]
-      const formula = pezzi.length > 2 ? pezzi[pezzi.length - 2] : v.descrizione
+      const [nome, formula] = x.etichetta.split(' · ')
       const g = gruppi.get(nome) ?? { corso: nome, suo, voci: [] }
       g.voci.push({
         etichetta: `${formula.charAt(0).toUpperCase()}${formula.slice(1)} · ${euroAssegna(v.prezzo)}`,
@@ -526,6 +524,9 @@ export function vociDaAggiungere(
   }
   return [...gruppi.values()].sort((a, b) => Number(b.suo) - Number(a.suo) || a.corso.localeCompare(b.corso, 'it'))
 }
+
+/** L'importo di una voce appena aggiunta: quel che resta del bonifico (`importo` meno `messo`), non oltre il prezzo. */
+export const importoProposto = (prezzo: number, importo: number, messo: number) => Math.max(0, Math.min(prezzo, importo - messo))
 
 /**
  * Segnata pagata a mano nella scheda, senza un pagamento nell'app: per `dovutiDi` non ha niente da pagare, e il
