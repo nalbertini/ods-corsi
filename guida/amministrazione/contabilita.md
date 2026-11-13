@@ -42,7 +42,8 @@ Si parte dal **mese corrente**. Filtri ed elenco stanno in un riquadro solo. In 
 (sullo schermo stretto vanno a capo):
 
 - la **ricerca** nella descrizione, nel nome o nell'importo (non bada a maiuscole, accenti e
-  spazi in più) e il **periodo**: i menu **Mese** e **Anno**, con le frecce **‹** e **›** per il mese
+  spazi in più; l'importo si scrive con la virgola, col punto delle migliaia o senza: «1.502,00»,
+  «1502,00» e «1502» trovano tutti 1.502,00 €, e «12,00» trova anche 112,00 €) e il **periodo**: i menu **Mese** e **Anno**, con le frecce **‹** e **›** per il mese
   prima e quello dopo. **›** si ferma al mese corrente; con **Tutti i mesi** le frecce non ci sono.
   **Tutti gli anni** guarda tutto lo storico; un mese scelto senza anno è di quest'anno. Ci sono anche i
   movimenti di prima della data di partenza di una cassa (lo storico importato): contano in BILANCIO e

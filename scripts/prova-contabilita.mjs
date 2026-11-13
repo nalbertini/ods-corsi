@@ -248,6 +248,12 @@ console.log('\n7. i filtri')
   ok('più filtri insieme', chi({ tipo: 'entrata', cassaId: 'c1' }), 'a')
   ok('un annullato con annullati e un filtro', chi({ annullati: true, voce: 'Donazioni' }), 'e')
   ok('non cambia l\'originale', prova(() => { const x = [b, a]; m.filtraMovimenti(x, { testo: 'rossi' }); return x.map((r) => r.id) }), ['b', 'a'])
+  // L'importo è in centesimi; si cerca come lo si legge, con due decimali, col punto delle migliaia o senza.
+  const soldi = [riga('m', 'uscita', '2026-09-20', 150200, 'c1', { descrizione: 'Bonifico' }), riga('n', 'uscita', '2026-09-20', 11200, 'c1', { descrizione: 'Bonifico' }), riga('o', 'uscita', '2026-09-20', 1200, 'c1', { descrizione: 'Bonifico' })]
+  const perCifra = (testo) => prova(() => m.filtraMovimenti(soldi, { testo }).map((r) => r.id).join(''))
+  ok('cercando l\'importo si trova la riga', [perCifra('1.502,00'), perCifra('1502,00'), perCifra('1502')], ['m', 'm', 'm'])
+  ok('«12,00» trova la riga da 12,00 (e quella da 112,00, che lo contiene)', perCifra('12,00'), 'no')
+  ok('un importo che non c\'è non trova niente', perCifra('99,00'), '')
 }
 
 console.log('\n8. i totali per voce')
