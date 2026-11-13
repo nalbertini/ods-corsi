@@ -34,7 +34,7 @@ const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { FOTO_NON_DEL_SITO, PUNTO_FUORI, nomeValido, puntoValido } from './sitoFoto'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
-import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
+import { abbinaPersone, cosaNonVaCollegato, cosaNonVaSuggerito, esitiCollegamenti, nomeDallaCausale, personeNelTesto, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
 import { cartaPerPersona, cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
 import { applicaScarico, NOME_CASSA_SATISPAY, SCARICO_FERMO, scaricoFermo, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
@@ -2173,9 +2173,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const m = contabilita().movimenti.find((x) => x.id === movimento)
       if (!m) throw new Error('Il movimento non c’è')
       // Come il database: solo un movimento che si può collegare, se no sarebbe una ricerca per nome sulle schede di chiunque.
-      const no = cosaNonVaCollegato(righeScelte([movimento])[0])
+      const no = cosaNonVaSuggerito(righeScelte([movimento])[0])
       if (no) throw new Error(no)
-      const { ids } = abbinaPersone(nomeDallaCausale(m.descrizione), personePerNome())
+      // Il nome di «Cliente … per …» e chi ha nome e cognome interi nel testo (i bonifici della banca), come il database.
+      const ids = [...new Set([...abbinaPersone(nomeDallaCausale(m.descrizione), personePerNome()).ids, ...personeNelTesto(m.descrizione, personePerNome())])]
       return a()
         .persone.filter((p) => ids.includes(p.id))
         .sort((x, y) => x.cognome.localeCompare(y.cognome) || x.nome.localeCompare(y.nome) || x.id.localeCompare(y.id))
