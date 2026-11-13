@@ -440,15 +440,22 @@ export const quotaDelListino = (listino: Listino, giorno: string) => ({ prezzo: 
  * sono quelli del listino nel giorno della prima assegnazione.
  */
 export function conAssegnazioni<P extends Pick<PersonaSeg, 'id' | 'quote' | 'vociCorsi'>>(p: P, diretti: PagamentoDiretto[], listino: Listino, oggi: string): P {
-  const sue = assegnazioniDi(diretti, p.id)
+  // Le schede lette dal database le hanno già dentro (`persone()`): ogni assegnazione si conta una volta sola.
+  const gia = (p as ConAssegnazioniDentro)[DENTRO] ?? []
+  const sue = assegnazioniDi(diretti, p.id).filter((d) => !gia.includes(d.id))
   if (!sue.length) return p
   const giorno = sue.map((d) => d.data).sort()[0]
   return {
     ...p,
-    quote: quoteConAssegnazioni(p.quote ?? [], quotaDelListino(listino, oggi), diretti, p.id),
-    vociCorsi: p.vociCorsi ? vociCorsiConAssegnazioni(p.vociCorsi, prezziDelListino(listino, giorno), diretti, p.id) : p.vociCorsi,
+    quote: quoteConAssegnazioni(p.quote ?? [], quotaDelListino(listino, oggi), sue, p.id),
+    vociCorsi: p.vociCorsi ? vociCorsiConAssegnazioni(p.vociCorsi, prezziDelListino(listino, giorno), sue, p.id) : p.vociCorsi,
+    [DENTRO]: [...gia, ...sue.map((d) => d.id)],
   }
 }
+
+/** Le assegnazioni già dentro quota e corsi di una scheda: un simbolo, che passa con le copie (`{ ...p }`) e non esce in JSON. */
+const DENTRO = Symbol('assegnazioni dentro')
+type ConAssegnazioniDentro = { [DENTRO]?: string[] }
 
 /**
  * Le cose ancora da pagare di una persona, per la ripartizione: la quota (intera, o quel che manca) e i corsi in cui è

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Chi ha pagato e per cosa</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .riq { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .vuoto { color: #46606f; border-color: #cfe6f4; }
+    .num { font-variant-numeric: tabular-nums; }
+    .voce { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+    .voce > span:first-child { flex: 1 1 220px; min-width: 0; }
+    .pag { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 6px; font-size: 14px; }
+  </style>
+</helmet>
+<!-- COSTRUITA (ChiEPerCosa di src/components/segreteria/ChiEPerCosa.tsx; regole in chiEPerCosa di src/lib/assegna.ts; ../persona-e-pagamento/): la finestra CHI HA PAGATO E PER COSA? (sg-velo + sg-dialogo, larga fino a 780px, scorre). La stessa dal campo PERSONA dell'import della banca, dal tasto «Chi e per cosa» di MOVIMENTI e da «Assegna a quota e corsi» del movimento. In cima SUGGERITE DAL TESTO (SchedaCandidata) e la ricerca (CampoPersona); scelta la persona, un riquadro per chi del nucleo: le cose da pagare (RigaDovuta: voce · manca, campo, tag Saldo/Parziale, «Resteranno…»), «Niente da pagare» se a posto, PAGAMENTI · N (gli ultimi quattro, ricevuta o «senza ricevuta»). Riquadri gialli (data-avviso) per «Già pagato a mano» (È questo bonifico / Non è questo) e C'È GIÀ LA RICEVUTA (Sì, è questa / No, dividi il bonifico), che prende il posto delle cose da pagare. Sotto: «Assegnati … di … · Da assegnare …», «Un solo modo di dividere: già messo» (data-tono fatto) finché non si tocca, Svuota tutto, l'errore (role alert), «TIPOLOGIA: «…», da quel che paga». Tasti: Conferma (pieno), «Conferma e fai la ricevuta» (solo dal movimento), «Solo la persona, decido dopo» (non dal movimento), Annulla. -->
+<div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:1180px;padding:40px 24px;background:rgba(0,0,0,.6)">
+<div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:780px;padding:28px;background:#ffffff;border:2px solid #0d2a3d">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h2 id="titolo" style="margin:0;font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-size:26px;font-weight:800;letter-spacing:.04em">CHI HA PAGATO E PER COSA?</h2>
+    <span style="font-size:14px;color:#46606f">27/10/2026 · Da GALLI M. per trimestre judo · <b style="color:#0b7a33">+ 120,00 €</b></span>
+  </div>
+  <label style="display:flex;flex-direction:column;gap:6px"><span class="et">CHI</span>
+    <input type="search" value="Galli" aria-label="Cerca per nome o cognome" style="width:100%;min-height:48px;padding:0 12px;background:#ffffff;border:2px solid #0d2a3d;border-radius:6px;font:inherit;font-size:16px;color:#0d2a3d"></label>
+  <div role="radiogroup" aria-label="Le persone" style="display:flex;gap:8px;flex-wrap:wrap">
+    <label style="display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 12px;border:2px solid #14709f;border-radius:6px"><input type="radio" name="p" checked style="width:20px;height:20px;margin:0"><b>Galli Matteo</b> <span class="sotto">Judo kids</span></label>
+    <label style="display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 12px;border:2px solid #cfe6f4;border-radius:6px"><input type="radio" name="p" style="width:20px;height:20px;margin:0"><b>Galli Martina</b> <span class="sotto">Judo ragazzi</span></label>
+    <label style="display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 12px;border:2px solid #cfe6f4;border-radius:6px"><input type="radio" name="p" style="width:20px;height:20px;margin:0"><b>Galli Mauro</b> <span class="sotto">Pilates</span></label>
+  </div>
+
+  <div class="riq">
+    <span class="et">GALLI MATTEO · CHI HA PAGATO</span>
+    <div class="voce"><span>Trimestre Judo kids <span class="sotto">· ott–dic · manca 120,00 €</span></span><span class="campo">120,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
+    <div class="voce"><span>Annuale Judo kids <span class="sotto">· oppure, al posto del trimestre · 420,00 €</span></span><span class="campo vuoto">0,00</span></div>
+    <span class="et" style="padding-top:6px">QUOTA ASSOCIATIVA</span>
+    <div class="voce"><span>Quota associativa 2026/27 <span class="sotto">· pagata il 21/09/2026</span></span><dc-import name="Badge" tipo="tag" label="Pagata" tono="verde" hint-size="90px,28px"></dc-import></div>
+    <span class="et" style="padding-top:6px">PAGAMENTI · 2</span>
+    <div class="pag"><span class="num" style="width:90px">21/09/2026</span><span style="flex:1 1 200px">Quota associativa 2026/27 <span class="sotto">· ricevuta n. 301/2026</span></span><span class="num">50,00 €</span></div>
+    <div class="pag"><span class="num" style="width:90px">10/09/2026</span><span style="flex:1 1 200px">Trimestre Judo kids · set <span class="sotto">· bonifico, senza ricevuta</span></span><span class="num">120,00 €</span></div>
+  </div>
+  <div class="riq" style="gap:4px">
+    <span class="et">GALLI SOFIA · STESSA FAMIGLIA</span>
+    <span class="sotto">Niente da pagare: corsi e quota a posto.</span>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">
+    <span class="num" style="font-size:15px">Assegnati 120,00 € di 120,00 € · Da assegnare 0,00 €</span>
+    <span style="font-size:13px;color:#0b7a33">Un solo modo di dividere: già messo.</span>
+  </div>
+  <span class="sotto">TIPOLOGIA: «Corsi e altri pagamenti», da quel che paga.</span>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" hint-size="140px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Solo la persona, decido dopo" hint-size="270px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="120px,48px"></dc-import>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":1180}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

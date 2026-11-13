@@ -3,7 +3,7 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { NOME_CASSA_CONTO, oggiARoma, vociOfferte, type Cassa, type RigaMovimento, type VoceContabile } from '../../lib/contabilita'
 import { assegnaDaSoli, assegnaDopoIlCollegamento, euroAssegna } from '../../lib/assegna'
 import { ChiEPerCosa } from './ChiEPerCosa'
-import { abbinamentiImport, anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, filtroIniziale, gruppiRighe, leggiBanca, PREFISSO_CHIAVE_BANCA, testoDaMostrare, MASSIMO_PER_IMPORTAZIONE, pianoDiAbbinamento, pianoDiAssegnazione, pianoDiClassificazione, ricevutaDellaPersona, sceltaDaFinestra, rigaComeMovimento, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type AbbinamentoBanca, type FiltroRigheBanca, type GruppoRigheBanca, type LetturaBanca, type MovimentoBanca, type RigaAnteprima, type SceltaVoceBanca, type SegnoBanca } from '../../lib/importaBanca'
+import { abbinamentiImport, anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, filtroIniziale, gruppiRighe, leggiBanca, PREFISSO_CHIAVE_BANCA, testoDaMostrare, MASSIMO_PER_IMPORTAZIONE, pianoDiAbbinamento, pianoDiAssegnazione, pianoDiClassificazione, collegatiDaAssegnare, ricevutaDellaPersona, sceltaDaFinestra, rigaComeMovimento, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type AbbinamentoBanca, type FiltroRigheBanca, type GruppoRigheBanca, type LetturaBanca, type MovimentoBanca, type RigaAnteprima, type SceltaVoceBanca, type SegnoBanca } from '../../lib/importaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import type { PersonaPerNome } from '../../lib/movimentiPersona'
 import { parolaDelMovimento, suggerisciMovimento, type SuggerimentoMovimento } from '../../lib/suggerimentoMovimento'
@@ -200,8 +200,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           const scelti = pianoDiAssegnazione(scelteValide, messi, conRicevuta, scrittiOra)
           const y = await assegnaDaSoli(d, scelti)
           if (y.errore) senzaAssegnare = y.errore
-          const giaScelti = new Set(scelti.map((z) => z.movimentoId))
-          const collegati = piano.lotti.filter((l) => !!l.personaId).flatMap((l) => l.ids).filter((id) => messi.has(id) && !conRicevuta.has(id) && !giaScelti.has(id))
+          const collegati = collegatiDaAssegnare(piano, scelteValide, scrittiOra, messi, conRicevuta)
           const x = await assegnaDopoIlCollegamento(d, collegati, oggiARoma())
           assegnati = y.chiavi.length + x.chiavi.length
           daScegliere = x.restano + (scelti.length - y.chiavi.length)

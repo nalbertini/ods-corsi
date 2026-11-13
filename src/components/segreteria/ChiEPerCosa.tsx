@@ -9,7 +9,8 @@ import { oggiARoma } from '../../lib/contabilita'
 import { CampoPersona, SchedaCandidata } from './CollegaPersona'
 import { DITO, Guaio, Tag, Tasto, useCarica, useDialogo } from './comune'
 
-const nome = (p?: Pick<PersonaSeg, 'nome' | 'cognome'>) => (p ? `${p.nome} ${p.cognome}` : '…')
+// Cognome e nome, come negli elenchi.
+const nome = (p?: Pick<PersonaSeg, 'nome' | 'cognome'>) => (p ? `${p.cognome} ${p.nome}` : '…')
 const chiaveDi = (x: { personaId: string; voce: string }) => `${x.personaId}\u0000${x.voce}`
 const valoriDa = (righe: RigaAssegnata[]) => Object.fromEntries(righe.map((r) => [chiaveDi(r), euro(r.importo)]))
 
@@ -163,7 +164,7 @@ export function ChiEPerCosa({
             ))}
             {dovuti.length > 0 && (
               <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'baseline' }}>
-                <span className="num" style={{ fontSize: 15 }}>Assegnati {euroAssegna(totale)} di {euroAssegna(importo)} · Da assegnare {euroAssegna(Math.max(0, importo - totale))}</span>
+                <span className="num" style={{ fontSize: 15 }}>Assegnati {euroAssegna(totale)} di {euroAssegna(importo)} · {totale > importo ? `${euroAssegna(totale - importo)} più del bonifico` : `Da assegnare ${euroAssegna(importo - totale)}`}</span>
                 {situazione.sicura && !valori && <span className="sg-sotto" data-tono="fatto">Un solo modo di dividere: già messo.</span>}
                 <button type="button" className="sg-link sg-pericolo" style={DITO} data-bozza onClick={() => setValori({})}>Svuota tutto</button>
               </div>

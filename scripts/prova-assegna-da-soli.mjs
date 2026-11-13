@@ -181,6 +181,13 @@ ok('la tipologia viene da quel che paga: solo quota → «Quota associativa»', 
 ok('…con un corso → «Corsi e altri pagamenti»', prova(() => tipologiaDaRighe([{ personaId: 'a', voce: 'Quota associativa 2026/27', importo: 5000 }, { personaId: 'a', voce: 'Annuale Judo adulti', importo: 61000 }])), 'Corsi e altri pagamenti')
 ok('…senza righe nessuna (resta quella che c\'è)', prova(() => tipologiaDaRighe([])), null)
 
+const conAss = fn(A, 'assegna', 'conAssegnazioni')
+const dA = { id: 'dA', personaId: 'sofia', data: '2026-10-01', importo: 6000, metodo: 'Bonifico', voce: 'Annuale Judo adulti', movimentoId: 'mA', creatoIl: '2026-10-01T10:00:00Z' }
+const giaDentro = prova(() => conAss(persona('sofia'), [dA], listino, oggi))
+ok('le schede dal database hanno già le assegnazioni dentro: non si tolgono due volte', prova(() => chiEPerCosa('sofia', 5000, { ...contesto([]), persone: [giaDentro], diretti: [dA] }).dovuti.map((v) => [v.voce, v.manca])),
+  [['Quota associativa 2026/27', 5000], ['Annuale Judo adulti', 55000]])
+ok('…e due bonifici uguali nel giro restano uno solo anche con quelle schede', prova(() => daSoli({ ...contesto([mov('m7', 60000, 'sofia'), mov('m8', 60000, 'sofia', { data: '2026-11-05' })]), persone: [giaDentro], diretti: [dA] }).pronti.map((x) => x.movimentoId)), ['m7'])
+
 console.log('Import: chi e per cosa scelti prima di importare')
 const B = await carica('importaBanca')
 const pianoDiAssegnazione = fn(B, 'importaBanca', 'pianoDiAssegnazione')
@@ -191,7 +198,11 @@ ok('si assegnano le righe scelte nella finestra, sui movimenti appena scritti e 
   new Set(['mv1', 'mv2']), new Set(), scrittiImport)), [{ chiave: 'k1', movimentoId: 'mv1', righe: righe1 }])
 ok('…non quelli che vanno con la ricevuta già fatta', prova(() => pianoDiAssegnazione({ k1: { voceId: 'v-corsi', personaId: 'sofia', righe: righe1 } }, new Set(['mv1']), new Set(['mv1']), scrittiImport)), [])
 ok('la scelta della finestra porta la tipologia giusta', prova(() => fn(B, 'importaBanca', 'sceltaDaFinestra')({ personaId: 'sofia', nomePersona: 'Sofia Test', righe: righe1 }, voci)), { voceId: 'v-corsi', personaId: 'sofia', nomePersona: 'Sofia Test', righe: righe1 })
-ok('…«Solo la persona»: la tipologia resta quella proposta', prova(() => fn(B, 'importaBanca', 'sceltaDaFinestra')({ personaId: 'sofia', nomePersona: 'Sofia Test', righe: [] }, voci, 'v-quota')), { voceId: 'v-quota', personaId: 'sofia', nomePersona: 'Sofia Test' })
+ok('…«Solo la persona»: la tipologia resta quella proposta', prova(() => fn(B, 'importaBanca', 'sceltaDaFinestra')({ personaId: 'sofia', nomePersona: 'Sofia Test', righe: [] }, voci, 'v-quota')), { voceId: 'v-quota', personaId: 'sofia', nomePersona: 'Sofia Test', soloPersona: true })
+
+ok('«Solo la persona» all\'import non si assegna da solo: non entra fra i collegati da assegnare', prova(() => fn(B, 'importaBanca', 'collegatiDaAssegnare')(
+  { lotti: [{ ids: ['mv1'], voceId: 'v-corsi', personaId: 'sofia' }, { ids: ['mv2'], voceId: 'v-corsi', personaId: 'anna' }, { ids: ['mv3'], voceId: 'v-corsi' }] },
+  { k1: { voceId: 'v-corsi', personaId: 'sofia', soloPersona: true }, k2: { voceId: 'v-corsi', personaId: 'anna' } }, scrittiImport, new Set(['mv1', 'mv2', 'mv3']), new Set())), ['mv2'])
 
 console.log('Scrivere chi e per cosa da MOVIMENTI')
 const scriviChiEPerCosa = fn(A, 'assegna', 'scriviChiEPerCosa')
