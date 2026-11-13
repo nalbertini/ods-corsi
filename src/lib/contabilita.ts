@@ -119,6 +119,8 @@ export const VOCE_CORSI = 'Corsi e altri pagamenti'
 export const VOCE_GARE = 'Gare'
 /** Il versamento «Da Satispay Europe S.A.» in banca, al netto della commissione: è l'incasso di Satispay (`132-satispay-solo-chi-ha-pagato.sql`). */
 export const VOCE_INCASSI_SATISPAY = 'Incassi Satispay'
+/** Le entrate che non sono di una persona, come il cashback della carta: la voce la crea la segreteria dall'app. */
+export const VOCE_ALTRE_ENTRATE = 'Altre entrate'
 /** Un'entrata su una quota o un corso, scritta a mano, ha la persona che ha pagato (`98-quote-persona.sql`). */
 export const vuolePersona = (tipo: string, voceNome: string | null | undefined): boolean =>
   tipo === 'entrata' && (voceNome === VOCE_QUOTA || voceNome === VOCE_CORSI)

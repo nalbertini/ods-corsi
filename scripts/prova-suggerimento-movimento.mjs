@@ -163,6 +163,20 @@ console.log('\n4c. il versamento di Satispay va su «Incassi Satispay» (132), s
   ok('un\'uscita verso Satispay Europe no', prova(() => m.suggerisciMovimento(riga({ tipo: 'uscita', descrizione: 'Satispay Europe commissioni' }), [], conSatispay, []).voce), null)
 }
 
+console.log('\n4d. il cashback va su «Altre entrate», senza persona')
+{
+  const conAltre = [...voci, { id: 'vae', nome: 'Altre entrate', tipo: 'entrata', diSistema: false, attiva: true }]
+  const p = [P('h', 'Bellavista', 'Hotel')]
+  const vero = 'PER ACQUISTO DI EURO 162,00 DA HOTEL BELLAVISTA IL 04/09/2026 ACCREDITO PER POSTEPAY CASHBACK BUSINESS'
+  const su = (d, v = conAltre, o = {}) => prova(() => { const x = m.suggerisciMovimento(riga({ descrizione: d, importo: 81, ...o }), [], v, p); return x && [x.caso, x.voce?.nome ?? null, x.persona, x.candidati.length] })
+  ok('il caso vero (07/10/2026, 0,81 €): la voce, nessuna persona', su(vero), ['C', 'Altre entrate', 'nessuna-senza-persona', 0])
+  ok('anche scritto in minuscolo', su('accredito cashback'), ['C', 'Altre entrate', 'nessuna-senza-persona', 0])
+  ok('all\'import vale senza persona', prova(() => m.suggerisciMovimento(riga({ descrizione: vero, importo: 81 }), [], conAltre, p).persona === 'nessuna-senza-persona' && m.confermaDi(m.suggerisciMovimento(riga({ descrizione: vero, importo: 81 }), [], conAltre, p), null)), { voceId: 'vae' })
+  ok('un\'uscita con «cashback» non si tocca', su('Storno CASHBACK Postepay', conAltre, { tipo: 'uscita' }), ['D', null, 'nessuna-spesa', 0])
+  ok('senza la voce «Altre entrate»: com\'è oggi', su(vero, voci), su(vero.replace('CASHBACK', 'RIMBORSO'), voci))
+  ok('la voce spenta non si propone', su(vero, conAltre.map((v) => (v.id === 'vae' ? { ...v, attiva: false } : v)))[1], null)
+}
+
 console.log('\n5. quando il blocco non c\'è')
 for (const [cosa, r] of [
   ['voce già vera', riga({ voce: 'Gare' })],
