@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 12px 14px; border: 2px solid {{bordo}}; border-radius: 6px; background: {{fondo}}; font-family: {{fam}}; color: {{c.text}}">
+  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+    <span style="display: flex; flex-direction: column; gap: 2px; flex: 1 1 160px; min-width: 0">
+      <span style="font-size: 15px; font-weight: 600; text-decoration: {{barra}}; color: {{coloreTitolo}}">{{data}} · Bonifico</span>
+      <span style="font-size: 12px; color: {{c.dim}}; overflow-wrap: anywhere">{{sotto}}</span>
+      <sc-if value="{{daAssegnare}}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 13px; font-weight: 600; color: {{c.gialloTesto}}">Da assegnare: finché non dici a cosa va, non conta come pagato.</span>
+      </sc-if>
+    </span>
+    <sc-if value="{{conTag}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="Badge" tema="sito" tipo="tag" tono="giallo" label="Senza ricevuta" hint-size="120px,24px"></dc-import>
+    </sc-if>
+    <span style="font-size: 18px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: {{coloreImporto}}">{{importo}} €</span>
+    <sc-if value="{{daAssegnare}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="principale" label="Assegna ›" hint-size="120px,44px"></dc-import>
+    </sc-if>
+    <sc-if value="{{conApri}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="Chip" tema="sito" label="Apri in contabilità" hint-size="180px,40px"></dc-import>
+    </sc-if>
+  </div>
+  <sc-if value="{{conParti}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 4px; padding-left: 14px; border-left: 2px solid {{c.line}}">
+      <sc-for list="{{parti}}" as="p" hint-placeholder-count="2">
+        <span style="display: flex; justify-content: space-between; gap: 12px; font-size: 14px; text-decoration: {{p.barra}}; color: {{p.colore}}">
+          <span style="min-width: 0; overflow-wrap: anywhere">{{p.voce}}</span>
+          <span style="font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums">{{p.importo}} €</span>
+        </span>
+      </sc-for>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["assegnato","annullato","daAssegnare"],"default":"assegnato"},"data":{"editor":"text","default":"12 ottobre 2026"},"da":{"editor":"text","default":"ROSSI MARIO"},"causale":{"editor":"text","default":"quota e judo Luca"},"importo":{"editor":"text","default":"180,00"},"parti":{"editor":"text","default":"Quota associativa:50,00|Trimestrale Judo:130,00"},"senzaRicevuta":{"editor":"boolean","default":true},"$preview":{"width":700,"height":150}}'>
+// COSTRUITA (`RigaBonificoVista` e `RigaDaAssegnareVista` di src/components/segreteria/Ricevute.tsx, `.sg-movimento*` di
+// src/segreteria.css; `../quota-senza-doppioni/`): un bonifico nella sezione PAGAMENTI della scheda iscritto, UNA riga per
+// movimento (`storicoPagamenti` e `righeDaAssegnare` di src/lib/schedeIscritto.ts).
+// Riquadro: padding 12px 14px, bordo 2px `line`, raggio 6px, fondo color-mix(line 20%, surface):
+// nel canvas era un azzurro a mano, si sta sui token). Testa a capo: «data · Bonifico» 15px 600, «da <ordinante>» 12px `dim`, il tag giallo «Senza ricevuta»
+// (`.sg-tag[data-tipo=presto]`) se una parte valida non ha ricevuta, importo 18px 700 `verde-testo`, un solo chip
+// «Apri in contabilità» (per chi vede CONTABILITÀ). Sotto le parti (voce e importo, 14px), rientrate con filetto 2px `line`.
+// `annullato`: nessuna parte valida, fondo `surface`, data e importo `dim` e barrati, niente tag.
+// `daAssegnare`: bordo `giallo-testo`, fondo `tinta-giallo` (nel canvas un giallo a mano), sotto «da X · «causale»» e la
+// frase gialla, importo `giallo-testo`, il tasto pieno «Assegna ›», niente parti; non conta nel pagato della stagione.
+// parti: "voce:importo" separati da |; una voce che finisce con "~" e' annullata (barrata, `dim`).
+const T = {
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', tintaGiallo: '#fcf6e6' },
+};
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T.sito;
+    const stato = p.stato || 'assegnato';
+    const daAssegnare = stato === 'daAssegnare';
+    const finito = stato === 'annullato';
+    const parti = String(p.parti ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
+      const k = s.lastIndexOf(':');
+      let voce = k > 0 ? s.slice(0, k).trim() : s;
+      const importo = k > 0 ? s.slice(k + 1).trim() : '';
+      const annullata = finito || voce.endsWith('~');
+      voce = voce.replace(/~$/, '');
+      return { voce, importo, barra: annullata ? 'line-through' : 'none', colore: annullata ? c.dim : 'inherit' };
+    });
+    const sotto = daAssegnare
+      ? [p.da ? `da ${p.da}` : '', p.causale ? `«${p.causale}»` : ''].filter(Boolean).join(' · ')
+      : (p.da ? `da ${p.da}` : '');
+    return {
+      c, fam: INTER, data: p.data ?? '12 ottobre 2026', importo: p.importo ?? '180,00', sotto, parti, daAssegnare,
+      bordo: daAssegnare ? c.gialloTesto : c.line,
+      fondo: daAssegnare ? c.tintaGiallo : finito ? c.surface : 'color-mix(in srgb, ' + c.line + ' 20%, ' + c.surface + ')',
+      barra: finito ? 'line-through' : 'none',
+      coloreTitolo: finito ? c.dim : c.text,
+      coloreImporto: daAssegnare ? c.gialloTesto : finito ? c.dim : c.verdeTesto,
+      conTag: !daAssegnare && !finito && p.senzaRicevuta !== false,
+      conApri: !daAssegnare,
+      conParti: !daAssegnare && parti.length > 0,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -482,9 +482,11 @@
 .sg-segno-regola[data-tono='verde'] { color: var(--verde-testo); }
 .sg-segno-regola[data-tono='spento'] { color: var(--dim); }
 /* I timbri in cima alla scheda: bordo e parola del colore dello stato, il resto si legge sul fondo. */
-/* Colonne uguali e alte uguali: un timbro più stretto o più basso sembrava meno importante, e il documento non lo è. */
-.sg-timbri { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; align-items: stretch; }
+/* Larghi e alti uguali in una riga: un timbro più stretto o più basso sembrava meno importante, e il documento non lo è.
+   Righe da tre; quel che avanza oltre il terzo si allarga a riempire l'ultima riga, così non resta una riga zoppa. */
+.sg-timbri { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; }
 .sg-timbro {
+  flex: 1 1 calc((100% - 24px) / 3);
   display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 44px; min-width: 0;
   padding: 12px 14px; text-align: left; background: var(--bg); border: 2px solid var(--tono, var(--line)); border-left-width: 4px;
   font-family: var(--cond); font-weight: 700; color: var(--sec);
@@ -503,10 +505,6 @@
 /* Disattivata non è un guaio (si annulla con RIATTIVA): bordo `testo`, niente rosso. */
 .sg-timbri-spenta { margin: 0; padding: 10px 14px; border: 2px dashed var(--text); font-size: 15px; line-height: 1.4; color: var(--sec); }
 .sg-timbri-spenta strong { margin-right: 8px; font-family: var(--cond); font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--text); }
-/* Sotto i 1000px la scheda è una colonna stretta: tre timbri in fila andrebbero a capo parola per parola. */
-@media (max-width: 1000px) {
-  .sg-timbri { grid-auto-flow: row; grid-template-columns: minmax(0, 1fr); }
-}
 .sg-iscritto {
   width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid var(--surface-2); text-align: left;
 }
@@ -638,6 +636,13 @@
 /* Un pagamento sotto la sua ricevuta: rientrato, con la barra a sinistra. Quello fatto a mano sta da solo, come una ricevuta. */
 .sg-pagamento { margin-left: 24px; min-height: 44px; padding: 4px 12px; background: var(--surface); border-left-width: 4px; }
 .sg-pagamento[data-amano] { margin-left: 0; background: var(--bg); border-left-width: 2px; }
+/* Un bonifico in PAGAMENTI: una riga sola per movimento, le parti sotto con un filo a sinistra (180 = 50 + 130). */
+.sg-movimento { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border: 2px solid var(--line); border-radius: 6px; background: color-mix(in srgb, var(--line) 20%, var(--surface)); }
+.sg-movimento-testa { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sg-movimento-parti { display: flex; flex-direction: column; gap: 4px; padding-left: 14px; border-left: 2px solid var(--line); }
+/* Da assegnare: giallo, come gli avvisi; non è ancora un pagamento. */
+.sg-movimento[data-da-assegnare] { border-color: var(--giallo-testo); background: var(--tinta-giallo); }
+.sg-movimento[data-annullato] { background: var(--surface); }
 /* Annullato è storia da poter verificare: leggibile, barrato e in grigio, non spento a metà. */
 .sg-riga-pagamento-tab.sg-iscritto[data-spento='true'] { opacity: 1; color: var(--dim); }
 /* Sotto il nome, per il telefono: data, a cosa serve, come, e i bollini. Sul computer stanno nelle loro colonne. */
@@ -1251,9 +1256,10 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-scheda-manca-riga { font-size: 15px; font-weight: 600; color: var(--text); }
 .sg-scheda-manca-perche { font-weight: 500; color: var(--dim); }
 .sg-scheda-piede-fisso { position: sticky; bottom: 0; z-index: 2; padding-bottom: 12px; background: var(--surface); }
-/* Stretto: i timbri due per due (una colonna sola spingerebbe le schede sotto lo scorrimento; questa regola sta dopo quella a una colonna e vince) e le quattro linguette stanno tutte nella larghezza, il segno va sotto il nome (niente scorrimento nascosto). */
+/* Stretto: tre timbri in fila non stanno, due per due lasciavano mezza riga vuota col terzo. Uno per riga, compatti,
+   così le schede restano vicine. Le quattro linguette stanno tutte nella larghezza, il segno va sotto il nome (niente scorrimento nascosto). */
 @media (max-width: 1000px) {
-  .sg-timbri { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-timbro { flex-basis: 100%; gap: 2px; padding: 8px 14px; }
   .sg-schede-scheda { grid-auto-columns: minmax(0, 1fr); align-self: stretch; width: 100%; }
   .sg-schede-scheda .sg-scheda-segno { letter-spacing: 0.04em; }
   .sg-scheda-lunga { display: none; }

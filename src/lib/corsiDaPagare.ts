@@ -1,4 +1,4 @@
-import { conti, entroAnnuale, euroBreve, QUOTA, type Ricevuta } from './ricevute'
+import { conti, entroAnnuale, euroBreve, eVoceAnnuale, QUOTA, type Ricevuta } from './ricevute'
 import { voceDelCorso, nomeCorso, type CorsoRef, type Listino } from './listino'
 import { STAGIONE, type VoceCosto } from './costi'
 import { dataLunga } from './sala'
@@ -19,21 +19,31 @@ export interface VoceCorso {
   dal?: string
   al?: string
   mancano: number
+  /** Centesimi, quantità per prezzo: il timbro dice «pagati … su …». */
+  totale?: number
   /** Il giorno della ricevuta: l'annuale si chiude entro il 31 dicembre di quell'anno. */
   data?: string
 }
 
-/** Come `quoteDi`, per le altre voci: quel che manca non supera quel che resta della ricevuta (l'anticipo copre). */
+/**
+ * Come `quoteDi`, per le altre voci: quel che manca non supera quel che resta della ricevuta. L'anticipo è la
+ * prima rata dell'annuale (come in `rateAnnuale`): si toglie dalle voci «Annuale …», e quel che avanza resta alle
+ * altre voci e alla quota, che lo vedono solo in `conti(r).netto`.
+ */
 export function vociCorsiDi(ricevute: Ricevuta[]): VoceCorso[] {
   return ricevute
     .filter((r) => !r.annullataIl)
     .flatMap((r) => {
       const resta = conti(r).netto
+      let anticipo = r.anticipo
       return r.voci
         .filter((v) => v.descrizione.trim().toUpperCase() !== QUOTA)
         .map((v) => {
           const pagata = v.pagamenti.reduce((s, p) => s + p.importo, 0)
-          return { descrizione: v.descrizione, dal: v.dal, al: v.al, mancano: Math.min(Math.max(0, v.quantita * v.prezzo - pagata), resta), data: r.data }
+          const dovuto = Math.max(0, v.quantita * v.prezzo - pagata)
+          const dallAnticipo = eVoceAnnuale(v.descrizione) ? Math.min(anticipo, dovuto) : 0
+          anticipo -= dallAnticipo
+          return { descrizione: v.descrizione, dal: v.dal, al: v.al, mancano: Math.min(dovuto - dallAnticipo, resta), totale: v.quantita * v.prezzo, data: r.data }
         })
     })
 }
@@ -52,6 +62,8 @@ export interface StatoCorso {
   entro?: string
   /** Passata quella data. */
   oltre?: boolean
+  /** Centesimi: per `in_parte` il totale della voce, per `da_pagare` l'annuale del listino. */
+  totale?: number
 }
 
 const PAGATI: ComeCorso[] = ['pagato', 'fuori_app', 'satispay']
@@ -130,7 +142,7 @@ export function statoCorsi(
       const parte = sue.filter((v) => v.mancano > 0 && (!v.dal || v.dal <= giorno) && (!v.al || v.al >= giorno)).sort((a, b) => a.mancano - b.mancano)[0]
       if (parte) {
         const entro = parte.formula === 'annuale' && parte.data ? entroAnnuale(parte.data) : undefined
-        return { ...base, come: 'in_parte', formula: parte.formula, al: parte.al, mancano: parte.mancano, ...(entro ? { entro, oltre: oggi > entro } : {}) }
+        return { ...base, come: 'in_parte', formula: parte.formula, al: parte.al, mancano: parte.mancano, ...(entro ? { entro, oltre: oggi > entro } : {}), ...(parte.totale ? { totale: parte.totale } : {}) }
       }
       if (ecc.stato === 'pagato' && fino >= giorno) return { ...base, come: 'fuori_app', al: fino }
       // La quota pagata dall'area iscritti è dentro `satispay` ma non è l'iscrizione di prima: i corsi no.
@@ -138,7 +150,10 @@ export function statoCorsi(
       const finita = piuLontana(sue.filter((v) => v.al && v.al < giorno))
       if (finita) return { ...base, come: 'scaduto', formula: finita.formula, al: finita.al }
       if (ecc.stato === 'pagato' && ecc.fino) return { ...base, come: 'fuori_scaduto', al: ecc.fino }
-      return { ...base, come: aMano ? 'da_controllare' : 'da_pagare' }
+      if (aMano) return { ...base, come: 'da_controllare' }
+      // Senza nessun pagamento il timbro dice quanto costa l'anno: la prima riga del listino che ha un annuale.
+      const annuale = voceDelCorso(listino.corsi, c)?.prezzi.find((x) => x.annuale)?.annuale
+      return { ...base, come: 'da_pagare', ...(annuale ? { totale: Math.round(annuale * 100) } : {}) }
     })
     .sort((a, b) => a.corso.localeCompare(b.corso, 'it'))
 }
@@ -206,6 +221,3 @@ export function testoCorsoBreve(s: StatoCorso): string {
   return `${s.corso}: ${dopo}`
 }
 
-/** Sotto il corso scaduto nella scheda: la voce da mettere nella ricevuta nuova, con le parole del modulo. */
-export const consiglioCorso = (s: StatoCorso): string =>
-  `Una ricevuta nuova con «${s.formula === 'annuale' ? 'Annuale' : 'Trimestre'} ${s.corso}» lo rimette a posto. In sala entra lo stesso.`

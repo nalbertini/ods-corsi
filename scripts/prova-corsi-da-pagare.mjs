@@ -51,6 +51,7 @@ const corsiDaPagare = lib('corsiDaPagare')
 const corsiScaduti = lib('corsiScaduti')
 const testoCorso = lib('testoCorso')
 const testoCorsoBreve = lib('testoCorsoBreve')
+const ric = await impacchetta("export { quoteDi } from './src/lib/ricevute'")
 const seg = await impacchetta("export { pagamentoDi, comePaga, inRegola } from './src/lib/segreteria'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'")
 
 // ---- i dati ----------------------------------------------------------------
@@ -113,8 +114,27 @@ console.log('1. vociCorsiDi: le voci di corso delle ricevute')
   ok('la QUOTA non c\'è, la ricevuta annullata non conta', Array.isArray(v) ? v.map((x) => x.descrizione) : v, ['Trimestre Judo 3', 'Annuale Pilates'])
   ok('descrizione, dal, al e quanto manca (centesimi, 0 = pagata)', Array.isArray(v) ? v.map((x) => [x.dal, x.al, x.mancano]) : v, [['2026-09-16', '2026-12-15', 0], ['2026-09-01', '2027-06-30', 4000]])
   const anticipo = vociCorsiDi([ricevuta([voce('Annuale Pilates', '2026-09-01', '2027-06-30', { prezzo: 20000, pagato: 0 })], { anticipo: 20000 })])
+  ok('totale: quantità per prezzo della voce, prima di togliere il pagato (centesimi)', Array.isArray(v) ? v.map((x) => x.totale) : v, [13000, 20000])
   ok('un anticipo che copre la ricevuta: non manca niente (come quoteDi)', Array.isArray(anticipo) ? anticipo.map((x) => x.mancano) : anticipo, [0])
   ok('nessuna ricevuta: nessuna voce', vociCorsiDi([]), [])
+  // L'anticipo è la prima rata dell'annuale (come `rateAnnuale`): va al corso, quel che avanza alla quota.
+  // Quota 30 € e annuale 480 €, anticipo 160 €: restano 350 €, 320 sul corso (pagati 160 su 480) e 30 sulla quota.
+  const quotaDaPagare = voce('QUOTA ASSOCIATIVA', '2026-09-01', '2027-07-31', { prezzo: 3000, pagato: 0 })
+  const diviso = vociCorsiDi([ricevuta([quotaDaPagare, voce('Annuale Judo 3', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo: 16000 })])
+  ok('anticipo su quota e annuale: al corso mancano 320 € (pagati 160 su 480)', Array.isArray(diviso) ? diviso.map((x) => [x.mancano, x.totale]) : diviso, [[32000, 48000]])
+  const piuDelCorso = vociCorsiDi([ricevuta([quotaDaPagare, voce('Annuale Judo 3', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo: 49000 })])
+  ok('anticipo più dell\'annuale: il corso è pagato, l\'avanzo va alla quota', Array.isArray(piuDelCorso) ? piuDelCorso.map((x) => x.mancano) : piuDelCorso, [0])
+  const quote = (anticipo) => ric.quoteDi([ricevuta([quotaDaPagare, voce('Annuale Judo 3', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo })]).map((q) => q.mancano)
+  ok('…e alla quota mancano ancora 30 €', quote(16000), [3000])
+  ok('…con l\'anticipo più dell\'annuale alla quota mancano 20 €', quote(49000), [2000])
+  // Trimestre 100 € e annuale 480 €, anticipo 160 €: l'anticipo è dell'annuale, il trimestre resta da pagare.
+  const misto = vociCorsiDi([ricevuta([voce('Trimestre Judo 3', '2026-09-16', '2026-12-15', { prezzo: 10000, pagato: 0 }), voce('Annuale Pilates', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo: 16000 })])
+  ok('trimestre e annuale: l\'anticipo va all\'annuale, non alla prima voce', Array.isArray(misto) ? misto.map((x) => x.mancano) : misto, [10000, 32000])
+  const conAnticipo = persona({ ricevute: [ricevuta([quotaDaPagare, voce('Annuale Judo 3', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo: 16000 })] })
+  const s = statoCorsi(conAnticipo, corsi, listino, OGGI)?.[0]
+  ok('…e lo stato del corso dà al timbro mancano 320 € su 480 €', s && [s.come, s.mancano, s.totale], ['in_parte', 32000, 48000])
+  const soloCorso = vociCorsiDi([ricevuta([voce('Annuale Judo 3', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo: 16000 })])
+  ok('anticipo solo sul corso: mancano 320 € come prima', Array.isArray(soloCorso) ? soloCorso.map((x) => x.mancano) : soloCorso, [32000])
 }
 
 console.log('\n2. Trimestre scaduto: il giorno dopo `al`')
@@ -176,6 +196,7 @@ console.log('\n7. Pagato in parte')
   const p = persona({ ricevute: [ricevuta([voce('Annuale Pilates', '2026-09-01', '2027-06-30', { prezzo: 20000, pagato: 16000 })])], iscrizioni: [{ corsoId: 'pilates', dal: '2026-09-01' }] })
   ok('annuale a rate, valido oggi: in parte', stati(p), [['Pilates', 'in_parte', '2027-06-30']])
   ok('mancano in centesimi', statoCorsi(p, corsi, listino, OGGI)?.[0]?.mancano, 4000)
+  ok('in parte: il totale della voce, in centesimi', statoCorsi(p, corsi, listino, OGGI)?.[0]?.totale, 20000)
   ok('formula annuale', statoCorsi(p, corsi, listino, OGGI)?.[0]?.formula, 'annuale')
   // Caso 315/2026: l'annuale si chiude entro il 31 dicembre dell'anno della ricevuta (data 2026-09-16 qui).
   ok('l’annuale a rate porta la scadenza del 31 dicembre', statoCorsi(p, corsi, listino, OGGI)?.[0]?.entro, '2026-12-31')
@@ -186,6 +207,16 @@ console.log('\n7. Pagato in parte')
   ok('è fra i corsi da pagare', corsiScaduti([p], corsi, listino, OGGI), 1)
   const pagataEIn = persona({ ricevute: [ricevuta([voce('Annuale Pilates', '2026-09-01', '2027-06-30', { prezzo: 20000, pagato: 16000 }), voce('Annuale Pilates', '2026-09-01', '2027-06-30')])], iscrizioni: [{ corsoId: 'pilates', dal: '2026-09-01' }] })
   ok('una voce pagata valida batte quella in parte', stati(pagataEIn), [['Pilates', 'pagato', '2027-06-30']])
+}
+
+console.log('\n7b. Il totale di un corso da pagare è l\'annuale del listino')
+{
+  const daPagare = (p, l = listino) => statoCorsi(p, corsi, l, OGGI)?.[0]
+  ok('da pagare: annuale del listino per 100', daPagare(persona())?.totale, 34000)
+  ok('da pagare con due righe di listino: la prima con un annuale', daPagare(persona({ iscrizioni: [{ corsoId: 'fitness', dal: '2026-09-16' }] }))?.totale, 40000)
+  const soloTrimestre = { ...listino, corsi: listino.corsi.map((c) => (c.corso === 'Judo 3' ? { corso: 'Judo 3', ...prezzi({ trimestre: 130 }) } : c)) }
+  ok('listino senza annuale: nessun totale', [daPagare(persona(), soloTrimestre)?.come, daPagare(persona(), soloTrimestre)?.totale], ['da_pagare', undefined])
+  ok('scaduto: nessun totale (non c\'è un importo da chiedere)', statoCorsi(persona({ ricevute: [ricevuta([trimestre('Judo 3', '2026-09-16', '2026-12-15')])] }), corsi, listino, OGGI)?.[0]?.totale, undefined)
 }
 
 console.log('\n8. Chi non c\'è: corsi gratuiti, iscrizioni finite, disattivati')
@@ -335,13 +366,6 @@ console.log('\n19. Casi al limite delle date')
   ok('una voce senza date pagata a metà: in parte', cs(statoCorsi(persona({ ricevute: [ricevuta([trimestre('Judo 3', undefined, undefined, { pagato: 5000 })])] }), corsi, listino, OGGI)), [['Judo 3', 'in_parte', null]])
   const futura = persona({ ricevute: [ricevuta([trimestre('Judo 3', '2026-12-20', '2027-03-20', { pagato: 5000 })])] })
   ok('un trimestre pagato in parte che comincia fra quattro giorni non è «in parte» oggi', cs(statoCorsi(futura, corsi, listino, OGGI)), [['Judo 3', 'da_pagare', null]])
-}
-
-console.log('\n20. Il consiglio della scheda: con quale voce si rimette a posto')
-{
-  const consiglio = lib('consiglioCorso')
-  ok('trimestre', consiglio({ corsoId: 'judo3', corso: 'Judo 3', come: 'scaduto', formula: 'trimestre', al: '2026-12-15' }), 'Una ricevuta nuova con «Trimestre Judo 3» lo rimette a posto. In sala entra lo stesso.')
-  ok('annuale', consiglio({ corsoId: 'pilates', corso: 'Pilates', come: 'scaduto', formula: 'annuale', al: '2026-06-30' }), 'Una ricevuta nuova con «Annuale Pilates» lo rimette a posto. In sala entra lo stesso.')
 }
 
 console.log('\n21. Il corso archiviato: conta solo fino al giorno in cui si è archiviato')

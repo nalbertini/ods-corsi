@@ -3,8 +3,8 @@ import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, famiglia
 import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
-import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
+import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, PrezzoQuota, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
+import { avvisiGesto, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, prezzoQuotaDi, timbriScheda, vienePoco, azioniTestata, vociQuota } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -22,12 +22,11 @@ import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, fratelliDaPr
 import { minorenne } from '../../lib/richieste'
 import { euro, voceQuota } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, cosaPassa, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
-import { StoricoPersona } from './CollegaPersona'
 import { PagatoPrima } from './PagatoPrima'
 import { CellaSollecito, SollecitoWhatsApp, useSollecito } from './Sollecito'
 import { cellaSollecito, fraseSollecitato, quotaNelVecchioDi } from '../../lib/sollecito'
-import { consiglioCorso, corsiDaPagare, nonPagati, statoCorsi, testoCorsoBreve, type StatoCorso } from '../../lib/corsiDaPagare'
-import { bollinoCorso, iscrizioniDellaScheda, riquadroCertificato, riquadroCorso, riquadroDocumento, riquadroQuota } from '../../lib/schedeIscritto'
+import { corsiDaPagare, nonPagati, statoCorsi, testoCorsoBreve, type StatoCorso } from '../../lib/corsiDaPagare'
+import { bollinoCorso, iscrizioniDellaScheda, riquadroCertificato, riquadroDocumento, timbriCorsi } from '../../lib/schedeIscritto'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 import { Icona, ICONE_ISCRITTI } from '../Icons'
 
@@ -416,6 +415,7 @@ export function Iscritti({
             tutti={tutti}
             corsi={perId}
             statiCorsi={statiDi(persona)}
+            prezzoQuota={prezzoQuotaDi(listino, (l) => voceQuota(l.listino).voce(oggi).prezzo)}
             attivi={attivi}
             f={freq.dato?.get(persona.id)}
             tessere={conTessereLette ? tessere.dato!.elenco : undefined}
@@ -768,9 +768,12 @@ function Scheda({
   giroSolleciti,
   onSollecitato,
   statiCorsi,
+  prezzoQuota,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
+  /** Il prezzo della quota nel listino, in centesimi (voceQuota): il timbro DA PAGARE dice quanto. 'leggo' mentre si legge, undefined se non si legge. */
+  prezzoQuota?: PrezzoQuota
   /** I corsi a pagamento in corso, pagati o no (`statoCorsi`); undefined se non si sa. */
   statiCorsi?: StatoCorso[]
   /** Tutti gli iscritti, per il nucleo familiare. */
@@ -844,6 +847,10 @@ function Scheda({
   const sollecito = useSollecito({ d, p, oggi, giro: giroAnagrafica, giroSolleciti, quotaNelVecchio, titolari, corsi: statiCorsi, aperto: sollecitoAperto })
   const azioni = azioniTestata(p, !!sollecito.s, { modifica: !!modifica, unendo, pagando })
   const voci = azioni.altro
+  // Chi fa solo da titolare non ha quota: niente voci della quota.
+  const quotaVoci = voci.length > 0 && !p.genitoreNonIscritto ? vociQuota(p, oggi) : []
+  // «Segna la quota pagata…» dal menu: il modulo si apre in cima a PAGAMENTI.
+  const [segnaQuota, setSegnaQuota] = useState(false)
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
   // Letti qui e non in DATI ANAGRAFICI: età e COSA MANCA in cima alla scheda li vogliono.
   const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
@@ -916,6 +923,31 @@ function Scheda({
               )}
               {voci.length > 0 && (
                 <MenuAzioni etichetta="Altro">
+                  {quotaVoci.includes('segna') && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setSegnaQuota(true)
+                        vaiAlTimbro('sez-quota')
+                      }}
+                    >
+                      Segna la quota pagata fuori dall’app…
+                    </button>
+                  )}
+                  {quotaVoci.includes('togli') && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="sg-pericolo"
+                      onClick={async () => {
+                        if (await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'Togli l’eccezione', { pericolo: true }))
+                          void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
+                      }}
+                    >
+                      {pagamentoDi(p, oggi).fonte === 'ricevuta' ? 'Togli «pagata fuori dall’app»: c’è la ricevuta' : 'Togli «pagata fuori dall’app»'}
+                    </button>
+                  )}
                   {voci.includes('unisci') && (
                     <button type="button" role="menuitem" onClick={() => setUnendo(true)}>
                       Unisci con un altro iscritto…
@@ -980,7 +1012,7 @@ function Scheda({
         </div>
       )}
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
-      {!unendo && !pagando && !soloGenitore && letta && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
+      {!unendo && !pagando && !soloGenitore && letta && <Timbri p={p} oggi={oggi} prezzoQuota={prezzoQuota} statiCorsi={statiCorsi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -1181,13 +1213,12 @@ function Scheda({
 
       <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={vista !== 'quota'}>
         <div id="sez-quota" className="stack" style={{ gap: 24, minWidth: 0 }}>
-            <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} statiCorsi={statiCorsi} fai={fai} onCambiato={onCambiato} onNuova={() => setPagando(true)} />
-            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} onMovimento={onMovimento} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onCambiato={onCambiato} contabilita={contabilita} riprendi={riprendi ?? undefined} onRicevuta={(x) => {
+            {segnaQuota && <SegnaQuota d={d} p={p} fai={fai} onFatto={() => { setSegnaQuota(false); onCambiato() }} onChiudi={() => setSegnaQuota(false)} />}
+            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} onMovimento={onMovimento} onNuova={() => setPagando(true)} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onCambiato={onCambiato} contabilita={contabilita} riprendi={riprendi ?? undefined} onRicevuta={(x) => {
               setRiprendi(null)
               setDaPagamento(x)
               setPagando(true)
             }} />
-            <StoricoPersona key={`s-${p.id}`} d={d} personaId={p.id} onMovimento={onMovimento} />
         </div>
       </div>
 
@@ -1348,11 +1379,11 @@ function vaiA(id: string) {
 }
 
 /**
- * In cima alla scheda: certificato, quota e documento in un colpo d'occhio,
+ * In cima alla scheda: certificato, quota e i corsi da pagare in un colpo d'occhio,
  * con le parole dell'elenco (`timbriScheda`). Ognuno porta alla sua sezione.
  */
-function Timbri({ p, oggi, tessera, onVai }: { p: PersonaSeg; oggi: string; tessera: ReturnType<typeof timbroTessera>; onVai: (id: string) => void }) {
-  const t = timbriScheda(p, oggi)
+function Timbri({ p, oggi, tessera, onVai, prezzoQuota, statiCorsi }: { p: PersonaSeg; oggi: string; tessera: ReturnType<typeof timbroTessera>; onVai: (id: string) => void; prezzoQuota?: PrezzoQuota; statiCorsi?: StatoCorso[] }) {
+  const t = timbriScheda(p, oggi, prezzoQuota)
   const uno = (titolo: string, x: Timbro, id: string) => (
     <button type="button" className="sg-timbro" data-tono={x.tono} onClick={() => onVai(id)}>
       <span className="sg-timbro-titolo">{titolo}</span>
@@ -1373,9 +1404,10 @@ function Timbri({ p, oggi, tessera, onVai }: { p: PersonaSeg; oggi: string; tess
       )}
       <div className="sg-timbri">
         {uno('CERTIFICATO MEDICO', t.certificato, 'sez-certificato')}
-        {uno('QUOTA', t.quota, 'sez-quota')}
+        {uno('QUOTA ASSOCIATIVA', t.quota, 'sez-quota')}
+        {/* Un timbro per ogni corso da pagare: il pagato non si dice, si vede in PAGAMENTI. */}
+        {timbriCorsi(statiCorsi ?? []).map((c) => <Fragment key={c.titolo}>{uno(c.titolo, p.attiva ? c : { ...c, tono: 'spento' }, 'sez-quota')}</Fragment>)}
         {tessera && uno('TESSERA', { ...tessera, tono: p.attiva ? tessera.tono : 'spento' }, 'sez-tessere')}
-        {uno('DOCUMENTO D’IDENTITÀ', t.documento, 'sez-documento')}
       </div>
     </div>
   )
@@ -2216,81 +2248,41 @@ function Documento({ d, p, minore, fai, onCambiato }: { d: DatiSegreteria; p: Pe
 }
 
 /**
- * La quota: se ha pagato lo dicono le ricevute (la QUOTA ASSOCIATIVA che vale
- * oggi, vedi `pagamentoDi`). Per chi ha pagato fuori dall'app, prima dell'app
- * o con una ricevuta di carta, c'è l'eccezione scritta a mano, fino a una
- * data. Sotto, fin quando sono pagati i corsi: si guardano, non contano.
+ * «Segna la quota pagata fuori dall’app», aperto dal menu Altro: per chi ha
+ * pagato senza una ricevuta dell’app (prima dell’app, o con una di carta),
+ * fino a una data. Le ricevute la segnano da sole.
  */
-function Pagamento({ d, p, fai, onCambiato, onNuova, statiCorsi }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void; onNuova: () => void; statiCorsi?: StatoCorso[] }) {
+function SegnaQuota({ d, p, fai, onFatto, onChiudi }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
   const oggi = chiaveGiorno(new Date())
-  const s = pagamentoDi(p, oggi)
-  const eccezione = p.pagamento.stato !== 'da_pagare'
-  const [scrivi, setScrivi] = useState(false)
   const [b, setB] = useState({ fino: stagioneDi(oggi).quota.al, nota: '' })
-  // Il primo corso scaduto dice quale voce scrivere sulla ricevuta nuova.
-  const scaduto = statiCorsi?.find((c) => c.come === 'scaduto')
-
+  // Aperto dal menu, si porta in vista: sul telefono starebbe sotto lo schermo.
+  const modulo = useRef<HTMLDivElement>(null)
+  useEffect(() => modulo.current?.scrollIntoView({ block: 'center' }), [])
   return (
-    <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo="QUOTA">
-        <button type="button" className={tastoPrincipale(p, oggi) === 'quota' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo onClick={onNuova}>
-          + Fai la ricevuta
+    <div ref={modulo} className="stack" style={{ gap: 8, padding: '12px 14px', border: '2px dashed var(--tratteggio)' }}>
+      <span className="sg-etichetta">QUOTA PAGATA FUORI DALL’APP</span>
+      <span style={{ fontSize: 14, color: 'var(--sec)' }}>Per chi ha pagato la quota senza una ricevuta dell’app: prima dell’app, o con una ricevuta di carta.</span>
+      <div className="sg-due">
+        <Campo id="pg-fino" etichetta="VALE FINO AL">
+          <input id="pg-fino" className="sg-campo" type="date" value={b.fino} onChange={(e) => setB({ ...b, fino: e.target.value })} />
+        </Campo>
+        <Campo id="pg-nota" etichetta="NOTA · FACOLTATIVA">
+          <input id="pg-nota" className="sg-campo" maxLength={300} placeholder="Ricevuta di carta n. 12…" value={b.nota} onChange={(e) => setB({ ...b, nota: e.target.value })} />
+        </Campo>
+      </div>
+      <div className="row" style={{ gap: 8 }}>
+        <button type="button" className="sg-btn sg-btn-linea grow" onClick={onChiudi}>
+          Lascia stare
         </button>
-      </Riga>
-      <Stato {...riquadroQuota(p, oggi)}>
-        {!scrivi && eccezione ? (
-          <button
-            type="button"
-            className="num sg-chip sg-pericolo"
-            onClick={async () => {
-              if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'Togli l’eccezione', { pericolo: true })))
-                void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
-            }}
-          >
-            {s.fonte === 'ricevuta' ? 'Togli «fuori app»: non serve più' : 'Togli'}
-          </button>
-        ) : (
-          !scrivi &&
-          s.come !== 'pagato' && (
-            <button type="button" className="num sg-chip" onClick={() => setScrivi(true)}>
-              Segna come pagata
-            </button>
-          )
-        )}
-      </Stato>
-      {scrivi ? (
-        <div className="stack" style={{ gap: 8, padding: '12px 14px', border: '2px dashed var(--tratteggio)' }}>
-          <span style={{ fontSize: 14, color: 'var(--sec)' }}>Per chi ha pagato la quota senza una ricevuta dell’app: prima dell’app, o con una ricevuta di carta.</span>
-          <div className="sg-due">
-            <Campo id="pg-fino" etichetta="VALE FINO AL">
-              <input id="pg-fino" className="sg-campo" type="date" value={b.fino} onChange={(e) => setB({ ...b, fino: e.target.value })} />
-            </Campo>
-            <Campo id="pg-nota" etichetta="NOTA · FACOLTATIVA">
-              <input id="pg-nota" className="sg-campo" maxLength={300} placeholder="Ricevuta di carta n. 12…" value={b.nota} onChange={(e) => setB({ ...b, nota: e.target.value })} />
-            </Campo>
-          </div>
-          <div className="row" style={{ gap: 8 }}>
-            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setScrivi(false)}>
-              Lascia stare
-            </button>
-            <button
-              type="button"
-              className="sg-btn sg-btn-pieno grow"
-              disabled={!b.fino || b.fino < oggi}
-              onClick={() =>
-                void fai(() => d.salvaPagamento(p.id, { stato: 'pagato', fino: b.fino, nota: b.nota.trim() || undefined }), 'Quota segnata pagata fuori dall’app', () => {
-                  setScrivi(false)
-                  onCambiato()
-                })
-              }
-            >
-              Segna pagata
-            </button>
-          </div>
-        </div>
-      ) : null}
-      {statiCorsi?.map((c) => <Stato key={c.corsoId} {...riquadroCorso(c)} />)}
-      {scaduto && <span style={{ fontSize: 14, color: 'var(--dim)' }}>{consiglioCorso(scaduto)}</span>}
+        <button
+          type="button"
+          className="sg-btn sg-btn-pieno grow"
+          disabled={!b.fino || b.fino < oggi}
+          onClick={() => void fai(() => d.salvaPagamento(p.id, { stato: 'pagato', fino: b.fino, nota: b.nota.trim() || undefined }), 'Quota segnata pagata fuori dall’app', onFatto)}
+        >
+          Segna pagata
+        </button>
+      </div>
     </div>
   )
 }

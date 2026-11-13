@@ -174,30 +174,30 @@ resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 Sotto il nome, l'età e da quando è in elenco. Se manca qualcosa, prima di tutto
 c'è il riquadro rosso **✕ COSA MANCA**, una riga per cosa: il telefono e
 l'email per ricevute e avvisi, il codice fiscale (**serve per la ricevuta**), la
-data di nascita, e per un minorenne il nome e il codice fiscale del genitore.
+data di nascita, per un minorenne il nome e il codice fiscale del genitore, e il
+**Documento d’identità** (da portare in segreteria, non serve per entrare).
 Una scheda in regola per quota e certificato può avere lo stesso il riquadro:
 dice cosa completare nei dati. Quando non manca niente il riquadro non c'è.
 
-Poi i timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
-grandi (verde a posto, giallo da guardare, rosso manca), con le parole
+Poi i timbri dicono subito come sta, tre per riga (sugli schermi stretti, come il telefono, uno sotto l'altro): **CERTIFICATO MEDICO**,
+**QUOTA ASSOCIATIVA** e un timbro per ogni corso da pagare (verde a posto, giallo da
+guardare, rosso manca; verde solo se non manca niente). Senza certificato il timbro
+dice **MANCA**, sotto **SENZA NON ENTRA**. La quota da pagare dice **DA PAGARE** e
+quanto (**50,00 €**): finché il listino non arriva, sotto c'è **STO LEGGENDO IL LISTINO…**, e se non si legge la cifra non c'è. Pagata, **PAGATA** e fin quando. Il timbro di un corso dice
+quanto manca (**JUDO 3 · MANCANO 350,00 €**) ed entro quando. Le parole sono
 dell'elenco ma la data intera: **SCADUTO IL 25/09/2026**, **VALIDO FINO
 AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
 (**SCADE IL 14/10/2026**, sotto **FRA 18 GIORNI**, o **DOMANI**). Sotto i 6 anni
 il timbro è grigio, **NON SERVE**, con **SOTTO I 6 ANNI**; un certificato già
 segnato si vede com'è, senza rosso. Nell'ultimo mese prima del compleanno è
-giallo, **SERVE DAL 14/10/2026**, sotto **FRA 14 GIORNI**. Senza certificato e senza data di nascita il timbro è rosso e dice anche **MANCA LA DATA DI NASCITA**. E
-**DOCUMENTO D'IDENTITÀ**, grande come gli altri: per un minorenne dice solo se
-c'è e quando scade. Con la **TESSERA** i timbri sono quattro, tutti larghi
-uguale. Un clic su
+giallo, **SERVE DAL 14/10/2026**, sotto **FRA 14 GIORNI**. Senza certificato il timbro è rosso, **MANCA**, sotto **SENZA NON ENTRA**, anche senza data di nascita. Il documento
+d'identità non ha un timbro: se manca lo dice **COSA MANCA**. Un clic su
 un timbro apre la scheda che lo contiene (sotto) e porta alla sua parte. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
 **Altro** → **Riattiva**.
 
-Se la quota è a posto ma un corso no, il timbro **QUOTA** dice **CORSO SCADUTO**,
-in rosso. Nella scheda **QUOTA E PAGAMENTI**, sotto la quota, **CORSI** dice
-corso per corso fin quando è pagato, quando è scaduto, o quanto manca; sotto,
-quale voce mettere nella ricevuta nuova («Trimestre Judo» o «Annuale Judo»)
-per rimetterlo a posto.
+Se la quota è a posto ma un corso no, la linguetta **QUOTA E PAGAMENTI** dice
+quanto manca (**MANCANO 350,00 €**); con la quota da pagare dice **DA PAGARE**.
 
 Accanto al nome, se la quota, un corso o il certificato sono da sistemare, c'è
 il tasto **Sollecita su WhatsApp ▾**: apre sotto il nome, sopra i timbri, il
@@ -246,14 +246,15 @@ Poi la scheda è divisa in quattro schede, e se ne vede una alla volta. Ogni lin
 
 - **PERSONA** — i **CONTATTI** (con l'**EMAIL**), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
-- **QUOTA E PAGAMENTI** — la quota e i pagamenti. **+ FAI LA RICEVUTA** sta accanto a **QUOTA**, **+ AGGIUNGI INCASSO** accanto a **PAGAMENTI**: non serve scorrere tutte le ricevute. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
-  corsi che l'amministrazione ha scritto in CONTABILITÀ con questa persona stanno in **SCRITTI IN
-  CONTABILITÀ**, col tag **Scritto in contabilità**: non sono ricevute (niente numero né PDF) e non si
-  sommano. Un bonifico su quota o corsi conta per quello che resta da pagare solo quando l'amministrazione
-  lo **assegna** dal movimento (vedi [Assegnare un bonifico](../amministrazione/contabilita.md#assegnare-un-bonifico-a-quota-e-corsi)):
-  finché non lo fa, un riquadro giallo dice quanto è **da assegnare**, con **Assegna ›**. Un pagamento
-  assegnato senza ricevuta ha **Assegnato · senza ricevuta**: la ricevuta si fa dal movimento, non da qui.
-  **Apri in contabilità** apre il movimento, per chi vede CONTABILITÀ. In fondo, se
+- **QUOTA E PAGAMENTI** — i pagamenti: lo stato di quota e corsi lo dicono i timbri in alto. **+ AGGIUNGI INCASSO** e **+ FAI LA RICEVUTA** stanno accanto a **PAGAMENTI**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Ogni pagamento si vede una volta sola.
+  Un bonifico che l'amministrazione ha già **assegnato** (vedi [Assegnare un bonifico](../amministrazione/contabilita.md#assegnare-un-bonifico-a-quota-e-corsi))
+  è una riga sola, **… · Bonifico**, con chi l'ha fatto (il nome della causale della banca: se non c'è, la riga non lo dice), l'importo arrivato e sotto come è stato diviso
+  (quota, corsi). Senza ricevuta ha il tag **Senza ricevuta**: la ricevuta, e l'annullo, si fanno dal
+  movimento, con **Apri in contabilità** (per chi vede CONTABILITÀ). Un bonifico non ancora assegnato è una
+  riga gialla, **Da assegnare**, con **Assegna ›**: finché non lo si assegna non conta come pagato, né nel
+  totale della stagione. Le altre quote e corsi che l'amministrazione ha scritto in CONTABILITÀ con questa
+  persona stanno in **SCRITTI IN CONTABILITÀ**, col tag **Scritto in contabilità**: non sono ricevute
+  (niente numero né PDF) e non si sommano. In fondo, se
   l'amministrazione ha collegato alla persona dei pagamenti del vecchio programma, c'è il blocco **DAL VECCHIO
   PROGRAMMA**: è lo storico, a parte. Non è nei pagamenti qui sopra e non conta per «quota pagata»: se la persona
   ha pagato anche nell'app negli stessi giorni, lo stesso incasso può comparire in tutti e due.
@@ -363,19 +364,16 @@ scheda è disattivata, nessuno.
   minore, quella del genitore): **IN SEGRETERIA** o **DA PORTARE**. **La copia è in segreteria** lo segna; **Non c'è più** la toglie senza
   chiedere (si rimette col tasto). **Senza documento**, sotto «Altri filtri», mostra chi non ce
   l'ha ancora.
-- **QUOTA** — il riquadro **QUOTA ASSOCIATIVA · …**: se ha pagato lo dicono le ricevute: **PAGATA** se c'è una
-  ricevuta non annullata con la **QUOTA ASSOCIATIVA** che vale oggi, con fin
-  quando e il numero della ricevuta; **IN PARTE** se della quota manca
-  qualcosa (e quanto); **QUOTA SCADUTA** quando è passata la sua data. Non si
-  segna a mano: si fa la ricevuta. Sotto, un riquadro per corso (**PAGATO**, **DA PAGARE**, **PAGATO IN
-  PARTE**…), con fin quando è pagato: non conta per essere in regola.
+- **La quota** — se ha pagato lo dicono le ricevute, e il timbro **QUOTA ASSOCIATIVA** in alto:
+  **PAGATA** se c'è una ricevuta non annullata con la **QUOTA ASSOCIATIVA** che vale oggi, con fin
+  quando; **IN PARTE** se della quota manca qualcosa (e quanto); **DA PAGARE** se no. Non si
+  segna a mano: si fa la ricevuta.
   Per chi ha pagato la quota fuori dall'app (prima dell'app, con una ricevuta
-  di carta) c'è **Segna come pagata**: **VALE FINO AL** (di
-  solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
-  PAGATA**. Senza **VALE FINO AL** vale fino al 31 luglio della stagione in cui la segni.
-  In elenco la quota è in regola, e nella scheda si legge **Fuori app**; alla sua data
-  scade da sola, e **Togli**, nel riquadro della quota, la toglie prima.
-- **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima quanto ha pagato in questa stagione, tra ricevute e incassi; poi un elenco solo, dal più recente, con le ricevute (e i loro pagamenti sotto) e gli incassi senza ricevuta, col tag **Senza ricevuta**. Si vedono gli ultimi 5: **Mostra altre N** apre gli altri. Quelli di tutti sono in [CONTABILITÀ → MOVIMENTI](../amministrazione/contabilita.md#movimenti).
+  di carta) c'è **Altro** → **Segna la quota pagata fuori dall’app…**: **VALE FINO AL** (di
+  solito la fine della stagione), una **NOTA** facoltativa e **Segna pagata**. Senza **VALE FINO AL** vale
+  fino al 31 luglio della stagione in cui la segni. In elenco la quota è in regola; alla sua data
+  scade da sola, e **Altro** → **Togli «pagata fuori dall’app»** la toglie prima (chiede conferma).
+- **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima quanto ha pagato in questa stagione; poi un elenco solo, dal più recente, con le ricevute (e i loro pagamenti sotto) e gli incassi senza ricevuta, col tag **Senza ricevuta**. Si vedono gli ultimi 5: **Mostra altre N** apre gli altri. Quelli di tutti sono in [CONTABILITÀ → MOVIMENTI](../amministrazione/contabilita.md#movimenti).
 - **ISCRIZIONI** — i corsi che fa, uno per riquadro, con da quando e se è
   pagato. **Termina** la toglie da un corso: da domani non è più
   nell'appello, il registro resta. **+ Iscrivi a un corso…** → il corso →
@@ -659,7 +657,7 @@ Come una ricevuta, non si cambia e non si cancella: se è sbagliato,
 resta in elenco, barrato, e non si conta.
 
 Il **Manca** di una ricevuta si calcola sulla ricevuta: un pagamento a mano **non lo riduce**, perché non si sa su quale ricevuta va (se paga il saldo di una ricevuta, il saldo si registra come pagamento di quella ricevuta, facendo una ricevuta nuova). Un pagamento a mano **non cambia se la persona è in regola**: la quota pagata
-fuori dall'app si segna dalla scheda **QUOTA E PAGAMENTI** (**Segna come pagata**, nel riquadro della quota), o con una ricevuta.
+fuori dall'app si segna da **Altro** → **Segna la quota pagata fuori dall’app…**, o con una ricevuta.
 
 Il certificato è un dato sulla salute: lo vede solo la segreteria, non gli
 istruttori, e non va scritto da nessun'altra parte (nemmeno nelle note). In

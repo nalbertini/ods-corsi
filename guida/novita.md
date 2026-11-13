@@ -10,6 +10,46 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.248.1 — 13 novembre 2026
+
+### Modificato
+
+- Il conto di cosa manca usa il documento della scheda
+
+## 0.248.0 — 13 novembre 2026
+
+### Novità
+
+- Nella finestra «Chi ha pagato e per cosa?» si può assegnare il bonifico anche all'abbigliamento
+
+## 0.247.1 — 13 novembre 2026
+
+### Risolto
+
+- La scheda non dice più "nessuna ricevuta" mentre carica
+
+## 0.247.0 — 13 novembre 2026
+
+### Novità
+
+- In «Chi ha pagato e per cosa?» si aggiunge una voce dal listino, anche per un corso senza iscrizione
+
+### Risolto
+
+- Il timbro del corso conta giusto un anticipo diviso tra quota e corso
+- Il bonifico nella scheda dice chi l'ha fatto
+- Sul telefono i timbri della scheda stanno uno sotto l'altro
+
+### Modificato
+
+- Bump supabase/setup-cli from 3.0.1 to 3.2.0
+
+## 0.246.2 — 13 novembre 2026
+
+### Modificato
+
+- La scheda dell'iscritto dice ogni pagamento una volta sola
+
 ## 0.246.1 — 13 novembre 2026
 
 ### Risolto

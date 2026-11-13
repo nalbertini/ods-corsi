@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { chiEPerCosa, euroAssegna, righeDaCampi, tipologiaDaRighe, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
+import { chiEPerCosa, euroAssegna, importoProposto, righeDaCampi, tipologiaDaRighe, vociDaAggiungere, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
 import { listinoUsabile } from '../../lib/listino'
 import { VOCE_PIU_CORSI } from '../../lib/nucleo'
 import type { CandidatoPersona } from '../../lib/movimentiPersona'
@@ -7,6 +7,7 @@ import type { PagamentoDiretto } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro, type Ricevuta } from '../../lib/ricevute'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { oggiARoma } from '../../lib/contabilita'
+import { Icona } from '../Icons'
 import { CampoPersona, SchedaCandidata } from './CollegaPersona'
 import { DITO, Guaio, Tag, Tasto, useBozza, useCarica, useDialogo } from './comune'
 
@@ -69,6 +70,9 @@ export function ChiEPerCosa({
   const [questo, setQuesto] = useState<string[]>([])
   const [nonQuesto, setNonQuesto] = useState<string[]>([])
   const [nonLaRicevuta, setNonLaRicevuta] = useState(false)
+  // «Aggiungi una voce dal listino»: le voci scelte a mano, e la persona di cui è aperto il menu.
+  const [aggiunte, setAggiunte] = useState<VoceDovuta[]>([])
+  const [menuDi, setMenuDi] = useState<string | null>(null)
   const situazione = useMemo(
     () => (chi && dati.dato ? chiEPerCosa(chi.id, importo, { ...dati.dato, oggi }, questo, testo) : null),
     [chi?.id, dati.dato, importo, oggi, questo.join(), testo],
@@ -81,10 +85,12 @@ export function ChiEPerCosa({
     setQuesto([])
     setNonQuesto([])
     setNonLaRicevuta(false)
+    setAggiunte([])
+    setMenuDi(null)
   }
   const ricevuta = chi && !nonLaRicevuta ? ricevutaDi?.(chi.id) : undefined
 
-  const dovuti: VoceDovuta[] = situazione?.dovuti ?? []
+  const dovuti: VoceDovuta[] = situazione ? [...situazione.dovuti, ...aggiunte] : []
   const letti = dovuti.map((v) => {
     const t = mostrati[chiaveDi(v)] ?? ''
     return { v, testo: t, cent: t.trim() ? centesimi(t) : 0 }
@@ -95,6 +101,15 @@ export function ChiEPerCosa({
   useBozza(valori !== null, 'Chi ha pagato e per cosa')
   const tipologia = tipologiaDaRighe(righe)
   const daChiedere = (situazione?.daChiedere ?? []).filter((id) => !nonQuesto.includes(id))
+  const aggiungi = (v: VoceDovuta) => {
+    setAggiunte([...aggiunte, v])
+    setValori({ ...mostrati, [chiaveDi(v)]: euro(importoProposto(v.manca, importo, totale)) })
+    setMenuDi(null)
+  }
+  const togli = (v: VoceDovuta) => {
+    setAggiunte(aggiunte.filter((x) => chiaveDi(x) !== chiaveDi(v)))
+    setValori(Object.fromEntries(Object.entries(mostrati).filter(([k]) => k !== chiaveDi(v))))
+  }
   const conferma = (eRicevuta: boolean) => chi && !guaio && righe.length && onConferma({ personaId: chi.id, nomePersona: nome(chi), righe, chiave: chiave.current }, eRicevuta)
 
   return (
@@ -144,16 +159,25 @@ export function ChiEPerCosa({
                 </div>
               )
             })}
-            {situazione.nucleo.map(({ persona: p, dovuti: suoi, pagamenti }) => (
+            {situazione.nucleo.map(({ persona: p, pagamenti }) => (
               <div key={p.id} className="sg-riquadro stack" style={{ gap: 8 }}>
                 <span className="stack" style={{ gap: 2 }}>
                   <span className="sg-etichetta">{p.id === chi.id ? 'CHI HA PAGATO' : 'STESSA FAMIGLIA'}</span>
                   <b style={{ fontSize: 16 }}>{nome(p)}</b>
                 </span>
-                {!suoi.length && <span className="sg-sotto">Niente da pagare: corsi e quota a posto.</span>}
+                {!dovuti.some((v) => v.personaId === p.id) && <span className="sg-sotto">Niente da pagare: corsi e quota a posto.</span>}
                 {letti.filter((x) => x.v.personaId === p.id).map(({ v, testo: t, cent }) => (
-                  <RigaDovuta key={chiaveDi(v)} v={v} testo={t} cent={cent} nomePersona={p.nome} aMano={questo.includes(p.id)} onCambia={(x) => setValori({ ...mostrati, [chiaveDi(v)]: x })} />
+                  <RigaDovuta key={chiaveDi(v)} v={v} testo={t} cent={cent} nomePersona={p.nome} aMano={questo.includes(p.id)} onCambia={(x) => setValori({ ...mostrati, [chiaveDi(v)]: x })} onTogli={v.aggiunta ? () => togli(v) : undefined} />
                 ))}
+                {dati.dato && (
+                  <AggiungiVoce
+                    gruppi={vociDaAggiungere(p, dati.dato.corsi, dati.dato.listino, oggi, dovuti.filter((v) => v.personaId === p.id).map((v) => v.voce), importo)}
+                    aperto={menuDi === p.id}
+                    onApri={() => setMenuDi(p.id)}
+                    onChiudi={() => setMenuDi(null)}
+                    onScegli={aggiungi}
+                  />
+                )}
                 {pagamenti.length > 0 && (
                   <>
                     <span className="sg-etichetta" style={{ paddingTop: 6 }}>PAGAMENTI · {pagamenti.length}</span>
@@ -197,10 +221,12 @@ export function ChiEPerCosa({
   )
 }
 
-export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia }: { v: VoceDovuta; testo: string; cent: number | null; nomePersona: string; aMano: boolean; onCambia: (t: string) => void }) {
+export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia, onTogli }: { v: VoceDovuta; testo: string; cent: number | null; nomePersona: string; aMano: boolean; onCambia: (t: string) => void; onTogli?: () => void }) {
   const id = `as-${chiaveDi(v).replace(/[^a-z0-9]/gi, '-')}`
-  const saldo = cent !== null && cent >= v.manca
-  const parziale = cent !== null && cent > 0 && cent < v.manca
+  // L'abbigliamento non ha un prezzo: il suo tetto è il bonifico, né saldo né parziale.
+  const libera = v.tipo === 'abbigliamento'
+  const saldo = !libera && cent !== null && cent >= v.manca
+  const parziale = !libera && cent !== null && cent > 0 && cent < v.manca
   // La voce «più corsi» elenca tutti i corsi: in riga il nome breve, i corsi sotto.
   const corsi = v.corsi
   // Il numero solo da due corsi: «più corsi (1 corso)» si contraddice, e il corso è già scritto sotto.
@@ -208,17 +234,70 @@ export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia }: { v
   return (
     <div className="stack" style={{ gap: 4 }}>
       <div className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <label htmlFor={id} style={{ fontSize: 15, flex: '1 1 200px', minWidth: 0 }}>
-          {nome} <span className="sg-sotto">· {aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} {euroAssegna(v.manca)}</span>
+        {/* «Togli» accanto al testo ma fuori dal label: il nome del campo resta la voce. */}
+        <span style={{ fontSize: 15, flex: '1 1 200px', minWidth: 0 }}>
+          <label htmlFor={id}>
+            {nome} <span className="sg-sotto">· {libera ? 'quanto è, a mano' : `${v.aggiunta ? 'dal listino' : aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} ${euroAssegna(v.manca)}`}</span>
+          </label>
+          {onTogli && <>{' '}<span className="sg-sotto">·</span>{' '}<button type="button" className="sg-link sg-pericolo" style={{ ...DITO, fontSize: 13 }} data-bozza aria-label={`Togli ${v.voce}`} onClick={onTogli}>Togli</button></>}
           {corsi && <span className="sg-sotto" style={{ display: 'block' }}>{corsi.join(' · ')}</span>}
-        </label>
+        </span>
         <input id={id} className="sg-campo num" inputMode="decimal" style={{ width: 110 }} aria-invalid={testo.trim() !== '' && (cent === null || cent <= 0 || cent > v.manca)} value={testo} onChange={(e) => onCambia(e.target.value)} />
-        {saldo && <Tag tipo="fatto">Saldo</Tag>}
-        {parziale && <Tag tipo="aspetta">Parziale</Tag>}
+        {/* Un posto fisso per il tag: i campi delle righe restano in colonna. */}
+        <span style={{ width: 90, display: 'flex' }}>
+          {saldo && <Tag tipo="fatto">Saldo</Tag>}
+          {parziale && <Tag tipo="aspetta">Parziale</Tag>}
+        </span>
       </div>
       {parziale && cent !== null && (
         <span className="sg-sotto">Resteranno {euroAssegna(v.manca - cent)} su «{corsi ? VOCE_PIU_CORSI : v.voce}»: si vedono nella scheda di {nomePersona}.</span>
       )}
+      {v.aggiunta && !v.aggiunta.suo && <span className="sg-sotto">{nomePersona} non ha l’iscrizione a {v.aggiunta.corso}: si fa dalla scheda.</span>}
     </div>
+  )
+}
+
+/** «Aggiungi una voce dal listino»: un link che apre un <select> nativo con le voci per corso (`vociDaAggiungere`). */
+function AggiungiVoce({ gruppi, aperto, onApri, onChiudi, onScegli }: {
+  gruppi: ReturnType<typeof vociDaAggiungere>
+  aperto: boolean
+  onApri: () => void
+  onChiudi: () => void
+  onScegli: (v: VoceDovuta) => void
+}) {
+  if (!gruppi.length) return null
+  if (!aperto) {
+    return (
+      <div style={{ borderTop: '1px solid var(--line-soft)', paddingTop: 4 }}>
+        <button type="button" className="sg-link" style={{ ...DITO, gap: 6, textDecoration: 'none' }} onClick={onApri}>
+          <Icona nome="aggiungi" /><span style={{ textDecoration: 'underline', textUnderlineOffset: 3 }}>Aggiungi una voce dal listino</span>
+        </button>
+      </div>
+    )
+  }
+  return (
+    <label className="stack" style={{ gap: 6, borderTop: '1px solid var(--line-soft)', paddingTop: 8 }}>
+      <span style={{ fontSize: 15, fontWeight: 600 }}>Aggiungi una voce dal listino</span>
+      <select
+        className="sg-campo"
+        autoFocus
+        style={{ width: 360, maxWidth: '100%' }}
+        value=""
+        onChange={(e) => {
+          const [g, i] = e.target.value.split('-').map(Number)
+          const v = gruppi[g]?.voci[i]?.dovuta
+          if (v) onScegli(v)
+        }}
+        onBlur={onChiudi}
+        onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), onChiudi())}
+      >
+        <option value="">Scegli…</option>
+        {gruppi.map((g, gi) => (
+          <optgroup key={g.corso} label={g.corso}>
+            {g.voci.map((v, vi) => <option key={v.dovuta.voce + vi} value={`${gi}-${vi}`}>{v.etichetta}</option>)}
+          </optgroup>
+        ))}
+      </select>
+    </label>
   )
 }

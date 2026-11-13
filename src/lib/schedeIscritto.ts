@@ -2,12 +2,13 @@
 // riquadro con lo stato in grande, il dettaglio sotto e i tasti a destra. Qui
 // le parole dei riquadri, perché si provano senza browser.
 import { riassunto, type PagamentoDiretto } from './pagamenti'
-import { dettaglioCorso, type StatoCorso } from './corsiDaPagare'
+import { type StatoCorso } from './corsiDaPagare'
 import { stagioneDi } from './costi'
 import { euro, type Ricevuta } from './ricevute'
 import { dataLunga } from './sala'
 import { soldi } from './satispay'
-import { inCorso, pagamentoDi, presentaCertificato, statoCertificato, timbriScheda, timbroDocumento, type CertificatoSeg, type IscrizioneSeg, type PersonaSeg, type StatoPaga, type Tono } from './segreteria'
+import { ordinanteDallaCausale, type VoceStorico } from './movimentiPersona'
+import { dataTimbro, inCorso, presentaCertificato, statoCertificato, timbroDocumento, type CertificatoSeg, type IscrizioneSeg, type StatoPaga, type Timbro, type Tono } from './segreteria'
 
 export interface Riquadro {
   nome: string
@@ -87,13 +88,6 @@ export function fraseQuota(s: StatoPaga): string {
   return s.come === 'scaduto' ? `Valeva fino al ${fino}: è da pagare di nuovo.` : 'Nessuna ricevuta con la quota di questa stagione.'
 }
 
-export function riquadroQuota(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string): Riquadro {
-  const t = timbriScheda(p, oggi).quota
-  const s = pagamentoDi(p, oggi)
-  // La nota la scrive la segreteria quando segna la quota pagata fuori dall'app: è il perché, va accanto.
-  return { nome: `QUOTA ASSOCIATIVA · ${t.parola}`, sotto: `${fraseQuota(s)}${s.fonte === 'fuori_app' && s.nota ? ` ${s.nota}` : ''}`, tono: t.tono }
-}
-
 const BOLLINI: Record<StatoCorso['come'], [string, 'verde' | 'rosso' | 'giallo']> = {
   pagato: ['PAGATO', 'verde'],
   fuori_app: ['PAGATO FUORI APP', 'verde'],
@@ -110,20 +104,96 @@ export function bollinoCorso(s: StatoCorso): { parola: string; tono: 'verde' | '
   return { parola, tono }
 }
 
-export function riquadroCorso(s: StatoCorso): Riquadro {
-  const b = bollinoCorso(s)
-  // «da pagare» ripeterebbe il nome: il riquadro resta con lo stato solo.
-  return { nome: `${s.corso.toUpperCase()} · ${b.parola}`, sotto: s.come === 'da_pagare' ? '' : dettaglioCorso(s).testo, tono: b.tono }
+/**
+ * I timbri dei corsi non pagati, uno per corso nell'ordine dato, accanto a quelli
+ * di certificato e quota: in maiuscolo come gli altri, importi con due decimali.
+ */
+export function timbriCorsi(stati: ReadonlyArray<StatoCorso>): Array<Timbro & { titolo: string }> {
+  return stati.flatMap((s): Array<Timbro & { titolo: string }> => {
+    const nome = s.corso.toUpperCase()
+    switch (s.come) {
+      case 'pagato':
+      case 'fuori_app':
+      case 'satispay':
+        return []
+      case 'in_parte': {
+        const mancano = s.mancano ?? 0
+        const righe = [
+          ...(s.entro ? [{ testo: `ENTRO IL ${dataTimbro(s.entro)}` }] : []),
+          ...(s.totale ? [{ testo: `PAGATI ${euro(s.totale - mancano)} € SU ${euro(s.totale)} €` }] : []),
+        ]
+        return [{ titolo: `${nome} · MANCANO`, parola: `${euro(mancano)} €`, tono: s.oltre ? 'rosso' : 'giallo', righe }]
+      }
+      case 'da_pagare':
+        return [{ titolo: `${nome} · DA PAGARE`, parola: s.totale ? `${euro(s.totale)} €` : 'DA PAGARE', tono: 'rosso', righe: [{ testo: s.totale ? 'ANNUALE, NESSUN PAGAMENTO' : 'NESSUN PAGAMENTO' }] }]
+      case 'scaduto':
+      case 'fuori_scaduto':
+        return [{ titolo: `${nome} · DA PAGARE`, parola: 'DA PAGARE', tono: 'rosso', righe: s.al ? [{ testo: `SCADUTO IL ${dataTimbro(s.al)}` }] : [] }]
+      case 'da_controllare':
+        return [{ titolo: `${nome} · DA CONTROLLARE`, parola: 'DA CONTROLLARE', tono: 'giallo', righe: [{ testo: 'VOCE SCRITTA A MANO' }] }]
+    }
+  })
 }
 
-export type RigaStorico = { tipo: 'ricevuta'; r: Ricevuta } | { tipo: 'diretto'; x: PagamentoDiretto }
+/** Un bonifico assegnato è una riga sola: le sue parti (anche annullate) stanno sotto; l'importo è quello del movimento (le parti valide se il movimento non si legge). */
+export type RigaBonifico = { tipo: 'bonifico'; movimentoId: string; data: string; importo: number; parti: PagamentoDiretto[]; da?: string }
 
-/** Ricevute e incassi senza ricevuta in un elenco solo, dal più recente: a pari giorno prima le ricevute, la più nuova in cima. */
-export function storicoPagamenti(ricevute: Ricevuta[], diretti: PagamentoDiretto[]): RigaStorico[] {
-  const righe: RigaStorico[] = [...ricevute.map((r) => ({ tipo: 'ricevuta' as const, r })), ...diretti.map((x) => ({ tipo: 'diretto' as const, x }))]
-  const data = (a: RigaStorico) => (a.tipo === 'ricevuta' ? a.r.data : a.x.data)
-  const dopo = (a: RigaStorico) => (a.tipo === 'ricevuta' ? `1${String(a.r.anno)}${String(a.r.numero).padStart(8, '0')}` : `0${a.x.creatoIl}`)
+export type RigaStorico = { tipo: 'ricevuta'; r: Ricevuta } | { tipo: 'diretto'; x: PagamentoDiretto } | RigaBonifico
+
+/**
+ * Ricevute, incassi senza ricevuta e bonifici in un elenco solo, dal più recente: a pari giorno prima le ricevute, la
+ * più nuova in cima. Le parti di uno stesso movimento diventano una riga: data e importo dal movimento quando c'è.
+ */
+export function storicoPagamenti(ricevute: Ricevuta[], diretti: PagamentoDiretto[], movimenti: VoceStorico[] = []): RigaStorico[] {
+  const perMovimento = new Map<string, PagamentoDiretto[]>()
+  for (const x of diretti) if (x.movimentoId) perMovimento.set(x.movimentoId, [...(perMovimento.get(x.movimentoId) ?? []), x])
+  const bonifici = [...perMovimento].map(([movimentoId, tutte]): RigaBonifico => {
+    const parti = [...tutte].sort((a, b) => a.creatoIl.localeCompare(b.creatoIl))
+    const m = movimenti.find((v) => v.id === movimentoId)
+    const da = m ? ordinanteDallaCausale(m.descrizione) : null
+    return {
+      tipo: 'bonifico',
+      movimentoId,
+      data: m?.data ?? parti[0].data,
+      importo: m?.importo ?? parti.reduce((s, x) => (x.annullatoIl ? s : s + x.importo), 0),
+      parti,
+      ...(da ? { da } : {}),
+    }
+  })
+  const righe: RigaStorico[] = [
+    ...ricevute.map((r) => ({ tipo: 'ricevuta' as const, r })),
+    ...diretti.filter((x) => !x.movimentoId).map((x) => ({ tipo: 'diretto' as const, x })),
+    ...bonifici,
+  ]
+  const data = (a: RigaStorico) => (a.tipo === 'ricevuta' ? a.r.data : a.tipo === 'diretto' ? a.x.data : a.data)
+  const dopo = (a: RigaStorico) => (a.tipo === 'ricevuta' ? `1${String(a.r.anno)}${String(a.r.numero).padStart(8, '0')}` : `0${a.tipo === 'diretto' ? a.x.creatoIl : a.parti[0].creatoIl}`)
   return righe.sort((a, b) => data(b).localeCompare(data(a)) || dopo(b).localeCompare(dopo(a)))
+}
+
+/** Un bonifico che ha ancora soldi da assegnare, come riga gialla di PAGAMENTI: non conta nel pagato. */
+export interface RigaDaAssegnare {
+  movimentoId: string
+  data: string
+  importo: number
+  da?: string
+  causale?: string
+}
+
+export function righeDaAssegnare(bonifici: ReadonlyArray<{ movimentoId: string; data: string; daAssegnare: number }>, movimenti: VoceStorico[]): RigaDaAssegnare[] {
+  return bonifici.map((b) => {
+    const m = movimenti.find((v) => v.id === b.movimentoId)
+    const da = m ? ordinanteDallaCausale(m.descrizione) : null
+    return { movimentoId: b.movimentoId, data: b.data, importo: b.daAssegnare, ...(da ? { da } : {}), ...(m ? { causale: m.descrizione } : {}) }
+  })
+}
+
+/**
+ * Le righe di contabilità che PAGAMENTI non dice già: via i movimenti assegnati (una riga bonifico) e quelli da
+ * assegnare (una riga gialla). Un movimento con solo parti annullate resta, se no sparirebbe.
+ */
+export function daMostrareInContabilita<T extends { id: string }>(inContabilita: T[], diretti: PagamentoDiretto[], bonifici: ReadonlyArray<{ movimentoId: string }>): T[] {
+  const giaDetti = new Set([...diretti.filter((x) => x.movimentoId && !x.annullatoIl).map((x) => x.movimentoId), ...bonifici.map((b) => b.movimentoId)])
+  return inContabilita.filter((v) => !giaDetti.has(v.id))
 }
 
 /** Un elenco lungo si apre a richiesta: le prime `n`, e quante restano. */

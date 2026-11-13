@@ -228,8 +228,8 @@ const impostazioniAGruppi = (r) => r.selettori.some((x) => /^\.sg-indice$|^\.sg-
 const numeriConti = (r) => r.selettori.includes('.sg-numeri.sg-numeri-conti')
 // ISCRITTI ha la colonna FAMIGLIA: la griglia della riga (anche col sollecito) e le colonne nascoste a 1000px sono cambiate di proposito, ora si passa alla vista stretta a 1200px.
 const iscrittiFamiglia = (r) => r.selettori.every((x) => /^(\.sg-lista-testa)?\.sg-riga-iscritti(\[data-sollecito\])?( > :nth-child\(\d\))?$/.test(x))
-// La scheda dell'iscritto rivista: i timbri tutti larghi uguale (niente più DOCUMENTO piccolo né colonna in più con la TESSERA) e la linguetta aperta scura; le loro regole sono cambiate di proposito.
-const SCHEDA_RIVISTA = ['.sg-timbri', '.sg-timbri[data-con-tessera]', ".sg-timbro[data-piccolo='true']", ".sg-timbro[data-piccolo='true'] .sg-timbro-parola", ".sg-timbro[data-piccolo='true'] .sg-timbro-riga", ".sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno[data-tono='giallo']"]
+// La scheda dell'iscritto rivista: i timbri tutti larghi uguale, in righe da tre (uno per riga sotto i 1000px) (niente più DOCUMENTO piccolo né colonna in più con la TESSERA) e la linguetta aperta scura; le loro regole sono cambiate di proposito.
+const SCHEDA_RIVISTA = ['.sg-timbri', '.sg-timbro', '.sg-timbri[data-con-tessera]', ".sg-timbro[data-piccolo='true']", ".sg-timbro[data-piccolo='true'] .sg-timbro-parola", ".sg-timbro[data-piccolo='true'] .sg-timbro-riga", ".sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno[data-tono='giallo']"]
 // La riga di «Importa dalla banca» ha ora tipologia e persona: la griglia e le regole sotto i 1400px sono cambiate di proposito.
 const rigaBancaConVoce = (r) => r.selettori.every((x) => x.startsWith('.sg-banca-'))
 const schedaRivista = (r) => r.selettori.every((x) => SCHEDA_RIVISTA.includes(x))

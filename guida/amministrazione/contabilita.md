@@ -234,6 +234,14 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   610,00 €. Un secondo bonifico paga quel che manca alla stessa voce; un annuale aggiunto dopo aver
   raggiunto i 660,00 € costa 0,00 €. Con la voce «Annuale più corsi» l'area iscritti e Satispay vedono
   pagati tutti i suoi annuali.
+- Se il bonifico paga una cosa che non è fra quelle da pagare (un corso a cui la persona non è ancora
+  iscritta nell'app, o il trimestre al posto dell'annuale), **Aggiungi una voce dal listino**, in fondo
+  al riquadro di ogni persona, apre l'elenco delle voci del listino divise per corso, prima i suoi. La
+  voce scelta diventa una riga come le altre, con «dal listino» e il prezzo: l'importo parte da quel che
+  resta del bonifico e non supera il prezzo. **Togli** la toglie. Se la persona non è iscritta a quel
+  corso, la finestra lo dice: l'iscrizione si fa dalla scheda. In fondo all'elenco c'è anche
+  **Abbigliamento**: non ha un prezzo nel listino, l'importo parte da quel che resta del bonifico e si
+  corregge a mano. Non segna saldato l'ordine in VESTIARIO: quello si fa lì.
 - **Conferma** scrive persona, tipologia e assegnazione, senza ricevuta: la ricevuta si fa dopo, dal
   movimento, con **Fai la ricevuta**. Dal movimento c'è anche **Conferma e fai la ricevuta**, che apre la
   ricevuta già compilata (data del bonifico, modo **Bonifico**). All'import si scrive tutto quando
@@ -283,9 +291,9 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   movimento ha dei soldi assegnati non si scollega, non cambia persona né va su una voce senza persona, e
   il suo lotto di Importa banca non si annulla: l'app dice cosa annullare prima.
 
-Nella scheda della persona, in **QUOTA E PAGAMENTI**, un bonifico collegato e non assegnato è in giallo
-(«da assegnare dal bonifico del …») con **Assegna ›**; un pagamento assegnato senza ricevuta ha
-**Assegnato · senza ricevuta** e **Apri in contabilità**. Se fai la ricevuta dalla scheda mentre c'è un
+Nella scheda della persona, in **QUOTA E PAGAMENTI**, un bonifico collegato e non assegnato è una riga
+gialla, **Da assegnare**, con **Assegna ›**; assegnato, è una riga sola con l'importo arrivato e sotto come
+è stato diviso, il tag **Senza ricevuta** finché non c'è, e **Apri in contabilità**. Se fai la ricevuta dalla scheda mentre c'è un
 bonifico collegato da assegnare, il modulo lo dice: se è quello, falla dal bonifico.
 Con **PAGATO CON Bonifico**, se nel Conto Corrente c'è già un bonifico libero con lo stesso importo
 entro 30 giorni (della persona, della sua famiglia o Da classificare con il loro nome nella causale), il modulo lo mostra in **FORSE È
