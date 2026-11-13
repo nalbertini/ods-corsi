@@ -2252,7 +2252,7 @@ export function sottoNome(natoIl: string | null, creataIl: string, oggi: Date): 
  */
 export type RigaCheManca = { cosa: string; perche?: string }
 
-export function cosaManca(p: Pick<PersonaSeg, 'nome' | 'cognome' | 'natoIl' | 'email' | 'telefono'> & { documento?: boolean }, a: Anagrafica | null, oggi: Date): RigaCheManca[] {
+export function cosaManca(p: Pick<PersonaSeg, 'nome' | 'cognome' | 'natoIl' | 'email' | 'telefono' | 'documento'>, a: Anagrafica | null, oggi: Date): RigaCheManca[] {
   const maiuscola = (t: string) => t[0].toUpperCase() + t.slice(1)
   const senzaTel = !p.telefono?.trim()
   const senzaEmail = !p.email?.trim()
