@@ -15,9 +15,9 @@
     body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<!-- PROPOSTA B: come A, righe da 48 e spazio 6. Circa 9 nomi interi. Sotto la Regola del Dito di Fretta (56): domanda per l'utente. -->
+<!-- PROPOSTA B: come A, righe da 48 e spazio 6, senza TUTTI PRESENTI (l'utente: succede pochissimo che siano tutti presenti) e col conto su una riga sola: testa da 90 invece di 140. Circa 10 nomi interi. Sotto la Regola del Dito di Fretta (56): domanda per l'utente. -->
 <div style="position: relative; display: flex; flex-direction: column; width: 390px; height: 760px; overflow: hidden; background: #eef5fa; color: #0d2a3d">
-  <dc-import name="TestaAppelloCorta" corso="Judo 3" kanji="龍" quando="Ven 13/11 18:00 · Tatami" presenti="0" iscritti="16" stato="mancano" mancano="16" hint-size="100%,140px"></dc-import>
+  <dc-import name="TestaAppelloCorta" corso="Judo 3" kanji="龍" quando="Ven 13/11 18:00 · Tatami" presenti="0" iscritti="16" stato="mancano" mancano="16" bassa="{{ true }}" hint-size="100%,90px"></dc-import>
   <div style="padding: 10px 16px 8px"><dc-import name="CercaAppello" iscritti="16" hint-size="100%,44px"></dc-import></div>
   <div style="display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; overflow: hidden; padding: 0 16px 8px">
     <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Barbieri Aurora" stato="niente" hint-size="100%,48px"></dc-import>
@@ -31,6 +31,8 @@
     <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Lombardi Pietro" stato="niente" hint-size="100%,48px"></dc-import>
     <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Marino Alice" stato="niente" hint-size="100%,48px"></dc-import>
     <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Moretti Leonardo" stato="niente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Ricci Chiara" stato="niente" hint-size="100%,48px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" fitta="{{ true }}" nome="Romano Davide" stato="niente" hint-size="100%,48px"></dc-import>
   </div>
   <dc-import name="BarraChiudiAppello" non-segnati="16" corta="{{ true }}" hint-size="100%,72px"></dc-import>
 </div>
