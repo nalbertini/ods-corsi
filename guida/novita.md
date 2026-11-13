@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.246.1 — 13 novembre 2026
+
+### Risolto
+
+- Con «trimestrale» nel testo del bonifico, «Chi ha pagato e per cosa» propone il trimestre e non l'annuale
+
 ## 0.246.0 — 13 novembre 2026
 
 ### Novità
