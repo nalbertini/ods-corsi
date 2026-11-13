@@ -58,7 +58,6 @@ import {
   type RigaMovimento,
   type VoceContabile,
   ultimaChiusura,
-  VOCE_CORSI,
   VOCE_DIFFERENZA,
   vociOfferte,
   vuolePersona,
@@ -85,7 +84,7 @@ import { segnaIncassiCoperti } from '../../lib/importaBanca'
 import { iniziali as inizialiDi } from '../../lib/sitoLayout'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import { NOME_CASSA_SATISPAY } from '../../lib/satispayScarico'
-import { apreChiEPerCosa, cosaNonVaMovimentoDaAssegnare, daSoli, elencoDaAssegnare, ricevutaGiaFatta, scriviChiEPerCosa } from '../../lib/assegna'
+import { abbinaDaFinestra, apreChiEPerCosa, cosaNonVaMovimentoDaAssegnare, daSoli, elencoDaAssegnare, ricevutaPerChi, scriviChiEPerCosa } from '../../lib/assegna'
 import { listinoUsabile } from '../../lib/listino'
 import { ChiEPerCosa } from './ChiEPerCosa'
 import type { PagamentoDiretto } from '../../lib/pagamenti'
@@ -261,13 +260,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
     const m = r.origine === 'movimento' ? manuali.find((x) => x.id === r.id) : undefined
     return !!m && apreChiEPerCosa(m, casse, voci, diretti, ricevute, oggi)
   }
-  // La ricevuta già fatta per la persona scelta: le regole di «Collegati prima», come se il movimento fosse già suo.
-  const ricevutaPer = (m: MovimentoManuale, personaId: string) => {
-    const corsi = voci.find((v) => v.nome === VOCE_CORSI)?.id
-    const comeSuo = manuali.map((x) => (x.id === m.id ? { ...x, personaId, voceId: x.voceId && voci.find((v) => v.id === x.voceId)?.nome !== VOCE_DA_CLASSIFICARE ? x.voceId : corsi } : x))
-    const id = ricevutaGiaFatta(m.id, comeSuo, diretti, ricevute, casse, voci, oggi, anagrafe.dato?.persone ?? [])
-    return ricevute.find((x) => x.id === id)
-  }
+  const ricevutaPer = (m: MovimentoManuale, personaId: string) => ricevutaPerChi(m, personaId, { manuali, diretti, ricevute, casse, voci, persone: anagrafe.dato?.persone ?? [], oggi })
   // Solo al clic su «Apri ›»: le righe che si rileggono non devono riaprire niente.
   useEffect(() => {
     if (apriRiga) setAperto(righe.find((r) => r.id === apriRiga.id) ?? null)
@@ -528,7 +521,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
           onRicevuta={(id, p) => {
             const m = chiPerCosa
             setChiPerCosa(null)
-            void fai(async () => { await scriviChiEPerCosa(d, m, { personaId: p.personaId, righe: [] }, voci); await d.abbinaRicevutaMovimento(m.id, id) }, 'Bonifico abbinato alla ricevuta', onCambiato)
+            void fai(() => abbinaDaFinestra(d, m, p.personaId, id, voci), 'Bonifico abbinato alla ricevuta', onCambiato)
           }}
           onConferma={(x) => {
             const m = chiPerCosa
@@ -605,7 +598,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
                   {perche[r.id] && <span className="sg-sotto" data-tono="aspetta" style={{ display: 'block', fontWeight: 400 }}>{perche[r.id]}</span>}
                   {apreFinestra(r) && (
                     <span style={{ display: 'block', paddingTop: 4 }} onClick={(e) => e.stopPropagation()}>
-                      <Tasto tono={r.personaId ? 'linea' : 'pieno'} onClick={() => setChiPerCosa(manuali.find((m) => m.id === r.id) ?? null)}>Chi e per cosa</Tasto>
+                      <Tasto tono={r.personaId ? 'linea' : 'pieno'} aria-label={`Chi ha pagato e per cosa: ${r.descrizione} del ${dataRicevuta(r.data)}`} onClick={() => setChiPerCosa(manuali.find((m) => m.id === r.id) ?? null)}>Chi e per cosa</Tasto>
                     </span>
                   )}
                 </span>

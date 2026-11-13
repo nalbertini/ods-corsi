@@ -204,6 +204,21 @@ ok('«Solo la persona» all\'import non si assegna da solo: non entra fra i coll
   { lotti: [{ ids: ['mv1'], voceId: 'v-corsi', personaId: 'sofia' }, { ids: ['mv2'], voceId: 'v-corsi', personaId: 'anna' }, { ids: ['mv3'], voceId: 'v-corsi' }] },
   { k1: { voceId: 'v-corsi', personaId: 'sofia', soloPersona: true }, k2: { voceId: 'v-corsi', personaId: 'anna' } }, scrittiImport, new Set(['mv1', 'mv2', 'mv3']), new Set())), ['mv2'])
 
+const ric = (id, o = {}) => ({ id, anno: 2026, numero: Number(id.replace(/\D/g, '')) || 1, data: '2026-11-05', personaId: 'sofia', pagato: 66000, metodo: 'Bonifico', voci: [{ descrizione: 'Annuale Judo adulti', quantita: 1, prezzo: 66000, pagamenti: [{ data: '2026-11-05', importo: 66000, metodo: 'Bonifico' }] }], creataIl: 'x', ...o })
+const mvB = { chiave: 'k9', importo: 66000, data: '2026-11-04', descrizione: 'Da Sofia', tipo: 'entrata' }
+const ricevutaDellaPersona = fn(B, 'importaBanca', 'ricevutaDellaPersona')
+ok('all\'import la ricevuta già fatta: una sola libera della persona → quella', prova(() => ricevutaDellaPersona(mvB, 'sofia', [ric('r1')], [])), 'r1')
+ok('…due → nessuna (si sceglie dopo); una già abbinata → nessuna; un\'uscita → nessuna', prova(() => [
+  ricevutaDellaPersona(mvB, 'sofia', [ric('r1'), ric('r2')], []) ?? null, ricevutaDellaPersona(mvB, 'sofia', [ric('r1', { movimentoId: 'altro' })], []) ?? null, ricevutaDellaPersona({ ...mvB, tipo: 'uscita' }, 'sofia', [ric('r1')], []) ?? null,
+]), [null, null, null])
+ok('dai movimenti la stessa domanda: la ricevuta per la persona scelta, anche se il movimento è Da classificare', prova(() => fn(A, 'assegna', 'ricevutaPerChi')(mov('m5', 66000, undefined, { voceId: 'v-dacl' }), 'sofia', { ...contesto([mov('m5', 66000, undefined, { voceId: 'v-dacl' })]), voci: [...voci, { id: 'v-dacl', nome: 'Da classificare', tipo: 'entrata', diSistema: true, attiva: true }], ricevute: [ric('r1')] })?.id), 'r1')
+ok('i pagamenti fatti contano le voci delle ricevute (con numero), non le annullate', prova(() => fn(A, 'assegna', 'pagamentiFatti')('sofia', [], [ric('r1'), ric('r2', { annullataIl: 'x' })]).map((x) => [x.voce, x.importo, x.ricevuta?.numero])), [['Annuale Judo adulti', 66000, 1]])
+ok('gli importi scritti a mano: le righe e cosa non va, senza browser', prova(() => {
+  const dv = [v('sofia', 'Quota', 5000, 'quota'), v('sofia', 'Annuale', 61000)]
+  const f = fn(A, 'assegna', 'righeDaCampi')
+  return [f(dv, { 'sofia\u0000Quota': '50,00', 'sofia\u0000Annuale': '' }, 66000), f(dv, { 'sofia\u0000Quota': '5x' }, 66000).guaio, f(dv, { 'sofia\u0000Annuale': '700' }, 66000).guaio]
+}), [{ righe: [{ personaId: 'sofia', voce: 'Quota', importo: 5000 }], guaio: null }, 'L’importo di «Quota» non si capisce.', 'A «Annuale» mancano 610,00 €: metti 610,00 € o meno, il resto rimane da assegnare.'])
+
 console.log('Scrivere chi e per cosa da MOVIMENTI')
 const scriviChiEPerCosa = fn(A, 'assegna', 'scriviChiEPerCosa')
 const chiamate = []
@@ -217,6 +232,21 @@ ok('un Da classificare: tipologia e persona insieme, poi le righe', await sc({ i
   [['voce', ['m1'], 'v-corsi', 'sofia'], ['assegna', 'm1', 1, 'string']])
 ok('già sulla tipologia giusta e con un\'altra persona: solo la persona, poi le righe', await sc({ id: 'm2', voceId: 'v-corsi', personaId: 'anna' }, { personaId: 'sofia', righe: righe1 }),
   [['persona', ['m2'], 'sofia'], ['assegna', 'm2', 1, 'string']])
+ok('la chiave è quella dell\'apertura della finestra: un nuovo tentativo non riscrive', await provaAsync(async () => {
+  const k = []
+  const dk = { ...dScrivi, assegnaMovimento: async (_id, _r, chiave) => { k.push(chiave) } }
+  await scriviChiEPerCosa(dk, { id: 'm3', voceId: 'v-corsi', personaId: 'sofia' }, { personaId: 'sofia', righe: righe1, chiave: 'apertura-1' }, voci)
+  await scriviChiEPerCosa(dk, { id: 'm3', voceId: 'v-corsi', personaId: 'sofia' }, { personaId: 'sofia', righe: righe1, chiave: 'apertura-1' }, voci)
+  return k
+}), ['apertura-1', 'apertura-1'])
+ok('«Sì, è questa» da un Da classificare: si abbina e basta, la voce la prende dalla ricevuta', await provaAsync(async () => {
+  const k = []
+  const dr = { ...dScrivi, abbinaRicevutaMovimento: async (id, r) => { k.push(['abbina', id, r]) }, collegaMovimentiPersona: async (ids, p) => { k.push(['persona', ids, p]) }, cambiaVoceMovimenti: async () => { k.push(['voce']) } }
+  const vv = [...voci, { id: 'v-dacl', nome: 'Da classificare', tipo: 'entrata', diSistema: true, attiva: true }]
+  await fn(A, 'assegna', 'abbinaDaFinestra')(dr, { id: 'm1', voceId: 'v-dacl' }, 'sofia', 'r1', vv)
+  await fn(A, 'assegna', 'abbinaDaFinestra')(dr, { id: 'm2', voceId: 'v-corsi', personaId: 'anna' }, 'sofia', 'r2', vv)
+  return k
+}), [['abbina', 'm1', 'r1'], ['persona', ['m2'], 'sofia'], ['abbina', 'm2', 'r2']])
 ok('tutto già giusto: solo le righe', await sc({ id: 'm3', voceId: 'v-corsi', personaId: 'sofia' }, { personaId: 'sofia', righe: righe1 }), [['assegna', 'm3', 1, 'string']])
 ok('«Solo la persona»: la tipologia resta (o «Corsi e altri pagamenti» se era da classificare), niente righe', await sc({ id: 'm4', voceId: 'v-dacl', personaId: undefined }, { personaId: 'sofia', righe: [] }),
   [['voce', ['m4'], 'v-corsi', 'sofia']])

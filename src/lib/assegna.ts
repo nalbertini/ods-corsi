@@ -7,7 +7,7 @@ import { NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, VOCE_CORSI, VOCE_QUOTA, voceDiSi
 import type { PagamentoDiretto } from './pagamenti'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import type { VoceStorico } from './movimentiPersona'
-import { QUOTA, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { QUOTA, centesimi, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { statoCorsi, type VoceCorso } from './corsiDaPagare'
 import { stagioneDi } from './costi'
 import { listinoUsabile, nomeCorso, type CorsoRef, type Listino } from './listino'
@@ -754,7 +754,7 @@ export async function assegnaDopoIlCollegamento(
 export async function scriviChiEPerCosa(
   d: Pick<DatiSegreteria, 'cambiaVoceMovimenti' | 'collegaMovimentiPersona' | 'assegnaMovimento'>,
   m: { id: string; voceId?: string; personaId?: string },
-  scelta: { personaId: string; righe: RigaAssegnata[] },
+  scelta: { personaId: string; righe: RigaAssegnata[]; chiave?: string },
   voci: VoceContabile[],
 ): Promise<void> {
   const daClassificare = voci.find((v) => v.id === m.voceId)?.nome === VOCE_DA_CLASSIFICARE
@@ -762,7 +762,8 @@ export async function scriviChiEPerCosa(
   const voceId = tipologia ? voci.find((v) => v.nome === tipologia)?.id : m.voceId
   if (voceId && voceId !== m.voceId) await d.cambiaVoceMovimenti([m.id], voceId, scelta.personaId)
   else if (scelta.personaId !== m.personaId) await d.collegaMovimentiPersona([m.id], scelta.personaId)
-  if (scelta.righe.length) await d.assegnaMovimento(m.id, scelta.righe, crypto.randomUUID())
+  // La chiave è dell'apertura della finestra: riprovato dopo una rete caduta, il database non assegna due volte (136).
+  if (scelta.righe.length) await d.assegnaMovimento(m.id, scelta.righe, scelta.chiave ?? crypto.randomUUID())
 }
 
 /**
@@ -780,4 +781,45 @@ export function apreChiEPerCosa(
   if (voce !== VOCE_QUOTA && voce !== VOCE_CORSI) return false
   if (m.origineImport?.startsWith('prima-nota:') && m.data < stagioneDi(oggi).dal) return false
   return daAssegnare(m, diretti, ricevute) === m.importo
+}
+
+/**
+ * La ricevuta già fatta che può essere questo movimento, per la persona scelta nella finestra: le regole di «C'è già
+ * la ricevuta» (`ricevutaGiaFatta`), come se il movimento fosse già suo e, se Da classificare, su «Corsi e altri pagamenti».
+ */
+export function ricevutaPerChi(
+  m: MovimentoManuale, personaId: string,
+  c: Pick<ContestoDaSoli, 'manuali' | 'diretti' | 'ricevute' | 'casse' | 'voci' | 'persone' | 'oggi'>,
+): Ricevuta | undefined {
+  const corsi = c.voci.find((v) => v.nome === VOCE_CORSI)?.id
+  const daClassificare = c.voci.find((v) => v.id === m.voceId)?.nome === VOCE_DA_CLASSIFICARE
+  const comeSuo = c.manuali.map((x) => (x.id === m.id ? { ...x, personaId, voceId: daClassificare || !x.voceId ? corsi : x.voceId } : x))
+  const id = ricevutaGiaFatta(m.id, comeSuo, c.diretti, c.ricevute, c.casse, c.voci, c.oggi, c.persone)
+  return c.ricevute.find((r) => r.id === id)
+}
+
+/** Gli importi scritti nella finestra, per voce (`personaId` e voce uniti da \u0000): le righe e cosa non va, in parole. */
+export function righeDaCampi(dovuti: VoceDovuta[], valori: Record<string, string>, importo: number): { righe: RigaAssegnata[]; guaio: string | null } {
+  const letti = dovuti.map((v) => {
+    const t = valori[`${v.personaId}\u0000${v.voce}`] ?? ''
+    return { v, cent: t.trim() ? centesimi(t) : 0 }
+  })
+  const nonSiCapisce = letti.find((x) => x.cent === null)
+  const righe = letti.filter((x) => (x.cent ?? 0) > 0).map((x) => ({ personaId: x.v.personaId, voce: x.v.voce, importo: x.cent ?? 0 }))
+  if (nonSiCapisce) return { righe, guaio: `L’importo di «${nonSiCapisce.v.voce}» non si capisce.` }
+  return { righe, guaio: righe.length ? cosaNonVaAssegnazione(righe, importo, dovuti) : null }
+}
+
+/**
+ * «Sì, è questa» nella finestra: il bonifico prende la ricevuta già fatta. Un Da classificare si abbina e basta
+ * (`abbina_ricevuta_movimento` gli dà persona e voce della ricevuta, 151); uno già su quota o corsi prima prende la
+ * persona scelta, se è un'altra.
+ */
+export async function abbinaDaFinestra(
+  d: Pick<DatiSegreteria, 'collegaMovimentiPersona' | 'abbinaRicevutaMovimento'>,
+  m: { id: string; voceId?: string; personaId?: string }, personaId: string, ricevutaId: string, voci: VoceContabile[],
+): Promise<void> {
+  const daClassificare = !m.voceId || voci.find((v) => v.id === m.voceId)?.nome === VOCE_DA_CLASSIFICARE
+  if (!daClassificare && m.personaId !== personaId) await d.collegaMovimentiPersona([m.id], personaId)
+  await d.abbinaRicevutaMovimento(m.id, ricevutaId)
 }

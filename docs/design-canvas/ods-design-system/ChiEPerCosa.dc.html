@@ -23,11 +23,11 @@
     .pag { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 6px; font-size: 14px; }
   </style>
 </helmet>
-<!-- COSTRUITA (ChiEPerCosa di src/components/segreteria/ChiEPerCosa.tsx; regole in chiEPerCosa di src/lib/assegna.ts; ../persona-e-pagamento/): la finestra CHI HA PAGATO E PER COSA? (sg-velo + sg-dialogo, larga fino a 780px, scorre). La stessa dal campo PERSONA dell'import della banca, dal tasto «Chi e per cosa» di MOVIMENTI e da «Assegna a quota e corsi» del movimento. In cima SUGGERITE DAL TESTO (SchedaCandidata) e la ricerca (CampoPersona); scelta la persona, un riquadro per chi del nucleo: le cose da pagare (RigaDovuta: voce · manca, campo, tag Saldo/Parziale, «Resteranno…»), «Niente da pagare» se a posto, PAGAMENTI · N (gli ultimi quattro, ricevuta o «senza ricevuta»). Riquadri gialli (data-avviso) per «Già pagato a mano» (È questo bonifico / Non è questo) e C'È GIÀ LA RICEVUTA (Sì, è questa / No, dividi il bonifico), che prende il posto delle cose da pagare. Sotto: «Assegnati … di … · Da assegnare …», «Un solo modo di dividere: già messo» (data-tono fatto) finché non si tocca, Svuota tutto, l'errore (role alert), «TIPOLOGIA: «…», da quel che paga». Tasti: Conferma (pieno), «Conferma e fai la ricevuta» (solo dal movimento), «Solo la persona, decido dopo» (non dal movimento), Annulla. -->
+<!-- COSTRUITA (ChiEPerCosa di src/components/segreteria/ChiEPerCosa.tsx; regole in chiEPerCosa di src/lib/assegna.ts; ../persona-e-pagamento/): la finestra CHI HA PAGATO E PER COSA? (sg-velo + sg-dialogo, larga fino a 780px, scorre). La stessa dal campo PERSONA dell'import della banca, dal tasto «Chi e per cosa» di MOVIMENTI e da «Assegna a quota e corsi» del movimento. In cima SUGGERITE DAL TESTO (SchedaCandidata, qui disegnate come scelte in riga) e la ricerca (CampoPersona); scelta la persona, un riquadro per chi del nucleo (etichetta CHI HA PAGATO o STESSA FAMIGLIA e sotto il nome, mai in maiuscolo): le cose da pagare (RigaDovuta: voce · manca, campo, tag Saldo/Parziale, «Resteranno…»), «Niente da pagare» se a posto, PAGAMENTI · N (gli ultimi quattro, ricevuta o «senza ricevuta»). Riquadri gialli (data-avviso) per GIÀ PAGATO A MANO (È questo bonifico / Non è questo) e C'È GIÀ LA RICEVUTA (Sì, è questa / No, dividi il bonifico), che prende il posto delle cose da pagare: lo stato è disegnato in ../persona-e-pagamento/ConRicevuta.dc.html. Sotto: «Assegnati … di … · Da assegnare …», «Un solo modo di dividere: già messo» (data-tono fatto) finché non si tocca, Svuota tutto, l'errore (role alert), «TIPOLOGIA: «…», da quel che paga». Tasti: Conferma (pieno), «Conferma e fai la ricevuta» (solo dal movimento), «Solo la persona, decido dopo» (non dal movimento), Annulla. -->
 <div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:1180px;padding:40px 24px;background:rgba(0,0,0,.6)">
 <div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:780px;padding:28px;background:#ffffff;border:2px solid #0d2a3d">
   <div style="display:flex;flex-direction:column;gap:4px">
-    <h2 id="titolo" style="margin:0;font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-size:26px;font-weight:800;letter-spacing:.04em">CHI HA PAGATO E PER COSA?</h2>
+    <h2 id="titolo" style="margin:0;font-family:'Saira Condensed', Arial, sans-serif;font-style:italic;font-size:26px;font-weight:700;letter-spacing:.04em">CHI HA PAGATO E PER COSA?</h2>
     <span style="font-size:14px;color:#46606f">27/10/2026 · Da GALLI M. per trimestre judo · <b style="color:#0b7a33">+ 120,00 €</b></span>
   </div>
   <label style="display:flex;flex-direction:column;gap:6px"><span class="et">CHI</span>
@@ -39,17 +39,16 @@
   </div>
 
   <div class="riq">
-    <span class="et">GALLI MATTEO · CHI HA PAGATO</span>
-    <div class="voce"><span>Trimestre Judo kids <span class="sotto">· ott–dic · manca 120,00 €</span></span><span class="campo">120,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
-    <div class="voce"><span>Annuale Judo kids <span class="sotto">· oppure, al posto del trimestre · 420,00 €</span></span><span class="campo vuoto">0,00</span></div>
-    <span class="et" style="padding-top:6px">QUOTA ASSOCIATIVA</span>
-    <div class="voce"><span>Quota associativa 2026/27 <span class="sotto">· pagata il 21/09/2026</span></span><dc-import name="Badge" tipo="tag" label="Pagata" tono="verde" hint-size="90px,28px"></dc-import></div>
+    <span class="et">CHI HA PAGATO</span>
+    <b style="font-size:16px">Galli Matteo</b>
+    <div class="voce"><span>Trimestre Judo kids <span class="sotto">· manca 120,00 €</span></span><span class="campo">120,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
     <span class="et" style="padding-top:6px">PAGAMENTI · 2</span>
     <div class="pag"><span class="num" style="width:90px">21/09/2026</span><span style="flex:1 1 200px">Quota associativa 2026/27 <span class="sotto">· ricevuta n. 301/2026</span></span><span class="num">50,00 €</span></div>
     <div class="pag"><span class="num" style="width:90px">10/09/2026</span><span style="flex:1 1 200px">Trimestre Judo kids · set <span class="sotto">· bonifico, senza ricevuta</span></span><span class="num">120,00 €</span></div>
   </div>
   <div class="riq" style="gap:4px">
-    <span class="et">GALLI SOFIA · STESSA FAMIGLIA</span>
+    <span class="et">STESSA FAMIGLIA</span>
+    <b style="font-size:16px">Galli Sofia</b>
     <span class="sotto">Niente da pagare: corsi e quota a posto.</span>
   </div>
 

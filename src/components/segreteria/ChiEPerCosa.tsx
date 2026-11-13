@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { chiEPerCosa, cosaNonVaAssegnazione, euroAssegna, tipologiaDaRighe, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
+import { useMemo, useRef, useState } from 'react'
+import { chiEPerCosa, euroAssegna, righeDaCampi, tipologiaDaRighe, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
 import { listinoUsabile } from '../../lib/listino'
 import type { CandidatoPersona } from '../../lib/movimentiPersona'
 import type { PagamentoDiretto } from '../../lib/pagamenti'
@@ -7,7 +7,7 @@ import { centesimi, dataRicevuta, euro, type Ricevuta } from '../../lib/ricevute
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { oggiARoma } from '../../lib/contabilita'
 import { CampoPersona, SchedaCandidata } from './CollegaPersona'
-import { DITO, Guaio, Tag, Tasto, useCarica, useDialogo } from './comune'
+import { DITO, Guaio, Tag, Tasto, useBozza, useCarica, useDialogo } from './comune'
 
 // Cognome e nome, come negli elenchi.
 const nome = (p?: Pick<PersonaSeg, 'nome' | 'cognome'>) => (p ? `${p.cognome} ${p.nome}` : '…')
@@ -19,6 +19,8 @@ export interface SceltaChiEPerCosa {
   personaId: string
   nomePersona: string
   righe: RigaAssegnata[]
+  /** Una per apertura della finestra: riprovata dopo una rete caduta, l'assegnazione non si scrive due volte (136). */
+  chiave: string
 }
 
 /**
@@ -45,7 +47,7 @@ export function ChiEPerCosa({
   conRicevuta?: boolean
   soloPersona?: boolean
   onConferma: (s: SceltaChiEPerCosa, eRicevuta: boolean) => void
-  onRicevuta?: (ricevutaId: string, s: Omit<SceltaChiEPerCosa, 'righe'>) => void
+  onRicevuta?: (ricevutaId: string, s: Pick<SceltaChiEPerCosa, 'personaId' | 'nomePersona'>) => void
   onChiudi: () => void
 }) {
   const ref = useDialogo<HTMLDivElement>(onChiudi)
@@ -86,13 +88,13 @@ export function ChiEPerCosa({
     const t = mostrati[chiaveDi(v)] ?? ''
     return { v, testo: t, cent: t.trim() ? centesimi(t) : 0 }
   })
-  const nonSiCapisce = letti.find((x) => x.cent === null)
-  const righe: RigaAssegnata[] = letti.filter((x) => (x.cent ?? 0) > 0).map((x) => ({ personaId: x.v.personaId, voce: x.v.voce, importo: x.cent ?? 0 }))
+  const { righe, guaio } = righeDaCampi(dovuti, mostrati, importo)
   const totale = righe.reduce((s, r) => s + r.importo, 0)
-  const guaio = nonSiCapisce ? `L’importo di «${nonSiCapisce.v.voce}» non si capisce.` : righe.length ? cosaNonVaAssegnazione(righe, importo, dovuti) : null
+  const chiave = useRef(crypto.randomUUID())
+  useBozza(valori !== null, 'Chi ha pagato e per cosa')
   const tipologia = tipologiaDaRighe(righe)
   const daChiedere = (situazione?.daChiedere ?? []).filter((id) => !nonQuesto.includes(id))
-  const conferma = (eRicevuta: boolean) => chi && !guaio && righe.length && onConferma({ personaId: chi.id, nomePersona: nome(chi), righe }, eRicevuta)
+  const conferma = (eRicevuta: boolean) => chi && !guaio && righe.length && onConferma({ personaId: chi.id, nomePersona: nome(chi), righe, chiave: chiave.current }, eRicevuta)
 
   return (
     <>
@@ -110,7 +112,7 @@ export function ChiEPerCosa({
         )}
         <CampoPersona d={d} scelta={chi && !suggerite.some((c) => c.id === chi.id) ? { ...chi, corsi: [] } : null} manca="" onScegli={scegli} />
         {dati.guaio && <Guaio testo={dati.guaio} />}
-        {chi && !dati.dato && !dati.guaio && <span className="sg-sotto">Sto leggendo la situazione…</span>}
+        {chi && !dati.dato && !dati.guaio && <span className="sg-sotto" role="status">Sto leggendo la situazione…</span>}
 
         {chi && ricevuta && (
           <div className="sg-riquadro stack" data-avviso="true" style={{ gap: 10 }}>
@@ -132,7 +134,7 @@ export function ChiEPerCosa({
               const p = situazione.nucleo.find((x) => x.persona.id === id)?.persona
               return (
                 <div key={id} className="sg-riquadro stack" data-avviso="true" style={{ gap: 10 }}>
-                  <span className="sg-etichetta">Già pagato a mano</span>
+                  <span className="sg-etichetta">GIÀ PAGATO A MANO</span>
                   <span style={{ fontSize: 15 }}>{nome(p)} è segnato pagato a mano nella scheda, senza un pagamento nell’app. È questo bonifico?</span>
                   <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                     <Tasto tono="pieno" onClick={() => { setQuesto([...questo, id]); setValori(null) }}>È questo bonifico</Tasto>
@@ -143,7 +145,10 @@ export function ChiEPerCosa({
             })}
             {situazione.nucleo.map(({ persona: p, dovuti: suoi, pagamenti }) => (
               <div key={p.id} className="sg-riquadro stack" style={{ gap: 8 }}>
-                <span className="sg-etichetta">{nome(p).toUpperCase()} · {p.id === chi.id ? 'CHI HA PAGATO' : 'STESSA FAMIGLIA'}</span>
+                <span className="stack" style={{ gap: 2 }}>
+                  <span className="sg-etichetta">{p.id === chi.id ? 'CHI HA PAGATO' : 'STESSA FAMIGLIA'}</span>
+                  <b style={{ fontSize: 16 }}>{nome(p)}</b>
+                </span>
                 {!suoi.length && <span className="sg-sotto">Niente da pagare: corsi e quota a posto.</span>}
                 {letti.filter((x) => x.v.personaId === p.id).map(({ v, testo: t, cent }) => (
                   <RigaDovuta key={chiaveDi(v)} v={v} testo={t} cent={cent} nomePersona={p.nome} aMano={questo.includes(p.id)} onCambia={(x) => setValori({ ...mostrati, [chiaveDi(v)]: x })} />
@@ -164,7 +169,7 @@ export function ChiEPerCosa({
             ))}
             {dovuti.length > 0 && (
               <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'baseline' }}>
-                <span className="num" style={{ fontSize: 15 }}>Assegnati {euroAssegna(totale)} di {euroAssegna(importo)} · {totale > importo ? `${euroAssegna(totale - importo)} più del bonifico` : `Da assegnare ${euroAssegna(importo - totale)}`}</span>
+                <span className="num" role="status" style={{ fontSize: 15 }}>Assegnati {euroAssegna(totale)} di {euroAssegna(importo)} · {totale > importo ? `${euroAssegna(totale - importo)} più del bonifico` : `Da assegnare ${euroAssegna(importo - totale)}`}</span>
                 {situazione.sicura && !valori && <span className="sg-sotto" data-tono="fatto">Un solo modo di dividere: già messo.</span>}
                 <button type="button" className="sg-link sg-pericolo" style={DITO} data-bozza onClick={() => setValori({})}>Svuota tutto</button>
               </div>
@@ -182,7 +187,7 @@ export function ChiEPerCosa({
             <Tasto disabled={!chi || !!guaio || !righe.length} onClick={() => conferma(true)}>Conferma e fai la ricevuta</Tasto>
           )}
           {soloPersona && !ricevuta && (
-            <Tasto disabled={!chi} onClick={() => chi && onConferma({ personaId: chi.id, nomePersona: nome(chi), righe: [] }, false)}>Solo la persona, decido dopo</Tasto>
+            <Tasto disabled={!chi} onClick={() => chi && onConferma({ personaId: chi.id, nomePersona: nome(chi), righe: [], chiave: chiave.current }, false)}>Solo la persona, decido dopo</Tasto>
           )}
           <Tasto onClick={onChiudi}>Annulla</Tasto>
         </div>
