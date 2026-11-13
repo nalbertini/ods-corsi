@@ -75,8 +75,8 @@ export const bastaPerCercare = (scritto: string) => Math.max(0, ...paroleCercate
 
 /**
  * Chi ha pagato, cercato per nome: le stesse regole di `cerca_pagatori`. Serve a
- * chi registra un pagamento senza vedere le persone: escono nome e cognome,
- * mai un contatto, e servono almeno tre lettere. Oltre cento lettere il
+ * chi registra un pagamento senza vedere le persone: escono nome, cognome e
+ * ruolo (due omonimi si distinguono), mai un contatto, e servono almeno tre lettere. Oltre cento lettere il
  * database non cerca, e nemmeno qui: un nome non è così lungo.
  */
 export function trovaPagatori<T extends { id: string; nome: string; cognome: string; attiva: boolean; ruolo?: string }>(persone: T[], scritto: string): Array<{ id: string; nome: string; cognome: string; ruolo?: string }> {

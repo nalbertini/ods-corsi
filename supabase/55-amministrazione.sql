@@ -346,7 +346,7 @@ begin
 end $$;
 
 -- Chi ha pagato, cercato per nome: serve a chi registra un pagamento senza vedere
--- le persone. Solo id, nome e cognome (mai un contatto), almeno tre lettere
+-- le persone. Solo id, nome e cognome (il 158 aggiunge il ruolo; mai un contatto), almeno tre lettere
 -- (`somiglia`, 34-prove-per-nome.sql), al massimo otto righe: dice chi è, non
 -- scarica l'elenco. Le persone disattivate non escono.
 -- Un tetto di ricerche per persona, come `ricerche_prove` (34): chi le ripete per
@@ -360,7 +360,9 @@ create index if not exists ricerche_pagatori_chi on ricerche_pagatori (persona_i
 alter table ricerche_pagatori enable row level security;
 revoke all on ricerche_pagatori from anon, authenticated;
 
-create or replace function cerca_pagatori(scritto text)
+-- Il 158 le aggiunge `ruolo`: senza il drop, rilanciare questo file dopo il 158 si fermerebbe qui (cambia quel che rende).
+drop function if exists cerca_pagatori(text);
+create function cerca_pagatori(scritto text)
   returns table (persona_id uuid, nome text, cognome text)
   language plpgsql security definer set search_path = public, extensions as $$
 begin

@@ -13,8 +13,7 @@
 -- di ricerche.
 --
 -- Si lancia dopo `55-amministrazione.sql`. Rifà `cerca_pagatori`: se si
--- rilancia il 55 dopo, prima `drop function cerca_pagatori(text);`, poi si
--- rilancia anche questo (`controllo.sql` lo dice). Non chiede di rilanciare
+-- rilancia il 55 dopo, va rilanciato anche questo (`controllo.sql` lo dice). Non chiede di rilanciare
 -- `06-iscrizioni.sql`. Finché non c'è, la ricerca rende solo nome e cognome e
 -- due omonimi restano uguali, come prima.
 -- ---------------------------------------------------------------------------
