@@ -183,7 +183,7 @@ Poi i timbri dicono subito come sta, tre per riga (sugli schermi stretti, come i
 **QUOTA ASSOCIATIVA** e un timbro per ogni corso da pagare (verde a posto, giallo da
 guardare, rosso manca; verde solo se non manca niente). Senza certificato il timbro
 dice **MANCA**, sotto **SENZA NON ENTRA**. La quota da pagare dice **DA PAGARE** e
-quanto (**50,00 €**); pagata, **PAGATA** e fin quando. Il timbro di un corso dice
+quanto (**50,00 €**): finché il listino non arriva, sotto c'è **STO LEGGENDO IL LISTINO…**, e se non si legge la cifra non c'è. Pagata, **PAGATA** e fin quando. Il timbro di un corso dice
 quanto manca (**JUDO 3 · MANCANO 350,00 €**) ed entro quando. Le parole sono
 dell'elenco ma la data intera: **SCADUTO IL 25/09/2026**, **VALIDO FINO
 AL 31/07/2027**; il certificato in scadenza dice anche quanto manca

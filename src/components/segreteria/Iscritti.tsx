@@ -3,8 +3,8 @@ import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, famiglia
 import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
-import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, timbriScheda, vienePoco, azioniTestata, vociQuota } from '../../lib/segreteria'
+import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, PrezzoQuota, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
+import { avvisiGesto, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, prezzoQuotaDi, timbriScheda, vienePoco, azioniTestata, vociQuota } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -415,7 +415,7 @@ export function Iscritti({
             tutti={tutti}
             corsi={perId}
             statiCorsi={statiDi(persona)}
-            prezzoQuota={listino.dato ? voceQuota(listino.dato.listino).voce(oggi).prezzo : undefined}
+            prezzoQuota={prezzoQuotaDi(listino, (l) => voceQuota(l.listino).voce(oggi).prezzo)}
             attivi={attivi}
             f={freq.dato?.get(persona.id)}
             tessere={conTessereLette ? tessere.dato!.elenco : undefined}
@@ -772,8 +772,8 @@ function Scheda({
 }: {
   d: DatiSegreteria
   p: PersonaSeg
-  /** Il prezzo della quota nel listino, in centesimi (voceQuota): il timbro DA PAGARE dice quanto. Undefined se il listino non si legge. */
-  prezzoQuota?: number
+  /** Il prezzo della quota nel listino, in centesimi (voceQuota): il timbro DA PAGARE dice quanto. 'leggo' mentre si legge, undefined se non si legge. */
+  prezzoQuota?: PrezzoQuota
   /** I corsi a pagamento in corso, pagati o no (`statoCorsi`); undefined se non si sa. */
   statiCorsi?: StatoCorso[]
   /** Tutti gli iscritti, per il nucleo familiare. */
@@ -1382,7 +1382,7 @@ function vaiA(id: string) {
  * In cima alla scheda: certificato, quota e i corsi da pagare in un colpo d'occhio,
  * con le parole dell'elenco (`timbriScheda`). Ognuno porta alla sua sezione.
  */
-function Timbri({ p, oggi, tessera, onVai, prezzoQuota, statiCorsi }: { p: PersonaSeg; oggi: string; tessera: ReturnType<typeof timbroTessera>; onVai: (id: string) => void; prezzoQuota?: number; statiCorsi?: StatoCorso[] }) {
+function Timbri({ p, oggi, tessera, onVai, prezzoQuota, statiCorsi }: { p: PersonaSeg; oggi: string; tessera: ReturnType<typeof timbroTessera>; onVai: (id: string) => void; prezzoQuota?: PrezzoQuota; statiCorsi?: StatoCorso[] }) {
   const t = timbriScheda(p, oggi, prezzoQuota)
   const uno = (titolo: string, x: Timbro, id: string) => (
     <button type="button" className="sg-timbro" data-tono={x.tono} onClick={() => onVai(id)}>

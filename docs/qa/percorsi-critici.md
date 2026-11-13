@@ -255,7 +255,7 @@ quando arriva la prova.
   prova.
 - Gare: `gareDellaSettimana` è provata, il collegamento in `Settimana.tsx` no.
 - Pagati di stagione (`Ricevute.tsx`): «un bonifico da assegnare non conta» sta nel `.tsx`, che passa solo i pagamenti a mano. Nessuna prova lo tiene (DA FARE: regola in `src/lib`).
-- Scheda iscritto: il cablaggio di «Segna/Togli» nel menu Altro (`Iscritti.tsx`) e il prezzo della quota che arriva dal listino (`prezzoQuota`) stanno nel `.tsx`; le regole sono provate, il collegamento no. Solo collaudo a mano.
+- Scheda iscritto: il cablaggio di «Segna/Togli» nel menu Altro (`Iscritti.tsx`) sta nel `.tsx`; le regole sono provate, il collegamento no. Solo collaudo a mano.
 
 - Tasti grandi del tablet: `Tablet.tsx` e `TabletPin.tsx` usano `TRATTO_TABLET`,
   ma `prova:icone` controlla solo la costante. Il tratto a 1,75 passa tutte le
