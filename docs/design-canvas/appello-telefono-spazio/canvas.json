@@ -1,0 +1,27 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-11-13T19:29:35Z"},
+  "title": "Appello istruttore · più nomi a schermo",
+  "launch": {"view": "canvas", "page": "proposta"},
+  "pages": [{"id": "proposta", "name": "Proposta"}, {"id": "libreria", "name": "Libreria"}],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 390, "h": 760, "title": "Oggi · 4 nomi a schermo", "page": "proposta"},
+    "Proposta.dc.html": {"x": 470, "y": 0, "w": 390, "h": 760, "title": "Proposta A · meno cornice, righe da 56", "page": "proposta"},
+    "PropostaFitta.dc.html": {"x": 940, "y": 0, "w": 390, "h": 760, "title": "Proposta B · meno cornice, righe da 48", "page": "proposta"},
+    "Testata.dc.html": {"x": 0, "y": 0, "w": 390, "h": 72, "page": "libreria"},
+    "TestaAppelloCorta.dc.html": {"x": 0, "y": 192, "w": 390, "h": 140, "page": "libreria"},
+    "CercaAppello.dc.html": {"x": 0, "y": 452, "w": 358, "h": 44, "page": "libreria"},
+    "RigaAppello.dc.html": {"x": 470, "y": 0, "w": 320, "h": 70, "page": "libreria"},
+    "Badge.dc.html": {"x": 470, "y": 190, "w": 140, "h": 40, "page": "libreria"},
+    "Icona.dc.html": {"x": 690, "y": 190, "w": 24, "h": 24, "page": "libreria"},
+    "SegnoCompleanno.dc.html": {"x": 470, "y": 350, "w": 260, "h": 60, "page": "libreria"},
+    "BarraChiudiAppello.dc.html": {"x": 870, "y": 0, "w": 390, "h": 92, "page": "libreria"},
+    "BarraNavigazione.dc.html": {"x": 870, "y": 212, "w": 390, "h": 66, "page": "libreria"}
+  },
+  "order": ["Main.dc.html", "Proposta.dc.html", "PropostaFitta.dc.html", "Testata.dc.html", "TestaAppelloCorta.dc.html", "CercaAppello.dc.html", "RigaAppello.dc.html", "Badge.dc.html", "Icona.dc.html", "SegnoCompleanno.dc.html", "BarraChiudiAppello.dc.html", "BarraNavigazione.dc.html"],
+  "notes": {
+    "titolo": {"x": 0, "y": -260, "text": "Appello sul telefono: più nomi a schermo", "kind": "title1", "maxW": 1330, "page": "proposta"},
+    "cosa": {"x": 1410, "y": 0, "w": 340, "page": "proposta", "fill": "blue", "text": "Judo 3, 16 iscritti, nessuno segnato, telefono 390×760.\n\nOggi: 4 nomi interi.\nA: circa 7 nomi. Via la testata del marchio, la frase d'aiuto e la barra delle pagine mentre l'appello è aperto; la nota sui non segnati entra in CHIUDI.\nB: come A con le righe da 48px invece di 56: circa 9 nomi. Sopra i 44px del tocco, ma meno margine per il dito di fretta.\n\nTUTTI PRESENTI resta giallo (decisione del look sito). Senza la barra delle pagine nell'appello, il giallo della linguetta qui non c'è più."}
+  },
+  "designSystems": []
+}

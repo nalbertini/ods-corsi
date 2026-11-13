@@ -17,18 +17,20 @@
   </style>
 </helmet>
 <div style="width: 100%">
-<div style="display: flex; flex-direction: column; gap: 6px; width: 100%; height: 92px; padding: 8px 16px 10px; background: #ffffff; border-top: 2px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<div style="display: flex; flex-direction: column; gap: 6px; width: 100%; height: {{alta}}; padding: {{spazio}}; background: #ffffff; border-top: 2px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <sc-if value="{{conFrase}}" hint-placeholder-val="{{ true }}">
   <span style="min-height: 16px; font-size: 13px; font-weight: {{pesoFrase}}; line-height: 16px; color: {{coloreFrase}}">{{frase}}</span>
+  </sc-if>
   <div style="display: flex; gap: 8px">
     <sc-if value="{{conProva}}" hint-placeholder-val="{{ true }}">
       <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 112px; height: 52px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 0.1em">+ PROVA</span>
     </sc-if>
-    <span style="display: flex; align-items: center; justify-content: center; flex-grow: 1; min-height: 52px; padding: 0 10px; border-radius: 6px; background: {{sfondo}}; color: {{colore}}; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.1em; text-align: center">{{tasto}}</span>
+    <span style="display: flex; align-items: center; justify-content: center; flex-grow: 1; min-height: 52px; padding: 0 10px; border-radius: 6px; background: {{sfondo}}; color: {{colore}}; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.1em; text-align: center; flex-direction: column; gap: 2px">{{tasto}}<sc-if value="{{conSotto}}" hint-placeholder-val="{{ false }}"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0; color: {{colore}}">{{sotto}}</span></sc-if></span>
   </div>
 </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nonSegnati":{"editor":"text","default":"3"},"chiede":{"editor":"boolean","default":false},"conProva":{"editor":"boolean","default":true},"tuttiAssenti":{"editor":"boolean","default":false},"$preview":{"width":390,"height":92}}'>
+<script data-dc-script data-props='{"nonSegnati":{"editor":"text","default":"3"},"chiede":{"editor":"boolean","default":false},"conProva":{"editor":"boolean","default":true},"tuttiAssenti":{"editor":"boolean","default":false},"corta":{"editor":"boolean","default":false},"$preview":{"width":390,"height":92}}'>
 // COSTRUITO (`.barra-chiudi` nel look sito, chiudiAppello in src/lib/etichetteAppello.ts; proposta in ../appello-istruttore/): la barra ferma in fondo all'appello, sopra la BarraNavigazione. Oggi CHIUDI sta in
 // fondo all'elenco, dopo prove e istruttori, e con tanti nomi bisogna scorrere per trovarlo (cliente-ods).
 // Bianca, filo in alto 2px #cfe6f4, alta 92px. Sopra una frase di 13px che dice cosa succede chiudendo:
@@ -43,6 +45,9 @@
 // `tuttiAssenti`: di solito e' l'appello chiuso per sbaglio, quindi CHIUDI non diventa giallo (il giallo resta su TUTTI
 // PRESENTI in testa) e la frase dice «Sono tutti assenti: chiudi solo se e' giusto.».
 // Nel codice + PROVA non va a capo (nowrap, 112px) e CHIUDI si': a 390px «SÌ, CHIUDI · 14 ASSENTI» sta su due righe.
+// PROPOSTA (`../appello-telefono-spazio/`, non costruita) `corta`: la barra alta 72px invece di 92. La frase sopra i tasti
+// sparisce e diventa la seconda riga di CHIUDI («16 non segnati → assenti», Inter 12px 600): 20px in piu' per i nomi.
+// La domanda di conferma (`chiede`) resta come oggi, frase rossa compresa: e' il momento in cui va letta.
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
@@ -51,8 +56,11 @@ class Component extends DCLogic {
     const chiede = truthy(p.chiede);
     const tutti = n === 0;
     const assentiTutti = truthy(p.tuttiAssenti);
+    const corta = truthy(p.corta) && !chiede;
     const assenti = n === 1 ? 'UN ASSENTE' : n + ' ASSENTI';
     return {
+      alta: corta ? '72px' : '92px', spazio: corta ? '10px 16px' : '8px 16px 10px', conFrase: !corta,
+      conSotto: corta && !tutti, sotto: assentiTutti ? 'sono tutti assenti' : n === 1 ? '1 non segnato → assente' : n + ' non segnati → assenti',
       conProva: p.conProva === undefined ? true : truthy(p.conProva),
       frase: chiede ? 'Sicuro? Tocca di nuovo per chiudere.' : assentiTutti ? 'Sono tutti assenti: chiudi solo se è giusto.' : tutti ? 'Tutti segnati: chiudi e torna al calendario.' : n === 1 ? 'Chi non è segnato diventerà assente.' : n + ' non segnati diventeranno assenti.',
       coloreFrase: chiede ? '#b81d1d' : '#46606f', pesoFrase: chiede ? '700' : '400',
