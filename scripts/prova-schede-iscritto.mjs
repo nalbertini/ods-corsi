@@ -143,6 +143,7 @@ okp('due parti dello stesso movimento: una riga «bonifico», importo senza le a
   tipo: 'bonifico', movimentoId: 'm1', data: '2026-10-03', importo: 50000, parti: [due[1], due[0], due[2]] })
 okp('col movimento: data, importo e nome dal movimento', riga(f('storicoPagamenti', [], due, [mov('m1', '2026-10-02', 53000)])), {
   tipo: 'bonifico', movimentoId: 'm1', data: '2026-10-02', importo: 53000, da: 'Mario Rossi', parti: [due[1], due[0], due[2]] })
+ok('il bonifico SEPA «DA … PER …»: «da» con le maiuscole normali', riga(f('storicoPagamenti', [], due, [mov('m1', '2026-10-02', 53000, 'TRN UNCRITMMXXX 1191262827851832 DA D\'ANGELO SARA LUCIA PER Quota judo BONIFICO SEPA')]))?.da, 'D\'Angelo Sara Lucia')
 ok('una causale senza nome: niente «da»', ((r) => [r?.tipo, r?.da])(riga(f('storicoPagamenti', [], due, [mov('m1', '2026-10-02', 53000, 'Bonifico generico')]))), ['bonifico', undefined])
 ok('i diretti senza movimentoId restano «diretto»; ordine per data decrescente',
   f('storicoPagamenti', [ric('r1', 1, '2026-09-10')], [dir('d9', '2026-10-20'), ...due])?.map?.((x) => x.tipo), ['diretto', 'bonifico', 'ricevuta'])
@@ -153,6 +154,7 @@ const bonifici = [{ movimentoId: 'm2', data: '2026-10-02', importo: 53000, daAss
 okp('righeDaAssegnare: da assegnare, nome e causale dal movimento', f('righeDaAssegnare', bonifici, [mov('m2', '2026-10-02', 53000), mov('m5', '2026-10-04', 1000, 'Bonifico generico')]), [
   { movimentoId: 'm2', data: '2026-10-02', importo: 23000, da: 'Mario Rossi', causale: 'Cliente Mario Rossi per quota e corso' },
   { movimentoId: 'm5', data: '2026-10-04', importo: 1000, causale: 'Bonifico generico' }])
+ok('righeDaAssegnare: anche qui «DA … PER …»', f('righeDaAssegnare', [bonifici[0]], [mov('m2', '2026-10-02', 53000, 'DA ROSSI MARIO PER quota BONIFICO SEPA')])?.[0]?.da, 'Rossi Mario')
 okp('righeDaAssegnare: movimento che non si trova, solo i dati del bonifico', f('righeDaAssegnare', [bonifici[0]], []), [{ movimentoId: 'm2', data: '2026-10-02', importo: 23000 }])
 const inCont = ['m1', 'm2', 'm3', 'm4', 'm5'].map((id) => mov(id, '2026-10-02', 1000))
 const diretti = [parte('a', 1000, '2026-10-05'), parte('b', 500, '2026-10-05', { movimentoId: 'm2' }), parte('c', 500, '2026-10-05', { movimentoId: 'm4', annullatoIl: '2026-10-06' }), parte('e', 500, '2026-10-05', { movimentoId: 'm5' })]

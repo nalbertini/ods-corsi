@@ -7,7 +7,7 @@ import { stagioneDi } from './costi'
 import { euro, type Ricevuta } from './ricevute'
 import { dataLunga } from './sala'
 import { soldi } from './satispay'
-import { nomeDallaCausale, type VoceStorico } from './movimentiPersona'
+import { ordinanteDallaCausale, type VoceStorico } from './movimentiPersona'
 import { dataTimbro, inCorso, presentaCertificato, statoCertificato, timbroDocumento, type CertificatoSeg, type IscrizioneSeg, type StatoPaga, type Timbro, type Tono } from './segreteria'
 
 export interface Riquadro {
@@ -150,7 +150,7 @@ export function storicoPagamenti(ricevute: Ricevuta[], diretti: PagamentoDiretto
   const bonifici = [...perMovimento].map(([movimentoId, tutte]): RigaBonifico => {
     const parti = [...tutte].sort((a, b) => a.creatoIl.localeCompare(b.creatoIl))
     const m = movimenti.find((v) => v.id === movimentoId)
-    const da = m ? nomeDallaCausale(m.descrizione) : null
+    const da = m ? ordinanteDallaCausale(m.descrizione) : null
     return {
       tipo: 'bonifico',
       movimentoId,
@@ -182,7 +182,7 @@ export interface RigaDaAssegnare {
 export function righeDaAssegnare(bonifici: ReadonlyArray<{ movimentoId: string; data: string; daAssegnare: number }>, movimenti: VoceStorico[]): RigaDaAssegnare[] {
   return bonifici.map((b) => {
     const m = movimenti.find((v) => v.id === b.movimentoId)
-    const da = m ? nomeDallaCausale(m.descrizione) : null
+    const da = m ? ordinanteDallaCausale(m.descrizione) : null
     return { movimentoId: b.movimentoId, data: b.data, importo: b.daAssegnare, ...(da ? { da } : {}), ...(m ? { causale: m.descrizione } : {}) }
   })
 }
