@@ -463,7 +463,9 @@ type ConAssegnazioniDentro = { [DENTRO]?: string[] }
  * tetto del database (`cosaNonVaQuota`) lascia mettere: una ricevuta fatta a un prezzo più alto del listino di adesso
  * direbbe di più, e il dialogo proporrebbe un importo che poi si rifiuta.
  */
-export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }): VoceDovuta[] {
+export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }, causale = ''): VoceDovuta[] {
+  // La causale che dice «trimestrale» propone il trimestre: con l'annuale restava da pagare un parziale che non c'è.
+  const daPagare = /trimestr/i.test(causale) ? 'trimestre' : 'annuale'
   const stagione = stagioneDi(oggi)
   const fuori: VoceDovuta[] = []
   const q = pagamentoDi(p, oggi)
@@ -477,8 +479,11 @@ export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, ogg
     if (!['in_parte', 'da_pagare', 'scaduto'].includes(s.come)) continue
     const corso = corsi.find((c) => c.id === s.corsoId)
     if (!corso) continue
-    const formula = s.come === 'in_parte' ? s.formula : 'annuale'
-    const voce = vociDelCorso(corso, oggi, listino).map((v) => v.voce(oggi)).find((v) => v.descrizione.toLowerCase().startsWith(formula ?? 'annuale'))
+    const formula = s.come === 'in_parte' ? s.formula : daPagare
+    const voci = vociDelCorso(corso, oggi, listino).map((v) => v.voce(oggi))
+    const conFormula = (f = 'annuale') => voci.find((v) => v.descrizione.toLowerCase().startsWith(f))
+    // Un corso senza prezzo del trimestre resta sull'annuale.
+    const voce = conFormula(formula) ?? (s.come === 'in_parte' ? undefined : conFormula())
     if (!voce) continue
     const manca = s.come === 'in_parte' ? (s.mancano ?? 0) : voce.prezzo
     const dal = p.iscrizioni.find((i) => i.corsoId === s.corsoId)?.dal ?? stagione.corsi.dal
@@ -500,8 +505,8 @@ export const pagatoAMano = (p: PersonaSeg, oggi: string) => {
 export const senzaSegnoAMano = (p: PersonaSeg): PersonaSeg => ({ ...p, pagamento: { ...p.pagamento, stato: 'da_pagare' } })
 
 /** Le cose da pagare del nucleo; per chi ha detto «È questo bonifico» come se la scheda non fosse segnata a mano. */
-export const dovutiDelNucleo = (chi: PersonaSeg[], eQuesto: string[], corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }) =>
-  chi.flatMap((p) => dovutiDi(conAssegnazioni(eQuesto.includes(p.id) ? senzaSegnoAMano(p) : p, gia.diretti, listino, oggi), corsi, listino, oggi, gia))
+export const dovutiDelNucleo = (chi: PersonaSeg[], eQuesto: string[], corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }, causale = '') =>
+  chi.flatMap((p) => dovutiDi(conAssegnazioni(eQuesto.includes(p.id) ? senzaSegnoAMano(p) : p, gia.diretti, listino, oggi), corsi, listino, oggi, gia, causale))
 
 /** A chi del nucleo chiedere «Già pagato a mano»: segnato a mano, niente da pagare, non ha ancora risposto. Con la data del segno. */
 export const daChiedereAMano = (chi: PersonaSeg[], risposto: string[], dovuti: VoceDovuta[], diretti: PagamentoDiretto[], listino: Listino, oggi: string) =>
@@ -625,9 +630,10 @@ export function chiEPerCosa(
   importo: number,
   c: Pick<ContestoDaSoli, 'diretti' | 'ricevute' | 'persone' | 'corsi' | 'listino' | 'oggi'>,
   eQuesto: string[] = [],
+  causale = '',
 ) {
   const chi = personeDelNucleo(personaId, c.persone).flatMap((id) => c.persone.filter((p) => p.id === id))
-  const dovuti = dovutiDelNucleo(chi, eQuesto, c.corsi, c.listino, c.oggi, { diretti: c.diretti, ricevute: c.ricevute })
+  const dovuti = dovutiDelNucleo(chi, eQuesto, c.corsi, c.listino, c.oggi, { diretti: c.diretti, ricevute: c.ricevute }, causale)
   const daChiedere = daChiedereAMano(chi, eQuesto, dovuti, c.diretti, c.listino, c.oggi).map((x) => x.persona.id)
   const r = ripartizioneSicura(importo, dovuti)
   const sicura = 'righe' in r && !daChiedere.length && cosaNonVaAssegnazione(r.righe, importo, dovuti) === null
@@ -666,7 +672,7 @@ export function daSoli(c: ContestoDaSoli, ids?: string[]): { pronti: ProntoDaSol
       perche[m.id] = 'C’è già la ricevuta: abbinala qui sopra.'
       continue
     }
-    const x = chiEPerCosa(m.personaId, m.importo, { ...c, diretti })
+    const x = chiEPerCosa(m.personaId, m.importo, { ...c, diretti }, [], m.descrizione)
     if (x.daChiedere.length) {
       perche[m.id] = 'È segnato pagato a mano: di’ tu se è questo bonifico.'
       continue
