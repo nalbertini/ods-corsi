@@ -250,6 +250,8 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
   const [aperto, setAperto] = useState<RigaMovimento | null>(() => righe.find((r) => r.id === movimento) ?? null)
   // CHI HA PAGATO E PER COSA?, dalla riga: la stessa finestra dell'import e del movimento.
   const [chiPerCosa, setChiPerCosa] = useState<MovimentoManuale | null>(null)
+  // Le persone col nome della causale, come nell'import della banca: senza, la finestra offre solo la ricerca a mano.
+  const suggeriteChi = useCarica(async () => (chiPerCosa ? d.candidatiPersonaMovimento(chiPerCosa.id) : []), [d, chiPerCosa?.id])
   const anagrafe = useCarica(async () => {
     if (f.mostra !== 'da_assegnare') return null
     const [persone, corsi, letto] = await Promise.all([d.persone(), d.corsi(), d.listino()])
@@ -516,7 +518,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
       )}
       {chiPerCosa && (
         <ChiEPerCosa
-          d={d} data={chiPerCosa.data} testo={chiPerCosa.descrizione} importo={chiPerCosa.importo} personaIniziale={chiPerCosa.personaId} gia={{ diretti, ricevute }}
+          d={d} data={chiPerCosa.data} testo={chiPerCosa.descrizione} importo={chiPerCosa.importo} suggerite={suggeriteChi.dato ?? []} personaIniziale={chiPerCosa.personaId} gia={{ diretti, ricevute }}
           ricevutaDi={(id) => ricevutaPer(chiPerCosa, id)}
           onRicevuta={(id, p) => {
             const m = chiPerCosa
