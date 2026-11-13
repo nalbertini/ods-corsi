@@ -453,7 +453,7 @@ export function AppelloScreen({
           )}
         </div>
 
-        <div className="row pad" style={{ gap: 12, paddingTop: fitto ? 6 : 10 }}>
+        <div className="row pad" style={{ gap: 12, paddingTop: fitto ? 4 : 10 }}>
           <span className={fitto ? 'row grow appello-riga-conto' : 'stack grow'} style={{ gap: fitto ? 10 : 2, minWidth: 0 }}>
             <span className="row" style={{ gap: 6, alignItems: 'baseline', whiteSpace: 'nowrap' }}>
               <span className="num conto-appello">{presentiIscritti}</span>
