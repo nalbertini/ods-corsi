@@ -141,8 +141,11 @@ diventa **✓ TUTTI SEGNATI**, bianco, e non si tocca. Se invece gli iscritti
 sono tutti assenti (un appello chiuso per sbaglio, riaperto; chi prova non
 conta) torna **TUTTI PRESENTI**, e mette ✓ a tutti.
 
-Sul telefono **TUTTI PRESENTI** non c'è: capita di rado che vengano tutti, e il
-posto serve a vedere più nomi. Si tocca ogni presente.
+Sul telefono **TUTTI PRESENTI** in cima non c'è: capita di rado che vengano
+tutti, e il posto serve a vedere più nomi. Si tocca ogni presente. Se però gli
+iscritti sono tutti assenti (un appello chiuso per sbaglio, riaperto), sopra
+l'elenco compare la striscia **✕ Sono tutti assenti** con il tasto giallo
+**TUTTI PRESENTI**: un tocco e tutti hanno la ✓.
 
 **AZZERA L'APPELLO** sta nel menu **⋯**, lontano dal pollice che segna: toglie
 tutti i segni della lezione, per ricominciare. Chiede **SÌ, TOGLI TUTTI I
@@ -204,6 +207,11 @@ diventerebbe assente. Mentre chiede, la frase dice **Sicuro? Tocca di nuovo
 per chiudere.** (sul telefono «Sicuro? Tocca di nuovo», dentro il tasto) e il
 tasto **SÌ, CHIUDI · 14 ASSENTI**: leggete, e toccatelo
 di nuovo. Un doppio tocco veloce non basta.
+
+Sul telefono, se nessuno è segnato, mentre chiede al posto di **+ PROVA**
+compare il giallo **TUTTI PRESENTI** e sotto **SÌ, CHIUDI** si legge «Tutti
+assenti? Tocca di nuovo»: se erano tutti presenti toccate il giallo, se erano
+davvero tutti assenti toccate di nuovo **SÌ, CHIUDI**.
 
 Chiuso, si torna al calendario e in cima compare com'è andata, con quanti
 presenti e quanti assenti:

@@ -92,6 +92,20 @@ ok('nel tasto, secondo tocco: 3 assenti', CN({ nonSegnati: 3, chiede: true }), {
 ok('nel tasto, secondo tocco: un assente', CN({ nonSegnati: 1, chiede: true }).tasto, 'SÌ, CHIUDI · UN ASSENTE')
 ok('nel tasto, secondo tocco con tutti segnati: SÌ, CHIUDI L’APPELLO, mai pieno', CN({ nonSegnati: 0, chiede: true }), { tasto: 'SÌ, CHIUDI L’APPELLO', sotto: 'Sicuro? Tocca di nuovo', pieno: false })
 ok('nel tasto: chiede → mai pieno, qualunque sia il conto', [0, 1, 5].map((n) => CN({ nonSegnati: n, chiede: true }).pieno), [false, false, false])
+ok('nel tasto, secondo tocco con nessuno segnato: «Tutti assenti? Tocca di nuovo»', CN({ nonSegnati: 4, chiede: true, nessuno: true }), { tasto: 'SÌ, CHIUDI · 4 ASSENTI', sotto: 'Tutti assenti? Tocca di nuovo', pieno: false })
+ok('nel tasto, secondo tocco senza `nessuno`: resta «Sicuro? Tocca di nuovo»', CN({ nonSegnati: 4, chiede: true, nessuno: false }).sotto, 'Sicuro? Tocca di nuovo')
+// Rimettere tutti presenti con un tocco, solo sul telefono: striscia sopra l'elenco (tutti assenti) e TUTTI PRESENTI al posto di + PROVA al secondo tocco di CHIUDI senza nessuno segnato.
+const R = (x) => vedi(() => e.rimedioPresenti({ fitto: true, soloLettura: false, tuttiAssenti: false, segnati: 0, nonSegnati: 4, chiedeChiudi: false, ...x }))
+ok('rimedio: tutti assenti sul telefono → striscia', R({ tuttiAssenti: true }).striscia, true)
+ok('rimedio: non tutti assenti → niente striscia', R({}).striscia, false)
+ok('rimedio: tutti assenti ma schermo largo → niente striscia', R({ tuttiAssenti: true, fitto: false }).striscia, false)
+ok('rimedio: tutti assenti ma sola lettura → niente striscia', R({ tuttiAssenti: true, soloLettura: true }).striscia, false)
+ok('rimedio: secondo tocco di CHIUDI, nessuno segnato → TUTTI PRESENTI al posto di + PROVA', R({ chiedeChiudi: true }).alPostoDiProva, true)
+ok('rimedio: CHIUDI non chiede il secondo tocco → + PROVA resta', R({ chiedeChiudi: false }).alPostoDiProva, false)
+ok('rimedio: qualcuno già segnato → + PROVA resta', R({ chiedeChiudi: true, segnati: 2 }).alPostoDiProva, false)
+ok('rimedio: elenco vuoto → + PROVA resta', R({ chiedeChiudi: true, segnati: 0, nonSegnati: 0 }).alPostoDiProva, false)
+ok('rimedio: schermo largo → mai, né striscia né al posto di + PROVA', R({ fitto: false, tuttiAssenti: true, chiedeChiudi: true }), { striscia: false, alPostoDiProva: false })
+ok('rimedio: sola lettura → mai, né striscia né al posto di + PROVA', R({ soloLettura: true, tuttiAssenti: true, chiedeChiudi: true }), { striscia: false, alPostoDiProva: false })
 // Chiede il secondo tocco quando chiudere è probabilmente uno sbaglio: stesse condizioni della vecchia `domanda` di AppelloScreen.
 const Q = (x) => vedi(() => e.chiedeDiChiudere({ segnati: 5, tuttiSegnati: false, futura: false, mancano: 1, iscritti: 12, ...x }))
 ok('chiede: pochi non segnati, appello cominciato → no', Q({}), false)
@@ -300,7 +314,8 @@ ok('.barra-chiudi .btn-prova: «+ PROVA» su una riga sola', /white-space:\s*now
   // Dalla revisione (garante): il secondo tocco per chiudere va collegato ai conti di src/lib, non ricalcolato qui.
   ok('i conti dell\'appello vengono da quadroAppello, con l\'ora vera', /quadroAppello\(\{ elenco: d\.elenco, inizio: d\.sessione\.inizio, adesso: Date\.now\(\) \}\)/.test(schermo), true)
   ok('niente conti rifatti nel .tsx (tuttiSegnati, futura, chiedeDiChiudere)', /const (tuttiSegnati|futura|mancano|nonSegnati) =|chiedeDiChiudere\(/.test(schermo), false)
-  ok('CHIUDI chiede il secondo tocco quando quadroAppello lo dice', /chiede=\{chiede \? chiudiAppello\(/.test(schermo), true)
+  // Sul telefono la domanda ha la seconda riga (chiudiNelTasto), sullo schermo largo è chiudiAppello: decide sempre il `chiede` del quadro.
+  ok('CHIUDI chiede il secondo tocco quando quadroAppello lo dice', /chiede=\{(\s*\/\/[^\n]*)?\s*chiede \? fitto \?[\s\S]{0,300}nelTasto\.sotto[\s\S]{0,120}: chiudiAppello\(\{ nonSegnati, chiede: true \}\)\.tasto : undefined/.test(schermo), true)
   ok('aiuto, frase di AZZERA e conto della ricerca da src/lib', ['aiutoAppello(localStorage)', 'fraseAzzera(sicuroAzzera)', 'contoRicerca('].every((x) => schermo.includes(x)), true)
   ok('AZZERA spento: fondo superficie-alta e testo spento, senza opacità', /var\(--surface-2\)/.test(corpo(/\.foglio-appello \.btn-azzera:disabled/)) && !/opacity:\s*0\.4/.test(corpo(/\.foglio-appello \.btn-azzera:disabled/)), true)
 }
@@ -330,6 +345,8 @@ console.log('\nL\'appello fitto sul telefono (App, Sala, AppelloScreen, CSS)')
 
   const sch = readFileSync('src/components/AppelloScreen.tsx', 'utf8')
   ok('AppelloScreen usa chiudiNelTasto(', /chiudiNelTasto\(/.test(sch), true)
+  ok('AppelloScreen usa rimedioPresenti(', /rimedioPresenti\(/.test(sch), true)
+  ok('AppelloScreen ha la striscia «Sono tutti assenti»', /Sono tutti assenti/.test(sch), true)
   ok('TUTTI PRESENTI non c\'è con fitto: il tasto è sotto una condizione su fitto', /!fitto\s*&&[\s\S]{0,200}appello-tasto|fitto\s*\?\s*null\s*:[\s\S]{0,200}appello-tasto|!fitto\s*\?\s*\(?[\s\S]{0,200}appello-tasto/.test(sch), true)
   ok('il titolo è un h1 quando fitto', /fitto\s*\?\s*\(?\s*<h1\b|<h1\b[^>]*appello-titolo|const Titolo = fitto \? 'h1'/.test(sch), true)
   ok('l\'aiuto «Un tocco sul nome» non c\'è con fitto', /!fitto[^\n]*Un tocco sul nome|aiuto && !fitto|!fitto && aiuto|fitto \|\| !aiuto/.test(sch), true)

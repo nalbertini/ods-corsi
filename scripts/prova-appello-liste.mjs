@@ -218,6 +218,12 @@ console.log('TUTTI PRESENTI sui dati di prova veri')
   ok('una scrittura per ogni non segnato, prova compresa', chiamate.sort(), [...nonSegnati, prova.id].sort())
   ok('mai segnaTutti', tutti, 0)
   ok('da segnare a zero', m.contiListe(dopo).da_segnare, 0)
+
+  // Il rimedio «tutti assenti» del telefono chiama segnaTutti: partendo da tutti assenti, prova compresa, li rimette tutti presenti.
+  for (const x of dopo) await dati.segna(LEZIONE, x.id, 'assente')
+  ok('rimedio, partenza: tutti assenti, prova compresa', [...new Set((await leggi()).map((x) => x.stato))], ['assente'])
+  await dati.segnaTutti(LEZIONE, 'presente')
+  ok('rimedio: segnaTutti(presente) li rimette tutti presenti', [...new Set((await leggi()).map((x) => x.stato))], ['presente'])
 }
 
 console.log('L\'annuncio per chi non vede lo schermo')

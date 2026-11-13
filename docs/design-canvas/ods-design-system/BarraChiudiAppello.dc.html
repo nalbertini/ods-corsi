@@ -25,12 +25,16 @@
     <sc-if value="{{conProva}}" hint-placeholder-val="{{ true }}">
       <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 112px; height: 52px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 0.1em">+ PROVA</span>
     </sc-if>
+    <sc-if value="{{conRimedia}}" hint-placeholder-val="{{ false }}">
+      <!-- COSTRUITO rimedia (`.barra-chiudi .btn-rimedio`, rimedioPresenti in src/lib/etichetteAppello.ts): al secondo tocco con nessuno segnato, sul telefono, al posto di + PROVA il giallo TUTTI PRESENTI, 150px a 17px (136px a 16px sotto i 380px). -->
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 150px; height: 52px; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.1em">TUTTI PRESENTI</span>
+    </sc-if>
     <span style="display: flex; align-items: center; justify-content: center; flex-grow: 1; min-height: 52px; padding: 0 10px; border-radius: 6px; background: {{sfondo}}; color: {{colore}}; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.1em; text-align: center; flex-direction: column; gap: 2px">{{tasto}}<sc-if value="{{conSotto}}" hint-placeholder-val="{{ false }}"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0; color: {{colore}}">{{sotto}}</span></sc-if></span>
   </div>
 </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nonSegnati":{"editor":"text","default":"3"},"chiede":{"editor":"boolean","default":false},"conProva":{"editor":"boolean","default":true},"tuttiAssenti":{"editor":"boolean","default":false},"corta":{"editor":"boolean","default":false},"$preview":{"width":390,"height":92}}'>
+<script data-dc-script data-props='{"nonSegnati":{"editor":"text","default":"3"},"chiede":{"editor":"boolean","default":false},"conProva":{"editor":"boolean","default":true},"tuttiAssenti":{"editor":"boolean","default":false},"corta":{"editor":"boolean","default":false},"rimedia":{"editor":"boolean","default":false},"$preview":{"width":390,"height":92}}'>
 // COSTRUITO (`.barra-chiudi` nel look sito, chiudiAppello in src/lib/etichetteAppello.ts; proposta in ../appello-istruttore/): la barra ferma in fondo all'appello, sopra la BarraNavigazione. Oggi CHIUDI sta in
 // fondo all'elenco, dopo prove e istruttori, e con tanti nomi bisogna scorrere per trovarlo (cliente-ods).
 // Bianca, filo in alto 2px #cfe6f4, alta 92px. Sopra una frase di 13px che dice cosa succede chiudendo:
@@ -48,7 +52,10 @@
 // COSTRUITO (`.barra-chiudi[data-fitto]` e `.btn-chiudi-sotto` nel look sito; proposta in `../appello-telefono-spazio/`) `corta`:
 // sul telefono la barra e' alta 74px invece di 92 (padding 10px 16px, gap 4px). La frase sopra i tasti sparisce e diventa la
 // seconda riga di CHIUDI («16 non segnati → assenti», Inter 12px 600 minuscolo: eccezione al maiuscolo dei tasti).
-// La domanda di conferma (`chiede`) resta come oggi, frase rossa compresa: e' il momento in cui va letta.
+// Anche la domanda di conferma (`chiede`) sta nella seconda riga: «Sicuro? Tocca di nuovo».
+// COSTRUITO `rimedia` (proposta in `../appello-tutti-assenti/`, tavola C): con nessuno segnato, al secondo tocco sul telefono
+// il giallo TUTTI PRESENTI prende il posto di + PROVA e la seconda riga dice «Tutti assenti? Tocca di nuovo». Nessuna frase in
+// piu' (scelta dell'utente). Col giallo accanto CHIUDI ha 40px in meno e passa a 17px con padding 0 8px.
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
@@ -57,12 +64,14 @@ class Component extends DCLogic {
     const chiede = truthy(p.chiede);
     const tutti = n === 0;
     const assentiTutti = truthy(p.tuttiAssenti);
-    const corta = truthy(p.corta) && !chiede;
+    const corta = truthy(p.corta);
+    const rimedia = chiede && corta && truthy(p.rimedia);
     const assenti = n === 1 ? 'UN ASSENTE' : n + ' ASSENTI';
     return {
       alta: corta ? '74px' : '92px', spazio: corta ? '10px 16px' : '8px 16px 10px', conFrase: !corta,
-      conSotto: corta && !tutti, sotto: assentiTutti ? 'sono tutti assenti' : n === 1 ? '1 non segnato → assente' : n + ' non segnati → assenti',
-      conProva: p.conProva === undefined ? true : truthy(p.conProva),
+      conSotto: corta && (chiede || !tutti), sotto: rimedia ? 'Tutti assenti? Tocca di nuovo' : chiede ? 'Sicuro? Tocca di nuovo' : assentiTutti ? 'sono tutti assenti' : n === 1 ? '1 non segnato → assente' : n + ' non segnati → assenti',
+      conRimedia: rimedia,
+      conProva: !rimedia && (p.conProva === undefined ? true : truthy(p.conProva)),
       frase: chiede ? 'Sicuro? Tocca di nuovo per chiudere.' : assentiTutti ? 'Sono tutti assenti: chiudi solo se è giusto.' : tutti ? 'Tutti segnati: chiudi e torna al calendario.' : n === 1 ? 'Chi non è segnato diventerà assente.' : n + ' non segnati diventeranno assenti.',
       coloreFrase: chiede ? '#b81d1d' : '#46606f', pesoFrase: chiede ? '700' : '400',
       tasto: chiede ? 'SÌ, CHIUDI · ' + assenti : '✓ CHIUDI L’APPELLO'.slice(tutti && !assentiTutti ? 0 : 2),

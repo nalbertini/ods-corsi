@@ -57,13 +57,25 @@ export function chiudiAppello(a: { nonSegnati: number; chiede: boolean; tuttiAss
  * Sul telefono la frase sopra la barra non c'è: quel che succede chiudendo
  * sta dentro il tasto, in una seconda riga, così si legge mentre lo si tocca.
  */
-export function chiudiNelTasto(a: { nonSegnati: number; chiede: boolean; tuttiAssenti?: boolean }): { tasto: string; sotto?: string; pieno: boolean } {
+export function chiudiNelTasto(a: { nonSegnati: number; chiede: boolean; tuttiAssenti?: boolean; nessuno?: boolean }): { tasto: string; sotto?: string; pieno: boolean } {
   const n = a.nonSegnati
   const { tasto, pieno } = chiudiAppello(a)
-  if (a.chiede) return { tasto, sotto: 'Sicuro? Tocca di nuovo', pieno }
+  // Con nessuno segnato, accanto c'è TUTTI PRESENTI: la domanda dice cosa succede se si tocca CHIUDI.
+  if (a.chiede) return { tasto, sotto: a.nessuno ? 'Tutti assenti? Tocca di nuovo' : 'Sicuro? Tocca di nuovo', pieno }
   if (a.tuttiAssenti) return { tasto, sotto: 'Sono tutti assenti', pieno }
   if (n === 0) return { tasto, pieno }
   return { tasto, sotto: n === 1 ? '1 non segnato → assente' : `${n} non segnati → assenti`, pieno }
+}
+
+/**
+ * Sul telefono il TUTTI PRESENTI in testa non c'è: chiuso un appello con tutti
+ * assenti si rimediava un nome alla volta. La striscia sopra l'elenco ripara
+ * dopo; al posto di + PROVA, al secondo tocco di CHIUDI con nessuno segnato,
+ * previene. Lo schermo largo ha già il tasto in testa.
+ */
+export function rimedioPresenti(a: { fitto: boolean; soloLettura: boolean; tuttiAssenti: boolean; segnati: number; nonSegnati: number; chiedeChiudi: boolean }): { striscia: boolean; alPostoDiProva: boolean } {
+  const si = a.fitto && !a.soloLettura
+  return { striscia: si && a.tuttiAssenti, alPostoDiProva: si && a.chiedeChiudi && a.segnati === 0 && a.nonSegnati > 0 }
 }
 
 /** Chiudere vuole il secondo tocco quando è probabilmente uno sbaglio: nessuno segnato, lezione futura, più di metà assenti. */
