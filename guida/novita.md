@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.252.0 — 13 novembre 2026
+
+### Novità
+
+- In Contabilità la ricerca dei movimenti trova anche l'importo
+
 ## 0.251.2 — 13 novembre 2026
 
 ### Risolto
