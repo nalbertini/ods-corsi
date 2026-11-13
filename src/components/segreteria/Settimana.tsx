@@ -390,9 +390,6 @@ export function Settimana({
           <span className="num sg-tag" data-tipo="manca">Senza appello</span>passata, nessuno ha segnato
         </span>
         <span className="row" style={{ gap: 6 }}>
-          <span className="num sg-tag" data-tipo="fatto">Appello fatto</span>passata, e l’appello c’è
-        </span>
-        <span className="row" style={{ gap: 6 }}>
           <span className="num sg-tag" data-tipo="aspetta">Manca l’istruttore</span>la lezione non ne ha uno: si assegna in CORSI
         </span>
         <span className="row" style={{ gap: 6 }}>
@@ -488,11 +485,11 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
   const annullata = l.stato === 'annullata'
   const fatto = l.segnati > 0
   const etichette = etichetteLezione(l, passata)
-  // Una regola sola per il tag e per il bordo: manca l'appello, o è fatto.
+  // Una regola sola per il tag e per il bordo: manca l'appello.
   const manca = etichette.some((e) => e.tipo === 'manca')
   // Passata e con l'appello fatto non chiede più niente: si fa da parte, e
   // nella settimana resta in vista solo quello che manca.
-  const chiusa = etichette.some((e) => e.tipo === 'fatto')
+  const chiusa = passata && !annullata && fatto
   return (
     <button
       type="button"

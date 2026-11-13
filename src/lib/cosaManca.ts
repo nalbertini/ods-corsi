@@ -178,13 +178,13 @@ export function strisciaVisibile(voce: string, telefono: boolean, schedaAperta: 
 }
 
 /**
- * Sul computer la striscia si vede finché non la si nasconde; sul telefono parte spenta e la accende solo chi la sceglie.
- * Un valore salvato che non è «mostrata» né «nascosta» (vuoto, vecchio, sconosciuto) lascia quello di partenza.
+ * La striscia parte spenta, sul computer e sul telefono: i suoi numeri stanno già in DA FARE e nei segni del menu, e in
+ * cima a ogni pagina erano più grandi del titolo. La accende solo chi la sceglie da IMPOSTAZIONI.
+ * Un valore salvato che non è «mostrata» (vuoto, vecchio, sconosciuto) la lascia spenta.
  */
-export function leggiPreferenzaStriscia(valore: unknown, telefono = false): boolean {
-  if (valore === 'nascosta') return false
-  if (valore === 'mostrata') return true
-  return !telefono
+// `telefono` resta per chi la chiama: oggi la partenza è la stessa ovunque.
+export function leggiPreferenzaStriscia(valore: unknown, _telefono = false): boolean {
+  return valore === 'mostrata'
 }
 
 /**

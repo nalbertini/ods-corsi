@@ -44,7 +44,8 @@ ok('PRESENZE ISTRUTTORI aspetta presenze e lezioni da confermare', /lette\(elenc
 ok('ISTRUTTORI E ACCESSI aspetta il personale', /lette\(lista\)/.test(voce('Personale')), true)
 ok('STATISTICHE aspetta le lezioni prima del blocco del sito', /lette\(stat\) && \(\s+<StatisticheSito/.test(voce('Statistiche')), true)
 ok('PRESENZE ISTRUTTORI: la tabella aspetta come il riepilogo', /\{pronte && \(\s+<div role="table"/.test(voce('PresenzeIstruttori')), true)
-ok('PRESENZE ISTRUTTORI: i menu di corso e istruttore hanno larghezza fissa', /id="corso-pi"[^>]*style=\{\{ width: \d+/.test(voce('PresenzeIstruttori')) && /id="istr-pi"[^>]*style=\{\{ width: \d+/.test(voce('PresenzeIstruttori')), true)
+// Il chip di FiltroMenu è largo quanto il valore scelto («Tutti»), non quanto la voce più lunga: quando arrivano corsi e istruttori non si sposta.
+ok('PRESENZE ISTRUTTORI: corso e istruttore sono chip, che non si allargano quando arrivano i nomi', /<FiltroMenu id="corso-pi"/.test(voce('PresenzeIstruttori')) && /<FiltroMenu id="istr-pi"/.test(voce('PresenzeIstruttori')), true)
 ok('STATISTICHE: il menu dei corsi ha larghezza fissa', /id="corso-s"[^>]*style=\{\{ width: \d+/.test(voce('Statistiche')), true)
 
 console.log(guai ? `\n${guai} da correggere` : '\nTutto in ordine')

@@ -187,6 +187,9 @@ console.log('\n8b. la striscia dei totali torna sempre: i saldi solo senza filtr
   ok('con Annullati solo entrate e uscite', nomi({ ...base, mostra: 'annullati' }), ['ENTRATE', 'USCITE'])
   const cifre = prova(() => m.striscia(m.estrattoMostra(righe, casse, { ...base, tipo: 'entrata' }, ctx), { ...base, tipo: 'entrata' }).map((x) => x.cifra))
   ok('zero uscite: la cifra senza il meno', typeof cifre?.[1] === 'string' && !cifre[1].includes('−'), true)
+  // Come le casse sopra (19.120,00 €): i totali di contabilità sempre coi centesimi, anche tondi e a zero.
+  ok('i totali hanno sempre due decimali', (cifre ?? []).every((c) => /\d,\d\d\u00a0€$/.test(c)), true)
+  ok('i saldi hanno sempre due decimali', prova(() => m.striscia(m.estrattoMostra(righe, casse, base, ctx), base).map((x) => x.cifra)).every((c) => /\d,\d\d\u00a0€$/.test(c)), true)
 }
 
 console.log('\n9. Contabilita.tsx: i filtri nuovi, con la voce, niente casse, persona, annullati e pillole')

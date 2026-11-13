@@ -1,6 +1,6 @@
 import { estrattoConto, filtraMovimenti, type Cassa, type EstrattoConto, type RigaEstratto, type RigaMovimento } from './contabilita'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
-import { soldi } from './satispay'
+import { euro } from './ricevute'
 import { senzaPersona, type EsitoCollegamento } from './movimentiPersona'
 
 /**
@@ -142,6 +142,8 @@ export function estrattoMostra(righe: RigaMovimento[], casse: Cassa[], f: Filtri
 }
 
 /** Il segno solo se c'è una cifra: «− 0,00 €» non vuol dire niente. */
+// Sempre coi centesimi, come le casse sopra la tabella (19.120,00 €); lo spazio che non va a capo tiene unito l'euro.
+const soldi = (c: number) => `${euro(c)}\u00a0€`
 const conSegno = (segno: '+' | '−', c: number) => (c ? `${segno} ${soldi(c)}` : soldi(c))
 const saldo = (c: number) => (c < 0 ? `− ${soldi(-c)}` : soldi(c))
 

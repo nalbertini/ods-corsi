@@ -9,7 +9,7 @@ import { dataRicevuta, euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
 import { bonificiPerCompensi, centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, daPagareCompensi, extraDelPagamento, avvisoDelMese, aChePunto, azioneCarta, azioneRiga, gruppiCompensi, senzaImporto, STATI_FERMI, type AzioneCompenso, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type GruppoCompensi, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
-import { chiedi, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Segmenti, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
+import { chiedi, FiltroMenu, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Segmenti, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 const GIORNI_CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
@@ -922,33 +922,31 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <Testa titolo="COMPENSI" sotto="Per ogni corso, ore confermate × la sua tariffa. Si sistemano, si stampano, si fanno firmare, si pagano." />
-      {avviso}
-      <div className="row" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <label className="stack" style={{ gap: 6, width: 240 }}>
-          <span className="sg-etichetta">MESE</span>
-          <select className="sg-campo" value={periodo} onChange={(e) => setPeriodo(e.target.value)}>
-            {periodi.map((x) => (
-              <option key={x.chiave} value={x.chiave}>
-                {x.nome}
-              </option>
-            ))}
-          </select>
-        </label>
-        {dati.dato && (
-          <>
-            <span className="num" style={{ fontSize: 14, minHeight: 44, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+      {/* Sotto il titolo il mese in numeri: la regola (ore confermate × tariffa) sta nella guida. */}
+      <Testa
+        titolo="COMPENSI"
+        sotto={
+          dati.dato ? (
+            <span className="num">
               {quante(righe.length, 'tecnico', 'tecnici')} ·{' '}
               <span style={fermi.length ? { color: 'var(--rosso-testo)', fontWeight: 700 } : undefined}>{quante(fermi.length, 'fermo', 'fermi')}</span> · {euro(totaleDaPagare)} € da pagare · {euro(tutti.pagati)} € pagati
             </span>
-            {/* Anche per chi nel mese non ha lezioni: per questo sta qui e non solo nel dialogo del tecnico. */}
-            <span className="row" style={{ marginLeft: 'auto', alignItems: 'center' }}>
-              <button type="button" className="sg-btn sg-btn-linea" onClick={() => setExtra({})}>
-                + Compenso extra
-              </button>
-            </span>
-          </>
+          ) : (
+            'Per ogni corso, ore confermate × la sua tariffa.'
+          )
+        }
+      >
+        {dati.dato && (
+          // Anche per chi nel mese non ha lezioni: per questo sta qui e non solo nel dialogo del tecnico.
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => setExtra({})}>
+            + Compenso extra
+          </button>
         )}
+      </Testa>
+      {avviso}
+      <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+        {/* Il mese da pagare (il passato) viene per primo: è quello da cui si parte, e la ✕ del filtro ci torna. */}
+        <FiltroMenu id="mese-c" nome="Mese" value={periodo} opzioni={[...(periodi[1] ? [periodi[1], periodi[0]] : [periodi[0]]), ...periodi.slice(2)].map((x) => [x.chiave, x.nome] as const)} onChange={setPeriodo} />
       </div>
       {dati.dato && (
         <div className="sg-elenco-barra sg-elenco-barra-due">

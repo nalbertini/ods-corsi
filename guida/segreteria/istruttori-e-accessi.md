@@ -11,10 +11,10 @@ Per ogni persona: nome e corsi, **EMAIL**, **RUOLO**, **ACCESSO**, **PIN
 TABLET**.
 
 - **ACCESSO**:
-  - **HA FATTO L'ACCESSO** — è entrata almeno una volta;
-  - **NON ANCORA ENTRATO** — c'è in elenco ma non è mai entrata;
-  - **SENZA ACCESSO** — l'accesso è stato tolto.
-- Senza email (in rosso «nessuna email») una persona non può entrare. È l'email
+  - **Ha fatto l'accesso** — è entrata almeno una volta;
+  - **Non ancora entrato** — c'è in elenco ma non è mai entrata;
+  - **Senza accesso** — l'accesso è stato tolto.
+- Senza email (un trattino grigio nella colonna) una persona non può entrare. È l'email
   di accesso, ed è la stessa per ricevute e avvisi: una sola persona di
   personale per indirizzo. Un iscritto con lo stesso indirizzo di un istruttore
   non diventa lui: l'accesso si lega al ruolo di chi lo ha.
