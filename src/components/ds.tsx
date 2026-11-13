@@ -436,7 +436,8 @@ export function DueTocchi({
   children,
 }: {
   className: string
-  chiede?: string
+  /** La domanda al primo tocco: un nodo, perché sul telefono CHIUDI la dice su due righe. */
+  chiede?: ReactNode
   disabled?: boolean
   /** Per un tasto con un'icona: il nome da leggere finché non chiede. */
   etichetta?: string

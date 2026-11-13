@@ -2690,6 +2690,11 @@ label.sg-btn { cursor: pointer; }
 :root[data-look='sito'] .elenco-appello[data-fitto] { gap: 6px; }
 :root[data-look='sito'] [data-fitto] .riga-appello { min-height: 48px; }
 :root[data-look='sito'] .barra-chiudi[data-fitto] { gap: 4px; padding: 10px 16px calc(var(--safe-b) + 10px); }
+/* Appello chiuso con tutti assenti: sul telefono il TUTTI PRESENTI in testa non c'è, la striscia lo rimette a un tocco. */
+:root[data-look='sito'] .striscia-assenti { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 8px 8px 8px 12px; background: var(--surface); border: 2px solid var(--line); border-left: 4px solid var(--rosso); border-radius: 6px; }
+:root[data-look='sito'] .striscia-assenti-testo { flex-grow: 1; font-size: 14px; font-weight: 700; color: var(--rosso-testo); }
+:root[data-look='sito'] .striscia-assenti .btn { background: var(--giallo); color: var(--su-colore); border-radius: 6px; letter-spacing: 0.04em; min-height: 44px; padding: 0 12px; white-space: nowrap; }
+:root[data-look='sito'] .barra-chiudi .btn-rimedio { background: var(--giallo); color: var(--su-colore); border-radius: 6px; letter-spacing: 0.04em; width: 150px; flex-shrink: 0; padding: 0 8px; white-space: nowrap; }
 :root[data-look='sito'] .btn-chiudi-sotto { font-family: var(--body); font-size: 12px; font-weight: 600; letter-spacing: 0; line-height: 1.1; text-transform: none; }
 /* Nell'appello fitto la data resta su una riga: a 375px andava a capo e la testa passava da 90 a 104px. */
 :root[data-look='sito'] .appello-testa[data-fitto] .chi-kanji > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="status" style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 8px 8px 12px; background: #ffffff; border: 2px solid #cfe6f4; border-left: 4px solid #e4292a; border-radius: 6px; color: #0d2a3d">
+  <span style="display: flex; flex-direction: column; gap: 1px; flex: 1 1 0; min-width: 0">
+    <span style="font-size: 14px; font-weight: 700; line-height: 1.25; color: #b81d1d">✕ Sono tutti assenti</span>
+    <span style="font-size: 13px; font-weight: 500; line-height: 1.25; color: #46606f">{{frase}}</span>
+  </span>
+  <span style="display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 44px; padding: 0 12px; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 0.06em; white-space: nowrap">TUTTI PRESENTI</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"frase":{"editor":"text","default":"Era uno sbaglio? Rimettili presenti."},"$preview":{"width":358,"height":64}}'>
+// PROPOSTA (../appello-tutti-assenti/): sul telefono TUTTI PRESENTI non c'e' piu' in testa (PR #873), e l'appello chiuso
+// per sbaglio resta senza rimedio veloce. Questa striscia compare SOLO con tutti gli iscritti assenti (`tuttiAssenti` di
+// quadroAppello), sopra l'elenco: in quel caso l'elenco e' tutto ✕, non si perde niente da vedere. Fondo surface, bordo line,
+// filo sinistro rosso 4px (lo stato, non un errore dell'app); titolo rosso-testo 14px 700 col segno ✕, frase dim 13px;
+// tasto giallo come TUTTI PRESENTI dello schermo largo (Big Shoulders 800, alto 44px). Un tocco, nessun secondo tocco:
+// rimettere presenti e' il rimedio, e si torna indietro toccando i nomi o con AZZERA.
+class Component extends DCLogic {
+  renderVals() { return { frase: this.props.frase ?? 'Era uno sbaglio? Rimettili presenti.' }; }
+}
+</script>
+</body>
+</html>

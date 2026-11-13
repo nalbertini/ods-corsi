@@ -130,6 +130,26 @@ try {
   await pagina.keyboard.press('Escape')
   ok('e ESC lo richiude sul ⋯', await fuoco(), 'tasto ⋯')
 
+  // Nessuno segnato e un tocco su CHIUDI: accanto al tasto che chiede compare TUTTI PRESENTI al posto di + PROVA,
+  // e CHIUDI dice cosa fa il secondo tocco (proposta in docs/design-canvas/appello-tutti-assenti/, tavola C).
+  await pagina.setViewportSize({ width: 360, height: 740 })
+  await pagina.locator('.btn-chiudi').click()
+  const rimedio = pagina.locator('.barra-chiudi .btn-rimedio')
+  // La barra cambia dopo che il tasto ha detto «chiedo» (un effetto): si aspetta, senza farne una KO a tempo scaduto.
+  await rimedio.waitFor({ timeout: 2000 }).catch(() => {})
+  ok('nessuno segnato, al primo tocco di CHIUDI c\'è TUTTI PRESENTI', await rimedio.count(), 1)
+  ok('e + PROVA non c\'è', await pagina.locator('.barra-chiudi .btn-prova').count(), 0)
+  ok('CHIUDI dice «Tutti assenti? Tocca di nuovo»', /Tutti assenti\? Tocca di nuovo/.test(await pagina.locator('.btn-chiudi').innerText()), true)
+  const misure = await pagina.evaluate(() => ({
+    largo: document.documentElement.scrollWidth <= innerWidth,
+    bassi: [...document.querySelectorAll('.barra-chiudi .btn')].filter((b) => b.getBoundingClientRect().height < 44).length,
+  }))
+  ok('a 360px niente scorrimento di lato, tasti alti almeno 44px', misure, { largo: true, bassi: 0 })
+  await rimedio.click()
+  await pagina.locator('.barra-chiudi .btn-prova').waitFor()
+  ok('TUTTI PRESENTI segna tutti: nessuno resta da segnare', await pagina.locator('.btn-chiudi').innerText().then((t) => /non segnat/.test(t)), false)
+  await pagina.setViewportSize({ width: 390, height: 844 })
+
   // + PROVA: la riga di chi è appena entrato si vede, non resta sotto la barra
   // CHIUDI ferma in fondo (l'ha trovato il collaudo: c'era solo «PROVE 1»).
   await pagina.locator('.btn-prova').click()

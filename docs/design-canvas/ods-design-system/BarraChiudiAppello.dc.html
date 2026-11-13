@@ -25,12 +25,16 @@
     <sc-if value="{{conProva}}" hint-placeholder-val="{{ true }}">
       <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 112px; height: 52px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 0.1em">+ PROVA</span>
     </sc-if>
+    <sc-if value="{{conRimedia}}" hint-placeholder-val="{{ false }}">
+      <!-- PROPOSTA rimedia (../appello-tutti-assenti/, tavola C): al secondo tocco con nessuno segnato, al posto di + PROVA il giallo TUTTI PRESENTI. -->
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 150px; height: 52px; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.1em">TUTTI PRESENTI</span>
+    </sc-if>
     <span style="display: flex; align-items: center; justify-content: center; flex-grow: 1; min-height: 52px; padding: 0 10px; border-radius: 6px; background: {{sfondo}}; color: {{colore}}; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.1em; text-align: center; flex-direction: column; gap: 2px">{{tasto}}<sc-if value="{{conSotto}}" hint-placeholder-val="{{ false }}"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0; color: {{colore}}">{{sotto}}</span></sc-if></span>
   </div>
 </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nonSegnati":{"editor":"text","default":"3"},"chiede":{"editor":"boolean","default":false},"conProva":{"editor":"boolean","default":true},"tuttiAssenti":{"editor":"boolean","default":false},"corta":{"editor":"boolean","default":false},"$preview":{"width":390,"height":92}}'>
+<script data-dc-script data-props='{"nonSegnati":{"editor":"text","default":"3"},"chiede":{"editor":"boolean","default":false},"conProva":{"editor":"boolean","default":true},"tuttiAssenti":{"editor":"boolean","default":false},"corta":{"editor":"boolean","default":false},"rimedia":{"editor":"boolean","default":false},"$preview":{"width":390,"height":92}}'>
 // COSTRUITO (`.barra-chiudi` nel look sito, chiudiAppello in src/lib/etichetteAppello.ts; proposta in ../appello-istruttore/): la barra ferma in fondo all'appello, sopra la BarraNavigazione. Oggi CHIUDI sta in
 // fondo all'elenco, dopo prove e istruttori, e con tanti nomi bisogna scorrere per trovarlo (cliente-ods).
 // Bianca, filo in alto 2px #cfe6f4, alta 92px. Sopra una frase di 13px che dice cosa succede chiudendo:
@@ -62,8 +66,9 @@ class Component extends DCLogic {
     return {
       alta: corta ? '74px' : '92px', spazio: corta ? '10px 16px' : '8px 16px 10px', conFrase: !corta,
       conSotto: corta && !tutti, sotto: assentiTutti ? 'sono tutti assenti' : n === 1 ? '1 non segnato → assente' : n + ' non segnati → assenti',
-      conProva: p.conProva === undefined ? true : truthy(p.conProva),
-      frase: chiede ? 'Sicuro? Tocca di nuovo per chiudere.' : assentiTutti ? 'Sono tutti assenti: chiudi solo se è giusto.' : tutti ? 'Tutti segnati: chiudi e torna al calendario.' : n === 1 ? 'Chi non è segnato diventerà assente.' : n + ' non segnati diventeranno assenti.',
+      conRimedia: chiede && truthy(p.rimedia),
+      conProva: !(chiede && truthy(p.rimedia)) && (p.conProva === undefined ? true : truthy(p.conProva)),
+      frase: chiede && truthy(p.rimedia) ? 'Nessuno è segnato: tutti presenti o tutti assenti?' : chiede ? 'Sicuro? Tocca di nuovo per chiudere.' : assentiTutti ? 'Sono tutti assenti: chiudi solo se è giusto.' : tutti ? 'Tutti segnati: chiudi e torna al calendario.' : n === 1 ? 'Chi non è segnato diventerà assente.' : n + ' non segnati diventeranno assenti.',
       coloreFrase: chiede ? '#b81d1d' : '#46606f', pesoFrase: chiede ? '700' : '400',
       tasto: chiede ? 'SÌ, CHIUDI · ' + assenti : '✓ CHIUDI L’APPELLO'.slice(tutti && !assentiTutti ? 0 : 2),
       sfondo: tutti && !chiede && !assentiTutti ? '#f4c31b' : '#0d2a3d', colore: tutti && !chiede && !assentiTutti ? '#0d2a3d' : '#ffffff',

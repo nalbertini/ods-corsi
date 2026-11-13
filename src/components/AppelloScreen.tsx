@@ -9,7 +9,7 @@ import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, TogliProva } from './Prove'
 import { CercaPersona } from './CercaPersona'
-import { aiutoAppello, chiudiAppello, chiudiNelTasto, codaAppello, contoRicerca, fraseAzzera, fraseGuaioAttivita, fraseGuaioSegnalata, proveInPiu, quadroAppello, statoAppello, tastoAppello } from '../lib/etichetteAppello'
+import { aiutoAppello, chiudiAppello, chiudiNelTasto, rimedioPresenti, codaAppello, contoRicerca, fraseAzzera, fraseGuaioAttivita, fraseGuaioSegnalata, proveInPiu, quadroAppello, statoAppello, tastoAppello } from '../lib/etichetteAppello'
 import { DueTocchi } from './ds'
 import { useDialogo } from './segreteria/comune'
 import { SegnoCompleanno } from './SegnoCompleanno'
@@ -407,7 +407,8 @@ export function AppelloScreen({
   // `chiede`: chiudere vuole un secondo tocco quando è probabilmente uno sbaglio,
   // di solito TUTTI PRESENTI dimenticato, e la segreteria riceverebbe assenze finte.
   const barra = chiudiAppello({ nonSegnati, chiede: sicuroChiudi, tuttiAssenti })
-  const nelTasto = chiudiNelTasto({ nonSegnati, chiede: sicuroChiudi, tuttiAssenti })
+  const rimedio = rimedioPresenti({ fitto, soloLettura, tuttiAssenti, segnati, nonSegnati, chiedeChiudi: sicuroChiudi })
+  const nelTasto = chiudiNelTasto({ nonSegnati, chiede: sicuroChiudi, tuttiAssenti, nessuno: rimedio.alPostoDiProva })
   // Il titolo è l'intestazione della pagina: sul telefono, senza la Testata, è il solo h1.
   const Titolo = fitto ? 'h1' : 'span'
 
@@ -594,6 +595,16 @@ export function AppelloScreen({
       </div>
 
       {!soloLettura && aiuto && !fitto && <p className="pad appello-aiuto">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>}
+      {rimedio.striscia && (
+        <div className="pad">
+          <div className="striscia-assenti">
+            <span className="striscia-assenti-testo">✕ Sono tutti assenti</span>
+            <button type="button" className="btn btn-go" onClick={tuttiGliAltri}>
+              TUTTI PRESENTI
+            </button>
+          </div>
+        </div>
+      )}
       <div className="pad elenco-appello" data-fitto={fitto || undefined}>
         {iscrittiTrovati.map((p) => (
           <button
@@ -719,13 +730,28 @@ export function AppelloScreen({
             </span>
           )}
           <div className="row" style={{ gap: 8 }}>
-            <button type="button" className="btn btn-prova" onClick={() => setAggiungendo(true)}>
-              + PROVA
-            </button>
+            {/* Al secondo tocco di CHIUDI con nessuno segnato, di solito TUTTI PRESENTI dimenticato: la scelta giusta sta accanto. */}
+            {rimedio.alPostoDiProva ? (
+              <button type="button" className="btn btn-go btn-rimedio" onClick={tuttiGliAltri}>
+                TUTTI PRESENTI
+              </button>
+            ) : (
+              <button type="button" className="btn btn-prova" onClick={() => setAggiungendo(true)}>
+                + PROVA
+              </button>
+            )}
             <DueTocchi
               className="btn btn-chiudi grow"
               pieno={barra.pieno}
-              chiede={chiede ? chiudiAppello({ nonSegnati, chiede: true }).tasto : undefined}
+              chiede={
+                // Sul telefono la frase sopra la barra non c'è: la seconda riga della domanda dice cosa fa il secondo tocco.
+                chiede ? fitto ? (
+                  <span className="stack" style={{ alignItems: 'center', gap: 1 }}>
+                    <span>{nelTasto.tasto}</span>
+                    {nelTasto.sotto && <span className="btn-chiudi-sotto">{nelTasto.sotto}</span>}
+                  </span>
+                ) : chiudiAppello({ nonSegnati, chiede: true }).tasto : undefined
+              }
               onChiede={setSicuroChiudi}
               onFai={chiudi}
             >
