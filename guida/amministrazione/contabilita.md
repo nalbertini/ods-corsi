@@ -234,14 +234,26 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   610,00 €. Un secondo bonifico paga quel che manca alla stessa voce; un annuale aggiunto dopo aver
   raggiunto i 660,00 € costa 0,00 €. Con la voce «Annuale più corsi» l'area iscritti e Satispay vedono
   pagati tutti i suoi annuali.
-- Se il bonifico paga una cosa che non è fra quelle da pagare (un corso a cui la persona non è ancora
-  iscritta nell'app, o il trimestre al posto dell'annuale), **Aggiungi una voce dal listino**, in fondo
-  al riquadro di ogni persona, apre l'elenco delle voci del listino divise per corso, prima i suoi. La
-  voce scelta diventa una riga come le altre, con «dal listino» e il prezzo: l'importo parte da quel che
-  resta del bonifico e non supera il prezzo. **Togli** la toglie. Se la persona non è iscritta a quel
-  corso, la finestra lo dice: l'iscrizione si fa dalla scheda. In fondo all'elenco c'è anche
-  **Abbigliamento**: non ha un prezzo nel listino, l'importo parte da quel che resta del bonifico e si
-  corregge a mano. Non segna saldato l'ordine in VESTIARIO: quello si fa lì.
+- Se il bonifico paga una cosa che non è fra quelle da pagare, sotto ogni persona c'è **PAGA ANCHE**, con
+  le scelte da un tocco: la **quota associativa** dell'anno (se non è già una riga e non è già pagata tutta
+  nell'app), le voci dei **corsi a cui è iscritta** (trimestre, annuale), **Abbigliamento · a mano** e
+  **Altro corso…**, che apre un campo per cercare gli altri corsi per nome (maiuscole e accenti non
+  contano; **Chiudi** o Esc lo chiude). La voce scelta diventa una riga come le altre, con «dal listino» e
+  il prezzo: l'importo parte da quel che resta del bonifico e non supera il prezzo. **Togli** la toglie.
+  Se la persona non è iscritta a quel corso, la finestra lo dice: l'iscrizione si fa dalla scheda.
+  **Abbigliamento · a mano** non ha un prezzo: l'importo parte da quel che resta del bonifico e si
+  corregge a mano. Non tocca nessun ordine in VESTIARIO. Come gli altri pagamenti, va su «Corsi e altri
+  pagamenti»: un bonifico si assegna solo lì o sulla quota.
+- Se in VESTIARIO c'è un ordine **da saldare** che può essere della famiglia, sopra PAGA ANCHE compare
+  **ORDINI DEL VESTIARIO**: per ogni ordine chi l'ha fatto e per chi, la data, i capi, le ultime cifre
+  del telefono e quanto manca. Un ordine è della famiglia se l'ha fatto una persona del nucleo a nome suo,
+  o se in «per chi» c'è nome e cognome di una persona del nucleo; se il telefono dell'ordine e quello
+  della scheda ci sono tutti e due e sono diversi, l'ordine non compare. Due ordini simili si vedono
+  tutti e due: la scelta è tua. **È questo ordine** lo fa diventare una riga «Abbigliamento, ordine del
+  …», con quel che manca all'ordine e l'importo che non va oltre il bonifico. Se la riga copre tutto
+  (**Saldo**), con **Conferma** l'ordine in VESTIARIO diventa saldato con bonifico. Se copre una parte
+  (**Parziale**), l'ordine resta com'è e si segna a mano in VESTIARIO. Un ordine scelto per una persona
+  sparisce dalle altre.
 - **Conferma** scrive persona, tipologia e assegnazione, senza ricevuta: la ricevuta si fa dopo, dal
   movimento, con **Fai la ricevuta**. Dal movimento c'è anche **Conferma e fai la ricevuta**, che apre la
   ricevuta già compilata (data del bonifico, modo **Bonifico**). All'import si scrive tutto quando

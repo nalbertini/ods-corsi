@@ -1,4 +1,5 @@
 import type { StatoPresenza, StatoSessione } from './sala'
+import type { Ordine } from './vestiario'
 import type { SollecitiCertificato, SollecitoAMano } from './sollecitiCertificato'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
@@ -956,6 +957,11 @@ export interface DatiSegreteria {
    * `chiave` dell'apertura del dialogo, ripetuta dopo una rete caduta non scrive di nuovo (`136-assegna-una-volta.sql`).
    */
   assegnaMovimento(movimentoId: string, righe: RigaAssegnata[], chiave?: string): Promise<void>
+  /**
+   * Gli ordini del vestiario non saldati né annullati, per «È questo ordine» nella finestra (`157-vestiario-dal-bonifico.sql`):
+   * `null` se il database non ha ancora quel file, e allora la finestra non li propone.
+   */
+  ordiniVestiarioDaSaldare(): Promise<Ordine[] | null>
   /** La ricevuta di una persona dai soldi che le sono assegnati sul movimento, tali e quali; le sue assegnazioni si annullano insieme. */
   emettiRicevutaDaMovimento(dati: DatiRicevuta, movimentoId: string): Promise<Ricevuta>
   /** «Collegati prima»: una ricevuta fatta a parte prima di questo cambio diventa del movimento, che così non si conta due volte. */

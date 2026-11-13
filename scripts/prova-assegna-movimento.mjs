@@ -88,6 +88,9 @@ const dovutiDi = lib('dovutiDi')
 const righeDaCampi = lib('righeDaCampi')
 const tipologiaDaRighe = lib('tipologiaDaRighe')
 const vociDaAggiungere = lib('vociDaAggiungere')
+const cercaCorsi = lib('cercaCorsi')
+const ordiniDelNucleo = lib('ordiniDelNucleo')
+const voceOrdine = lib('voceOrdine')
 const importoProposto = lib('importoProposto')
 const pagatoAMano = lib('pagatoAMano')
 const senzaSegnoAMano = lib('senzaSegnoAMano')
@@ -106,6 +109,7 @@ const B = await impacchetta(`
   export { abbonamentiDalleRicevute } from './src/lib/nucleo'
   export { pagamentoDi, inRegola } from './src/lib/segreteria'
   export { creaSegreteriaProva } from './src/lib/segreteriaProva'
+  export { creaVestiarioProva } from './src/lib/vestiarioProva'
   export { righeDaRicevute, righeDirette } from './src/lib/pagamenti'
   export { fraseQuota } from './src/lib/schedeIscritto'
 `)
@@ -469,26 +473,40 @@ console.log('\n3g. Una voce dal listino, anche per un corso a cui non è iscritt
   }
   const corsi = [{ id: 'kids', nome: 'Judo kids' }, { id: 'pil', nome: 'Pilates' }]
   const leo = { id: 'leo', iscrizioni: [] }
-  const menu = (p, gia = []) => prova(() => vociDaAggiungere(p, corsi, listino, oggi, gia).map((g) => [g.corso, g.suo, g.voci.map((v) => v.etichetta)]))
-  ok('senza iscrizioni: tutti i corsi del listino per nome, con le voci col prezzo', menu(leo),
-    [['Judo kids', false, ['Annuale · 360,00 €', 'Trimestre · 130,00 €']], ['Pilates', false, ['Annuale · 400,00 €']]])
-  ok('…prima i corsi a cui è iscritto', menu({ id: 'leo', iscrizioni: [{ corsoId: 'pil', dal: '2026-09-01' }] })[0], ['Pilates', true, ['Annuale · 400,00 €']])
-  ok('…un’iscrizione finita non conta', menu({ id: 'leo', iscrizioni: [{ corsoId: 'pil', dal: '2025-09-01', al: '2026-06-30' }] })[0][0], 'Judo kids')
+  // PAGA ANCHE: la quota, le voci dei suoi corsi, l'abbigliamento a mano e «Altro corso…» con la ricerca.
+  const scelte = (p, gia = [], importo = 0, pagati) => prova(() => vociDaAggiungere(p, corsi, listino, oggi, gia, importo, pagati))
+  const suoi = (x) => x?.suoi?.map?.((v) => [v.corso, v.formula, v.dovuta.manca])
+  const altri = (x) => x?.altri?.map?.((g) => [g.corso, g.voci.map((v) => [v.formula, v.dovuta.manca])])
+  ok('senza iscrizioni: nessuna voce sua, tutti i corsi del listino in «Altro corso…», per nome', [suoi(scelte(leo)), altri(scelte(leo))],
+    [[], [['Judo kids', [['Annuale', 36000], ['Trimestre', 13000]]], ['Pilates', [['Annuale', 40000]]]]])
+  const leoPil = { id: 'leo', iscrizioni: [{ corsoId: 'pil', dal: '2026-09-01' }] }
+  ok('iscritto a Pilates: le sue voci a un tocco, e Pilates non è fra gli altri', [suoi(scelte(leoPil)), altri(scelte(leoPil))],
+    [[['Pilates', 'Annuale', 40000]], [['Judo kids', [['Annuale', 36000], ['Trimestre', 13000]]]]])
+  ok('…un’iscrizione finita non conta', suoi(scelte({ id: 'leo', iscrizioni: [{ corsoId: 'pil', dal: '2025-09-01', al: '2026-06-30' }] })), [])
   ok('…un corso con più righe di prezzo ha un gruppo per riga, col suo nome', prova(() => vociDaAggiungere(leo, corsi,
     { ...listino, corsi: [{ corso: 'Fitness', eta: '', orari: [], prezzi: [{ etichetta: '2 giorni', annuale: 340, trimestre: 130 }, { etichetta: '3 giorni', annuale: 450 }] }] }, oggi, [])
-    .map((g) => [g.corso, g.voci.map((v) => [v.etichetta, v.dovuta.voce])])),
-  [['Fitness 2 giorni', [['Annuale · 340,00 €', 'Annuale Fitness 2 giorni'], ['Trimestre · 130,00 €', 'Trimestre Fitness 2 giorni']]], ['Fitness 3 giorni', [['Annuale · 450,00 €', 'Annuale Fitness 3 giorni']]]])
-  ok('…una voce che è già una riga di quella persona non si ripete', menu(leo, ['Trimestre Judo kids']),
-    [['Judo kids', false, ['Annuale · 360,00 €']], ['Pilates', false, ['Annuale · 400,00 €']]])
-  const trimestre = prova(() => vociDaAggiungere(leo, corsi, listino, oggi, []).find((g) => g.corso === 'Judo kids').voci[1].dovuta)
+    .altri.map((g) => [g.corso, g.voci.map((v) => [v.formula, v.dovuta.voce])])),
+  [['Fitness 2 giorni', [['Annuale', 'Annuale Fitness 2 giorni'], ['Trimestre', 'Trimestre Fitness 2 giorni']]], ['Fitness 3 giorni', [['Annuale', 'Annuale Fitness 3 giorni']]]])
+  ok('…una voce che è già una riga di quella persona non si ripete', altri(scelte(leo, ['Trimestre Judo kids'])),
+    [['Judo kids', [['Annuale', 36000]]], ['Pilates', [['Annuale', 40000]]]])
+  const trimestre = prova(() => vociDaAggiungere(leo, corsi, listino, oggi, []).altri.find((g) => g.corso === 'Judo kids').voci[1].dovuta)
   ok('la voce scelta è una cosa da pagare di quella persona, col prezzo del listino come tetto', trimestre,
     { personaId: 'leo', voce: 'Trimestre Judo kids', tipo: 'corso', dal: oggi, manca: 13000, aggiunta: { corso: 'Judo kids', suo: false } })
-  const abbigliamento = prova(() => vociDaAggiungere(leo, corsi, listino, oggi, [], 7000).at(-1))
-  ok('col bonifico, in fondo al menu c’è l’abbigliamento: il prezzo si mette a mano, al massimo il bonifico', abbigliamento,
-    { corso: 'Abbigliamento', suo: true, voci: [{ etichetta: 'Prezzo a mano', dovuta: { personaId: 'leo', voce: 'Abbigliamento', tipo: 'abbigliamento', dal: oggi, manca: 7000, aggiunta: { corso: 'Abbigliamento', suo: true } } }] })
-  ok('…già una riga della persona: non si ripete', prova(() => vociDaAggiungere(leo, corsi, listino, oggi, ['Abbigliamento'], 7000).some((g) => g.corso === 'Abbigliamento')), false)
-  ok('…e una riga di abbigliamento si assegna come le altre', prova(() => righeDaCampi([abbigliamento.voci[0].dovuta], { [`leo\u0000Abbigliamento`]: '70,00' }, 7000)),
+  ok('«Altro corso…» cerca senza maiuscole né accenti', prova(() => cercaCorsi(scelte(leo).altri, ' JUDÒ ').map((g) => g.corso)), ['Judo kids'])
+  ok('…niente scritto: tutti', prova(() => cercaCorsi(scelte(leo).altri, '').length), 2)
+  ok('…nessun corso con quel nome: niente', prova(() => cercaCorsi(scelte(leo).altri, 'zumba')), [])
+  const abbigliamento = scelte(leo, [], 7000)?.abbigliamento
+  ok('col bonifico c’è «Abbigliamento · a mano»: il prezzo si mette a mano, al massimo il bonifico', abbigliamento,
+    { personaId: 'leo', voce: 'Abbigliamento', tipo: 'abbigliamento', dal: oggi, manca: 7000 })
+  ok('…già una riga della persona: non si ripete', scelte(leo, ['Abbigliamento'], 7000)?.abbigliamento, null)
+  ok('…e una riga di abbigliamento si assegna come le altre', prova(() => righeDaCampi([abbigliamento], { [`leo\u0000Abbigliamento`]: '70,00' }, 7000)),
     { righe: [{ personaId: 'leo', voce: 'Abbigliamento', importo: 7000 }], guaio: null })
+  ok('…ed è su «Corsi e altri pagamenti»: un bonifico si assegna solo lì o sulla quota', prova(() => tipologiaDaRighe([{ personaId: 'leo', voce: 'Abbigliamento', importo: 7000 }])), 'Corsi e altri pagamenti')
+  const nessunPagato = { diretti: [], ricevute: [] }
+  ok('la quota dell’anno è la prima scelta, al prezzo del listino', prova(() => { const q = scelte(leo, [], 7000, nessunPagato).quota.dovuta; return [q.voce, q.tipo, q.manca] }), ['Quota associativa 2026/27', 'quota', 5000])
+  ok('…se è già una riga della persona no', scelte(leo, ['Quota associativa 2026/27'], 7000, nessunPagato)?.quota, null)
+  ok('…né se nell’app è già pagata tutta', scelte(leo, [], 7000, { diretti: [{ id: 'q', personaId: 'leo', data: '2026-09-10', importo: 5000, metodo: 'Bonifico', voce: 'Quota associativa 2026/27', creatoIl: '2026-09-10' }], ricevute: [] })?.quota, null)
+  ok('…pagata in parte: quel che manca', prova(() => scelte(leo, [], 7000, { diretti: [{ id: 'q', personaId: 'leo', data: '2026-09-10', importo: 2000, metodo: 'Bonifico', voce: 'Quota associativa 2026/27', creatoIl: '2026-09-10' }], ricevute: [] }).quota.dovuta.manca), 3000)
   const quota = { personaId: 'leo', voce: 'Quota associativa 2026/27', tipo: 'quota', dal: '2026-09-01', manca: 5000 }
   const chiave = (v) => `${v.personaId}\u0000${v.voce}`
   ok('180 €: quota e trimestre, nessun guaio', prova(() => righeDaCampi([quota, trimestre], { [chiave(quota)]: '50,00', [chiave(trimestre)]: '130,00' }, 18000)),
@@ -499,6 +517,34 @@ console.log('\n3g. Una voce dal listino, anche per un corso a cui non è iscritt
   ok('…non oltre il prezzo del listino', prova(() => importoProposto(13000, 18000, 0)), 13000)
   ok('…e niente se il bonifico è già tutto assegnato', prova(() => importoProposto(13000, 18000, 18000)), 0)
   ok('…e la tipologia diventa «Corsi e altri pagamenti»', prova(() => tipologiaDaRighe([{ personaId: 'leo', voce: 'Quota associativa 2026/27', importo: 5000 }, { personaId: 'leo', voce: 'Trimestre Judo kids', importo: 13000 }])), 'Corsi e altri pagamenti')
+}
+
+console.log('\n3h. Gli ordini del vestiario da saldare, per il nucleo di chi ha pagato')
+{
+  const ordine = (id, nome, cognome, telefono, perChi, totale, o = {}) => ({ id, raccolta: 'r1', nome, cognome, telefono, email: null,
+    righe: perChi.map((x, i) => ({ id: `${id}-${i}`, perChi: x, capo: 'Tuta lotta', taglia: '152', quanti: 1, prezzo: totale })), totale, saldato: false, annullato: false,
+    pagato: 0, pagatoCon: null, pagatoIl: null, arrivato: '2026-09-28T10:00:00.000Z', dalBanco: false, ...o })
+  const nicole = { id: 'nic', nome: 'Nicole', cognome: 'Scelsi', telefono: '+39 333 123 4123' }
+  const daniela = ordine('o1', 'Daniela', 'Ferretti', '333-1234123', ['Nicole Scelsi'], 40)
+  const suo = ordine('o2', 'NICOLE', 'Scèlsi', '347 000 0000', ['Nicole'], 25)
+  const ids = (nucleo, ordini, scelti) => prova(() => ordiniDelNucleo(nucleo, ordini, scelti).map((o) => o.id))
+  ok('l’ordine della mamma per «Nicole Scelsi», stesso telefono: è suo', ids([nicole], [daniela]), ['o1'])
+  ok('ordinato a nome suo (maiuscole e accenti non contano), ma con un altro telefono: scartato', ids([nicole], [suo]), [])
+  ok('…senza telefono nella scheda: proposto', ids([{ ...nicole, telefono: undefined }], [suo]), ['o2'])
+  ok('solo il nome in «per chi», senza cognome: non basta', ids([nicole], [ordine('o3', 'Luca', 'Rossi', '333 1234123', ['Nicole'], 30)]), [])
+  ok('un altro nome: niente', ids([nicole], [ordine('o4', 'Sara', 'Bianchi', '333 1234123', ['Sara Bianchi'], 30)]), [])
+  ok('saldato o annullato: non compare', ids([nicole], [ordine('o5', 'Daniela', 'Ferretti', '', ['Nicole Scelsi'], 40, { saldato: true, pagato: 40 }), ordine('o6', 'Daniela', 'Ferretti', '', ['Nicole Scelsi'], 40, { annullato: true })]), [])
+  const fratello = { id: 'tom', nome: 'Tommaso', cognome: 'Scelsi', telefono: undefined }
+  ok('il nucleo: l’ordine di un fratello compare per tutta la famiglia', ids([nicole, fratello], [ordine('o7', 'Tommaso', 'Scelsi', '', ['Tommaso Scelsi'], 30)]), ['o7'])
+  ok('già scelto per qualcuno: sparisce', ids([nicole], [daniela], ['o1']), [])
+  ok('due ordini simili: si vedono tutti e due, dal più recente', ids([nicole], [daniela, ordine('o8', 'Daniela', 'Ferretti', '', ['Nicole Scelsi'], 15, { arrivato: '2026-10-02T10:00:00.000Z' })]), ['o8', 'o1'])
+  ok('la riga dell’ordine: Abbigliamento con la data, manca il totale meno il pagato, in centesimi', prova(() => voceOrdine('nic', ordine('o9', 'Daniela', 'Ferretti', '', ['Nicole Scelsi'], 70, { pagato: 63 }))),
+    { personaId: 'nic', voce: 'Abbigliamento, ordine del 28/09/2026', tipo: 'abbigliamento', dal: '2026-09-28', manca: 700, ordine: { id: 'o9', di: 'Ferretti Daniela' } })
+  const v = prova(() => voceOrdine('nic', daniela))
+  ok('…si assegna portando l’ordine con sé', prova(() => righeDaCampi([v], { [`nic\u0000${v.voce}`]: '40,00' }, 4000)),
+    { righe: [{ personaId: 'nic', voce: 'Abbigliamento, ordine del 28/09/2026', importo: 4000, ordine: 'o1' }], guaio: null })
+  ok('…non oltre quel che manca all’ordine', prova(() => righeDaCampi([v], { [`nic\u0000${v.voce}`]: '45,00' }, 5000).guaio),
+    'A «Abbigliamento, ordine del 28/09/2026» mancano 40,00 €: metti 40,00 € o meno, il resto rimane da assegnare.')
 }
 
 console.log('\n4. Quali movimenti si assegnano, e a chi')
@@ -1139,6 +1185,50 @@ console.log('\n11. Verso il database: la chiave dell’apertura dentro ogni riga
   const [e2, c2] = await manda()
   ok('senza chiave: nessun campo «chiave» nelle righe (come prima)', [e2, c2?.[1]?.righe], ['nessun errore', [{ persona_id: 'p1', voce: 'Quota associativa 2026/27', importo: 3000 }, { persona_id: 'p1', voce: 'Annuale Judo Kids', importo: 2000 }]])
   ok('gli argomenti della funzione sono solo movimento e righe: la firma (uuid, jsonb) non cambia', Object.keys(c1?.[1] ?? {}), ['movimento', 'righe'])
+}
+
+console.log('\n12. L’ordine del vestiario saldato dal bonifico, in prova come nel database')
+try {
+  const s = B.creaSegreteriaProva()
+  const v = B.creaVestiarioProva()
+  const lista = (await s.persone()).filter((p) => p.attiva && !p.nucleo)
+  const chi = lista[0]
+  const riga = (r, importo) => ({ personaId: chi.id, voce: 'Abbigliamento, ordine del 28/09/2026', importo, ordine: r })
+  await v.salvaCatalogo({ chiude: '2099-12-31', capi: [{ capo: 'Tuta lotta', taglie: ['152'], prezzo: 40 }] })
+  const nuovo = async () => v.scriviOrdine({ nome: chi.nome, cognome: chi.cognome, telefono: '333 1234567', righe: [{ perChi: `${chi.nome} ${chi.cognome}`, capo: 'Tuta lotta', taglia: '152', quanti: 1 }] })
+  const bonifico = (importo) => s.registraMovimento({ tipo: 'entrata', data: '2026-10-15', importo, voceId: 'voce-corsi', cassaId: 'cassa-conto', descrizione: `Bonifico ${importo}`, personaId: chi.id })
+  const letto = async (id) => (await s.ordiniVestiarioDaSaldare())?.find((o) => o.id === id)
+  const tutti = async () => (await v.raccolte()).length ? (await Promise.all((await v.raccolte()).map((r) => v.ordini(r.id)))).flat() : []
+  const o1 = await nuovo()
+  ok('gli ordini da saldare si leggono dalla segreteria', Boolean(await letto(o1)), true)
+  const m1 = await bonifico(4000)
+  ok('40,00 € sull’ordine da 40,00 €: si assegna', await errore(() => s.assegnaMovimento(m1, [riga(o1, 4000)])), 'nessun errore')
+  const dopo = (await tutti()).find((o) => o.id === o1)
+  ok('…e l’ordine è saldato, con bonifico, oggi (come quando lo segna la segreteria)', dopo && [dopo.saldato, dopo.pagato, dopo.pagatoCon, dopo.pagatoIl], [true, 40, 'bonifico', new Date().toLocaleDateString('sv-SE')])
+  ok('…e non è più da saldare', await letto(o1), undefined)
+  const m2 = await bonifico(5000)
+  ok('lo stesso ordine da un altro bonifico: rifiutato', await errore(() => s.assegnaMovimento(m2, [riga(o1, 4000)])), 'L’ordine del vestiario è già saldato o annullato: togli la riga e riapri la finestra.')
+  const o2 = await nuovo()
+  ok('più di quel che manca all’ordine: rifiutato', await errore(() => s.assegnaMovimento(m2, [riga(o2, 4500)])),
+    'All’ordine del vestiario mancano 40,00 €: metti 40,00 € o meno, il resto rimane da assegnare.')
+  ok('25,00 € su 40,00 €: si assegna', await errore(() => s.assegnaMovimento(m2, [riga(o2, 2500)])), 'nessun errore')
+  const parziale = (await tutti()).find((o) => o.id === o2)
+  ok('…ma l’ordine resta com’era: da saldare, niente pagato', parziale && [parziale.saldato, parziale.pagato], [false, 0])
+  const m3 = await bonifico(4000)
+  ok('un ordine che non c’è: rifiutato, e niente si scrive', [await errore(() => s.assegnaMovimento(m3, [riga('sparito', 4000)])), (await s.pagamentiDiretti()).filter((x) => x.movimentoId === m3).length],
+    ['L’ordine del vestiario è già saldato o annullato: togli la riga e riapri la finestra.', 0])
+} catch (e) {
+  ok('la prova del vestiario dal bonifico gira', e.message, 'nessun errore')
+}
+
+console.log('\n13. Verso il database: l’ordine dentro la riga')
+{
+  const chiamate = []
+  const db = { rpc: async (nome, args) => { chiamate.push([nome, args]); return { data: null, error: null } } }
+  await errore(() => S.creaSegreteriaSupabase(db).assegnaMovimento('m1', [{ personaId: 'p1', voce: 'Abbigliamento, ordine del 28/09/2026', importo: 4000, ordine: 'o1' }]))
+  ok('la riga con l’ordine porta «ordine»', chiamate[0]?.[1]?.righe, [{ persona_id: 'p1', voce: 'Abbigliamento, ordine del 28/09/2026', importo: 4000, ordine: 'o1' }])
+  const manca = { rpc: async () => ({ data: null, error: { code: 'PGRST202', message: 'Could not find the function public.ordini_vestiario_da_saldare without parameters' } }) }
+  ok('database senza il file nuovo: nessun ordine e nessun errore', await prova(() => S.creaSegreteriaSupabase(manca).ordiniVestiarioDaSaldare()), null)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

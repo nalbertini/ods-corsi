@@ -15,6 +15,7 @@ import { listinoUsabile, nomeCorso, voceDelCorso, type CorsoRef, type Listino } 
 import { pagamentoDi, type DatiSegreteria, type PersonaSeg } from './segreteria'
 import { nomeOGenitore } from './abbinaMovimenti'
 import { ripartizioneSicura } from './sicuro'
+import { cifreTelefono, type Ordine } from './vestiario'
 
 /**
  * I soldi sempre con i centesimi, come nel canvas: «50,00 €». Il punto delle migliaia anche a quattro cifre
@@ -32,7 +33,7 @@ export function euroAssegna(cent: number): string {
 export interface VoceDovuta {
   personaId: string
   voce: string
-  /** `abbigliamento`: aggiunta a mano, senza prezzo nel listino; `manca` è il bonifico. */
+  /** `abbigliamento`: a mano (senza prezzo, `manca` è il bonifico) o da un ordine del vestiario (`ordine`). */
   tipo: 'quota' | 'corso' | 'abbigliamento'
   dal: string
   manca: number
@@ -40,6 +41,8 @@ export interface VoceDovuta {
   corsi?: string[]
   /** Aggiunta a mano dal listino (`vociDaAggiungere`): `manca` è il prezzo del listino. */
   aggiunta?: { corso: string; suo: boolean }
+  /** Un ordine del vestiario (`voceOrdine`): `manca` è quel che manca all'ordine, e coperto tutto l'ordine si salda. */
+  ordine?: { id: string; di: string }
 }
 
 /** Un pezzo del bonifico: a chi, su che voce, quanto. */
@@ -47,6 +50,8 @@ export interface RigaAssegnata {
   personaId: string
   voce: string
   importo: number
+  /** L'ordine del vestiario che la riga paga: se lo copre tutto, il database lo segna saldato (157). */
+  ordine?: string
 }
 
 /** Un'assegnazione diventa ricevuta solo dal movimento (il trigger `assegnazione_solo_dal_movimento`, 135). */
@@ -547,18 +552,27 @@ export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, ogg
   return fuori
 }
 
+/** Una voce di PAGA ANCHE: il corso, la formula («Trimestre») e la cosa da pagare, col prezzo come `manca`. */
+export interface VoceDaAggiungere {
+  corso: string
+  formula: string
+  dovuta: VoceDovuta
+}
+
 /**
- * «Aggiungi una voce dal listino» della finestra: le voci dei corsi del listino di oggi, per corso, prima quelli a cui
- * la persona è iscritta, poi gli altri per nome. Servono quando il bonifico paga una cosa che `dovutiDi` non vede: un
- * corso senza iscrizione nell'app, il trimestre al posto dell'annuale, o l'abbigliamento (in fondo, con `importo`). Fuori le voci che sono già righe della persona
- * (`gia`, i nomi): due righe con lo stesso nome sarebbero un campo solo.
+ * PAGA ANCHE nella finestra: le cose che il bonifico può pagare oltre a quelle che `dovutiDi` vede. In quest'ordine:
+ * la quota dell'anno (`quota`, solo con `pagati`: quel che le manca per il tetto del database), le voci dei corsi a cui
+ * la persona è iscritta oggi (`suoi`, a un tocco), l'abbigliamento a mano (col bonifico: il tetto è `importo`) e gli
+ * altri corsi del listino per nome (`altri`, per «Altro corso…» e `cercaCorsi`). Fuori le voci che sono già righe
+ * della persona (`gia`, i nomi): due righe con lo stesso nome sarebbero un campo solo.
  */
 export function vociDaAggiungere(
   p: Pick<PersonaSeg, 'id' | 'iscrizioni'>, corsi: CorsoRef[], listino: Listino, oggi: string, gia: string[], importo = 0,
-): Array<{ corso: string; suo: boolean; voci: Array<{ etichetta: string; dovuta: VoceDovuta }> }> {
+  pagati?: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] },
+): { quota: { dovuta: VoceDovuta } | null; suoi: VoceDaAggiungere[]; abbigliamento: VoceDovuta | null; altri: Array<{ corso: string; voci: VoceDaAggiungere[] }> } {
   const suoi = corsi.filter((c) => p.iscrizioni.some((i) => i.corsoId === c.id && i.dal <= oggi && (!i.al || i.al >= oggi)))
   const giaQui = new Set(gia.map((v) => v.trim().toLowerCase()))
-  const gruppi = new Map<string, { corso: string; suo: boolean; voci: Array<{ etichetta: string; dovuta: VoceDovuta }> }>()
+  const gruppi = new Map<string, { corso: string; suo: boolean; voci: VoceDaAggiungere[] }>()
   for (const vc of listino.corsi) {
     const suo = suoi.some((c) => voceDelCorso(listino.corsi, c) === vc)
     for (const x of vociDelCorso(vc.corso, oggi, listino)) {
@@ -569,22 +583,66 @@ export function vociDaAggiungere(
       const [nome, formula] = x.etichetta.split(' · ')
       const g = gruppi.get(nome) ?? { corso: nome, suo, voci: [] }
       g.voci.push({
-        etichetta: `${formula.charAt(0).toUpperCase()}${formula.slice(1)} · ${euroAssegna(v.prezzo)}`,
+        corso: nome,
+        formula: `${formula.charAt(0).toUpperCase()}${formula.slice(1)}`,
         dovuta: { personaId: p.id, voce: v.descrizione, tipo: 'corso', dal: v.dal ?? oggi, manca: v.prezzo, aggiunta: { corso: nome, suo } },
       })
       gruppi.set(nome, g)
     }
   }
-  const fuori = [...gruppi.values()].sort((a, b) => Number(b.suo) - Number(a.suo) || a.corso.localeCompare(b.corso, 'it'))
-  // In fondo l'abbigliamento: non ha un prezzo nel listino, il tetto è il bonifico (`importo`).
-  if (importo > 0 && !giaQui.has(VOCE_ABBIGLIAMENTO.toLowerCase())) {
-    const aggiunta = { corso: VOCE_ABBIGLIAMENTO, suo: true }
-    fuori.push({ ...aggiunta, voci: [{ etichetta: 'Prezzo a mano', dovuta: { personaId: p.id, voce: VOCE_ABBIGLIAMENTO, tipo: 'abbigliamento', dal: oggi, manca: importo, aggiunta } }] })
+  const tutti = [...gruppi.values()].sort((a, b) => a.corso.localeCompare(b.corso, 'it'))
+  const stagione = stagioneDi(oggi)
+  const voceQuota = `${VOCE_QUOTA} ${nomeStagione(stagione.quota.dal)}`
+  const prezzoQuota = Math.round(listino.quota * 100)
+  // Quel che manca al tetto della quota (136): oltre, il database rifiuterebbe la riga.
+  const mancaQuota = pagati && prezzoQuota > 0 && !giaQui.has(voceQuota.toLowerCase())
+    ? prezzoQuota - giaSullaQuota(p.id, Number(stagione.quota.dal.slice(0, 4)), pagati.diretti, pagati.ricevute) : 0
+  return {
+    quota: mancaQuota > 0 ? { dovuta: { personaId: p.id, voce: voceQuota, tipo: 'quota', dal: stagione.quota.dal, manca: mancaQuota, aggiunta: { corso: VOCE_QUOTA, suo: true } } } : null,
+    suoi: tutti.filter((g) => g.suo).flatMap((g) => g.voci),
+    abbigliamento: importo > 0 && !giaQui.has(VOCE_ABBIGLIAMENTO.toLowerCase()) ? { personaId: p.id, voce: VOCE_ABBIGLIAMENTO, tipo: 'abbigliamento', dal: oggi, manca: importo } : null,
+    altri: tutti.filter((g) => !g.suo).map(({ corso, voci }) => ({ corso, voci })),
   }
-  return fuori
+}
+
+/** «Altro corso…»: i corsi col nome che contiene il testo, senza maiuscole né accenti; senza testo tutti. */
+export const cercaCorsi = <G extends { corso: string }>(altri: G[], testo: string): G[] =>
+  altri.filter((g) => nomeCorso(g.corso).includes(nomeCorso(testo)))
+
+const parole = (s: string) => nomeCorso(s).split(' ').filter(Boolean)
+const tutteDentro = (cercate: string[], frase: string) => { const qui = parole(frase); return cercate.length > 0 && cercate.every((w) => qui.includes(w)) }
+
+/**
+ * Gli ordini del vestiario da saldare che possono essere di questo nucleo, dal più recente: di chi li ha fatti a nome
+ * suo, o con nome e cognome in «per chi» (il genitore che ordina per il figlio). Se il telefono c'è da tutte e due le
+ * parti e non è lo stesso, l'ordine non è suo. Fuori gli ordini già scelti nella finestra (`scelti`): uno vale una volta.
+ */
+export function ordiniDelNucleo(nucleo: Array<Pick<PersonaSeg, 'nome' | 'cognome' | 'telefono'>>, ordini: Ordine[], scelti: string[] = []): Ordine[] {
+  const suo = (p: Pick<PersonaSeg, 'nome' | 'cognome' | 'telefono'>, o: Ordine) => {
+    const chi = [...parole(p.nome), ...parole(p.cognome)]
+    const perNome = tutteDentro(chi, `${o.nome} ${o.cognome}`) && parole(`${o.nome} ${o.cognome}`).length === chi.length
+    const perChi = o.righe.some((r) => tutteDentro(chi, r.perChi))
+    const tel = [cifreTelefono(p.telefono ?? ''), cifreTelefono(o.telefono ?? '')]
+    return (perNome || perChi) && !(tel[0] && tel[1] && tel[0] !== tel[1])
+  }
+  return ordini
+    .filter((o) => !o.saldato && !o.annullato && o.totale > o.pagato && !scelti.includes(o.id) && nucleo.some((p) => suo(p, o)))
+    .sort((a, b) => b.arrivato.localeCompare(a.arrivato))
+}
+
+/** La riga di un ordine scelto («È questo ordine»): Abbigliamento con la data, e manca quel che manca all'ordine. */
+export function voceOrdine(personaId: string, o: Ordine): VoceDovuta {
+  const dal = o.arrivato.slice(0, 10)
+  return {
+    personaId, voce: `${VOCE_ABBIGLIAMENTO}, ordine del ${dal.split('-').reverse().join('/')}`, tipo: 'abbigliamento', dal,
+    manca: Math.round((o.totale - o.pagato) * 100), ordine: { id: o.id, di: `${o.cognome} ${o.nome}` },
+  }
 }
 
 export const VOCE_ABBIGLIAMENTO = 'Abbigliamento'
+
+/** L'ordine della riga non è più da saldare (saldato da un altro bonifico, o annullato), come nel 157. */
+export const ORDINE_NON_DA_SALDARE = 'L’ordine del vestiario è già saldato o annullato: togli la riga e riapri la finestra.'
 
 /** L'importo di una voce appena aggiunta: quel che resta del bonifico (`importo` meno `messo`), non oltre il prezzo. */
 export const importoProposto = (prezzo: number, importo: number, messo: number) => Math.max(0, Math.min(prezzo, importo - messo))
@@ -922,7 +980,7 @@ export function righeDaCampi(dovuti: VoceDovuta[], valori: Record<string, string
     return { v, cent: t.trim() ? centesimi(t) : 0 }
   })
   const nonSiCapisce = letti.find((x) => x.cent === null)
-  const righe = letti.filter((x) => (x.cent ?? 0) > 0).map((x) => ({ personaId: x.v.personaId, voce: x.v.voce, importo: x.cent ?? 0 }))
+  const righe = letti.filter((x) => (x.cent ?? 0) > 0).map((x) => ({ personaId: x.v.personaId, voce: x.v.voce, importo: x.cent ?? 0, ...(x.v.ordine ? { ordine: x.v.ordine.id } : {}) }))
   if (nonSiCapisce) return { righe, guaio: `L’importo di «${nonSiCapisce.v.voce}» non si capisce.` }
   return { righe, guaio: righe.length ? cosaNonVaAssegnazione(righe, importo, dovuti) : null }
 }

@@ -743,6 +743,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rifà `nome_corso` e `nomi_del_corso` del 152: se si rilancia 152 dopo, va rilanciato anche questo.
   ('156-piu-corsi.sql', '«Annuale più corsi» paga ogni annuale anche per l''area iscritti, e lo sconto famiglia non è del nome',
     exists (select 1 from dentro where nome = 'nomi_del_corso' and corpo like '%più corsi%')
-    and exists (select 1 from dentro where nome = 'nome_corso' and corpo like '%sconto famiglia%'))
+    and exists (select 1 from dentro where nome = 'nome_corso' and corpo like '%sconto famiglia%')),
+  -- Rifà `assegna_movimento` del 136: se si rilancia 135 o 136 dopo, va rilanciato anche questo.
+  ('157-vestiario-dal-bonifico.sql', 'il bonifico salda l''ordine del vestiario che copre tutto',
+    to_regprocedure('public.ordini_vestiario_da_saldare()') is not null
+    and exists (select 1 from dentro where nome = 'assegna_movimento' and corpo like '%ordini_vestiario%'))
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -1,4 +1,5 @@
 import { cosaNonVaSolleciti, SOLLECITI_PROPOSTI, ultimoMomentoArrivato } from './sollecitiCertificato'
+import { datiVestiario } from './vestiarioDati'
 import { indirizziDaSalvare } from './avvisoSegreteria'
 import type { Anagrafica, AnagraficaDi, UltimoSollecito, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
@@ -46,7 +47,7 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { abbinaMovimento, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
-import { assegnato, conAssegnazioni, conGenitori, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, movimentoDaClassificareAbbinabile, personeDelNucleo, SOLO_DAL_MOVIMENTO, voceDaRicevuta } from './assegna'
+import { assegnato, conAssegnazioni, conGenitori, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, euroAssegna, movimentoDaClassificareAbbinabile, ORDINE_NON_DA_SALDARE, personeDelNucleo, SOLO_DAL_MOVIMENTO, voceDaRicevuta } from './assegna'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, giaNelPagamento, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
@@ -1866,10 +1867,29 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const nonVa = cosaNonVaAssegnazione(righe, daAssegnare(m, a().pagamentiDiretti ?? [], a().ricevute ?? []), [])
         ?? cosaNonVaQuota(righe, m.data, a().pagamentiDiretti ?? [], a().ricevute ?? [], Math.round(listino.quota * 100))
       if (nonVa) throw new Error(nonVa)
+      // Come il 157: l'ordine del vestiario della riga dev'essere ancora da saldare, e la riga non va oltre quel che gli manca.
+      const daSaldare = righe.some((r) => r.ordine) ? (await this.ordiniVestiarioDaSaldare()) ?? [] : []
+      const saldati: string[] = []
+      for (const r of righe.filter((x) => x.ordine)) {
+        const o = daSaldare.find((x) => x.id === r.ordine)
+        if (!o) throw new Error(ORDINE_NON_DA_SALDARE)
+        const manca = Math.round((o.totale - o.pagato) * 100)
+        if (r.importo > manca) throw new Error(`All’ordine del vestiario mancano ${euroAssegna(manca)}: metti ${euroAssegna(manca)} o meno, il resto rimane da assegnare.`)
+        if (r.importo === manca) saldati.push(o.id)
+      }
       const creatoIl = new Date().toISOString()
       const nuove: PagamentoDiretto[] = righe.map((r) => ({ id: `pd-${unico()}`, personaId: r.personaId, data: m.data, importo: r.importo, metodo: 'Bonifico', voce: r.voce.trim(), movimentoId, creatoIl, ...(k ? { chiave: k } : {}) }))
       a().pagamentiDiretti = [...(a().pagamentiDiretti ?? []), ...nuove]
       salva()
+      // Coperto tutto, l'ordine è saldato con bonifico; in parte resta com'è e si segna in VESTIARIO.
+      const v = saldati.length ? await datiVestiario() : null
+      for (const id of saldati) await v?.segnaSaldato(id, 'bonifico')
+    },
+
+    async ordiniVestiarioDaSaldare() {
+      const v = await datiVestiario()
+      const tutti = (await Promise.all((await v.raccolte()).map((r) => v.ordini(r.id)))).flat()
+      return tutti.filter((o) => !o.saldato && !o.annullato)
     },
 
     async emettiRicevutaDaMovimento(dati, movimentoId) {

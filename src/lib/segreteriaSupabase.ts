@@ -1,4 +1,5 @@
 import { cosaNonVaSolleciti } from './sollecitiCertificato'
+import type { Ordine } from './vestiario'
 import { indirizziDaSalvare } from './avvisoSegreteria'
 import { daSenzaIstruttore } from './ore'
 import type { AnteprimaUnione, IndiziDoppioni } from './doppioni'
@@ -54,6 +55,19 @@ import type { NumeriSito } from './sitoNumeri'
 import { tipoDaRisposta } from './sitoStatistiche'
 import { URL_SUPABASE } from './dati'
 import { AllegatiNonPartiti, cosaNonVaSegnalazione, eCategoria, SCEGLI, type Categoria, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
+
+/** Un ordine da `ordini_vestiario_da_saldare()` (157): solo quel che serve alla finestra, niente email. */
+interface OrdineDaSaldareDb {
+  id: string
+  raccolta_id: string
+  nome: string
+  cognome: string
+  telefono: string
+  totale: number
+  pagato: number
+  creato_il: string
+  righe: Array<{ id: string; per_chi: string; capo: string; taglia: string; quanti: number; prezzo: number }>
+}
 
 /**
  * La segreteria col database vero.
@@ -1646,8 +1660,20 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async assegnaMovimento(movimentoId, righe, chiave) {
       // La chiave in ogni riga e non come argomento: la firma `(uuid, jsonb)` resta quella del 135, e un database
       // senza il 136 la ignora.
-      const riga = (r: RigaAssegnata) => ({ persona_id: r.personaId, voce: r.voce.trim(), importo: r.importo, ...(chiave ? { chiave } : {}) })
+      const riga = (r: RigaAssegnata) => ({ persona_id: r.personaId, voce: r.voce.trim(), importo: r.importo, ...(chiave ? { chiave } : {}), ...(r.ordine ? { ordine: r.ordine } : {}) })
       ok(await db.rpc('assegna_movimento', { movimento: movimentoId, righe: righe.map(riga) }))
+    },
+
+    async ordiniVestiarioDaSaldare() {
+      const r = await db.rpc('ordini_vestiario_da_saldare')
+      // Senza il 157 la finestra non propone ordini: senza la funzione, `assegna_movimento` non li salderebbe.
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code ?? '')) return null
+      const x = ok(r) as OrdineDaSaldareDb[]
+      return x.map((o): Ordine => ({
+        id: o.id, raccolta: o.raccolta_id, nome: o.nome, cognome: o.cognome, telefono: o.telefono, email: null,
+        righe: o.righe.map((g) => ({ id: g.id, perChi: g.per_chi, capo: g.capo, taglia: g.taglia, quanti: g.quanti, prezzo: Number(g.prezzo) })),
+        totale: Number(o.totale), saldato: false, annullato: false, pagato: Number(o.pagato), pagatoCon: null, pagatoIl: null, arrivato: o.creato_il, dalBanco: false,
+      }))
     },
 
     async emettiRicevutaDaMovimento(r, movimentoId) {
