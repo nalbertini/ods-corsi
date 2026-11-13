@@ -532,6 +532,7 @@ console.log('\n3h. Gli ordini del vestiario da saldare, per il nucleo di chi ha 
   ok('l’ordine della mamma per «Nicole Scelsi», stesso telefono: è suo', ids([nicole], [daniela]), ['o1'])
   ok('ordinato a nome suo (maiuscole e accenti non contano), ma con un altro telefono: scartato', ids([nicole], [suo]), [])
   ok('…senza telefono nella scheda: proposto', ids([{ ...nicole, telefono: undefined }], [suo]), ['o2'])
+  ok('per lei in «per chi», col telefono della mamma diverso da quello della scheda: proposto lo stesso', ids([{ ...nicole, telefono: '333 458 1047' }], [daniela]), ['o1'])
   ok('solo il nome in «per chi», senza cognome: non basta', ids([nicole], [ordine('o3', 'Luca', 'Rossi', '333 1234123', ['Nicole'], 30)]), [])
   ok('un altro nome: niente', ids([nicole], [ordine('o4', 'Sara', 'Bianchi', '333 1234123', ['Sara Bianchi'], 30)]), [])
   ok('saldato o annullato: non compare', ids([nicole], [ordine('o5', 'Daniela', 'Ferretti', '', ['Nicole Scelsi'], 40, { saldato: true, pagato: 40 }), ordine('o6', 'Daniela', 'Ferretti', '', ['Nicole Scelsi'], 40, { annullato: true })]), [])

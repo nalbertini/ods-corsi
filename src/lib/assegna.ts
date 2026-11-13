@@ -613,9 +613,10 @@ const parole = (s: string) => nomeCorso(s).split(' ').filter(Boolean)
 const tutteDentro = (cercate: string[], frase: string) => { const qui = parole(frase); return cercate.length > 0 && cercate.every((w) => qui.includes(w)) }
 
 /**
- * Gli ordini del vestiario da saldare che possono essere di questo nucleo, dal più recente: di chi li ha fatti a nome
- * suo, o con nome e cognome in «per chi» (il genitore che ordina per il figlio). Se il telefono c'è da tutte e due le
- * parti e non è lo stesso, l'ordine non è suo. Fuori gli ordini già scelti nella finestra (`scelti`): uno vale una volta.
+ * Gli ordini del vestiario da saldare che possono essere di questo nucleo, dal più recente: con nome e cognome in «per
+ * chi» (il genitore che ordina per il figlio, col suo telefono: quello della scheda può essere un altro), o fatti a nome
+ * suo, e allora, se il telefono c'è da tutte e due le parti e non è lo stesso, è un omonimo e non è suo. Fuori gli
+ * ordini già scelti nella finestra (`scelti`): uno vale una volta.
  */
 export function ordiniDelNucleo(nucleo: Array<Pick<PersonaSeg, 'nome' | 'cognome' | 'telefono'>>, ordini: Ordine[], scelti: string[] = []): Ordine[] {
   const suo = (p: Pick<PersonaSeg, 'nome' | 'cognome' | 'telefono'>, o: Ordine) => {
@@ -623,7 +624,7 @@ export function ordiniDelNucleo(nucleo: Array<Pick<PersonaSeg, 'nome' | 'cognome
     const perNome = tutteDentro(chi, `${o.nome} ${o.cognome}`) && parole(`${o.nome} ${o.cognome}`).length === chi.length
     const perChi = o.righe.some((r) => tutteDentro(chi, r.perChi))
     const tel = [cifreTelefono(p.telefono ?? ''), cifreTelefono(o.telefono ?? '')]
-    return (perNome || perChi) && !(tel[0] && tel[1] && tel[0] !== tel[1])
+    return perChi || (perNome && !(tel[0] && tel[1] && tel[0] !== tel[1]))
   }
   return ordini
     .filter((o) => !o.saldato && !o.annullato && mancaOrdine(o) > 0 && !scelti.includes(o.id) && nucleo.some((p) => suo(p, o)))
