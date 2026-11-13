@@ -341,6 +341,25 @@ console.log('\n5. la modalità prova: pagaCorsoProva')
   riparti([conVoce('Annuale Nome del listino', '2026-09-01', '2027-06-30')])
   li.salvaListinoProva?.(listino([{ ...voce(corsoA, [{ annuale: 300 }]), corso: 'Nome del listino' }, voce(corsoB, [{ annuale: 200 }])]))
   ok('…e col nome che il corso ha nel listino', await statoDiAnna(), ['pagato'])
+
+  // «Annuale più corsi» (VOCE_PIU_CORSI) paga ogni corso con l'annuale, come in segreteria (156-piu-corsi.sql).
+  const conAnnuali = () => li.salvaListinoProva?.(listino([voce(corsoA, [{ annuale: 300 }]), voce(corsoB, [{ annuale: 200 }])]))
+  riparti([conVoce('Annuale più corsi', '2026-09-01', '2027-06-30', 61000)])
+  conAnnuali()
+  await nessunaScrittura('una ricevuta «Annuale più corsi»: il corso con l\'annuale non si paga di nuovo', T_RICEVUTA)
+  ok('…e l\'iscritto lo vede pagato', await statoDiAnna(), ['pagato'])
+  riparti([conVoce('Annuale più corsi · sconto famiglia 20% su 660,00 €', '2026-09-01', '2027-06-30', 52800)])
+  conAnnuali()
+  await nessunaScrittura('…anche con lo sconto famiglia in coda alla voce', T_RICEVUTA)
+  riparti([conVoce('Annuale più corsi', '2026-09-01', '2027-06-30', 61000)])
+  li.salvaListinoProva?.(listino([voce(corsoA, [{ annuale: 0, trimestre: 120 }]), voce(corsoB, [{ annuale: 200 }])]))
+  ok('un corso senza annuale non è dentro «più corsi»: il trimestre si paga', inCoda(await tocca(anna, corsoA, 'trimestre')), false)
+  riparti()
+  conAnnuali()
+  d.pagamentiDiretti = [{ id: 'pd-piu', personaId: anna?.id, data: OGGI_ISO, importo: 61000, metodo: 'Bonifico', voce: 'Annuale più corsi', creatoIl: '2026-10-20T08:00:00Z' }]
+  await nessunaScrittura('un bonifico assegnato «Annuale più corsi»: non si paga di nuovo', 'Il corso risulta già pagato in segreteria: per quel che manca chiedi alla segreteria')
+  ok('…e chiPagaCorsi lo dice assegnato', (await aspetta(() => dati.chiPagaCorsi(anna?.id, anna?.id)))?.corsi?.find((c) => c.corsoId === corsoA?.id)?.assegnato, true)
+  d.pagamentiDiretti = []
   li.scordaListinoProva?.()
 }
 

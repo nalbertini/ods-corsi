@@ -37,6 +37,7 @@ import {
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { chiaveGiorno } from '../../lib/sala'
 import { bonificiDaAssegnare, bonificiLiberi, bonificiPerRicevuta, conGenitori, cosaNonVaRicevutaDaMovimento, euroAssegna, movimentoDaClassificareAbbinabile, voceDaRicevuta, vociDaMovimento } from '../../lib/assegna'
+import { vociCorsiDi } from '../../lib/corsiDaPagare'
 import { nuovoId } from '../../lib/prove'
 import { avvisoDopoRicevuta, avvisoManda, confermaEmail, daMandare, domandaManda, genitoreDellaMail, restaDopoManda, restaDopoRicevuta, siRiprova, statoPosta, ultimaMandata } from '../../lib/ricevuteEmail'
 import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, suCarta, useAvviso, useBozza, useCarica, Tasto } from './comune'
@@ -613,7 +614,9 @@ export function NuovaRicevuta({
   // Fin quando è chiusa la cassa contanti: il rifiuto sotto al modulo, prima di farla. Senza, decide il database.
   const chiusaFino = useCarica(() => d.contantiChiusiFino().catch(() => null), [d])
   const partenza = useCarica(
-    () => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id), d.listino().then(async (x) => ({ ...x, listino: listinoUsabile(x.listino, await d.corsi()) })), Promise.all(nucleo.map((x) => d.ricevute(x.id)))]),
+    () => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id), d.listino().then(async (x) => ({ ...x, listino: listinoUsabile(x.listino, await d.corsi()) })), Promise.all(nucleo.map((x) => d.ricevute(x.id))),
+      // Dal bonifico: le altre assegnazioni della persona, perché la «più corsi» costi il tetto meno gli annuali già assegnati.
+      daMovimento ? d.pagamentiDiretti(p.id) : Promise.resolve([])]),
     [d, p.id, nucleo.map((x) => x.id).join()],
   )
   const [numero, setNumero] = useState('')
@@ -678,7 +681,7 @@ export function NuovaRicevuta({
   // La prima volta che arriva quello che si sa, si compila il modulo.
   useEffect(() => {
     if (!partenza.dato || voci) return
-    const [intestatario, e, fatte, { listino: l }] = partenza.dato
+    const [intestatario, e, fatte, { listino: l }, , altre] = partenza.dato
     setSocio(intestatario)
     const prima = mancanoDatiSocio(intestatario, new Date(data || oggi))
     setSocioAperto(prima.blocca.length + prima.avvisa.length > 0)
@@ -688,7 +691,7 @@ export function NuovaRicevuta({
     // Dal bonifico: le voci assegnate, col pagato di quel bonifico (un parziale resta parziale).
     if (daMovimento)
       return setVoci(
-        vociDaMovimento(daMovimento.sue, daMovimento.data, l).map((v) => ({ ...bozzaDa(v), pagato: euro(v.pagamenti.reduce((t, x) => t + x.importo, 0)), pagatoAMano: true })),
+        vociDaMovimento(daMovimento.sue, daMovimento.data, l, vociCorsiDi(fatte), altre).map((v) => ({ ...bozzaDa(v), pagato: euro(v.pagamenti.reduce((t, x) => t + x.importo, 0)), pagatoAMano: true })),
       )
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
     metti([

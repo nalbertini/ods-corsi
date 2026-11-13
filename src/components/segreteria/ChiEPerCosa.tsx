@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { chiEPerCosa, euroAssegna, righeDaCampi, tipologiaDaRighe, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
 import { listinoUsabile } from '../../lib/listino'
+import { VOCE_PIU_CORSI } from '../../lib/nucleo'
 import type { CandidatoPersona } from '../../lib/movimentiPersona'
 import type { PagamentoDiretto } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro, type Ricevuta } from '../../lib/ricevute'
@@ -200,18 +201,23 @@ export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia }: { v
   const id = `as-${chiaveDi(v).replace(/[^a-z0-9]/gi, '-')}`
   const saldo = cent !== null && cent >= v.manca
   const parziale = cent !== null && cent > 0 && cent < v.manca
+  // La voce «più corsi» elenca tutti i corsi: in riga il nome breve, i corsi sotto.
+  const corsi = v.corsi
+  // Il numero solo da due corsi: «più corsi (1 corso)» si contraddice, e il corso è già scritto sotto.
+  const nome = corsi && corsi.length > 1 ? `${VOCE_PIU_CORSI} (${corsi.length} corsi)` : corsi ? VOCE_PIU_CORSI : v.voce
   return (
     <div className="stack" style={{ gap: 4 }}>
       <div className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <label htmlFor={id} style={{ fontSize: 15, flex: '1 1 200px', minWidth: 0 }}>
-          {v.voce} <span className="sg-sotto">· {aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} {euroAssegna(v.manca)}</span>
+          {nome} <span className="sg-sotto">· {aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} {euroAssegna(v.manca)}</span>
+          {corsi && <span className="sg-sotto" style={{ display: 'block' }}>{corsi.join(' · ')}</span>}
         </label>
         <input id={id} className="sg-campo num" inputMode="decimal" style={{ width: 110 }} aria-invalid={testo.trim() !== '' && (cent === null || cent <= 0 || cent > v.manca)} value={testo} onChange={(e) => onCambia(e.target.value)} />
         {saldo && <Tag tipo="fatto">Saldo</Tag>}
         {parziale && <Tag tipo="aspetta">Parziale</Tag>}
       </div>
       {parziale && cent !== null && (
-        <span className="sg-sotto">Resteranno {euroAssegna(v.manca - cent)} su «{v.voce}»: si vedono nella scheda di {nomePersona}.</span>
+        <span className="sg-sotto">Resteranno {euroAssegna(v.manca - cent)} su «{corsi ? VOCE_PIU_CORSI : v.voce}»: si vedono nella scheda di {nomePersona}.</span>
       )}
     </div>
   )

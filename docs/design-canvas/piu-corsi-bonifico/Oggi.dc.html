@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Oggi · un annuale per riga</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .riq { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .vuoto { color: #46606f; border-color: #cfe6f4; }
+    .num { font-variant-numeric: tabular-nums; }
+    .voce { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+    .voce > span:first-child { flex: 1 1 220px; min-width: 0; }
+    .pag { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 6px; font-size: 14px; }
+  </style>
+</helmet>
+<!-- OGGI (ChiEPerCosa.tsx, dovutiDi in assegna.ts): ogni annuale da pagare è una riga a prezzo pieno; il bonifico da 660,00 € va su quota, Judo adulti e una parte di Judo agonisti, e PIÙ CORSI non si vede. Nomi veri del caso segnalato, importi del listino. -->
+<div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:980px;padding:40px 24px;background:rgba(0,0,0,.6)">
+<div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:780px;padding:28px;background:#ffffff;border:2px solid #0d2a3d">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h2 id="titolo" style="margin:0;font-family:'Saira Condensed', Arial, sans-serif;font-style:italic;font-size:26px;font-weight:700;letter-spacing:.04em">CHI HA PAGATO E PER COSA?</h2>
+    <span style="font-size:14px;color:#46606f">10/11/2026 · Da SAPORITO FRANCESCO SALVATORE iscrizione corsi · <b style="color:#0b7a33">+ 660,00 €</b></span>
+  </div>
+  <div class="riq">
+    <span class="et">CHI HA PAGATO</span>
+    <b style="font-size:16px">Saporito Francesco Salvatore</b>
+    <div class="voce"><span>Quota associativa 2026/27 <span class="sotto">· manca 50,00 €</span></span><span class="campo">50,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
+    <div class="voce"><span>Annuale Judo adulti <span class="sotto">· manca 500,00 €</span></span><span class="campo">500,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
+    <div class="voce"><span>Annuale Judo agonisti <span class="sotto">· manca 660,00 €</span></span><span class="campo">110,00</span><dc-import name="Badge" tipo="tag" label="Parziale" tono="giallo" hint-size="100px,28px"></dc-import></div>
+    <span class="sotto">Resteranno 550,00 € su «Annuale Judo agonisti»: si vedono nella scheda di Francesco Salvatore.</span>
+    <div class="voce"><span>Annuale Pesi agonisti <span class="sotto">· manca 660,00 €</span></span><span class="campo vuoto"></span></div>
+    <div class="voce"><span>Annuale Preparazione atletica 1 giorno <span class="sotto">· manca 340,00 €</span></span><span class="campo vuoto"></span></div>
+
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">
+    <span class="num" style="font-size:15px">Assegnati 660,00 € di 660,00 € · Da assegnare 0,00 €</span>
+    <span style="font-size:13px;color:#0b7a33">Un solo modo di dividere: già messo.</span>
+  </div>
+  <span class="sotto">TIPOLOGIA: «Corsi e altri pagamenti», da quel che paga.</span>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" hint-size="140px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Solo la persona, decido dopo" hint-size="270px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="120px,48px"></dc-import>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":980}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

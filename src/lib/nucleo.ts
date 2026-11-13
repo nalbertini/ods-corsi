@@ -4,7 +4,7 @@ import { minorenne } from './richieste'
 import type { Ricevuta } from './ricevute'
 import { centesimi, euro, voceQuota, vociDelCorso } from './ricevute'
 import { PIU_CORSI, stagioneDi } from './costi'
-import type { CorsoRef, Listino } from './listino'
+import { nomeCorso, type CorsoRef, type Listino } from './listino'
 
 /**
  * Il nucleo familiare: chi iscrive anche figli, coniuge o fratelli li vede
@@ -50,6 +50,16 @@ export function scontoDellaVoce(descrizione: string): { descrizione: string; pie
   const pieno = x ? centesimi(x[2]) : null
   return x && pieno !== null ? { descrizione: x[1], pieno } : null
 }
+
+/**
+ * La voce che mette insieme gli annuali di una persona oltre il tetto di PIÙ CORSI. Comincia con «Annuale» perché
+ * ricevute e database la contino come un annuale; non elenca i corsi perché copre tutti gli annuali della persona nella
+ * stagione, anche quelli aggiunti dopo, e con 6 o 7 corsi l'elenco passava i 120 caratteri di una voce.
+ */
+export const VOCE_PIU_CORSI = 'Annuale più corsi'
+
+/** È la voce «più corsi», anche scontata, in maiuscolo o senza accento: come la riconosce `nome_corso` (156). */
+export const ePiuCorsi = (voce: string) => nomeCorso(voce) === 'annuale piu corsi'
 
 /** Lo sconto di un annuale che costa `pieno` centesimi. */
 export const importoSconto = (pieno: number) => Math.round(pieno * SCONTO_FAMIGLIA)

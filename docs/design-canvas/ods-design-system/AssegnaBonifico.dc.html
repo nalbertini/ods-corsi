@@ -28,7 +28,10 @@
   <div class="riq">
     <span class="et">ROSSI LUCA · COLLEGATO AL BONIFICO</span>
     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-size: 15px; flex: 1 1 200px">Quota associativa 2026/27 <span class="sotto">· manca 50,00 €</span></span><span class="campo">50,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
-    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-size: 15px; flex: 1 1 200px">Annuale Judo Kids <span class="sotto">· manca 420,00 €</span></span><span class="campo">420,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-size: 15px; flex: 1 1 200px">Annuale più corsi (4 corsi) <span class="sotto">· manca 610,00 €</span><span class="sotto" style="display: block">Judo adulti · Judo agonisti · Pesi agonisti · Preparazione atletica</span></span><span class="campo">420,00</span><dc-import name="Badge" tipo="tag" label="Parziale" tono="giallo" hint-size="100px,28px"></dc-import></div>
+      <span class="sotto">Resteranno 190,00 € su «Annuale più corsi»: si vedono nella scheda di Luca.</span>
+    </div>
   </div>
   <div class="riq">
     <span class="et">ROSSI SOFIA · STESSA FAMIGLIA</span>
@@ -56,6 +59,8 @@
 // «Alla quota mancano 50,00 €: metti 50,00 € o meno, il resto rimane da assegnare.» / «Hai assegnato N € più del bonifico: togli da una voce.».
 // Se avanza: riquadro giallo «Restano N € da assegnare: li trovi nella scheda «Da assegnare» di CONTABILITÀ.». Con una persona sola il tasto è «Assegna e fai la ricevuta».
 // Chi è segnato pagato a mano (../bonifico-gia-pagato/): riquadro .sg-riquadro data-avviso «Già pagato a mano», Tasto pieno «È questo bonifico» e sg-link «Non è questo» (daChiedereAMano).
+// PIÙ CORSI (../piu-corsi-bonifico/): con più annuali oltre 660,00 € una riga sola «Annuale più corsi (N corsi)», N solo da 2; i corsi sotto, separati da « · »;
+// il «Resteranno…» dice «Annuale più corsi» senza il numero. Costa 660,00 € meno gli annuali già messi (dovutiDi).
 // Niente «+ Un'altra persona della famiglia» della proposta: il nucleo c'è già tutto. «Svuota tutto» è un sg-link sg-pericolo alto 44px (DITO).
 class Component extends DCLogic { renderVals() { return {}; } }
 </script>
