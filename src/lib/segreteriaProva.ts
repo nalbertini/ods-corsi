@@ -2182,7 +2182,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
         .sort((x, y) => x.cognome.localeCompare(y.cognome) || x.nome.localeCompare(y.nome) || x.id.localeCompare(y.id))
         .map((p) => {
           // Anno di nascita, corsi e iscrizione servono a distinguere due omonimi: con una persona sola non escono.
-          if (ids.length < 2) return { id: p.id, nome: p.nome, cognome: p.cognome, corsi: [] as string[] }
+          // Solo fra omonimi veri (lo stesso nome), come il database: due nomi diversi nel testo non li fanno uscire.
+          if (abbinaPersone(`${p.nome} ${p.cognome}`, personePerNome()).ids.length < 2) return { id: p.id, nome: p.nome, cognome: p.cognome, corsi: [] as string[] }
           const nato = a().anagrafiche?.[p.id]?.natoIl
           const iscrizioni = a().iscrizioni.filter((i) => i.personaId === p.id)
           const dal = iscrizioni.map((i) => i.dal).sort()[0]

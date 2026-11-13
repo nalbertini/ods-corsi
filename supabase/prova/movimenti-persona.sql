@@ -783,6 +783,11 @@ create or replace function nomi_candidati(o text) returns text language sql as $
     (select id from movimenti where origine_import = o))), '?') $f$;
 select atteso('il bonifico SEPA da classificare: chi ha pagato e chi frequenta, senza accento', nomi_candidati('banca:prova-40'), 'Elisa Matera | Diego Orrù');
 select atteso('cognome e nome, con la punteggiatura attaccata', nomi_candidati('banca:prova-41'), 'Diego Orrù');
+-- Anno, corsi e iscrizione servono solo fra omonimi: due nomi diversi nel testo non li fanno uscire (l'amministrazione non legge le anagrafiche).
+insert into anagrafiche (persona_id, nato_il) values (pid(40), '2017-03-03');
+select atteso('due nomi diversi nel testo: niente anno, corsi né iscrizione', come('22222222-2222-2222-2222-222222222222',
+  format($q$select count(*)::text || '/' || count(*) filter (where c.anno_nascita is null and c.corsi = '{}' and c.iscritto_dal is null)::text from candidati_persona_movimento(%L) c$q$,
+    (select id from movimenti where origine_import = 'banca:prova-40'))), '2/2');
 select atteso('il cognome da solo non basta, e «UGO REGALO» non è Ugo Re', nomi_candidati('banca:prova-42'), 'nessuno');
 select atteso('un''uscita da classificare resta fuori', nomi_candidati('banca:prova-43'), '22023 Il movimento del 05/10/2026 (rimborso DIEGO ORRU) è un’uscita: si collegano solo le entrate');
 select atteso('il blocco dei sicuri non li tocca: restano senza persona', (select count(*) filter (where persona_id is null)::text from movimenti where origine_import like 'banca:prova-%'), '4');

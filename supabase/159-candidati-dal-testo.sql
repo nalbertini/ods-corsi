@@ -46,20 +46,22 @@ begin
   end if;
   testo := collegamento_testo(mv.descrizione);
   return query
+    -- `q`: gli omonimi veri (lo stesso nome), non tutti i candidati: anno, corsi e iscrizione servono solo a distinguere
+    -- loro, e con due nomi diversi nel testo resterebbero visibili a chi non legge le anagrafiche.
     with c as (
-      select p.id, p.nome, p.cognome from persone p
+      select p.id, p.nome, p.cognome, count(*) over (partition by collegamento_token(p.nome || ' ' || p.cognome)) as q
+      from persone p
       where p.id in (select collegamento_candidati(mv.descrizione))
          or (btrim(collegamento_testo(p.nome || ' ' || p.cognome)) <> ''
              and (position(collegamento_testo(p.nome || ' ' || p.cognome) in testo) > 0
-                  or position(collegamento_testo(p.cognome || ' ' || p.nome) in testo) > 0))),
-         n as (select count(*) as q from c)
+                  or position(collegamento_testo(p.cognome || ' ' || p.nome) in testo) > 0)))
     select c.id, c.nome, c.cognome,
-           case when n.q > 1 then extract(year from a.nato_il)::integer end,
-           case when n.q > 1
+           case when c.q > 1 then extract(year from a.nato_il)::integer end,
+           case when c.q > 1
              then coalesce((select array_agg(k.nome order by k.nome) from iscrizioni i join corsi k on k.id = i.corso_id where i.persona_id = c.id), '{}')
              else '{}'::text[] end,
-           case when n.q > 1 then (select min(i.dal) from iscrizioni i where i.persona_id = c.id) end
-    from c cross join n left join anagrafiche a on a.persona_id = c.id
+           case when c.q > 1 then (select min(i.dal) from iscrizioni i where i.persona_id = c.id) end
+    from c left join anagrafiche a on a.persona_id = c.id
     order by c.cognome, c.nome, c.id;
 end $$;
 
