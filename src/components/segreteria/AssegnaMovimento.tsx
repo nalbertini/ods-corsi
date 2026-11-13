@@ -368,12 +368,12 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
   const aCosa = (x: { personaId: string; righe: RigaAssegnata[] }) => x.righe.map((r) => (r.personaId === x.personaId ? r.voce : `${r.voce} (${chi(r.personaId)})`)).join(' + ')
   const assegnaTutti = async () => {
     const n = da.pronti.length
-    const si = await chiedi(`Assegnare ${n === 1 ? 'il bonifico' : `i ${n} bonifici`} (${euroAssegna(sommaPronti)}) come in elenco? Senza ricevuta: la fai dal movimento quando serve.`, n === 1 ? 'Sì, assegna' : `Sì, assegna i ${n}`)
+    const si = await chiedi(`Assegnare ${n === 1 ? 'il bonifico' : `i ${n} bonifici`} (${euroAssegna(sommaPronti)}) come nel riquadro, persona per persona? Senza ricevuta: la fai dal movimento quando serve.`, n === 1 ? 'Sì, assegna' : `Sì, assegna i ${n}`)
     if (!si) return
     setLavoro(0)
     const x = await assegnaDaSoli(d, da.pronti, setLavoro)
     setLavoro(null)
-    setLotto({ chiavi: [...(lotto?.chiavi ?? []), ...x.chiavi], errore: x.errore })
+    setLotto({ chiavi: [...(lotto && lotto.tolti === undefined ? lotto.chiavi : []), ...x.chiavi], errore: x.errore })
     onCambiato()
   }
   const togliLotto = async () => {
@@ -468,7 +468,7 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
       )}
       {(da.pronti.length > 0 || lotto) && (
         <section aria-label="Si assegnano da soli" className="sg-riquadro stack" style={{ gap: 10, boxShadow: 'inset 4px 0 0 var(--verde-testo)' }}>
-          <span className="sg-etichetta">SI ASSEGNANO DA SOLI · {da.pronti.length} {da.pronti.length === 1 ? 'BONIFICO' : 'BONIFICI'} · {euroAssegna(sommaPronti)}</span>
+          <span className="sg-etichetta">{da.pronti.length ? `SI ASSEGNANO DA SOLI · ${da.pronti.length} ${da.pronti.length === 1 ? 'BONIFICO' : 'BONIFICI'} · ${euroAssegna(sommaPronti)}` : 'ASSEGNATI DA SOLI'}</span>
           {da.pronti.length > 0 && (
             <span style={{ fontSize: 14 }}>
               Per questi la persona è sicura e l’importo è esattamente quel che deve: niente resto, niente corso pagato a metà, niente annuale o trimestre da scegliere, un solo modo di dividere. Si assegnano senza ricevuta, come «Assegna senza ricevuta».
@@ -482,9 +482,9 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
               <span className="num" style={{ fontWeight: 700, width: 100, textAlign: 'right' }}>{euroAssegna(x.importo)}</span>
             </div>
           ))}
-          {lotto && (
+          {lotto && (lotto.tolti === undefined || !da.pronti.length) && (
             <span role="status" style={{ fontSize: 15 }}>
-              {lotto.tolti !== undefined ? `Tolto il lotto: ${lotto.tolti} assegnazioni annullate, i bonifici sono tornati da assegnare.` : `Assegnati ${lotto.chiavi.length} ${lotto.chiavi.length === 1 ? 'bonifico' : 'bonifici'}: la ricevuta si fa dal movimento, quando serve.`}
+              {lotto.tolti !== undefined ? `Tolto il lotto: ${lotto.chiavi.length === 1 ? 'il bonifico è tornato' : `i ${lotto.chiavi.length} bonifici sono tornati`} da assegnare.` : `Assegnati ${lotto.chiavi.length} ${lotto.chiavi.length === 1 ? 'bonifico' : 'bonifici'}: la ricevuta si fa dal movimento, quando serve.`}
             </span>
           )}
           {lotto?.errore && <div role="alert" className="sg-riquadro" style={{ borderColor: 'var(--rosso-testo)', fontSize: 15 }}>{lotto.errore} Riprova: quelli già assegnati non si ripetono.</div>}
@@ -497,7 +497,7 @@ export function DaAssegnare({ d, manuali, diretti, ricevute, casse, voci, fai, o
             {lotto && lotto.tolti === undefined && lotto.chiavi.length > 0 && (
               <button type="button" className="sg-btn sg-btn-linea sg-pericolo" onClick={() => void togliLotto()}>Togli questo lotto</button>
             )}
-            <span className="sg-sotto">Qui ci sono tutti, uno per riga. Uno solo si annulla anche dal movimento.</span>
+            {lotto && lotto.tolti === undefined && lotto.chiavi.length > 0 && <span className="sg-sotto">«Togli questo lotto» li rimette tutti in Da assegnare; uno solo si annulla anche dal movimento.</span>}
           </div>
         </section>
       )}
