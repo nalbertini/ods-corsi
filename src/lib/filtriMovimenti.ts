@@ -27,6 +27,8 @@ export interface FiltriElenco {
 export interface ContestoAssegna {
   ids: Set<string>
   esiti: Record<string, EsitoCollegamento | undefined>
+  /** Il nome della persona collegata, per la ricerca: vedi `FiltroMovimenti.nomePersona`. */
+  nomePersona?: (id: string) => string | undefined
 }
 
 const NOMI_MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
@@ -123,7 +125,7 @@ export const filtriPer = (r: Pick<RigaMovimento, 'data'>): FiltriElenco => ({ te
  * Gli annullati sono in elenco ma valgono zero, quindi i loro totali sono zero.
  */
 export function estrattoMostra(righe: RigaMovimento[], casse: Cassa[], f: FiltriElenco, ctx: ContestoAssegna): EstrattoConto {
-  const filtri = { ...intervalloFiltri(f), testo: f.testo, tipo: f.tipo, voce: f.voce, annullati: f.mostra === 'annullati' }
+  const filtri = { ...intervalloFiltri(f), testo: f.testo, tipo: f.tipo, voce: f.voce, annullati: f.mostra === 'annullati', nomePersona: ctx.nomePersona }
   const e = estrattoConto(righe, casse, filtri)
   // Lo storico prima del «dal» della cassa: BILANCIO lo conta, quindi qui si vede e si sistema, ma fuori dai saldi (`storico`).
   const dal = new Map(casse.map((c) => [c.id, c.dal] as const))

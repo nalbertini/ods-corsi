@@ -1098,6 +1098,8 @@ console.log('\n40. la colonna PERSONA mostra l\'iscritto anche per gli incassi; 
   // 4.
   ok('la descrizione resta il nome della ricevuta', [ric?.descrizione, dir?.descrizione], ['Rossi Giulia', "D'Amico Zoë"])
   ok('cercando «rossi giulia» la si trova', prova(() => m.filtraMovimenti(elenco, { testo: 'rossi giulia' }).map((r) => r.id)), [`incasso:${conP1.id}:0:0`])
+  ok('cercando il cognome della persona collegata la si trova anche se la descrizione non lo dice', prova(() => m.filtraMovimenti([{ ...ric, descrizione: 'Bonifico SEPA' }], { testo: 'druetto', nomePersona: (id) => (id === 'p1' ? 'Druetto Marco' : undefined) }).length), 1)
+  ok('…e senza nomi passati no', prova(() => m.filtraMovimenti([{ ...ric, descrizione: 'Bonifico SEPA' }], { testo: 'druetto' }).length), 0)
   ok('cercando la voce («quota») si trova l\'incasso, che la voce non la ripete più sotto', prova(() => m.filtraMovimenti(elenco, { testo: 'quota' }).some((r) => r.id === `incasso:${conP1.id}:0:0`)), true)
   // 5.
   ok('«Collegati» è solo lo storico collegato a mano, non gli incassi con la persona', prova(() => persona.filtraPerPersona(elenco, 'collegati', {}).map((r) => r.id)), ['st1'])

@@ -267,7 +267,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
   const nomiPersone = useMemo(() => new Map((nomiLetti.dato ?? []).map((p) => [p.id, `${p.cognome} ${p.nome}`] as const)), [nomiLetti.dato])
   // «Da assegnare» guarda anche i soldi ancora da dividere fra le quote: quel che dice la scheda Da assegnare.
   const idDaAssegnare = useMemo(() => new Set(elencoDaAssegnare(manuali, diretti, ricevute, casse, voci, oggi).righe.map((r) => r.movimentoId)), [manuali, diretti, ricevute, casse, voci, oggi])
-  const ctx = { ids: idDaAssegnare, esiti }
+  const ctx = { ids: idDaAssegnare, esiti, nomePersona: (id: string) => nomiPersone.get(id) }
   const quantiDaAssegnare = filtraMostra(righe, 'da_assegnare', ctx).length
   const estratto = estrattoMostra(righe, casse, f, ctx)
   const totali = striscia(estratto, f)
