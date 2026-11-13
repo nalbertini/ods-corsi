@@ -81,3 +81,18 @@ export function unisciTurni<R extends RigaConAppello>(righe: readonly R[]): R[] 
   }
   return [...fuse.values(), ...resto].sort((a, b) => a.inizio.localeCompare(b.inizio))
 }
+
+/**
+ * Lo storico di una persona: un segno per corso e giorno, il più forte dei
+ * turni (presente, poi giustificato, poi assente, poi niente). L'ordine resta.
+ */
+export function unSegnoAlGiorno<R extends { corsoId: string; inizio: string; stato: StatoPresenza | null }>(righe: readonly R[]): R[] {
+  const scelta = new Map<string, R>()
+  for (const r of righe) {
+    const chiave = `${r.corsoId}|${giornoRoma(r.inizio)}`
+    const c = scelta.get(chiave)
+    if (!c || peso(r.stato) > peso(c.stato)) scelta.set(chiave, r)
+  }
+  const tenute = new Set(scelta.values())
+  return righe.filter((r) => tenute.has(r))
+}

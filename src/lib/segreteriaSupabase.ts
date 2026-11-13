@@ -20,7 +20,7 @@ import { insegna, RUOLI_DEL_PERSONALE, segniDi, type RuoloPersonale } from './ru
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
-import { presentiAltrove, togliAltrove } from './turni'
+import { presentiAltrove, togliAltrove, unSegnoAlGiorno } from './turni'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -1320,17 +1320,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           .order('inizio', { ascending: false })
           .limit(quante * 4),
       ) as unknown as Array<{ id: string; corso_id: string; inizio: string; corsi: { nome: string } | null }>
-      // Le presenze di tutte le lezioni lette (non annullate): una presenza all'altro turno dello stesso giorno toglie questa (`turni.ts`).
+      // Le presenze di tutte le lezioni lette (non annullate): il doppio turno è un quadretto solo, col segno più forte (`turni.ts`).
       const pres = ok(
         await db.from('presenze').select('sessione_id, stato').eq('persona_id', personaId).in('sessione_id', sessioni.length ? sessioni.map((s) => s.id) : ['00000000-0000-0000-0000-000000000000']),
       ) as Array<{ sessione_id: string; stato: StatoPresenza }>
-      const turni = sessioni.map((s) => ({ id: s.id, corsoId: s.corso_id, inizio: s.inizio }))
-      const segni = pres.map((p) => ({ sessioneId: p.sessione_id, personaId, stato: p.stato }))
-      return sessioni
+      const righe = sessioni
         .filter((s) => isc.some((i) => i.corso_id === s.corso_id && valeIl(i, giornoDi(s.inizio))))
-        .filter((s) => !presentiAltrove({ id: s.id, corsoId: s.corso_id, inizio: s.inizio }, turni, segni).has(personaId))
+        .map((s) => ({ sessioneId: s.id, corsoId: s.corso_id, inizio: s.inizio, corso: s.corsi?.nome ?? '', stato: pres.find((p) => p.sessione_id === s.id)?.stato ?? null }))
+      return unSegnoAlGiorno(righe)
         .slice(0, quante)
-        .map((s): StoricoSeg => ({ sessioneId: s.id, inizio: s.inizio, corso: s.corsi?.nome ?? '', stato: pres.find((p) => p.sessione_id === s.id)?.stato ?? null }))
+        .map(({ corsoId: _, ...x }): StoricoSeg => x)
         .reverse()
     },
 

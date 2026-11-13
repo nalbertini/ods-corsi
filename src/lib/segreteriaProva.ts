@@ -8,6 +8,7 @@ import { conDatiDellaSegreteria } from './segreteria'
 import { statoCertificato, attivitaCambiata, cancellaFileIl, cosaNonVaGiorniCertificato, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO, termineCertificato, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
 import { unisciGare } from './gare'
+import { unSegnoAlGiorno } from './turni'
 import { codicePulito, cosaNonVaNucleo, GENITORE_GIA_IN_ELENCO, GENITORE_SENZA_CF, GENITORE_SENZA_NOME, nuovoTitolare, type DatiGenitore } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio, personaleDaRiprendere } from './nomi'
@@ -879,13 +880,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async storico(personaId, quante) {
       const adesso = Date.now()
       const corsi = new Set(a().iscrizioni.filter((i) => i.personaId === personaId).map((i) => i.corsoId))
-      const x: StoricoSeg[] = []
+      const x: Array<StoricoSeg & { corsoId: string }> = []
       for (const l of lezioniFra(new Date(adesso - 120 * GIORNO), new Date(adesso))) {
         if (!corsi.has(l.corso.id) || l.inizio.getTime() >= adesso || comeE(l).stato === 'annullata') continue
         if (!iscrittiDellAppello(l).some((p) => p.id === personaId)) continue
-        x.push({ sessioneId: l.id, inizio: l.inizio.toISOString(), corso: l.corso.nome, stato: memoria.segnate[l.id]?.[personaId] ?? null })
+        x.push({ sessioneId: l.id, corsoId: l.corso.id, inizio: l.inizio.toISOString(), corso: l.corso.nome, stato: memoria.segnate[l.id]?.[personaId] ?? null })
       }
-      return x.slice(-quante)
+      return unSegnoAlGiorno(x).slice(-quante).map(({ corsoId: _, ...r }): StoricoSeg => r)
     },
 
     async salvaPersona(dati) {

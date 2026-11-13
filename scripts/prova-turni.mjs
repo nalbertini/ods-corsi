@@ -135,6 +135,18 @@ console.log('modalità prova: Psicomotricità, venerdì 6 novembre alle 17:00 (A
   ok('tablet: l\'elenco di B non lo ha', (await tablet.elenco(B)).some((q) => q.personaId === x), false)
 }
 
+console.log('unSegnoAlGiorno')
+{
+  const r = (id, corsoId, inizio, stato) => ({ id, corsoId, inizio, stato })
+  const st = [
+    r('A', 'judo', A.inizio, null), r('B', 'judo', B.inizio, 'assente'),
+    r('D', 'judo', altroGiorno.inizio, 'assente'), r('E', 'lotta', altroCorso.inizio, 'assente'),
+  ]
+  ok('doppio turno: un quadretto, col segno più forte', m.unSegnoAlGiorno(st).map((x) => x.id), ['B', 'D', 'E'])
+  ok('assente + presente: presente', m.unSegnoAlGiorno([r('A', 'judo', A.inizio, 'presente'), r('B', 'judo', B.inizio, 'assente')]).map((x) => x.stato), ['presente'])
+  ok('due assenze: una', m.unSegnoAlGiorno([r('A', 'judo', A.inizio, 'assente'), r('B', 'judo', B.inizio, 'assente')]).length, 1)
+}
+
 if (guai) {
   console.log(`\n${guai} prova/e fallita/e`)
   process.exit(1)
