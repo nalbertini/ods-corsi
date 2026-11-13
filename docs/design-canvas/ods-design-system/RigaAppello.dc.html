@@ -81,8 +81,9 @@
 // di 8px invece di 4 e il segno bianco in un quadrato pieno da 26px (✓ su verde-testo #0b7a33, che col bianco passa il
 // contrasto; ✕ su rosso #e4292a). Il non
 // segnato resta il quadratino vuoto blu: pieno contro vuoto si distingue anche senza colore.
-// PROPOSTA (`../appello-telefono-spazio/`, non costruita) `fitta`: la riga alta 48px invece di 56, per vedere piu' nomi sul telefono.
-// Resta sopra i 44px del tocco, ma va contro la Regola del Dito di Fretta: e' una domanda all'utente, non una scelta fatta.
+// COSTRUITO (`[data-fitto] .riga-appello` nel look sito, `fitto` in AppelloScreen.tsx; proposta in `../appello-telefono-spazio/`) `fitta`:
+// sul telefono (sotto i 960px) la riga e' alta 48px invece di 56 e le righe stanno a 6px l'una dall'altra, per vedere circa
+// dieci nomi invece di quattro. Resta sopra i 44px del tocco; l'eccezione alla Regola del Dito di Fretta l'ha decisa l'utente il 2026-11-13.
 // Alta 56px perche' la si tocca in piedi e di fretta (La Regola del Dito di Fretta, DESIGN.md).
 const T = {
   sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', verde: '#12913f', rosso: '#e4292a', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33' },

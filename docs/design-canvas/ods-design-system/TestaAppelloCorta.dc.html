@@ -60,8 +60,8 @@
   </div>
   </sc-if>
   <sc-if value="{{bassa}}" hint-placeholder-val="{{ false }}">
-  <!-- PROPOSTA bassa (../appello-telefono-spazio/, non costruita): niente TUTTI PRESENTI, il conto in una riga sola. -->
-  <div style="display: flex; align-items: baseline; gap: 10px; padding: 8px 16px 0; white-space: nowrap; font-variant-numeric: tabular-nums">
+  <!-- COSTRUITO bassa (.appello-riga-conto, fitto in AppelloScreen.tsx): niente TUTTI PRESENTI, il conto in una riga sola. -->
+  <div style="display: flex; align-items: baseline; gap: 10px; padding: 4px 16px 0; white-space: nowrap; font-variant-numeric: tabular-nums">
     <span style="font-size: 22px; font-weight: 800; line-height: 1">{{presenti}}<span style="font-size: 15px; font-weight: 400; color: #46606f"> / {{iscritti}}</span></span>
     <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; color: {{coloreStato}}">{{statoTesto}}</span>
     <span style="margin-left: auto; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: #8f6a00">{{codaTesto}}</span>
@@ -82,8 +82,9 @@
 //    vale («i 5 non segnati»). Spento a tutto segnato: bianco col bordo verde, «✓ TUTTI SEGNATI». In lettura non c'e'.
 // AZZERA non c'e' piu' accanto al giallo: sta nel menu ⋯, lontano dal pollice che segna. Anche l'attivita' (oggi il
 // select ATTIVITA' sotto la testa) si cambia solo dal menu: si cambia di rado (deciso dall'utente il 2026-11-11).
-// PROPOSTA (`../appello-telefono-spazio/`, non costruita): bassa toglie TUTTI PRESENTI e mette conto, stato e coda su una
-// riga sola: la testa scende a circa 90px (l'utente: «succede pochissimo che siano tutti presenti», 2026-11-13).
+// COSTRUITO (`.appello-testa[data-fitto]`, `.appello-riga-conto`; proposta in `../appello-telefono-spazio/`): sul telefono la testa
+// e' sempre `bassa`: niente TUTTI PRESENTI, conto (22px) / iscritti (15px), stato e coda su una riga sola, e la data su una riga
+// tagliata con «…». La testa sta a 90px (l'utente: «succede pochissimo che siano tutti presenti», 2026-11-13).
 // Il giallo pieno resta uno per schermata. Colori di TestaAppello.
 // Nel codice la riga sotto il titolo e' «mercoledi' 11 novembre 18:00 · Pesi» e va a capo invece di tagliarsi: per questo
 // l'altezza e' minima (min-height 140px), e con un titolo lungo la testa arriva a circa 188px.

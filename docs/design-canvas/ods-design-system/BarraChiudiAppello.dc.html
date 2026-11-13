@@ -45,8 +45,9 @@
 // `tuttiAssenti`: di solito e' l'appello chiuso per sbaglio, quindi CHIUDI non diventa giallo (il giallo resta su TUTTI
 // PRESENTI in testa) e la frase dice «Sono tutti assenti: chiudi solo se e' giusto.».
 // Nel codice + PROVA non va a capo (nowrap, 112px) e CHIUDI si': a 390px «SÌ, CHIUDI · 14 ASSENTI» sta su due righe.
-// PROPOSTA (`../appello-telefono-spazio/`, non costruita) `corta`: la barra alta 72px invece di 92. La frase sopra i tasti
-// sparisce e diventa la seconda riga di CHIUDI («16 non segnati → assenti», Inter 12px 600): 20px in piu' per i nomi.
+// COSTRUITO (`.barra-chiudi[data-fitto]` e `.btn-chiudi-sotto` nel look sito; proposta in `../appello-telefono-spazio/`) `corta`:
+// sul telefono la barra e' alta 74px invece di 92 (padding 10px 16px, gap 4px). La frase sopra i tasti sparisce e diventa la
+// seconda riga di CHIUDI («16 non segnati → assenti», Inter 12px 600 minuscolo: eccezione al maiuscolo dei tasti).
 // La domanda di conferma (`chiede`) resta come oggi, frase rossa compresa: e' il momento in cui va letta.
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
@@ -59,7 +60,7 @@ class Component extends DCLogic {
     const corta = truthy(p.corta) && !chiede;
     const assenti = n === 1 ? 'UN ASSENTE' : n + ' ASSENTI';
     return {
-      alta: corta ? '72px' : '92px', spazio: corta ? '10px 16px' : '8px 16px 10px', conFrase: !corta,
+      alta: corta ? '74px' : '92px', spazio: corta ? '10px 16px' : '8px 16px 10px', conFrase: !corta,
       conSotto: corta && !tutti, sotto: assentiTutti ? 'sono tutti assenti' : n === 1 ? '1 non segnato → assente' : n + ' non segnati → assenti',
       conProva: p.conProva === undefined ? true : truthy(p.conProva),
       frase: chiede ? 'Sicuro? Tocca di nuovo per chiudere.' : assentiTutti ? 'Sono tutti assenti: chiudi solo se è giusto.' : tutti ? 'Tutti segnati: chiudi e torna al calendario.' : n === 1 ? 'Chi non è segnato diventerà assente.' : n + ' non segnati diventeranno assenti.',
