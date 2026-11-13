@@ -387,6 +387,8 @@ Le righe sono a gruppi:
 
 I versamenti **«Da Satispay Europe S.A.»** entrano come gli altri: sono l'incasso di Satispay, sulla voce **Incassi Satispay** (vedi [Satispay](#satispay)). Le righe già nell'app si ricontrollano dopo l'importazione in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
 
+Un'entrata con **«cashback»** nel testo (per esempio il cashback di Postepay) va da sola su **Altre entrate**, senza chiedere chi ha pagato: non la paga una persona. Serve che la voce «Altre entrate» ci sia tra le entrate; se no la riga resta in «Da classificare».
+
 Sulle righe che entrano scegli la **tipologia**: parte da quella che l'app propone (come per
 i movimenti da classificare) o da **Da classificare**. Per una quota o un corso serve anche la
 **persona**, in fondo alla riga: se nel testo c'è il nome di una sola scheda, l'app la mette già lì

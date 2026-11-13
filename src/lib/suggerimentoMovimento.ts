@@ -1,6 +1,6 @@
 import { schedaUnica } from './sicuro'
 import { inEuro } from './vestiario'
-import { VOCE_CORSI, VOCE_DIFFERENZA, VOCE_INCASSI_SATISPAY, VOCE_QUOTA, VOCE_VARIE, vociOfferte, vuolePersonaRiga, type RigaMovimento, type VoceContabile } from './contabilita'
+import { VOCE_ALTRE_ENTRATE, VOCE_CORSI, VOCE_DIFFERENZA, VOCE_INCASSI_SATISPAY, VOCE_QUOTA, VOCE_VARIE, vociOfferte, vuolePersonaRiga, type RigaMovimento, type VoceContabile } from './contabilita'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { ordinaAbbinati, type Abbinato, type ComeAbbinato } from './abbinaMovimenti'
 import { normalizzaNome, nomeDallaCausale, type PersonaPerNome } from './movimentiPersona'
@@ -136,6 +136,9 @@ export function suggerisciMovimento(riga: RigaMovimento, righe: RigaMovimento[],
     const voce = v ? { voceId: v.id, nome: v.nome, motivo: 'È il versamento di Satispay in banca' } : null
     return { caso: voce ? 'C' : 'D', voce, candidati: [], preselezionato: null, persona: 'nessuna-senza-persona' }
   }
+  // Il cashback della carta non lo paga nessuno; senza la voce «Altre entrate» la riga resta com'è.
+  const altre = riga.tipo === 'entrata' && /cashback/i.test(riga.descrizione) ? vociOfferte(voci, 'entrata').find((x) => x.nome === VOCE_ALTRE_ENTRATE) : undefined
+  if (altre) return { caso: 'C', voce: { voceId: altre.id, nome: altre.nome, motivo: 'È un cashback, non lo paga una persona' }, candidati: [], preselezionato: null, persona: 'nessuna-senza-persona' }
   const voce = vocePerDescrizione(riga, righe, voci)
   const senza = { voce, candidati: [], preselezionato: null }
   if (riga.personaId) return { caso: voce ? 'C' : 'D', ...senza, persona: 'gia-collegata' }
