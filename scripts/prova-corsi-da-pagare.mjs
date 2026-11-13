@@ -405,5 +405,29 @@ console.log('\n22. Modalità prova: archiviare segna il giorno, rimetterlo in ca
   ok('di nuovo in calendario: niente giorno', (await s.corsi()).find((x) => x.id === c.id)?.archiviatoIl, undefined)
 }
 
+console.log('\n23. Più corsi: la voce «Annuale più corsi» copre tutti i corsi con l’annuale (tetto 660 €)')
+{
+  // Judo 3 (340) + Judo kids (300) + MGA (300) = 940 €: oltre il tetto, una voce sola da 660 €. La voce non elenca i
+  // corsi: con 6 o 7 corsi passava i 120 caratteri.
+  const PIU = 'Annuale più corsi'
+  const tre = [{ corsoId: 'judo3', dal: '2026-09-16' }, { corsoId: 'kids', dal: '2026-09-16' }, { corsoId: 'mga', dal: '2026-09-16' }]
+  const v = (descrizione, prezzo, pagato) => voce(descrizione, '2026-09-01', '2027-06-30', { prezzo, pagato })
+  const dei = (voci, iscrizioni = tre) => persona({ ricevute: [ricevuta(voci)], iscrizioni })
+  const sc = (p) => statoCorsi(p, corsi, listino, OGGI)
+  const tutti = (come, mancano) => ['Judo 3', 'Judo kids', 'MGA'].map((c) => [c, come, mancano])
+  const riassunto = (p) => (Array.isArray(sc(p)) ? sc(p).map((x) => [x.corso, x.come, x.mancano ?? 0]) : sc(p))
+  ok('voce pagata (660,00 €): tutti i corsi «pagato»', riassunto(dei([v(PIU, 66000, 66000)])), tutti('pagato', 0))
+  ok('voce pagata in parte (610,00 €): tutti «in_parte», mancano 50,00 €', riassunto(dei([v(PIU, 66000, 61000)])), tutti('in_parte', 5000))
+  ok('…la formula resta annuale, e l’annuale va chiuso entro il 31 dicembre', sc(dei([v(PIU, 66000, 61000)]))?.map((x) => [x.formula, x.entro]), [['annuale', '2026-12-31'], ['annuale', '2026-12-31'], ['annuale', '2026-12-31']])
+  ok('nessuno «da_controllare»: la voce non è «scritta a mano»', sc(dei([v(PIU, 66000, 61000)]))?.some((x) => x.come === 'da_controllare'), false)
+  ok('tetto raggiunto (voce pagata): un annuale aggiunto dopo è coperto', riassunto(dei([v(PIU, 66000, 66000)], [...tre, { corsoId: 'pilates', dal: '2026-11-01' }])).filter((x) => x[0] === 'Pilates'), [['Pilates', 'pagato', 0]])
+  ok('…e corsiDaPagare è vuoto', corsiDaPagare(dei([v(PIU, 66000, 66000)]), corsi, listino, OGGI), [])
+  ok('con lo sconto famiglia (528,00 € su 660,00 €): pagata, tutti i corsi «pagato»', riassunto(dei([v(`${PIU} · sconto famiglia 20% su 660,00 €`, 52800, 52800)])), tutti('pagato', 0))
+  ok('…in parte: mancano 128,00 €', riassunto(dei([v(`${PIU} · sconto famiglia 20% su 660,00 €`, 52800, 40000)])), tutti('in_parte', 12800))
+  ok('le maiuscole e senza accento («ANNUALE PIU CORSI») valgono lo stesso', riassunto(dei([v('ANNUALE PIU CORSI', 66000, 66000)])), tutti('pagato', 0))
+  ok('le voci vecchie con l’elenco («Annuale più corsi: Judo 3; …») non sono la voce più corsi', sc(dei([v('Annuale più corsi: Judo 3; MGA', 66000, 66000)]))?.some((x) => x.come === 'da_controllare'), true)
+  ok('con un trimestre di un altro corso: il trimestre resta suo', riassunto(dei([v(PIU, 66000, 66000), trimestre('Pilates', '2026-10-01', '2027-01-15')], [...tre, { corsoId: 'pilates', dal: '2026-09-16' }])).filter((x) => x[0] === 'Pilates'), [['Pilates', 'pagato', 0]])
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

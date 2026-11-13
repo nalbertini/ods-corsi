@@ -96,11 +96,14 @@ const daChiedereAMano = lib('daChiedereAMano')
 const propostaDopoIlSi = lib('propostaDopoIlSi')
 const collegatiPrima = lib('collegatiPrima')
 const ricevutaGiaFatta = lib('ricevutaGiaFatta')
+const chiEPerCosa = lib('chiEPerCosa')
+const conAssegnazioni = lib('conAssegnazioni')
 
 const B = await impacchetta(`
   export { elencoMovimenti, totali, previstoCassa, residui, incassiDerivati, righeMovimenti } from './src/lib/contabilita'
   export { bilancioAnno } from './src/lib/bilancio'
-  export { statoCorsi } from './src/lib/corsiDaPagare'
+  export { statoCorsi, vociCorsiDi } from './src/lib/corsiDaPagare'
+  export { abbonamentiDalleRicevute } from './src/lib/nucleo'
   export { pagamentoDi, inRegola } from './src/lib/segreteria'
   export { creaSegreteriaProva } from './src/lib/segreteriaProva'
   export { righeDaRicevute, righeDirette } from './src/lib/pagamenti'
@@ -133,6 +136,9 @@ const ricevuta = (id, personaId, voci2, o = {}) => ({
   id, anno: 2026, numero: 1, data: '2026-10-15', ente: 'ODS', personaId, intestatario: { nome: 'Mario', cognome: 'Rossi' }, voci: voci2, anticipo: 0,
   totale: voci2.reduce((s, v) => s + v.prezzo, 0), pagato: voci2.reduce((s, v) => s + v.pagamenti.reduce((t, p) => t + p.importo, 0), 0), creataIl: '2026-10-15T10:00:00Z', ...o,
 })
+// Il riconoscimento della voce «più corsi» (src/lib/nucleo.ts): se non c'è ancora, ogni caso lo dice.
+const N = await impacchetta("export * from './src/lib/nucleo'")
+const ePiuCorsi = typeof N.ePiuCorsi === 'function' ? N.ePiuCorsi : () => { throw new Error('manca ePiuCorsi in src/lib/nucleo.ts') }
 const nomi = [{ id: 'mario', nome: 'Mario', cognome: 'Rossi' }, { id: 'luca', nome: 'Luca', cognome: 'Rossi' }, { id: 'sofia', nome: 'Sofia', cognome: 'Rossi' }]
 
 console.log('1. Quanto resta da assegnare di un movimento')
@@ -327,7 +333,129 @@ console.log('\n3e. La causale dice «trimestrale»: si propone il trimestre, non
     [['Quota associativa 2026/27', 5000], ['Trimestre Judo adulti', 19000]])
 }
 
-console.log('\n3f. Una voce dal listino, anche per un corso a cui non è iscritto')
+console.log('\n3f. Più corsi: gli annuali di una persona costano al massimo 660 €, la quota a parte')
+{
+  // Il caso vero: bonifico da 660 €, quattro annuali (500 + 660 + 660 + 340) e la quota. Il dialogo proponeva
+  // quota + Judo adulti + 110 € di Judo agonisti. La voce è un «annuale» (ricevuta e database la riconoscono con
+  // `^annuale\s`), fissa e corta: copre tutti gli annuali della persona nella stagione, quanti che siano (con l'elenco
+  // dei corsi, 6 o 7 corsi passavano i 120 caratteri di una voce). Se c'è lo sconto famiglia, il suffisso di sempre.
+  const oggi = '2026-11-12'
+  const PIU = 'Annuale più corsi'
+  const listino = { quota: 50, saldoEntro: '2026-08-31', offerte: [], senzaPrezzoVaBene: [], corsi: [
+    { corso: 'Judo adulti', eta: '', orari: [], prezzi: [{ annuale: 500, trimestre: 190 }] },
+    { corso: 'Judo agonisti', eta: '', orari: [], prezzi: [{ annuale: 660 }] },
+    { corso: 'Pesi agonisti', eta: '', orari: [], prezzi: [{ annuale: 660 }] },
+    { corso: 'Preparazione atletica 1 giorno', eta: '', orari: [], prezzi: [{ annuale: 340 }] },
+  ] }
+  const corsi = [{ id: 'adulti', nome: 'Judo adulti' }, { id: 'agonisti', nome: 'Judo agonisti' }, { id: 'pesi', nome: 'Pesi agonisti' }, { id: 'prep', nome: 'Preparazione atletica 1 giorno' }]
+  const quotaPagata = [{ anno: 2026, numero: 1, dal: '2026-09-01', al: '2027-07-31', mancano: 0 }]
+  const sap = (ids, o = {}) => ({ id: 'sap', attiva: true, certificato: { scade: '2027-09-01', conFile: false }, documento: true, pagamento: { stato: 'da_pagare' }, natoIl: '1990-01-01', iscrizioni: ids.map((corsoId) => ({ corsoId, dal: '2026-09-01' })), quote: [], vociCorsi: [], ...o })
+  const tutti = ['adulti', 'agonisti', 'pesi', 'prep']
+  const gia = { diretti: [], ricevute: [] }
+  const dovuti = (p, g = gia, l = listino) => prova(() => dovutiDi(p, corsi, l, oggi, g).map((d) => [d.voce, d.manca]))
+  const righe = (r) => prova(() => r.proposta.map((x) => [x.personaId, x.voce, x.importo]))
+  const ctx = (p, g = gia) => ({ ...g, persone: [p], corsi, listino, oggi })
+
+  // 1.
+  const r = prova(() => chiEPerCosa('sap', 66000, ctx(sap(tutti))))
+  ok('Saporito, bonifico da 660,00 €: la quota e UNA riga «più corsi» da 610,00 €', righe(r), [['sap', 'Quota associativa 2026/27', 5000], ['sap', PIU, 61000]])
+  ok('…la riga «più corsi» dovuta è di 660,00 € (il tetto), i 50,00 € in più restano da dare', prova(() => r.dovuti.map((d) => [d.voce, d.manca])), [['Quota associativa 2026/27', 5000], [PIU, 66000]])
+  ok('…il parziale è ammesso', prova(() => cosaNonVaAssegnazione(r.proposta, 66000, r.dovuti)), null)
+  // 12.
+  ok('…la riga dice i suoi 4 corsi, da mostrare sotto', prova(() => r.dovuti.find((d) => d.voce === PIU).corsi), ['Judo adulti', 'Judo agonisti', 'Pesi agonisti', 'Preparazione atletica 1 giorno'])
+  ok('la voce «più corsi» si riconosce anche scontata e in maiuscolo', prova(() => [PIU, `${PIU} · sconto famiglia 20% su 660,00 €`, 'ANNUALE PIÙ CORSI', 'Annuale piu corsi', 'Annuale  più corsi.'].map(ePiuCorsi)), [true, true, true, true, true])
+  ok('…un annuale qualunque, il trimestre e la quota no', prova(() => ['Annuale Judo adulti', 'Trimestre Judo adulti', 'Quota associativa 2026/27', 'Annuale più corsi extra'].map(ePiuCorsi)), [false, false, false, false])
+
+  // 2 e 3. Judo adulti già pagato (500 €) in una ricevuta, Judo agonisti ora: il resto costa 660 − 500.
+  const pagato500 = { diretti: [], ricevute: [ricevuta('r1', 'sap', [voceRic('Annuale Judo adulti', 50000, 50000, { dal: '2026-09-01', al: '2027-06-30' })], { data: '2026-09-10' })] }
+  const conRicevuta = sap(['adulti', 'agonisti'], { quote: quotaPagata, vociCorsi: [{ descrizione: 'Annuale Judo adulti', dal: '2026-09-01', al: '2027-06-30', mancano: 0, data: '2026-09-10' }] })
+  ok('Judo adulti già pagato 500,00 €, Judo agonisti ora: una voce «più corsi» di 160,00 € con il solo Judo agonisti', dovuti(conRicevuta, pagato500), [[PIU, 16000]])
+  ok('…dovutiDi non elenca Judo adulti', prova(() => dovutiDi(conRicevuta, corsi, listino, oggi, pagato500).some((d) => d.voce.includes('Judo adulti'))), false)
+  ok('…il bonifico da 160,00 € la salda tutta', righe(prova(() => chiEPerCosa('sap', 16000, ctx(conRicevuta, pagato500)))), [['sap', PIU, 16000]])
+
+  // 11 e 10. Sotto il tetto restano annuali separati; un annuale solo è quello di sempre.
+  const piccolo = { ...listino, corsi: [{ corso: 'Judo adulti', eta: '', orari: [], prezzi: [{ annuale: 340 }] }, { corso: 'Pilates', eta: '', orari: [], prezzi: [{ annuale: 250 }] }] }
+  corsi.push({ id: 'pilates', nome: 'Pilates' })
+  ok('due annuali sotto il tetto (340 + 250 = 590): due voci separate', dovuti(sap(['adulti', 'pilates'], { quote: quotaPagata }), gia, piccolo), [['Annuale Judo adulti', 34000], ['Annuale Pilates', 25000]])
+  ok('un annuale solo: com’è sempre stato', dovuti(sap(['adulti'], { quote: quotaPagata })), [['Annuale Judo adulti', 50000]])
+  corsi.pop()
+
+  // 13. Il trimestre non entra nel tetto né nella voce.
+  ok('trimestre nella causale: il trimestre di Judo adulti fuori dal tetto, gli altri annuali nella voce «più corsi»', prova(() => dovutiDi(sap(tutti, { quote: quotaPagata }), corsi, listino, oggi, gia, 'trimestrale judo adulti').map((d) => [d.voce, d.manca])),
+    [['Trimestre Judo adulti', 19000], [PIU, 66000]])
+
+  // 4 e 7. I bonifici sulla voce: dopo il primo IN PARTE, dopo l'ultimo pagata; in tutti i corsi della voce, nessuno «da controllare».
+  const dd = (...importi) => importi.map((x, i) => diretto('c' + i, 'sap', x, PIU, { movimentoId: 'm' + i }))
+  const stati = (diretti, extra = {}) => prova(() => B.statoCorsi(conAssegnazioni(sap(tutti, { quote: quotaPagata, ...extra }), diretti, listino, oggi), corsi, listino, oggi).map((s) => [s.corso, s.come, s.mancano ?? 0]))
+  const tuttiCosi = (come, mancano) => corsi.slice(0, 4).map((c) => [c.nome, come, mancano])
+  ok('bonifico da 300,00 € sulla voce da 660,00 €: tutti i 4 corsi IN PARTE, mancano 360,00 €', stati(dd(30000)), tuttiCosi('in_parte', 36000))
+  ok('…dopo il secondo da 360,00 €: tutti pagati', stati(dd(30000, 36000)), tuttiCosi('pagato', 0))
+  ok('610,00 € (il caso di Saporito): IN PARTE, mancano 50,00 €, nessun «da controllare»', stati(dd(61000)), tuttiCosi('in_parte', 5000))
+
+  // 5. Oltre il dovuto della voce.
+  const doveri = prova(() => chiEPerCosa('sap', 70000, ctx(sap(tutti, { quote: quotaPagata }))).dovuti)
+  ok('un importo oltre il dovuto della voce «più corsi»: rifiutato, dice quanto metterne', prova(() => cosaNonVaAssegnazione([{ personaId: 'sap', voce: PIU, importo: 67000 }], 70000, doveri)),
+    `A «${PIU}» mancano 660,00 €: metti 660,00 € o meno, il resto rimane da assegnare.`)
+
+  // 6 e 8. La ricevuta dal bonifico: il prezzo è il tetto, non la somma dei listini; lo stato è quello dell'assegnazione.
+  const vv = prova(() => vociDaMovimento(dd(61000), '2026-11-12', listino))
+  ok('vociDaMovimento: prezzo 660,00 € (non la somma dei listini), un solo pagamento da 610,00 €', prova(() => vv.map((v) => [v.descrizione, v.prezzo, v.pagamenti.map((p) => p.importo)])), [[PIU, 66000, [61000]]])
+  const daRicevuta = prova(() => B.statoCorsi(sap(tutti, { quote: quotaPagata, vociCorsi: B.vociCorsiDi([ricevuta('r9', 'sap', vv)]) }), corsi, listino, oggi))
+  ok('lo stato dalla ricevuta emessa con lo stesso testo è identico a quello dall’assegnazione', daRicevuta, prova(() => B.statoCorsi(conAssegnazioni(sap(tutti, { quote: quotaPagata }), dd(61000), listino, oggi), corsi, listino, oggi)))
+
+  // 9. Un annuale in più a tetto raggiunto costa 0,00 €.
+  const piuPagata = [{ descrizione: PIU, dal: '2026-09-01', al: '2027-06-30', mancano: 0, data: '2026-09-10' }]
+  ok('tetto raggiunto (voce «più corsi» pagata) e un annuale in più: non è da pagare, è coperto', prova(() => B.statoCorsi(sap(tutti, { quote: quotaPagata, vociCorsi: piuPagata }), corsi, listino, oggi).find((s) => s.corsoId === 'prep').come), 'pagato')
+  ok('…e dovutiDi non lo chiede', dovuti(sap(tutti, { quote: quotaPagata, vociCorsi: piuPagata }), { diretti: [], ricevute: [ricevuta('r2', 'sap', [voceRic(piuPagata[0].descrizione, 66000, 66000, { dal: '2026-09-01', al: '2027-06-30' })], { data: '2026-09-10' })] }), [])
+
+  // 13. Lo sconto famiglia sulla riga «più corsi», come su un annuale qualunque.
+  const scontata = `${PIU} · sconto famiglia 20% su 660,00 €`
+  const ab = prova(() => B.abbonamentiDalleRicevute([ricevuta('r3', 'sap', [voceRic(scontata, 52800, 52800, { dal: '2026-09-01', al: '2027-06-30' })], { data: '2026-09-10' })], () => 'Saporito', '2026-11-12').map((a) => [a.importo, a.scontato ?? false]))
+  ok('abbonamentiDalleRicevute: la voce scontata vale 660,00 € pieni, con lo sconto già avuto', ab, [[66000, true]])
+
+  // 14. Sette corsi: la voce resta corta e l'assegnazione passa (con l'elenco dei corsi passava i 120 caratteri).
+  const sette = ['Preparazione atletica, pesi e Mobility', 'Judo agonisti under 18', 'Pesi agonisti', 'Ginnastica posturale', 'Brazilian jiu jitsu', 'Difesa personale', 'Functional training']
+  const l7 = { ...listino, corsi: sette.map((corso) => ({ corso, eta: '', orari: [], prezzi: [{ annuale: 300 }] })) }
+  const c7 = sette.map((nome, i) => ({ id: 'k' + i, nome }))
+  const p7 = sap(c7.map((c) => c.id), { quote: quotaPagata })
+  const r7 = prova(() => chiEPerCosa('sap', 66000, { ...gia, persone: [p7], corsi: c7, listino: l7, oggi }))
+  ok('7 annuali da 300,00 €: una riga «più corsi» da 660,00 €', righe(r7), [['sap', PIU, 66000]])
+  ok('…con tutti e 7 i corsi da mostrare', prova(() => r7.dovuti[0].corsi.length), 7)
+  ok('…la voce sta nei 120 caratteri di un pagamento', prova(() => r7.proposta.every((x) => x.voce.length <= 120)), true)
+  ok('…l’assegnazione si può fare', prova(() => cosaNonVaAssegnazione(r7.proposta, 66000, r7.dovuti)), null)
+
+  // 15. Una voce «più corsi» pagata in parte copre ogni annuale della persona: anche quello aggiunto dopo.
+  // Scheda e dialogo dicono la stessa cosa (prima Pesi agonisti restava da pagare a parte, oltre al tetto).
+  const due = dd(30000)
+  const conPesi = conAssegnazioni(sap(['adulti', 'agonisti', 'pesi'], { quote: quotaPagata }), due, listino, oggi)
+  ok('più corsi pagata 300,00 € per Judo adulti e agonisti, poi Pesi agonisti: tutti e 3 IN PARTE, mancano 360,00 €', prova(() => B.statoCorsi(conPesi, corsi, listino, oggi).map((s) => [s.corso, s.come, s.mancano ?? 0])),
+    [['Judo adulti', 'in_parte', 36000], ['Judo agonisti', 'in_parte', 36000], ['Pesi agonisti', 'in_parte', 36000]])
+  ok('…e il dialogo chiede solo i 360,00 € della voce, una volta', prova(() => dovutiDi(conPesi, corsi, listino, oggi, { diretti: due, ricevute: [] }).map((d) => [d.voce, d.manca])), [[PIU, 36000]])
+
+  // 16. Due bonifici assegnati prima di ogni ricevuta: 500,00 € su Judo adulti, poi 160,00 € sulla «più corsi».
+  const prima = [diretto('a0', 'sap', 50000, 'Annuale Judo adulti', { movimentoId: 'm0' }), diretto('a1', 'sap', 16000, PIU, { movimentoId: 'm1', data: '2026-10-20' })]
+  ok('500,00 € su Judo adulti e 160,00 € sulla «più corsi», senza ricevute: tutti e due pagati', prova(() => B.statoCorsi(conAssegnazioni(sap(['adulti', 'agonisti'], { quote: quotaPagata }), prima, listino, oggi), corsi, listino, oggi).map((s) => [s.corso, s.come])),
+    [['Judo adulti', 'pagato'], ['Judo agonisti', 'pagato']])
+  ok('…la ricevuta del secondo costa 160,00 €, non 660,00 €', prova(() => vociDaMovimento([prima[1]], '2026-10-20', listino, [], prima).map((v) => [v.descrizione, v.prezzo])), [[PIU, 16000]])
+
+  // 17. Il secondo bonifico dopo la ricevuta del primo: la «più corsi» costa quel che manca al tetto.
+  const fatta500 = [{ descrizione: 'Annuale Judo adulti', dal: '2026-09-01', al: '2027-06-30', mancano: 0, data: '2026-09-10' }]
+  ok('Judo adulti già in ricevuta 500,00 €: la ricevuta della «più corsi» da 160,00 € costa 160,00 €, pagata tutta', prova(() => vociDaMovimento([diretto('b1', 'sap', 16000, PIU, { movimentoId: 'm1' })], '2026-11-12', listino, fatta500).map((v) => [v.prezzo, v.pagamenti[0].importo])), [[16000, 16000]])
+  // La «più corsi» già in ricevuta in parte: il bonifico dopo costa quel che le manca, non di nuovo il tetto.
+  const piuInParte = [{ descrizione: PIU, dal: '2026-09-01', al: '2027-06-30', mancano: 16000, data: '2026-09-10' }]
+  ok('«più corsi» in ricevuta 500,00 € su 660,00 €, poi 160,00 €: la ricevuta nuova costa 160,00 €', prova(() => vociDaMovimento([diretto('b1', 'sap', 16000, PIU, { movimentoId: 'm1' })], '2026-11-12', listino, piuInParte).map((v) => [v.prezzo, v.pagamenti[0].importo])), [[16000, 16000]])
+  ok('…e con 100,00 € la ricevuta nuova costa 160,00 €: ne mancano ancora 60,00 €', prova(() => vociDaMovimento([diretto('b1', 'sap', 10000, PIU, { movimentoId: 'm1' })], '2026-11-12', listino, piuInParte).map((v) => [v.prezzo, v.pagamenti[0].importo])), [[16000, 10000]])
+
+  // 18. Le iscrizioni: una che finisce domani conta ancora, una finita ieri no.
+  const conAl = (al) => sap(tutti, { quote: quotaPagata, iscrizioni: tutti.map((corsoId) => ({ corsoId, dal: '2026-09-01', ...(corsoId === 'adulti' ? { al } : {}) })) })
+  ok('Judo adulti finisce domani: è ancora fra i corsi della «più corsi»', prova(() => dovutiDi(conAl('2026-11-13'), corsi, listino, oggi, gia)[0].corsi.includes('Judo adulti')), true)
+  ok('Judo adulti finito ieri: non c’è più', prova(() => dovutiDi(conAl('2026-11-11'), corsi, listino, oggi, gia)[0].corsi.includes('Judo adulti')), false)
+
+  // 19. La quota viene prima: un bonifico che copre i soli corsi, con la quota ancora da pagare, non è «sicuro».
+  ok('quota da pagare e 660,00 € che bastano alla sola «più corsi»: da guardare, non sicuro', prova(() => chiEPerCosa('sap', 66000, ctx(sap(['agonisti', 'pesi']))).sicura), false)
+}
+
+console.log('\n3g. Una voce dal listino, anche per un corso a cui non è iscritto')
 {
   // Il caso vero: 180 € «per Iscrizione Leonardo», Leonardo senza iscrizioni. La finestra dava solo la quota:
   // il trimestrale dentro il bonifico non si poteva scegliere.

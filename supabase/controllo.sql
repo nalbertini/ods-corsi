@@ -739,6 +739,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('154-compensi-dal-bonifico.sql', 'i compensi si pagano con un bonifico già in banca',
     to_regprocedure('public.abbina_compensi_movimento(uuid[],uuid)') is not null),
   ('155-sicuro-nome-intero.sql', 'chi è già iscritto, col nome intero nella causale, è «sicuro»',
-    exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%not o.gi or o.cm = ''nome intero''%'))
+    exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%not o.gi or o.cm = ''nome intero''%')),
+  -- Rifà `nome_corso` e `nomi_del_corso` del 152: se si rilancia 152 dopo, va rilanciato anche questo.
+  ('156-piu-corsi.sql', '«Annuale più corsi» paga ogni annuale anche per l''area iscritti, e lo sconto famiglia non è del nome',
+    exists (select 1 from dentro where nome = 'nomi_del_corso' and corpo like '%più corsi%')
+    and exists (select 1 from dentro where nome = 'nome_corso' and corpo like '%sconto famiglia%'))
 ) as x(file, cosa, c)
 order by file, cosa;

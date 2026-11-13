@@ -167,8 +167,8 @@ export function listinoDa(x: unknown): Listino | null {
   })
 }
 
-/** Per confrontare i nomi dei corsi: le ricevute li trovano così. */
-export const nomeCorso = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, ' ').trim()
+/** Per confrontare i nomi dei corsi: le ricevute li trovano così. Lo sconto famiglia in coda alla voce (`descrizioneScontata`) non è del nome, come `nome_corso` (156). */
+export const nomeCorso = (s: string) => s.replace(/\s*·\s*sconto famiglia .*$/i, '').toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, ' ').trim()
 
 /**
  * Il mese di nascita, contato dall'anno 0 (anno × 12 + mese da 0 a 11), se la

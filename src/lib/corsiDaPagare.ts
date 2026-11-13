@@ -2,6 +2,7 @@ import { conti, entroAnnuale, euroBreve, eVoceAnnuale, QUOTA, type Ricevuta } fr
 import { voceDelCorso, nomeCorso, type CorsoRef, type Listino } from './listino'
 import { STAGIONE, type VoceCosto } from './costi'
 import { dataLunga } from './sala'
+import { ePiuCorsi } from './nucleo'
 import type { PersonaSeg } from './segreteria'
 
 /**
@@ -70,18 +71,23 @@ const PAGATI: ComeCorso[] = ['pagato', 'fuori_app', 'satispay']
 // «Trimestre Judo 3», «Annuale Fitness 2 giorni», «Saldo Pilates»: le voci che scrive il modulo e la segreteria.
 const FORMULA = /^(annuale|trimestre|saldo)\s+(.+)$/i
 
-const formulaDi = (descrizione: string) => {
+// «Annuale più corsi» (vedi `ePiuCorsi`) è l'annuale di tutti i corsi con l'annuale: non ha nomi suoi.
+const formulaDi = (descrizione: string): { formula: 'trimestre' | 'annuale'; nomi: string[]; piu?: true } | undefined => {
+  if (ePiuCorsi(descrizione)) return { formula: 'annuale', nomi: [], piu: true }
   const m = descrizione.trim().match(FORMULA)
-  return m ? { formula: m[1].toLowerCase() === 'trimestre' ? ('trimestre' as const) : ('annuale' as const), nome: nomeCorso(m[2]) } : undefined
+  return m ? { formula: m[1].toLowerCase() === 'trimestre' ? 'trimestre' : 'annuale', nomi: [nomeCorso(m[2])] } : undefined
 }
 
 /** I nomi di una voce del listino, anche con l'etichetta di ogni riga («Fitness 2 giorni»). */
 const nomiDellaVoce = (v: VoceCosto) => [v.corso, ...v.prezzi.flatMap((p) => (p.etichetta ? [`${v.corso} ${p.etichetta}`] : []))]
 
-/** I nomi con cui una voce di ricevuta può chiamare un corso: il suo e quelli della sua voce di listino. */
+/**
+ * I nomi con cui una voce di ricevuta può chiamare un corso: il suo, quelli della sua voce di listino e, se ha
+ * l'annuale, «più corsi» (`VOCE_PIU_CORSI`), come `nomi_del_corso` (156).
+ */
 export function nomiDel(listino: Listino, c: CorsoRef): string[] {
   const v = voceDelCorso(listino.corsi, c)
-  return [c.nome, ...(v ? nomiDellaVoce(v) : [])].map(nomeCorso)
+  return [c.nome, ...(v ? nomiDellaVoce(v) : []), ...(conAnnuale(listino, c) ? ['più corsi'] : [])].map(nomeCorso)
 }
 
 /** Un corso gratuito non si paga: senza voce nel listino, senza un prezzo, o «va bene senza prezzo». */
@@ -90,6 +96,8 @@ export function aPagamento(listino: Listino, c: CorsoRef): boolean {
   const v = voceDelCorso(listino.corsi, c)
   return !!v && v.prezzi.some((p) => [p.annuale, p.trimestre, p.saldo].some((x) => (x ?? 0) > 0))
 }
+
+export const conAnnuale = (listino: Listino, c: CorsoRef) => !!voceDelCorso(listino.corsi, c)?.prezzi.some((p) => (p.annuale ?? 0) > 0)
 
 const piuLontana = <T extends { al?: string }>(voci: T[]) => [...voci].sort((a, b) => (b.al ?? '9999').localeCompare(a.al ?? '9999'))[0]
 
@@ -110,7 +118,7 @@ export function statoCorsi(
   // Una voce scritta a mano che vale oggi potrebbe essere il corso: meglio guardarla che chiedere di pagare.
   const aMano = voci.some((v) => {
     const f = formulaDi(v.descrizione)
-    return (!f || !conosciuti.has(f.nome)) && (!v.dal || v.dal <= oggi) && (!v.al || v.al >= oggi)
+    return (!f || !f.nomi.every((n) => conosciuti.has(n))) && (!v.dal || v.dal <= oggi) && (!v.al || v.al >= oggi)
   })
   const ecc = p.pagamento
   const fino = ecc.fino || STAGIONE.quota.al
@@ -125,7 +133,7 @@ export function statoCorsi(
       const nomi = nomiDel(listino, c)
       const sue = voci.flatMap((v) => {
         const f = formulaDi(v.descrizione)
-        return f && nomi.includes(f.nome) ? [{ ...v, formula: f.formula }] : []
+        return f && (f.piu ? conAnnuale(listino, c) : f.nomi.some((n) => nomi.includes(n))) ? [{ ...v, formula: f.formula }] : []
       })
       const base = { corsoId: c.id, corso: c.nome }
       // Anche un trimestre che parte domani, già pagato, copre: non si sollecita chi ha pagato in anticipo.

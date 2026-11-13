@@ -8,8 +8,9 @@ import type { PagamentoDiretto } from './pagamenti'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import type { VoceStorico } from './movimentiPersona'
 import { QUOTA, centesimi, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
-import { statoCorsi, type VoceCorso } from './corsiDaPagare'
-import { stagioneDi } from './costi'
+import { conAnnuale, statoCorsi, type VoceCorso } from './corsiDaPagare'
+import { PIU_CORSI, stagioneDi } from './costi'
+import { ePiuCorsi, scontoDellaVoce, VOCE_PIU_CORSI } from './nucleo'
 import { listinoUsabile, nomeCorso, voceDelCorso, type CorsoRef, type Listino } from './listino'
 import { pagamentoDi, type DatiSegreteria, type PersonaSeg } from './segreteria'
 import { nomeOGenitore } from './abbinaMovimenti'
@@ -35,6 +36,8 @@ export interface VoceDovuta {
   tipo: 'quota' | 'corso' | 'abbigliamento'
   dal: string
   manca: number
+  /** Per la voce «più corsi»: i corsi che copre, da mostrare (la voce non li elenca). */
+  corsi?: string[]
   /** Aggiunta a mano dal listino (`vociDaAggiungere`): `manca` è il prezzo del listino. */
   aggiunta?: { corso: string; suo: boolean }
 }
@@ -408,15 +411,22 @@ export function vociCorsiConAssegnazioni(
   prezzi: Array<{ descrizione: string; prezzo: number; dal?: string; al?: string }>,
   diretti: PagamentoDiretto[],
   personaId: string,
+  /**
+   * Quanto costa una voce «più corsi», che il listino non ha: il tetto meno gli annuali già messi in `voci`, che
+   * comprende quelli appena fatti dalle assegnazioni (un annuale solo assegnato conta come uno in ricevuta).
+   */
+  prezzoPiuCorsi: (voce: string, voci: VoceCorso[]) => number = () => TETTO,
 ): VoceCorso[] {
   const sue = assegnazioniDi(diretti, personaId).filter((d) => !eQuota(d.voce))
+  const piu = [...new Set(sue.flatMap((d) => (ePiuCorsi(d.voce) ? [d.voce.trim()] : [])))]
+  const stagione = (voce: string) => stagioneDi(sue.filter((d) => stessa(d.voce, voce)).map((d) => d.data).sort()[0]).corsi
   const fatte = new Set<string>()
   const nuove: VoceCorso[] = []
-  for (const p of prezzi) {
+  const conta = (p: { descrizione: string; prezzo: number; dal?: string; al?: string }) => {
     const chiave = p.descrizione.trim().toLowerCase()
-    if (chiave === QUOTA.toLowerCase() || fatte.has(chiave)) continue
+    if (chiave === QUOTA.toLowerCase() || fatte.has(chiave)) return
     const sulla = sue.filter((d) => stessa(d.voce, p.descrizione))
-    if (!sulla.length) continue
+    if (!sulla.length) return
     fatte.add(chiave)
     const messo = sulla.reduce((s, d) => s + d.importo, 0)
     const data = sulla.map((d) => d.data).sort()[0]
@@ -426,9 +436,30 @@ export function vociCorsiConAssegnazioni(
       .filter((v) => stessa(v.descrizione, p.descrizione) && stessoPeriodo(v, p))
       .map((v) => v.mancano)
     const base = prima.length ? Math.min(...prima) : p.prezzo
-    nuove.push({ descrizione: p.descrizione, dal: p.dal, al: p.al, mancano: Math.max(0, base - messo), data })
+    // `totale` come una voce di ricevuta: il timbro della scheda dice «di quanto» anche prima della ricevuta.
+    nuove.push({ descrizione: p.descrizione, dal: p.dal, al: p.al, mancano: Math.max(0, base - messo), totale: p.prezzo, data })
   }
+  prezzi.forEach(conta)
+  // Le «più corsi» dopo, perché il loro prezzo dipende dagli annuali appena contati.
+  for (const voce of piu) conta({ descrizione: voce, prezzo: prezzoPiuCorsi(voce, [...voci, ...nuove]), ...stagione(voce) })
   return nuove.length ? [...voci, ...nuove] : voci
+}
+
+/** Il tetto di PIÙ CORSI, in centesimi: gli annuali di una persona non costano di più (la quota a parte). */
+const TETTO = PIU_CORSI * 100
+
+/**
+ * Quanto degli annuali della stagione dei corsi di `giorno` è già messo, in ricevuta o assegnato, al prezzo del listino
+ * anche se non è pagato tutto (quel che manca resta sulla sua voce): il tetto di PIÙ CORSI meno questo è quel che costa
+ * il resto. Una voce «più corsi» chiude il tetto, perché costa proprio quel che mancava; `tranne` è quella che si sta
+ * contando.
+ */
+export function giaSugliAnnuali(voci: VoceCorso[], listino: Listino, giorno: string, tranne = ''): number {
+  const prezzi = prezziDelListino(listino, giorno)
+  const sue = voci.filter((v) => /^annuale\s/i.test(v.descrizione.trim()) && stessoPeriodo(v, stagioneDi(giorno).corsi) && !stessa(v.descrizione, tranne))
+  if (sue.some((v) => ePiuCorsi(v.descrizione))) return TETTO
+  const prezzo = (v: VoceCorso) => prezzi.find((x) => stessa(x.descrizione, scontoDellaVoce(v.descrizione.trim())?.descrizione ?? v.descrizione))?.prezzo ?? 0
+  return Math.min(TETTO, sue.reduce((t, v) => t + prezzo(v), 0))
 }
 
 /** I prezzi del listino in quel giorno, come voci di ricevuta (senza la quota): quelli che `vociCorsiConAssegnazioni` cerca. */
@@ -451,7 +482,9 @@ export function conAssegnazioni<P extends Pick<PersonaSeg, 'id' | 'quote' | 'voc
   return {
     ...p,
     quote: quoteConAssegnazioni(p.quote ?? [], quotaDelListino(listino, oggi), sue, p.id),
-    vociCorsi: p.vociCorsi ? vociCorsiConAssegnazioni(p.vociCorsi, prezziDelListino(listino, giorno), sue, p.id) : p.vociCorsi,
+    vociCorsi: p.vociCorsi
+      ? vociCorsiConAssegnazioni(p.vociCorsi, prezziDelListino(listino, giorno), sue, p.id, (voce, vv) => TETTO - giaSugliAnnuali(vv, listino, giorno, voce))
+      : p.vociCorsi,
     [DENTRO]: [...gia, ...sue.map((d) => d.id)],
   }
 }
@@ -478,6 +511,8 @@ export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, ogg
   const perIlTetto = quota > 0 ? Math.max(0, quota - giaSullaQuota(p.id, Number(stagione.quota.dal.slice(0, 4)), gia.diretti, gia.ricevute)) : perLaScheda
   const mancaQuota = Math.min(perLaScheda, perIlTetto)
   if (mancaQuota > 0) fuori.push({ personaId: p.id, voce: `${VOCE_QUOTA} ${nomeStagione(stagione.quota.dal)}`, tipo: 'quota', dal: stagione.quota.dal, manca: mancaQuota })
+  // Gli annuali da pagare per intero: oltre il tetto di PIÙ CORSI diventano una voce sola.
+  const annuali: Array<{ corso: string; prezzo: number; voce: VoceDovuta }> = []
   for (const s of statoCorsi(p, corsi, listino, oggi) ?? []) {
     if (!['in_parte', 'da_pagare', 'scaduto'].includes(s.come)) continue
     const corso = corsi.find((c) => c.id === s.corsoId)
@@ -488,10 +523,27 @@ export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, ogg
     // Un corso senza prezzo del trimestre resta sull'annuale.
     const voce = conFormula(formula) ?? (s.come === 'in_parte' ? undefined : conFormula())
     if (!voce) continue
-    const manca = s.come === 'in_parte' ? (s.mancano ?? 0) : voce.prezzo
     const dal = p.iscrizioni.find((i) => i.corsoId === s.corsoId)?.dal ?? stagione.corsi.dal
-    if (manca > 0) fuori.push({ personaId: p.id, voce: voce.descrizione, tipo: 'corso', dal, manca })
+    if (s.come !== 'in_parte') {
+      const dovuta: VoceDovuta = { personaId: p.id, voce: voce.descrizione, tipo: 'corso', dal, manca: voce.prezzo }
+      if (/^annuale\s/i.test(voce.descrizione)) annuali.push({ corso: corso.nome, prezzo: voce.prezzo, voce: dovuta })
+      else if (voce.prezzo > 0) fuori.push(dovuta)
+      continue
+    }
+    // Una voce «più corsi» pagata in parte è di tutti i suoi corsi: si chiede una volta sola.
+    const sua = s.formula === 'annuale' && conAnnuale(listino, corso) ? p.vociCorsi?.find((v) => v.mancano === s.mancano && ePiuCorsi(v.descrizione)) : undefined
+    const descrizione = sua?.descrizione ?? voce.descrizione
+    const gia = fuori.find((d) => d.personaId === p.id && stessa(d.voce, descrizione))
+    if (gia) gia.corsi?.push(corso.nome)
+    else if ((s.mancano ?? 0) > 0) fuori.push({ personaId: p.id, voce: descrizione, tipo: 'corso', dal, manca: s.mancano ?? 0, ...(sua ? { corsi: [corso.nome] } : {}) })
   }
+  const messo = giaSugliAnnuali(p.vociCorsi ?? [], listino, oggi)
+  const tutti = annuali.reduce((t, a) => t + a.prezzo, 0)
+  if (messo + tutti > TETTO && (annuali.length > 1 || messo > 0)) {
+    const manca = TETTO - messo
+    const dal = annuali.map((a) => a.voce.dal).sort()[0]
+    if (manca > 0) fuori.push({ personaId: p.id, voce: VOCE_PIU_CORSI, tipo: 'corso', dal, manca, corsi: annuali.map((a) => a.corso) })
+  } else fuori.push(...annuali.filter((a) => a.prezzo > 0).map((a) => a.voce))
   return fuori
 }
 
@@ -575,8 +627,11 @@ const annoQuota = (voce: string, giorno: string) => Number(stagioneQuota(voce, g
  * data. Il prezzo è quello del listino, così un parziale resta un parziale anche nella ricevuta; una voce che il
  * listino non ha costa quel che è assegnato.
  */
-export function vociDaMovimento(sue: PagamentoDiretto[], dataMovimento: string, listino: Listino): VoceRicevuta[] {
+export function vociDaMovimento(sue: PagamentoDiretto[], dataMovimento: string, listino: Listino, giaFatte: VoceCorso[] = [], altre: PagamentoDiretto[] = []): VoceRicevuta[] {
   const prezzi = prezziDelListino(listino, dataMovimento)
+  // Gli annuali delle altre assegnazioni della persona, non ancora in ricevuta, contano come quelli in ricevuta.
+  const ids = new Set(sue.map((d) => d.id))
+  const fatte = sue[0] ? vociCorsiConAssegnazioni(giaFatte, prezzi, altre.filter((d) => !ids.has(d.id)), sue[0].personaId) : giaFatte
   const gruppi = new Map<string, { voce: string; importo: number }>()
   for (const d of sue.filter((x) => !x.annullatoIl)) {
     const k = d.voce.trim().toLowerCase()
@@ -587,6 +642,14 @@ export function vociDaMovimento(sue: PagamentoDiretto[], dataMovimento: string, 
   return [...gruppi.values()].map(({ voce, importo }) => {
     const pagamenti = [{ data: dataMovimento, importo, metodo: 'Bonifico' }]
     if (eQuota(voce)) return { descrizione: QUOTA, quantita: 1, prezzo: Math.max(importo, Math.round(listino.quota * 100)), ...stagioneQuota(voce, dataMovimento), pagamenti }
+    // La «più corsi» non è nel listino: costa quel che le manca se è già in ricevuta in parte, se no il tetto meno gli
+    // annuali già messi, in ricevuta o assegnati, per la stagione.
+    if (ePiuCorsi(voce)) {
+      const stagione = stagioneDi(dataMovimento).corsi
+      const manca = fatte.filter((v) => ePiuCorsi(v.descrizione) && stessoPeriodo(v, stagione)).map((v) => v.mancano)
+      const prezzo = manca.length ? Math.min(...manca) : TETTO - giaSugliAnnuali(fatte, listino, dataMovimento, voce)
+      return { descrizione: voce, quantita: 1, prezzo: Math.max(importo, prezzo), ...stagione, pagamenti }
+    }
     const p = prezzi.find((x) => stessa(x.descrizione, voce))
     return { descrizione: voce, quantita: 1, prezzo: Math.max(importo, p?.prezzo ?? importo), dal: p?.dal, al: p?.al, pagamenti }
   })
@@ -681,7 +744,10 @@ export function chiEPerCosa(
   const dovuti = dovutiDelNucleo(chi, eQuesto, c.corsi, c.listino, c.oggi, { diretti: c.diretti, ricevute: c.ricevute }, causale)
   const daChiedere = daChiedereAMano(chi, eQuesto, dovuti, c.diretti, c.listino, c.oggi).map((x) => x.persona.id)
   const r = ripartizioneSicura(importo, dovuti)
-  const sicura = 'righe' in r && !daChiedere.length && cosaNonVaAssegnazione(r.righe, importo, dovuti) === null
+  // Un corso pagato lasciando fuori la quota della stessa persona non è sicuro: la quota viene prima (la «più corsi» da
+  // 660 € è proprio un bonifico da 660 €, ma la quota resta a parte).
+  const saltaQuota = 'righe' in r && r.righe.some((x) => !eQuota(x.voce) && dovuti.some((d) => d.personaId === x.personaId && d.tipo === 'quota' && !r.righe.some((y) => y.personaId === d.personaId && stessa(y.voce, d.voce))))
+  const sicura = 'righe' in r && !saltaQuota && !daChiedere.length && cosaNonVaAssegnazione(r.righe, importo, dovuti) === null
   const proposta = 'righe' in r && sicura ? r.righe : eQuesto.length ? propostaDopoIlSi(importo, dovuti, eQuesto[eQuesto.length - 1]).righe : proponiRipartizione(importo, dovuti).righe
   return {
     nucleo: chi.map((p) => ({ persona: p, dovuti: dovuti.filter((v) => v.personaId === p.id), pagamenti: pagamentiFatti(p.id, c.diretti, c.ricevute) })),

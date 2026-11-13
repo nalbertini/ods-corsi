@@ -227,6 +227,13 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   testo del bonifico dice «trimestrale» o «trimestre». Gli importi si correggono a mano; accanto a ognuno il tag **Saldo** o **Parziale**, e sotto
   quanto resterà. **Svuota tutto** azzera la proposta. Non si assegna più di quel che manca a ogni voce,
   né più del bonifico.
+- Chi fa **più corsi annuali** non paga ogni corso a listino: i corsi insieme costano al massimo 660,00 €,
+  la quota a parte. La finestra mostra una riga sola, **Annuale più corsi (N corsi)**, con i corsi sotto
+  e quel che manca: 660,00 € meno quel che ha già pagato sugli annuali in questa stagione (il trimestre
+  non conta). Un bonifico da 660,00 € con quattro annuali diventa quota 50,00 € e «Annuale più corsi»
+  610,00 €. Un secondo bonifico paga quel che manca alla stessa voce; un annuale aggiunto dopo aver
+  raggiunto i 660,00 € costa 0,00 €. Con la voce «Annuale più corsi» l'area iscritti e Satispay vedono
+  pagati tutti i suoi annuali.
 - Se il bonifico paga una cosa che non è fra quelle da pagare (un corso a cui la persona non è ancora
   iscritta nell'app, o il trimestre al posto dell'annuale), **Aggiungi una voce dal listino**, in fondo
   al riquadro di ogni persona, apre l'elenco delle voci del listino divise per corso, prima i suoi. La
