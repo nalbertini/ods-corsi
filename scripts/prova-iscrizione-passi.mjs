@@ -937,7 +937,8 @@ console.log('\n16b. le parole per il genitore, nel flusso del figlio')
   ok('luogo del genitore: il codice lo dice, non si chiede', m.luogoGenitoreDaChiedere(figlio(), luoghi), false)
   ok('luogo del genitore: codice di un luogo che non c’è in elenco, si chiede', m.luogoGenitoreDaChiedere(figlio(), { Z999: [['ROMA', 'RM']] }), true)
   ok('luogo del genitore: elenco assente, si chiede', m.luogoGenitoreDaChiedere(figlio(), undefined), true)
-  ok('luogo del genitore: codice non scritto ancora, si chiede', m.luogoGenitoreDaChiedere(figlio({ genitoreCodiceFiscale: '' }), luoghi), true)
+  // Prima il codice non scritto faceva comparire «dove sei nato»: ora finché il codice non è valido il luogo non conta (sezione 49).
+  ok('luogo del genitore: codice non scritto ancora, non si chiede', m.luogoGenitoreDaChiedere(figlio({ genitoreCodiceFiscale: '' }), luoghi), false)
   ok('luogo del genitore: l’adulto non lo chiede mai', m.luogoGenitoreDaChiedere(adulto(), undefined), false)
 }
 
@@ -3207,7 +3208,8 @@ console.log('\n49. DOPO AVANTI: MENO RUMORE, CONTO GIUSTO')
   ok('adulto, codice fiscale scritto a metà: data e luogo non mancano', m.mancaNelPasso(adulto({ codiceFiscale: 'RSSLCU96A01', natoIl: '', natoA: '' }), 1), ['CODICE FISCALE'])
   ok('figlio, DATI vuoto: nome, cognome, codice, residenza (6)', m.mancaNelPasso(vuotoF, 1), ['NOME', 'COGNOME', 'CODICE FISCALE', 'INDIRIZZO', 'CAP', 'COMUNE'])
   ok('figlio, col codice del bambino a metà: data e luogo non mancano', m.mancaNelPasso(figlio({ codiceFiscale: 'RSSLCU96', natoIl: '', natoA: '' }), 1), ['CODICE FISCALE'])
-  ok('figlio, CHI FIRMA vuoto: «dove sei nato» non manca senza il codice del genitore', m.mancaNelPasso(vuotoF, 2), ['EMAIL', 'TELEFONO'])
+  ok('figlio, CHI FIRMA vuoto (anche il codice del bambino): mancano solo i contatti', m.mancaNelPasso(vuotoF, 2), ['EMAIL', 'TELEFONO'])
+  ok('figlio maggiorenne di codice, codice del genitore vuoto: «dove sei nato» non manca', m.mancaNelPasso(figlio({ genitoreCodiceFiscale: '' }, { natoAGenitore: '' }), 2).includes('DOVE SEI NATO'), false)
   ok('figlio, codice del genitore a metà: «dove sei nato» non manca', m.mancaNelPasso(figlio({ genitoreCodiceFiscale: 'RSSPLA80' }, { natoAGenitore: '' }), 2), ['CODICE FISCALE DEL GENITORE'])
 
   // 2. Col codice valido data e luogo si ricavano; se il luogo non si ricava e resta vuoto, torna a mancare.
@@ -3254,6 +3256,23 @@ console.log('\n49. DOPO AVANTI: MENO RUMORE, CONTO GIUSTO')
   ok('dopo un AVANTI non riuscito la barra mostra gli 8 mancanti', lista(() => m.mancaInBarra(vuotoA, 1, true)).map((p) => p.nome), DATI_ADULTO)
   ok('dopo AVANTI, col passo a posto, la barra è vuota', lista(() => m.mancaInBarra(adulto(), 1, true)), [])
   ok('la prima voce della barra è il primo da correggere', lista(() => m.mancaInBarra(vuotoA, 1, true))[0]?.chiave, m.primoDaCorreggere(vuotoA, 1))
+
+  // 8. Sotto i campi, gli stessi errori della barra: senza codice valido niente «Manca» su data e luogo, neanche dopo averli toccati.
+  const errDati = (cambi) => m.problemiDeiDati(adulto(cambi).risposte)
+  ok('codice vuoto: sotto il luogo niente «Manca»', errDati({ codiceFiscale: '', natoIl: '', natoA: '' }).natoA, undefined)
+  ok('codice vuoto: sotto la data niente «Manca»', errDati({ codiceFiscale: '', natoIl: '', natoA: '' }).natoIl, undefined)
+  ok('codice a metà: manca il codice, non il luogo', [errDati({ codiceFiscale: 'RSSLCU96A01', natoA: '' }).codiceFiscale !== undefined, errDati({ codiceFiscale: 'RSSLCU96A01', natoA: '' }).natoA], [true, undefined])
+  ok('codice valido, luogo vuoto: sotto il luogo «Manca»', errDati({ natoA: '' }).natoA, 'Manca')
+
+  // 9. Il luogo si scrive a mano solo col codice valido e un luogo che l'elenco non sa dire.
+  const torino = { L219: [['TORINO', 'TO']] }
+  const solaLettura = (cambi, l) => m.luogoInSolaLettura(adulto(cambi).risposte, l)
+  ok('luogo: codice vuoto, in sola lettura', solaLettura({ codiceFiscale: '' }, torino), true)
+  ok('luogo: codice a metà, in sola lettura', solaLettura({ codiceFiscale: 'RSSLCU96A01' }, undefined), true)
+  ok('luogo: codice valido e l’elenco lo dice, in sola lettura', solaLettura({}, torino), true)
+  ok('luogo: codice valido, elenco assente, si scrive', solaLettura({}, undefined), false)
+  ok('luogo: codice valido, luogo che l’elenco non ha, si scrive', solaLettura({}, { Z999: [['ROMA', 'RM']] }), false)
+  ok('luogo del genitore: codice a metà, non si chiede', m.luogoGenitoreDaChiedere(figlio({ genitoreCodiceFiscale: 'RSSPLA80' }), undefined), false)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

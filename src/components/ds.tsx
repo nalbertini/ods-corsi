@@ -516,8 +516,9 @@ export function Chip({ children, acceso, numero, etichetta, disabled, onClick }:
  * Dove si è nel modulo a passi: tre tappe, ognuna coi segmenti dei suoi passi
  * (fatti verdi, quello di adesso in tinta testo, gli altri `line`) e il nome
  * sotto, poi il nome del passo. Il numero resta solo per lo screen reader. Fonte: docs/design-canvas/ods-design-system/Avanzamento.dc.html.
+ * Con `senzaNome` il nome sotto le tappe non c'è: lo mostra già la riga RICHIESTA DI ISCRIZIONE, e lo screen reader lo
+ * sente dall'`aria-label`.
  */
-/** `senzaNome`: il nome del passo lo mostra già chi sta sopra (la riga RICHIESTA DI ISCRIZIONE); resta solo per lo screen reader. */
 export function Avanzamento({ numero, totale, titolo, tappe, rif, senzaNome }: { numero: number; totale: number; titolo: string; tappe: Tappa[]; rif?: RefObject<HTMLDivElement>; senzaNome?: boolean }) {
   return (
     // tabIndex -1: a ogni cambio di passo il fuoco viene qui, e chi usa uno screen reader sente «Passo N di N: nome».

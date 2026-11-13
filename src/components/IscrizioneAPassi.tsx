@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { chiama, scrivi } from '../lib/sito'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, OrarioAperto, TipoFile } from '../lib/richieste'
-import { anniScritti, dataDaCf, datiRichieste, domandaCertificato, giorniDetti, mancaCertificato, promemoriaCertificato, testoCertificatoDopo, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
+import { anniScritti, dataDaCf, datiRichieste, domandaCertificato, giorniDetti, mancaCertificato, promemoriaCertificato, testoCertificatoDopo, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, pulisciCf } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO } from '../lib/iscrizione'
@@ -478,7 +478,7 @@ function Flusso({
   // Il bambino 0, per l'io: i suoi dati, la sua firma sono anche dell'io.
   const primo = P.nomeDellaPersona(tutte[0], 0)
 
-  const errori = problemi(r)
+  const errori = P.problemiDeiDati(r)
   // «Manca» solo sul primo da fare (e su quel che si è già toccato): un muro di rosso non dice da dove cominciare.
   const primoDaFare = P.primoDaCorreggere(v, passo)
   const nota = (k: CampoModulo): Nota | undefined => {
@@ -869,7 +869,8 @@ function Flusso({
 
   const cf = (chiave: 'codiceFiscale' | 'genitoreCodiceFiscale', etichetta: string, nascita: string) => {
     const a = nascita ? `${anniScritti(nascita)}: lo dice il codice fiscale` : undefined
-    const notaNascita = a ? { testo: a, guaio: false } : { testo: 'Compare dal codice fiscale', guaio: false }
+    // Senza data la dice il segnaposto, come per il luogo: una nota gialla in più non serve.
+    const notaNascita = a ? { testo: a, guaio: false } : undefined
     const valoreNascita = nascita ? nascita.split('-').reverse().join('/') : ''
     return (
       <>
@@ -888,11 +889,11 @@ function Flusso({
         {/* La voce DATA DI NASCITA della barra (chiave natoIl) porta qui: la data la dice il codice fiscale di chi si iscrive. */}
         {chiave === 'codiceFiscale' ? (
           <Campo id="n-natoIl" etichetta="DATA DI NASCITA" nota={notaNascita}>
-            <input id="n-natoIl" className="campo" readOnly value={valoreNascita} />
+            <input id="n-natoIl" className="campo" readOnly placeholder="Lo dice il codice fiscale" value={valoreNascita} />
           </Campo>
         ) : (
           <Campo id="n-nascita-genitoreCodiceFiscale" etichetta="DATA DI NASCITA" nota={notaNascita}>
-            <input id="n-nascita-genitoreCodiceFiscale" className="campo" readOnly value={valoreNascita} />
+            <input id="n-nascita-genitoreCodiceFiscale" className="campo" readOnly placeholder="Lo dice il codice fiscale" value={valoreNascita} />
           </Campo>
         )}
         {chiave === 'codiceFiscale' ? (
@@ -901,8 +902,7 @@ function Flusso({
               id="n-natoA"
               {...segna('natoA')}
               className="campo"
-              // Senza un codice valido il luogo lo scriverà il codice: niente da fare qui, come per la data.
-              readOnly={!cfValido(pulisciCf(r.codiceFiscale)) || !!(luoghi && luogoDaCf(luoghi, pulisciCf(r.codiceFiscale), r.natoIl))}
+              readOnly={P.luogoInSolaLettura(r, luoghi ?? undefined)}
               placeholder={luoghi || !cfValido(pulisciCf(r.codiceFiscale)) ? 'Lo dice il codice fiscale' : undefined}
               value={r.natoA}
               onChange={metti('natoA')}
@@ -1061,7 +1061,7 @@ function Flusso({
                 <Campo id="n-natoAGenitore" etichetta="DOVE SEI NATO">
                   <input id="n-natoAGenitore" className="campo" placeholder="Comune" value={v.natoAGenitore} onChange={(e) => setGrezzo((p) => ({ ...p, natoAGenitore: e.target.value }))} />
                 </Campo>
-                <Campo id="n-provincia" etichetta="PROVINCIA" nota={cfValido(pulisciCf(r.genitoreCodiceFiscale ?? '')) ? { testo: 'Non lo ricaviamo dal tuo codice fiscale: scrivilo tu.', guaio: false } : undefined}>
+                <Campo id="n-provincia" etichetta="PROVINCIA" nota={{ testo: 'Non lo ricaviamo dal tuo codice fiscale: scrivilo tu.', guaio: false }}>
                   <input id="n-provincia" className="campo campo-codice" autoCapitalize="characters" maxLength={2} placeholder="ES. TO" value={provinciaGenitore} onChange={(e) => setProvincia(e.target.value.toUpperCase())} />
                 </Campo>
               </>

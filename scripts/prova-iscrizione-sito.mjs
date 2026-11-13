@@ -273,7 +273,7 @@ const listinoLargo = (r) => r.selettori.includes('.sg-listino') && /max-width:\s
 const strisciaDeiCorsi = (r) => r.selettori.includes('.sito-punto-striscia')
 // MOVIMENTI ha i filtri semplici (`prova:filtri-movimenti`): niente più menu delle casse, pillole dei filtri accesi, chip e somme in una frase; i totali sono una striscia di cifre.
 const filtriMovimentiSemplici = (r) => r.selettori.some((x) => /\.sg-(pillola|elenco-somme|movimento-chip|filtro-casse|filtro-menu\.sg-casse)\b/.test(x))
-// Passi compatti: il nome del passo sale nella riga RICHIESTA DI ISCRIZIONE, che parte a 12px invece di 16 (`prova:iscrizione-passi`, sezione 49).
+// Passi compatti: il nome del passo sale nella riga RICHIESTA DI ISCRIZIONE, che parte a 12px invece di 16 (provato qui sotto, «Passi compatti»).
 const intestaPassoCompatta = (r) => r.selettori.includes('.passo-intesta')
 const iconeDappertutto = (r) => r.selettori.some((x) => /^\.rule-label$|^\.mie-ore-stato$|^\.tb-tasto\[data-piccolo='true'\]$|\.sg-ordina-segno$|^\.sg-icona-contatto$/.test(x))
 const senzaSalti = (r) => (/--cond:\s*'Big Shoulders Display', 'Arial Narrow'/.test(r.corpo) && /--body:\s*Inter, 'Helvetica Neue'/.test(r.corpo)) || r.selettori.includes('.iscrizioni-costi-attesa > *')
@@ -329,6 +329,16 @@ const PAROLE_AL_TELEFONO = new Set([
 const appelloRivisto = (r) => r.selettori.some((x) => /^\.azzera(\[|$)|^\.appello-vai(::after)?$|^\.appello-fine$/.test(x))
 if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !segreteriaInOrdine(r) && !PAROLE_AL_TELEFONO.has(chiaveR(r)) && !senzaSalti(r) && !schedaGaraRivista(r) && !movimentoConPersona(r) && !movimentoAColonnaUnica(r) && !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !rigaBancaConVoce(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !cosaServeSenzaCaselle(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !temiTolti(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !segmentiSenzaSegno(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !statCorsoAlto(r) && !iscrittiFamiglia(r) && !listinoLargo(r) && !finestraLarga(r) && !schedeTabletConIcona(r) && !iconeDappertutto(r) && !strisciaDeiCorsi(r) && !appelloRivisto(r) && !filtriMovimentiSemplici(r) && !intestaPassoCompatta(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
+console.log('\nPassi compatti')
+{
+  const regola = (sel) => rOra.find((r) => r.selettori.includes(sel))?.corpo ?? ''
+  ok('.passo-intesta parte a 12px', /padding-top:\s*12px|padding:\s*12px/.test(regola('.passo-intesta')), true)
+  ok('.passo-intesta-nome sta su una riga, coi puntini', ['white-space:\\s*nowrap', 'overflow:\\s*hidden', 'text-overflow:\\s*ellipsis'].map((x) => new RegExp(x).test(regola('.passo-intesta-nome'))), [true, true, true])
+  const passi = sorgente('src/components/IscrizioneAPassi.tsx')
+  ok('il nome del passo sta nella riga in alto', /className="passo-intesta-nome"/.test(passi), true)
+  ok('sotto le tappe niente nome: Avanzamento senzaNome', /<Avanzamento[^>]*senzaNome/.test(passi), true)
+  ok('Avanzamento con senzaNome non scrive il nome', /\{!senzaNome && \(\s*<span className="avanza-nome"/.test(sorgente('src/components/ds.tsx')), true)
+}
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 for (const f of ['OrdinaVestiario', 'IscrizioneAPassi']) ok(`${f}.tsx non usa aspettoModulo`, /aspettoModulo/.test(sorgente(`src/components/${f}.tsx`)), false)

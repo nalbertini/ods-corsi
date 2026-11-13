@@ -180,12 +180,27 @@ const DATI: CampoModulo[] = ['nome', 'cognome', 'codiceFiscale', 'natoIl', 'nato
 const CONTATTI: CampoModulo[] = ['email', 'telefono', 'telefono2']
 const GENITORE: CampoModulo[] = ['genitoreNome', 'genitoreCognome', 'genitoreCodiceFiscale']
 
-/** I campi di `quali` che non vanno, coi controlli di oggi (`problemi`) e il verdetto sul codice fiscale. */
+/**
+ * I controlli di oggi (`problemi`) come li vede il modulo a passi: data e luogo li scrive il codice fiscale, quindi
+ * finché non è valido manca lui, non loro (una cosa da fare, non tre). La barra e le note sotto i campi usano questi.
+ */
+export function problemiDeiDati(r: DatiRichiesta, oggi = new Date()): Partial<Record<CampoModulo, string>> {
+  const g = { ...problemi(r, oggi) }
+  if (!cfValido(pulisciCf(r.codiceFiscale))) {
+    delete g.natoIl
+    delete g.natoA
+  }
+  return g
+}
+
+/** Il luogo di nascita si scrive a mano solo col codice valido e un luogo che l'elenco non sa dire: se no lo scrive il codice. */
+export const luogoInSolaLettura = (r: DatiRichiesta, luoghi: Luoghi | undefined): boolean =>
+  !cfValido(pulisciCf(r.codiceFiscale)) || !!(luoghi && luogoDaCf(luoghi, pulisciCf(r.codiceFiscale), r.natoIl))
+
+/** I campi di `quali` che non vanno, coi controlli del modulo a passi e il verdetto sul codice fiscale. */
 function campi(s: StatoPassi, oggi: Date, quali: CampoModulo[]): Pastiglia[] {
-  const g: Partial<Record<CampoModulo, string>> = { ...problemi(risposteDaiPassi(s, oggi), oggi) }
+  const g = problemiDeiDati(risposteDaiPassi(s, oggi), oggi)
   if (controlloScelta(s, oggi)) g.codiceFiscale = g.codiceFiscale ?? 'Non torna'
-  // Data e luogo li scrive il codice fiscale: finché non è valido manca lui, non loro (una cosa da fare, non tre).
-  if (!cfValido(pulisciCf(s.risposte.codiceFiscale))) delete g.natoIl, delete g.natoA
   return quali.filter((k) => g[k]).map((k) => ({ chiave: k, nome: NOMI[k] }))
 }
 
@@ -725,13 +740,14 @@ export function testoFile(chi: Chi, tipo: TipoFile, nome: string): { etichetta: 
 }
 
 /**
- * Il luogo di nascita del genitore si chiede solo se il suo codice fiscale non lo dice (elenco dei luoghi assente,
- * codice non ancora scritto o luogo che non c'è). Segue `natoAGenitore`, che il componente riempie dallo stesso elenco:
- * se uno dei due cambia, cambia anche l'altro (la mancanza «DOVE SEI NATO» in `sezione`).
+ * Il luogo di nascita del genitore si chiede solo a codice fiscale valido, e solo se il codice non lo dice (elenco dei
+ * luoghi assente o luogo che non c'è): prima manca il codice, non il luogo. Segue `natoAGenitore`, che il componente
+ * riempie dallo stesso elenco: se uno dei due cambia, cambia anche l'altro (la mancanza «DOVE SEI NATO» in `sezione`).
  */
 export function luogoGenitoreDaChiedere(s: StatoPassi, luoghi: Luoghi | undefined): boolean {
   if (s.chi !== 'figlio') return false
-  return !(luoghi && luogoDaCf(luoghi, pulisciCf(s.risposte.genitoreCodiceFiscale ?? '')))
+  const cf = pulisciCf(s.risposte.genitoreCodiceFiscale ?? '')
+  return cfValido(cf) && !(luoghi && luogoDaCf(luoghi, cf))
 }
 
 /** La frase sotto l'elenco dei corsi di un minore, se qualche corso per grandi non compare. */
