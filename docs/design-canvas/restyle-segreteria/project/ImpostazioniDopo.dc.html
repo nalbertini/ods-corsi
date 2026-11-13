@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Impostazioni · dopo</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA IMPOSTAZIONI › LA STAGIONE (Impostazioni.tsx): stesse nove linguette, stessa sezione IL CALENDARIO.
+     Cambiano: linguette in minuscolo 15px in una riga sola (oggi due righe in maiuscolo con icone), segno blu 2px sotto quella scelta;
+     la sezione è SezioneImpostazioni (titolo e spiegazione a sinistra, campi a destra). -->
+<div style="display: flex; width: 100%; height: 900px; overflow: hidden; background: #eef5fa">
+  <dc-import name="MenuNuovo" corrente="Impostazioni" hint-size="240px,900px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 24px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 28px; font-weight: 800; letter-spacing: 0.02em; line-height: 1">IMPOSTAZIONI</h1>
+      <span style="font-size: 14px; color: #46606f">Le scelte che spettano alla palestra, non al programma. In fondo, quelle di questo computer.</span>
+    </div>
+    <nav aria-label="Impostazioni" style="display: flex; gap: 24px; border-bottom: 1px solid #cfe6f4">
+      <sc-for list="{{linguette}}" as="l" hint-placeholder-count="9">
+        <a href="#" style="display: flex; align-items: center; height: 44px; margin-bottom: -1px; border-bottom: 2px solid {{l.segno}}; color: {{l.colore}}; text-decoration: none; font-size: 15px; font-weight: {{l.peso}}; white-space: nowrap">{{l.nome}}</a>
+      </sc-for>
+    </nav>
+    <dc-import name="SezioneImpostazioni" hint-size="100%,420px"></dc-import>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+const NOMI = ['La stagione', 'Le sale e i tablet', 'Gli esercizi', 'Le ricevute', 'Come si paga', 'Gli avvisi', 'Dati e privacy', 'Importa', 'Questo computer'];
+class Component extends DCLogic {
+  renderVals() {
+    return { linguette: NOMI.map((nome, i) => ({ nome, segno: i === 0 ? '#14709f' : 'transparent', colore: i === 0 ? '#0d2a3d' : '#46606f', peso: i === 0 ? 600 : 500 })) };
+  }
+}
+</script>
+</body>
+</html>

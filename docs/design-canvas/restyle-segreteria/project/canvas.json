@@ -1,0 +1,44 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-14T10:00:00Z" },
+  "title": "Restyle segreteria",
+  "launch": { "view": "canvas", "page": "prima-dopo" },
+  "pages": [
+    { "id": "prima-dopo", "name": "Prima e dopo" },
+    { "id": "libreria", "name": "Libreria" }
+  ],
+  "boards": {
+    "PrimaOggi.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 900, "title": "Oggi · prima (1440, Il Banco)", "page": "prima-dopo" },
+    "Main.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 900, "title": "Oggi · dopo (1440, Il Banco)", "page": "prima-dopo" },
+    "PrimaOggiTelefono.dc.html": { "x": 3040, "y": 0, "w": 390, "h": 844, "title": "Da fare · prima (390)", "page": "prima-dopo" },
+    "OggiDopoTelefono.dc.html": { "x": 3510, "y": 0, "w": 390, "h": 844, "title": "Da fare · dopo (390)", "page": "prima-dopo" },
+    "PrimaIscritti.dc.html": { "x": 0, "y": 1300, "w": 1440, "h": 900, "title": "Iscritti · prima (1440)", "page": "prima-dopo" },
+    "IscrittiDopo.dc.html": { "x": 1520, "y": 1300, "w": 1440, "h": 900, "title": "Iscritti · dopo (1440)", "page": "prima-dopo" },
+    "PrimaIscrittiTelefono.dc.html": { "x": 3040, "y": 1300, "w": 390, "h": 844, "title": "Iscritti · prima (390)", "page": "prima-dopo" },
+    "IscrittiDopoTelefono.dc.html": { "x": 3510, "y": 1300, "w": 390, "h": 844, "title": "Iscritti · dopo (390)", "page": "prima-dopo" },
+    "PrimaImpostazioni.dc.html": { "x": 0, "y": 2600, "w": 1440, "h": 900, "title": "Impostazioni › La stagione · prima (1440)", "page": "prima-dopo" },
+    "ImpostazioniDopo.dc.html": { "x": 1520, "y": 2600, "w": 1440, "h": 900, "title": "Impostazioni › La stagione · dopo (1440)", "page": "prima-dopo" },
+    "PrimaImpostazioniTelefono.dc.html": { "x": 3040, "y": 2600, "w": 390, "h": 844, "title": "Impostazioni · prima (390)", "page": "prima-dopo" },
+    "ImpostazioniDopoTelefono.dc.html": { "x": 3510, "y": 2600, "w": 390, "h": 844, "title": "Impostazioni · dopo (390)", "page": "prima-dopo" },
+    "MenuNuovo.dc.html": { "x": 0, "y": 0, "w": 240, "h": 900, "title": "MenuNuovo", "page": "libreria" },
+    "CosaMancaNuova.dc.html": { "x": 320, "y": 0, "w": 1128, "h": 104, "title": "CosaMancaNuova", "page": "libreria" },
+    "RigaBanco.dc.html": { "x": 320, "y": 224, "w": 384, "h": 72, "title": "RigaBanco", "page": "libreria" },
+    "TabellaIscritti.dc.html": { "x": 320, "y": 416, "w": 1128, "h": 620, "title": "TabellaIscritti", "page": "libreria" },
+    "SezioneImpostazioni.dc.html": { "x": 320, "y": 1156, "w": 1128, "h": 420, "title": "SezioneImpostazioni", "page": "libreria" },
+    "BarraTelefonoNuova.dc.html": { "x": 1528, "y": 0, "w": 390, "h": 56, "title": "BarraTelefonoNuova", "page": "libreria" }
+  },
+  "order": [
+    "PrimaOggi.dc.html", "Main.dc.html", "PrimaOggiTelefono.dc.html", "OggiDopoTelefono.dc.html",
+    "PrimaIscritti.dc.html", "IscrittiDopo.dc.html", "PrimaIscrittiTelefono.dc.html", "IscrittiDopoTelefono.dc.html",
+    "PrimaImpostazioni.dc.html", "ImpostazioniDopo.dc.html", "PrimaImpostazioniTelefono.dc.html", "ImpostazioniDopoTelefono.dc.html",
+    "MenuNuovo.dc.html", "CosaMancaNuova.dc.html", "RigaBanco.dc.html", "TabellaIscritti.dc.html", "SezioneImpostazioni.dc.html", "BarraTelefonoNuova.dc.html"
+  ],
+  "notes": {
+    "t1": { "x": 0, "y": -300, "text": "Oggi e Cosa manca: i numeri in una striscia sola, il banco in una colonna", "kind": "title1", "maxW": 3900, "page": "prima-dopo" },
+    "t2": { "x": 0, "y": 1000, "text": "Iscritti: tabella senza cornice, numeri a destra, stati come pastiglie", "kind": "title1", "maxW": 3900, "page": "prima-dopo" },
+    "t3": { "x": 0, "y": 2300, "text": "Impostazioni: etichetta a sinistra, campi a destra, linguette in una riga", "kind": "title1", "maxW": 3900, "page": "prima-dopo" },
+    "n1": { "x": 4000, "y": 0, "w": 420, "fill": "teal", "text": "Stile «accent-ladder» (seed 1021063431). Restano i colori e i font ODS: il blu #14709f solo su segni piccoli (linguetta attiva, link, barre dei dati, bordo dei campi), le sue tinte #cfe6f4 / #e6eef3 sulle aree. Giallo solo sul tasto principale e sulla voce corrente. Bordi da 2px a 1px. Etichette in minuscolo, senza spaziatura. Titolo 28px invece di 34. Tutti i bersagli restano a 44px (Regola del Dito di Fretta).", "page": "prima-dopo" },
+    "n2": { "x": 4000, "y": 700, "w": 420, "fill": "blue", "text": "Le tavole «prima» sono schermate vere dell'app in modalità prova (14 novembre 2026). Il portatile del banco è alto ~700px: tutto quel che conta deve stare sopra quella riga.", "page": "prima-dopo" }
+  },
+  "designSystems": []
+}

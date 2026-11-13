@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #0d2a3d; }
+  </style>
+</helmet>
+<!-- PROPOSTA per la tabella di ISCRITTI (Iscritti.tsx, .sg-tabella): senza la cornice 2px, su una superficie bianca a raggio 6px.
+     Intestazioni 13px 500 dim in minuscolo (niente 0.12em), righe 56px divise da un filo 1px #cfe6f4. Una pastiglia tinta solo dove
+     manca qualcosa («Senza data», «Manca», «Scaduto», «In parte»); quel che è in regola è testo dim, non un ✓ verde.
+     30 GIORNI allineato a destra, cifre tabellari: «7» inchiostro, «/8» dim, barra 4px sotto (#14709f, #8f6a00 sotto la metà). -->
+<div style="width: 100%; background: #ffffff; border-radius: 6px; overflow: hidden">
+  <div style="display: grid; grid-template-columns: {{colonne}}; align-items: center; height: 44px; padding: 0 20px; border-bottom: 1px solid #cfe6f4; font-size: 13px; font-weight: 500; color: #46606f">
+    <span>Nome ↑</span><span>Famiglia</span><span>Certificato</span><span>Quota</span><span>Corsi</span><span>Contatto</span><span style="text-align: right">Ultimi 30 giorni</span>
+  </div>
+  <sc-for list="{{righe}}" as="r" hint-placeholder-count="10">
+    <div style="display: grid; grid-template-columns: {{colonne}}; align-items: center; height: 56px; padding: 0 20px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+      <span style="font-size: 15px; font-weight: 600">{{r.nome}}</span>
+      <span style="color: #46606f">{{r.famiglia}}</span>
+      <span><span style="padding: 3px 8px; border-radius: 999px; background: {{r.cFondo}}; color: {{r.cColore}}; font-size: 13px; font-weight: {{r.cPeso}}">{{r.cert}}</span></span>
+      <span><span style="padding: 3px 8px; border-radius: 999px; background: {{r.qFondo}}; color: {{r.qColore}}; font-size: 13px; font-weight: {{r.qPeso}}">{{r.quota}}</span></span>
+      <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 12px">{{r.corsi}}</span>
+      <span style="color: #46606f; font-variant-numeric: tabular-nums">{{r.tel}}</span>
+      <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+        <span style="font-variant-numeric: tabular-nums; font-weight: 600">{{r.fatte}}<span style="font-weight: 400; color: #46606f"> /{{r.su}}</span></span>
+        <span style="display: block; width: 56px; height: 4px; border-radius: 2px; background: #cfe6f4; overflow: hidden"><span style="display: block; height: 4px; width: {{r.barra}}; background: {{r.coloreBarra}}"></span></span>
+      </span>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1128,"height":620}}'>
+// Gli stessi iscritti della modalità prova (schermata del 14 novembre 2026).
+const RIGHE = [
+  ['Barbieri Alessandro', '', 'Senza data', 'Pagata', 'Giocomotricità', '347 204 1404', 7, 8],
+  ['Barbieri Aurora', '', 'Senza data', 'Pagata', 'Judo 3', '338 435 2584', 13, 13],
+  ['Barbieri Beatrice', '', 'Manca', 'Pagata', 'Prepugilistica', '333 322 1790', 1, 4],
+  ['Barbieri Elena', '', 'Manca', 'Pagata', 'Judo 3', '338 103 3321', 13, 13],
+  ['Barbieri Ludovica', '', 'Senza data', 'Pagata', 'Judo 2', '338 337 8881', 12, 13],
+  ['Barbieri Matteo', '', 'Senza data', 'Pagata', 'Judo 3', '340 909 1934', 11, 11],
+  ['Barbieri Riccardo', '', 'Scaduto', 'Pagata', 'Pesistica e Mobility', '335 479 3063', 13, 13],
+  ['Bellini Andrea', 'Bellini', 'In regola', 'Pagata', 'Judo 2', '333 174 4579', 6, 13],
+  ['Bellini Emma', 'Bellini', 'Senza data', 'In parte', 'Aikido 3', '338 277 1358', 8, 9],
+  ['Bianchi Andrea', 'Bianchi', 'In regola', 'Pagata', 'Judo 3', '347 127 5081', 11, 12],
+];
+const TONO = { 'Senza data': ['#fcf6e6', '#8f6a00'], 'In parte': ['#fcf6e6', '#8f6a00'], 'Manca': ['#fbe9e9', '#b81d1d'], 'Scaduto': ['#fbe9e9', '#b81d1d'] };
+const stato = (t) => (TONO[t] ? { f: TONO[t][0], c: TONO[t][1], p: 600 } : { f: 'transparent', c: '#46606f', p: 400 });
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      colonne: '220px 120px 140px 120px minmax(0, 1fr) 140px 120px',
+      righe: RIGHE.map(([nome, famiglia, cert, quota, corsi, tel, fatte, su]) => {
+        const c = stato(cert), q = stato(quota);
+        return { nome, famiglia, cert, quota, corsi, tel, fatte, su,
+          cFondo: c.f, cColore: c.c, cPeso: c.p, qFondo: q.f, qColore: q.c, qPeso: q.p,
+          barra: Math.round((fatte / su) * 100) + '%', coloreBarra: fatte / su < 0.5 ? '#8f6a00' : '#14709f' };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>

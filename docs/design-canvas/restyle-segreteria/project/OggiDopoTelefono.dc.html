@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Da fare sul telefono · dopo</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA DA FARE a 390px (DaFare.tsx; OGGI c'è solo nell'aspetto Il Banco, da 768px in su). Stessi gruppi, stesso ordine.
+     Cambiano: il numero da 44px rosso diventa 28px accanto al titolo del gruppo; niente barra rossa a sinistra della scheda;
+     le lezioni sono righe d'elenco (RigaBanco) invece di tessere con la striscia del colore del corso; «Vedi tutti» resta il tasto secondario. -->
+<div style="display: flex; flex-direction: column; width: 390px; height: 844px; overflow: hidden; background: #eef5fa">
+  <dc-import name="BarraTelefonoNuova" hint-size="390px,56px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 16px; padding: 18px 16px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 24px; font-weight: 800; letter-spacing: 0.02em; line-height: 1">DA FARE</h1>
+      <span style="font-size: 14px; line-height: 1.4; color: #46606f">Sabato 14 novembre 2026. Quello che aspetta la segreteria: si riconta ogni volta che torni qui.</span>
+    </div>
+    <section style="display: flex; flex-direction: column; border-radius: 6px; background: #ffffff; overflow: hidden">
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 16px 16px 12px">
+        <h2 style="margin: 0; display: flex; align-items: baseline; gap: 10px; font-size: 17px; font-weight: 600"><span style="font-size: 28px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; color: #b81d1d">13</span>Lezioni senza appello</h2>
+        <span style="font-size: 14px; line-height: 1.4; color: #46606f">Negli ultimi 30 giorni: passate, e nessuno ha segnato. Si apre la lezione e si fa l'appello, o si annulla se non c'è stata.</span>
+      </div>
+      <dc-import name="RigaBanco" titolo="Psicomotricità" cosa="ven 13 nov" sotto="18:10 · 0 iscritti da segnare" tasto="Apri" tono="r" filo="si" hint-size="100%,72px"></dc-import>
+      <dc-import name="RigaBanco" titolo="Aikido 3" cosa="gio 12 nov" sotto="18:00 · 9 iscritti da segnare" tasto="Apri" tono="r" filo="si" hint-size="100%,72px"></dc-import>
+      <dc-import name="RigaBanco" titolo="Giocomotricità" cosa="gio 12 nov" sotto="17:00 · 8 iscritti da segnare" tasto="Apri" tono="r" filo="si" hint-size="100%,72px"></dc-import>
+      <dc-import name="RigaBanco" titolo="Lotta 3" cosa="mar 10 nov" sotto="18:00 · 7 iscritti da segnare" tasto="Apri" tono="r" filo="si" hint-size="100%,72px"></dc-import>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px 16px; border-top: 1px solid #cfe6f4">
+        <span style="font-size: 14px; color: #46606f">e altre 9</span>
+        <button style="height: 44px; padding: 0 16px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 15px Inter, sans-serif">Vedi tutti</button>
+      </div>
+    </section>
+    <section style="display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 6px; background: #ffffff">
+      <h2 style="margin: 0; display: flex; align-items: baseline; gap: 10px; font-size: 17px; font-weight: 600"><span style="font-size: 28px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; color: #b81d1d">42</span>Iscritti senza certificato valido</h2>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #0d2a3d; }
+  </style>
+</helmet>
+<!-- PROPOSTA per CosaManca.tsx / StrisciaCosaManca (.sg-mancano, .sg-mancano-casella, .sg-mancano-n): un contenitore bianco solo,
+     celle divise da un filo 1px #cfe6f4 invece di caselle con bordo 2px. Etichetta 14px 500 inchiostro, numero Inter 28px 600 tabellare
+     (rosso-testo / giallo-testo, 0 in inchiostro), nota 12px dim. compatta = la striscia sopra le schermate: 52px, numero 20px in riga. -->
+<div style="display: grid; grid-template-columns: repeat({{colonne}}, minmax(0, 1fr)); width: 100%; background: #ffffff; border-radius: 6px; overflow: hidden">
+  <sc-for list="{{celle}}" as="c" hint-placeholder-count="5">
+    <a href="#" style="display: flex; flex-direction: {{direzione}}; align-items: {{allinea}}; gap: {{spazio}}; min-height: {{altezza}}; padding: {{riempi}}; border-left: {{c.filo}}; color: #0d2a3d; text-decoration: none">
+      <span style="font-size: 14px; font-weight: 500; order: {{ordineEtichetta}}">{{c.titolo}}</span>
+      <span style="font-size: {{corpoNumero}}; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; color: {{c.colore}}">{{c.n}}</span>
+      <sc-if value="{{conNota}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; color: #46606f">{{c.nota}}</span></sc-if>
+    </a>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"13|Appelli non fatti|ultimi 30 giorni|r; 42|Certificati scaduti|termine passato|r; 33|Pagamenti|quote non in regola|r; 0|Corsi scaduti|tutto in ordine|r; 3|Richieste online|da accogliere|g"},"compatta":{"editor":"boolean","default":false},"$preview":{"width":1128,"height":104}}'>
+// voci: «n|titolo|nota|tono; …», tono r = rosso-testo, g = giallo-testo; un numero 0 resta inchiostro (niente allarme se non manca nulla).
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const compatta = truthy(p.compatta);
+    const celle = String(p.voci ?? '').split(';').map((s) => s.trim()).filter(Boolean).map((s, i) => {
+      const [n, titolo, nota, tono] = s.split('|').map((x) => (x ?? '').trim());
+      const colore = n === '0' ? '#0d2a3d' : tono === 'g' ? '#8f6a00' : '#b81d1d';
+      return { n, titolo, nota, colore, filo: i === 0 ? '0' : '1px solid #cfe6f4' };
+    });
+    return {
+      celle, colonne: celle.length || 1, conNota: !compatta,
+      direzione: compatta ? 'row' : 'column', allinea: compatta ? 'center' : 'flex-start',
+      spazio: compatta ? '10px' : '4px', altezza: compatta ? '52px' : '104px',
+      riempi: compatta ? '0 16px' : '16px 20px', corpoNumero: compatta ? '20px' : '28px',
+      ordineEtichetta: compatta ? 1 : 0,
+    };
+  }
+}
+</script>
+</body>
+</html>

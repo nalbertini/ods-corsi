@@ -163,8 +163,28 @@ for (const c of ['.sg-riquadro', '.sg-dafare-riga', '.card', '.sg-mancano']) {
   ok(`${c}: tessera senza bordo`, ha(c, SENZA_BORDO), true)
   ok(`${c}: tessera bianca (var(--surface))`, ha(c, /background(-color)?:\s*var\(--surface\)/), true)
 }
-for (const [c, colore] of [[".sg-dafare-riga[data-livello='blocca']", 'rosso'], [".sg-dafare-riga[data-livello='presto']", 'giallo-testo'], [".sg-riquadro[data-fatto='true']", 'verde']])
-  ok(`${c}: barra a sinistra var(--${colore})`, ha(c, new RegExp(`box-shadow:\\s*inset 4px 0 0 var\\(--${colore}\\)`)), true)
+ok(".sg-riquadro[data-fatto='true']: barra a sinistra var(--verde)", ha(".sg-riquadro[data-fatto='true']", /box-shadow:\s*inset 4px 0 0 var\(--verde\)/), true)
+
+// Il restyle della segreteria (canvas docs/design-canvas/restyle-segreteria): il blu pieno solo sui segni piccoli, i bordi da 1px,
+// i numeri di COSA MANCA e del Banco a 28px in un contenitore solo, le righe di DA FARE senza la barra (lo stato è nel colore del numero e nelle parole).
+console.log('\nIl restyle della segreteria')
+for (const c of [".sg-dafare-riga[data-livello='blocca']", ".sg-dafare-riga[data-livello='presto']"])
+  ok(`${c}: niente barra a sinistra`, /inset 4px/.test(esatto(c)), false)
+for (const c of ['.sg-btn-linea', '.sg-btn-tratteggio', '.sg-chip', '.sg-scelta', '.sg-campo', '.sg-segmenti', '.sg-filtro-menu'])
+  ok(`${c}: bordo da 1px`, ha(c, /border-width:\s*1px/), true)
+ok('.sg-mancano: un contenitore solo, angoli 6px', ha('.sg-mancano', /border-radius:\s*6px/) && ha('.sg-mancano', /overflow:\s*hidden/), true)
+ok('.sg-mancano-casella: niente barra colorata sotto', ha('.sg-mancano-casella', /border-bottom:\s*0/), true)
+ok('.sg-mancano-n: 28px, Inter, peso 600', ha('.sg-mancano-n', /font-size:\s*28px/) && ha('.sg-mancano-n', /font-family:\s*var\(--body\)/) && ha('.sg-mancano-n', /font-weight:\s*600/), true)
+ok('nessuna casella di COSA MANCA ha più il numero da 36 o 44px', delLook.filter((r) => r.selettori.some((s) => s.includes('.sg-mancano-n')) && /font-size:\s*(36|44)px/.test(r.corpo)).length, 0)
+ok('nessun divisorio da 2px fra le caselle', delLook.filter((r) => r.selettori.some((s) => s.includes('.sg-mancano-casella')) && /border-left:\s*2px/.test(r.corpo)).length, 0)
+ok('.bn-cifre: un contenitore solo bianco, senza spazio fra le caselle', ha('.bn-cifre', /gap:\s*0/) && ha('.bn-cifre', /background(-color)?:\s*var\(--surface\)/), true)
+ok('.bn-cifra: niente bordo da 2px, filo da 1px fra le caselle', ha('.bn-cifra', SENZA_BORDO) && ha('.bn-cifra + .bn-cifra', /border-left:\s*1px solid var\(--line\)/), true)
+ok('.bn-cifra-n: 28px, peso 600', ha('.bn-cifra-n', /font-size:\s*28px/) && ha('.bn-cifra-n', /font-weight:\s*600/), true)
+ok('.bn-riga: niente barra da 8px, un punto da 8px', ha('.bn-riga', /border-left:\s*0/) && ha('.bn-riga::before', /width:\s*8px/) && ha('.bn-riga::before', /border-radius:\s*50%/), true)
+ok(".bn-riga[data-livello='blocca']::before: rosso", ha(".bn-riga[data-livello='blocca']::before", /background(-color)?:\s*var\(--rosso\)/), true)
+ok('.sg-titolo: 28px', ha('.sg-titolo', /font-size:\s*28px/), true)
+ok('.sg-dafare-titolo: 17px', ha('.sg-dafare-titolo', /font-size:\s*17px/), true)
+ok('.sg-dafare-n: 28px, peso 600', ha('.sg-dafare-n', /font-size:\s*28px/) && ha('.sg-dafare-n', /font-weight:\s*600/), true)
 
 // Il giallo pieno è di sei cose sole (con il tasto verde del tablet, che nella sala è giallo): il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
 // il tasto principale di tutto il resto (.btn-primary: CHIUDI e simili), la voce di menu corrente e la voce corrente
@@ -217,10 +237,11 @@ ok('colori nelle regole del look: solo i 12 del sito, #ffffff, #121212 e le tint
   delLook.flatMap((r) => (r.corpo.match(HEX) ?? []).map((h) => h.toLowerCase())).filter((h) => !AMMESSI_LOOK.has(h) && !Object.values(TINTE).includes(h)), [])
 
 
-// Il menu in cinque gruppi: il titolo resta maiuscolo per CSS (il testo è con l'iniziale maiuscola), voci da 44px.
-ok('.sg-gruppo-titolo: maiuscolo per CSS', ha('.sg-gruppo-titolo', /text-transform:\s*uppercase/), true)
+// Il menu in cinque gruppi: il titolo come è scritto (iniziale maiuscola), senza maiuscolo né spaziatura, voci da 44px.
+ok('.sg-gruppo-titolo: niente maiuscolo per CSS', ha('.sg-gruppo-titolo', /text-transform:\s*uppercase/), false)
+ok('.sg-gruppo-titolo: senza spaziatura', ha('.sg-gruppo-titolo', /letter-spacing:\s*0\s*(;|$)/), true)
 ok('.sg-gruppo-titolo: Inter (var(--body))', ha('.sg-gruppo-titolo', /font-family:\s*var\(--body\)/), true)
-ok('.sg-gruppo-titolo: 12px, peso 600', ha('.sg-gruppo-titolo', /font-size:\s*12px/) && ha('.sg-gruppo-titolo', /font-weight:\s*600/), true)
+ok('.sg-gruppo-titolo: 13px, peso 600', ha('.sg-gruppo-titolo', /font-size:\s*13px/) && ha('.sg-gruppo-titolo', /font-weight:\s*600/), true)
 ok('.mia-barra: in fondo anche a pagina corta (margin-top: auto)', /\n\.mia-barra \{[^}]*margin-top: auto/.test(readFileSync('src/styles.css', 'utf8')), true)
 ok('.mio-nome-scelta (cambio persona): alto almeno 44px', /\n\.mio-nome-scelta \{[^}]*min-height: 44px/.test(readFileSync('src/styles.css', 'utf8')), true)
 ok('.sg-voce: altezza minima 44px', ha('.sg-voce', /min-height:\s*44px/), true)
