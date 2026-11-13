@@ -218,7 +218,8 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   **Chi e per cosa** di un'entrata in MOVIMENTI (Da classificare, o su quota e corsi ancora da assegnare,
   con o senza persona) e da **Assegna a quota e corsi** nel movimento. In alto l'importo in grande, la
   data, chi ha fatto il bonifico e la causale senza i codici (**Causale intera** la mostra com'è). Poi le
-  schede col nome del testo e la ricerca; scelta la persona, la ricerca si chiude in una riga col suo nome
+  schede di chi ha nome e cognome interi nel testo, in un ordine o nell'altro e senza badare agli accenti
+  (in «DA MATERA ELISA PER SALDO … DIEGO ORRU» escono la mamma e Diego: la quota va a chi frequenta), e la ricerca; scelta la persona, la ricerca si chiude in una riga col suo nome
   e **Cambia**, che la riapre. Sotto, in **COSA PAGA**, la sua situazione e quella del suo **nucleo**: cosa
   deve (quota e corsi, con quel che manca) e i **pagamenti** già fatti; con più persone della famiglia, un
   riquadro per persona col nome. In fondo, sempre in vista, il conto: quanto è assegnato di tutto il

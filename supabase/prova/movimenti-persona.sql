@@ -679,7 +679,11 @@ select atteso('un movimento scritto a mano col nome di una minorenne: la scheda 
 select atteso('…e nella risposta non c''è l''anno di nascita', (come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_mov('Cliente Giulia Verdi per mano'))) like '%2016%')::text, 'false');
 select atteso('un''uscita', come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_n(12))), '22023 Il movimento del 03/03/2025 (Cliente Giulia Verdi per rimborso) è un’uscita: si collegano solo le entrate');
 select atteso('un annullato', come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_n(13))), '22023 Il movimento del 04/03/2025 (Cliente Giulia Verdi per extra) è annullato: non si collega');
-select atteso('un''entrata su un''altra voce', come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_n(11))), '22023 Il movimento del 02/03/2025 (Cliente Giulia Verdi per regalo) è su «Da classificare»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»');
+-- Cambiata da 159-candidati-dal-testo.sql: un'entrata da classificare ha i suoi candidati (sezione 21); le altre voci no.
+insert into voci_contabili (nome, tipo) values ('Affitto sala', 'entrata');
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, origine_import)
+values ('entrata', '2025-03-05', 9000, id_voce('Affitto sala', 'entrata'), id_cassa('Conto Corrente'), 'Cliente Giulia Verdi per affitto', 'prima-nota:39');
+select atteso('un''entrata su un''altra voce', come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_n(39))), '22023 Il movimento del 05/03/2025 (Cliente Giulia Verdi per affitto) è su «Affitto sala»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»');
 select atteso('un giroconto', come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, (select id from movimenti where tipo = 'giroconto' limit 1))), '22023 Un giroconto non ha una persona');
 select atteso('la differenza di una chiusura', come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_mov('Differenza di cassa'))), '22023 Il movimento del 07/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si collega');
 select atteso('con una scheda sola: id, nome e cognome; anno di nascita, corsi e iscritta dal restano vuoti (Giulia ha l''anagrafica e un corso)', come(:ada,
@@ -764,3 +768,27 @@ select atteso('il blocco dei sicuri collega i due movimenti con l''apostrofo',
   come_json(:ada, format($q$select collega_sicuri_persona(%L)::text$q$, lotto(30))), '{"restano": 0, "collegati": 2}');
 select atteso('il blocco dei sicuri collega «Cliente FEMIA NICOLO'' per quota» a Nicolò Femia, e Badalì a Gabriele',
   coalesce(persona_di(31), '—') || ' / ' || coalesce(persona_di(30), '—'), 'Nicolò Femia / Gabriele Badalì');
+
+\echo ''
+\echo '--- 21. i candidati di «Chi e per cosa»: nome e cognome interi nel testo, anche nei bonifici della banca da classificare (159; le stesse regole di scripts/prova-movimenti-persona.mjs, sezione 12) ---'
+insert into persone (id, nome, cognome, ruolo) values
+  (pid(40), 'Diego', 'Orrù', 'iscritto'), (pid(41), 'Elisa', 'Matera', 'iscritto'), (pid(42), 'Ugo', 'Re', 'iscritto');
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, origine_import) values
+  ('entrata', '2026-10-02', 30000, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'DA MATERA ELISA PER SALDO PSICOMOTRICITA DIEGO ORRU', 'banca:prova-40'),
+  ('entrata', '2026-10-03', 4000, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'quota ORRU DIEGO.', 'banca:prova-41'),
+  ('entrata', '2026-10-04', 4000, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'SALDO ORRU per UGO REGALO', 'banca:prova-42'),
+  ('uscita', '2026-10-05', 4000, id_voce('Da classificare', 'uscita'), id_cassa('Conto Corrente'), 'rimborso DIEGO ORRU', 'banca:prova-43');
+create or replace function nomi_candidati(o text) returns text language sql as $f$
+  select coalesce(come_esito('22222222-2222-2222-2222-222222222222', format($q$select coalesce(string_agg(c.nome || ' ' || c.cognome, ' | ' order by c.cognome), 'nessuno') from candidati_persona_movimento(%L) c$q$,
+    (select id from movimenti where origine_import = o))), '?') $f$;
+select atteso('il bonifico SEPA da classificare: chi ha pagato e chi frequenta, senza accento', nomi_candidati('banca:prova-40'), 'Elisa Matera | Diego Orrù');
+select atteso('cognome e nome, con la punteggiatura attaccata', nomi_candidati('banca:prova-41'), 'Diego Orrù');
+-- Anno, corsi e iscrizione servono solo fra omonimi: due nomi diversi nel testo non li fanno uscire (l'amministrazione non legge le anagrafiche).
+insert into anagrafiche (persona_id, nato_il) values (pid(40), '2017-03-03');
+select atteso('due nomi diversi nel testo: niente anno, corsi né iscrizione', come('22222222-2222-2222-2222-222222222222',
+  format($q$select count(*)::text || '/' || count(*) filter (where c.anno_nascita is null and c.corsi = '{}' and c.iscritto_dal is null)::text from candidati_persona_movimento(%L) c$q$,
+    (select id from movimenti where origine_import = 'banca:prova-40'))), '2/2');
+select atteso('il cognome da solo non basta, e «UGO REGALO» non è Ugo Re', nomi_candidati('banca:prova-42'), 'nessuno');
+select atteso('un''uscita da classificare resta fuori', nomi_candidati('banca:prova-43'), '22023 Il movimento del 05/10/2026 (rimborso DIEGO ORRU) è un’uscita: si collegano solo le entrate');
+select atteso('il blocco dei sicuri non li tocca: restano senza persona', (select count(*) filter (where persona_id is null)::text from movimenti where origine_import like 'banca:prova-%'), '4');
+select atteso('gli esiti per riga non li contano', (select count(*)::text from jsonb_array_elements(come_json(:ada, 'select esiti_collegamenti_persona()::text')::jsonb) e where e->>'id' in (select id::text from movimenti where origine_import like 'banca:prova-%')), '0');

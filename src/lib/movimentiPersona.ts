@@ -1,5 +1,6 @@
 import { LIMITE_CAMBIO_VOCE, VOCE_CORSI, VOCE_DIFFERENZA, VOCE_QUOTA } from './contabilita'
 import type { DatiSegreteria } from './segreteria'
+import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { schedaUnica } from './sicuro'
 
 /**
@@ -152,6 +153,33 @@ export function cosaNonVaCollegato(m: MovimentoDaCollegare): string | null {
     return `${q} è su «${m.voce}»: si collegano solo quelli su «${VOCE_QUOTA}» e «${VOCE_CORSI}»`
   }
   return null
+}
+
+/**
+ * Per i suggerimenti di «Chi ha pagato e per cosa?» vale anche un'entrata da classificare (i bonifici della banca):
+ * è proprio quella da decidere. Il resto come `cosaNonVaCollegato`; il collegamento automatico non cambia.
+ */
+export function cosaNonVaSuggerito(m: MovimentoDaCollegare): string | null {
+  const no = cosaNonVaCollegato(m)
+  return no && m.voce === VOCE_DA_CLASSIFICARE && m.tipo === 'entrata' && !m.annullato && (!m.origine || m.origine === 'movimento') ? null : no
+}
+
+// Il testo in parole intere, come `collegamento_testo` del database: senza accenti né punteggiatura, l'apostrofo-accento tolto.
+const testoInParole = (s: string): string => ` ${normalizzaNome(s.replace(/[^\p{L}\p{N}'’‘`]+/gu, ' '))} `
+
+/**
+ * Le schede il cui nome e cognome interi (in un ordine o nell'altro) stanno nel testo: «DA MATERA ELISA PER SALDO …
+ * DIEGO ORRU» dà la madre e il figlio, e si sceglie. Solo suggerimenti: il collegamento automatico resta su
+ * `nomeDallaCausale`. Lo stesso di `candidati_persona_movimento` (159-candidati-dal-testo.sql).
+ */
+export function personeNelTesto(descrizione: string, persone: PersonaPerNome[]): string[] {
+  const t = testoInParole(descrizione)
+  return persone
+    .filter((p) => [`${p.nome} ${p.cognome}`, `${p.cognome} ${p.nome}`].some((n) => {
+      const k = testoInParole(n)
+      return k.trim() !== '' && t.includes(k)
+    }))
+    .map((p) => p.id)
 }
 
 // Il blocco automatico guarda solo lo storico: un'entrata a mano ha la persona da quando si scrive (98-quote-persona.sql).

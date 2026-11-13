@@ -350,5 +350,29 @@ ok('i due gruppi, nello stesso ordine di prima', prova(() => {
 }), { inContabilita: ['a', 'd'], vecchioProgramma: ['b', 'c'] })
 ok('niente: due liste vuote', prova(() => m.dividiStorico([])), { inContabilita: [], vecchioProgramma: [] })
 
+console.log('\n12. «Chi e per cosa»: le persone col nome e cognome interi nel testo, anche nei bonifici della banca (supabase/prova/movimenti-persona.sql, sezione 21)')
+{
+  const persone = [
+    { id: 'diego', nome: 'Diego', cognome: 'Orrù' },
+    { id: 'elisa', nome: 'Elisa', cognome: 'Matera' },
+    { id: 'ugo', nome: 'Ugo', cognome: 'Re' },
+    { id: 'mg', nome: 'Maria Grazia', cognome: 'Fontana' },
+    { id: 'nicolo', nome: 'Nicolò', cognome: 'Femia' },
+  ]
+  const nel = (t) => prova(() => m.personeNelTesto(t, persone))
+  ok('il bonifico SEPA: chi ha pagato e chi frequenta, senza accento', nel('DA MATERA ELISA PER SALDO PSICOMOTRICITA DIEGO ORRU'), ['diego', 'elisa'])
+  ok('cognome e nome, con la punteggiatura attaccata', nel('quota ORRU DIEGO.'), ['diego'])
+  ok('il cognome da solo non basta', nel('SALDO ORRU'), [])
+  ok('parole intere: «UGO REGALO» non è Ugo Re', nel('per UGO REGALO'), [])
+  ok('un nome doppio', nel('corso FONTANA MARIA GRAZIA'), ['mg'])
+  ok('l\'apostrofo che fa da accento', nel("Cliente FEMIA NICOLO' per quota"), ['nicolo'])
+  ok('niente testo, nessuno', nel(''), [])
+  const mv = { id: 'x', tipo: 'entrata', data: '2026-10-02', importo: 30000, descrizione: 'DA MATERA ELISA PER SALDO', voce: 'Da classificare', annullato: false, origineImport: 'banca:1', origine: 'movimento' }
+  ok('un\'entrata da classificare si può suggerire', prova(() => m.cosaNonVaSuggerito(mv)), null)
+  ok('…ma non annullata', prova(() => m.cosaNonVaSuggerito({ ...mv, annullato: true })), 'Il movimento del 02/10/2026 (DA MATERA ELISA PER SALDO) è annullato: non si collega')
+  ok('…né un\'uscita da classificare', prova(() => m.cosaNonVaSuggerito({ ...mv, tipo: 'uscita' })), 'Il movimento del 02/10/2026 (DA MATERA ELISA PER SALDO) è un’uscita: si collegano solo le entrate')
+  ok('le altre voci restano fuori come prima', prova(() => m.cosaNonVaSuggerito({ ...mv, voce: 'Affitto sala' })), 'Il movimento del 02/10/2026 (DA MATERA ELISA PER SALDO) è su «Affitto sala»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
