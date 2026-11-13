@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; width: 100%; min-height: {{altezza}}; margin-left: {{rientro}}; padding: {{padding}}; background: {{sfondo}}; border: 2px solid {{bordo}}; border-left-width: {{barra}}; color: {{c.text}}; font-family: {{corpoTesto}}">
+  <span style="display: flex; flex-direction: column; flex: 1 1 0; min-width: 0">
+    <span style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 15px; font-weight: {{peso}}; color: {{coloreTitolo}}; text-decoration: {{taglio}}">{{titolo}}<sc-for list="{{tag}}" as="g" hint-placeholder-count="1"><span style="padding: {{g.padding}}; background: {{g.fondo}}; color: {{g.testo}}; border: {{g.bordo}}; border-radius: {{raggio}}; font-family: {{g.carattere}}; font-size: 12px; font-weight: 700; letter-spacing: {{g.spazio}}; white-space: nowrap; text-decoration: none">{{g.parola}}</span></sc-for></span>
+    <span style="font-size: 12px; color: {{c.dim}}">{{sotto}}</span>
+    <sc-if value="{{haPosta}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 14px; color: {{colorePosta}}; overflow-wrap: anywhere; margin-top: 2px">{{posta}}</span>
+    </sc-if>
+  </span>
+  <sc-if value="{{haImporto}}" hint-placeholder-val="{{ true }}">
+    <span style="font-family: {{cifre}}; font-variant-numeric: tabular-nums; font-size: {{corpoImporto}}; font-weight: 700; color: {{coloreImporto}}; text-decoration: {{taglio}}; white-space: nowrap">{{importo}}</span>
+  </sc-if>
+  <sc-for list="{{tasti}}" as="t" hint-placeholder-count="2">
+    <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid {{t.bordo}}; border-radius: {{raggio}}; background: {{t.fondo}}; color: {{t.colore}}; font-family: {{tasto.carattere}}; font-variant-numeric: tabular-nums; font-size: {{tasto.corpo}}; font-weight: {{tasto.peso}}; letter-spacing: {{tasto.spazio}}; white-space: nowrap">{{t.testo}}</span>
+  </sc-for>
+  <sc-if value="{{haMail}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; flex-basis: 100%">
+      <sc-if value="{{haMotivo}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: {{c.dim}}; text-align: right; flex: 1 1 200px">{{motivo}}</span></sc-if>
+      <sc-for list="{{tastiMail}}" as="t" hint-placeholder-count="1">
+        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid {{t.bordo}}; border-radius: {{raggio}}; background: {{t.fondo}}; color: {{t.colore}}; font-family: {{tasto.carattere}}; font-size: {{tasto.corpo}}; font-weight: {{tasto.peso}}; letter-spacing: {{tasto.spazio}}; white-space: nowrap">{{t.testo}}</span>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{haSotto}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; flex-basis: 100%">
+      <sc-for list="{{tastiSotto}}" as="t" hint-placeholder-count="1">
+        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid {{t.bordo}}; border-radius: {{raggio}}; background: {{t.fondo}}; color: {{t.colore}}; font-family: {{tasto.carattere}}; font-size: {{tasto.corpo}}; font-weight: {{tasto.peso}}; letter-spacing: {{tasto.spazio}}; white-space: nowrap">{{t.testo}}</span>
+      </sc-for>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["ricevuta","pagamento"],"default":"ricevuta"},"titolo":{"editor":"text","default":"N. 12/2026 · 14 ottobre 2026"},"sotto":{"editor":"text","default":"QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS"},"importo":{"editor":"text","default":"80,00 €"},"tag":{"editor":"text","default":""},"tagTono":{"editor":"enum","options":["neutro","giallo","rosso","verde"],"default":"neutro"},"tasti":{"editor":"text","default":"PDF|ANNULLA RICEVUTA"},"tastiMail":{"editor":"text","default":""},"tastiSotto":{"editor":"text","default":""},"motivo":{"editor":"text","default":""},"posta":{"editor":"text","default":""},"postaTono":{"editor":"enum","options":["verde","giallo","rosso","neutro"],"default":"verde"},"annullato":{"editor":"boolean","default":false},"$preview":{"width":700,"height":120}}'>
+// Una riga dello STORICO della scheda iscritto (QUOTA E PAGAMENTI): `StoricoIscritto` e `RigaDelloStorico` di
+// src/components/segreteria/Ricevute.tsx (righe 103-136 e 206-232), che usano .sg-voce-elenco e .sg-pagamento.
+// tipo "ricevuta": la testata di una ricevuta: .sg-voce-elenco (src/styles.css riga 2584: fondo `bg`, bordo 2px `line`, min 48px,
+//   padding 6px 12px, gap 12px); titolo 15px 700, sotto 12px `dim`, importo Saira 20px 700 (nell'app oggi la testata non ha importo:
+//   si passa vuoto), tasti .sg-chip (riga 2064: 44px, padding 0 12px, bordo 2px).
+// tipo "pagamento": .sg-pagamento (riga 2586): rientrato di 24px, barra a sinistra 4px `line`, fondo `surface`, titolo 15px 600,
+//   importo 18px 700 in `verde-testo`.
+// tag: uno o piu' .sg-tag separati da | , ognuno «parola» o «parola:tono» (tono neutro, giallo, rosso, verde; senza tono vale tagTono).
+//   Bianchi con bordo 1.5px e testo del tono, padding 1px 8px,
+//   0.02em, raggio 6px e il segno davanti: ✕ rosso (data-tipo manca), … giallo (aspetta), ✓ verde (fatto); il giallo «presto»
+//   (Manca 30,00 €) ha il testo inchiostro e nessun segno.
+// annullato: barrato e in `dim`, non in rosso: e' storia, non qualcosa che manca.
+// tasti: i .sg-chip sulla riga, separati da |; tastiSotto: quelli su una riga loro, a destra (flexBasis 100%, come «Annulla ricevuta»
+//   oggi). Ogni tasto e' «testo» o «testo:pericolo» (.sg-pericolo, riga 3435: bordo e testo `rosso-testo`) o «testo:spento»
+//   (.sg-btn:disabled del sito, riga 396: blocco `surface-2`, testo `dim`, senza bordo). motivo: la frase accanto ai tastiSotto (perche' e' spento).
+// Look del sito (righe 240-268, 299-301, 350, 369-402): token chiari azzurri, Inter per testo, tasti e tag (chip 15px 600, 0 di
+//   spaziatura), raggio 6px su chip e tag; .sg-voce-elenco non e' nella lista del raggio: resta squadrata.
+// La ricevuta per email (../ricevuta-email/): posta = la riga dello stato dell'invio sotto la descrizione, .sg-sotto[data-tono] (14px,
+//   verde-testo `fatto` «✓ Mandata il … a … · 2 volte», giallo-testo `aspetta` «… Non mandata», `dim` il resto). tastiMail: MANDA PER EMAIL
+//   o MANDA DI NUOVO su una riga loro sopra i tastiSotto (ANNULLA RICEVUTA), mai affiancati; motivo sta accanto a loro.
+const T = {
+  sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', giallo: '#f4c31b', rosso: '#e4292a', verde: '#12913f', verdeTesto: '#0b7a33', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d', suColore: '#0d2a3d', suRosso: '#ffffff', rigaCampo: '#14709f' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const BARLOW = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const sito = true;
+    const c = T.sito;
+    const pag = p.tipo === 'pagamento';
+    const ann = truthy(p.annullato);
+    const importo = p.importo ?? '80,00 €';
+    const tonoBase = p.tagTono || 'neutro';
+    const tag = String(p.tag ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((x) => {
+      const [parola, tono = tonoBase] = x.split(':');
+      if (!sito) return {
+        parola, padding: '0 4px', bordo: '0', carattere: COND, spazio: '0.12em',
+        fondo: tono === 'rosso' ? c.rosso : tono === 'giallo' ? c.giallo : tono === 'verde' ? c.verde : c.dim,
+        testo: tono === 'rosso' ? c.suRosso : tono === 'giallo' || tono === 'verde' ? c.suColore : c.bg,
+      };
+      const colore = { rosso: c.rossoTesto, giallo: c.gialloTesto, verde: c.verdeTesto, neutro: c.dim }[tono] || c.dim;
+      const segno = { rosso: '✕ ', verde: '✓ ' }[tono] || '';
+      return { parola: segno + parola, padding: '1px 8px', bordo: `1.5px solid ${colore}`, carattere: INTER, spazio: '0.02em', fondo: c.surface, testo: tono === 'giallo' ? c.suColore : colore };
+    });
+    const tasto = (x) => {
+      const [testo, modo] = x.split(':');
+      if (modo === 'spento') return { testo, bordo: sito ? c.surface2 : c.line, fondo: sito ? c.surface2 : 'transparent', colore: c.dim };
+      if (modo === 'pericolo') return { testo, bordo: c.rossoTesto, fondo: 'transparent', colore: c.rossoTesto };
+      return { testo, bordo: sito ? c.rigaCampo : c.line, fondo: 'transparent', colore: sito ? c.text : c.sec };
+    };
+    const lista = (v) => String(v ?? '').split('|').map((s) => s.trim()).filter(Boolean).map(tasto);
+    const tastiSotto = lista(p.tastiSotto);
+    const tastiMail = lista(p.tastiMail);
+    const motivo = p.motivo ?? '';
+    const posta = p.posta ?? '';
+    const pt = p.postaTono || 'verde';
+    return {
+      c, raggio: sito ? '6px' : '0', corpoTesto: sito ? INTER : BARLOW, cifre: sito ? INTER : COND,
+      tasto: sito ? { carattere: INTER, corpo: '15px', peso: '600', spazio: '0' } : { carattere: COND, corpo: '13px', peso: '700', spazio: '0.12em' },
+      titolo: p.titolo ?? 'N. 12/2026 · 14 ottobre 2026', sotto: p.sotto ?? '',
+      importo, haImporto: importo !== '',
+      tag,
+      tasti: lista(p.tasti ?? 'PDF|ANNULLA RICEVUTA'),
+      tastiSotto, haSotto: tastiSotto.length > 0, tastiMail, haMail: tastiMail.length > 0 || motivo !== '', motivo, haMotivo: motivo !== '',
+      posta, haPosta: posta !== '',
+      colorePosta: { verde: c.verdeTesto, giallo: c.gialloTesto, rosso: c.rossoTesto, neutro: c.dim }[pt] || c.dim,
+      altezza: pag ? '44px' : '48px', padding: pag ? '4px 12px' : '6px 12px', rientro: pag ? '24px' : '0',
+      sfondo: pag ? c.surface : c.bg, bordo: c.line, barra: pag ? '4px' : '2px',
+      peso: pag ? '600' : '700', corpoImporto: pag ? '18px' : '20px',
+      coloreTitolo: ann ? c.dim : c.text,
+      coloreImporto: ann ? c.dim : pag ? c.verdeTesto : c.text,
+      taglio: ann ? 'line-through' : 'none',
+    };
+  }
+}
+</script>
+</body>
+</html>

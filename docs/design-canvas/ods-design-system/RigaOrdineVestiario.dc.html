@@ -13,6 +13,7 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
+</helmet>
 <div role="row" style="display: grid; grid-template-columns: {{griglia}}; gap: 14px; align-items: center; width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid {{c.surface2}}; background: {{sfondo}}; outline: {{contorno}}; outline-offset: -2px; color: {{colore}}; text-align: left">
   <span style="padding: 6px 0; font-size: 15px; font-weight: 600">{{nome}}<sc-if value="{{stesso}}" hint-placeholder-val="{{ false }}"> <span style="display: inline-block; vertical-align: middle"><dc-import name="Badge" tipo="tag" tono="giallo" label="STESSO TELEFONO" hint-size="120px,20px"></dc-import></span></sc-if><sc-if value="{{haArrivo}}" hint-placeholder-val="{{ true }}"><span style="display: block; font-size: 12px; font-weight: 400; color: {{c.dim}}">{{arrivo}}</span></sc-if></span>
   <span style="font-size: 13px">{{capi}}</span>

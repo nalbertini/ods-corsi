@@ -76,17 +76,6 @@ const parolaDoc = seg.timbriScheda(senzaDoc, OGGI).documento.parola
 ok('senza documento, minore', f('riquadroDocumento', false, true), { nome: parolaDoc, sotto: 'va mostrato in segreteria, quello del genitore', tono: 'giallo', tasto: 'La copia è in segreteria' })
 ok('senza documento, adulto: il sotto', f('riquadroDocumento', false, false).sotto, 'va mostrato in segreteria')
 
-// ---- 3. La quota -----------------------------------------------------------
-console.log('\n3. Riquadro della quota')
-const persona = (pagamento) => ({ ...senzaDoc, pagamento })
-const q0 = f('riquadroQuota', persona({ stato: 'da_pagare' }), OGGI)
-ok('nessuna ricevuta: nome e tono del timbro', [q0.nome, q0.tono], ['QUOTA ASSOCIATIVA · DA PAGARE', 'rosso'])
-ok('nessuna ricevuta: il sotto', q0.sotto, 'Nessuna ricevuta con la quota di questa stagione.')
-const q1 = f('riquadroQuota', persona({ stato: 'pagato', fino: '2027-07-31' }), OGGI)
-ok('pagata fuori app: nome e tono', [q1.nome, q1.tono], ['QUOTA ASSOCIATIVA · PAGATA', 'verde'])
-ok('pagata fuori app: il sotto', q1.sotto, 'Pagata fuori dall’app, fino al 31 luglio 2027.')
-ok('pagata fuori app con la nota della segreteria', f('riquadroQuota', persona({ stato: 'pagato', fino: '2027-07-31', nota: 'Bonifico del 3 settembre.' }), OGGI).sotto, 'Pagata fuori dall’app, fino al 31 luglio 2027. Bonifico del 3 settembre.')
-
 // ---- 4-5. I corsi ----------------------------------------------------------
 console.log('\n4. Il bollino del corso')
 const stato = (come, altro = {}) => ({ corsoId: 'c1', corso: 'Lotta 3', come, ...altro })
@@ -95,12 +84,6 @@ for (const [come, parola, tono] of [
   ['in_parte', 'PAGATO IN PARTE', 'giallo'], ['da_controllare', 'DA CONTROLLARE', 'giallo'],
   ['scaduto', 'DA PAGARE', 'rosso'], ['fuori_scaduto', 'DA PAGARE', 'rosso'], ['da_pagare', 'DA PAGARE', 'rosso'],
 ]) ok(come, f('bollinoCorso', stato(come)), { parola, tono })
-
-console.log('\n5. Il riquadro del corso')
-ok('da pagare: il sotto non ripete il nome', f('riquadroCorso', stato('da_pagare')), { nome: 'LOTTA 3 · DA PAGARE', sotto: '', tono: 'rosso' })
-ok('pagato fino al', f('riquadroCorso', stato('pagato', { al: '2026-12-31' })), { nome: 'LOTTA 3 · PAGATO', sotto: 'pagato fino al 31 dicembre 2026', tono: 'verde' })
-ok('in parte: mancano', f('riquadroCorso', stato('in_parte', { mancano: 2500 })).sotto?.startsWith('pagato in parte, mancano'), true)
-ok('scaduto', f('riquadroCorso', stato('scaduto', { al: '2026-09-30' })), { nome: 'LOTTA 3 · DA PAGARE', sotto: 'scaduto il 30 settembre 2026, da pagare', tono: 'rosso' })
 
 // ---- 6-8. I pagamenti ------------------------------------------------------
 const voce = (importo) => ({ descrizione: 'QUOTA ASSOCIATIVA', quantita: 1, prezzo: importo, pagamenti: [{ importo, metodo: 'contanti' }] })
@@ -126,6 +109,64 @@ console.log('\n8. Il pagato della stagione')
 ok('conta la stagione di oggi, non le annullate né la stagione prima', f('pagatoNellaStagione',
   [ric('r1', 1, '2026-10-03', 5000), ric('r2', 2, '2026-10-04', 7000, '2026-10-05'), ric('r3', 3, '2026-06-15', 9000)],
   [dir('d1', '2026-10-10', 1000), dir('d2', '2026-10-11', 2000, '2026-10-12'), dir('d3', '2026-07-01', 3000)], OGGI), 6000)
+
+// ---- 10. I timbri dei corsi ------------------------------------------------
+// Chiavi in qualunque ordine: contano i valori.
+const piatto = (x) => x === undefined ? null : JSON.parse(JSON.stringify(x, (_, v) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v)))
+const okp = (cosa, avuto, voluto) => ok(cosa, piatto(avuto), piatto(voluto))
+const corso = (come, extra = {}) => ({ corsoId: 'judo3', corso: 'Judo 3', come, ...extra })
+const tc = (...stati) => f('timbriCorsi', stati)
+
+console.log('\n10. I timbri dei corsi (timbriCorsi)')
+for (const come of ['pagato', 'fuori_app', 'satispay']) okp(`${come}: nessun timbro`, tc(corso(come)), [])
+okp('in parte: quanto manca, entro quando, quanto è stato pagato', tc(corso('in_parte', { mancano: 35000, totale: 48000, entro: '2026-12-31' })), [
+  { titolo: 'JUDO 3 · MANCANO', parola: '350,00 €', tono: 'giallo', righe: [{ testo: 'ENTRO IL 31/12/2026' }, { testo: 'PAGATI 130,00 € SU 480,00 €' }] }])
+okp('in parte senza entro: niente riga ENTRO', tc(corso('in_parte', { mancano: 35000, totale: 48000 }))[0]?.righe, [{ testo: 'PAGATI 130,00 € SU 480,00 €' }])
+okp('in parte senza totale: niente riga PAGATI', tc(corso('in_parte', { mancano: 35000, entro: '2026-12-31' }))[0]?.righe, [{ testo: 'ENTRO IL 31/12/2026' }])
+ok('in parte oltre il termine: rosso', tc(corso('in_parte', { mancano: 35000, totale: 48000, entro: '2026-12-31', oltre: true }))[0]?.tono, 'rosso')
+okp('da pagare col totale: il prezzo dell’annuale', tc(corso('da_pagare', { totale: 48000 })), [
+  { titolo: 'JUDO 3 · DA PAGARE', parola: '480,00 €', tono: 'rosso', righe: [{ testo: 'ANNUALE, NESSUN PAGAMENTO' }] }])
+okp('da pagare senza totale: DA PAGARE', tc(corso('da_pagare')), [{ titolo: 'JUDO 3 · DA PAGARE', parola: 'DA PAGARE', tono: 'rosso', righe: [{ testo: 'NESSUN PAGAMENTO' }] }])
+for (const come of ['scaduto', 'fuori_scaduto'])
+  okp(`${come}: DA PAGARE, scaduto il`, tc(corso(come, { al: '2026-09-30' })), [{ titolo: 'JUDO 3 · DA PAGARE', parola: 'DA PAGARE', tono: 'rosso', righe: [{ testo: 'SCADUTO IL 30/09/2026' }] }])
+okp('da controllare: voce scritta a mano', tc(corso('da_controllare')), [{ titolo: 'JUDO 3 · DA CONTROLLARE', parola: 'DA CONTROLLARE', tono: 'giallo', righe: [{ testo: 'VOCE SCRITTA A MANO' }] }])
+ok('un timbro per corso non pagato, nell’ordine dato', tc(corso('pagato'), corso('da_pagare', { corso: 'MGA' }), corso('da_controllare', { corso: 'Pilates' }))?.map?.((t) => t.titolo), ['MGA · DA PAGARE', 'PILATES · DA CONTROLLARE'])
+
+// ---- 11. Lo storico con i bonifici ------------------------------------------
+console.log('\n11. Lo storico: un bonifico assegnato è una riga sola')
+const parte = (id, importo, creatoIl, extra = {}) => ({ ...dir(id, '2026-10-03', importo), movimentoId: 'm1', metodo: 'bonifico', creatoIl, ...extra })
+const mov = (id, data, importo, descrizione = 'Cliente Mario Rossi per quota e corso') => ({ id, data, descrizione, importo, voce: 'CORSI', cassa: 'CC', aMano: true })
+const due = [parte('d2', 30000, '2026-10-05T10:00:00Z'), parte('d1', 20000, '2026-10-05T09:00:00Z'), parte('dx', 7000, '2026-10-05T11:00:00Z', { annullatoIl: '2026-10-06' })]
+const riga = (x) => (Array.isArray(x) ? x.find((y) => y.tipo === 'bonifico') : x)
+// sigla() dei test vecchi legge x.x.id: una riga «bonifico» non ce l'ha, qui non serve.
+okp('due parti dello stesso movimento: una riga «bonifico», importo senza le annullate, parti per creatoIl', riga(f('storicoPagamenti', [], due)), {
+  tipo: 'bonifico', movimentoId: 'm1', data: '2026-10-03', importo: 50000, parti: [due[1], due[0], due[2]] })
+okp('col movimento: data, importo e nome dal movimento', riga(f('storicoPagamenti', [], due, [mov('m1', '2026-10-02', 53000)])), {
+  tipo: 'bonifico', movimentoId: 'm1', data: '2026-10-02', importo: 53000, da: 'Mario Rossi', parti: [due[1], due[0], due[2]] })
+ok('una causale senza nome: niente «da»', ((r) => [r?.tipo, r?.da])(riga(f('storicoPagamenti', [], due, [mov('m1', '2026-10-02', 53000, 'Bonifico generico')]))), ['bonifico', undefined])
+ok('i diretti senza movimentoId restano «diretto»; ordine per data decrescente',
+  f('storicoPagamenti', [ric('r1', 1, '2026-09-10')], [dir('d9', '2026-10-20'), ...due])?.map?.((x) => x.tipo), ['diretto', 'bonifico', 'ricevuta'])
+
+// ---- 12. I bonifici da assegnare e le righe di contabilità ------------------
+console.log('\n12. Righe da assegnare e filtro di contabilità')
+const bonifici = [{ movimentoId: 'm2', data: '2026-10-02', importo: 53000, daAssegnare: 23000 }, { movimentoId: 'm5', data: '2026-10-04', importo: 1000, daAssegnare: 1000 }]
+okp('righeDaAssegnare: da assegnare, nome e causale dal movimento', f('righeDaAssegnare', bonifici, [mov('m2', '2026-10-02', 53000), mov('m5', '2026-10-04', 1000, 'Bonifico generico')]), [
+  { movimentoId: 'm2', data: '2026-10-02', importo: 23000, da: 'Mario Rossi', causale: 'Cliente Mario Rossi per quota e corso' },
+  { movimentoId: 'm5', data: '2026-10-04', importo: 1000, causale: 'Bonifico generico' }])
+okp('righeDaAssegnare: movimento che non si trova, solo i dati del bonifico', f('righeDaAssegnare', [bonifici[0]], []), [{ movimentoId: 'm2', data: '2026-10-02', importo: 23000 }])
+const inCont = ['m1', 'm2', 'm3', 'm4', 'm5'].map((id) => mov(id, '2026-10-02', 1000))
+const diretti = [parte('a', 1000, '2026-10-05'), parte('b', 500, '2026-10-05', { movimentoId: 'm2' }), parte('c', 500, '2026-10-05', { movimentoId: 'm4', annullatoIl: '2026-10-06' }), parte('e', 500, '2026-10-05', { movimentoId: 'm5' })]
+ok('daMostrareInContabilita: restano il movimento a mano e quello con la sola parte annullata',
+  f('daMostrareInContabilita', inCont, diretti, bonifici)?.map?.((x) => x.id), ['m3', 'm4'])
+
+console.log('\n13. Il pagato della stagione non conta i bonifici da assegnare')
+ok('conta solo le parti assegnate non annullate, più le ricevute', f('pagatoNellaStagione', [ric('r1', 1, '2026-10-03', 5000)], [parte('a', 2000, '2026-10-05'), parte('x', 9000, '2026-10-05', { annullatoIl: '2026-10-06' })], OGGI), 7000)
+// La scheda passa a pagatoNellaStagione solo ricevute e incassi a mano: i bonifici da assegnare (bonificiAperti)
+// non sono PagamentoDiretto e non devono finirci. Se la chiamata cambia, questa prova cade.
+const ricevuteTsx = (await import('node:fs')).readFileSync('src/components/segreteria/Ricevute.tsx', 'utf8')
+ok('la scheda chiama pagatoNellaStagione(tutteRicevute, aMano, oggi), senza i da assegnare',
+  ricevuteTsx.match(/pagatoNellaStagione\(([^)]*)\)/g), ['pagatoNellaStagione(tutteRicevute, aMano, oggi)'])
+ok('aMano sono solo gli incassi a mano letti', /const aMano = diretti\.dato \?\? \[\]/.test(ricevuteTsx), true)
 
 // ---- 9. Le iscrizioni ------------------------------------------------------
 console.log('\n9. Le iscrizioni della scheda')

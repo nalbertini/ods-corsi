@@ -346,8 +346,8 @@ console.log('\n13. cosa manca nella scheda: l\'email per ricevute e avvisi è qu
 {
   const oggi = new Date()
   const manca = (p) => cosaManca({ nome: 'A', cognome: 'B', ...p }, null, oggi)
-  ok('né telefono né email', manca({}), [{ cosa: 'Telefono, email per ricevute e avvisi' }])
-  ok('con l\'email manca solo il telefono', manca({ email: 'a@b.it' }), [{ cosa: 'Telefono' }])
+  ok('né telefono né email', manca({}), [{ cosa: 'Telefono o email', perche: 'per ricevute e avvisi' }])
+  ok('con l\'email manca solo il telefono', manca({ email: 'a@b.it' }), [{ cosa: 'Telefono', perche: 'per ricevute e avvisi' }])
   ok('con tutti e due non manca niente', manca({ email: 'a@b.it', telefono: '333 1' }), [])
 }
 

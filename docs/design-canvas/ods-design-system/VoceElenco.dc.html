@@ -13,6 +13,7 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
+</helmet>
 <div style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 6px 12px; background: {{c.bg}}; border: 2px solid {{c.line}}; color: {{c.text}}">
   <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0">
     <span style="font-size: 15px; font-weight: 700">{{nome}}<sc-if value="{{haBollino}}" hint-placeholder-val="{{ false }}"> <span style="padding: 0 4px; background: {{c.giallo}}; color: {{c.suColore}}; font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap">{{bollino}}</span></sc-if></span>

@@ -638,6 +638,13 @@
 /* Un pagamento sotto la sua ricevuta: rientrato, con la barra a sinistra. Quello fatto a mano sta da solo, come una ricevuta. */
 .sg-pagamento { margin-left: 24px; min-height: 44px; padding: 4px 12px; background: var(--surface); border-left-width: 4px; }
 .sg-pagamento[data-amano] { margin-left: 0; background: var(--bg); border-left-width: 2px; }
+/* Un bonifico in PAGAMENTI: una riga sola per movimento, le parti sotto con un filo a sinistra (180 = 50 + 130). */
+.sg-movimento { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border: 2px solid var(--line); border-radius: 6px; background: color-mix(in srgb, var(--line) 20%, var(--surface)); }
+.sg-movimento-testa { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sg-movimento-parti { display: flex; flex-direction: column; gap: 4px; padding-left: 14px; border-left: 2px solid var(--line); }
+/* Da assegnare: giallo, come gli avvisi; non è ancora un pagamento. */
+.sg-movimento[data-da-assegnare] { border-color: var(--giallo-testo); background: var(--tinta-giallo); }
+.sg-movimento[data-annullato] { background: var(--surface); }
 /* Annullato è storia da poter verificare: leggibile, barrato e in grigio, non spento a metà. */
 .sg-riga-pagamento-tab.sg-iscritto[data-spento='true'] { opacity: 1; color: var(--dim); }
 /* Sotto il nome, per il telefono: data, a cosa serve, come, e i bollini. Sul computer stanno nelle loro colonne. */

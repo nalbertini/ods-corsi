@@ -1,7 +1,8 @@
 import { accesi } from '../../lib/metodiPagamento'
 import { cosaNonVaMetodo, cosaNonVaSatispay, cosaNonVaSatispayAMano, fraseDalModulo, metodiRicevuta, metodoDi, satispayDaUsare, soldi } from '../../lib/satispay'
 import { cartaSePuoi } from '../../lib/cartaPdf'
-import { pagatoNellaStagione, primeRighe, storicoPagamenti } from '../../lib/schedeIscritto'
+import { pagatoNellaStagione, primeRighe, righeDaAssegnare, storicoPagamenti, type RigaBonifico, type RigaDaAssegnare } from '../../lib/schedeIscritto'
+import { StoricoPersona } from './CollegaPersona'
 import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
@@ -84,6 +85,7 @@ export function StoricoIscritto({
   riprendi,
   onRicevuta,
   onMovimento,
+  onNuova,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
@@ -99,6 +101,8 @@ export function StoricoIscritto({
   onRicevuta?: (dati: DatiPagamentoDiretto) => void
   /** Un pagamento assegnato da un bonifico: la ricevuta si fa dal movimento, in CONTABILITÀ. */
   onMovimento?: (movimentoId: string) => void
+  /** «+ Fai la ricevuta»: la apre la scheda. */
+  onNuova?: () => void
 }) {
   const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
   // La mail delle ricevute: se non si legge, lo storico non ne dice niente, come senza 76-ricevute-email.sql.
@@ -138,10 +142,19 @@ export function StoricoIscritto({
   }
 
   const oggi = chiaveGiorno(new Date())
+  // I movimenti di CONTABILITÀ a suo nome: danno data e ordinante ai bonifici, e dicono quali sono ancora da assegnare.
+  const st = useCarica(() => d.storicoPersona(p.id), [d, p.id])
+  const storico = st.dato ?? []
+  // Pagamenti e ricevute di tutti (un bonifico si divide anche sui fratelli) si leggono solo se c'è un bonifico che può
+  // averne bisogno: le schede senza bonifici non pagano la lettura.
+  const candidati = bonificiDaAssegnare(storico, [], [], oggi).map((b) => b.movimentoId).join()
+  const contiTutti = useCarica(() => (candidati ? Promise.all([d.pagamentiDiretti(), d.ricevute()]) : Promise.resolve(null)), [d, candidati])
+  const bonificiAperti = contiTutti.dato ? bonificiDaAssegnare(storico, contiTutti.dato[0], contiTutti.dato[1], oggi) : []
+  const daAssegnare = righeDaAssegnare(bonificiAperti, storico)
   const tutteRicevute = ricevute.dato ?? []
   const aMano = diretti.dato ?? []
-  const elenco = primeRighe(storicoPagamenti(tutteRicevute, aMano), tutte)
-  const vuoto = ricevute.dato !== null && tutteRicevute.length === 0 && aMano.length === 0
+  const elenco = primeRighe(storicoPagamenti(tutteRicevute, aMano, storico), tutte)
+  const vuoto = ricevute.dato !== null && tutteRicevute.length === 0 && aMano.length === 0 && daAssegnare.length === 0
 
   return (
     <div className="stack" style={{ gap: 8 }}>
@@ -149,6 +162,11 @@ export function StoricoIscritto({
         {!registrando && (
           <button type="button" className="num sg-chip" onClick={() => setRegistrando(true)}>
             + Aggiungi incasso
+          </button>
+        )}
+        {onNuova && (
+          <button type="button" className="num sg-chip sg-chip-pieno" data-primo onClick={onNuova}>
+            + Fai la ricevuta
           </button>
         )}
       </Riga>
@@ -173,7 +191,10 @@ export function StoricoIscritto({
       )}
       {ricevute.guaio && <Guaio testo={ricevute.guaio} />}
       {diretti.guaio && <Guaio testo={diretti.guaio} />}
-      {!vuoto && ricevute.dato && diretti.dato && <span className="sg-sotto">{euro(pagatoNellaStagione(tutteRicevute, aMano, oggi))} € pagati in questa stagione, tra ricevute e incassi.</span>}
+      {st.guaio && <span className="sg-sotto" role="status">I movimenti di contabilità a suo nome non si leggono: {st.guaio}</span>}
+      {contiTutti.guaio && <span className="sg-sotto" role="status">Non si riesce a controllare se ci sono bonifici da assegnare: {contiTutti.guaio}</span>}
+      {!vuoto && ricevute.dato && diretti.dato && <span className="sg-sotto">{euro(pagatoNellaStagione(tutteRicevute, aMano, oggi))} € pagati in questa stagione.</span>}
+      {daAssegnare.map((x) => <RigaDaAssegnareVista key={x.movimentoId} x={x} onAssegna={onMovimento ? () => onMovimento(x.movimentoId) : undefined} />)}
       {vuoto &&
         (p.satispay ? (
           <span className="sg-sotto" data-tono="fatto">{fraseDalModulo(p.satispay, p.carta)}</span>
@@ -181,16 +202,13 @@ export function StoricoIscritto({
           <span className="sg-sotto">Nessun pagamento registrato. Fai la ricevuta quando paga, o aggiungi un incasso già fatto: lo trovi qui.</span>
         ))}
       {elenco.righe.map((riga) => {
+        if (riga.tipo === 'bonifico') return <RigaBonificoVista key={riga.movimentoId} riga={riga} onApri={onMovimento ? () => onMovimento(riga.movimentoId) : undefined} />
         if (riga.tipo === 'diretto') {
           const suo = riga.x
           const x = righeDirette([suo], () => `${p.cognome} ${p.nome}`)[0]
           // Con un Satispay arrivato la ricevuta va fatta con quei soldi: dal pagamento a mano no, come con «Fai anche la ricevuta».
-          // Assegnato da un bonifico: la ricevuta si fa dal movimento (`SOLO_DAL_MOVIMENTO`), qui si porta lì.
-          const dalBonifico = suo.movimentoId
-          const fanne = !x.annullato && onRicevuta && !p.satispay && !dalBonifico ? () => onRicevuta(datiDaPagamento(suo, nuovoId())) : undefined
-          const stato = dalBonifico && !x.annullato ? 'Assegnato · senza ricevuta' : statoDiretto(suo, tutteRicevute)
-          const apri = dalBonifico && !x.annullato && onMovimento ? () => onMovimento(dalBonifico) : undefined
-          return <RigaDelloStorico key={x.id} riga={x} aMano stato={stato} diventato={!!suo.ricevutaId} onFanne={fanne} onApri={apri} onAnnulla={x.annullato ? undefined : () => annullaPagamento(suo)} />
+          const fanne = !x.annullato && onRicevuta && !p.satispay ? () => onRicevuta(datiDaPagamento(suo, nuovoId())) : undefined
+          return <RigaDelloStorico key={x.id} riga={x} aMano stato={statoDiretto(suo, tutteRicevute)} diventato={!!suo.ricevutaId} onFanne={fanne} onAnnulla={x.annullato ? undefined : () => annullaPagamento(suo)} />
         }
         const r = riga.r
         const manca = r.annullataIl ? 0 : conti(r).netto
@@ -273,6 +291,7 @@ export function StoricoIscritto({
           Mostra altre {elenco.altre}
         </button>
       )}
+      {st.dato && <StoricoPersona storico={st.dato} diretti={aMano} giaDetti={bonificiAperti} onMovimento={onMovimento} />}
       {scoperta && (
         <div className="sg-prima">
           <span className="sg-etichetta" data-manca>LA QUOTA NON È PIÙ PAGATA</span>
@@ -308,7 +327,7 @@ export function StoricoIscritto({
 }
 
 /** Un pagamento nello storico: la data e come, a cosa serve, l'importo. */
-function RigaDelloStorico({ riga, rata, aMano, stato, diventato, onFanne, onApri, onAnnulla }: { riga: RigaPagamento; rata?: number; aMano?: boolean; stato?: string; diventato?: boolean; onFanne?: () => void; onApri?: () => void; onAnnulla?: () => void }) {
+function RigaDelloStorico({ riga, rata, aMano, stato, diventato, onFanne, onAnnulla }: { riga: RigaPagamento; rata?: number; aMano?: boolean; stato?: string; diventato?: boolean; onFanne?: () => void; onAnnulla?: () => void }) {
   const barrato = riga.annullato ? 'line-through' : undefined
   return (
     <div className="sg-voce-elenco sg-pagamento" data-amano={aMano || undefined} data-annullato={riga.annullato || undefined} style={{ flexWrap: 'wrap' }}>
@@ -331,11 +350,6 @@ function RigaDelloStorico({ riga, rata, aMano, stato, diventato, onFanne, onApri
           Fanne la ricevuta
         </button>
       )}
-      {onApri && (
-        <button type="button" className="num sg-chip" style={{ marginLeft: 'auto' }} onClick={onApri}>
-          Apri in contabilità
-        </button>
-      )}
       {onAnnulla && (
         <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-start' }}>
           <button type="button" className="num sg-chip sg-pericolo" onClick={onAnnulla}>
@@ -343,6 +357,64 @@ function RigaDelloStorico({ riga, rata, aMano, stato, diventato, onFanne, onApri
           </button>
         </div>
       )}
+    </div>
+  )
+}
+
+/**
+ * Un bonifico assegnato: una riga per movimento, l'importo arrivato e sotto come è stato diviso. Ricevuta e annullo
+ * si fanno dal movimento (`SOLO_DAL_MOVIMENTO`): qui c'è solo «Apri in contabilità».
+ */
+function RigaBonificoVista({ riga, onApri }: { riga: RigaBonifico; onApri?: () => void }) {
+  const valide = riga.parti.filter((x) => !x.annullatoIl)
+  // Tutte le parti annullate: resta come storia, barrato, senza tag.
+  const finito = valide.length === 0
+  const senzaRicevuta = valide.some((x) => !x.ricevutaId)
+  return (
+    <div className="sg-movimento" data-annullato={finito || undefined}>
+      <div className="sg-movimento-testa">
+        <span className="stack" style={{ gap: 2, flex: '1 1 0', minWidth: 160 }}>
+          <span style={{ fontSize: 15, fontWeight: 600, textDecoration: finito ? 'line-through' : undefined, color: finito ? 'var(--dim)' : undefined }}>{dataLunga(riga.data)} · Bonifico</span>
+          {riga.da && <span style={{ fontSize: 12, color: 'var(--dim)', overflowWrap: 'anywhere' }}>da {riga.da}</span>}
+        </span>
+        {senzaRicevuta && <span className="num sg-tag" data-tipo="presto">Senza ricevuta</span>}
+        <span className="num" style={{ fontSize: 18, fontWeight: 700, whiteSpace: 'nowrap', color: finito ? 'var(--dim)' : 'var(--verde-testo)' }}>{euro(riga.importo)} €</span>
+        {onApri && (
+          <button type="button" className="num sg-chip" onClick={onApri}>
+            Apri in contabilità
+          </button>
+        )}
+      </div>
+      <div className="sg-movimento-parti">
+        {riga.parti.map((x) => (
+          <span key={x.id} className="row" style={{ justifyContent: 'space-between', gap: 12, fontSize: 14, textDecoration: x.annullatoIl ? 'line-through' : undefined, color: x.annullatoIl ? 'var(--dim)' : undefined }}>
+            <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>{x.voce}</span>
+            <span className="num" style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{euro(x.importo)} €</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** Un bonifico non ancora assegnato: giallo, non conta nel pagato finché non si dice a cosa va. */
+function RigaDaAssegnareVista({ x, onAssegna }: { x: RigaDaAssegnare; onAssegna?: () => void }) {
+  const sotto = [x.da ? `da ${x.da}` : '', x.causale ? `«${x.causale}»` : ''].filter(Boolean).join(' · ')
+  return (
+    <div className="sg-movimento" data-da-assegnare>
+      <div className="sg-movimento-testa">
+        <span className="stack" style={{ gap: 2, flex: '1 1 300px', minWidth: 0 }}>
+          <span style={{ fontSize: 15, fontWeight: 600 }}>{dataLunga(x.data)} · Bonifico</span>
+          {sotto && <span style={{ fontSize: 12, color: 'var(--dim)', overflowWrap: 'anywhere' }}>{sotto}</span>}
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--giallo-testo)' }}>Da assegnare: finché non dici a cosa va, non conta come pagato.</span>
+        </span>
+        <span className="num" style={{ fontSize: 18, fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--giallo-testo)' }}>{euroAssegna(x.importo)}</span>
+        {onAssegna && (
+          <button type="button" className="sg-btn" onClick={onAssegna}>
+            Assegna ›
+          </button>
+        )}
+      </div>
     </div>
   )
 }
