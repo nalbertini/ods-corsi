@@ -2679,3 +2679,15 @@ label.sg-btn { cursor: pointer; }
 .sg-segno-elenco[data-tono='spento'] { color: var(--dim); }
 /* Il link dentro una frase resta testo: l'eccezione «in linea» di WCAG 2.5.8. */
 .sg-sotto .sg-link { display: inline; min-height: 0; font-size: inherit; }
+
+/* L'appello fitto sul telefono (`fitto` in AppelloScreen, proposta in docs/design-canvas/appello-telefono-spazio/):
+   più nomi a schermo, circa dieci invece di quattro. La testa scende a 90px perché il conto sta su una riga sola
+   senza TUTTI PRESENTI; le righe a 48px restano sopra i 44 del tocco; la frase sotto CHIUDI entra nel tasto. */
+:root[data-look='sito'] .appello-testa[data-fitto] { min-height: 90px; padding-bottom: 8px; }
+:root[data-look='sito'] h1.appello-titolo { margin: 0; }
+:root[data-look='sito'] .appello-riga-conto { align-items: baseline; white-space: nowrap; }
+:root[data-look='sito'] .appello-riga-conto .conto-appello { font-size: 22px; line-height: 1; }
+:root[data-look='sito'] .elenco-appello[data-fitto] { gap: 6px; }
+:root[data-look='sito'] [data-fitto] .riga-appello { min-height: 48px; }
+:root[data-look='sito'] .barra-chiudi[data-fitto] { gap: 4px; padding: 10px 16px calc(var(--safe-b) + 10px); }
+:root[data-look='sito'] .btn-chiudi-sotto { font-family: var(--body); font-size: 12px; font-weight: 600; letter-spacing: 0; line-height: 1.1; text-transform: none; }

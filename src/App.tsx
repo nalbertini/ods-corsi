@@ -19,7 +19,7 @@ import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
 import { ISTRUTTORE_PROVA, dati as caricaDati, haUnServer, inProvaScelta, scegliProva, type Dati } from './lib/dati'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
-import { chiediPrimaDiSostituire, esciConMusica, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, tastoImpostazioni, timerAperto, videoNellaBarraPiccola, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
+import { appelloATuttoSchermo, chiediPrimaDiSostituire, esciConMusica, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, tastoImpostazioni, timerAperto, videoNellaBarraPiccola, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
 import type { Incorporato, StatoTimer } from '../timer/src/lib/incorporato'
 import { oraDi, type SessioneVista } from './lib/sala'
 
@@ -293,6 +293,8 @@ function Istruttori() {
   // La lezione del timer: quella dell'appello da cui si è arrivati, o nessuna dal menu.
   const [lezioneTimer, setLezioneTimer] = useState<LezioneTimer | null>(null)
   const [daAppello, setDaAppello] = useState(false)
+  // Lo sa Sala, dove vive l'appello: qui serve per togliere la cornice sul telefono.
+  const [appelloAperto, setAppelloAperto] = useState(false)
   // Il timer pesa: si monta alla prima visita, e poi resta.
   const [timerMontato, setTimerMontato] = useState(false)
   // L'allenamento aperto nel timer, e di quale lezione è partito.
@@ -405,7 +407,9 @@ function Istruttori() {
           />
         )
         // Sotto, sopra la barra delle pagine; sullo schermo largo in fondo al corpo.
-        const mini = mostraMusicaMini(musica.stato, pagina) && (
+        // Sul telefono, con l'appello aperto, la cornice lascia il posto ai nomi; la striscia resta.
+        const tuttoSchermo = appelloATuttoSchermo({ largo, appelloAperto, pagina })
+        const mini = !tuttoSchermo && mostraMusicaMini(musica.stato, pagina) && (
           <MusicaMini
             m={musica}
             conVideo={videoNellaBarraPiccola({ stato: musica.stato, pagina, youtube: musica.conYoutube })}
@@ -420,14 +424,14 @@ function Istruttori() {
           {largo ? (
             <MenuIstruttori chi={chi} onEsci={onEsci} voci={voci} pagina={pagina} onPagina={dalMenu} />
           ) : (
-            <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} h1 />
+            !tuttoSchermo && <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} h1 />
           )}
           {!largo && striscia}
           <main ref={corpo} className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
             {largo && striscia}
-            {!largo && chi && pagina !== 'timer' && <ChiSei chi={chi} onEsci={onEsci} />}
+            {!largo && !tuttoSchermo && chi && pagina !== 'timer' && <ChiSei chi={chi} onEsci={onEsci} />}
             <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
-              <Sala soloDi={mio} senzaLimiti={chi?.ruolo === 'staff'} onTimer={(l) => void apriTimer(l)} />
+              <Sala soloDi={mio} senzaLimiti={chi?.ruolo === 'staff'} onTimer={(l) => void apriTimer(l)} onAppello={setAppelloAperto} />
             </div>
             {timerMontato && (
               <PaginaTimer
@@ -451,7 +455,7 @@ function Istruttori() {
             {largo && mini}
           </main>
           {!largo && mini}
-          {!largo && <BarraNavigazione voci={voci} attiva={pagina} onPagina={dalMenu} />}
+          {!largo && !tuttoSchermo && <BarraNavigazione voci={voci} attiva={pagina} onPagina={dalMenu} />}
           <Conferme />
           {musica.lettori(pagina)}
         </div>
