@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { NOME_CASSA_CONTO, oggiARoma, vociOfferte, type Cassa, type RigaMovimento, type VoceContabile } from '../../lib/contabilita'
+import { assegnaDopoIlCollegamento } from '../../lib/assegna'
 import { abbinamentiImport, anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, filtroIniziale, gruppiRighe, leggiBanca, PREFISSO_CHIAVE_BANCA, testoDaMostrare, MASSIMO_PER_IMPORTAZIONE, pianoDiAbbinamento, pianoDiClassificazione, rigaComeMovimento, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type AbbinamentoBanca, type FiltroRigheBanca, type GruppoRigheBanca, type LetturaBanca, type MovimentoBanca, type RigaAnteprima, type SceltaVoceBanca, type SegnoBanca } from '../../lib/importaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import type { CandidatoPersona, PersonaPerNome } from '../../lib/movimentiPersona'
@@ -39,7 +40,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const righe = useMemo(() => (coperti.dato ? segnaIncassiCoperti(tutte, coperti.dato.righe ?? []) : null), [tutte, coperti.dato])
   const [lettura, setLettura] = useState<LetturaBanca | null>(null)
   const [scelte, setScelte] = useState<Record<string, string>>({})
-  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[]; senzaAbbinare: string | null; incassi: number } | null>(null)
+  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[]; senzaAbbinare: string | null; incassi: number; assegnati: number; daScegliere: number } | null>(null)
   // Le ricevute libere a cui può andare un bonifico che entra con la persona; se non si leggono, si importa senza abbinare.
   const archivio = useCarica(async () => {
     const [ricevute, persone] = await Promise.all([d.ricevute(), d.persone()])
@@ -155,6 +156,8 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
       const abbinati: string[] = []
       const nonAbbinati: string[] = []
       let senzaAbbinare: string | null = null
+      let assegnati = 0
+      let daScegliere = 0
       if (classificate) {
         // Un lotto che non va resta in «Da classificare» e gli altri vanno avanti; il primo motivo si dice nel riepilogo.
         try {
@@ -178,6 +181,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           } catch (e) {
             senzaAbbinare = erroreSegreteria(e)
           }
+          const conRicevuta = new Set<string>()
           const oraAbbinamenti = ora ? abbinamentiImport(a.entrano, scelteValide, ora.ricevute, ora.persone, voci, conto.id) : {}
           for (const c of pianoDiAbbinamento(oraAbbinamenti, tolti, messi, scrittiOra)) {
             const r = ora?.ricevute.find((x) => x.id === c.ricevutaId)
@@ -185,16 +189,22 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
             if (!r || !mv) continue
             try {
               await d.abbinaRicevutaMovimento(c.movimentoId, c.ricevutaId)
+              conRicevuta.add(c.movimentoId)
               abbinati.push(`n. ${r.numero}/${r.anno} di ${nomeDi(r.personaId)}`)
             } catch (e) {
               nonAbbinati.push(`${nomeDi(sceltaDi(c.chiave)?.personaId)}, ${soldi(mv.importo)} del ${dataRicevuta(mv.data)} (${erroreSegreteria(e)})`)
             }
           }
+          // Collegati e senza ricevuta: si assegnano da soli quelli con un solo modo di dividerli (sicuro.ts), gli altri restano da assegnare.
+          const collegati = piano.lotti.filter((l) => !!l.personaId).flatMap((l) => l.ids).filter((id) => messi.has(id) && !conRicevuta.has(id))
+          const x = await assegnaDopoIlCollegamento(d, collegati, oggiARoma())
+          assegnati = x.chiavi.length
+          daScegliere = collegati.length - assegnati
         } catch (e) {
           guasto ??= erroreSegreteria(e)
         }
       }
-      setScritti({ n, classificati, guasto, abbinati, nonAbbinati, senzaAbbinare, incassi: a.entrano.filter((m) => m.tipo === 'entrata').length })
+      setScritti({ n, classificati, guasto, abbinati, nonAbbinati, senzaAbbinare, incassi: a.entrano.filter((m) => m.tipo === 'entrata').length, assegnati, daScegliere })
     }, undefined, () => {
       setLettura(null)
       onRileggi()
@@ -239,6 +249,12 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
             {scritti.classificati ? <>: <b>{scritti.classificati === 1 ? '1 ha' : `${scritti.classificati} hanno`} la voce che hai scelto</b>{scritti.n > scritti.classificati ? <>, {scritti.n - scritti.classificati === 1 ? 'l’altro è' : `gli altri ${scritti.n - scritti.classificati} sono`} in «Da classificare»: la voce la scegli dopo, con Cambia voce</> : ''}.</> : <>, in «Da classificare»: la voce la scegli dopo, con Cambia voce.</>}{' '}
             {scritti.senzaAbbinare ? null : scritti.abbinati.length ? <><b>{scritti.abbinati.length === 1 ? '1 bonifico è già con la sua ricevuta' : `${scritti.abbinati.length} bonifici sono già con la loro ricevuta`}</b> ({scritti.abbinati.join(', ')}){scritti.incassi > scritti.abbinati.length ? '; gli altri incassi non hanno ricevuta.' : '.'}</> : 'Gli incassi importati non hanno ricevuta.'}
           </span>
+          {scritti.assegnati + scritti.daScegliere > 0 && (
+            <span style={{ fontSize: 15 }}>
+              {scritti.assegnati > 0 && <><b>{scritti.assegnati === 1 ? '1 bonifico è già assegnato' : `${scritti.assegnati} bonifici sono già assegnati`}</b> a quota e corsi, senza ricevuta: la ricevuta si fa dal movimento, quando serve. </>}
+              {scritti.daScegliere > 0 && <>{scritti.daScegliere === 1 ? '1 bonifico con la persona resta' : `${scritti.daScegliere} bonifici con la persona restano`} in «Da assegnare»: c’è da scegliere.</>}
+            </span>
+          )}
           {scritti.senzaAbbinare && (
             <span role="alert" className="sg-banca-avviso">
               <b>Le ricevute non si sono abbinate</b>: {scritti.senzaAbbinare}. I bonifici sono in «Da assegnare», con la persona: li abbini da lì.

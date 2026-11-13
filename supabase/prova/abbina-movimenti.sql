@@ -246,7 +246,7 @@ select atteso('prima chi non è iscritto il giorno del movimento, in fondo chi l
   tenta($$select abbinati('Da Ferri Anna, Ferri Bruno, Ferri Carlo, Ferri Dora BONIFICO SEPA')$$),
   'Bruno Ferri (nome intero); Carlo Ferri (nome intero); Anna Ferri (nome intero, già iscritto); Dora Ferri (nome intero, già iscritto)');
 select atteso('un iscritto solo si propone lo stesso, col segno «già iscritto»', tenta($$select abbinati('Da Ferri Ennio BONIFICO SEPA')$$), 'Ennio Ferri (nome intero, già iscritto)');
-select atteso('…ma non è mai «sicuro»', tenta($$select preselezionato('Da Ferri Ennio BONIFICO SEPA')$$), 'nessuno');
+select atteso('…e col nome intero è «sicuro» anche se già iscritto (155)', tenta($$select preselezionato('Da Ferri Ennio BONIFICO SEPA')$$), 'Ennio');
 -- L'importo: il database cerca nel listino i corsi che costano l'importo del movimento, e guarda chi è iscritto a
 -- quei corsi il giorno del movimento e ha nel testo il cognome suo o del genitore. Qui l'iscrizione è a favore.
 select atteso('il solo cognome + iscritto al corso dell''importo (anche chi finisce il 15/10), non «già iscritto»; non Bruno (finita) né Carlo (da novembre)',
@@ -259,7 +259,7 @@ select atteso('i corsi li ricava il database: quelli passati da chi chiama non c
   'Anna Ferri (corso e cognome); Dora Ferri (corso e cognome); Ennio Ferri (corso e cognome)');
 select atteso('…né per «già iscritto» e «sicuro»: Ennio paga 50 €, che non è il prezzo di Judo',
   tenta($$select abbinati('Da Ferri Ennio BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[]) || ' · '
-    || preselezionato('Da Ferri Ennio BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$), 'Ennio Ferri (nome intero, già iscritto) · nessuno');
+    || preselezionato('Da Ferri Ennio BONIFICO SEPA', array['cccccccc-0000-0000-0000-000000000001']::uuid[])$$), 'Ennio Ferri (nome intero, già iscritto) · Ennio');
 select atteso('senza il corso dell''importo vale il solo cognome: i Ferri iscritti quel giorno',
   tenta($$select abbinati('Da FERRI TRN 22 BONIFICO SEPA')$$), 'Anna Ferri (cognome); Dora Ferri (cognome); Ennio Ferri (cognome)');
 select atteso('nome intero e corso dell''importo si sommano: Ennio primo, l''iscrizione a quel corso è a favore; l''importo non sparisce',

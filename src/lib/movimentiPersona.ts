@@ -1,5 +1,6 @@
 import { LIMITE_CAMBIO_VOCE, VOCE_CORSI, VOCE_DIFFERENZA, VOCE_QUOTA } from './contabilita'
 import type { DatiSegreteria } from './segreteria'
+import { schedaUnica } from './sicuro'
 
 /**
  * Lo storico del vecchio programma collegato alla persona che ha pagato (`supabase/70-movimenti-persona.sql`).
@@ -89,11 +90,11 @@ export function nomeDallaCausale(descrizione: string): string | null {
 // Le parole in ordine alfabetico: «Rossi Giulia» e «Giulia Rossi» sono lo stesso nome.
 const chiave = (s: string): string => normalizzaNome(s).split(' ').filter(Boolean).sort().join(' ')
 
-/** Con una scheda sola il nome è «sicuro»; con due o più sono omonimi; con nessuna (o senza nome) non c'è scheda. */
+/** Con una scheda sola il nome è «sicuro» (`schedaUnica`, la regola unica di `sicuro.ts`); con due o più sono omonimi; con nessuna (o senza nome) non c'è scheda. */
 export function abbinaPersone(nome: string | null, persone: PersonaPerNome[]): { esito: 'sicuro' | 'omonimi' | 'nessuna'; ids: string[] } {
   const k = nome ? chiave(nome) : ''
   const ids = k ? persone.filter((p) => chiave(`${p.nome} ${p.cognome}`) === k).map((p) => p.id) : []
-  return { esito: ids.length === 1 ? 'sicuro' : ids.length > 1 ? 'omonimi' : 'nessuna', ids }
+  return { esito: schedaUnica(ids) ? 'sicuro' : ids.length > 1 ? 'omonimi' : 'nessuna', ids }
 }
 
 const giornoMeseAnno = (data: string): string => data.split('-').reverse().join('/')
