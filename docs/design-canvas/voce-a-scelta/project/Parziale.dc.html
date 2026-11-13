@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Voce aggiunta in parte</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #ffffff; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .voce { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+    .voce > span:first-child { flex: 1 1 220px; min-width: 0; }
+    .tag { width: 90px; display: flex; }
+    .con-icona { text-decoration: none; }
+    .con-icona span { text-decoration: underline; text-underline-offset: 3px; }
+    .link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit; }
+  </style>
+</helmet>
+<!-- PROPOSTA: bonifico di 150,00 €, quota 50,00 € e poi l'annuale da 360,00 € aggiunto dal listino. Il campo si riempie con quel che resta del bonifico (100,00 €), il tag è Parziale e sotto la riga «Resteranno …», come per le cose da pagare (RigaDovuta). Si può scrivere meno, mai più del prezzo. -->
+<div style="width:780px;padding:20px;background:#ffffff;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#ffffff;border:2px solid #cfe6f4">
+  <span class="et">CHI HA PAGATO</span>
+  <b style="font-size:16px">Riccardi Leonardo</b>
+  <div class="voce"><span>Quota associativa 2026/27 <span class="sotto">· manca 50,00 €</span></span><span class="campo">50,00</span><span class="tag"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <div class="voce"><span>Annuale Judo kids <span class="sotto">· dal listino 360,00 € ·</span> <button type="button" class="link" style="font-size:13px;min-height:44px" aria-label="Togli Annuale Judo kids">Togli</button></span><span class="campo">100,00</span><span class="tag"><dc-import name="Badge" tipo="tag" label="Parziale" tono="giallo" hint-size="90px,28px"></dc-import></span></div>
+    <span class="sotto">Resteranno 260,00 € su «Annuale Judo kids»: si vedono nella scheda di Leonardo.</span>
+    <span class="sotto">Leonardo non è iscritto a Judo kids: l’iscrizione si fa dalla scheda.</span>
+  </div>
+  <div style="border-top:1px solid #cfe6f4;padding-top:4px">
+    <button type="button" class="link con-icona" aria-haspopup="listbox"><dc-import name="Icona" nome="aggiungi" misura="18" hint-size="18px,18px"></dc-import><span>Aggiungi una voce dal listino</span></button>
+  </div>
+</div>
+<span class="num" style="font-size:15px">Assegnati 150,00 € di 150,00 € · Da assegnare 0,00 €</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":780,"height":420}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
