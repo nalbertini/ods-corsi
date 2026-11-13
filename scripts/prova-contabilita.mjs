@@ -1453,5 +1453,14 @@ console.log('\n96. la scheda di un movimento mette in evidenza la persona')
   ok('il lucchetto non prende il fuoco', /tabIndex=\{0\}[^\n]*lucchetto/.test(corpo), false)
 }
 
+console.log('\n38. «Chi e per cosa» da MOVIMENTI suggerisce le persone dal testo, come dall\'import della banca')
+{
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  const k = tsx.indexOf('<ChiEPerCosa')
+  const tag = k >= 0 ? tsx.slice(k, tsx.indexOf('/>', tsx.indexOf('onChiudi=', k))) : ''
+  ok('la finestra riceve `suggerite` lette per il movimento aperto', /\bsuggerite=\{suggeriteChi\.dato \?\? \[\]\}/.test(tag), true)
+  ok('…lette con `candidatiPersonaMovimento` dal movimento aperto', /const suggeriteChi = useCarica\([^\n]*candidatiPersonaMovimento\(chiPerCosa\.id\)[^\n]*\[d, chiPerCosa\?\.id\]\)/.test(tsx), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
