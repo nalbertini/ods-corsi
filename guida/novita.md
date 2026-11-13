@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.251.0 — 13 novembre 2026
+
+### Novità
+
+- Il cashback della carta va da solo su «Altre entrate», senza chiedere chi ha pagato
+
 ## 0.250.2 — 13 novembre 2026
 
 ### Modificato
