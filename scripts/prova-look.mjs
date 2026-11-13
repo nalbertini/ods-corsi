@@ -169,8 +169,8 @@ for (const [c, colore] of [[".sg-dafare-riga[data-livello='blocca']", 'rosso'], 
 // Il giallo pieno è di sei cose sole (con il tasto verde del tablet, che nella sala è giallo): il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
 // il tasto principale di tutto il resto (.btn-primary: CHIUDI e simili), la voce di menu corrente e la voce corrente
 // della barra in basso dell'istruttore.
-const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .barra-chiudi .btn-chiudi[data-pieno]`, `${LOOK} .btn-primary`, `${LOOK} .tb-btn-verde`]
-ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .tb-btn-verde, .appello-testa .btn-go, .barra-chiudi .btn-chiudi[data-pieno] e le due voci di menu correnti',
+const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .striscia-assenti .btn-go`, `${LOOK} .barra-chiudi .btn-rimedio`, `${LOOK} .barra-chiudi .btn-chiudi[data-pieno]`, `${LOOK} .btn-primary`, `${LOOK} .tb-btn-verde`]
+ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .tb-btn-verde, TUTTI PRESENTI (testa, striscia, rimedio), .barra-chiudi .btn-chiudi[data-pieno] e le due voci di menu correnti',
   delLook.filter((r) => r !== bloccoLook && GIALLO_PIENO.test(r.corpo) && !r.selettori.every((s) => PIENO_AMMESSO.includes(s))).map((r) => r.selettori.join(',')), [])
 ok('.sg-btn-pieno: fondo var(--giallo), testo var(--su-colore)', ha('.sg-btn-pieno', /background(-color)?:\s*var\(--giallo\)/) && ha('.sg-btn-pieno', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // Ogni regola di fuori del look con un .sg- e il giallo pieno ne ha una gemella nel look col giallo scritto.

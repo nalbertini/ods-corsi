@@ -290,8 +290,6 @@ quando arriva la prova.
 - Disposizione dei timbri della scheda (`.sg-timbri`: righe da tre, sotto i
   1000px uno per riga): nessuna prova la guarda, il dato resta giusto anche se
   si spezza. Solo collaudo a mano sul telefono.
-- Rimedio «tutti assenti» (`AppelloScreen.tsx`): striscia e TUTTI PRESENTI al posto di + PROVA
-  sono nel `.tsx`. Tolti, nessuna prova cade (DA FARE: `prova:appello-browser`).
 
 ## Come si aggiorna
 
