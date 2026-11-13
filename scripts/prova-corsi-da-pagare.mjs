@@ -51,6 +51,7 @@ const corsiDaPagare = lib('corsiDaPagare')
 const corsiScaduti = lib('corsiScaduti')
 const testoCorso = lib('testoCorso')
 const testoCorsoBreve = lib('testoCorsoBreve')
+const ric = await impacchetta("export { quoteDi } from './src/lib/ricevute'")
 const seg = await impacchetta("export { pagamentoDi, comePaga, inRegola } from './src/lib/segreteria'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'")
 
 // ---- i dati ----------------------------------------------------------------
@@ -116,6 +117,24 @@ console.log('1. vociCorsiDi: le voci di corso delle ricevute')
   ok('totale: quantità per prezzo della voce, prima di togliere il pagato (centesimi)', Array.isArray(v) ? v.map((x) => x.totale) : v, [13000, 20000])
   ok('un anticipo che copre la ricevuta: non manca niente (come quoteDi)', Array.isArray(anticipo) ? anticipo.map((x) => x.mancano) : anticipo, [0])
   ok('nessuna ricevuta: nessuna voce', vociCorsiDi([]), [])
+  // L'anticipo è la prima rata dell'annuale (come `rateAnnuale`): va al corso, quel che avanza alla quota.
+  // Quota 30 € e annuale 480 €, anticipo 160 €: restano 350 €, 320 sul corso (pagati 160 su 480) e 30 sulla quota.
+  const quotaDaPagare = voce('QUOTA ASSOCIATIVA', '2026-09-01', '2027-07-31', { prezzo: 3000, pagato: 0 })
+  const diviso = vociCorsiDi([ricevuta([quotaDaPagare, voce('Annuale Judo 3', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo: 16000 })])
+  ok('anticipo su quota e annuale: al corso mancano 320 € (pagati 160 su 480)', Array.isArray(diviso) ? diviso.map((x) => [x.mancano, x.totale]) : diviso, [[32000, 48000]])
+  const piuDelCorso = vociCorsiDi([ricevuta([quotaDaPagare, voce('Annuale Judo 3', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo: 49000 })])
+  ok('anticipo più dell\'annuale: il corso è pagato, l\'avanzo va alla quota', Array.isArray(piuDelCorso) ? piuDelCorso.map((x) => x.mancano) : piuDelCorso, [0])
+  const quote = (anticipo) => ric.quoteDi([ricevuta([quotaDaPagare, voce('Annuale Judo 3', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo })]).map((q) => q.mancano)
+  ok('…e alla quota mancano ancora 30 €', quote(16000), [3000])
+  ok('…con l\'anticipo più dell\'annuale alla quota mancano 20 €', quote(49000), [2000])
+  // Trimestre 100 € e annuale 480 €, anticipo 160 €: l'anticipo è dell'annuale, il trimestre resta da pagare.
+  const misto = vociCorsiDi([ricevuta([voce('Trimestre Judo 3', '2026-09-16', '2026-12-15', { prezzo: 10000, pagato: 0 }), voce('Annuale Pilates', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo: 16000 })])
+  ok('trimestre e annuale: l\'anticipo va all\'annuale, non alla prima voce', Array.isArray(misto) ? misto.map((x) => x.mancano) : misto, [10000, 32000])
+  const conAnticipo = persona({ ricevute: [ricevuta([quotaDaPagare, voce('Annuale Judo 3', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo: 16000 })] })
+  const s = statoCorsi(conAnticipo, corsi, listino, OGGI)?.[0]
+  ok('…e lo stato del corso dà al timbro mancano 320 € su 480 €', s && [s.come, s.mancano, s.totale], ['in_parte', 32000, 48000])
+  const soloCorso = vociCorsiDi([ricevuta([voce('Annuale Judo 3', '2026-09-01', '2027-06-30', { prezzo: 48000, pagato: 0 })], { anticipo: 16000 })])
+  ok('anticipo solo sul corso: mancano 320 € come prima', Array.isArray(soloCorso) ? soloCorso.map((x) => x.mancano) : soloCorso, [32000])
 }
 
 console.log('\n2. Trimestre scaduto: il giorno dopo `al`')
