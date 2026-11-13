@@ -65,7 +65,7 @@ Anche le linguette di CONTABILITÀ, del corso (Dati, Iscritti) e di PRESENZE (Il
 
 ## La striscia COSA MANCA
 
-In cima a ogni pagina, tranne **Da fare**, ci sono sei caselle con un numero grande:
+Chi la accende da [IMPOSTAZIONI](regole.md) (all'inizio è nascosta) ha in cima a ogni pagina, tranne **Da fare**, sei caselle con un numero grande:
 **Appelli non fatti** (lezioni degli ultimi 30 giorni senza appello), **Certificati
 scaduti** (termine passato o scaduti; sotto, «+N da portare» per chi è ancora
 nel termine, che non fa rossa la casella), **Pagamenti** (quote non in regola), **Corsi scaduti**

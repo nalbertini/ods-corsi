@@ -351,19 +351,20 @@ console.log('\nNascondere la striscia da IMPOSTAZIONI (la scelta sta sul disposi
       return `ERRORE: ${e.message}`
     }
   }
-  ok('di default la striscia si vede: niente salvato', prova('leggiPreferenzaStriscia', null), true)
-  ok('anche con valori che non si conoscono', ['', 'mostrata', 'Nascosta', 'NASCOSTA', '1', 'false', ' nascosta', undefined, 0, {}].map((v) => prova('leggiPreferenzaStriscia', v)), Array(10).fill(true))
+  ok('di default la striscia è spenta: niente salvato', prova('leggiPreferenzaStriscia', null), false)
+  ok('anche con valori che non si conoscono', ['', 'Mostrata', 'Nascosta', 'NASCOSTA', '1', 'true', ' mostrata', undefined, 0, {}].map((v) => prova('leggiPreferenzaStriscia', v)), Array(10).fill(false))
+  ok('solo «mostrata» la accende', prova('leggiPreferenzaStriscia', 'mostrata'), true)
   ok('solo «nascosta» la nasconde', prova('leggiPreferenzaStriscia', 'nascosta'), false)
   ok('cosa si salva: nascosta o mostrata', [prova('valorePreferenzaStriscia', false), prova('valorePreferenzaStriscia', true)], ['nascosta', 'mostrata'])
   ok('si rilegge quello che si è salvato', [true, false].map((v) => prova('leggiPreferenzaStriscia', prova('valorePreferenzaStriscia', v))), [true, false])
   // Cosa si vede quando il salvataggio non riesce (quota piena, navigazione privata): la scelta fatta in questa pagina vince su
   // quello che c'è salvato, se no Impostazioni e il resto della segreteria vedrebbero due cose diverse.
-  ok('niente salvato e niente scelto: si vede', prova('preferenzaStriscia', null, null), true)
+  ok('niente salvato e niente scelto: spenta', prova('preferenzaStriscia', null, null), false)
   // Sul telefono la striscia parte spenta: solo chi l'ha accesa da IMPOSTAZIONI la vede.
   ok('telefono, niente salvato: spenta', [prova('leggiPreferenzaStriscia', null, true), prova('leggiPreferenzaStriscia', 'valore vecchio', true), prova('preferenzaStriscia', null, null, true)], [false, false, false])
   ok('telefono, accesa a mano: si vede', [prova('leggiPreferenzaStriscia', 'mostrata', true), prova('preferenzaStriscia', null, true, true)], [true, true])
   ok('telefono, spenta a mano: spenta', prova('leggiPreferenzaStriscia', 'nascosta', true), false)
-  ok('computer, niente salvato: si vede', prova('leggiPreferenzaStriscia', null, false), true)
+  ok('computer, niente salvato: spenta anche lì (i conti stanno in DA FARE e nel menu)', prova('leggiPreferenzaStriscia', null, false), false)
   ok('salvata nascosta: nascosta', prova('preferenzaStriscia', 'nascosta', null), false)
   ok('scelta in questa pagina senza poter salvare: vince lei', [prova('preferenzaStriscia', null, false), prova('preferenzaStriscia', 'mostrata', false), prova('preferenzaStriscia', 'nascosta', true)], [false, false, true])
   ok('salvato e scelto uguali: lo stesso', [prova('preferenzaStriscia', 'nascosta', false), prova('preferenzaStriscia', 'mostrata', true)], [false, true])
