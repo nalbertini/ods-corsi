@@ -89,13 +89,15 @@ export function nomeDallaCausale(descrizione: string): string | null {
 
 /**
  * Chi ha fatto il bonifico, da mostrare nella scheda: «Cliente NOME per …» com'è, se no il «DA NOME PER …» dei
- * bonifici SEPA (tutto maiuscolo, la prima «PER» lo chiude) con le maiuscole normali. Solo da mostrare: abbinaPersone
+ * bonifici SEPA (tutto maiuscolo, la prima «PER» lo chiude) con le maiuscole normali. «Cliente» resta
+ * com'è: è il nome scritto a mano nel vecchio programma. Solo da mostrare: abbinaPersone
  * resta su nomeDallaCausale. Un nome con cifre o vuoto non è un nome: null, mai uno indovinato.
  */
 export function ordinanteDallaCausale(descrizione: string): string | null {
   const cliente = nomeDallaCausale(descrizione)
   if (cliente) return cliente
-  const r = /(?:^|\s)DA\s+([A-ZÀ-Ý'’][A-ZÀ-Ý'’ .-]*?)\s+PER\s/.exec(descrizione)
+  // Il «DA» solo in testa o dopo il codice TRN: «QUOTA DA SETTEMBRE PER …» non ha un nome.
+  const r = /^\s*(?:TRN(?:\s+\S+){1,2}\s+)?DA\s+(\p{Lu}[\p{Lu}'’ .-]*?)\s+PER\s/u.exec(descrizione)
   return r ? r[1].replace(/\s+/g, ' ').toLowerCase().replace(/(^|[ '’-])(\p{L})/gu, (_, prima: string, l: string) => prima + l.toUpperCase()) : null
 }
 

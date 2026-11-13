@@ -65,10 +65,11 @@ console.log('\n2b. ordinanteDallaCausale: chi ha fatto il bonifico, da mostrare'
 const da = (d) => prova(() => m.ordinanteDallaCausale(d))
 ok('la causale SEPA vera, con TRN e apostrofo', da('TRN UNCRITMMXXX 1191262827851832 DA D\'ANGELO SARA LUCIA PER Quota trimestrale Judo Verdi Luca BONIFICO SEPA ISTANTANEO'), 'D\'Angelo Sara Lucia')
 ok('senza TRN', da('DA ROSSI MARIO PER quota associativa BONIFICO SEPA'), 'Rossi Mario')
+ok('TRN con un codice solo', da('TRN 1191262827851832 DA ROSSI MARIO PER quota'), 'Rossi Mario')
 ok('l\'apostrofo tipografico', da('DA D’ANGELO SARA PER corso'), 'D’Angelo Sara')
 ok('la prima «PER» chiude il nome, «PER» dentro un cognome no', da('DA PERETTI ALBERTO PER mensile PER tutti'), 'Peretti Alberto')
 ok('«Cliente X per …» resta com\'è', [da('Cliente Giulia Verdi per annuale judo kids'), da('Cliente VERDI GIULIA per quota')], ['Giulia Verdi', 'VERDI GIULIA'])
-ok('senza nome: nessuno, mai uno indovinato', ['Bonifico anonimo per quota', 'quota da settembre per Luca', 'DA PER quota', 'TRN X 123 BONIFICO SEPA', 'DA 12345 PER quota', ''].map(da), [null, null, null, null, null, null])
+ok('senza nome: nessuno, mai uno indovinato', ['Bonifico anonimo per quota', 'quota da settembre per Luca', 'DA PER quota', 'TRN X 123 BONIFICO SEPA', 'DA 12345 PER quota', '', 'QUOTA DA SETTEMBRE PER JUDO BONIFICO SEPA', 'RETTA DA PAGARE PER MARZO', 'SALDO DA VERSARE PER IL CORSO'].map(da), [null, null, null, null, null, null, null, null, null])
 
 console.log('\n3. abbinaPersone: una scheda sola, più d\'una, nessuna')
 const gente = [
