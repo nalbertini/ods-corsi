@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.245.0 — 13 novembre 2026
+
+### Novità
+
+- I bonifici collegati in modo sicuro si assegnano da soli a quota e corsi
+
 ## 0.244.4 — 13 novembre 2026
 
 ### Modificato
