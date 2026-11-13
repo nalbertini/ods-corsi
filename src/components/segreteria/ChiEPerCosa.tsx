@@ -170,7 +170,7 @@ export function ChiEPerCosa({
                 ))}
                 {dati.dato && (
                   <AggiungiVoce
-                    gruppi={vociDaAggiungere(p, dati.dato.corsi, dati.dato.listino, oggi, dovuti.filter((v) => v.personaId === p.id).map((v) => v.voce))}
+                    gruppi={vociDaAggiungere(p, dati.dato.corsi, dati.dato.listino, oggi, dovuti.filter((v) => v.personaId === p.id).map((v) => v.voce), importo)}
                     aperto={menuDi === p.id}
                     onApri={() => setMenuDi(p.id)}
                     onChiudi={() => setMenuDi(null)}
@@ -222,15 +222,17 @@ export function ChiEPerCosa({
 
 export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia, onTogli }: { v: VoceDovuta; testo: string; cent: number | null; nomePersona: string; aMano: boolean; onCambia: (t: string) => void; onTogli?: () => void }) {
   const id = `as-${chiaveDi(v).replace(/[^a-z0-9]/gi, '-')}`
-  const saldo = cent !== null && cent >= v.manca
-  const parziale = cent !== null && cent > 0 && cent < v.manca
+  // L'abbigliamento non ha un prezzo: il suo tetto è il bonifico, né saldo né parziale.
+  const libera = v.tipo === 'abbigliamento'
+  const saldo = !libera && cent !== null && cent >= v.manca
+  const parziale = !libera && cent !== null && cent > 0 && cent < v.manca
   return (
     <div className="stack" style={{ gap: 4 }}>
       <div className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         {/* «Togli» accanto al testo ma fuori dal label: il nome del campo resta la voce. */}
         <span style={{ fontSize: 15, flex: '1 1 200px', minWidth: 0 }}>
           <label htmlFor={id}>
-            {v.voce} <span className="sg-sotto">· {v.aggiunta ? 'dal listino' : aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} {euroAssegna(v.manca)}</span>
+            {v.voce} <span className="sg-sotto">· {libera ? 'quanto è, a mano' : `${v.aggiunta ? 'dal listino' : aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} ${euroAssegna(v.manca)}`}</span>
           </label>
           {onTogli && <>{' '}<span className="sg-sotto">·</span>{' '}<button type="button" className="sg-link sg-pericolo" style={{ ...DITO, fontSize: 13 }} data-bozza aria-label={`Togli ${v.voce}`} onClick={onTogli}>Togli</button></>}
         </span>
