@@ -1548,7 +1548,7 @@ export function rigaFuoriApp(s: Pick<StatoPaga, 'fonte' | 'fino'>): string | nul
   return s.fino ? `fuori app · fino ${alGiorno(s.fino).toLowerCase()}` : 'fuori app'
 }
 
-function timbroQuota(s: StatoPaga, prezzo?: number): Timbro {
+function timbroQuota(s: StatoPaga, prezzo?: PrezzoQuota): Timbro {
   const fuori = rigaFuoriApp(s)
   const fino = s.fino ? [{ testo: `FINO ${alGiorno(s.fino)}` }] : []
   const daFino = fuori ? [{ testo: fuori.toUpperCase() }] : [...(s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : []), ...fino]
@@ -1556,8 +1556,9 @@ function timbroQuota(s: StatoPaga, prezzo?: number): Timbro {
   if (s.come === 'in_parte')
     return { tono: 'giallo', parola: 'IN PARTE', inElenco: 'Pagata in parte', righe: s.fonte === 'ricevuta' ? [{ testo: `MANCANO ${euro(s.mancano ?? 0)} €` }, ...(s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : [])] : daFino }
   if (s.come === 'scaduto') return { tono: 'rosso', parola: 'QUOTA SCADUTA', inElenco: 'Quota scaduta', righe: s.fino ? [{ testo: `VALEVA FINO ${alGiorno(s.fino)}` }] : [] }
-  // Col listino la scheda dice quanto chiedere (centesimi, come voceQuota).
-  return { tono: 'rosso', parola: 'DA PAGARE', inElenco: 'Da pagare', righe: [{ testo: prezzo === undefined ? 'NESSUNA RICEVUTA' : `${euro(prezzo)} €` }] }
+  // Col listino la scheda dice quanto chiedere (centesimi, come voceQuota); senza, niente: mai una riga falsa che poi cambia.
+  const righe = prezzo === 'leggo' ? [{ testo: 'STO LEGGENDO IL LISTINO…' }] : prezzo === undefined ? [] : [{ testo: `${euro(prezzo)} €` }]
+  return { tono: 'rosso', parola: 'DA PAGARE', inElenco: 'Da pagare', righe }
 }
 
 export function timbroDocumento(documento: boolean): Timbro {
@@ -1574,7 +1575,10 @@ export function timbroDocumento(documento: boolean): Timbro {
  * documento si vede ma non conta per «in regola» (vedi `inRegola`). Chi è
  * disattivato li ha spenti, con le stesse parole.
  */
-export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string, prezzoQuota?: number): TimbriScheda {
+/** Il prezzo della quota per il timbro: i centesimi del listino, 'leggo' mentre si legge, undefined se non si è letto. */
+export type PrezzoQuota = number | 'leggo'
+
+export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string, prezzoQuota?: PrezzoQuota): TimbriScheda {
   const t = {
     certificato: timbroCertificato(p.certificato, oggi, p.natoIl),
     quota: timbroQuota(pagamentoDi(p, oggi), prezzoQuota),

@@ -3192,12 +3192,16 @@ console.log('\nsotto i 6 anni il certificato non serve')
   ok('scheda: 6 anni oggi, rosso: MANCA', cert(persona('2020-09-26')).parola, 'MANCA')
   ok('scheda: senza data di nascita, rosso MANCA: senza non entra, niente riga sulla data', cert(persona(undefined)), { tono: 'rosso', parola: 'MANCA', inElenco: 'Manca il certificato', righe: [{ testo: 'SENZA NON ENTRA' }] })
   ok('scheda: con la data di nascita stessa riga, SENZA NON ENTRA', cert(persona('2020-09-26')).righe, [{ testo: 'SENZA NON ENTRA' }])
-  // Il prezzo della quota viene dal listino (voceQuota, in centesimi): se c'è, il timbro lo scrive al posto di NESSUNA RICEVUTA.
+  // Il prezzo della quota viene dal listino (voceQuota, in centesimi): se c'è, il timbro lo scrive.
   const quotaDa = (...a) => vedi(() => L.timbriScheda(persona(cinque, undefined, { quote: [] }), oggi, ...a).quota)
   ok('scheda: quota da pagare col prezzo del listino', quotaDa(5000), { tono: 'rosso', parola: 'DA PAGARE', inElenco: 'Da pagare', righe: [{ testo: '50,00 €' }] })
   // Lo stesso numero che passa la scheda (Iscritti.tsx): era moltiplicato due volte, «5.000,00 €».
   ok('scheda: col prezzo di voceQuota il timbro dice 50,00 €', quotaDa(m.voceQuota().voce(oggi).prezzo).righe, [{ testo: '50,00 €' }])
-  ok('scheda: quota da pagare senza prezzo: NESSUNA RICEVUTA', quotaDa().righe, [{ testo: 'NESSUNA RICEVUTA' }])
+  // Il listino ancora in lettura: la riga lo dice, neutra, e tiene il posto al prezzo (la scheda non salta).
+  ok('scheda: quota da pagare col listino in lettura: niente NESSUNA RICEVUTA', quotaDa('leggo').righe, [{ testo: 'STO LEGGENDO IL LISTINO…' }])
+  // Il listino che non si legge non dice niente di falso: la quota resta DA PAGARE (lo sa la scheda), senza riga.
+  ok('scheda: quota da pagare col listino non letto: nessuna riga', quotaDa().righe, [])
+  ok('scheda: quota pagata col listino in lettura: invariata', vedi(() => L.timbriScheda(persona(cinque), oggi, 'leggo').quota), vedi(() => L.timbriScheda(persona(cinque), oggi).quota))
   ok('scheda: quota pagata col prezzo: invariata', vedi(() => L.timbriScheda(persona(cinque), oggi, 5000).quota), vedi(() => L.timbriScheda(persona(cinque), oggi).quota))
   ok('scheda: il file non porta più DA STAMPARE, nemmeno sotto i 6 anni', vedi(() => cert(persona(cinque, { scade: '2027-06-01', conFile: true })).righe), [{ testo: 'NON SERVE SOTTO I 6 ANNI' }])
   ok('scheda: chi è disattivato ha il timbro spento, con le stesse parole', vedi(() => { const t = L.timbriScheda(persona(cinque, undefined, { attiva: false }), oggi); return [t.certificato.tono, t.certificato.parola] }), ['spento', 'NON SERVE'])
