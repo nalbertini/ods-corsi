@@ -155,6 +155,8 @@ quando arriva la prova.
 - «Chi ha pagato e per cosa?» (`ChiEPerCosa.tsx`), da import, MOVIMENTI e movimento: le
   regole sono provate (`chiEPerCosa`, `righeDaCampi`, `scriviChiEPerCosa`, `ricevutaPerChi`);
   la finestra e i tre punti d'ingresso solo a mano.
+- «Aggiungi una voce dal listino» nella stessa finestra: le voci e l'importo proposto sono provati
+  (`vociDaAggiungere`, `importoProposto`); il link, il menu e «Togli» solo a mano.
 - La chiave della finestra è una per apertura (`useRef` in `ChiEPerCosa.tsx`): provato che
   `scriviChiEPerCosa` la passa, non che il componente la tenga. Solo collaudo a mano.
 - Compensi: `tenuti` in `anagraficaDi` (IBAN e province), `cosaNonVaLettera`,

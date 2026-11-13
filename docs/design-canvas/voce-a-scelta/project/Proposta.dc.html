@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Chi ha pagato e per cosa · voce a scelta</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .riq { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .voce { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+    .voce > span:first-child { flex: 1 1 220px; min-width: 0; }
+    .tag { width: 90px; display: flex; }
+    .con-icona { text-decoration: none; }
+    .con-icona span { text-decoration: underline; text-underline-offset: 3px; }
+    .link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit; }
+  </style>
+</helmet>
+<!-- PROPOSTA, ritoccata dopo l'analisi: ogni riga ha lo stesso posto per il tag (90px), così campi e tag stanno in colonna; «Togli» sta nel testo della voce aggiunta, dopo il prezzo del listino (link da 13px, area di tocco alta 44px come DITO). Nel link «Aggiungi…» è sottolineato solo il testo, non l'icona. In fondo al riquadro di ogni persona il link «Aggiungi una voce dal listino», che apre il menu (tavola Menu). La voce scelta è una riga come le altre, con «dal listino X €» al posto di «manca»; se il corso non è fra i suoi, sotto la riga una nota col nome: l'iscrizione si fa dalla scheda. La tipologia segue le righe come oggi. -->
+<div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:960px;padding:40px 24px;background:rgba(0,0,0,.6)">
+<div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:780px;padding:28px;background:#ffffff;border:2px solid #0d2a3d">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h2 id="titolo" style="margin:0;font-family:'Saira Condensed', Arial, sans-serif;font-style:italic;font-size:26px;font-weight:700;letter-spacing:.04em">CHI HA PAGATO E PER COSA?</h2>
+    <span style="font-size:14px;color:#46606f">04/11/2026 · Da DELLE ROSE SERENA RICCARDI FRANCESCO per Iscrizione Leonardo Riccardi BONIFICO SEPA · <b style="color:#0b7a33">+ 180,00 €</b></span>
+  </div>
+  <label style="display:flex;flex-direction:column;gap:6px"><span class="et">PERSONA · DI CHI È</span>
+    <input type="search" placeholder="Almeno tre lettere del nome o del cognome" aria-label="Cerca per nome o cognome" style="width:100%;min-height:48px;padding:0 12px;background:#ffffff;border:2px solid #0d2a3d;border-radius:6px;font:inherit;font-size:16px;color:#0d2a3d"></label>
+  <label style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:2px solid #14709f;background:#d6e9f5"><input type="radio" name="p" checked style="width:20px;height:20px;margin:0"><span style="display:flex;flex-direction:column"><b>Riccardi Leonardo</b><span class="sotto">nessun dato in più sulla scheda</span></span></label>
+
+  <div class="riq">
+    <span class="et">CHI HA PAGATO</span>
+    <b style="font-size:16px">Riccardi Leonardo</b>
+    <div class="voce"><span>Quota associativa 2026/27 <span class="sotto">· manca 50,00 €</span></span><span class="campo">50,00</span><span class="tag"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+    <div class="stack" style="display:flex;flex-direction:column;gap:4px">
+      <div class="voce"><span>Trimestre Judo kids <span class="sotto">· dal listino 130,00 € ·</span> <button type="button" class="link" style="font-size:13px;min-height:44px" aria-label="Togli Trimestre Judo kids">Togli</button></span><span class="campo">130,00</span><span class="tag"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+      <span class="sotto">Leonardo non è iscritto a Judo kids: l’iscrizione si fa dalla scheda.</span>
+    </div>
+    <div style="border-top:1px solid #cfe6f4;padding-top:4px">
+      <button type="button" class="link con-icona" aria-haspopup="listbox"><dc-import name="Icona" nome="aggiungi" misura="18" hint-size="18px,18px"></dc-import><span>Aggiungi una voce dal listino</span></button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">
+    <span class="num" style="font-size:15px">Assegnati 180,00 € di 180,00 € · Da assegnare 0,00 €</span>
+    <span style="font-size:15px;color:#b3261e;text-decoration:underline">Svuota tutto</span>
+  </div>
+  <span class="sotto">TIPOLOGIA: «Corsi e altri pagamenti», da quel che paga.</span>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" hint-size="140px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Conferma e fai la ricevuta" hint-size="250px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="120px,48px"></dc-import>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":960}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

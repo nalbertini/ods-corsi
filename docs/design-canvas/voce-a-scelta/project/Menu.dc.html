@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Aggiungi una voce dal listino · il menu</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #ffffff; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .voce { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+    .voce > span:first-child { flex: 1 1 220px; min-width: 0; }
+    .tag { width: 90px; display: flex; }
+    .elenco { width: 360px; max-width: 100%; padding: 4px 0; font: inherit; font-size: 15px; color: #0d2a3d; background: #ffffff; border: 2px solid #14709f; }
+    .elenco optgroup { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .1em; color: #46606f; font-style: normal; }
+    .elenco option { font-family: Inter, Arial, sans-serif; font-size: 15px; letter-spacing: 0; color: #0d2a3d; padding: 6px 12px; }
+  </style>
+</helmet>
+<!-- PROPOSTA: il menu che apre «Aggiungi una voce dal listino». Nell'app è un <select> nativo (tastiera, telefono e lettore di schermo gratis), con le voci del listino di oggi raggruppate per corso (<optgroup>): prima i corsi a cui la persona è iscritta (qui nessuno), poi gli altri in ordine di nome; dentro Trimestre, Annuale, Saldo, solo quelle col prezzo. La quota compare solo se non è già fra le righe. Qui il menu è disegnato aperto. -->
+<div style="width:780px;padding:20px;background:#ffffff">
+<div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#ffffff;border:2px solid #cfe6f4">
+  <span class="et">CHI HA PAGATO</span>
+  <b style="font-size:16px">Riccardi Leonardo</b>
+  <div class="voce"><span>Quota associativa 2026/27 <span class="sotto">· manca 50,00 €</span></span><span class="campo">50,00</span><span class="tag"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+  <label for="aggiungi" style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #cfe6f4;padding-top:8px"><span style="font-size:15px;font-weight:600">Aggiungi una voce dal listino</span>
+    <select id="aggiungi" class="elenco" size="10">
+      <optgroup label="JUDO KIDS">
+        <option>Trimestre · 130,00 €</option>
+        <option>Annuale · 360,00 €</option>
+      </optgroup>
+      <optgroup label="JUDO RAGAZZI">
+        <option>Trimestre · 140,00 €</option>
+        <option>Annuale · 390,00 €</option>
+      </optgroup>
+      <optgroup label="PILATES">
+        <option>Trimestre · 150,00 €</option>
+        <option>Annuale · 400,00 €</option>
+        <option>Saldo · 100,00 €</option>
+      </optgroup>
+    </select>
+  </label>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":780,"height":520}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

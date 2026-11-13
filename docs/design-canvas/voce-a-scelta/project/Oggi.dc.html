@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Chi ha pagato e per cosa · oggi</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .riq { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .voce { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+    .voce > span:first-child { flex: 1 1 220px; min-width: 0; }
+  </style>
+</helmet>
+<!-- OGGI (ChiEPerCosa.tsx, regole in chiEPerCosa di src/lib/assegna.ts): Riccardi Leonardo non è iscritto a nessun corso, quindi l'unica cosa da pagare è la quota. Il bonifico è quota + trimestrale, ma la finestra non offre altre voci: si cambia solo l'importo. -->
+<div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:900px;padding:40px 24px;background:rgba(0,0,0,.6)">
+<div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:780px;padding:28px;background:#ffffff;border:2px solid #0d2a3d">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h2 id="titolo" style="margin:0;font-family:'Saira Condensed', Arial, sans-serif;font-style:italic;font-size:26px;font-weight:700;letter-spacing:.04em">CHI HA PAGATO E PER COSA?</h2>
+    <span style="font-size:14px;color:#46606f">04/11/2026 · Da DELLE ROSE SERENA RICCARDI FRANCESCO per Iscrizione Leonardo Riccardi BONIFICO SEPA · <b style="color:#0b7a33">+ 180,00 €</b></span>
+  </div>
+  <label style="display:flex;flex-direction:column;gap:6px"><span class="et">PERSONA · DI CHI È</span>
+    <input type="search" placeholder="Almeno tre lettere del nome o del cognome" aria-label="Cerca per nome o cognome" style="width:100%;min-height:48px;padding:0 12px;background:#ffffff;border:2px solid #0d2a3d;border-radius:6px;font:inherit;font-size:16px;color:#0d2a3d"></label>
+  <label style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:2px solid #14709f;background:#d6e9f5"><input type="radio" name="p" checked style="width:20px;height:20px;margin:0"><span style="display:flex;flex-direction:column"><b>Riccardi Leonardo</b><span class="sotto">nessun dato in più sulla scheda</span></span></label>
+
+  <div class="riq">
+    <span class="et">CHI HA PAGATO</span>
+    <b style="font-size:16px">Riccardi Leonardo</b>
+    <div class="voce"><span>Quota associativa 2026/27 <span class="sotto">· manca 50,00 €</span></span><span class="campo">50,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">
+    <span class="num" style="font-size:15px">Assegnati 50,00 € di 180,00 € · Da assegnare 130,00 €</span>
+    <span style="font-size:15px;color:#b3261e;text-decoration:underline">Svuota tutto</span>
+  </div>
+  <span class="sotto">TIPOLOGIA: «Quota associativa», da quel che paga.</span>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" hint-size="140px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Conferma e fai la ricevuta" hint-size="250px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="120px,48px"></dc-import>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

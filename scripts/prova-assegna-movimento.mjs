@@ -85,6 +85,10 @@ const bonificiLiberi = lib('bonificiLiberi')
 const euroAssegna = lib('euroAssegna')
 const cosaNonVaQuota = lib('cosaNonVaQuota')
 const dovutiDi = lib('dovutiDi')
+const righeDaCampi = lib('righeDaCampi')
+const tipologiaDaRighe = lib('tipologiaDaRighe')
+const vociDaAggiungere = lib('vociDaAggiungere')
+const importoProposto = lib('importoProposto')
 const pagatoAMano = lib('pagatoAMano')
 const senzaSegnoAMano = lib('senzaSegnoAMano')
 const dovutiDelNucleo = lib('dovutiDelNucleo')
@@ -321,6 +325,46 @@ console.log('\n3e. La causale dice «trimestrale»: si propone il trimestre, non
   ok('…240 €: quota e trimestre pieni, niente resta da pagare sull’annuale',
     prova(() => proponiRipartizione(24000, dovutiDi(susanna, corsi, listino, oggi, gia, 'quota + trimestrale judo')).righe.map((r) => [r.voce, r.importo])),
     [['Quota associativa 2026/27', 5000], ['Trimestre Judo adulti', 19000]])
+}
+
+console.log('\n3f. Una voce dal listino, anche per un corso a cui non è iscritto')
+{
+  // Il caso vero: 180 € «per Iscrizione Leonardo», Leonardo senza iscrizioni. La finestra dava solo la quota:
+  // il trimestrale dentro il bonifico non si poteva scegliere.
+  const oggi = '2026-11-04'
+  const listino = {
+    quota: 50, saldoEntro: '2026-08-31', offerte: [], senzaPrezzoVaBene: [],
+    corsi: [
+      { corso: 'Pilates', eta: '', orari: [], prezzi: [{ annuale: 400 }] },
+      { corso: 'Judo kids', eta: '', orari: [], prezzi: [{ annuale: 360, trimestre: 130 }] },
+    ],
+  }
+  const corsi = [{ id: 'kids', nome: 'Judo kids' }, { id: 'pil', nome: 'Pilates' }]
+  const leo = { id: 'leo', iscrizioni: [] }
+  const menu = (p, gia = []) => prova(() => vociDaAggiungere(p, corsi, listino, oggi, gia).map((g) => [g.corso, g.suo, g.voci.map((v) => v.etichetta)]))
+  ok('senza iscrizioni: tutti i corsi del listino per nome, con le voci col prezzo', menu(leo),
+    [['Judo kids', false, ['Annuale · 360,00 €', 'Trimestre · 130,00 €']], ['Pilates', false, ['Annuale · 400,00 €']]])
+  ok('…prima i corsi a cui è iscritto', menu({ id: 'leo', iscrizioni: [{ corsoId: 'pil', dal: '2026-09-01' }] })[0], ['Pilates', true, ['Annuale · 400,00 €']])
+  ok('…un’iscrizione finita non conta', menu({ id: 'leo', iscrizioni: [{ corsoId: 'pil', dal: '2025-09-01', al: '2026-06-30' }] })[0][0], 'Judo kids')
+  ok('…un corso con più righe di prezzo ha un gruppo per riga, col suo nome', prova(() => vociDaAggiungere(leo, corsi,
+    { ...listino, corsi: [{ corso: 'Fitness', eta: '', orari: [], prezzi: [{ etichetta: '2 giorni', annuale: 340, trimestre: 130 }, { etichetta: '3 giorni', annuale: 450 }] }] }, oggi, [])
+    .map((g) => [g.corso, g.voci.map((v) => [v.etichetta, v.dovuta.voce])])),
+  [['Fitness 2 giorni', [['Annuale · 340,00 €', 'Annuale Fitness 2 giorni'], ['Trimestre · 130,00 €', 'Trimestre Fitness 2 giorni']]], ['Fitness 3 giorni', [['Annuale · 450,00 €', 'Annuale Fitness 3 giorni']]]])
+  ok('…una voce che è già una riga di quella persona non si ripete', menu(leo, ['Trimestre Judo kids']),
+    [['Judo kids', false, ['Annuale · 360,00 €']], ['Pilates', false, ['Annuale · 400,00 €']]])
+  const trimestre = prova(() => vociDaAggiungere(leo, corsi, listino, oggi, []).find((g) => g.corso === 'Judo kids').voci[1].dovuta)
+  ok('la voce scelta è una cosa da pagare di quella persona, col prezzo del listino come tetto', trimestre,
+    { personaId: 'leo', voce: 'Trimestre Judo kids', tipo: 'corso', dal: oggi, manca: 13000, aggiunta: { corso: 'Judo kids', suo: false } })
+  const quota = { personaId: 'leo', voce: 'Quota associativa 2026/27', tipo: 'quota', dal: '2026-09-01', manca: 5000 }
+  const chiave = (v) => `${v.personaId}\u0000${v.voce}`
+  ok('180 €: quota e trimestre, nessun guaio', prova(() => righeDaCampi([quota, trimestre], { [chiave(quota)]: '50,00', [chiave(trimestre)]: '130,00' }, 18000)),
+    { righe: [{ personaId: 'leo', voce: 'Quota associativa 2026/27', importo: 5000 }, { personaId: 'leo', voce: 'Trimestre Judo kids', importo: 13000 }], guaio: null })
+  ok('…più del prezzo del listino non va', prova(() => righeDaCampi([trimestre], { [chiave(trimestre)]: '140,00' }, 18000).guaio),
+    'A «Trimestre Judo kids» mancano 130,00 €: metti 130,00 € o meno, il resto rimane da assegnare.')
+  ok('la voce aggiunta parte da quel che resta del bonifico: 180 € con 50 già messi → 130 €', prova(() => importoProposto(13000, 18000, 5000)), 13000)
+  ok('…non oltre il prezzo del listino', prova(() => importoProposto(13000, 18000, 0)), 13000)
+  ok('…e niente se il bonifico è già tutto assegnato', prova(() => importoProposto(13000, 18000, 18000)), 0)
+  ok('…e la tipologia diventa «Corsi e altri pagamenti»', prova(() => tipologiaDaRighe([{ personaId: 'leo', voce: 'Quota associativa 2026/27', importo: 5000 }, { personaId: 'leo', voce: 'Trimestre Judo kids', importo: 13000 }])), 'Corsi e altri pagamenti')
 }
 
 console.log('\n4. Quali movimenti si assegnano, e a chi')
