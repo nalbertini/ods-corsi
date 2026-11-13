@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Oggi · il menu del listino</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #ffffff; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .elenco { width: 360px; max-width: 100%; padding: 4px 0; font: inherit; font-size: 15px; color: #0d2a3d; background: #ffffff; border: 2px solid #14709f; }
+    .elenco optgroup { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .1em; color: #46606f; font-style: normal; }
+    .elenco option { font-family: Inter, Arial, sans-serif; font-size: 15px; letter-spacing: 0; color: #0d2a3d; padding: 6px 12px; }
+  </style>
+</helmet>
+<!-- OGGI (ChiEPerCosa.tsx, AggiungiVoce; vociDaAggiungere di assegna.ts, PR 857): «Aggiungi una voce dal listino» apre un <select> nativo con tutte le voci di tutti i corsi del listino in <optgroup>, prima i suoi; in fondo il gruppo finto ABBIGLIAMENTO con «Prezzo a mano», che non tocca l'ordine in VESTIARIO. Con molti corsi si scorre a lungo; il trimestre del suo corso è a due tocchi più uno scorrimento. Qui il menu è disegnato aperto. -->
+<div style="width:780px;padding:20px;background:#ffffff">
+<div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#ffffff;border:2px solid #cfe6f4">
+  <span class="et">CHI HA PAGATO</span>
+  <b style="font-size:16px">Scelsi Nicole</b>
+  <span class="sotto">Niente da pagare: corsi e quota a posto.</span>
+  <label for="aggiungi" style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #cfe6f4;padding-top:8px"><span style="font-size:15px;font-weight:600">Aggiungi una voce dal listino</span>
+    <select id="aggiungi" class="elenco" size="14">
+      <optgroup label="LOTTA RAGAZZI">
+        <option>Trimestre · 130,00 €</option>
+        <option>Annuale · 360,00 €</option>
+      </optgroup>
+      <optgroup label="JUDO KIDS">
+        <option>Trimestre · 130,00 €</option>
+        <option>Annuale · 360,00 €</option>
+      </optgroup>
+      <optgroup label="JUDO RAGAZZI">
+        <option>Trimestre · 140,00 €</option>
+        <option>Annuale · 390,00 €</option>
+      </optgroup>
+      <optgroup label="PILATES">
+        <option>Trimestre · 150,00 €</option>
+        <option>Annuale · 400,00 €</option>
+      </optgroup>
+      <optgroup label="ABBIGLIAMENTO">
+        <option>Prezzo a mano</option>
+      </optgroup>
+    </select>
+  </label>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":780,"height":620}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Chi ha pagato e per cosa · vestiario e listino</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .scelta { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; font: inherit; font-size: 15px; color: #0d2a3d; background: #ffffff; border: 2px solid #8fb7cf; border-radius: 6px; cursor: pointer; }
+    .scelta b { font-weight: 600; }
+    .link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font: inherit; font-size: 15px; font-weight: 600; color: #0d2a3d; background: none; border: 0; padding: 0; cursor: pointer; }
+    .link span { text-decoration: underline; text-underline-offset: 3px; }
+  </style>
+</helmet>
+<!-- PROPOSTA (parte da ../ods-design-system/ChiEPerCosa.dc.html), il caso di tutti i giorni: nessun ordine del vestiario. Sotto le cose da pagare, PAGA ANCHE: la quota associativa dell’anno (se non è già una riga), le voci dei corsi a cui è iscritta come scelte da un tocco (corso · voce · prezzo), «Abbigliamento» (a mano, sempre c'è: è il caso più frequente) e «Altro corso…» che apre la ricerca (vedi AltroCorso). Al posto del <select> lungo con tutti i corsi. Se c'è un ordine da saldare in VESTIARIO che combacia, sopra compare in più ORDINI DEL VESTIARIO (vedi ConOrdine). Il riquadro giallo «Già pagato a mano», quando c'è, resta dov'è oggi: qui non è disegnato. -->
+<div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:1080px;padding:40px 24px;background:rgba(0,0,0,.6)">
+<div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:780px;padding:28px;background:#ffffff;border:2px solid #0d2a3d">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h2 id="titolo" style="margin:0;font-family:'Saira Condensed', Arial, sans-serif;font-style:italic;font-size:26px;font-weight:700;letter-spacing:.04em">CHI HA PAGATO E PER COSA?</h2>
+    <span style="font-size:14px;color:#46606f">14/10/2026 · Da DANIELA FERRETTI per tuta lotta Nicole Scelsi · BONIFICO SEPA ISTANTANEO · <b style="color:#0b7a33">+ 40,00 €</b></span>
+  </div>
+  <label style="display:flex;flex-direction:column;gap:6px"><span class="et">PERSONA · DI CHI È</span>
+    <input type="search" value="Nicole" aria-label="Cerca per nome o cognome" style="width:100%;min-height:48px;padding:0 12px;background:#ffffff;border:2px solid #0d2a3d;border-radius:6px;font:inherit;font-size:16px;color:#0d2a3d"></label>
+  <label style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:2px solid #14709f;background:#d6e9f5"><input type="radio" name="p" checked style="width:20px;height:20px;margin:0"><span style="display:flex;flex-direction:column"><b>Scelsi Nicole</b><span class="sotto">Lotta ragazzi</span></span></label>
+
+  <div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#ffffff;border:2px solid #cfe6f4">
+    <span class="et">CHI HA PAGATO</span>
+    <b style="font-size:16px">Scelsi Nicole</b>
+    <span class="sotto">Niente da pagare: corsi e quota a posto.</span>
+
+    <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #cfe6f4;padding-top:10px">
+      <span class="et">PAGA ANCHE</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="scelta"><b>Quota associativa 2026/27</b> <span class="num sotto">50,00 €</span></button>
+        <button type="button" class="scelta">Lotta ragazzi · <b>Trimestre</b> <span class="num sotto">130,00 €</span></button>
+        <button type="button" class="scelta">Lotta ragazzi · <b>Annuale</b> <span class="num sotto">360,00 €</span></button>
+        <button type="button" class="scelta"><dc-import name="Icona" nome="vestiario" misura="18" hint-size="18px,18px"></dc-import><b>Abbigliamento</b> <span class="sotto">a mano</span></button>
+        <button type="button" class="link"><dc-import name="Icona" nome="cerca" misura="18" hint-size="18px,18px"></dc-import><span>Altro corso…</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">
+    <span class="num" style="font-size:15px">Assegnati 0,00 € di 40,00 € · Da assegnare 40,00 €</span>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" disabilitato="true" hint-size="140px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Solo la persona, decido dopo" hint-size="270px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="120px,48px"></dc-import>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":1080}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

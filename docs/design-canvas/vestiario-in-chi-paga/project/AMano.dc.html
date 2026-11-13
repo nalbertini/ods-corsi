@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Abbigliamento a mano</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #ffffff; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .voce { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+    .voce > span:first-child { flex: 1 1 220px; min-width: 0; }
+    .togli { font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; color: #b3261e; text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; padding: 0; cursor: pointer; }
+  </style>
+</helmet>
+<!-- PROPOSTA: dopo il tocco su «Abbigliamento». La riga è quella di oggi: importo proposto = quel che resta del bonifico, si corregge a mano, né Saldo né Parziale (non c'è un prezzo). «Abbigliamento» sparisce dalle scelte finché la riga c'è; «Togli» la rimette. Non tocca nessun ordine in VESTIARIO. -->
+<div style="width:780px;padding:20px;background:#ffffff">
+<div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#ffffff;border:2px solid #cfe6f4">
+  <span class="et">CHI HA PAGATO</span>
+  <b style="font-size:16px">Scelsi Nicole</b>
+  <div class="voce"><span>Abbigliamento <span class="sotto">· a mano ·</span> <button type="button" class="togli" aria-label="Togli Abbigliamento">Togli</button></span><span class="campo">40,00</span><span style="width:90px"></span></div>
+  <span class="num" style="font-size:15px;padding-top:8px">Assegnati 40,00 € di 40,00 € · Da assegnare 0,00 €</span>
+  <span class="sotto">TIPOLOGIA: «Abbigliamento», da quel che paga.</span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":780,"height":380}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
