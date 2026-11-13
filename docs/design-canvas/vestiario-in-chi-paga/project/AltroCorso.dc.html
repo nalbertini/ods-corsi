@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Altro corso</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #ffffff; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .scelta { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; font: inherit; font-size: 15px; color: #0d2a3d; background: #ffffff; border: 2px solid #8fb7cf; border-radius: 6px; cursor: pointer; }
+    .scelta b { font-weight: 600; }
+    .gruppo { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; }
+    .gruppo > span:first-child { width: 150px; font-size: 15px; font-weight: 600; }
+    .link { display: inline-flex; align-items: center; min-height: 44px; font: inherit; font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; padding: 0; cursor: pointer; }
+  </style>
+</helmet>
+<!-- PROPOSTA: «Altro corso…» apre al suo posto un campo di ricerca (autofocus) sugli ALTRI corsi del listino di oggi: si scrive e restano solo i corsi col nome che combacia (senza maiuscole né accenti). Ogni corso è una riga col nome e le sue voci come scelte da un tocco, le stesse dei corsi suoi. Un tocco aggiunge la riga e chiude la ricerca; «Chiudi» o Esc la chiude senza aggiungere. Senza testo si vedono tutti, in ordine di nome: con pochi corsi basta scorrere, con molti si scrive. Nessun risultato: «Nessun corso con “…”». Sotto il corso scelto, se non è iscritta, la nota di oggi: «… non ha l'iscrizione a …: si fa dalla scheda». -->
+<div style="width:780px;padding:20px;background:#ffffff">
+<div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#ffffff;border:2px solid #cfe6f4">
+  <span class="et">AGGIUNGI DAL LISTINO</span>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button type="button" class="scelta">Lotta ragazzi · <b>Trimestre</b> <span class="num sotto">130,00 €</span></button>
+    <button type="button" class="scelta">Lotta ragazzi · <b>Annuale</b> <span class="num sotto">360,00 €</span></button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #cfe6f4;padding-top:10px">
+    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+      <label style="display:flex;flex-direction:column;gap:6px;flex:1 1 320px"><span style="font-size:15px;font-weight:600">Altro corso</span>
+        <input type="search" value="lot" aria-label="Cerca un altro corso per nome" style="width:100%;min-height:48px;padding:0 12px;background:#ffffff;border:2px solid #14709f;border-radius:6px;font:inherit;font-size:16px;color:#0d2a3d"></label>
+      <button type="button" class="link">Chiudi</button>
+    </div>
+    <span class="sotto" role="status">2 corsi con «lot»</span>
+    <div class="gruppo"><span>Lotta adulti</span>
+      <button type="button" class="scelta"><b>Trimestre</b> <span class="num sotto">150,00 €</span></button>
+      <button type="button" class="scelta"><b>Annuale</b> <span class="num sotto">400,00 €</span></button>
+    </div>
+    <div class="gruppo"><span>Lotta kids</span>
+      <button type="button" class="scelta"><b>Trimestre</b> <span class="num sotto">120,00 €</span></button>
+      <button type="button" class="scelta"><b>Annuale</b> <span class="num sotto">330,00 €</span></button>
+      <button type="button" class="scelta"><b>Saldo</b> <span class="num sotto">90,00 €</span></button>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":780,"height":620}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

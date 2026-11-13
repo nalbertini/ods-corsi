@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Con un ordine del vestiario</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #ffffff; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .scelta { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; font: inherit; font-size: 15px; color: #0d2a3d; background: #ffffff; border: 2px solid #8fb7cf; border-radius: 6px; cursor: pointer; }
+    .scelta b { font-weight: 600; }
+    .link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font: inherit; font-size: 15px; font-weight: 600; color: #0d2a3d; background: none; border: 0; padding: 0; cursor: pointer; }
+    .link span { text-decoration: underline; text-underline-offset: 3px; }
+  </style>
+</helmet>
+<!-- PROPOSTA, il caso raro: in VESTIARIO c'è un ordine da saldare che combacia con una persona del nucleo (cognome e nome di chi ordina o per chi è; telefono diverso = scartato). Si propone sotto ogni persona del nucleo; scelto per una, sparisce dalle altre. Solo allora, sopra PAGA ANCHE, la sezione ORDINI DEL VESTIARIO: per ordine chi l'ha fatto e per chi, data, capi, raccolta, quel che manca, e «È questo ordine» (vedi OrdineScelto). Due ordini simili: si vedono tutti e due, nessuno scelto da solo. «Abbigliamento» a mano resta fra le scelte. -->
+<div style="width:780px;padding:20px;background:#ffffff">
+<div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#ffffff;border:2px solid #cfe6f4">
+  <span class="et">CHI HA PAGATO</span>
+  <b style="font-size:16px">Scelsi Nicole</b>
+  <span class="sotto">Niente da pagare: corsi e quota a posto.</span>
+  <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #cfe6f4;padding-top:10px">
+    <span class="et" style="display:flex;align-items:center;gap:8px"><dc-import name="Icona" nome="vestiario" misura="16" hint-size="16px,16px"></dc-import>ORDINI DEL VESTIARIO · 1</span>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <span style="flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:15px">Ordine di Ferretti Daniela <span class="sotto">· per Nicole · 28/09/2026</span></span>
+        <span class="sotto">Tuta lotta 152 · Raccolta autunno 2026 · tel. …123</span>
+      </span>
+      <span style="display:flex;flex-direction:column;align-items:flex-end"><span class="num" style="font-size:15px;font-weight:600">mancano 40,00 €</span><span class="sotto num">di 40,00 €</span></span>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="È questo ordine" hint-size="170px,44px"></dc-import>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #cfe6f4;padding-top:10px">
+    <span class="et">PAGA ANCHE</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" class="scelta"><b>Quota associativa 2026/27</b> <span class="num sotto">50,00 €</span></button>
+      <button type="button" class="scelta">Lotta ragazzi · <b>Trimestre</b> <span class="num sotto">130,00 €</span></button>
+      <button type="button" class="scelta">Lotta ragazzi · <b>Annuale</b> <span class="num sotto">360,00 €</span></button>
+      <button type="button" class="scelta"><dc-import name="Icona" nome="vestiario" misura="18" hint-size="18px,18px"></dc-import><b>Abbigliamento</b> <span class="sotto">a mano</span></button>
+      <button type="button" class="link"><dc-import name="Icona" nome="cerca" misura="18" hint-size="18px,18px"></dc-import><span>Altro corso…</span></button>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":780,"height":520}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

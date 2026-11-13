@@ -1,5 +1,7 @@
-import { useMemo, useRef, useState } from 'react'
-import { chiEPerCosa, euroAssegna, importoProposto, righeDaCampi, tipologiaDaRighe, vociDaAggiungere, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { cercaCorsi, chiaveVoce, chiEPerCosa, mancaOrdine, euroAssegna, importoProposto, ordiniDelNucleo, righeDaCampi, tipologiaDaRighe, vociDaAggiungere, voceOrdine, type RigaAssegnata, type VoceDovuta } from '../../lib/assegna'
+import { cifreTelefono, type Ordine } from '../../lib/vestiario'
+import type { NomeIcona } from '../../lib/icone'
 import { listinoUsabile } from '../../lib/listino'
 import { VOCE_PIU_CORSI } from '../../lib/nucleo'
 import type { CandidatoPersona } from '../../lib/movimentiPersona'
@@ -13,7 +15,7 @@ import { DITO, Guaio, Tag, Tasto, useBozza, useCarica, useDialogo } from './comu
 
 // Cognome e nome, come negli elenchi.
 const nome = (p?: Pick<PersonaSeg, 'nome' | 'cognome'>) => (p ? `${p.cognome} ${p.nome}` : '…')
-const chiaveDi = (x: { personaId: string; voce: string }) => `${x.personaId}\u0000${x.voce}`
+const chiaveDi = chiaveVoce
 const valoriDa = (righe: RigaAssegnata[]) => Object.fromEntries(righe.map((r) => [chiaveDi(r), euro(r.importo)]))
 
 /** Quel che la finestra ha deciso: chi ha pagato e le righe (vuote con «Solo la persona»). */
@@ -55,10 +57,12 @@ export function ChiEPerCosa({
   const ref = useDialogo<HTMLDivElement>(onChiudi)
   const oggi = oggiARoma()
   const dati = useCarica(async () => {
-    const [persone, corsi, letto, diretti, ricevute] = await Promise.all([
+    const [persone, corsi, letto, diretti, ricevute, ordini] = await Promise.all([
       d.persone(), d.corsi(), d.listino(), gia ? Promise.resolve(gia.diretti) : d.pagamentiDiretti(), gia ? Promise.resolve(gia.ricevute) : d.ricevute(),
+      // Senza gli ordini (rete, o il database senza il 157) la finestra va avanti: l'abbigliamento si mette a mano.
+      d.ordiniVestiarioDaSaldare().catch(() => null),
     ])
-    return { persone, corsi, listino: listinoUsabile(letto.listino, corsi), diretti, ricevute }
+    return { persone, corsi, listino: listinoUsabile(letto.listino, corsi), diretti, ricevute, ordini: ordini ?? [] }
   }, [d])
   const [qui, setQui] = useState<{ id: string; nome: string; cognome: string } | null>(() => {
     const s = suggerite.find((c) => c.id === personaIniziale)
@@ -70,7 +74,7 @@ export function ChiEPerCosa({
   const [questo, setQuesto] = useState<string[]>([])
   const [nonQuesto, setNonQuesto] = useState<string[]>([])
   const [nonLaRicevuta, setNonLaRicevuta] = useState(false)
-  // «Aggiungi una voce dal listino»: le voci scelte a mano, e la persona di cui è aperto il menu.
+  // PAGA ANCHE e gli ordini del vestiario: le voci scelte a mano, e la persona di cui è aperto «Altro corso…».
   const [aggiunte, setAggiunte] = useState<VoceDovuta[]>([])
   const [menuDi, setMenuDi] = useState<string | null>(null)
   const situazione = useMemo(
@@ -167,14 +171,15 @@ export function ChiEPerCosa({
                 </span>
                 {!dovuti.some((v) => v.personaId === p.id) && <span className="sg-sotto">Niente da pagare: corsi e quota a posto.</span>}
                 {letti.filter((x) => x.v.personaId === p.id).map(({ v, testo: t, cent }) => (
-                  <RigaDovuta key={chiaveDi(v)} v={v} testo={t} cent={cent} nomePersona={p.nome} aMano={questo.includes(p.id)} onCambia={(x) => setValori({ ...mostrati, [chiaveDi(v)]: x })} onTogli={v.aggiunta ? () => togli(v) : undefined} />
+                  <RigaDovuta key={chiaveDi(v)} v={v} testo={t} cent={cent} nomePersona={p.nome} aMano={questo.includes(p.id)} onCambia={(x) => setValori({ ...mostrati, [chiaveDi(v)]: x })} onTogli={aggiunte.some((x) => chiaveDi(x) === chiaveDi(v)) ? () => togli(v) : undefined} />
                 ))}
                 {dati.dato && (
-                  <AggiungiVoce
-                    gruppi={vociDaAggiungere(p, dati.dato.corsi, dati.dato.listino, oggi, dovuti.filter((v) => v.personaId === p.id).map((v) => v.voce), importo)}
-                    aperto={menuDi === p.id}
-                    onApri={() => setMenuDi(p.id)}
-                    onChiudi={() => setMenuDi(null)}
+                  <PagaAnche
+                    scelte={vociDaAggiungere(p, dati.dato.corsi, dati.dato.listino, oggi, dovuti.filter((v) => v.personaId === p.id).map((v) => v.voce), importo, dati.dato)}
+                    ordini={ordiniDelNucleo(situazione.nucleo.map((x) => x.persona), dati.dato.ordini, aggiunte.flatMap((v) => (v.ordine ? [v.ordine.id] : [])))}
+                    personaId={p.id}
+                    cerca={menuDi === p.id}
+                    onCerca={(si) => setMenuDi(si ? p.id : null)}
                     onScegli={aggiungi}
                   />
                 )}
@@ -223,8 +228,8 @@ export function ChiEPerCosa({
 
 export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia, onTogli }: { v: VoceDovuta; testo: string; cent: number | null; nomePersona: string; aMano: boolean; onCambia: (t: string) => void; onTogli?: () => void }) {
   const id = `as-${chiaveDi(v).replace(/[^a-z0-9]/gi, '-')}`
-  // L'abbigliamento non ha un prezzo: il suo tetto è il bonifico, né saldo né parziale.
-  const libera = v.tipo === 'abbigliamento'
+  // L'abbigliamento a mano non ha un prezzo: il suo tetto è il bonifico, né saldo né parziale. Quello di un ordine sì.
+  const libera = v.tipo === 'abbigliamento' && !v.ordine
   const saldo = !libera && cent !== null && cent >= v.manca
   const parziale = !libera && cent !== null && cent > 0 && cent < v.manca
   // La voce «più corsi» elenca tutti i corsi: in riga il nome breve, i corsi sotto.
@@ -237,7 +242,7 @@ export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia, onTog
         {/* «Togli» accanto al testo ma fuori dal label: il nome del campo resta la voce. */}
         <span style={{ fontSize: 15, flex: '1 1 200px', minWidth: 0 }}>
           <label htmlFor={id}>
-            {nome} <span className="sg-sotto">· {libera ? 'quanto è, a mano' : `${v.aggiunta ? 'dal listino' : aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} ${euroAssegna(v.manca)}`}</span>
+            {nome} <span className="sg-sotto">· {libera ? 'a mano' : `${v.ordine ? `ordine di ${v.ordine.di} · manca` : v.aggiunta ? 'dal listino' : aMano ? `${v.tipo === 'quota' ? 'pagata' : 'pagato'} a mano,` : 'manca'} ${euroAssegna(v.manca)}`}</span>
           </label>
           {onTogli && <>{' '}<span className="sg-sotto">·</span>{' '}<button type="button" className="sg-link sg-pericolo" style={{ ...DITO, fontSize: 13 }} data-bozza aria-label={`Togli ${v.voce}`} onClick={onTogli}>Togli</button></>}
           {corsi && <span className="sg-sotto" style={{ display: 'block' }}>{corsi.join(' · ')}</span>}
@@ -249,7 +254,9 @@ export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia, onTog
           {parziale && <Tag tipo="aspetta">Parziale</Tag>}
         </span>
       </div>
-      {parziale && cent !== null && (
+      {v.ordine && saldo && <span className="sg-sotto">Con Conferma l’ordine di {v.ordine.di} in VESTIARIO diventa saldato, con bonifico.</span>}
+      {v.ordine && parziale && <span className="sg-sotto">Copre solo una parte: l’ordine in VESTIARIO resta com’è, si segna lì.</span>}
+      {!v.ordine && parziale && cent !== null && (
         <span className="sg-sotto">Resteranno {euroAssegna(v.manca - cent)} su «{corsi ? VOCE_PIU_CORSI : v.voce}»: si vedono nella scheda di {nomePersona}.</span>
       )}
       {v.aggiunta && !v.aggiunta.suo && <span className="sg-sotto">{nomePersona} non ha l’iscrizione a {v.aggiunta.corso}: si fa dalla scheda.</span>}
@@ -257,47 +264,101 @@ export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia, onTog
   )
 }
 
-/** «Aggiungi una voce dal listino»: un link che apre un <select> nativo con le voci per corso (`vociDaAggiungere`). */
-function AggiungiVoce({ gruppi, aperto, onApri, onChiudi, onScegli }: {
-  gruppi: ReturnType<typeof vociDaAggiungere>
-  aperto: boolean
-  onApri: () => void
-  onChiudi: () => void
+/** Una scelta da un tocco: la formula (o la voce) in grassetto, il prezzo in grigio. */
+function Scelta({ forte, dopo, icona, corso, onClick }: { forte: string; dopo?: string; icona?: NomeIcona; corso?: string; onClick: () => void }) {
+  return (
+    // Col corso nel nome: «Annuale 340,00 €» da solo, letto ad alta voce, non dice di quale corso.
+    <Tasto icona={icona ?? null} data-bozza aria-label={corso ? `${corso}: ${forte}${dopo ? ` ${dopo}` : ''}` : undefined} onClick={onClick}>
+      <span><b>{forte}</b>{dopo && <span className="sg-sotto num"> {dopo}</span>}</span>
+    </Tasto>
+  )
+}
+
+/**
+ * Sotto ogni persona: ORDINI DEL VESTIARIO (solo se c'è un ordine da saldare del nucleo, `ordiniDelNucleo`) e PAGA
+ * ANCHE, le scelte da un tocco di `vociDaAggiungere` (la quota, i suoi corsi, l'abbigliamento a mano) e «Altro corso…»,
+ * che al suo posto apre la ricerca sugli altri corsi (`cercaCorsi`). Un tocco aggiunge la riga.
+ */
+function PagaAnche({ scelte, ordini, personaId, cerca, onCerca, onScegli }: {
+  scelte: ReturnType<typeof vociDaAggiungere>
+  ordini: Ordine[]
+  personaId: string
+  cerca: boolean
+  onCerca: (si: boolean) => void
   onScegli: (v: VoceDovuta) => void
 }) {
-  if (!gruppi.length) return null
-  if (!aperto) {
-    return (
-      <div style={{ borderTop: '1px solid var(--line-soft)', paddingTop: 4 }}>
-        <button type="button" className="sg-link" style={{ ...DITO, gap: 6, textDecoration: 'none' }} onClick={onApri}>
-          <Icona nome="aggiungi" /><span style={{ textDecoration: 'underline', textUnderlineOffset: 3 }}>Aggiungi una voce dal listino</span>
-        </button>
-      </div>
-    )
-  }
+  const [testo, setTesto] = useState('')
+  // Chiusa la ricerca, il fuoco torna su «Altro corso…»: se no cade sulla pagina e chi usa la tastiera si perde.
+  const altro = useRef<HTMLButtonElement>(null)
+  const torna = useRef(false)
+  useEffect(() => { if (!cerca && torna.current) { torna.current = false; altro.current?.focus() } }, [cerca])
+  const trovati = cercaCorsi(scelte.altri, testo)
+  const filetto = { borderTop: '1px solid var(--line-soft)', paddingTop: 10 }
+  const chiudi = () => { setTesto(''); torna.current = true; onCerca(false) }
   return (
-    <label className="stack" style={{ gap: 6, borderTop: '1px solid var(--line-soft)', paddingTop: 8 }}>
-      <span style={{ fontSize: 15, fontWeight: 600 }}>Aggiungi una voce dal listino</span>
-      <select
-        className="sg-campo"
-        autoFocus
-        style={{ width: 360, maxWidth: '100%' }}
-        value=""
-        onChange={(e) => {
-          const [g, i] = e.target.value.split('-').map(Number)
-          const v = gruppi[g]?.voci[i]?.dovuta
-          if (v) onScegli(v)
-        }}
-        onBlur={onChiudi}
-        onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), onChiudi())}
-      >
-        <option value="">Scegli…</option>
-        {gruppi.map((g, gi) => (
-          <optgroup key={g.corso} label={g.corso}>
-            {g.voci.map((v, vi) => <option key={v.dovuta.voce + vi} value={`${gi}-${vi}`}>{v.etichetta}</option>)}
-          </optgroup>
+    <>
+      {ordini.length > 0 && (
+        <div className="stack" style={{ gap: 8, ...filetto }}>
+          <span className="sg-etichetta row" style={{ gap: 8, alignItems: 'center' }}><Icona nome="vestiario" />ORDINI DEL VESTIARIO · {ordini.length}</span>
+          {ordini.map((o) => {
+            const capi = [...new Set(o.righe.map((r) => `${r.capo} ${r.taglia}`))].join(', ')
+            const per = [...new Set(o.righe.map((r) => r.perChi))].join(', ')
+            const tel = cifreTelefono(o.telefono).slice(-3)
+            return (
+              <div key={o.id} className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                <span className="stack" style={{ gap: 2, flex: '1 1 260px', minWidth: 0 }}>
+                  <span style={{ fontSize: 15 }}>Ordine di {o.cognome} {o.nome} <span className="sg-sotto">· per {per} · {dataRicevuta(o.arrivato.slice(0, 10))}</span></span>
+                  <span className="sg-sotto">{capi}{tel && ` · tel. …${tel}`}</span>
+                </span>
+                <span className="stack" style={{ alignItems: 'flex-end' }}>
+                  <span className="num" style={{ fontSize: 15, fontWeight: 600 }}>mancano {euroAssegna(mancaOrdine(o))}</span>
+                  <span className="sg-sotto num">di {euroAssegna(Math.round(o.totale * 100))}</span>
+                </span>
+                <Tasto icona={null} data-bozza onClick={() => onScegli(voceOrdine(personaId, o))}>È questo ordine</Tasto>
+              </div>
+            )
+          })}
+        </div>
+      )}
+      <div className="stack" style={{ gap: 8, ...filetto }}>
+        <span className="sg-etichetta">PAGA ANCHE</span>
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          {scelte.quota && <Scelta forte={scelte.quota.dovuta.voce} dopo={euroAssegna(scelte.quota.dovuta.manca)} onClick={() => scelte.quota && onScegli(scelte.quota.dovuta)} />}
+        </div>
+        {/* Un corso con più righe di prezzo (1 giorno, 2 giorni…) dà una riga per prezzo: il nome una volta, poi le formule. */}
+        {[...new Set(scelte.suoi.map((v) => v.corso))].map((corso) => (
+          <div key={corso} className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 15, flex: '1 1 220px', minWidth: 0 }}>{corso}</span>
+            {scelte.suoi.filter((v) => v.corso === corso).map((v) => <Scelta key={v.dovuta.voce} corso={corso} forte={v.formula} dopo={euroAssegna(v.dovuta.manca)} onClick={() => onScegli(v.dovuta)} />)}
+          </div>
         ))}
-      </select>
-    </label>
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          {scelte.abbigliamento && <Scelta icona="vestiario" forte="Abbigliamento" dopo="a mano" onClick={() => scelte.abbigliamento && onScegli(scelte.abbigliamento)} />}
+          {!cerca && scelte.altri.length > 0 && (
+            <button ref={altro} type="button" className="sg-link" style={{ ...DITO, gap: 6, textDecoration: 'none' }} onClick={() => onCerca(true)}>
+              <Icona nome="cerca" /><span style={{ textDecoration: 'underline', textUnderlineOffset: 3 }}>Altro corso…</span>
+            </button>
+          )}
+        </div>
+        {cerca && (
+          <div className="stack" style={{ gap: 8, ...filetto }} onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), chiudi())}>
+            <div className="row" style={{ gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <label className="stack" style={{ gap: 6, flex: '1 1 320px' }}>
+                <span style={{ fontSize: 15, fontWeight: 600 }}>Altro corso</span>
+                <input type="search" className="sg-campo" autoFocus value={testo} onChange={(e) => setTesto(e.target.value)} />
+              </label>
+              <button type="button" className="sg-link" style={DITO} onClick={chiudi}>Chiudi</button>
+            </div>
+            <span className="sg-sotto" role="status">{!testo.trim() ? '' : trovati.length ? `${trovati.length === 1 ? '1 corso' : `${trovati.length} corsi`} con «${testo.trim()}»` : `Nessun corso con «${testo.trim()}»`}</span>
+            {trovati.map((g) => (
+              <div key={g.corso} className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap', borderTop: '1px solid var(--line-soft)', paddingTop: 8 }}>
+                <span style={{ flex: '1 1 220px', minWidth: 0, fontSize: 15, fontWeight: 600 }}>{g.corso}</span>
+                {g.voci.map((v) => <Scelta key={v.dovuta.voce} corso={g.corso} forte={v.formula} dopo={euroAssegna(v.dovuta.manca)} onClick={() => { onScegli(v.dovuta); chiudi() }} />)}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   )
 }

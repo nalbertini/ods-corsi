@@ -76,6 +76,10 @@ Un ordine si apre in una finestra sopra l'elenco:
   come e quando («Saldato con bonifico il 3 ottobre»). Se una parte era già
   stata pagata, resta scritto solo l'ultimo modo e l'ultimo giorno. **Togli il segno** lo
   rimette da saldare, senza niente di pagato.
+  Un ordine si salda anche da CONTABILITÀ, quando arriva il bonifico: nella
+  finestra «Chi ha pagato e per cosa?» **È questo ordine** lo prende, e se il
+  bonifico lo copre tutto l'ordine diventa saldato con bonifico, quel giorno.
+  Se lo copre solo in parte l'ordine resta com'è: il segno si mette qui.
 - **Le righe** — per chi è il capo, capo, taglia e quantità. Si correggono
   quando una famiglia chiama per cambiare una taglia; il totale si ricalcola.
   Una riga che c'era tiene il suo prezzo, una nuova prende quello di adesso.

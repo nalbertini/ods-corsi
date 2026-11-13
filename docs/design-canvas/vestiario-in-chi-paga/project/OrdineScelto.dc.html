@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>È questo ordine</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #ffffff; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .voce { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+    .voce > span:first-child { flex: 1 1 220px; min-width: 0; }
+    .scelta { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; font: inherit; font-size: 15px; color: #0d2a3d; background: #ffffff; border: 2px solid #8fb7cf; border-radius: 6px; cursor: pointer; }
+    .scelta b { font-weight: 600; }
+    .link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font: inherit; font-size: 15px; font-weight: 600; color: #0d2a3d; background: none; border: 0; padding: 0; cursor: pointer; }
+    .link span { text-decoration: underline; text-underline-offset: 3px; }
+    .togli { font: inherit; font-size: 13px; font-weight: 600; min-height: 44px; color: #b3261e; text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; padding: 0; cursor: pointer; }
+  </style>
+</helmet>
+<!-- PROPOSTA: dopo «È questo ordine». L'ordine diventa una riga come le altre (RigaDovuta), col nome dell'ordine e «manca» = totale − pagato; importo proposto = quel che manca, non oltre il bonifico ancora libero; tag Saldo o Parziale come i corsi. «Togli» la toglie e l'ordine torna nella sezione. La frase sotto dice cosa farà Conferma: l'ordine in VESTIARIO diventa saldato con bonifico (Parziale: l'ordine non si tocca, e la frase diventa «Copre solo una parte: l'ordine in VESTIARIO resta com'è, si segna lì»). La sezione ORDINI DEL VESTIARIO sparisce se non restano altri ordini. -->
+<div style="width:780px;padding:20px;background:#ffffff;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#ffffff;border:2px solid #cfe6f4">
+  <span class="et">CHI HA PAGATO</span>
+  <b style="font-size:16px">Scelsi Nicole</b>
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <div class="voce"><span>Abbigliamento <span class="sotto">· ordine del 28/09/2026 · manca 40,00 € ·</span> <button type="button" class="togli" aria-label="Togli l'ordine del vestiario">Togli</button></span><span class="campo">40,00</span><span style="width:90px;display:flex"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+    <span class="sotto">Con Conferma l’ordine di Ferretti Daniela in VESTIARIO diventa saldato, con bonifico.</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #cfe6f4;padding-top:10px">
+    <span class="et">PAGA ANCHE</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" class="scelta"><b>Quota associativa 2026/27</b> <span class="num sotto">50,00 €</span></button>
+      <button type="button" class="scelta">Lotta ragazzi · <b>Trimestre</b> <span class="num sotto">130,00 €</span></button>
+      <button type="button" class="scelta">Lotta ragazzi · <b>Annuale</b> <span class="num sotto">360,00 €</span></button>
+      <button type="button" class="link"><dc-import name="Icona" nome="cerca" misura="18" hint-size="18px,18px"></dc-import><span>Altro corso…</span></button>
+    </div>
+  </div>
+</div>
+<span class="num" style="font-size:15px">Assegnati 40,00 € di 40,00 € · Da assegnare 0,00 €</span>
+<span class="sotto">TIPOLOGIA: «Corsi e altri pagamenti», da quel che paga.</span>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+  <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" hint-size="140px,48px"></dc-import>
+  <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="120px,48px"></dc-import>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":780,"height":560}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
