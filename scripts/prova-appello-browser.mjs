@@ -38,8 +38,27 @@ try {
   await pagina.getByRole('button', { name: /da segnare/ }).first().click()
 
   const tasto = pagina.getByRole('button', { name: /^Altro: azzera/ })
-  const foglio = pagina.getByRole('dialog', { name: 'Altro dell’appello' })
   await tasto.waitFor()
+
+  // L'appello fitto (proposta in docs/design-canvas/appello-telefono-spazio/): la testa resta a 90px anche a 375,
+  // dove «lunedì 9 novembre 19:00 · Tatami» andava a capo e la portava a 104 (l'ha trovato il collaudo).
+  await pagina.setViewportSize({ width: 375, height: 667 })
+  const altaTesta = await pagina.locator('.appello-testa').evaluate((e) => Math.round(e.getBoundingClientRect().height))
+  ok('a 375px la testa dell\'appello è alta al più 92px', altaTesta <= 92 ? 'sì' : `${altaTesta}px`, 'sì')
+  // A 390×760, striscia dei dati di prova compresa, i nomi interi sopra CHIUDI sono almeno 9.
+  await pagina.setViewportSize({ width: 390, height: 760 })
+  const interi = await pagina.evaluate(() => {
+    const fondo = document.querySelector('.barra-chiudi')?.getBoundingClientRect().top ?? innerHeight
+    const cima = document.querySelector('.appello-testa')?.getBoundingClientRect().bottom ?? 0
+    return [...document.querySelectorAll('.elenco-appello .riga-appello')].filter((r) => {
+      const b = r.getBoundingClientRect()
+      return b.top >= cima && b.bottom <= fondo
+    }).length
+  })
+  ok('a 390×760 si vedono almeno 9 nomi interi', interi >= 9 ? 'sì' : `${interi}`, 'sì')
+  await pagina.setViewportSize({ width: 390, height: 844 })
+
+  const foglio = pagina.getByRole('dialog', { name: 'Altro dell’appello' })
   /** Dove sta il fuoco: «foglio», «tasto ⋯», «nel foglio: <nome>» o «fuori: <nome>». */
   const fuoco = () =>
     pagina.evaluate(() => {

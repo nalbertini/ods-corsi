@@ -109,6 +109,16 @@ export function mostraStriscia(status: Status, pagina: PaginaIstruttori): boolea
   return status !== 'idle' && pagina !== 'timer'
 }
 
+/**
+ * Sul telefono, con l'appello aperto, la cornice (testata, chi sei, barra delle
+ * pagine, musica) lascia il posto ai nomi: con 16 iscritti se ne vedevano 4.
+ * La striscia dell'allenamento resta, a parte. Sulla pagina TIMER no: lì la
+ * barra serve per tornare all'appello, che resta montato sotto.
+ */
+export function appelloATuttoSchermo(a: { largo: boolean; appelloAperto: boolean; pagina: PaginaIstruttori }): boolean {
+  return !a.largo && a.appelloAperto && a.pagina === 'calendario'
+}
+
 interface StatoVisto {
   status: Status
   kind: SegmentKind | null

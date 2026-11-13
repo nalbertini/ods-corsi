@@ -19,8 +19,10 @@ import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
  *
  * `soloDi` è l'istruttore di cui mostrare le lezioni (vedi `CalendarioScreen`);
  * `onTimer` apre il timer della lezione, dal cronometro dell'appello.
+ * `onAppello` dice fuori se c'è un appello aperto: sul telefono l'app degli
+ * istruttori toglie la sua cornice per lasciare il posto ai nomi.
  */
-export function Sala({ soloDi, senzaLimiti = soloDi === undefined, onTimer }: { soloDi?: string; senzaLimiti?: boolean; onTimer?: (l: SessioneVista) => void } = {}) {
+export function Sala({ soloDi, senzaLimiti = soloDi === undefined, onTimer, onAppello }: { soloDi?: string; senzaLimiti?: boolean; onTimer?: (l: SessioneVista) => void; onAppello?: (aperto: boolean) => void } = {}) {
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
@@ -52,6 +54,12 @@ export function Sala({ soloDi, senzaLimiti = soloDi === undefined, onTimer }: { 
     setAperta(s)
     if (s) setChiuso(null)
   }
+  const conAppello = !!aperta
+  useEffect(() => {
+    onAppello?.(conAppello)
+    // Se la sala sparisce con l'appello aperto, il telefono riavrebbe la cornice solo al prossimo appello.
+    return () => onAppello?.(false)
+  }, [conAppello, onAppello])
   useLayoutEffect(() => {
     const scorre = qui.current?.closest('.scroll')
     if (scorre && !largo) scorre.scrollTop = aperta ? 0 : eraA.current
@@ -131,6 +139,7 @@ export function Sala({ soloDi, senzaLimiti = soloDi === undefined, onTimer }: { 
           {aperta ? (
             <AppelloScreen
               key={aperta.id}
+              fitto={!largo}
               dati={d}
               sessioneId={aperta.id}
               soloDi={soloDi}

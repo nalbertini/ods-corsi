@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Appello oggi</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI, com'e' costruito (fotografato a 390x760, senza il nastro della prova): testata del marchio, testa dell'appello, ricerca, frase d'aiuto sempre visibile, nomi, barra CHIUDI con la frase sopra e barra delle pagine. Si vedono 4 nomi interi su 16. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 390px; height: 760px; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+  <dc-import name="Testata" luogo="ISTRUTTORI · COLLEGNO" guida="{{ true }}" senza-citta="{{ true }}" istruttori="{{ true }}" hint-size="100%,72px"></dc-import>
+  <dc-import name="TestaAppelloCorta" corso="Judo 3" kanji="龍" quando="Ven 13/11 18:00 · Tatami" presenti="0" iscritti="16" stato="mancano" mancano="16" hint-size="100%,140px"></dc-import>
+  <div style="padding: 10px 16px 8px"><dc-import name="CercaAppello" iscritti="16" hint-size="100%,44px"></dc-import></div>
+  <p style="margin: 0 0 8px; padding: 0 16px; font-size: 14px; line-height: 1.4; color: #46606f">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>
+  <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; overflow: hidden; padding: 0 16px 8px">
+    <dc-import name="RigaAppello" marcato="{{ true }}" nome="Barbieri Aurora" stato="niente" hint-size="100%,56px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" nome="Barbieri Elena" stato="niente" hint-size="100%,56px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" nome="Costa Lorenzo" stato="niente" hint-size="100%,56px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" nome="De Luca Ginevra" stato="niente" hint-size="100%,56px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" nome="Esposito Tommaso" stato="niente" hint-size="100%,56px"></dc-import>
+    <dc-import name="RigaAppello" marcato="{{ true }}" nome="Fontana Giulia" stato="niente" hint-size="100%,56px"></dc-import>
+  </div>
+  <dc-import name="BarraChiudiAppello" non-segnati="16" hint-size="100%,92px"></dc-import>
+  <dc-import name="BarraNavigazione" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="CALENDARIO" hint-size="100%,66px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

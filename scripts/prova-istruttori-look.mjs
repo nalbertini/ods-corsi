@@ -82,6 +82,16 @@ ok('chiudi, secondo tocco: un assente', C({ nonSegnati: 1, chiede: true }), { fr
 ok('chiudi, secondo tocco con tutti segnati: niente assenti da nominare, mai giallo', C({ nonSegnati: 0, chiede: true }), { frase: 'Sicuro? Tocca di nuovo per chiudere.', tasto: 'SÌ, CHIUDI L’APPELLO', pieno: false })
 // Dalla revisione: tutti assenti è l'appello chiuso per sbaglio, e il tasto in testa è già giallo (TUTTI PRESENTI). CHIUDI non può spingere a chiudere.
 ok('chiudi, tutti assenti: frase che mette in guardia, tasto non pieno', C({ tuttiAssenti: true }), { frase: 'Sono tutti assenti: chiudi solo se è giusto.', tasto: 'CHIUDI L’APPELLO', pieno: false })
+// Il telefono: l'avviso e il «Sicuro?» vanno dentro il tasto, come seconda riga; niente frase sopra la barra.
+const CN = (x) => vedi(() => e.chiudiNelTasto({ nonSegnati: 0, chiede: false, ...x }))
+ok('nel tasto: tutti segnati → tasto pieno, senza seconda riga', CN({}), { tasto: '✓ CHIUDI L’APPELLO', pieno: true })
+ok('nel tasto: un non segnato → «1 non segnato → assente»', CN({ nonSegnati: 1 }), { tasto: 'CHIUDI L’APPELLO', sotto: '1 non segnato → assente', pieno: false })
+ok('nel tasto: 16 non segnati → «16 non segnati → assenti»', CN({ nonSegnati: 16 }), { tasto: 'CHIUDI L’APPELLO', sotto: '16 non segnati → assenti', pieno: false })
+ok('nel tasto: tutti assenti → «Sono tutti assenti», non pieno', CN({ tuttiAssenti: true }), { tasto: 'CHIUDI L’APPELLO', sotto: 'Sono tutti assenti', pieno: false })
+ok('nel tasto, secondo tocco: 3 assenti', CN({ nonSegnati: 3, chiede: true }), { tasto: 'SÌ, CHIUDI · 3 ASSENTI', sotto: 'Sicuro? Tocca di nuovo', pieno: false })
+ok('nel tasto, secondo tocco: un assente', CN({ nonSegnati: 1, chiede: true }).tasto, 'SÌ, CHIUDI · UN ASSENTE')
+ok('nel tasto, secondo tocco con tutti segnati: SÌ, CHIUDI L’APPELLO, mai pieno', CN({ nonSegnati: 0, chiede: true }), { tasto: 'SÌ, CHIUDI L’APPELLO', sotto: 'Sicuro? Tocca di nuovo', pieno: false })
+ok('nel tasto: chiede → mai pieno, qualunque sia il conto', [0, 1, 5].map((n) => CN({ nonSegnati: n, chiede: true }).pieno), [false, false, false])
 // Chiede il secondo tocco quando chiudere è probabilmente uno sbaglio: stesse condizioni della vecchia `domanda` di AppelloScreen.
 const Q = (x) => vedi(() => e.chiedeDiChiudere({ segnati: 5, tuttiSegnati: false, futura: false, mancano: 1, iscritti: 12, ...x }))
 ok('chiede: pochi non segnati, appello cominciato → no', Q({}), false)
@@ -296,6 +306,42 @@ ok('.barra-chiudi .btn-prova: «+ PROVA» su una riga sola', /white-space:\s*now
 }
 ok('.cerca-appello: alta 44px, testo da 16px (iOS non ingrandisce)', /(?<![-\w])(min-)?height:\s*44px/.test(corpo(/\.cerca-appello/)) && /font-size:\s*16px/.test(corpo(/\.cerca-appello/)), true)
 ok('.azzera e .appello-fine non ci sono più: lo spegnimento sta nel foglio e nella barra', regole.filter((r) => r.sel.some((x) => /\.azzera|\.appello-fine/.test(x))).length, 0)
+
+// --- 5c. l'appello fitto sul telefono (sotto 960px): più nomi senza scorrere --------------
+console.log('\nL\'appello fitto sul telefono (App, Sala, AppelloScreen, CSS)')
+{
+  const righe = app.split('\n')
+  const nome = app.match(/const (\w+) = appelloATuttoSchermo\(/)?.[1]
+  ok('App.tsx calcola appelloATuttoSchermo(', Boolean(nome), true)
+  // La riga col pezzo e le 4 prima: la condizione può stare sulla riga del ternario o su quella del pezzo.
+  // L'ultima: la prima Testata è quella della porta, prima di sapere chi entra, che col telefono a tutto schermo non c'entra.
+  const attorno = (re) => { const i = righe.findLastIndex((r) => re.test(r)); return i < 0 ? '' : righe.slice(Math.max(0, i - 4), i + 1).join('\n') }
+  const usa = (t) => Boolean(nome) && new RegExp(`\\b${nome}\\b`).test(t)
+  ok('la Testata del telefono dipende dal tutto schermo', usa(attorno(/<Testata luogo="ISTRUTTORI"/)), true)
+  ok('ChiSei dipende dal tutto schermo', usa(attorno(/<ChiSei\b/)), true)
+  ok('la BarraNavigazione dipende dal tutto schermo', usa(attorno(/<BarraNavigazione\b/)), true)
+  const blocco = (da) => { const i = app.indexOf(da); return i < 0 ? '' : app.slice(i, app.indexOf('\n        const ', i + 10)) }
+  ok('il mini della musica dipende dal tutto schermo (nella definizione o dove si mette)', usa(blocco('const mini =')) || usa(attorno(/\{!largo && [^}]*\bmini\b/)), true)
+  ok('la striscia dell\'allenamento NON dipende dal tutto schermo', usa(blocco('const striscia =')) || usa(righe.find((r) => /\{!largo && striscia\}/.test(r)) ?? ''), false)
+
+  const sala = readFileSync('src/components/Sala.tsx', 'utf8')
+  ok('Sala dice ad App se l\'appello è aperto (prop onAppello)', /\bonAppello\b/.test(sala) && /onAppello\??\.?\(/.test(sala), true)
+  ok('Sala passa fitto={!largo} ad AppelloScreen', /<AppelloScreen[^>]*?\bfitto=\{!largo\}/s.test(sala), true)
+
+  const sch = readFileSync('src/components/AppelloScreen.tsx', 'utf8')
+  ok('AppelloScreen usa chiudiNelTasto(', /chiudiNelTasto\(/.test(sch), true)
+  ok('TUTTI PRESENTI non c\'è con fitto: il tasto è sotto una condizione su fitto', /!fitto\s*&&[\s\S]{0,200}appello-tasto|fitto\s*\?\s*null\s*:[\s\S]{0,200}appello-tasto|!fitto\s*\?\s*\(?[\s\S]{0,200}appello-tasto/.test(sch), true)
+  ok('il titolo è un h1 quando fitto', /fitto\s*\?\s*\(?\s*<h1\b|<h1\b[^>]*appello-titolo|const Titolo = fitto \? 'h1'/.test(sch), true)
+  ok('l\'aiuto «Un tocco sul nome» non c\'è con fitto', /!fitto[^\n]*Un tocco sul nome|aiuto && !fitto|!fitto && aiuto|fitto \|\| !aiuto/.test(sch), true)
+  ok('l\'appello fitto lo dice al CSS: data-fitto', /data-fitto=\{/.test(sch), true)
+
+  // Senza la Testata (che porta il safe-area in alto) la cima è dell'appello: su iPhone con la tacca finiva sotto la barra di stato.
+  ok('a tutto schermo l\'app lo dice al CSS: data-tutto-schermo', /data-tutto-schermo=\{tuttoSchermo/.test(app), true)
+  ok('.app[data-tutto-schermo]: spazio per la barra di stato (--safe-t)', /padding-top:\s*var\(--safe-t\)/.test(corpo(/\.app\[data-tutto-schermo\]/)), true)
+  ok('.appello-testa[data-fitto]: alta 90px (min-height)', /min-height:\s*90px/.test(corpo(/\.appello-testa\[data-fitto\]/)), true)
+  ok('riga dell\'appello sotto [data-fitto]: 48px (min-height)', /min-height:\s*48px/.test(corpo(/\[data-fitto\][^,]*\.riga-appello/)), true)
+  ok('.btn-chiudi-sotto: seconda riga del tasto CHIUDI a 12px', /font-size:\s*12px/.test(corpo(/\.btn-chiudi-sotto/)), true)
+}
 
 // --- 6. la guida -------------------------------------------------------------
 console.log('\nLa guida (guida/istruttori.md)')

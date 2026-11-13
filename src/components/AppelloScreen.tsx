@@ -9,7 +9,7 @@ import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, TogliProva } from './Prove'
 import { CercaPersona } from './CercaPersona'
-import { aiutoAppello, chiudiAppello, codaAppello, contoRicerca, fraseAzzera, fraseGuaioAttivita, fraseGuaioSegnalata, proveInPiu, quadroAppello, statoAppello, tastoAppello } from '../lib/etichetteAppello'
+import { aiutoAppello, chiudiAppello, chiudiNelTasto, codaAppello, contoRicerca, fraseAzzera, fraseGuaioAttivita, fraseGuaioSegnalata, proveInPiu, quadroAppello, statoAppello, tastoAppello } from '../lib/etichetteAppello'
 import { DueTocchi } from './ds'
 import { useDialogo } from './segreteria/comune'
 import { SegnoCompleanno } from './SegnoCompleanno'
@@ -133,6 +133,7 @@ export function AppelloScreen({
   onChiudi,
   inCoda = 0,
   senzaLimiti = false,
+  fitto = false,
 }: {
   dati: Dati
   sessioneId: string
@@ -151,6 +152,9 @@ export function AppelloScreen({
   inCoda?: number
   /** La segreteria (ruolo doppio compreso) tocca le presenze di ogni lezione; un istruttore solo nella finestra di `finestra.ts`. */
   senzaLimiti?: boolean
+  /** Sul telefono: più nomi a schermo. Testa su una riga sola senza TUTTI PRESENTI (succede di rado che ci siano
+   *  tutti), niente frase d'aiuto, righe da 48px, e quel che succede chiudendo scritto dentro CHIUDI. */
+  fitto?: boolean
 }) {
   const [d, setD] = useState<DettaglioSessione | null>(null)
   const [segnalate, setSegnalate] = useState<SegnalataVista[]>([])
@@ -247,6 +251,8 @@ export function AppelloScreen({
   // Contato una volta per apertura; senza memoria del browser si mostra sempre.
   // In sviluppo StrictMode chiama due volte l'inizializzatore e conta 2: nell'app pubblicata conta 1.
   const [aiuto] = useState(() => {
+    // Sul telefono l'aiuto non si mostra: non si consumano le volte che restano per lo schermo largo.
+    if (fitto) return false
     try {
       return aiutoAppello(localStorage)
     } catch {
@@ -401,6 +407,9 @@ export function AppelloScreen({
   // `chiede`: chiudere vuole un secondo tocco quando è probabilmente uno sbaglio,
   // di solito TUTTI PRESENTI dimenticato, e la segreteria riceverebbe assenze finte.
   const barra = chiudiAppello({ nonSegnati, chiede: sicuroChiudi, tuttiAssenti })
+  const nelTasto = chiudiNelTasto({ nonSegnati, chiede: sicuroChiudi, tuttiAssenti })
+  // Il titolo è l'intestazione della pagina: sul telefono, senza la Testata, è il solo h1.
+  const Titolo = fitto ? 'h1' : 'span'
 
   if (aggiungendo) {
     const giaQui = new Map<string, 'iscritto' | 'prova'>(d.elenco.map((p) => [p.id, p.prova ? 'prova' : 'iscritto']))
@@ -411,7 +420,7 @@ export function AppelloScreen({
     <>
       {/* In cima e ferma mentre si scorre l'elenco: quale lezione, quanti
           sono, e il gesto più frequente, sempre sotto il pollice. */}
-      <div className="appello-testa">
+      <div className="appello-testa" data-fitto={fitto || undefined}>
         <div className="row pad" style={{ gap: 8, paddingTop: 10 }}>
           {onIndietro && (
             <DueTocchi className="icon-btn" etichetta="Torna al calendario" onFai={onIndietro}>
@@ -419,7 +428,7 @@ export function AppelloScreen({
             </DueTocchi>
           )}
           <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-            <span className="ob appello-titolo">{d.sessione.corso.toUpperCase()}</span>
+            <Titolo className="ob appello-titolo">{d.sessione.corso.toUpperCase()}</Titolo>
             <span className="chi-kanji" style={{ fontSize: 13, color: 'var(--dim)' }}>
               <Kanji segni={d.sessione.kanji} />
               <span>
@@ -444,11 +453,11 @@ export function AppelloScreen({
           )}
         </div>
 
-        <div className="row pad" style={{ gap: 12, paddingTop: 10 }}>
-          <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+        <div className="row pad" style={{ gap: 12, paddingTop: fitto ? 4 : 10 }}>
+          <span className={fitto ? 'row grow appello-riga-conto' : 'stack grow'} style={{ gap: fitto ? 10 : 2, minWidth: 0 }}>
             <span className="row" style={{ gap: 6, alignItems: 'baseline', whiteSpace: 'nowrap' }}>
               <span className="num conto-appello">{presentiIscritti}</span>
-              <span className="num" style={{ fontSize: 20, color: 'var(--dim)' }}>/ {iscritti.length}</span>
+              <span className="num appello-di" style={{ fontSize: fitto ? 15 : 20, color: 'var(--dim)' }}>/ {iscritti.length}</span>
               {presentiProve > 0 && <span className="num appello-prove">{proveInPiu(presentiProve)}</span>}
             </span>
             <span className="num appello-stato" data-fatto={stato.tono === 'fatto'} data-manca={stato.tono === 'manca' || undefined}>
@@ -463,7 +472,7 @@ export function AppelloScreen({
               suo posto (CHIUDI) prendeva il secondo tocco di chi ritocca «per
               sicurezza». Con tutti assenti torna TUTTI PRESENTI anche se tutti
               hanno un segno: è l'appello chiuso per sbaglio, riaperto. */}
-          {!soloLettura && (
+          {!soloLettura && !fitto && (
             <button
               type="button"
               className="btn btn-go appello-tasto"
@@ -584,8 +593,8 @@ export function AppelloScreen({
         )}
       </div>
 
-      {!soloLettura && aiuto && <p className="pad appello-aiuto">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>}
-      <div className="pad elenco-appello">
+      {!soloLettura && aiuto && !fitto && <p className="pad appello-aiuto">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>}
+      <div className="pad elenco-appello" data-fitto={fitto || undefined}>
         {iscrittiTrovati.map((p) => (
           <button
             key={p.id}
@@ -627,7 +636,7 @@ export function AppelloScreen({
               {appena.testo}
             </p>
           )}
-          <div className="pad elenco-appello">
+          <div className="pad elenco-appello" data-fitto={fitto || undefined}>
             {proveTrovate.map((p) => (
               <div
                 key={p.id}
@@ -678,7 +687,7 @@ export function AppelloScreen({
               {guaioIstruttore}
             </p>
           )}
-          <div className="pad elenco-appello">
+          <div className="pad elenco-appello" data-fitto={fitto || undefined}>
             {colleghi.map((x) => (
               <button
                 key={x.id}
@@ -702,10 +711,13 @@ export function AppelloScreen({
           con dei non segnati è normale. Chi viene a provare si cerca fra tutte
           le persone in una pagina a parte (`CercaPersona`). */}
       {onChiudi && !soloLettura && (
-        <div className="barra-chiudi">
-          <span className="barra-chiudi-frase" data-chiede={sicuroChiudi || undefined}>
-            {barra.frase}
-          </span>
+        <div className="barra-chiudi" data-fitto={fitto || undefined}>
+          {/* Sul telefono la frase la dice già CHIUDI, nella sua seconda riga: due volte farebbe crescere la barra mentre si tocca. */}
+          {!fitto && (
+            <span className="barra-chiudi-frase" data-chiede={sicuroChiudi || undefined}>
+              {barra.frase}
+            </span>
+          )}
           <div className="row" style={{ gap: 8 }}>
             <button type="button" className="btn btn-prova" onClick={() => setAggiungendo(true)}>
               + PROVA
@@ -717,7 +729,14 @@ export function AppelloScreen({
               onChiede={setSicuroChiudi}
               onFai={chiudi}
             >
-              {barra.tasto}
+              {fitto ? (
+                <span className="stack" style={{ alignItems: 'center', gap: 1 }}>
+                  <span>{nelTasto.tasto}</span>
+                  {nelTasto.sotto && <span className="btn-chiudi-sotto">{nelTasto.sotto}</span>}
+                </span>
+              ) : (
+                barra.tasto
+              )}
             </DueTocchi>
           </div>
         </div>

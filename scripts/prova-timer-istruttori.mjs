@@ -143,6 +143,18 @@ ok(
   [true, false],
 )
 
+// 10. L'APPELLO A TUTTO SCHERMO sul telefono: niente testata, chi sei, barra e musica, per far stare più nomi.
+const TS = (largo, appelloAperto, pagina) => vedi(() => m.appelloATuttoSchermo({ largo, appelloAperto, pagina }))
+ok('telefono, appello aperto, calendario: tutto schermo', TS(false, true, 'calendario'), true)
+ok('telefono, appello chiuso, calendario: tutto come oggi', TS(false, false, 'calendario'), false)
+ok('schermo largo, appello aperto, calendario: tutto come oggi', TS(true, true, 'calendario'), false)
+ok('schermo largo, appello chiuso: tutto come oggi', TS(true, false, 'calendario'), false)
+ok('telefono, appello aperto ma pagina TIMER: la barra serve per tornare', TS(false, true, 'timer'), false)
+ok('telefono, appello aperto, pagina I MIEI: tutto come oggi', TS(false, true, 'mieiTimer'), false)
+ok('telefono, appello aperto, pagina ORE: tutto come oggi', TS(false, true, 'ore'), false)
+ok('telefono, appello chiuso, pagina TIMER: tutto come oggi', TS(false, false, 'timer'), false)
+ok('largo con appello aperto su timer: tutto come oggi', TS(true, true, 'timer'), false)
+
 // Il timer del telefono non tocca i tablet: niente onTimerSala, e sala resta null.
 {
   const musica = { musicaFonte: 'youtube', youtube: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo1Z', radio: '' }
