@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.248.2 — 13 novembre 2026
+
+### Risolto
+
+- Il bonifico di chi fa più corsi annuali paga al massimo 660,00 €, non ogni corso a listino
+
 ## 0.248.1 — 13 novembre 2026
 
 ### Modificato
