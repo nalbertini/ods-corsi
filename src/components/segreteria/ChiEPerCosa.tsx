@@ -264,11 +264,12 @@ export function RigaDovuta({ v, testo, cent, nomePersona, aMano, onCambia, onTog
   )
 }
 
-/** Una scelta da un tocco: il nome in chiaro, la formula in grassetto, il prezzo in grigio. */
-function Scelta({ prima, forte, dopo, icona, onClick }: { prima?: string; forte: string; dopo?: string; icona?: NomeIcona; onClick: () => void }) {
+/** Una scelta da un tocco: la formula (o la voce) in grassetto, il prezzo in grigio. */
+function Scelta({ forte, dopo, icona, corso, onClick }: { forte: string; dopo?: string; icona?: NomeIcona; corso?: string; onClick: () => void }) {
   return (
-    <Tasto icona={icona ?? null} data-bozza onClick={onClick}>
-      <span>{prima && <>{prima} · </>}<b>{forte}</b>{dopo && <span className="sg-sotto num"> {dopo}</span>}</span>
+    // Col corso nel nome: «Annuale 340,00 €» da solo, letto ad alta voce, non dice di quale corso.
+    <Tasto icona={icona ?? null} data-bozza aria-label={corso ? `${corso} · ${forte} · ${dopo ?? ''}` : undefined} onClick={onClick}>
+      <span><b>{forte}</b>{dopo && <span className="sg-sotto num"> {dopo}</span>}</span>
     </Tasto>
   )
 }
@@ -319,7 +320,15 @@ function PagaAnche({ scelte, ordini, personaId, cerca, onCerca, onScegli }: {
         <span className="sg-etichetta">PAGA ANCHE</span>
         <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           {scelte.quota && <Scelta forte={scelte.quota.dovuta.voce} dopo={euroAssegna(scelte.quota.dovuta.manca)} onClick={() => scelte.quota && onScegli(scelte.quota.dovuta)} />}
-          {scelte.suoi.map((v) => <Scelta key={v.dovuta.voce} prima={v.corso} forte={v.formula} dopo={euroAssegna(v.dovuta.manca)} onClick={() => onScegli(v.dovuta)} />)}
+        </div>
+        {/* Un corso con più righe di prezzo (1 giorno, 2 giorni…) dà una riga per prezzo: il nome una volta, poi le formule. */}
+        {[...new Set(scelte.suoi.map((v) => v.corso))].map((corso) => (
+          <div key={corso} className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 15, flex: '1 1 220px', minWidth: 0 }}>{corso}</span>
+            {scelte.suoi.filter((v) => v.corso === corso).map((v) => <Scelta key={v.dovuta.voce} corso={corso} forte={v.formula} dopo={euroAssegna(v.dovuta.manca)} onClick={() => onScegli(v.dovuta)} />)}
+          </div>
+        ))}
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           {scelte.abbigliamento && <Scelta icona="vestiario" forte="Abbigliamento" dopo="a mano" onClick={() => scelte.abbigliamento && onScegli(scelte.abbigliamento)} />}
           {!cerca && scelte.altri.length > 0 && (
             <button type="button" className="sg-link" style={{ ...DITO, gap: 6, textDecoration: 'none' }} onClick={() => onCerca(true)}>
@@ -340,7 +349,7 @@ function PagaAnche({ scelte, ordini, personaId, cerca, onCerca, onScegli }: {
             {trovati.map((g) => (
               <div key={g.corso} className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'wrap', borderTop: '1px solid var(--line-soft)', paddingTop: 8 }}>
                 <span style={{ width: 150, fontSize: 15, fontWeight: 600 }}>{g.corso}</span>
-                {g.voci.map((v) => <Scelta key={v.dovuta.voce} forte={v.formula} dopo={euroAssegna(v.dovuta.manca)} onClick={() => { onScegli(v.dovuta); chiudi() }} />)}
+                {g.voci.map((v) => <Scelta key={v.dovuta.voce} corso={g.corso} forte={v.formula} dopo={euroAssegna(v.dovuta.manca)} onClick={() => { onScegli(v.dovuta); chiudi() }} />)}
               </div>
             ))}
           </div>
