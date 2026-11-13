@@ -90,6 +90,9 @@ export function areeDi(p: { ruolo: string; ancheIstruttore?: boolean; ancheAmmin
   return [...new Set(spunteDi(p).map((s) => area[s]))]
 }
 
+/** Sotto il nome di una scheda trovata: il ruolo di chi non è un iscritto («istruttore»), niente per un iscritto. */
+export const ruoloDaMostrare = (ruolo?: string): string => (ruolo && ruolo !== 'iscritto' ? nomeDelRuolo({ ruolo }).toLowerCase() : '')
+
 /** Il ruolo detto per esteso, per mostrarlo: «Segreteria e amministrazione». */
 export function nomeDelRuolo(p: { ruolo: string; ancheIstruttore?: boolean; ancheAmministrazione?: boolean }): string {
   const nomi = spunteDi(p)

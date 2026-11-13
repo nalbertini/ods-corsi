@@ -748,6 +748,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('157-vestiario-dal-bonifico.sql', 'il bonifico salda l''ordine del vestiario che copre tutto',
     to_regprocedure('public.ordini_vestiario_da_saldare()') is not null
     and exists (select 1 from dentro where nome = 'assegna_movimento' and corpo like '%ordine_vestiario_assegnato%')
-    and exists (select 1 from information_schema.columns where table_name = 'pagamenti_diretti' and column_name = 'ordine_vestiario'))
+    and exists (select 1 from information_schema.columns where table_name = 'pagamenti_diretti' and column_name = 'ordine_vestiario')),
+  -- Rifà `cerca_pagatori` del 55: se si rilancia 55 dopo, va rilanciato anche questo.
+  ('158-cerca-pagatori-ruolo.sql', 'la ricerca per nome dice il ruolo, e due omonimi si distinguono',
+    exists (select 1 from information_schema.parameters p join information_schema.routines r on r.specific_name = p.specific_name
+            where r.routine_schema = 'public' and r.routine_name = 'cerca_pagatori' and p.parameter_mode = 'OUT' and p.parameter_name = 'ruolo'))
 ) as x(file, cosa, c)
 order by file, cosa;

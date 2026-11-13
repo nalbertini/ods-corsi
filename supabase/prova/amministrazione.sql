@@ -330,7 +330,13 @@ select atteso('l''amministrazione cerca per nome', tenta($$select string_agg(nom
 select atteso('anche senza accenti e maiuscole', tenta($$select count(*)::text from cerca_pagatori('BIANCHI')$$), '2');
 select atteso('due lettere non bastano', tenta($$select count(*)::text from cerca_pagatori('bi')$$), '0');
 select atteso('chi non è più attivo non esce', tenta($$select count(*)::text from cerca_pagatori('spenta')$$), '0');
-select atteso('escono solo id, nome e cognome', (select string_agg(p.parameter_name, ',' order by p.ordinal_position) from information_schema.routines r join information_schema.parameters p on p.specific_name = r.specific_name where r.routine_name = 'cerca_pagatori' and p.parameter_mode = 'OUT'), 'persona_id,nome,cognome');
+select atteso('escono solo id, nome, cognome e ruolo', (select string_agg(p.parameter_name, ',' order by p.ordinal_position) from information_schema.routines r join information_schema.parameters p on p.specific_name = r.specific_name where r.routine_name = 'cerca_pagatori' and p.parameter_mode = 'OUT'), 'persona_id,nome,cognome,ruolo');
+reset role;
+-- La stessa persona da iscritta e da istruttrice (non si uniscono, 29): il ruolo le distingue.
+insert into persone (nome, cognome, ruolo) values ('Ugo', 'Omonimo', 'iscritto'), ('Ugo', 'Omonimo', 'istruttore'), ('Ugo', 'Omonimo', 'staff'), ('Ugo', 'Omonimo', 'amministrazione');
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('il ruolo distingue gli omonimi', tenta($$select string_agg(ruolo, ',' order by ruolo) from cerca_pagatori('omonimo')$$), 'amministrazione,iscritto,istruttore,staff');
 reset role;
 insert into persone (nome, cognome, ruolo)
   select 'Nome' || i, 'Verdi', 'iscritto' from generate_series(1, 12) i;

@@ -2221,8 +2221,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async cercaPagatori(scritto) {
-      const righe = ok(await db.rpc('cerca_pagatori', { scritto })) as Array<{ persona_id: string; nome: string; cognome: string }>
-      return righe.map((r) => ({ id: r.persona_id, nome: r.nome, cognome: r.cognome }))
+      // Senza 158-cerca-pagatori-ruolo.sql il ruolo non c'è: la ricerca va lo stesso, senza.
+      const righe = ok(await db.rpc('cerca_pagatori', { scritto })) as Array<{ persona_id: string; nome: string; cognome: string; ruolo?: string }>
+      return righe.map((r) => ({ id: r.persona_id, nome: r.nome, cognome: r.cognome, ruolo: r.ruolo }))
     },
 
     async abbinaPagatori(movimento, corsi) {

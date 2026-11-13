@@ -4,6 +4,7 @@ import { bastaPerCercare, comeSiAnnulla, domandaAnnullaPagamento, domandaAnnulla
 import { avvisoCassaChiusa } from '../../lib/contabilita'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { rigaEmail } from '../../lib/ricevuteEmail'
+import { ruoloDaMostrare } from '../../lib/ruoli'
 import { chiedi, messaggio, Riga, useCarica, type useAvviso, Tasto } from './comune'
 import { RegistraPagamento } from './Ricevute'
 
@@ -104,15 +105,15 @@ export function PagamentoAperto({ d, riga, fai, onChiudi, onFatto }: { d: DatiSe
 
 /**
  * REGISTRA UN PAGAMENTO senza la scheda: prima chi (si cerca per nome, ne escono
- * al massimo otto, solo nome e cognome), poi il modulo di sempre.
+ * al massimo otto, solo nome, cognome e ruolo), poi il modulo di sempre.
  */
 export function RegistraDaPagamenti({ d, fai, onFatto, onChiudi }: { d: DatiSegreteria; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
   const [scritto, setScritto] = useState('')
-  const [trovati, setTrovati] = useState<Array<{ id: string; nome: string; cognome: string }>>([])
+  const [trovati, setTrovati] = useState<Array<{ id: string; nome: string; cognome: string; ruolo?: string }>>([])
   const [guaio, setGuaio] = useState<string | null>(null)
   // Cosa è stato cercato davvero: finché non risponde, «nessuno corrisponde» sarebbe una bugia.
   const [cercato, setCercato] = useState('')
-  const [scelto, setScelto] = useState<{ id: string; nome: string; cognome: string } | null>(null)
+  const [scelto, setScelto] = useState<{ id: string; nome: string; cognome: string; ruolo?: string } | null>(null)
   useEffect(() => {
     if (scelto) return
     setGuaio(null)
@@ -144,7 +145,7 @@ export function RegistraDaPagamenti({ d, fai, onFatto, onChiudi }: { d: DatiSegr
         <RegistraPagamento d={d} p={scelto} corsi={[]} fai={fai} onFatto={onFatto} onChiudi={onChiudi} contabilita />
         <div className="row">
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelto(null)}>
-            Non è {scelto.cognome.toUpperCase()} {scelto.nome.toUpperCase()}: scegli un’altra persona
+            Non è {scelto.cognome.toUpperCase()} {scelto.nome.toUpperCase()}{ruoloDaMostrare(scelto.ruolo) && ` (${ruoloDaMostrare(scelto.ruolo)})`}: scegli un’altra persona
           </button>
         </div>
       </div>
@@ -154,18 +155,21 @@ export function RegistraDaPagamenti({ d, fai, onFatto, onChiudi }: { d: DatiSegr
     <section aria-label="Pagamento fatto a mano" className="sg-riquadro">
       <span className="sg-etichetta">PAGAMENTO FATTO A MANO</span>
       <Riga titolo="CHI HA PAGATO?" />
-      <span className="sg-sotto">Si cerca per nome: escono solo nome e cognome, senza telefono né altro.</span>
+      <span className="sg-sotto">Si cerca per nome: escono solo nome, cognome e ruolo, senza telefono né altro.</span>
       <label htmlFor="cerca-pagatore" className="vh">Cerca chi ha pagato per nome</label>
       <input id="cerca-pagatore" className="sg-campo" type="search" autoFocus placeholder="Almeno tre lettere" value={scritto} onChange={(e) => setScritto(e.target.value)} />
       {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       <ul className="stack" style={{ gap: 6, margin: 0, padding: 0, listStyle: 'none' }} aria-label="Chi corrisponde">
-        {trovati.map((p) => (
-          <li key={p.id}>
-            <button type="button" className="sg-btn sg-scelta" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setScelto(p)}>
-              {p.cognome} {p.nome}
-            </button>
-          </li>
-        ))}
+        {trovati.map((p) => {
+          const ruolo = ruoloDaMostrare(p.ruolo)
+          return (
+            <li key={p.id}>
+              <button type="button" className="sg-btn sg-scelta" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setScelto(p)}>
+                {p.cognome} {p.nome}{ruolo && ` · ${ruolo}`}
+              </button>
+            </li>
+          )
+        })}
       </ul>
       <span className="sg-sotto" role="status">
         {!bastaPerCercare(scritto) ? 'Scrivi almeno tre lettere.' : cercato !== scritto ? ' ' : trovati.length === 0 ? 'Nessuno corrisponde: controlla come è scritto, o scrivi di più.' : trovati.length >= MASSIMO_PAGATORI ? `Ne escono al massimo ${MASSIMO_PAGATORI}: se non c’è, scrivi di più.` : ' '}

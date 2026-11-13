@@ -868,8 +868,8 @@ export interface DatiSegreteria {
   pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
   /** Nome e cognome di chi ha pagato, e nient'altro: per chi segue i pagamenti senza vedere le persone (`55-amministrazione.sql`). */
   nomiPersone(ids: string[]): Promise<Array<{ id: string; nome: string; cognome: string }>>
-  /** Chi ha pagato, cercato per nome: almeno tre lettere, al massimo otto, solo nome e cognome (`cerca_pagatori`). */
-  cercaPagatori(scritto: string): Promise<Array<{ id: string; nome: string; cognome: string }>>
+  /** Chi ha pagato, cercato per nome: almeno tre lettere, al massimo otto, nome, cognome e ruolo (`cerca_pagatori`, il ruolo dal 158). */
+  cercaPagatori(scritto: string): Promise<Array<{ id: string; nome: string; cognome: string; ruolo?: string }>>
   /**
    * Chi può aver pagato un movimento non identificato: un punteggio su nome, genitore, codice fiscale letto, storico, importo e corso (`121-punteggio-movimenti.sql`); `sicuro` solo sul primo che si preseleziona.
    * `corsi`: i corsi che costano quell'importo (`corsiConImporto`). Senza il file, ricade sul solo nome: lista vuota.

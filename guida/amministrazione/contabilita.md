@@ -90,6 +90,8 @@ la cassa. Niente dati personali che non servono, nella descrizione e nella nota.
 
 Un'entrata su **Quota associativa** o **Corsi e altri pagamenti** si registra sempre con la
 **persona**: compare il campo **PERSONA · DI CHI È**, si cerca da tre lettere e si tocca la scheda giusta.
+Sotto il nome di chi non è un iscritto c'è il ruolo (**istruttore**, **segreteria**): chi insegna e
+frequenta anche i corsi ha due schede con lo stesso nome, e la quota va su quella senza ruolo.
 Per un minore è chi frequenta, anche se ha pagato il genitore. Senza persona non si registra. Se quella
 persona ha già una ricevuta o un pagamento con lo stesso importo negli ultimi 30 giorni, l'app avvisa
 (**Forse già tra gli incassi**): se è la stessa quota non scriverla qui, c'è già. La persona è un'etichetta:

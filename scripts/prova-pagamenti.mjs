@@ -241,7 +241,7 @@ console.log('\nchi ha pagato, cercato per nome (come cerca_pagatori)')
   const P = (id, nome, cognome, attiva = true) => ({ id, nome, cognome, attiva, telefono: '338 000 0000' })
   const gente = [P('1', 'Marco', 'Bianchi'), P('2', 'Chiara', 'Bianchi'), P('3', 'Luca', 'Biancotto'), P('4', 'Bianca', 'Spenta', false), P('5', 'Zoë', "D'Amico")]
   ok('per cognome, in ordine di cognome e nome', m.trovaPagatori(gente, 'bian').map((x) => x.id), ['2', '1', '3'])
-  ok('escono solo id, nome e cognome: mai un contatto', Object.keys(m.trovaPagatori(gente, 'bianchi')[0]), ['id', 'nome', 'cognome'])
+  ok('escono solo id, nome, cognome e ruolo: mai un contatto', Object.keys(m.trovaPagatori(gente, 'bianchi')[0]), ['id', 'nome', 'cognome', 'ruolo'])
   ok('senza accenti, maiuscole e apostrofi', m.trovaPagatori(gente, 'ZOE damico').map((x) => x.id), ['5'])
   ok('chi non è più attivo non esce', m.trovaPagatori(gente, 'spenta'), [])
   ok('due lettere non bastano', m.trovaPagatori(gente, 'bi'), [])
