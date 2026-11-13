@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Chi ha pagato e per cosa · due persone, mancano</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .campo { width: 110px; min-height: 44px; padding: 10px 12px; font: inherit; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; color: #0d2a3d; background: #ffffff; border: 2px solid #14709f; }
+    .voce { display: grid; grid-template-columns: minmax(0, 1fr) 110px 90px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid #cfe6f4; font-size: 15px; }
+    .riq { display: flex; flex-direction: column; padding: 14px 16px; border: 2px solid #cfe6f4; }
+    .link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0; background: none; border: 0; font: inherit; font-size: 15px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .link.rosso { color: #b81d1d; font-size: 13px; }
+  </style>
+</helmet>
+<!-- PROPOSTA, caso con la famiglia: quando paga per più persone, ogni riquadro ha il nome in una riga («Galli Sofia · stessa famiglia»); con una persona sola il riquadro non ha nome (Main). Il conto nel piede dice «Mancano 80,00 €» in giallo-testo; con troppo diventa «20,00 € più del bonifico» in rosso-testo e Conferma si spegne, come oggi. I PAGAMENTI fatti restano sotto le voci, più piccoli. -->
+<div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:1080px;padding:40px 24px;background:rgba(0,0,0,.6)">
+<div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;width:100%;max-width:780px;background:#ffffff;border:2px solid #0d2a3d">
+
+  <div style="display:flex;flex-direction:column;gap:20px;padding:28px 28px 24px">
+    <div style="display:flex;gap:20px;align-items:flex-start;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <h2 id="titolo" style="margin:0;font-family:'Big Shoulders Display', Arial, sans-serif;font-size:30px;font-weight:800;line-height:1;letter-spacing:.02em">CHI HA PAGATO E PER COSA?</h2>
+        <span style="font-size:15px">27/10/2026 · Bonifico da <b>Mauro Galli</b></span>
+        <span class="sotto" style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">«Trimestre judo Matteo e Sofia» <button type="button" class="link" style="min-height:24px;font-size:13px">Causale intera</button></span>
+      </div>
+      <span class="num" style="flex:none;font-family:'Big Shoulders Display', Arial, sans-serif;font-size:44px;font-weight:800;line-height:1;color:#0b7a33">+ 300,00 €</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span class="et">PERSONA</span>
+      <div style="display:flex;gap:12px;align-items:center;min-height:56px;padding:8px 8px 8px 16px;background:#eef5fa;border:2px solid #14709f">
+        <dc-import name="Icona" nome="persona" misura="22" hint-size="22px,22px"></dc-import>
+        <span style="display:flex;flex-direction:column;flex:1;min-width:0"><b style="font-size:17px">Galli Matteo</b><span class="sotto">Judo kids · con lui Galli Sofia, stessa famiglia</span></span>
+        <button type="button" class="link" style="padding:0 12px"><dc-import name="Icona" nome="modifica" misura="18" hint-size="18px,18px"></dc-import>Cambia</button>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span class="et">COSA PAGA</span>
+      <div class="riq">
+        <span style="padding-bottom:6px"><b style="font-size:16px">Galli Matteo</b> <span class="sotto">· chi ha pagato</span></span>
+        <div class="voce"><label for="m1">Trimestre Judo kids <span class="sotto">· manca 120,00 €</span></label><input id="m1" class="campo" value="120,00"><span style="display:flex"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid #cfe6f4">
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="aggiungi" label="Judo kids annuale · 360,00 €" hint-size="260px,44px"></dc-import>
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="vestiario" label="Abbigliamento" hint-size="180px,44px"></dc-import>
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="cerca" label="Altro corso…" hint-size="170px,44px"></dc-import>
+        </div>
+        <span class="sotto" style="padding-top:10px">Ultimi pagamenti: 21/09/2026 quota 50,00 € (ricevuta 301/2026) · 10/09/2026 trimestre 120,00 € (senza ricevuta)</span>
+      </div>
+      <div class="riq">
+        <span style="padding-bottom:6px"><b style="font-size:16px">Galli Sofia</b> <span class="sotto">· stessa famiglia</span></span>
+        <div class="voce" style="padding-bottom:4px"><label for="m2">Trimestre Judo ragazzi <span class="sotto">· manca 180,00 €</span></label><input id="m2" class="campo" value="100,00"><span style="display:flex"><dc-import name="Badge" tipo="tag" label="Parziale" tono="giallo" hint-size="90px,28px"></dc-import></span></div>
+        <span class="sotto" style="padding-bottom:10px">Resteranno 80,00 € su «Trimestre Judo ragazzi»: si vedono nella scheda di Sofia.</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid #cfe6f4">
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="aggiungi" label="Judo ragazzi annuale · 480,00 €" hint-size="280px,44px"></dc-import>
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="vestiario" label="Abbigliamento" hint-size="180px,44px"></dc-import>
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="cerca" label="Altro corso…" hint-size="170px,44px"></dc-import>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:18px 28px;background:#eef5fa;border-top:2px solid #cfe6f4">
+    <div style="display:flex;flex-direction:column;gap:4px" role="status">
+      <span class="num" style="font-family:'Big Shoulders Display', Arial, sans-serif;font-size:28px;font-weight:800;line-height:1">220,00 € <span style="font-size:18px;color:#46606f">di 300,00 €</span></span>
+      <span style="display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600;color:#8f6a00"><span style="width:8px;height:8px;border-radius:50%;background:#8f6a00"></span>Mancano 80,00 €: restano da assegnare</span>
+      <span class="sotto" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">Tipologia: Corsi e altri pagamenti · <button type="button" class="link rosso" style="min-height:24px">Svuota tutto</button></span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="110px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Solo la persona, decido dopo" hint-size="250px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" hint-size="130px,48px"></dc-import>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":1080}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -71,6 +71,18 @@ ok('la prima «PER» chiude il nome, «PER» dentro un cognome no', da('DA PERET
 ok('«Cliente X per …» resta com\'è', [da('Cliente Giulia Verdi per annuale judo kids'), da('Cliente VERDI GIULIA per quota')], ['Giulia Verdi', 'VERDI GIULIA'])
 ok('senza nome: nessuno, mai uno indovinato', ['Bonifico anonimo per quota', 'quota da settembre per Luca', 'DA PER quota', 'TRN X 123 BONIFICO SEPA', 'DA 12345 PER quota', '', 'QUOTA DA SETTEMBRE PER JUDO BONIFICO SEPA', 'RETTA DA PAGARE PER MARZO', 'SALDO DA VERSARE PER IL CORSO'].map(da), [null, null, null, null, null, null, null, null, null])
 
+console.log('\n2c. causaleInBreve: chi ha fatto il bonifico e la causale, senza codici, in testa a CHI HA PAGATO E PER COSA?')
+const breve = (d) => prova(() => m.causaleInBreve(d))
+ok('SEPA con TRN in testa: nome e causale, senza il tipo d\'operazione', breve('TRN UNCRITMMXXX 1191262827851832 DA D\'ANGELO SARA LUCIA PER Quota trimestrale Judo Verdi Luca BONIFICO SEPA ISTANTANEO'), { da: 'D\'Angelo Sara Lucia', causale: 'Quota trimestrale Judo Verdi Luca' })
+ok('«Da NOME TRN … per …» del movimento: il TRN fra nome e causale va via', breve('Da ROSSI ANNA TRN 4010276790003268483041030410IT SELBIT2B per QUOTA JUDO ROSSI LUCA PRIMO TRIMESTRE 2026-2 BONIFICO SEPA'), { da: 'Rossi Anna', causale: 'QUOTA JUDO ROSSI LUCA PRIMO TRIMESTRE 2026-2' })
+ok('«Cliente X per …» del vecchio programma', breve('Cliente Giulia Verdi per annuale judo kids'), { da: 'Giulia Verdi', causale: 'annuale judo kids' })
+ok('senza nome: la causale intera, senza codici', [breve('Affitto palestra'), breve('TRN 1191262827851832 Bonifico anonimo per quota BONIFICO SEPA'), breve('')], [{ da: null, causale: 'Affitto palestra' }, { da: null, causale: 'Bonifico anonimo per quota' }, { da: null, causale: '' }])
+ok('una «per» nella causale resta', breve('DA ROSSI MARIO PER quota per Luca e Anna BONIFICO SEPA'), { da: 'Rossi Mario', causale: 'quota per Luca e Anna' })
+ok('«Da NOME TRN …» senza «per»: resta il resto', breve('Da ROSSI ANNA TRN 1191262827851832 QUOTA JUDO'), { da: 'Rossi Anna', causale: 'QUOTA JUDO' })
+ok('«Da NOME TRN …»: la causale parte dopo i codici, non dalla prima «per» più avanti', breve('Da ROSSI ANNA TRN 1191262827851832 SELBIT2B Pilates per Luca'), { da: 'Rossi Anna', causale: 'Pilates per Luca' })
+ok('dopo i codici una cifra o una parola di 8 lettere restano', [breve('Da ROSSI ANNA TRN 1191262827851832 SELBIT2B 3 CORSI'), breve('Da ROSSI ANNA TRN 1191262827851832 SELBIT2B FEBBRAIO')].map((x) => x.causale), ['3 CORSI', 'FEBBRAIO'])
+ok('le altre code del bonifico vanno via', [breve('DA ROSSI MARIO PER quota BONIFICO SEPA ORDINARIO'), breve('DA ROSSI MARIO PER quota BONIFICO SEPA INSTANT')].map((x) => x.causale), ['quota', 'quota'])
+
 console.log('\n3. abbinaPersone: una scheda sola, più d\'una, nessuna')
 const gente = [
   { id: 'g1', nome: 'Giulia', cognome: 'Verdi' },

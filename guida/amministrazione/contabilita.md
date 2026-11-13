@@ -216,16 +216,21 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
 - **CHI HA PAGATO E PER COSA?** è la finestra che dice chi ha pagato un bonifico e a cosa va, in un passo
   solo. È la stessa dovunque cominci: dal campo PERSONA di una riga dell'**import della banca**, dal tasto
   **Chi e per cosa** di un'entrata in MOVIMENTI (Da classificare, o su quota e corsi ancora da assegnare,
-  con o senza persona) e da **Assegna a quota e corsi** nel movimento. In cima le schede col nome del
-  testo e la ricerca; scelta la persona, sotto c'è la sua situazione e quella del suo **nucleo**: cosa
-  deve (quota e corsi, con quel che manca) e i **pagamenti** già fatti. La **tipologia** la dice quel che
-  paga: solo la quota → «Quota associativa»; con un corso → «Corsi e altri pagamenti».
+  con o senza persona) e da **Assegna a quota e corsi** nel movimento. In alto l'importo in grande, la
+  data, chi ha fatto il bonifico e la causale senza i codici (**Causale intera** la mostra com'è). Poi le
+  schede col nome del testo e la ricerca; scelta la persona, la ricerca si chiude in una riga col suo nome
+  e **Cambia**, che la riapre. Sotto, in **COSA PAGA**, la sua situazione e quella del suo **nucleo**: cosa
+  deve (quota e corsi, con quel che manca) e i **pagamenti** già fatti; con più persone della famiglia, un
+  riquadro per persona col nome. In fondo, sempre in vista, il conto: quanto è assegnato di tutto il
+  bonifico e se è **Tutto assegnato**, **Da assegnare** (in giallo) o **più del bonifico** (in rosso), con
+  la **tipologia**, che la dice quel che paga: solo la quota → «Quota associativa»; con un corso → «Corsi
+  e altri pagamenti».
   **Solo la persona, decido dopo** collega e basta. Se c'è una ricevuta fatta a parte che può essere
   questo bonifico, la finestra chiede **C'È GIÀ LA RICEVUTA: è questa?**: **Sì, è questa** la lega,
   **No, dividi il bonifico** torna alle cose da pagare.
 - Gli importi sono già proposti (un bonifico solo per due fratelli si divide fra tutti e due): prima la
-  quota, poi i corsi dal più vecchio; se c'è un solo modo di dividere, la finestra lo dice («Un solo modo
-  di dividere: già messo»). Per un corso ancora da pagare propone l'**annuale**, o il **trimestre** se il
+  quota, poi i corsi dal più vecchio; se c'è un solo modo di dividere, il conto in fondo lo dice
+  («Tutto assegnato · un solo modo di dividere»). Per un corso ancora da pagare propone l'**annuale**, o il **trimestre** se il
   testo del bonifico dice «trimestrale» o «trimestre». Gli importi si correggono a mano; accanto a ognuno il tag **Saldo** o **Parziale**, e sotto
   quanto resterà. **Svuota tutto** azzera la proposta. Non si assegna più di quel che manca a ogni voce,
   né più del bonifico.
@@ -236,9 +241,9 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   610,00 €. Un secondo bonifico paga quel che manca alla stessa voce; un annuale aggiunto dopo aver
   raggiunto i 660,00 € costa 0,00 €. Con la voce «Annuale più corsi» l'area iscritti e Satispay vedono
   pagati tutti i suoi annuali.
-- Se il bonifico paga una cosa che non è fra quelle da pagare, sotto ogni persona c'è **PAGA ANCHE**, con
-  le scelte da un tocco: la **quota associativa** dell'anno (se non è già una riga e non è già pagata tutta
-  nell'app), le voci dei **corsi a cui è iscritta** (trimestre, annuale), **Abbigliamento · a mano** e
+- Se il bonifico paga una cosa che non è fra quelle da pagare, sotto ogni persona c'è **AGGIUNGI**, con
+  le scelte da un tocco, tutte tasti uguali col «+»: la **quota associativa** dell'anno (se non è già una riga e non è già pagata tutta
+  nell'app), le voci dei **corsi a cui è iscritta** («Judo 2 annuale», «Judo 2 trimestre»), **Abbigliamento · a mano** e
   **Altro corso…**, che apre un campo per cercare gli altri corsi per nome (maiuscole e accenti non
   contano; **Chiudi** o Esc lo chiude). La voce scelta diventa una riga come le altre, con «dal listino» e
   il prezzo: l'importo parte da quel che resta del bonifico e non supera il prezzo. **Togli** la toglie.
@@ -246,7 +251,7 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   **Abbigliamento · a mano** non ha un prezzo: l'importo parte da quel che resta del bonifico e si
   corregge a mano. Non tocca nessun ordine in VESTIARIO. Come gli altri pagamenti, va su «Corsi e altri
   pagamenti»: un bonifico si assegna solo lì o sulla quota.
-- Se in VESTIARIO c'è un ordine **da saldare** che può essere della famiglia, sopra PAGA ANCHE compare
+- Se in VESTIARIO c'è un ordine **da saldare** che può essere della famiglia, sopra AGGIUNGI compare
   **ORDINI DEL VESTIARIO**: per ogni ordine chi l'ha fatto e per chi, la data, i capi, le ultime cifre
   del telefono e quanto manca. Un ordine è della famiglia se l'ha fatto una persona del nucleo a nome suo,
   o se in «per chi» c'è nome e cognome di una persona del nucleo (anche col telefono del genitore, diverso da

@@ -156,6 +156,8 @@ quando arriva la prova.
 - «Chi ha pagato e per cosa?» (`ChiEPerCosa.tsx`), da import, MOVIMENTI e movimento: le
   regole sono provate (`chiEPerCosa`, `righeDaCampi`, `scriviChiEPerCosa`, `ricevutaPerChi`);
   la finestra e i tre punti d'ingresso solo a mano.
+- La testata di quella finestra, chi ha pagato e la causale senza codici: `causaleInBreve`,
+  in `prova:movimenti-persona`. Il conto del piede, «Cambia» e il fuoco solo a mano.
 - Il ruolo sotto il nome di due omonimi, in quella finestra e nel pagamento fatto a mano: la regola
   è provata (`ruoloDaMostrare`, `cerca_pagatori` del 158); la resa nei `.tsx` solo a mano.
 - «Aggiungi una voce dal listino» nella stessa finestra: le voci e l'importo proposto sono provati

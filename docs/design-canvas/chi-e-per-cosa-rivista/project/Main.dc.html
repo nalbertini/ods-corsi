@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Chi ha pagato e per cosa · proposta</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .campo { width: 110px; min-height: 44px; padding: 10px 12px; font: inherit; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; color: #0d2a3d; background: #ffffff; border: 2px solid #14709f; }
+    .voce { display: grid; grid-template-columns: minmax(0, 1fr) 110px 90px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid #cfe6f4; font-size: 15px; }
+    .link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0; background: none; border: 0; font: inherit; font-size: 15px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .link.rosso { color: #b81d1d; font-size: 13px; }
+  </style>
+</helmet>
+<!-- PROPOSTA (rivede ChiEPerCosa.tsx; ../chi-e-per-cosa-rivista/). Tre cambi: 1) testata con l'importo grande a destra e la causale ripulita (niente TRN e SEPA, «Causale intera» la apre); 2) la persona scelta diventa una riga sola con «Cambia», e il riquadro sotto non ripete il nome se paga una persona sola; 3) il piede: il conto grande con il suo stato, la tipologia e Svuota tutto piccoli, i tasti a destra con Conferma per ultimo. PAGA ANCHE diventa AGGIUNGI: tre tasti uguali a linea con «+», al posto di tasto a destra, tasto a sinistra e link. -->
+<div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:940px;padding:40px 24px;background:rgba(0,0,0,.6)">
+<div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;width:100%;max-width:780px;background:#ffffff;border:2px solid #0d2a3d">
+
+  <div style="display:flex;flex-direction:column;gap:20px;padding:28px 28px 24px">
+    <div style="display:flex;gap:20px;align-items:flex-start;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <h2 id="titolo" style="margin:0;font-family:'Big Shoulders Display', Arial, sans-serif;font-size:30px;font-weight:800;line-height:1;letter-spacing:.02em">CHI HA PAGATO E PER COSA?</h2>
+        <span style="font-size:15px">07/10/2026 · Bonifico da <b>Rosalba Valenti</b></span>
+        <span class="sotto" style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">«Quota judo Paparelli Francesco primo trimestre 2026-2» <button type="button" class="link" style="min-height:24px;font-size:13px">Causale intera</button></span>
+      </div>
+      <span class="num" style="flex:none;font-family:'Big Shoulders Display', Arial, sans-serif;font-size:44px;font-weight:800;line-height:1;color:#0b7a33">+ 230,00 €</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span class="et">PERSONA</span>
+      <div style="display:flex;gap:12px;align-items:center;min-height:56px;padding:8px 8px 8px 16px;background:#eef5fa;border:2px solid #14709f">
+        <dc-import name="Icona" nome="persona" misura="22" hint-size="22px,22px"></dc-import>
+        <span style="display:flex;flex-direction:column;flex:1;min-width:0"><b style="font-size:17px">Paparelli Francesco</b><span class="sotto">Judo 2 · quota e corsi intestati a lui, anche se paga il genitore</span></span>
+        <button type="button" class="link" style="padding:0 12px"><dc-import name="Icona" nome="modifica" misura="18" hint-size="18px,18px"></dc-import>Cambia</button>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column">
+      <span class="et" style="padding-bottom:4px">COSA PAGA</span>
+      <div class="voce"><label for="v1">Quota associativa 2026/27 <span class="sotto">· pagata a mano, 50,00 €</span></label><input id="v1" class="campo" value="50,00"><span style="display:flex"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+      <div class="voce"><label for="v2">Trimestre Judo 2 <span class="sotto">· pagato a mano, 180,00 €</span></label><input id="v2" class="campo" value="180,00"><span style="display:flex"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+      <div style="display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid #cfe6f4">
+        <span class="et">AGGIUNGI</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="aggiungi" label="Judo 2 annuale · 480,00 €" hint-size="250px,44px"></dc-import>
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="vestiario" label="Abbigliamento" hint-size="180px,44px"></dc-import>
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="cerca" label="Altro corso…" hint-size="170px,44px"></dc-import>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:18px 28px;background:#eef5fa;border-top:2px solid #cfe6f4">
+    <div style="display:flex;flex-direction:column;gap:4px" role="status">
+      <span class="num" style="font-family:'Big Shoulders Display', Arial, sans-serif;font-size:28px;font-weight:800;line-height:1">230,00 € <span style="font-size:18px;color:#46606f">di 230,00 €</span></span>
+      <span style="display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600;color:#0b7a33"><span style="width:8px;height:8px;border-radius:50%;background:#0b7a33"></span>Tutto assegnato · un solo modo di dividere</span>
+      <span class="sotto" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">Tipologia: Corsi e altri pagamenti · <button type="button" class="link rosso" style="min-height:24px">Svuota tutto</button></span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="110px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Solo la persona, decido dopo" hint-size="250px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" hint-size="130px,48px"></dc-import>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":940}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

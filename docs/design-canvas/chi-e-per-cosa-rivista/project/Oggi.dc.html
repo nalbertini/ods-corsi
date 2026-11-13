@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Chi ha pagato e per cosa · oggi</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .campo { width: 110px; padding: 9px 12px; font: inherit; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; color: #0d2a3d; background: #ffffff; border: 2px solid #14709f; }
+    .voce { display: flex; gap: 10px; align-items: center; font-size: 15px; }
+    .voce > label { flex: 1 1 200px; min-width: 0; }
+    .link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0; background: none; border: 0; font: inherit; font-size: 15px; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; }
+  </style>
+</helmet>
+<!-- OGGI (ChiEPerCosa.tsx, dallo screenshot dell'import della banca del 07/10/2026): l'importo in grigio in fondo alla causale col TRN; il nome tre volte (campo, scelta, CHI HA PAGATO) e l'aiuto alla ricerca anche a persona scelta; il conto in corpo normale in fondo, Svuota tutto su una riga sua; in PAGA ANCHE tre comandi diversi per la stessa azione. -->
+<div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:1000px;padding:40px 24px;background:rgba(0,0,0,.6)">
+<div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:780px;padding:28px;background:#ffffff;border:2px solid #0d2a3d">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h2 id="titolo" style="margin:0;font-family:'Big Shoulders Display', Arial, sans-serif;font-size:30px;font-weight:800;line-height:1;letter-spacing:.02em">CHI HA PAGATO E PER COSA?</h2>
+    <span style="font-size:14px;color:#46606f">07/10/2026 · Da ROSALBA VALENTI TRN 4010276790003268483041030410IT SELBIT2B per QUOTA JUDO PAPARELLI FRANCESCO PRIMO TRIMESTRE 2026-2 BONIFICO SEPA · <b style="color:#0d2a3d">+ 230,00 €</b></span>
+  </div>
+  <label style="display:flex;flex-direction:column;gap:6px"><span class="et">PERSONA · DI CHI È</span>
+    <input type="search" value="papa" aria-label="Cerca per nome o cognome" style="width:100%;min-height:48px;padding:0 12px;background:#ffffff;border:2px solid #14709f;font:inherit;font-size:16px;color:#0d2a3d"></label>
+  <label style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;border:2px solid #14709f;background:#cfe6f4"><input type="radio" name="p" checked style="width:20px;height:20px;margin:0"><span style="display:flex;flex-direction:column"><b>Paparelli Francesco</b><span class="sotto">nessun dato in più sulla scheda</span></span></label>
+  <span class="sotto">Si cerca da tre lettere. La quota va a chi frequenta, anche se ha pagato il genitore.</span>
+
+  <div style="display:flex;flex-direction:column;gap:10px;padding:14px 20px">
+    <span style="display:flex;flex-direction:column;gap:2px"><span class="et">CHI HA PAGATO</span><b style="font-size:16px">Paparelli Francesco</b></span>
+    <div class="voce"><label for="o1">Quota associativa 2026/27 <span class="sotto">· pagata a mano, 50,00 €</span></label><input id="o1" class="campo" value="50,00"><span style="width:90px;display:flex"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+    <div class="voce"><label for="o2">Trimestre Judo 2 <span class="sotto">· pagato a mano, 180,00 €</span></label><input id="o2" class="campo" value="180,00"><span style="width:90px;display:flex"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+    <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #cfe6f4;padding-top:10px">
+      <span class="et">PAGA ANCHE</span>
+      <div style="display:flex;gap:8px;align-items:center"><span style="flex:1;font-size:15px">Judo 2</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annuale 480,00 €" hint-size="170px,44px"></dc-import></div>
+      <div style="display:flex;gap:12px;align-items:center"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="vestiario" label="Abbigliamento a mano" hint-size="230px,44px"></dc-import><button type="button" class="link"><dc-import name="Icona" nome="cerca" misura="18" hint-size="18px,18px"></dc-import>Altro corso…</button></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">
+    <span class="num" style="font-size:15px">Assegnati 230,00 € di 230,00 € · Da assegnare 0,00 €</span>
+    <span style="font-size:13px;color:#0b7a33">Un solo modo di dividere: già messo.</span>
+  </div>
+  <button type="button" class="link" style="color:#b81d1d;font-size:13px;align-self:flex-start">Svuota tutto</button>
+  <span class="sotto">TIPOLOGIA: «Corsi e altri pagamenti», da quel che paga.</span>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" hint-size="130px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Solo la persona, decido dopo" hint-size="270px,48px"></dc-import>
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="indietro" label="Annulla" hint-size="130px,48px"></dc-import>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
