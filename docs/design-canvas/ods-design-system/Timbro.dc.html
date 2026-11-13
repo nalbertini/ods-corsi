@@ -15,7 +15,7 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; height: 100%; min-height: 44px; min-width: 0; padding: {{padding}}; text-align: left; background: {{c.bg}}; border: 2px solid {{bordo}}; border-left-width: 4px; border-radius: {{raggio}}; font-family: {{fam}}; font-weight: 700; color: {{coloreBase}}">
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: {{gap}}; width: 100%; height: 100%; min-height: 44px; min-width: 0; padding: {{padding}}; text-align: left; background: {{c.bg}}; border: 2px solid {{bordo}}; border-left-width: 4px; border-radius: {{raggio}}; font-family: {{fam}}; font-weight: 700; color: {{coloreBase}}">
   <span style="font-size: 12px; letter-spacing: 0.2em; color: {{c.dim}}">{{titolo}}</span>
   <span style="font-size: {{corpoParola}}; line-height: 1.05; letter-spacing: 0.04em; color: {{coloreParola}}; overflow-wrap: anywhere">{{parola}}</span>
   <sc-for list="{{righe}}" as="r" hint-placeholder-count="1">
@@ -23,11 +23,12 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"titolo":{"editor":"text","default":"CERTIFICATO"},"parola":{"editor":"text","default":"SCADUTO"},"tono":{"editor":"enum","options":["rosso","giallo","verde","spento"],"default":"rosso"},"righe":{"editor":"text","default":"il 12 marzo:giallo"},"$preview":{"width":240,"height":120}}'>
-// Riproduzione 1:1 del timbro in cima alla scheda di un iscritto: .sg-timbro e figli (src/styles.css)
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"CERTIFICATO"},"parola":{"editor":"text","default":"SCADUTO"},"tono":{"editor":"enum","options":["rosso","giallo","verde","spento"],"default":"rosso"},"righe":{"editor":"text","default":"il 12 marzo:giallo"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":240,"height":120}}'>
+// Riproduzione 1:1 del timbro in cima alla scheda di un iscritto: .sg-timbro e figli (src/segreteria.css)
 // disegnato da `Timbri` in src/components/segreteria/Iscritti.tsx, con le parole di `timbriScheda`.
-// Nell'app sono in una griglia di 3 colonne larghe uguale (.sg-timbri, gap 12px, alti quanto il piu' alto; sotto i
-// 1000px una colonna; `../quota-senza-doppioni/`): CERTIFICATO MEDICO (MANCA · SENZA NON ENTRA), QUOTA ASSOCIATIVA
+// Nell'app stanno in righe da tre larghi uguale (.sg-timbri, flex a capo, gap 12px, alti quanto il piu' alto della riga):
+// oltre il terzo, quelli dell'ultima riga si allargano a riempirla (4 = 3 + 1 largo, 5 = 3 + 2). Sotto i 1000px uno per
+// riga a tutta larghezza, compatti (`telefono`: padding 8px 14px, gap 2px; parola 18px sotto i 480px). `../quota-senza-doppioni/`: CERTIFICATO MEDICO (MANCA · SENZA NON ENTRA), QUOTA ASSOCIATIVA
 // (PAGATA · FINO AL …, o DA PAGARE · 50,00 € in rosso) e un timbro per ogni corso da pagare (`timbriCorsi`,
 // «JUDO 3 · MANCANO» / «350,00 €»). Verde solo se non manca niente. Il documento non ha piu' un timbro: sta in
 // COSA MANCA. Le righe sono in maiuscolo come le altre. Qui un timbro solo, largo e alto quanto il contenitore.
@@ -36,7 +37,7 @@
 // stato (rosso-testo, giallo-testo, verde-testo, `dim`); le righe 14px 0.12em. Una riga gialla ha il bordo 2px giallo
 // e il testo giallo-testo.
 // Look del sito (`:root[data-look='sito'] .sg-timbro`, styles.css riga 381 e 462-463): fondo bianco, raggio 6px, giallo = giallo-testo.
-// tono: lo stato. righe: "testo:tono" separati da | (tono giallo o vuoto). Non riprodotti: bordo `text` al
+// telefono: il timbro compatto dello stretto. tono: lo stato. righe: "testo:tono" separati da | (tono giallo o vuoto). Non riprodotti: bordo `text` al
 // passaggio del mouse e il fuoco da tastiera.
 const T = {
   sito: { bg: '#ffffff', surface: '#ffffff', surface2: '#eef5fa', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a', giallo: '#8f6a00', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', tasto: '#0d2a3d', menu: '#0d2a3d' },
@@ -61,7 +62,7 @@ const tono = p.tono || 'rosso';
       c, righe, titolo: p.titolo ?? 'CERTIFICATO', parola: p.parola ?? 'SCADUTO',
       bordo: BORDO[tono] || c.line, coloreParola: TESTO[tono] || c.text,
       coloreBase: tono === 'spento' ? c.dim : c.sec,
-      padding: '12px 14px', corpoParola: '22px', corpoRiga: '14px',
+      padding: p.telefono ? '8px 14px' : '12px 14px', gap: p.telefono ? '2px' : '4px', corpoParola: p.telefono ? '18px' : '22px', corpoRiga: '14px',
     };
   }
 }

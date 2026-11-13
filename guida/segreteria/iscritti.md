@@ -179,7 +179,7 @@ data di nascita, per un minorenne il nome e il codice fiscale del genitore, e il
 Una scheda in regola per quota e certificato può avere lo stesso il riquadro:
 dice cosa completare nei dati. Quando non manca niente il riquadro non c'è.
 
-Poi i timbri dicono subito come sta, in una griglia: **CERTIFICATO MEDICO**,
+Poi i timbri dicono subito come sta, tre per riga (sul telefono uno sotto l'altro): **CERTIFICATO MEDICO**,
 **QUOTA ASSOCIATIVA** e un timbro per ogni corso da pagare (verde a posto, giallo da
 guardare, rosso manca; verde solo se non manca niente). Senza certificato il timbro
 dice **MANCA**, sotto **SENZA NON ENTRA**. La quota da pagare dice **DA PAGARE** e
