@@ -4,6 +4,7 @@ import { bastaPerCercare, comeSiAnnulla, domandaAnnullaPagamento, domandaAnnulla
 import { avvisoCassaChiusa } from '../../lib/contabilita'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { rigaEmail } from '../../lib/ricevuteEmail'
+import { ruoloDaMostrare } from '../../lib/ruoli'
 import { chiedi, messaggio, Riga, useCarica, type useAvviso, Tasto } from './comune'
 import { RegistraPagamento } from './Ricevute'
 
@@ -108,7 +109,7 @@ export function PagamentoAperto({ d, riga, fai, onChiudi, onFatto }: { d: DatiSe
  */
 export function RegistraDaPagamenti({ d, fai, onFatto, onChiudi }: { d: DatiSegreteria; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
   const [scritto, setScritto] = useState('')
-  const [trovati, setTrovati] = useState<Array<{ id: string; nome: string; cognome: string }>>([])
+  const [trovati, setTrovati] = useState<Array<{ id: string; nome: string; cognome: string; ruolo?: string }>>([])
   const [guaio, setGuaio] = useState<string | null>(null)
   // Cosa è stato cercato davvero: finché non risponde, «nessuno corrisponde» sarebbe una bugia.
   const [cercato, setCercato] = useState('')
@@ -162,7 +163,7 @@ export function RegistraDaPagamenti({ d, fai, onFatto, onChiudi }: { d: DatiSegr
         {trovati.map((p) => (
           <li key={p.id}>
             <button type="button" className="sg-btn sg-scelta" style={{ justifyContent: 'flex-start', width: '100%' }} onClick={() => setScelto(p)}>
-              {p.cognome} {p.nome}
+              {p.cognome} {p.nome}{ruoloDaMostrare(p.ruolo) && ` · ${ruoloDaMostrare(p.ruolo)}`}
             </button>
           </li>
         ))}

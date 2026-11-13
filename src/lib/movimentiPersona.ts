@@ -49,6 +49,8 @@ export interface CandidatoPersona {
   id: string
   nome: string
   cognome: string
+  /** Il ruolo della scheda: due omonimi, una da iscritta e una da istruttore, si distinguono così. */
+  ruolo?: string
   annoNascita?: number
   corsi: string[]
   iscrittoDal?: string

@@ -7,6 +7,7 @@ import { daMostrareInContabilita } from '../../lib/schedeIscritto'
 import type { PagamentoDiretto } from '../../lib/pagamenti'
 import { assegnaDopoIlCollegamento, togliLottoAssegnazioni } from '../../lib/assegna'
 import { oggiARoma } from '../../lib/contabilita'
+import { ruoloDaMostrare } from '../../lib/ruoli'
 import { chiedi, dataLunga, Guaio, messaggio, useCarica, type useAvviso } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -157,6 +158,7 @@ export function CollegaSicuri({ d, onRileggi, onVediDaDecidere, onChiudi }: { d:
 /** Una persona da scegliere: nome e cognome, e quel che distingue due omonimi. */
 export function SchedaCandidata({ c, scelta, onScegli, nome = 'persona' }: { c: CandidatoPersona; scelta: boolean; onScegli: () => void; nome?: string }) {
   const dettagli = [
+    ruoloDaMostrare(c.ruolo),
     c.annoNascita ? `nascita ${c.annoNascita}` : '',
     c.corsi.length ? c.corsi.join(', ') : '',
     c.iscrittoDal ? `iscrizione dal ${dataRicevuta(c.iscrittoDal)}` : '',

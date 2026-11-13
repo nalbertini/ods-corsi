@@ -79,14 +79,14 @@ export const bastaPerCercare = (scritto: string) => Math.max(0, ...paroleCercate
  * mai un contatto, e servono almeno tre lettere. Oltre cento lettere il
  * database non cerca, e nemmeno qui: un nome non è così lungo.
  */
-export function trovaPagatori<T extends { id: string; nome: string; cognome: string; attiva: boolean }>(persone: T[], scritto: string): Array<{ id: string; nome: string; cognome: string }> {
+export function trovaPagatori<T extends { id: string; nome: string; cognome: string; attiva: boolean; ruolo?: string }>(persone: T[], scritto: string): Array<{ id: string; nome: string; cognome: string; ruolo?: string }> {
   if (scritto.length > 100 || !bastaPerCercare(scritto)) return []
   const parole = paroleCercate(scritto)
   return persone
     .filter((p) => p.attiva && somiglia(p, parole))
     .sort((a, b) => a.cognome.localeCompare(b.cognome, 'it') || a.nome.localeCompare(b.nome, 'it') || a.id.localeCompare(b.id))
     .slice(0, MASSIMO_PAGATORI)
-    .map(({ id, nome, cognome }) => ({ id, nome, cognome }))
+    .map(({ id, nome, cognome, ruolo }) => ({ id, nome, cognome, ruolo }))
 }
 
 /**
