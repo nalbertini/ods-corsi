@@ -552,7 +552,7 @@ export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, ogg
   return fuori
 }
 
-/** Una voce di PAGA ANCHE: il corso, la formula («Trimestre») e la cosa da pagare, col prezzo come `manca`. */
+/** Una voce di AGGIUNGI: il corso, la formula («Trimestre») e la cosa da pagare, col prezzo come `manca`. */
 export interface VoceDaAggiungere {
   corso: string
   formula: string
@@ -560,7 +560,7 @@ export interface VoceDaAggiungere {
 }
 
 /**
- * PAGA ANCHE nella finestra: le cose che il bonifico può pagare oltre a quelle che `dovutiDi` vede. In quest'ordine:
+ * AGGIUNGI nella finestra: le cose che il bonifico può pagare oltre a quelle che `dovutiDi` vede. In quest'ordine:
  * la quota dell'anno (`quota`, solo con `pagati`: quel che le manca per il tetto del database), le voci dei corsi a cui
  * la persona è iscritta oggi (`suoi`, a un tocco), l'abbigliamento a mano (col bonifico: il tetto è `importo`) e gli
  * altri corsi del listino per nome (`altri`, per «Altro corso…» e `cercaCorsi`). Fuori le voci che sono già righe

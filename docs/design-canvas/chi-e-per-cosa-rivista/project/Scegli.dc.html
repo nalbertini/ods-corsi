@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Chi ha pagato e per cosa · prima della scelta</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .scelta { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 14px; background: #ffffff; border: 2px solid #cfe6f4; font: inherit; color: #0d2a3d; text-align: left; cursor: pointer; }
+  </style>
+</helmet>
+<!-- PROPOSTA, prima della scelta: la stessa testata, poi la ricerca con l'aiuto sotto il campo e le persone come righe da toccare (un tocco sceglie e chiude, niente pallino). Le SUGGERITE DAL TESTO stanno in cima, come oggi. Scelta la persona si passa a Main: una riga sola con «Cambia», che riapre questa. Senza persona il piede ha solo Annulla. -->
+<div style="display:flex;flex-direction:column;width:780px;background:#ffffff;border:2px solid #0d2a3d">
+  <div style="display:flex;flex-direction:column;gap:20px;padding:28px">
+    <div style="display:flex;gap:20px;align-items:flex-start;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <h2 style="margin:0;font-family:'Big Shoulders Display', Arial, sans-serif;font-size:30px;font-weight:800;line-height:1;letter-spacing:.02em">CHI HA PAGATO E PER COSA?</h2>
+        <span style="font-size:15px">07/10/2026 · Bonifico da <b>Rosalba Valenti</b></span>
+        <span class="sotto">«Quota judo Paparelli Francesco primo trimestre 2026-2»</span>
+      </div>
+      <span class="num" style="flex:none;font-family:'Big Shoulders Display', Arial, sans-serif;font-size:44px;font-weight:800;line-height:1;color:#0b7a33">+ 230,00 €</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span class="et">SUGGERITA DAL TESTO</span>
+      <button type="button" class="scelta"><dc-import name="Icona" nome="persona" misura="22" hint-size="22px,22px"></dc-import><span style="display:flex;flex-direction:column;flex:1"><b>Paparelli Francesco</b><span class="sotto">Judo 2</span></span><span style="font-size:15px;font-weight:600;color:#14709f">Scegli</span></button>
+    </div>
+    <label style="display:flex;flex-direction:column;gap:6px"><span class="et">O CERCA</span>
+      <input type="search" placeholder="Almeno tre lettere del nome o del cognome" style="width:100%;min-height:48px;padding:0 12px;background:#ffffff;border:2px solid #14709f;font:inherit;font-size:16px;color:#0d2a3d">
+      <span class="sotto">La quota va a chi frequenta, anche se ha pagato il genitore.</span></label>
+  </div>
+  <div style="display:flex;justify-content:flex-end;padding:18px 28px;background:#eef5fa;border-top:2px solid #cfe6f4">
+    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="110px,48px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":780,"height":560}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

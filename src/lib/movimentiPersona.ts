@@ -100,7 +100,32 @@ export function ordinanteDallaCausale(descrizione: string): string | null {
   if (cliente) return cliente
   // Il «DA» solo in testa o dopo il codice TRN: «QUOTA DA SETTEMBRE PER …» non ha un nome.
   const r = /^\s*(?:TRN(?:\s+\S+){1,2}\s+)?DA\s+(\p{Lu}[\p{Lu}'’ .-]*?)\s+PER\s/u.exec(descrizione)
-  return r ? r[1].replace(/\s+/g, ' ').toLowerCase().replace(/(^|[ '’-])(\p{L})/gu, (_, prima: string, l: string) => prima + l.toUpperCase()) : null
+  return r ? conIniziali(r[1]) : null
+}
+
+// Il TRN e al più due codici: uno con una cifra, o un BIC italiano (SELBIT2B, UNCRITMMXXX). Una parola come FEBBRAIO non è un codice.
+const TRN = /\bTRN(?:\s+(?:[A-Z0-9]*\d[A-Z0-9]*|[A-Z]{4}IT[A-Z0-9]{2}(?:[A-Z0-9]{3})?)\b){1,2}/
+
+const conIniziali = (s: string): string => s.replace(/\s+/g, ' ').toLowerCase().replace(/(^|[ '’-])(\p{L})/gu, (_, prima: string, l: string) => prima + l.toUpperCase())
+
+/**
+ * La testata di CHI HA PAGATO E PER COSA?: chi ha fatto il bonifico (`ordinanteDallaCausale`, o «Da NOME TRN …» del
+ * movimento) e la causale dopo la prima «per», senza i codici TRN né il tipo d'operazione in fondo. Senza nome, la
+ * descrizione intera ripulita. Solo da mostrare: la descrizione intera resta a un tocco.
+ */
+export function causaleInBreve(descrizione: string): { da: string | null; causale: string } {
+  const ordinante = ordinanteDallaCausale(descrizione)
+  const dalMovimento = ordinante ? null : /^\s*da\s+(\p{L}[\p{L}'’ .-]*?)\s+(TRN\s[\s\S]*)$/iu.exec(descrizione)
+  const da = ordinante ?? (dalMovimento ? conIniziali(dalMovimento[1]) : null)
+  // «Cliente X per …» e «DA X PER …»: la causale dopo la prima «per». «Da X TRN …»: dopo i codici, con la «per» che li segue.
+  const dopoPer = ordinante ? /\sper\s([\s\S]*)$/i.exec(descrizione) : null
+  const resto = dopoPer ? dopoPer[1] : dalMovimento ? dalMovimento[2].replace(TRN, '').replace(/^\s*per\s/i, '') : descrizione
+  const causale = resto
+    .replace(new RegExp(TRN.source, 'g'), ' ')
+    .replace(/\s+BONIFICO(?:\s+SEPA)?(?:\s+(?:ISTANTANEO|ORDINARIO|INSTANT))?\s*$/i, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return { da, causale }
 }
 
 // Le parole in ordine alfabetico: «Rossi Giulia» e «Giulia Rossi» sono lo stesso nome.

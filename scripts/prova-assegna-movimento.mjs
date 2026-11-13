@@ -474,7 +474,7 @@ console.log('\n3g. Una voce dal listino, anche per un corso a cui non è iscritt
   }
   const corsi = [{ id: 'kids', nome: 'Judo kids' }, { id: 'pil', nome: 'Pilates' }]
   const leo = { id: 'leo', iscrizioni: [] }
-  // PAGA ANCHE: la quota, le voci dei suoi corsi, l'abbigliamento a mano e «Altro corso…» con la ricerca.
+  // AGGIUNGI: la quota, le voci dei suoi corsi, l'abbigliamento a mano e «Altro corso…» con la ricerca.
   const scelte = (p, gia = [], importo = 0, pagati) => prova(() => vociDaAggiungere(p, corsi, listino, oggi, gia, importo, pagati))
   const suoi = (x) => x?.suoi?.map?.((v) => [v.corso, v.formula, v.dovuta.manca])
   const altri = (x) => x?.altri?.map?.((g) => [g.corso, g.voci.map((v) => [v.formula, v.dovuta.manca])])

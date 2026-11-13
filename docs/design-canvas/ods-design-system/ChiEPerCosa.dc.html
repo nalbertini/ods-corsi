@@ -8,69 +8,74 @@
 <body>
 <x-dc>
 <helmet>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
-    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
     .sotto { font-size: 13px; color: #46606f; }
-    .riq { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
-    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
-    .vuoto { color: #46606f; border-color: #cfe6f4; }
     .num { font-variant-numeric: tabular-nums; }
-    .voce { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
-    .voce > span:first-child { flex: 1 1 220px; min-width: 0; }
-    .pag { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 6px; font-size: 14px; }
+    .campo { width: 110px; min-height: 44px; padding: 10px 12px; font: inherit; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; color: #0d2a3d; background: #ffffff; border: 2px solid #14709f; }
+    .voce { display: grid; grid-template-columns: minmax(0, 1fr) 110px 90px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid #cfe6f4; font-size: 15px; }
+    .link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0; background: none; border: 0; font: inherit; font-size: 15px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+    .link.rosso { color: #b81d1d; font-size: 13px; }
   </style>
 </helmet>
-<!-- COSTRUITA (ChiEPerCosa di src/components/segreteria/ChiEPerCosa.tsx; regole in chiEPerCosa di src/lib/assegna.ts; ../persona-e-pagamento/): la finestra CHI HA PAGATO E PER COSA? (sg-velo + sg-dialogo, larga fino a 780px, scorre). La stessa dal campo PERSONA dell'import della banca, dal tasto «Chi e per cosa» di MOVIMENTI e da «Assegna a quota e corsi» del movimento. In cima SUGGERITE DAL TESTO (SchedaCandidata, qui disegnate come scelte in riga) e la ricerca (CampoPersona); scelta la persona, un riquadro per chi del nucleo (etichetta CHI HA PAGATO o STESSA FAMIGLIA e sotto il nome, mai in maiuscolo): le cose da pagare (RigaDovuta: voce · manca, campo, tag Saldo/Parziale, «Resteranno…»), «Niente da pagare» se a posto, PAGAMENTI · N (gli ultimi quattro, ricevuta o «senza ricevuta»). Riquadri gialli (data-avviso) per GIÀ PAGATO A MANO (È questo bonifico / Non è questo) e C'È GIÀ LA RICEVUTA (Sì, è questa / No, dividi il bonifico), che prende il posto delle cose da pagare: lo stato è disegnato in ../persona-e-pagamento/ConRicevuta.dc.html. Sotto le cose da pagare, se in VESTIARIO c'è un ordine da saldare che combacia con una persona del nucleo (nome e cognome in «per chi», o di chi ordina se il telefono non è diverso da quello della scheda), ORDINI DEL VESTIARIO · N con l'icona vestiario: per ordine «Ordine di <chi> · per <chi> · data», capi e ultime cifre del telefono, «mancano X di Y» e il Tasto «È questo ordine» (ordiniDelNucleo e voceOrdine di assegna.ts; ../vestiario-in-chi-paga/). La riga che ne esce è «Abbigliamento, ordine del …» con «ordine di <chi> · manca X», Saldo o Parziale, e sotto «Con Conferma l'ordine di <chi> in VESTIARIO diventa saldato, con bonifico.» o «Copre solo una parte: l'ordine in VESTIARIO resta com'è, si segna lì.». Poi PAGA ANCHE (vociDaAggiungere): la quota dell'anno se non è già una riga né pagata tutta nell'app, le voci dei corsi a cui è iscritta raggruppate per riga di prezzo (il nome del corso a sinistra, poi un Tasto a linea per formula: «Annuale 340,00 €», con l'aria-label che dice anche il corso), il Tasto «Abbigliamento a mano» con l'icona vestiario (riga senza prezzo, «· a mano ·», tetto il bonifico, né Saldo né Parziale) e il link «Altro corso…» con l'icona cerca, che al suo posto apre il campo «Altro corso» (cercaCorsi: senza maiuscole né accenti), «Chiudi» ed Esc, un role=status «N corsi con «…»» e una riga per corso con le sue formule. La voce scelta è una RigaDovuta con «dal listino X €» e «Togli» nel testo (13px, alto 44px, rosso sg-pericolo come Svuota tutto: tocca una bozza), e se non è iscritta «<nome> non ha l'iscrizione a <corso>: si fa dalla scheda». Il tag sta in un posto fisso di 90px, così i campi restano in colonna. Sotto: «Assegnati … di … · Da assegnare …», «Un solo modo di dividere: già messo» (data-tono fatto) finché non si tocca, Svuota tutto, l'errore (role alert), «TIPOLOGIA: «…», da quel che paga». Tasti: Conferma (pieno), «Conferma e fai la ricevuta» (solo dal movimento), «Solo la persona, decido dopo» (non dal movimento), Annulla. -->
-<div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:1180px;padding:40px 24px;background:rgba(0,0,0,.6)">
-<div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:780px;padding:28px;background:#ffffff;border:2px solid #0d2a3d">
-  <div style="display:flex;flex-direction:column;gap:4px">
-    <h2 id="titolo" style="margin:0;font-family:'Saira Condensed', Arial, sans-serif;font-style:italic;font-size:26px;font-weight:700;letter-spacing:.04em">CHI HA PAGATO E PER COSA?</h2>
-    <span style="font-size:14px;color:#46606f">27/10/2026 · Da GALLI M. per trimestre judo · <b style="color:#0b7a33">+ 120,00 €</b></span>
-  </div>
-  <label style="display:flex;flex-direction:column;gap:6px"><span class="et">CHI</span>
-    <input type="search" value="Galli" aria-label="Cerca per nome o cognome" style="width:100%;min-height:48px;padding:0 12px;background:#ffffff;border:2px solid #0d2a3d;border-radius:6px;font:inherit;font-size:16px;color:#0d2a3d"></label>
-  <div role="radiogroup" aria-label="Le persone" style="display:flex;gap:8px;flex-wrap:wrap">
-    <label style="display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 12px;border:2px solid #14709f;border-radius:6px"><input type="radio" name="p" checked style="width:20px;height:20px;margin:0"><b>Galli Matteo</b> <span class="sotto">Judo kids</span></label>
-    <label style="display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 12px;border:2px solid #cfe6f4;border-radius:6px"><input type="radio" name="p" style="width:20px;height:20px;margin:0"><b>Galli Martina</b> <span class="sotto">Judo ragazzi</span></label>
-    <label style="display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 12px;border:2px solid #cfe6f4;border-radius:6px"><input type="radio" name="p" style="width:20px;height:20px;margin:0"><b>Galli Mauro</b> <span class="sotto">Pilates</span></label>
-  </div>
+<!-- COSTRUITA (ChiEPerCosa.tsx, causaleInBreve di src/lib/movimentiPersona.ts, regole in chiEPerCosa di src/lib/assegna.ts; storia in ../persona-e-pagamento/, ../vestiario-in-chi-paga/, ../chi-e-per-cosa-rivista/): la finestra CHI HA PAGATO E PER COSA? (sg-velo + sg-dialogo, larga fino a 780px, scorre). La stessa dal campo PERSONA dell'import della banca, dal tasto «Chi e per cosa» di MOVIMENTI e da «Assegna a quota e corsi» del movimento. TESTATA: titolo 30px, «data · Da <chi>» (causaleInBreve: ordinanteDallaCausale o «Da NOME TRN …»), la causale senza TRN né «BONIFICO SEPA» fra «» e «Causale intera» / «Causale corta» (solo se diversa), a destra l'importo 44px verde-testo. PERSONA: prima della scelta SUGGERITE DAL TESTO (SchedaCandidata) e CampoPersona; scelta, una riga sola su fondo bg con bordo riga-campo, nome 17px e «La quota va a chi frequenta…», «Cambia» (icona modifica) la riapre col fuoco nella ricerca, e «Resta <nome>» torna indietro. COSA PAGA: con una persona sola niente riquadro né nome; con la famiglia un sg-riquadro per persona con «Nome · chi ha pagato / stessa famiglia». Le righe (RigaDovuta: voce · manca, campo 110px, tag Saldo/Parziale in un posto fisso di 90px, «Resteranno…»), riquadri gialli GIÀ PAGATO A MANO e C'È GIÀ LA RICEVUTA come prima, ORDINI DEL VESTIARIO, poi AGGIUNGI: tasti a linea tutti uguali, «+ Quota…», «+ <corso> <formula> prezzo» uno per formula, «Abbigliamento a mano» (icona vestiario), «Altro corso…» (icona cerca) che apre la ricerca dei corsi; PAGAMENTI · N. PIEDE sticky in fondo, fondo bg e filo line: «assegnato di bonifico» 28px, lo stato col pallino (verde-testo «Tutto assegnato», «· un solo modo di dividere» se è la proposta sicura; giallo-testo «Da assegnare X»; rosso-testo «X più del bonifico», Conferma spenta), «Tipologia: … · Svuota tutto»; i tasti a destra, Solo la persona, decido dopo (non dal movimento), Conferma e fai la ricevuta (solo dal movimento), Annulla, Conferma (pieno) per ultimo; al telefono crescono e vanno a capo. -->
+<div style="display:flex;align-items:flex-start;justify-content:center;width:1100px;min-height:940px;padding:40px 24px;background:rgba(0,0,0,.6)">
+<div role="dialog" aria-modal="true" aria-labelledby="titolo" style="display:flex;flex-direction:column;width:100%;max-width:780px;background:#ffffff;border:2px solid #0d2a3d">
 
-  <div class="riq">
-    <span class="et">CHI HA PAGATO</span>
-    <b style="font-size:16px">Galli Matteo</b>
-    <div class="voce"><span>Trimestre Judo kids <span class="sotto">· manca 120,00 €</span></span><span class="campo">120,00</span><span style="width:90px;display:flex"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
-    <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid #cfe6f4;padding-top:10px">
-      <span class="et">PAGA ANCHE</span>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="flex:1 1 220px;font-size:15px">Judo kids</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annuale 360,00 €" hint-size="170px,44px"></dc-import></div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="vestiario" label="Abbigliamento a mano" hint-size="210px,44px"></dc-import><span style="display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:15px;font-weight:600"><dc-import name="Icona" nome="cerca" misura="18" hint-size="18px,18px"></dc-import><span style="text-decoration:underline;text-underline-offset:3px">Altro corso…</span></span></div>
+  <div style="display:flex;flex-direction:column;gap:20px;padding:28px 28px 24px">
+    <div style="display:flex;gap:20px;align-items:flex-start;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <h2 id="titolo" style="margin:0;font-family:'Big Shoulders Display', Arial, sans-serif;font-size:30px;font-weight:800;line-height:1;letter-spacing:.02em">CHI HA PAGATO E PER COSA?</h2>
+        <span style="font-size:15px">07/10/2026 · Da <b>Rosalba Valenti</b></span>
+        <span class="sotto">«QUOTA JUDO PAPARELLI FRANCESCO PRIMO TRIMESTRE 2026-2»</span>
+        <button type="button" class="link" style="align-self:flex-start;font-size:13px">Causale intera</button>
+      </div>
+      <span class="num" style="flex:none;font-family:'Big Shoulders Display', Arial, sans-serif;font-size:44px;font-weight:800;line-height:1;color:#0b7a33">+ 230,00 €</span>
     </div>
-    <span class="et" style="padding-top:6px">PAGAMENTI · 2</span>
-    <div class="pag"><span class="num" style="width:90px">21/09/2026</span><span style="flex:1 1 200px">Quota associativa 2026/27 <span class="sotto">· ricevuta n. 301/2026</span></span><span class="num">50,00 €</span></div>
-    <div class="pag"><span class="num" style="width:90px">10/09/2026</span><span style="flex:1 1 200px">Trimestre Judo kids · set <span class="sotto">· bonifico, senza ricevuta</span></span><span class="num">120,00 €</span></div>
-  </div>
-  <div class="riq" style="gap:4px">
-    <span class="et">STESSA FAMIGLIA</span>
-    <b style="font-size:16px">Galli Sofia</b>
-    <span class="sotto">Niente da pagare: corsi e quota a posto.</span>
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <span class="et">PERSONA</span>
+      <div style="display:flex;gap:12px;align-items:center;min-height:56px;padding:8px 8px 8px 16px;background:#eef5fa;border:2px solid #14709f">
+        <dc-import name="Icona" nome="persona" misura="22" hint-size="22px,22px"></dc-import>
+        <span style="display:flex;flex-direction:column;flex:1;min-width:0"><b style="font-size:17px">Paparelli Francesco</b><span class="sotto">La quota va a chi frequenta, anche se ha pagato il genitore.</span></span>
+        <button type="button" class="link" style="padding:0 12px"><dc-import name="Icona" nome="modifica" misura="18" hint-size="18px,18px"></dc-import>Cambia</button>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column">
+      <span class="et" style="padding-bottom:4px">COSA PAGA</span>
+      <div class="voce"><label for="v1">Quota associativa 2026/27 <span class="sotto">· pagata a mano, 50,00 €</span></label><input id="v1" class="campo" value="50,00"><span style="display:flex"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+      <div class="voce"><label for="v2">Trimestre Judo 2 <span class="sotto">· pagato a mano, 180,00 €</span></label><input id="v2" class="campo" value="180,00"><span style="display:flex"><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></span></div>
+      <div style="display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid #cfe6f4">
+        <span class="et">AGGIUNGI</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="aggiungi" label="Judo 2 annuale 480,00 €" hint-size="250px,44px"></dc-import>
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="vestiario" label="Abbigliamento" hint-size="180px,44px"></dc-import>
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" icona="cerca" label="Altro corso…" hint-size="170px,44px"></dc-import>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">
-    <span class="num" style="font-size:15px">Assegnati 120,00 € di 120,00 € · Da assegnare 0,00 €</span>
-    <span style="font-size:13px;color:#0b7a33">Un solo modo di dividere: già messo.</span>
-  </div>
-  <span class="sotto">TIPOLOGIA: «Corsi e altri pagamenti», da quel che paga.</span>
-  <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" hint-size="140px,48px"></dc-import>
-    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Solo la persona, decido dopo" hint-size="270px,48px"></dc-import>
-    <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="120px,48px"></dc-import>
+  <div style="display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:18px 28px;background:#eef5fa;border-top:2px solid #cfe6f4">
+    <div style="display:flex;flex-direction:column;gap:4px" role="status">
+      <span class="num" style="font-family:'Big Shoulders Display', Arial, sans-serif;font-size:28px;font-weight:800;line-height:1">230,00 € <span style="font-size:18px;color:#46606f">di 230,00 €</span></span>
+      <span style="display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600;color:#0b7a33"><span style="width:8px;height:8px;border-radius:50%;background:#0b7a33"></span>Tutto assegnato · un solo modo di dividere</span>
+      <span class="sotto" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">Tipologia: Corsi e altri pagamenti · <button type="button" class="link rosso" style="min-height:24px">Svuota tutto</button></span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Solo la persona, decido dopo" hint-size="250px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="110px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" hint-size="130px,48px"></dc-import>
+    </div>
   </div>
 </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":1180}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":940}}'>
 class Component extends DCLogic { renderVals() { return {}; } }
 </script>
 </body>
