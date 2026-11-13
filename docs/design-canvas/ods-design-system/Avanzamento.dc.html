@@ -36,7 +36,7 @@
 // L'avanzamento del modulo a passi: `Avanzamento` di src/components/ds.tsx e `.avanza*` di src/styles.css, le tappe da `tappeDelPasso` di src/lib/passiIscrizione.ts.
 // Tre tappe affiancate (CHI, IL CORSO, PAGA E MANDA), gap 10px, larghe quanto i loro passi: segmenti da 6px, gap 3px (fatti `verde`, quello di adesso `text`, gli altri `line`);
 // sotto il nome in Saira 12px 0.14em: `text` la tappa di adesso, `verdeTesto` con ✓ quella finita, `dim` le altre. Poi il nome del passo in Saira 24px 0.12em.
-// PROPOSTA (passi compatti): `titolo` vuoto = solo le tappe, il nome del passo sta in IntestaPasso.
+// `titolo` vuoto = solo le tappe (`senzaNome`, `.avanza-corta`: 12px sopra, niente sotto): è com'è nel modulo a passi, dove il nome del passo sta in IntestaPasso.
 // Il numero a schermo non c'è: per chi legge lo schermo resta «Passo N di N: nome». `totale` 7 = adulto (CHI ha 1 passo), 8 = figlio (CHI ne ha 2).
 const T = {
   sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', tasto: '#0d2a3d', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suRosso: '#ffffff', suColore: '#0d2a3d' },

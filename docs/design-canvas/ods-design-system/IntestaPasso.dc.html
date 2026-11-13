@@ -29,18 +29,18 @@
   </span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"riempi":{"editor":"boolean","default":true},"titolo":{"editor":"text","default":""},"$preview":{"width":390,"height":64}}'>
+<script data-dc-script data-props='{"riempi":{"editor":"boolean","default":true},"titolo":{"editor":"text","default":"CORSO"},"$preview":{"width":390,"height":64}}'>
 // La riga in cima ai passi del modulo a passi (`.passo-intesta` di src/styles.css, `IscrizioneAPassi.tsx`): RICHIESTA DI ISCRIZIONE (Saira 12px 0.18em `dim`)
 // e, solo in prova, il bollino PROVA; accanto, nei passi che si possono riempire (`riempibile`), RIEMPI (`.passo-riempi`: 44px, bordo 2px tratteggiato e testo `gialloTesto`, 14px 0.14em).
-// PROPOSTA (passi compatti): con `titolo` il nome del passo sale qui, sotto RICHIESTA DI ISCRIZIONE (Saira 24px 0.12em), e la riga parte a 12px dall'alto;
-// l'Avanzamento sotto si usa senza titolo. Toglie una riga intera dalla cima del passo.
+// COSTRUITO (passi compatti): il nome del passo sta qui, sotto RICHIESTA DI ISCRIZIONE (`.passo-intesta-nome`: Saira 24px 0.12em, una riga, si taglia con «…»),
+// e la riga parte a 12px dall'alto; l'Avanzamento sotto si usa senza nome (`senzaNome`). Nell'app `titolo` c'è sempre: vuoto solo per i canvas vecchi (16px dall'alto).
 const T = {
   sito: { text: '#0d2a3d', dim: '#46606f', giallo: '#f4c31b', gialloTesto: '#8f6a00' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const titolo = String(p.titolo ?? '');
+    const titolo = String(p.titolo ?? 'CORSO');
     return { c: T.sito, riempi: p.riempi ?? true, titolo, haTitolo: titolo !== '', spazio: titolo ? '12px 20px 0' : '16px 20px 0' };
   }
 }

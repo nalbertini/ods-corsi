@@ -71,7 +71,7 @@
 // PROPOSTA (rifinitura iscrizione): `compatta` = la barra del mancante in una riga sola (MANCANO N, il tasto VAI A: la prima voce, e ▾ che apre l'elenco; `aperta` lo mostra, una voce = un tasto che porta al campo); le voci mancanti sono la lista `manca` come prima, la prima e' la prossima. Il bordo di INDIETRO usa `riga-campo`. Nell'app e' sempre compatta (`compatta` vero); la pastiglia per cosa resta per le proposte vecchie.
 // `totale` (con `totaleEtichetta`, TOTALE o TOTALE FAMIGLIA, e `totaleRighe`, cosa lo compone) e' il totale dentro la barra, solo al passo del corso: nella colonna, senza fondo, un filo 2px `line` sotto; a sinistra l'etichetta (12px 0.18em `dim`) e le righe in una riga (13px `dim`, si tagliano con «…»), a destra la cifra Saira 34px (.barra-totale di src/styles.css).
 // Il fondo di ogni passo: `BarraPasso` di src/components/ds.tsx e `.barra-passo*` di src/styles.css (modulo a passi, solo in prova). Nell'app e' sticky: resta in fondo allo schermo, sotto il pollice; qui e' ferma. Se manca qualcosa dice cosa (MANCA 1 COSA: + una pastiglia da 44px per cosa,
-// separate da |); se no una riga verde con la nota. Poi INDIETRO (110px, linea) e AVANTI (principale rosso, o vai verde per l'ultimo
+// separate da |); se no una riga verde con la nota. Nel modulo a passi la riga del mancante c'è solo dopo un AVANTI che non è passato (`manca` vuoto e `nota` vuota = la barra a riposo, solo i tasti). Poi INDIETRO (110px, linea) e AVANTI (principale rosso, o vai verde per l'ultimo
 // passo che manda la richiesta). `indietroChiede` e' lo stato dei due tocchi di DueTocchi (ds.tsx): bordo e testo rossi,
 // LE RISPOSTE SI PERDONO · ESCI?; il tasto prende tutta la riga e AVANTI scende sotto.
 const T = {
