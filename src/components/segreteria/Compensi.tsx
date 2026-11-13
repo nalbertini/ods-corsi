@@ -5,12 +5,11 @@ import type { Voce } from '../../lib/indirizzoSegreteria'
 import { NOME_CASSA_CONTO, oggiARoma, type Cassa, type ChiusuraCassa } from '../../lib/contabilita'
 import { insegna } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga, oraDi } from '../../lib/sala'
-import { euro } from '../../lib/ricevute'
+import { dataRicevuta, euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
-import { centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, daPagareCompensi, extraDelPagamento, avvisoDelMese, aChePunto, azioneCarta, azioneRiga, gruppiCompensi, senzaImporto, STATI_FERMI, type AzioneCompenso, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type GruppoCompensi, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
-import { chiedi, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
-import { Chip } from '../ds'
+import { bonificiPerCompensi, centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, daPagareCompensi, extraDelPagamento, avvisoDelMese, aChePunto, azioneCarta, azioneRiga, gruppiCompensi, senzaImporto, STATI_FERMI, type AzioneCompenso, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type GruppoCompensi, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
+import { chiedi, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Segmenti, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 const GIORNI_CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
@@ -942,14 +941,8 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
               {quante(righe.length, 'tecnico', 'tecnici')} ·{' '}
               <span style={fermi.length ? { color: 'var(--rosso-testo)', fontWeight: 700 } : undefined}>{quante(fermi.length, 'fermo', 'fermi')}</span> · {euro(totaleDaPagare)} € da pagare · {euro(tutti.pagati)} € pagati
             </span>
-            <span className="row" style={{ gap: 10, flexWrap: 'wrap', marginLeft: 'auto', alignItems: 'center' }}>
-              <Chip acceso={filtro === 'manca-firma'} numero={tutti.senzaFirma.length} etichetta={`Manca la firma: ${quante(tutti.senzaFirma.length, 'lezione', 'lezioni')}`} onClick={() => setFiltro(filtro === 'manca-firma' ? null : 'manca-firma')}>
-                Manca la firma
-              </Chip>
-              <Chip acceso={filtro === 'extra'} numero={nExtra} etichetta={`Extra: ${quante(nExtra, 'ricevuta', 'ricevute')}`} onClick={() => setFiltro(filtro === 'extra' ? null : 'extra')}>
-                Extra
-              </Chip>
-              {/* Anche per chi nel mese non ha lezioni: per questo sta qui e non solo nel dialogo del tecnico. */}
+            {/* Anche per chi nel mese non ha lezioni: per questo sta qui e non solo nel dialogo del tecnico. */}
+            <span className="row" style={{ marginLeft: 'auto', alignItems: 'center' }}>
               <button type="button" className="sg-btn sg-btn-linea" onClick={() => setExtra({})}>
                 + Compenso extra
               </button>
@@ -957,6 +950,23 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
           </>
         )}
       </div>
+      {dati.dato && (
+        <div className="sg-elenco-barra sg-elenco-barra-due">
+          <span className="sg-filtro-gruppo">
+            <span className="sg-etichetta" aria-hidden="true">MOSTRA</span>
+            <Segmenti
+              etichetta="Quali compensi"
+              voci={[
+                ['tutti', 'Tutti'],
+                ['manca-firma', `Manca la firma · ${tutti.senzaFirma.length}`],
+                ['extra', `Extra · ${nExtra}`],
+              ]}
+              scelta={filtro ?? 'tutti'}
+              onScegli={(v) => setFiltro(v === 'tutti' ? null : v)}
+            />
+          </span>
+        </div>
+      )}
       {dati.guaio && <Guaio testo={dati.guaio} />}
       {dati.dato && (
         <>
@@ -1081,6 +1091,7 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
                 const [y, mm] = r.mese.split('-').map(Number)
                 return dati.dato ? compensoDelMese(dati.dato.presenze, dati.dato.senzaIstruttore, r.personaId, { da: new Date(y, mm - 1, 1), a: new Date(y, mm, 0) }, dati.dato.tariffe[r.personaId] ?? []).calcolato : undefined
               })}
+              tutte={dati.dato.ricevute}
               casse={dati.dato.casse}
               chiusure={dati.dato.chiusure}
               fai={fai}
@@ -1100,12 +1111,15 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
 /**
  * SEGNA PAGATO: una o più ricevute fatte e non pagate dello stesso tecnico,
  * il giorno e la cassa; diventano un'uscita sola in CONTABILITÀ con la voce
- * «Compensi istruttori». Prima di scrivere si vede il riepilogo.
+ * «Compensi istruttori». Prima di scrivere si vede il riepilogo. Se il bonifico
+ * è già nel Conto Corrente (dall'importazione della banca), FORSE È GIÀ IN BANCA
+ * lo propone: spuntato, è lui il pagamento e non nasce un’altra uscita (154).
  */
 function PannelloPaga({
   d,
   p,
   ricevute,
+  tutte,
   casse,
   chiusure,
   fai,
@@ -1114,6 +1128,8 @@ function PannelloPaga({
   d: DatiSegreteria
   p: Persona
   ricevute: RicevutaCompenso[]
+  /** Tutte le ricevute dei compensi: un bonifico già pagamento di altre non si propone. */
+  tutte: RicevutaCompenso[]
   casse: Cassa[]
   chiusure: ChiusuraCassa[]
   fai: Fai
@@ -1133,7 +1149,31 @@ function PannelloPaga({
   const pagate = ricevute.filter((r) => scelte.includes(r.id))
   const totale = pagate.reduce((s, r) => s + r.importo, 0)
   const cassa = casse.find((c) => c.id === cassaId)
-  const no = cosaNonVaPagamento({ ricevute: pagate, data, cassaId, casse, chiusure, oggi })
+  // Le uscite già in banca che possono essere questo pagamento; si ricalcolano a ogni spunta.
+  const banca = useCarica(() => Promise.all([d.movimenti(), d.voci()]), [d])
+  const proposti = banca.dato ? bonificiPerCompensi(banca.dato[0], tutte, pagate, { id: p.id, nome: p.nome, cognome: p.cognome ?? '' }, casse, banca.dato[1]) : { colNome: [], senzaNome: [] }
+  const [bonificoId, setBonificoId] = useState<string | null>(null)
+  // Il bonifico scelto vale finché è fra i proposti: cambiate le spunte, la scelta cade.
+  const bonifico = [...proposti.colNome, ...proposti.senzaNome].find((m) => m.id === bonificoId)
+  const no = cosaNonVaPagamento({ ricevute: pagate, data: bonifico?.data ?? data, cassaId: bonifico?.cassaId ?? cassaId, casse, chiusure, oggi })
+  const spunta = (m: (typeof proposti.colNome)[number]) => (
+    <div key={m.id} className="stack" style={{ gap: 4, borderTop: '1px solid var(--line-soft)', paddingTop: 10 }}>
+      <span style={{ fontSize: 15, lineHeight: 1.4 }}>
+        Bonifico in uscita del {dataRicevuta(m.data)} da <b className="num">{euro(m.importo)} €</b>
+        {banca.dato?.[1].find((v) => v.id === m.voceId)?.nome === VOCE_COMPENSI ? '' : ', da classificare'}: «{m.descrizione}».
+      </span>
+      <label className="row" style={{ gap: 10, alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600 }}>
+        <input
+          type="checkbox"
+          style={{ width: 22, height: 22, accentColor: 'var(--text)' }}
+          aria-label={`È questo il bonifico del ${dataRicevuta(m.data)} da ${euro(m.importo)} €: è il pagamento di queste ricevute`}
+          checked={bonifico?.id === m.id}
+          onChange={(e) => setBonificoId(e.target.checked ? m.id : null)}
+        />
+        È questo: è il pagamento di queste ricevute
+      </label>
+    </div>
+  )
   return (
     <section className="stack" style={{ gap: 14, maxWidth: 820, padding: '22px 24px', border: '2px solid var(--text)' }} aria-label={`Segna pagato ${nomeDi(p)}`}>
       <h2 ref={titolo} tabIndex={-1} className="sg-riquadro-titolo ob" style={{ margin: 0 }}>
@@ -1156,6 +1196,35 @@ function PannelloPaga({
         </label>
       ))}
       <span className="sg-sotto">Solo le sue ricevute fatte e non ancora pagate. Un bonifico che paga più mesi è un movimento solo.</span>
+      {banca.guaio && <span role="status" className="sg-sotto">Non si riesce a controllare se il bonifico è già in banca ({banca.guaio}): guarda CONTABILITÀ → MOVIMENTI prima di segnare pagato.</span>}
+      {proposti.colNome.length > 0 && (
+        <section className="sg-riquadro" data-avviso="true" aria-label="Forse è già in banca">
+          <span className="sg-etichetta">FORSE È GIÀ IN BANCA</span>
+          <span style={{ fontSize: 15, lineHeight: 1.4 }}>
+            {proposti.colNome.length === 1 ? 'Questo bonifico è' : 'Questi bonifici sono'} già nel Conto Corrente, con lo stesso importo delle ricevute spuntate e il nome di {p.nome} {p.cognome}. Se è questo pagamento, spuntalo: così non si conta due volte.
+          </span>
+          {proposti.colNome.map(spunta)}
+        </section>
+      )}
+      {proposti.senzaNome.length > 0 && (
+        <section className="sg-riquadro" aria-label="Stesso importo, nome non trovato">
+          <span className="sg-etichetta">STESSO IMPORTO, NOME NON TROVATO</span>
+          <span className="sg-sotto">Nel Conto Corrente, con lo stesso importo e nei giorni giusti, ma senza il suo nome nella descrizione: spunta solo se sai che è lui.</span>
+          {proposti.senzaNome.map(spunta)}
+        </section>
+      )}
+      {bonifico ? (
+        <div className="sg-due">
+          <span className="stack" style={{ gap: 2 }}>
+            <span className="sg-etichetta">DATA DEL PAGAMENTO</span>
+            {dataRicevuta(bonifico.data)} · quella del bonifico
+          </span>
+          <span className="stack" style={{ gap: 2 }}>
+            <span className="sg-etichetta">CASSA</span>
+            {casse.find((c) => c.id === bonifico.cassaId)?.nome} · quella del bonifico
+          </span>
+        </div>
+      ) : (
       <div className="sg-due sg-scheda-campi">
         <label className="stack" style={{ gap: 6 }}>
           <span className="sg-etichetta">DATA DEL PAGAMENTO</span>
@@ -1172,14 +1241,16 @@ function PannelloPaga({
           </div>
         </div>
       </div>
+      )}
       {pagate.length > 0 && cassa && (
         <div className="sg-due" style={{ padding: '14px 16px', border: '2px solid var(--line-soft)' }}>
           <span className="stack" style={{ gap: 2 }}>
-            <span className="sg-etichetta">TIPO</span>Uscita
+            <span className="sg-etichetta">TIPO</span>
+            {bonifico ? 'Uscita già in banca' : 'Uscita'}
           </span>
           <span className="stack" style={{ gap: 2 }}>
             <span className="sg-etichetta">CASSA</span>
-            {cassa.nome}
+            {bonifico ? casse.find((c) => c.id === bonifico.cassaId)?.nome : cassa.nome}
           </span>
           <span className="stack" style={{ gap: 2 }}>
             <span className="sg-etichetta">VOCE</span>
@@ -1191,16 +1262,28 @@ function PannelloPaga({
           </span>
           <span className="stack" style={{ gap: 2, gridColumn: 'span 2' }}>
             <span className="sg-etichetta">DESCRIZIONE</span>
-            {descrizionePagamento(
-              p.nome,
-              p.cognome,
-              pagate.map((r) => r.mese),
-              extraDelPagamento(pagate),
+            {bonifico ? (
+              <>
+                {bonifico.descrizione} <span className="sg-sotto">· resta quella della banca</span>
+              </>
+            ) : (
+              descrizionePagamento(
+                p.nome,
+                p.cognome,
+                pagate.map((r) => r.mese),
+                extraDelPagamento(pagate),
+              )
             )}
           </span>
         </div>
       )}
-      <span className="sg-sotto">Si scrive in CONTABILITÀ → MOVIMENTI collegato al tecnico, senza codice fiscale né IBAN. Se va annullato, si annulla da lì e le ricevute tornano da pagare.</span>
+      {bonifico ? (
+        <span className="sg-sotto">
+          Non nasce un’uscita nuova: il bonifico va a {p.nome} {p.cognome} su «{VOCE_COMPENSI}» e le ricevute risultano pagate il {dataRicevuta(bonifico.data)}. Se va annullato, si annulla da CONTABILITÀ → MOVIMENTI e le ricevute tornano da pagare.
+        </span>
+      ) : (
+        <span className="sg-sotto">Si scrive in CONTABILITÀ → MOVIMENTI collegato al tecnico, senza codice fiscale né IBAN. Se va annullato, si annulla da lì e le ricevute tornano da pagare.</span>
+      )}
       {no && (
         <span role="alert" style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>
           {no}.
@@ -1210,9 +1293,15 @@ function PannelloPaga({
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => void onFatto()}>
           Lascia stare
         </button>
-        <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void fai(() => d.pagaCompensi(pagate.map((r) => r.id), data, cassaId), `Pagato: ${euro(totale)} € in CONTABILITÀ`, onFatto)}>
-          Segna pagato {euro(totale)} €
-        </button>
+        {bonifico ? (
+          <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void fai(() => d.abbinaCompensiMovimento(pagate.map((r) => r.id), bonifico.id), `Pagato: ${euro(totale)} € col bonifico del ${dataRicevuta(bonifico.data)}`, onFatto)}>
+            Abbina al bonifico {euro(totale)} €
+          </button>
+        ) : (
+          <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void fai(() => d.pagaCompensi(pagate.map((r) => r.id), data, cassaId), `Pagato: ${euro(totale)} € in CONTABILITÀ`, onFatto)}>
+            Segna pagato {euro(totale)} €
+          </button>
+        )}
       </div>
     </section>
   )

@@ -20,7 +20,11 @@
 -- (stessi casi, stessi messaggi).
 --   · 136-assegna-una-volta.sql: la chiave dell'assegnazione (ripetuta non conta due volte, su un altro bonifico è un
 --     errore) e il tetto della quota per persona e stagione (sezioni 13, 14 e 15).
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 136-assegna-una-volta.sql. Nomi tutti inventati.
+--   · 151-abbina-famiglia-da-classificare.sql: si abbina anche la ricevuta del nucleo, e un bonifico Da classificare
+--     prende persona e voce della ricevuta (sezione 9b).
+--   · 153-collegati-prima-nome.sql: un bonifico Da classificare senza persona solo se la causale nomina la persona della
+--     ricevuta, qualcuno del suo nucleo o il genitore (sezione 9c).
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 153-collegati-prima-nome.sql. Nomi tutti inventati.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -403,6 +407,128 @@ select atteso('l''abbinamento non ha cambiato i previsti', previsto('Conto Corre
   :'conto9' || '/' || :'contanti9');
 select annulla_ricevuta(:'ra'::uuid);
 select atteso('annullata la ricevuta abbinata, il bonifico torna da assegnare', resta('Collegato prima A'), '12000');
+reset role;
+
+\echo ''
+\echo '--- 9b. 151: la ricevuta della famiglia e i bonifici Da classificare ---'
+insert into voci_contabili (nome, tipo) values ('Da classificare', 'entrata') on conflict do nothing;
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, persona_id) values
+  ('entrata', '2026-09-01', 9000, id_voce('Corsi e altri pagamenti', 'entrata'), id_cassa('Conto Corrente'), 'Bonifico papà Rossi', pid(10)),
+  ('entrata', '2026-09-01', 9000, id_voce('Corsi e altri pagamenti', 'entrata'), id_cassa('Conto Corrente'), 'Bonifico papà Rossi bis', pid(10)),
+  ('entrata', '2026-09-01', 7000, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'Da GIALLI ELENA BONIFICO SEPA', null),
+  ('entrata', '2026-09-01', 7000, id_voce('Da classificare', 'entrata'), id_cassa('Cassa Contanti'), 'Contanti da classificare', null),
+  ('entrata', '2026-09-01', 22000, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'Da DARIO BIANCHI BONIFICO SEPA', null);
+select chi(:ANNA);
+set role authenticated;
+select vecchia(dati(11, jsonb_build_array(vr('TRIMESTRE JUDO', 9000, bon(9000, '2026-09-02'))), '{}', '2026-09-02')) as rfiglio \gset
+select vecchia(dati(13, jsonb_build_array(vr('TRIMESTRE JUDO', 9000, bon(9000, '2026-09-02'))), '{}', '2026-09-02')) as rgiada \gset
+select vecchia(dati(17, jsonb_build_array(vr('QUOTA ASSOCIATIVA', 7000, bon(7000, '2026-09-04'))), '{}', '2026-09-04')) as rquota \gset
+select vecchia(dati(17, jsonb_build_array(vr('QUOTA ASSOCIATIVA', 7000, bon(7000, '2026-09-04'))), '{}', '2026-09-04')) as rquota2 \gset
+select vecchia(dati(19, jsonb_build_array(vr('QUOTA ASSOCIATIVA', 5000, bon(5000, '2026-09-05')), vr('TRIMESTRE JUDO', 17000, bon(17000, '2026-09-05'))), '{}', '2026-09-05')) as rmista \gset
+reset role;
+select chi(:ADA);
+set role authenticated;
+select atteso('la ricevuta del figlio sul bonifico del padre (stesso nucleo): si abbina', abbina('Bonifico papà Rossi', :'rfiglio'), 'nessun errore');
+select atteso('…la ricevuta punta al bonifico', com_ricevuta(:'rfiglio'), 'bbbbbbbb-0000-0000-0000-000000000011|Bonifico papà Rossi|9000|false');
+select atteso('…e il bonifico non ha più niente da assegnare: i soldi contano una volta', resta('Bonifico papà Rossi'), '0');
+select atteso('…chi è spento nel nucleo no, come per assegnare', abbina('Bonifico papà Rossi bis', :'rgiada'), '22023 La ricevuta è di un’altra persona.');
+select atteso('un bonifico Da classificare con la ricevuta in Bonifico: si abbina', abbina('Da GIALLI ELENA BONIFICO SEPA', :'rquota'), 'nessun errore');
+select atteso('…e prende persona e voce della ricevuta (solo quota)', (select persona_id::text || '|' || (select nome from voci_contabili where id = voce_id) from movimenti where id = id_mov('Da GIALLI ELENA BONIFICO SEPA')),
+  'bbbbbbbb-0000-0000-0000-000000000017|Quota associativa');
+select atteso('…la ricevuta punta al bonifico', com_ricevuta(:'rquota'), 'bbbbbbbb-0000-0000-0000-000000000017|Da GIALLI ELENA BONIFICO SEPA|7000|false');
+select atteso('…in CONTABILITÀ un solo incasso: il bonifico è da assegnare a zero', resta('Da GIALLI ELENA BONIFICO SEPA'), '0');
+select atteso('un Da classificare in Cassa Contanti, senza persona: no', abbina('Contanti da classificare', :'rquota2'), '22023 Collega prima il movimento a una persona.');
+select atteso('quota e corsi insieme: il bonifico va su «Corsi e altri pagamenti»', abbina('Da DARIO BIANCHI BONIFICO SEPA', :'rmista'), 'nessun errore');
+select atteso('…', (select (select nome from voci_contabili where id = voce_id) from movimenti where id = id_mov('Da DARIO BIANCHI BONIFICO SEPA')), 'Corsi e altri pagamenti');
+reset role;
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, persona_id) values
+  ('entrata', '2026-09-01', 6100, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'Da NESSUNO BONIFICO SEPA', null),
+  ('entrata', '2026-09-01', 6200, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'Da classificare del papà', pid(10));
+select chi(:ANNA);
+set role authenticated;
+select vecchia(dati(17, jsonb_build_array(vr('TRIMESTRE JUDO', 6100, bon(6100, '2026-09-03'))), '{}', '2026-09-03')) as rsenza \gset
+select vecchia(dati(11, jsonb_build_array(vr('TRIMESTRE JUDO', 6200, bon(6200, '2026-09-03'))), '{}', '2026-09-03')) as rpapa \gset
+reset role;
+update ricevute set persona_id = null where id = :'rsenza';
+select chi(:ADA);
+set role authenticated;
+select atteso('una ricevuta senza persona su un Da classificare: no', abbina('Da NESSUNO BONIFICO SEPA', :'rsenza'), '22023 La ricevuta non ha una persona.');
+select atteso('un Da classificare già collegato al padre, ricevuta del figlio: si abbina', abbina('Da classificare del papà', :'rpapa'), 'nessun errore');
+select atteso('…e tiene il padre', (select persona_id::text from movimenti where id = id_mov('Da classificare del papà')), 'bbbbbbbb-0000-0000-0000-000000000010');
+reset role;
+select chi(:ANNA);
+set role authenticated;
+select atteso('la segreteria non abbina nemmeno un Da classificare', left(abbina('Contanti da classificare', :'rquota2'), 5), '42501');
+reset role;
+
+\echo ''
+\echo '--- 9c. 153: un Da classificare senza persona solo se la causale nomina la famiglia della ricevuta ---'
+-- Il caso segnalato: «Allisio … Edoardo» e la ricevuta di un'altra persona. Sofia Rossi ha in anagrafica la madre Stefania Allisio.
+insert into anagrafiche (persona_id, genitore_nome, genitore_cognome) values (pid(12), 'Stefania', 'Allisio')
+  on conflict (persona_id) do update set genitore_nome = excluded.genitore_nome, genitore_cognome = excluded.genitore_cognome;
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, persona_id) values
+  ('entrata', '2026-09-01', 22001, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'DA ALLISIO STEFANIA LIA DANIELE PER AVVIAMENTO ARTI MARZIALI 1 - Edoardo', null),
+  ('entrata', '2026-09-01', 22002, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'DA ALLISIO STEFANIA PER JUDO', null),
+  ('entrata', '2026-09-01', 22003, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'DA ROSSI MARIO QUOTA FIGLIO', null),
+  ('entrata', '2026-09-01', 22004, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'BONIFICO MARTINI LUDOVICA', null),
+  ('entrata', '2026-09-01', 22005, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'DA ROSSI PER CORSO', null);
+select chi(:ANNA);
+set role authenticated;
+select vecchia(dati(14, jsonb_build_array(vr('TRIMESTRE JUDO', 22001, bon(22001, '2026-09-20'))), '{}', '2026-09-20')) as restranea \gset
+select vecchia(dati(12, jsonb_build_array(vr('TRIMESTRE JUDO', 22002, bon(22002, '2026-09-03'))), '{}', '2026-09-03')) as rgenitore \gset
+select vecchia(dati(11, jsonb_build_array(vr('TRIMESTRE JUDO', 22003, bon(22003, '2026-09-03'))), '{}', '2026-09-03')) as rnucleo \gset
+select vecchia(dati(14, jsonb_build_array(vr('TRIMESTRE JUDO', 22004, bon(22004, '2026-09-03'))), '{}', '2026-09-03')) as rnome \gset
+select vecchia(dati(12, jsonb_build_array(vr('TRIMESTRE JUDO', 22005, bon(22005, '2026-09-03'))), '{}', '2026-09-03')) as rcognome \gset
+reset role;
+select chi(:ADA);
+set role authenticated;
+select atteso('«Allisio … Edoardo» e la ricevuta di Ludovica Martini: no', abbina('DA ALLISIO STEFANIA LIA DANIELE PER AVVIAMENTO ARTI MARZIALI 1 - Edoardo', :'restranea'),
+  '22023 La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.');
+select atteso('…e non scrive niente: il bonifico resta Da classificare, la ricevuta libera',
+  (select coalesce(persona_id::text, '-') || '|' || (select nome from voci_contabili where id = voce_id) from movimenti where id = id_mov('DA ALLISIO STEFANIA LIA DANIELE PER AVVIAMENTO ARTI MARZIALI 1 - Edoardo'))
+  || '|' || (select coalesce(movimento_id::text, '-') from ricevute where id = :'restranea'), '-|Da classificare|-');
+select atteso('la causale col genitore dell’anagrafica (Stefania Allisio) e la ricevuta di Sofia: si abbina', abbina('DA ALLISIO STEFANIA PER JUDO', :'rgenitore'), 'nessun errore');
+select atteso('la causale col padre titolare del nucleo e la ricevuta del figlio Luca: si abbina', abbina('DA ROSSI MARIO QUOTA FIGLIO', :'rnucleo'), 'nessun errore');
+select atteso('la causale col nome intero della persona della ricevuta: si abbina', abbina('BONIFICO MARTINI LUDOVICA', :'rnome'), 'nessun errore');
+select atteso('il solo cognome non basta', abbina('DA ROSSI PER CORSO', :'rcognome'),
+  '22023 La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.');
+reset role;
+-- Il genitore della richiesta accolta vale, quello di una richiesta non accolta no; chi è spento nel nucleo non conta;
+-- un bonifico che ha già una persona non guarda la causale.
+insert into richieste_iscrizione (nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono,
+                                  corsi, formula, persona_id, stato, genitore_nome, genitore_cognome)
+values ('Marco', 'Verdi', '2015-03-03', 'Torino', 'VRDMRC15C03L219Z', 'via Roma 1', '10100', 'Torino', 'verdi@esempio.it', '3335550000',
+        array[gen_random_uuid()], 'annuale', pid(15), 'accolta', 'Carla', 'Fumo'),
+       ('Marco', 'Verdi', '2015-03-03', 'Torino', 'VRDMRC15C03L219Z', 'via Roma 1', '10100', 'Torino', 'verdi@esempio.it', '3335550000',
+        array[gen_random_uuid()], 'annuale', pid(15), 'nuova', 'Piera', 'Sasso');
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, persona_id) values
+  ('entrata', '2026-09-01', 22006, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'DA FUMO CARLA PER JUDO', null),
+  ('entrata', '2026-09-01', 22007, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'DA SASSO PIERA PER JUDO', null),
+  ('entrata', '2026-09-01', 22008, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'DA GIADA ROSSI PER JUDO', null),
+  ('entrata', '2026-09-01', 22009, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'BONIFICO SENZA NOMI', pid(10));
+select chi(:ANNA);
+set role authenticated;
+select vecchia(dati(15, jsonb_build_array(vr('TRIMESTRE JUDO', 22006, bon(22006, '2026-09-03'))), '{}', '2026-09-03')) as rrichiesta \gset
+select vecchia(dati(15, jsonb_build_array(vr('TRIMESTRE JUDO', 22007, bon(22007, '2026-09-03'))), '{}', '2026-09-03')) as rnuova \gset
+select vecchia(dati(11, jsonb_build_array(vr('TRIMESTRE JUDO', 22008, bon(22008, '2026-09-03'))), '{}', '2026-09-03')) as rspenta \gset
+select vecchia(dati(11, jsonb_build_array(vr('TRIMESTRE JUDO', 22009, bon(22009, '2026-09-03'))), '{}', '2026-09-03')) as rconpersona \gset
+reset role;
+select chi(:MAURA);
+set role authenticated;
+select atteso('l''istruttore non abbina un Da classificare', left(abbina('DA FUMO CARLA PER JUDO', :'rrichiesta'), 5), '42501');
+reset role;
+select chi('00000000-0000-0000-0000-000000000000');
+set role anon;
+select atteso('…né chi non ha fatto l''accesso', left(abbina('DA FUMO CARLA PER JUDO', :'rrichiesta'), 5), '42501');
+reset role;
+select chi(:ADA);
+set role authenticated;
+select atteso('il genitore di una richiesta accolta: si abbina', abbina('DA FUMO CARLA PER JUDO', :'rrichiesta'), 'nessun errore');
+select atteso('il genitore di una richiesta non accolta: no', abbina('DA SASSO PIERA PER JUDO', :'rnuova'),
+  '22023 La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.');
+select atteso('il nome di chi è spento nel nucleo: no', abbina('DA GIADA ROSSI PER JUDO', :'rspenta'),
+  '22023 La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.');
+select atteso('un Da classificare già collegato al padre non guarda la causale: si abbina la ricevuta del figlio', abbina('BONIFICO SENZA NOMI', :'rconpersona'), 'nessun errore');
 reset role;
 
 \echo ''

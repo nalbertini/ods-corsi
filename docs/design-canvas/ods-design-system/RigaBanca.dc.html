@@ -14,70 +14,70 @@
     body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div role="row" style="display: grid; grid-template-columns: 150px 90px minmax(160px, 1fr) 200px 220px 104px; gap: 16px; align-items: center; min-height: 76px; width: 100%; padding: 12px 0; border-bottom: 1px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
-  <dc-import name="Badge" tema="sito" tipo="tag" tono="{{tono}}" label="{{stato}}" larghezza="150px" hint-size="150px,24px"></dc-import>
-  <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{data}}</span>
-  <span style="font-size: 14px; overflow-wrap: anywhere; min-width: 0">{{testo}}</span>
+<div role="row" style="display: grid; grid-template-columns: 84px minmax(160px, 1fr) 190px 104px 216px; gap: 12px; align-items: center; min-height: 56px; width: 100%; padding: 6px 12px; border-bottom: 1px solid #cfe6f4; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <span style="font-size: 14px; font-variant-numeric: tabular-nums">{{data}}</span>
+  <span style="min-width: 0; font-size: 14px; line-height: 1.35; overflow-wrap: anywhere">
+    <span style="display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; color: #46606f">{{operazione}}</span>{{testo}}
+    <sc-if value="{{conNota}}" hint-placeholder-val="{{ false }}"><span style="display: block; font-size: 13px; color: #8f6a00">{{nota}}</span></sc-if>
+  </span>
   <sc-if value="{{entra}}" hint-placeholder-val="{{ true }}">
-    <span style="display: flex; align-items: center; height: 44px; padding: 0 12px; border: 2px solid #46606f; border-radius: 6px; background: #ffffff; font-size: 15px">{{tipologia}} ▾</span>
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
-      <sc-if value="{{conPersona}}" hint-placeholder-val="{{ true }}">
-        <b style="font-size: 14px; color: {{colorePersona}}">{{persona}}</b>
-        <span style="display: flex; gap: 6px">
-          <sc-if value="{{conSpunta}}" hint-placeholder-val="{{ true }}">
-            <span role="img" aria-label="È questa: collega il movimento a {{persona}}" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #ffffff; border: 2px solid #0b7a33; border-radius: 6px; font-size: 22px; font-weight: 700; color: #0b7a33">✓</span>
-          </sc-if>
-          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="{{tastoPersona}}" hint-size="96px,44px"></dc-import>
-        </span>
-      </sc-if>
-    </div>
+    <span style="display: flex; align-items: center; height: 44px; padding: 0 10px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-size: 14px; font-weight: 600">{{tipologia}} ▾</span>
   </sc-if>
-  <sc-if value="{{conVoce}}" hint-placeholder-val="{{ true }}">
-    <div style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; gap: 12px">
-      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
-        <span style="font-size: 12px; font-weight: 600; letter-spacing: .08em; color: #46606f">{{introVoce}}</span>
-        <sc-if value="{{conMotivo}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #8f6a00">{{motivo}}</span></sc-if>
-        <span style="font-size: 14px"><b>{{voce}}</b> <span style="font-size: 13px; color: #46606f">{{dettaglio}}</span></span>
-      </span>
-      <span style="display: flex; gap: 6px">
-        <sc-if value="{{decide}}" hint-placeholder-val="{{ true }}">
-          <span role="img" aria-label="È questa: collega il movimento a questa voce" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #ffffff; border: 2px solid #0b7a33; border-radius: 6px; font-size: 22px; font-weight: 700; color: #0b7a33">✓</span>
-        </sc-if>
-        <sc-if value="{{conNuova}}" hint-placeholder-val="{{ true }}">
-          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="È nuova" hint-size="110px,44px"></dc-import>
-        </sc-if>
-      </span>
-    </div>
+  <sc-if value="{{conVoce}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 14px"><b>{{voce}}</b><span style="font-size: 13px; color: #46606f">{{dettaglio}}</span></span>
   </sc-if>
-  <sc-if value="{{scartata}}" hint-placeholder-val="{{ false }}"><span style="grid-column: span 2"></span></sc-if>
+  <sc-if value="{{scartata}}" hint-placeholder-val="{{ false }}"><span></span></sc-if>
   <b style="text-align: right; font-size: 15px; font-variant-numeric: tabular-nums">{{importo}}</b>
+  <sc-if value="{{conPersona}}" hint-placeholder-val="{{ true }}">
+    <span style="display: flex; align-items: center; height: 44px; padding: 0 10px; border: 2px solid {{bordoPersona}}; border-radius: 6px; background: #ffffff; font-size: 14px; font-weight: 600; color: {{bordoPersona}}">{{persona}}</span>
+  </sc-if>
+  <sc-if value="{{conTasti}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; gap: 8px; justify-content: flex-end">
+      <sc-if value="{{decide}}" hint-placeholder-val="{{ false }}"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Conferma" larghezza="104px" hint-size="104px,44px"></dc-import></sc-if>
+      <sc-if value="{{conNuovo}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Nuovo" larghezza="104px" hint-size="104px,44px"></dc-import></sc-if>
+    </span>
+  </sc-if>
+  <sc-if value="{{vuota}}" hint-placeholder-val="{{ false }}"><span></span></sc-if>
+  <sc-if value="{{conAbbina}}" hint-placeholder-val="{{ false }}">
+    <span style="grid-column: 2 / 5; font-size: 14px; line-height: 1.35; color: {{tonoAbbina}}">{{testoAbbina}}</span>
+    <span style="display: flex; gap: 8px; justify-content: flex-end">
+      <sc-if value="{{conTogli}}" hint-placeholder-val="{{ false }}"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="rosso" label="Togli" larghezza="104px" hint-size="104px,44px"></dc-import></sc-if>
+      <sc-if value="{{conAbbinaTasto}}" hint-placeholder-val="{{ false }}"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Abbina" larghezza="104px" hint-size="104px,44px"></dc-import></sc-if>
+    </span>
+  </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"stato":{"editor":"enum","options":["nuova","da controllare","duplicata","da decidere","scartata"],"default":"nuova"},"data":{"editor":"text","default":"27/10/2026"},"testo":{"editor":"text","default":"Da BIANCHI ANNA per quota annuale BONIFICO SEPA"},"tipologia":{"editor":"text","default":"Quota annuale"},"persona":{"editor":"enum","options":["proposta","confermata","manca","più schede","nessuna"],"default":"proposta"},"nome":{"editor":"text","default":"Anna Bianchi"},"voce":{"editor":"text","default":"Merigo Elena"},"dettaglio":{"editor":"text","default":"27/10/2026 · Quota annuale · ricevuta n. 212"},"importo":{"editor":"text","default":"+ 120,00 €"},"rifiutabile":{"editor":"boolean","default":true},"motivo":{"editor":"text","default":""},"$preview":{"width":1100,"height":100}}'>
-// COSTRUITA (ImportaBanca.tsx, `.sg-banca-riga`; docs/design-canvas/importa-banca-pagina): una riga del file della banca nella pagina piena «Importa dalla banca». Griglia 110 / 90 / 1fr (almeno 200) / 200 / 220 / 104, gap 16, centrata, alta almeno 76, filetto 1px `line-soft`.
-// Stato in parole con `Badge` tag: nuova = verde, da controllare e da decidere = giallo, duplicata = neutro, scartata = rosso. Nuova e da controllare: TIPOLOGIA (select `sg-campo`, le voci del tipo) e PERSONA, solo se la voce la vuole (quota, corsi):
-// proposta = nome + spunta verde 44×44 («È questa: collega il movimento a …») + «Cambia»; confermata = nome + «Cambia»; manca = «Manca la persona» (`giallo-testo`) + «Cerca»; più schede = «N schede possibili» + «Scegli».
-// Duplicata: al posto di tipologia e persona «GIÀ SCRITTA COME» voce · data · cassa · tipo, e «È nuova» solo se `rifiutabile`. Da decidere: «POTREBBE ESSERE» con la spunta verde, e «È nuova»; `motivo` è la frase gialla (13px, `giallo-testo`) che dice perché, es. «Il nome nel testo non è quello della ricevuta: dimmi tu.». Una ricevuta pagata in più rate è una voce sola: il dettaglio dice «ricevuta n/anno · quota 50,00 + trimestre 170,00». Scartata: niente, il motivo sta nel testo.
-// Sotto i 1400px la griglia diventa: lo stato da solo in alto, sotto data e importo, poi il resto su tutta la larghezza.
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["nuova","da controllare","duplicata","da decidere","scartata"],"default":"nuova"},"data":{"editor":"text","default":"29/10/2026"},"operazione":{"editor":"text","default":"BONIFICO SEPA"},"testo":{"editor":"text","default":"Da BIANCHI ANNA per quota trimestre judo"},"tipologia":{"editor":"text","default":"Quota trimestrale"},"persona":{"editor":"text","default":"Anna Bianchi"},"voce":{"editor":"text","default":"Rossi Luca"},"dettaglio":{"editor":"text","default":"ricevuta n. 119 · 26/10/2026"},"importo":{"editor":"text","default":"+ 120,00 €"},"rifiutabile":{"editor":"boolean","default":true},"motivo":{"editor":"text","default":""},"abbina":{"editor":"enum","options":["niente","con la ricevuta","tolta","più ricevute","contesa"],"default":"niente"},"ricevuta":{"editor":"text","default":"n. 324/2026 di <b>Russo Elena</b>, 09/11/2026, 220,00 €"},"$preview":{"width":1100,"height":70}}'>
+// COSTRUITA (ImportaBanca.tsx, `.sg-banca-riga`; docs/design-canvas/importa-banca-snella): una riga del file della banca nella pagina «Importa dalla banca».
+// Griglia 84 / 1fr (almeno 160) / 190 / 104 / 216, gap 12, padding 6px 12px, alta almeno 56, filetto 1px `line-soft`; sotto i 1200px data e importo in alto, il resto sotto.
+// Niente colonna di stato: lo dice il gruppo (`.sg-banca-gruppo`: forse già nell'app su `tinta-giallo` coi tasti Conferma e Tutti nuovi, movimenti nuovi in `verde-testo`, già nell'app, scartate).
+// La descrizione ha il tipo d'operazione della banca sopra (11px 700 `dim`) e il testo senza codici TRN; `nota` gialla 13px per i contanti e per «Nome diverso».
+// Nuova e da controllare: TIPOLOGIA (select `sg-campo`) e, in fondo a destra, il campo PERSONA quando la voce la vuole (`persona` vuota = «Assegna», bordo e testo `giallo-testo`); apre CHI HA PAGATO?.
+// Da decidere: al posto della tipologia il movimento dell'app che potrebbe essere (nome in grassetto, sotto ricevuta e data), in fondo «Conferma» (giallo) e «Nuovo».
+// Sotto una riga nuova che entra con la persona, la ricevuta (`.sg-banca-abbina`, colonne 2–4, 14px): verde `verde-testo` «Va con la ricevuta …» e «Togli» (rosso) nell'ultima colonna;
+// tolta in `dim` «Non la abbino: resta in «Da assegnare», ci pensi tu.» e «Abbina» (linea); più ricevute o contesa in `giallo-testo`, senza tasto: la sceglie la segreteria in «Da assegnare».
+// Duplicata (già nell'app): il movimento dell'app a cui corrisponde; «Nuovo» solo se `rifiutabile`. Scartata: il motivo nel testo, niente altro. I tasti sempre nell'ultima colonna, larghi 104.
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const stato = p.stato || 'nuova';
-    const tono = { 'nuova': 'verde', 'da controllare': 'giallo', 'duplicata': 'neutro', 'da decidere': 'giallo', 'scartata': 'rosso' }[stato];
     const entra = stato === 'nuova' || stato === 'da controllare';
     const decide = stato === 'da decidere';
-    const per = p.persona || 'proposta';
-    const nome = p.nome ?? '';
+    const persona = p.persona ?? '';
+    const conPersona = entra && persona !== '-';
+    const conTasti = decide || (stato === 'duplicata' && p.rifiutabile !== false);
+    const ab = p.abbina || 'niente';
+    const ric = (p.ricevuta ?? '').replace(/<[^>]+>/g, '');
+    const nota = stato === 'da controllare' ? 'Contanti: controlla che non siano già nella cassa contanti.' : decide ? (p.motivo ?? '') : '';
     return {
-      tono, stato: stato.toUpperCase(), data: p.data ?? '', testo: p.testo ?? '', importo: p.importo ?? '',
-      entra, tipologia: p.tipologia ?? '', conPersona: per !== 'nessuna',
-      persona: per === 'manca' ? 'Manca la persona' : per === 'più schede' ? '3 schede possibili' : nome,
-      colorePersona: per === 'manca' || per === 'più schede' ? '#8f6a00' : '#0d2a3d',
-      conSpunta: per === 'proposta', tastoPersona: per === 'manca' ? 'Cerca' : per === 'più schede' ? 'Scegli' : 'Cambia',
-      conVoce: stato === 'duplicata' || decide, decide, conNuova: decide || p.rifiutabile !== false,
-      introVoce: decide ? 'POTREBBE ESSERE' : 'GIÀ SCRITTA COME', voce: p.voce ?? '', dettaglio: p.dettaglio ?? '',
-      scartata: stato === 'scartata',
-      conMotivo: decide && !!p.motivo, motivo: p.motivo ?? '',
+      data: p.data ?? '', operazione: p.operazione ?? '', testo: stato === 'scartata' ? (p.motivo || 'La data non si legge. Correggila nel file e riprova.') : (p.testo ?? ''), importo: p.importo ?? '',
+      entra, tipologia: p.tipologia ?? '', conVoce: decide || stato === 'duplicata', voce: p.voce ?? '', dettaglio: p.dettaglio ?? '',
+      scartata: stato === 'scartata', conPersona, persona: persona || 'Assegna', bordoPersona: persona ? '#14709f' : '#8f6a00',
+      conTasti, decide, conNuovo: decide || p.rifiutabile !== false, vuota: !conPersona && !conTasti,
+      conNota: !!nota, nota,
+      conAbbina: entra && ab !== 'niente', tonoAbbina: { 'con la ricevuta': '#0b7a33', tolta: '#46606f' }[ab] ?? '#8f6a00',
+      testoAbbina: { 'con la ricevuta': `Va con la ricevuta ${ric}`, tolta: `Non la abbino: resta in «Da assegnare», ci pensi tu. (Ricevuta ${ric})`, 'più ricevute': '2 ricevute possibili di Russo Elena (n. 323/2026 e 324/2026): la scegli in «Da assegnare»', contesa: 'Questo e il bonifico del 06/11 vogliono la stessa ricevuta: la scegli in «Da assegnare»' }[ab] ?? '',
+      conTogli: ab === 'con la ricevuta', conAbbinaTasto: ab === 'tolta',
     };
   }
 }

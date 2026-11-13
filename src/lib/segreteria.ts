@@ -42,7 +42,7 @@ import type { LetturaSito } from './sitoStatistiche'
 import type { DaDove } from './provenienza'
 
 export type { ListaMusica } from './musica'
-import type { IndiziDoppioni } from './doppioni'
+import type { AnteprimaUnione, IndiziDoppioni } from './doppioni'
 import type { EsitoImportTessere, RigaIncrocio, RigaRasd, TesseraSeg, TipoTessera } from './tessere'
 import { parolaTessera } from './tessere'
 
@@ -95,6 +95,8 @@ export interface CorsoSeg {
   istruttori: Istruttore[]
   capienza?: number
   attivo: boolean
+  /** Il giorno in cui è stato archiviato: i corsi da pagare contano fino a lì (`150-corso-archiviato-il.sql`). */
+  archiviatoIl?: string
   /** Quale tessera chiede il corso (FIJLKAM, FIPE…); senza, nessuna (`61-tessere.sql`). */
   enteTessera?: string
   /** Gli istruttori si alternano: a lezione basta uno, agli altri non si chiede la firma. Assente senza `82-manca-la-firma.sql`. */
@@ -812,6 +814,8 @@ export interface DatiSegreteria {
   segnaFirmataCompenso(id: string, firmata: boolean): Promise<void>
   /** Paga una o più ricevute dello stesso tecnico con un movimento solo in CONTABILITÀ (`paga_compensi`). */
   pagaCompensi(ids: string[], data: string, cassaId: string): Promise<void>
+  /** Paga le ricevute con un'uscita già nel Conto Corrente, invece di scriverne una (`abbina_compensi_movimento`, 154). */
+  abbinaCompensiMovimento(ids: string[], movimentoId: string): Promise<void>
   /**
    * Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). Con `pagamentoId` la fa da un pagamento
    * a mano e lo annulla insieme (`emetti_ricevuta_da_pagamento` in `89-pagamento-diventa-ricevuta.sql`).
@@ -1013,7 +1017,7 @@ export interface DatiSegreteria {
    * Quante presenze, prove, iscrizioni e ricevute della scheda `via` passano
    * a `resta` unendole; dice di no come `unisciPersone`, senza cambiare niente.
    */
-  anteprimaUnione(resta: string, via: string): Promise<{ presenze: number; prove: number; iscrizioni: number; ricevute: number }>
+  anteprimaUnione(resta: string, via: string): Promise<AnteprimaUnione>
   /** Unisce due schede della stessa persona: `via` se ne va, tutto il suo passa a `resta` (`29-unisci-doppioni.sql`). */
   unisciPersone(resta: string, via: string): Promise<void>
   /** Codici fiscali, nascite e coppie «non sono doppioni», per i possibili doppioni di ISCRITTI (`doppioni.ts`). */

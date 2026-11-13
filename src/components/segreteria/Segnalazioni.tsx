@@ -36,7 +36,7 @@ import {
   type Segnalazione,
 } from '../../lib/segnalazioni'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
-import { Campo, Guaio, Testa, chiedi, useAvviso, useCarica } from './comune'
+import { Campo, Guaio, Segmenti, Testa, chiedi, useAvviso, useCarica } from './comune'
 
 /**
  * WhatsApp con l'avviso già scritto: senza numero, a chi mandarlo si sceglie
@@ -301,14 +301,25 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
         titolo="SEGNALAZIONI"
         sotto={`${aperte === 1 ? 'Una aperta' : aperte ? `${aperte} aperte` : 'Nessuna aperta'}${daRispondere ? `, ${daRispondere === 1 ? 'una aspetta' : `${daRispondere} aspettano`} una risposta` : ''}.`}
       >
-        <button type="button" className="num sg-chip sg-chip-dopo" aria-pressed={chiuse} onClick={() => setChiuse(!chiuse)}>
-          Anche le chiuse
-        </button>
         {/* Col modulo aperto passa da pieno a linea: si vede che è già premuto. */}
         <button type="button" className={`sg-btn ${nuova ? 'sg-btn-linea' : 'sg-btn-pieno'}`} onClick={() => setNuova(!nuova)} aria-expanded={nuova}>
           Nuova segnalazione
         </button>
       </Testa>
+      <div className="sg-elenco-barra sg-elenco-barra-due">
+        <span className="sg-filtro-gruppo">
+          <span className="sg-etichetta" aria-hidden="true">MOSTRA</span>
+          <Segmenti
+            etichetta="Quali segnalazioni"
+            voci={[
+              ['aperte', 'Aperte'],
+              ['tutte', 'Tutte'],
+            ]}
+            scelta={chiuse ? 'tutte' : 'aperte'}
+            onScegli={(v) => setChiuse(v === 'tutte')}
+          />
+        </span>
+      </div>
 
       <p className="sg-sotto" style={{ maxWidth: 760, margin: 0 }}>
         Cosa non va o cosa servirebbe nell’app: si scrive qui, e la risposta arriva sotto, nello stesso filo. Quando è fatta si chiude.
@@ -383,7 +394,7 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
       {elenco.guaio && <Guaio testo={elenco.guaio} />}
       {elenco.dato === null && !elenco.guaio && <p className="sg-sotto">Sto leggendo le segnalazioni…</p>}
       {elenco.dato !== null && lista.length === 0 && (
-        <p className="sg-sotto">{chiuse || !tutte.length ? 'Nessuna segnalazione.' : 'Nessuna aperta. Le altre si vedono con ANCHE LE CHIUSE.'}</p>
+        <p className="sg-sotto">{chiuse || !tutte.length ? 'Nessuna segnalazione.' : 'Nessuna aperta. Le altre si vedono con «Tutte».'}</p>
       )}
 
       <div className="stack" style={{ gap: 10 }}>

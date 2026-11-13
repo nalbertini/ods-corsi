@@ -351,7 +351,7 @@ function Aggiungi({
       <span className="sg-scheda-campi" style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
         {d.modo === 'prova'
           ? 'In prova l’account non serve e nessuna email parte: la persona compare subito negli istruttori dei corsi.'
-          : 'Con l’invito le arriva una mail con un link: lo apre, sceglie la sua password ed entra. Il link scade dopo un’ora; se scade, «Manda l’invito» nella sua scheda ne manda un altro. Se la persona è già in elenco come iscritta, diventa istruttore invece di un doppione.'}
+          : 'Con l’invito le arriva una mail con un link: lo apre, sceglie la sua password ed entra. Il link scade dopo un’ora; se scade, «Manda l’invito» nella sua scheda ne manda un altro. Se la persona è anche iscritta, la sua scheda da iscritta resta: questa è la seconda, del personale.'}
       </span>
       <div className="sg-scheda-piede">
         <button type="button" className="sg-btn sg-btn-linea" onClick={onLasciaStare}>
@@ -625,7 +625,7 @@ function Scheda({
                     onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   />
                   <button type="submit" className="num sg-chip sg-chip-pieno" disabled={pin.length !== 4}>
-                    OK
+                    Salva
                   </button>
                   <button type="button" className="sg-link" onClick={() => setPin(null)}>
                     lascia stare
@@ -728,7 +728,7 @@ function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: P
             onChange={(e) => setAMano(e.target.value)}
           />
           <button type="submit" className="num sg-chip sg-chip-pieno" disabled={!scritto || !!giaDi}>
-            OK
+            Salva
           </button>
           <button type="button" className="sg-link" onClick={() => setAMano(null)}>
             lascia stare

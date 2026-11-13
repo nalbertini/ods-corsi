@@ -169,8 +169,8 @@ for (const [c, colore] of [[".sg-dafare-riga[data-livello='blocca']", 'rosso'], 
 // Il giallo pieno è di sei cose sole (con il tasto verde del tablet, che nella sala è giallo): il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
 // il tasto principale di tutto il resto (.btn-primary: CHIUDI e simili), la voce di menu corrente e la voce corrente
 // della barra in basso dell'istruttore.
-const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .appello-fine .btn-go`, `${LOOK} .btn-primary`, `${LOOK} .tb-btn-verde`]
-ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .tb-btn-verde, .appello-testa .btn-go, .appello-fine .btn-go e le due voci di menu correnti',
+const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .barra-chiudi .btn-chiudi[data-pieno]`, `${LOOK} .btn-primary`, `${LOOK} .tb-btn-verde`]
+ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .tb-btn-verde, .appello-testa .btn-go, .barra-chiudi .btn-chiudi[data-pieno] e le due voci di menu correnti',
   delLook.filter((r) => r !== bloccoLook && GIALLO_PIENO.test(r.corpo) && !r.selettori.every((s) => PIENO_AMMESSO.includes(s))).map((r) => r.selettori.join(',')), [])
 ok('.sg-btn-pieno: fondo var(--giallo), testo var(--su-colore)', ha('.sg-btn-pieno', /background(-color)?:\s*var\(--giallo\)/) && ha('.sg-btn-pieno', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // Ogni regola di fuori del look con un .sg- e il giallo pieno ne ha una gemella nel look col giallo scritto.
@@ -183,9 +183,10 @@ for (const s of [...new Set(giallePiene)]) {
   ok(`${s}: nel look è giallo scritto (var(--giallo-testo)), mai fondo giallo`, !!g && !GIALLO_PIENO.test(g) && /var\(--giallo-testo\)/.test(g), true)
 }
 
-for (const [t, segno, colore] of [['manca', '✕', 'rosso-testo'], ['aspetta', '…', 'giallo-testo'], ['sostituto', '…', 'giallo-testo'], ['fatto', '✓', 'verde-testo']]) {
+// Niente segno davanti alla parola (deciso da Nicola il 2026-11-11): lo stato lo dicono il bordo, il colore e la parola.
+for (const [t, colore] of [['manca', 'rosso-testo'], ['aspetta', 'giallo-testo'], ['sostituto', 'giallo-testo'], ['fatto', 'verde-testo']]) {
   const c = `.sg-tag[data-tipo='${t}']`
-  ok(`${c}::before: segno ${segno}`, new RegExp(`content:\\s*['"]${segno}`).test(esatto(c + '::before')), true)
+  ok(`${c}::before: nessun segno`, /content:/.test(esatto(c + '::before')), false)
   ok(`${c}: fondo bianco, bordo e testo var(--${colore})`, ha(c, /background(-color)?:\s*var\(--surface\)/) && ha(c, new RegExp(`border(-color)?:[^;]*var\\(--${colore}\\)`)) && ha(c, new RegExp(`(?<![-\\w])color:\\s*var\\(--${colore}\\)`)), true)
 }
 ok(".sg-tag[data-tipo='presto'] (numero del menu): nessun segno", /content:/.test(esatto(".sg-tag[data-tipo='presto']::before")), false)
@@ -235,8 +236,8 @@ ok("il tasto «tocca di nuovo per eliminare» (.btn-primary[data-sicuro='true'])
 // Il bordo di .btn-ghost è var(--blu) (regola dell'appello, che vince sull'ordine): nel look vale quanto --riga-campo.
 for (const [c, bordo] of [['.btn-ghost', /border(-color)?:[^;]*var\(--blu\)/], ['.btn-dashed', /border(-color)?:[^;]*dashed[^;]*var\(--riga-campo\)/]])
   ok(`${c}: bordo ${c === '.btn-dashed' ? 'tratteggiato var(--riga-campo)' : 'var(--blu)'}, testo var(--text)`, ha(c, bordo) && ha(c, /(?<![-\w])color:\s*var\(--text\)/), true)
-// CHIUDI L'APPELLO (tutto segnato) è .btn-go: giallo come CHIUDI · N ASSENTI, approvato dall'utente.
-ok(".appello-fine .btn-go: fondo var(--giallo), testo var(--su-colore)", ha('.appello-fine .btn-go', /background(-color)?:\s*var\(--giallo\)/) && ha('.appello-fine .btn-go', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
+// CHIUDI L'APPELLO (tutto segnato) sta nella barra ferma in fondo: giallo solo con data-pieno, approvato dall'utente.
+ok(".barra-chiudi .btn-chiudi[data-pieno]: fondo var(--giallo), testo var(--su-colore)", ha('.barra-chiudi .btn-chiudi[data-pieno]', /background(-color)?:\s*var\(--giallo\)/) && ha('.barra-chiudi .btn-chiudi[data-pieno]', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // TUTTI PRESENTI spento: grigio come ogni tasto spento, non azzurro.
 ok('.appello-testa .btn-go:disabled: fondo var(--surface-2)', ha('.appello-testa .btn-go:disabled', /background(-color)?:\s*var\(--surface-2\)/) && !ha('.appello-testa .btn-go:disabled', /var\(--line\)/), true)
 ok('.btn:disabled: grigio (fondo var(--surface-2), testo var(--dim)), mai sbiadito (opacity 1)', ha('.btn:disabled', /background(-color)?:\s*var\(--surface-2\)/) && ha('.btn:disabled', /(?<![-\w])color:\s*var\(--dim\)/) && ha('.btn:disabled', /opacity:\s*1\s*(;|$)/), true)
@@ -269,9 +270,10 @@ arriva('--faint su bianco (segnaposto del campo di ricerca): 4,5:1', T['--faint'
 
 // --- 11. i segni delle schede e le tessere di SETTIMANA ------------------------
 console.log('\nSegni delle schede, lezioni e righe scelte')
-for (const [t, segno] of [['rosso', '✕'], ['giallo', '…'], ['verde', '✓']])
-  ok(`.sg-segno-regola[data-tono='${t}']::before: segno ${segno}`, new RegExp(`content:\\s*['"]${segno}`).test(esatto(`.sg-segno-regola[data-tono='${t}']::before`)), true)
-ok(".sg-segno-regola[data-tono='spento']: nessun segno", /content:/.test(esatto(".sg-segno-regola[data-tono='spento']::before")), false)
+for (const t of ['rosso', 'giallo', 'verde', 'spento'])
+  ok(`.sg-segno-regola[data-tono='${t}']::before: nessun segno`, /content:/.test(esatto(`.sg-segno-regola[data-tono='${t}']::before`)), false)
+ok(".sg-chip[aria-pressed='true']::before (filtro scelto): nessun segno", /content:/.test(esatto(".sg-chip[aria-pressed='true']::before")), false)
+ok("Segmenti, la voce scelta: nessun segno (in nessun look)", rOra.some((r) => r.selettori.some((x) => x.endsWith(".sg-segmenti > button[aria-pressed='true']::before")) && /content:/.test(r.corpo)), false)
 ok('.sg-lezione: senza bordo da 2px (resta la tinta in alto)', ha('.sg-lezione', /(?<![-\w])border:\s*0\s*;/) && ha('.sg-lezione', /border-top:\s*4px solid var\(--tinta\)/), true)
 ok('.sg-lezione[data-manca]: barra rossa a sinistra', ha(".sg-lezione[data-manca='true']", /inset 4px 0 0 var\(--rosso\)/), true)
 ok('.sg-lezione[data-annullata]: niente opacità (4,5:1)', ha(".sg-lezione[data-annullata='true']", /opacity:\s*1/), true)

@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #0d2a3d; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: {{colonne}}; gap: 16px; align-items: center; width: 100%; padding: 16px 18px; background: #ffffff; border-bottom: 1px solid #cfe6f4; font-size: 15px">
+  <div style="display: flex; align-items: center; gap: 12px">
+    <span style="display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 6px; background: #eef5fa"><dc-import name="Icona" nome="{{icona}}" misura="22" colore="#0d2a3d" hint-size="22px,22px"></dc-import></span>
+    <div style="display: flex; flex-direction: column"><b style="font-size: 16px">{{nome}}</b><span style="font-size: 14px; color: #46606f">{{sotto}}</span></div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 2px">
+    <dc-import name="SegnoStato" parola="{{stato}}" tono="{{tono}}" hint-size="160px,24px"></dc-import>
+    <sc-if value="{{conRiaccendi}}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: #46606f">Lo scarico è fermo.</span><a href="#" style="font-size: 14px; font-weight: 600; color: #14709f; text-underline-offset: 3px">Riaccendi in Regole ›</a></sc-if>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 2px">
+    <span>{{arrivo}}</span>
+    <span style="font-size: 14px; color: #46606f">{{nota}}</span>
+  </div>
+  <div style="display: flex; justify-content: {{tastiAllinea}}; grid-column: {{tastiColonna}}">
+    <dc-import name="Bottone" label="{{tasto}}" icona="{{iconaTasto}}" variante="linea" contesto="segreteria" alto="44px" hint-size="auto,44px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"nome":{"editor":"text","default":"Banca"},"sotto":{"editor":"text","default":"BancoPosta · Conto Corrente"},"icona":{"editor":"text","default":"banca"},"stato":{"editor":"text","default":"Aggiornata"},"tono":{"editor":"enum","options":["verde","giallo","rosso","spento"],"default":"verde"},"riaccendi":{"editor":"boolean","default":false},"stretta":{"editor":"boolean","default":false},"arrivo":{"editor":"text","default":"11/11/2026 · 12 movimenti"},"nota":{"editor":"text","default":"dal 04/11/2026 al 09/11/2026"},"tasto":{"editor":"text","default":"Visualizza i movimenti"},"iconaTasto":{"editor":"text","default":"movimenti"},"$preview":{"width":1100,"height":76}}'>
+// COSTRUITO «segreteria in ordine» (`.sg-riga-fonte` di segreteria.css, Importazioni.tsx): una fonte di IMPORTAZIONI in tabella FONTE / STATO / ULTIMO ARRIVO / tasto.
+// Banca: Aggiornata (verde) o Mai importata, tasto «Visualizza i movimenti». Satispay: Acceso / Spento (giallo, con «Riaccendi in Regole ›») / Non riuscito (rosso),
+// tasto «Visualizza chi ha pagato» (icona persona). Il tasto della riga è a linea: il solo giallo della pagina è **Importa** accanto al titolo (TestataPagina, icona carica).
+// Sotto i 1440px (`stretta`) colonne 220px 140px resto e il tasto scende a tutta riga, allineato a sinistra: a 1024 col menu aperto copriva il testo.
+// Spento dice anche «Lo scarico è fermo.». Sotto i 768px la riga va in colonna e la testata della tabella sparisce.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return {
+      nome: p.nome ?? 'Banca', sotto: p.sotto ?? 'BancoPosta · Conto Corrente', icona: p.icona || 'banca', stato: p.stato ?? 'Aggiornata', tono: p.tono || 'verde',
+      conRiaccendi: !!p.riaccendi, arrivo: p.arrivo ?? '11/11/2026 · 12 movimenti', nota: p.nota ?? 'dal 04/11/2026 al 09/11/2026',
+      tasto: p.tasto ?? 'Visualizza i movimenti', iconaTasto: p.iconaTasto || 'movimenti',
+      colonne: p.stretta ? '220px 140px minmax(0, 1fr)' : '260px 160px minmax(0, 1fr) auto', tastiColonna: p.stretta ? '1 / -1' : 'auto', tastiAllinea: p.stretta ? 'flex-start' : 'flex-end',
+    };
+  }
+}
+</script>
+</body>
+</html>

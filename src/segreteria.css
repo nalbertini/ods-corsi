@@ -132,14 +132,25 @@
 .sg-elenco-casella { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px; font-size: 15px; cursor: pointer; }
 .sg-elenco-casella input { width: 22px; height: 22px; margin: 0; accent-color: var(--text); cursor: pointer; }
 .sg-elenco-stato { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; min-height: 48px; padding: 8px 16px; background: var(--bg); border-block: 1px solid var(--line); font-size: 14px; }
-.sg-elenco-somme { display: flex; gap: 6px 16px; flex-wrap: wrap; color: var(--dim); }
-.sg-elenco-somme b { color: var(--text); white-space: nowrap; }
+.sg-elenco-barra-due { gap: 12px 24px; padding-top: 0; }
+/* MOVIMENTI ha tutti i filtri in una riga: la ricerca cede spazio (la voce lunga si taglia, in styles.css). */
+.sg-elenco-barra-movimenti .sg-elenco-cerca { flex-basis: 140px; min-width: 140px; }
+.sg-periodo, .sg-filtro-gruppo { display: inline-flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; }
+.sg-tasto-quadro { width: 44px; min-width: 44px; padding: 0; justify-content: center; }
+/* I quattro totali del periodo: cifre grandi con l'etichetta sopra, si leggono come un estratto conto. */
+.sg-totali { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+.sg-totali > div { display: flex; flex-direction: column; gap: 2px; padding: 12px 18px; min-width: 0; }
+.sg-totali > div + div { border-left: 1px solid var(--line); }
+.sg-totali > div > span { font-family: inherit; font-weight: 600; letter-spacing: 0.08em; }
+.sg-totali b { font-size: 22px; font-weight: 700; white-space: nowrap; }
+@media (max-width: 640px) {
+  .sg-totali { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-totali > div:nth-child(3) { border-left: 0; }
+  .sg-totali > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .sg-totali b { font-size: 18px; }
+}
 .sg-elenco .sg-tabella { border: 0; }
 .sg-elenco .sg-lista-testa { padding-top: 10px; }
-/* Una pillola della riga di stato: il filtro acceso, con la ✕ che toglie solo lui. */
-.sg-pillola { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; max-width: 100%; min-width: 0; padding-left: 12px; background: var(--surface); border: 1.5px solid var(--text); font-weight: 600; }
-.sg-pillola-testo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sg-pillola button { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 44px; height: 41px; font-size: 13px; }
 /* VOCE e CASSA con la loro icona davanti: si riconoscono a colpo d'occhio scorrendo. */
 .sg-cella-icona { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; }
 .sg-riga-movimento .sg-cella-icona svg { color: var(--blu, var(--text)); }
@@ -328,20 +339,20 @@
   .sg-tre > * { grid-column: auto !important; }
 }
 .sg-scheda-campi { max-width: 720px; }
-/* La scheda di un movimento: testata (chi, quanto, quando), suggerimento a tutta larghezza, campi, piede coi tasti. Sul telefono tutto in colonna, tasti a tutta larghezza. */
-.sg-movimento-testata { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-.sg-movimento-chip { padding: 6px 12px; border: 2px solid var(--line-soft); font-size: 14px; font-weight: 600; }
-.sg-movimento-importo { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; flex: none; }
-.sg-movimento-importo b { font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+/* La scheda di un movimento: una riga coi dati che non si cambiano, l'importo grande, la persona in una card col bordo blu (e dentro quel che resta da assegnare), i campi, il piede. Sul telefono tutto in colonna, tasti a tutta larghezza. */
+.sg-movimento-cifra { font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+.sg-movimento-persona { display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; border: 2px solid var(--blu); background: var(--surface); }
+.sg-movimento-chi { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.sg-iniziali { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--blu); color: var(--surface); font-family: var(--cond); font-size: 18px; font-weight: 700; }
 .sg-sug-colonne { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .sg-movimento-piede { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 20px; border-top: 2px solid var(--line-soft); }
 .sg-movimento-gruppo { display: flex; gap: 10px; flex-wrap: wrap; }
 @media (min-width: 700px) { .sg-sug-colonne { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; } }
 @media (max-width: 699px) {
-  .sg-movimento-testata { flex-direction: column; }
-  .sg-movimento-importo { align-items: flex-start; }
-  .sg-movimento-importo b { font-size: 40px; }
-  .sg-movimento-piede, .sg-movimento-gruppo { flex-direction: column; align-items: stretch; width: 100%; }
+  .sg-movimento-cifra { font-size: 40px; }
+  .sg-movimento-gruppo { flex-direction: column; align-items: stretch; width: 100%; }
+  /* Sul telefono Salva va in cima, lontano da «Annulla movimento». */
+  .sg-movimento-piede { flex-direction: column-reverse; align-items: stretch; width: 100%; gap: 24px; }
   .sg-movimento-gruppo button { width: 100%; }
 }
 .sg-scheda-piede { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding-top: 16px; border-top: 2px solid var(--line-soft); }
@@ -437,12 +448,7 @@
 .sg-sotto-movimento { display: block; font-size: 13px; color: var(--sec); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-sotto-extra::before { content: ' · '; }
 .sg-solo-telefono { display: none; }
-/* Le casse a scelta multipla: l'elenco si apre sotto il tasto. */
-.sg-filtro-casse { position: relative; }
-.sg-filtro-casse summary { display: flex; align-items: center; box-sizing: border-box; list-style: none; cursor: pointer; min-height: 44px; }
-.sg-filtro-casse summary::-webkit-details-marker { display: none; }
 .sg-filtro-menu-etichetta { color: var(--dim); }
-.sg-filtro-casse-lista { position: absolute; z-index: 6; top: 100%; left: -2px; display: flex; flex-direction: column; min-width: 100%; padding: 6px 12px; background: var(--bg, var(--surface)); border: 2px solid var(--text); white-space: nowrap; }
 /* Sul tablet la tabella dei movimenti ha troppe colonne (con PERSONA sette): sotto i 1200px resta come sul telefono, con il resto sotto la descrizione. */
 @media (max-width: 1200px) {
   .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr); gap: 8px; }
@@ -1357,17 +1363,61 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sg-lista-testa.sg-riga-verbale { display: none; }
 }
 
-/* «Importa dalla banca»: una riga del file ha stato, data, testo, tipologia, persona e importo; la voce già presente prende il posto di tipologia e persona. */
-.sg-banca-riga { display: grid; grid-template-columns: 150px 90px minmax(160px, 1fr) 200px 220px 104px; gap: 16px; align-items: center; min-height: 76px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
-.sg-banca-testa { min-height: 0; padding: 6px 0; border-bottom: 2px solid var(--text); }
-.sg-banca-oltre { grid-column: span 2; }
-.sg-banca-aperta { grid-column: 1 / -1; }
-/* Col menu accanto, sotto i 1400px il testo della banca non ci sta: la riga va in colonna. */
-@media (max-width: 1399px) {
+/* «Importa dalla banca»: data, descrizione, tipologia, importo e, in fondo a destra, la persona o i tasti della riga. */
+.sg-banca-riga { display: grid; grid-template-columns: 84px minmax(160px, 1fr) 190px 104px 216px; gap: 12px; align-items: center; min-height: 56px; padding: 6px 12px; border-bottom: 1px solid var(--line-soft); }
+.sg-banca-riga > :first-child { font-size: 14px; }
+.sg-banca-testa { min-height: 0; padding: 6px 12px; border-bottom: 2px solid var(--text); }
+.sg-banca-importo { text-align: right; font-size: 15px; }
+.sg-banca-importo[data-tipo='entrata'] { color: var(--verde-testo); }
+.sg-banca-testo { min-width: 0; font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
+.sg-banca-operazione { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--dim); }
+.sg-banca-nota { display: block; font-size: 13px; color: var(--giallo-testo); }
+.sg-banca-voce { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; font-size: 14px; }
+.sg-banca-alto { min-height: 48px; }
+.sg-banca-tasti { display: flex; gap: 8px; justify-content: flex-end; }
+.sg-banca-tasti > * { width: 104px; justify-content: center; }
+.sg-banca-persona { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; min-height: 44px; text-align: left; font-weight: 600; cursor: pointer; }
+.sg-banca-persona > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Più forte del bordo blu di .sg-campo nel look sito. */
+.sg-banca-persona.sg-banca-persona[aria-haspopup][data-manca='true'] { border-color: var(--giallo-testo); color: var(--giallo-testo); }
+/* La fascia di un gruppo: il nome a sinistra, i tasti del gruppo nella colonna dei tasti delle righe. */
+.sg-banca-gruppo { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 6px 12px; background: var(--bg); border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+.sg-banca-gruppo[data-gruppo='forse'] { background: var(--tinta-giallo); color: var(--giallo-testo); }
+.sg-banca-gruppo[data-gruppo='nuovi'] { color: var(--verde-testo); }
+.sg-banca-avviso { padding: 8px 12px; font-size: 14px; background: var(--tinta-giallo); border-left: 4px solid var(--giallo-testo); }
+.sg-banca-avviso[data-tono='fatto'] { background: var(--bg); border-left-color: var(--verde-testo); font-size: 15px; }
+/* Sotto un bonifico: la ricevuta già fatta a cui andrà, dalla descrizione all'importo; il tasto nella colonna della persona. */
+.sg-banca-abbina { grid-column: 2 / 5; font-size: 14px; line-height: 1.35; }
+.sg-banca-abbina[data-tono='fatto'] { color: var(--verde-testo); }
+.sg-banca-abbina[data-tono='tolto'] { color: var(--dim); }
+.sg-banca-abbina[data-tono='dubbio'] { color: var(--giallo-testo); }
+/* Col menu accanto, sotto i 1200px la riga non ci sta: data e importo in alto, il resto sotto a tutta larghezza. */
+@media (max-width: 1199px) {
   .sg-banca-testa { display: none; }
-  /* Lo stato da solo in alto («DA CONTROLLARE» è lungo), sotto data e importo, poi il resto. */
-  .sg-banca-riga { grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; }
-  .sg-banca-riga > :first-child { grid-column: 1 / -1; justify-self: start; }
-  .sg-banca-riga > :nth-child(2) { text-align: left; }
-  .sg-banca-riga > :not(:nth-child(-n+2)):not(.sg-banca-importo) { grid-column: 1 / -1; order: 3; }
+  .sg-banca-riga { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; }
+  .sg-banca-riga > :not(:first-child):not(.sg-banca-importo) { grid-column: 1 / -1; order: 3; }
+  .sg-banca-tasti { justify-content: flex-start; }
 }
+
+/* IMPORTAZIONI: le fonti in una tabella a quattro colonne, come nel design. */
+.sg-riga-fonte { display: grid; grid-template-columns: 260px 160px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--line-soft); font-size: 15px; }
+.sg-lista-testa.sg-riga-fonte { padding: 10px 18px; }
+.sg-riga-fonte:last-child { border-bottom: 0; }
+.sg-fonte-icona { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 6px; background: var(--bg); }
+.sg-fonte-tasti { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+/* Sotto i 1440px i tasti stringevano ULTIMO ARRIVO fino a una parola per riga: vanno sotto, a tutta riga. */
+@media (max-width: 1439px) {
+  .sg-riga-fonte { grid-template-columns: 220px 140px minmax(0, 1fr); }
+  .sg-fonte-tasti { grid-column: 1 / -1; justify-content: flex-start; }
+  .sg-lista-testa.sg-riga-fonte > :last-child { display: none; }
+}
+@media (max-width: 767px) {
+  .sg-lista-testa.sg-riga-fonte { display: none; }
+  .sg-riga-fonte { grid-template-columns: 1fr; gap: 10px; }
+  .sg-fonte-tasti { justify-content: flex-start; }
+}
+
+/* Con un filtro sulle righe restano solo entrate e uscite (striscia() in filtriMovimenti). */
+.sg-totali[data-quanti='2'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sg-totali[data-quanti='2'] > div:nth-child(n) { border-top: 0; }
+.sg-totali[data-quanti='2'] > div + div { border-left: 1px solid var(--line); }

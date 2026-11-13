@@ -51,3 +51,22 @@ export function somiglia(p: { nome: string; cognome: string }, parole: string[])
   const sue = [...nomi.flatMap((n) => n.replace(STACCA, ' ').split(/\s+/)), ...attaccati]
   return parole.every((w) => sue.some((s) => s.startsWith(w))) || attaccati.some((s) => s.startsWith(parole.join('')))
 }
+
+/**
+ * La scheda del personale da riprendere quando se ne aggiunge uno, invece di
+ * farne un doppione: quella senza email con lo stesso nome e cognome, scritti
+ * attaccati (D'Amico e D’Amico, senza jolly). Un'email già di un altro del
+ * personale è un errore. Mai la scheda di un iscritto, neanche con la stessa
+ * email o lo stesso nome: chi si allena e insegna ha due schede, una da
+ * iscritto e una del personale (scelta della palestra, 2026-11-12).
+ */
+export function personaleDaRiprendere<P extends { nome: string; cognome: string; email?: string | null; ruolo: string }>(
+  persone: readonly P[],
+  nuovo: { nome: string; cognome: string; email?: string | null },
+): P | undefined {
+  const personale = persone.filter((p) => p.ruolo !== 'iscritto')
+  const email = nuovo.email?.trim().toLowerCase()
+  const altro = email && personale.find((p) => p.email?.toLowerCase() === email)
+  if (altro) throw new Error(`Questa email è già di ${altro.cognome ? `${altro.nome} ${altro.cognome}` : altro.nome}`)
+  return personale.find((p) => !p.email && compatto(p.nome) === compatto(nuovo.nome) && compatto(p.cognome) === compatto(nuovo.cognome))
+}

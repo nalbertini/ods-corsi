@@ -8,8 +8,10 @@ semplice, gli istruttori e il tablet no. Ha cinque schede, sotto il titolo come 
 
 ## Movimenti
 
-MOVIMENTI è un **estratto conto**. In cima, in una riga di stato, **Saldo iniziale**,
-**Entrate**, **Uscite** e **Saldo finale**, di quel che hai scelto con i filtri. La
+MOVIMENTI è un **estratto conto**. Sotto i filtri, una striscia di quattro cifre: **SALDO INIZIALE**,
+**ENTRATE**, **USCITE** e **SALDO FINALE**, del periodo che hai scelto. Con **Da assegnare**,
+**Annullati**, un TIPO, una voce o una ricerca restano solo **ENTRATE** e **USCITE**: i saldi sono di tutta
+la cassa e non tornerebbero con le righe che vedi. La
 tabella ha le colonne **DATA**, **DESCRIZIONE**, **TIPO** (con la sua icona: Incasso iscritto,
 Giroconto, Entrata, Uscita), **CASSA**, **ENTRATE** e **USCITE**, con le righe dalla più
 recente. Accanto al titolo CONTABILITÀ, e solo in questa scheda, c'è **Nuovo movimento**
@@ -36,16 +38,27 @@ L'elenco unisce due cose:
 - i **movimenti che scrivi tu**: altre entrate (contributi, gare, attività
   fatturate) e le uscite.
 
-Si parte da **Tutto l'anno**: l'elenco, ENTRATE, USCITE e DIFFERENZA contano l'anno in
-corso, non più il mese. Filtri ed elenco stanno in un riquadro solo. Sopra la **ricerca** nella
-descrizione (non bada a maiuscole, accenti e spazi in più), il **periodo** (il mese, il mese
-scorso, tutto l'anno, tutto) e i menu, tutti sulla stessa riga. **Esporta CSV**, nel menu **Altre azioni**, dà un foglio per Excel e per il commercialista,
-senza gli annullati. I menu: **Casse** (**Conto corrente**, **Contanti**, **Satispay**: se ne spuntano quante
-si vuole, nessuna spuntata vale tutte), **Tipo** (**Tutti**, **Entrate**, **Uscite**), **Voce** e **Persona**, poi **Mostra annullati** e la **vista**: **Elenco** o **Per
-voce**, che dà i totali per voce. Un menu acceso ha il fondo pieno e una ✕ accanto che lo spegne.
-Sotto i filtri, una riga dice quanti movimenti ci sono, quanti ne hai scelti, ogni
-filtro acceso con la sua ✕ (toglie solo quello), **Togli i filtri** (li toglie tutti e riporta
-a Tutto l'anno) e a destra ENTRATE, USCITE e DIFFERENZA di quel che vedi.
+Si parte dal **mese corrente**. Filtri ed elenco stanno in un riquadro solo. In alto, su una riga
+(sullo schermo stretto vanno a capo):
+
+- la **ricerca** nella descrizione, nel nome o nell'importo (non bada a maiuscole, accenti e
+  spazi in più) e il **periodo**: i menu **Mese** e **Anno**, con le frecce **‹** e **›** per il mese
+  prima e quello dopo. **›** si ferma al mese corrente; con **Tutti i mesi** le frecce non ci sono.
+  **Tutti gli anni** guarda tutto lo storico; un mese scelto senza anno è di quest'anno. Ci sono anche i
+  movimenti di prima della data di partenza di una cassa (lo storico importato): contano in BILANCIO e
+  si sistemano come gli altri, ma non nei saldi, quindi con loro la striscia tiene solo ENTRATE e USCITE;
+- **MOSTRA**: **Da assegnare · N** (quel che resta da sistemare: una quota o un corso senza persona,
+  un omonimo da decidere, soldi ancora da assegnare, la voce **Da classificare**; guarda tutto lo
+  storico, il periodo passa a tutti gli anni), **Tutti** o **Annullati** (solo quelli annullati,
+  che non contano). **TIPO**: **Entrate**, **Uscite** o **Tutti**. **Voce**: una sola voce, fra
+  quelle che i movimenti hanno (anche quelle vecchie o spente); segue il TIPO, e se cambi TIPO e la
+  voce non c'è più si toglie da sola. Con una voce scelta restano solo **ENTRATE** e **USCITE**.
+
+Sotto, quanti movimenti ci sono («38 movimenti a novembre 2026»), quanti ne hai scelti e, a destra,
+la **VISTA**: **Elenco** o **Per voce**, che dà i totali per voce.
+
+**Esporta CSV**, nel menu **Altre azioni**, dà un foglio per Excel e per il commercialista,
+senza gli annullati.
 
 ### Gli incassi degli iscritti
 
@@ -55,7 +68,7 @@ riepilogo prima di scrivere, e dove entra: Cassa Contanti per i contanti, Satisp
 Corrente per il resto) e **+ FAI LA RICEVUTA** ([Un pagamento e la sua
 ricevuta](../segreteria/iscritti.md#un-pagamento-e-la-sua-ricevuta)). Si annulla da lì: un
 pagamento senza ricevuta con **Annulla il pagamento**, uno di una ricevuta annullando la ricevuta
-intera. Sparisce dai conti, resta in elenco con **Mostra annullati**.
+intera. Sparisce dai conti, resta in elenco con MOSTRA **Annullati**.
 
 - **Satispay senza richiesta**: chi ha pagato con Satispay in fondo al modulo e poi non ha mandato
   la richiesta compare da solo, col segno **Satispay senza richiesta** e sotto il nome l'email e il
@@ -84,30 +97,36 @@ la quota **non conta come pagata** (per questo serve la ricevuta, dalla scheda d
 
 Prima di scrivere, l'app mostra un **riepilogo** (importo, voce, cassa, data e, se c'è, la persona): **Sì,
 registra il movimento** lo scrive, **No, torna al modulo** lascia tutto com'era. Se il movimento scritto è fuori dai filtri che hai
-acceso, l'elenco lo dice («Non lo vedi nell'elenco: è fuori dai filtri») e **Togli i filtri** lo
-fa comparire.
+acceso, l'elenco lo dice («Non lo vedi nell'elenco: è fuori dai filtri») e **Mostralo** porta al suo
+mese, con tutti i movimenti.
 
 Un movimento registrato **non si cambia** negli importi: toccandolo si apre in una **finestra** sopra l'elenco
-(vedi [La finestra dei dettagli](../segreteria/README.md#la-finestra-dei-dettagli)), e si può
-**annullare** (resta in elenco, annullato, e non si conta più), correggere la descrizione e
-la nota (di un giroconto, solo la nota) o **cambiare la voce** (vedi sotto). Per correggere
-importo, data o cassa si annulla e si rifà.
+(vedi [La finestra dei dettagli](../segreteria/README.md#la-finestra-dei-dettagli)). In alto c'è da dove viene
+(«Movimento dalla banca», la cassa e la data, col lucchetto: questi non si cambiano), l'**importo** grande e se è
+un'entrata o un'uscita.
 
-Nella finestra, la riga **PERSONA** dice di chi è una quota o un corso. **Apri la scheda ›** porta alla
-scheda della persona (anche per un incasso di un iscritto). Su un movimento scritto qui: **Collega a una
-persona** se manca («Nessuna: di chi è?»), **Cambia persona** e **Scollega**. Il filtro **Persona** ha
-anche **Quote e corsi senza persona**, per trovare quelli scritti prima che la persona fosse obbligatoria.
+Sotto c'è la **persona**: un riquadro col suo nome, **Apri scheda →** (porta alla scheda della persona, anche per
+un incasso di un iscritto) e **⋯**, con **Cambia persona** e **Scollega**. Se manca: «Nessuna persona collegata»
+e **Collega una persona**. Su un'entrata di quota o corsi con soldi ancora da dire a cosa vanno, nello stesso
+riquadro c'è **Da assegnare** (vedi sotto). MOSTRA **Da assegnare** trova anche le quote e i corsi senza persona,
+scritti prima che la persona fosse obbligatoria.
+
+Poi la **voce** e la **nota**. La descrizione (di un movimento della banca, il suo testo) e **Cosa è cambiato**
+stanno in **Descrizione e storico**, chiuso: si apre per leggerli o correggere la descrizione (di un giroconto,
+solo la nota). **Salva** compare solo quando hai cambiato qualcosa, e scrive quel che hai cambiato.
+**Annulla movimento**, in rosso in basso a sinistra, chiede prima di annullare: il movimento resta in elenco,
+annullato, e non si conta più. Per correggere importo, data o cassa si annulla e si rifà.
 
 ### Cambiare la voce
 
 La voce di un movimento si cambia **senza annullare e rifare**: importo, data, cassa e testo
 restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi sono gli stessi).
 
-- **Uno solo**: apri il movimento, scegli la **voce** nuova e tocca **Cambia la voce**. In fondo, **Cosa è
+- **Uno solo**: apri il movimento, scegli la **voce** nuova e tocca **Salva**. In **Descrizione e storico**, **Cosa è
   cambiato** dice chi l'ha cambiata, quando e da quale voce veniva. Un movimento scritto qui che va su
   **Quota associativa** o **Corsi e altri pagamenti** chiede la **persona**, se non ce l'ha già.
 - **Il suggerimento**: un movimento su **Da classificare** apre con un riquadro giallo,
-  **Suggerito · conferma tu**, con la **voce** e la **persona** affiancate. La **voce** è quella delle
+  **Suggerito · conferma tu**, con il **testo della banca** in cima, per confrontarlo, e sotto la **voce** e la **persona** affiancate. La **voce** è quella delle
   altre righe uguali (almeno due, tutte sulla stessa voce); se non ci sono, si capisce dall'importo:
   50 € è la **Quota associativa**, il prezzo di un corso del listino è **Corsi e altri pagamenti**, e un
   importo che non combacia con nessun prezzo va lo stesso su **Corsi e altri pagamenti**, con un avviso
@@ -127,8 +146,8 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
   registri l’incasso nella scheda della persona. **Scegli tu** non cambia niente: mette la proposta nei campi qui sotto, e decidi lì.
   Senza suggerimento, il riquadro non c'è.
 - **Tanti insieme**: nell'elenco scrivi nella ricerca una parte della causale (per esempio «enel»),
-  scegli la **voce** da cui partire (per esempio «Da classificare») e, se serve, il periodo
-  **Tutto**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure la casella in testa alla
+  e, se serve, MOSTRA **Da assegnare** (le voci da classificare ci sono), la **Voce** di partenza
+  (per spostare tutta una voce in un'altra) o il periodo **Tutti gli anni**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure la casella in testa alla
   colonna, che le sceglie tutte. In fondo compare la barra **N scelti**: **Cambia voce** apre il riepilogo (quanti sono,
   di che tipo, quanto fanno, da quali voci vengono). Scegli la **nuova voce** e tocca **Sì, cambia la
   voce**: finché non lo dici, non cambia niente. Se cambi la ricerca o i filtri, la scelta si svuota.
@@ -164,8 +183,8 @@ storico qui, quelle scritte a mano dalla loro finestra (vedi sopra). Non si coll
   Niente si scrive finché non dici **Sì, collega**. Vanno a pacchetti da 500, ognuno tutto o niente; se uno
   si ferma, l'app dice quanti ne ha collegati e **Rifai il collegamento** riparte dagli altri. A fine
   lavoro **Togli questo lotto** scollega solo quelli appena collegati: quelli cambiati a mano dopo non si toccano.
-- **Chi ha più schede dello stesso nome** (omonimi) non si collega mai da sé: il tag **Omonimi** e il
-  filtro **Da decidere** li mostrano. Scegli i movimenti e tocca **Collega a una persona**: l'app offre
+- **Chi ha più schede dello stesso nome** (omonimi) non si collega mai da sé: il tag **Omonimi** e
+  MOSTRA **Da assegnare** li mostrano. Scegli i movimenti e tocca **Collega a una persona**: l'app offre
   le persone con quel nome e quel che le distingue (anno di nascita, corsi, iscrizione). Se non basta,
   si cerca per nome.
 - **Chi non ha più la scheda** (un ex iscritto): il movimento resta com'è, con il tag **Senza scheda** e il
@@ -175,9 +194,7 @@ storico qui, quelle scritte a mano dalla loro finestra (vedi sopra). Non si coll
 - Se una scheda viene eliminata, i suoi movimenti restano, senza persona; se due schede si uniscono,
   il collegamento passa a chi resta.
 
-Il filtro **Persona** sopra l'elenco ha **Collegati**, **Da decidere** e **Senza scheda**, con il numero
-di ognuno sull'intero storico. **Collegati** conta solo lo storico collegato: gli incassi degli iscritti
-hanno la persona da sé e non ci sono.
+Gli omonimi da decidere e le quote senza persona sono in MOSTRA **Da assegnare**, su tutto lo storico.
 
 ### Assegnare un bonifico a quota e corsi
 
@@ -201,13 +218,33 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   la data è quella del bonifico, il modo **Bonifico**. **Assegna senza ricevuta** scrive solo
   l'assegnazione: la ricevuta si fa dopo, dalla stessa finestra, con **Fai la ricevuta**. Quel che non
   assegni resta **da assegnare**.
+- Se la persona è segnata **pagata a mano** nella scheda, senza un pagamento nell'app, non c'è niente da
+  pagare e la finestra mostra il riquadro giallo **GIÀ PAGATO A MANO**. Se il bonifico è quel
+  pagamento, **È questo bonifico** propone la quota e i corsi interi, prima i suoi e quel che avanza ai
+  familiari: assegnali, con o senza ricevuta, e il bonifico esce da Da assegnare. Se il bonifico copre
+  meno del listino, il corso diventa **pagato in parte** con quel che manca: la finestra lo dice prima,
+  con «Resteranno…». **Non è questo** chiude il riquadro e il bonifico resta da assegnare, con la scheda
+  segnata pagata com'era.
 - Nella finestra, **ASSEGNATO A** elenca a chi e a cosa sono andati i soldi, con la ricevuta (e il
   **PDF**) o il tag **Senza ricevuta**.
 - La scheda **DA ASSEGNARE** elenca tutte le entrate collegate che hanno ancora soldi senza una voce,
-  col totale; **Assegna** apre il movimento. In cima, **COLLEGATI PRIMA**: i bonifici collegati prima
-  di questo passaggio per cui la ricevuta l'hai già fatta a parte (stessa persona, stesso importo,
-  pagata tutta con bonifico, entro 30 giorni). **Abbina** li lega senza scrivere niente di nuovo, così i
+  col totale; **Assegna** apre il movimento. In cima, **COLLEGATI PRIMA**: i bonifici già nel Conto
+  Corrente per cui la ricevuta in Bonifico l'hai fatta a parte (stesso importo, pagata tutta con
+  bonifico, entro 30 giorni). La ricevuta può essere della persona del bonifico o della sua famiglia
+  (il genitore paga, la ricevuta è del figlio). **Abbina** li lega senza scrivere niente di nuovo, così i
   soldi non si contano due volte; **Non è questa** la toglie dalla proposta.
+- Lo stesso lo vedi **dal movimento**: se il bonifico non ha ancora niente assegnato e c'è la sua
+  ricevuta fatta a parte (la stessa che proporrebbe COLLEGATI PRIMA), al posto di **DA ASSEGNARE** c'è
+  **C'È GIÀ LA RICEVUTA**: «C'è già la ricevuta n. … del … da …: è questa?». **Abbina** la lega al
+  bonifico, che resta aperto con la ricevuta in **ASSEGNATO A**; **Non è questa** torna a **DA
+  ASSEGNARE**, finché non chiudi la finestra.
+- Anche un bonifico ancora **Da classificare** compare in COLLEGATI PRIMA, con le ricevute che possono
+  essere sue, dalla data più vicina: solo quelle di chi la causale nomina con nome e cognome interi (la
+  persona della ricevuta, qualcuno della sua famiglia o il genitore scritto nella sua anagrafica). Se la
+  causale non nomina nessuno, il bonifico non compare: collegalo a mano. Poi scegli quella giusta con **È questa** (o **Abbina**, se è una sola),
+  o **Nessuna di queste**. Non si abbina mai da solo, e nemmeno con «Abbina tutti»: abbinato, il bonifico
+  prende la persona della ricevuta e la voce (**Quota associativa** se la ricevuta è solo quota, se no
+  **Corsi e altri pagamenti**).
 - **Per correggere** si annulla la ricevuta (i soldi tornano da assegnare) e si riassegna. Finché un
   movimento ha dei soldi assegnati non si scollega, non cambia persona né va su una voce senza persona, e
   il suo lotto di Importa banca non si annulla: l'app dice cosa annullare prima.
@@ -216,6 +253,10 @@ Nella scheda della persona, in **QUOTA E PAGAMENTI**, un bonifico collegato e no
 («da assegnare dal bonifico del …») con **Assegna ›**; un pagamento assegnato senza ricevuta ha
 **Assegnato · senza ricevuta** e **Apri in contabilità**. Se fai la ricevuta dalla scheda mentre c'è un
 bonifico collegato da assegnare, il modulo lo dice: se è quello, falla dal bonifico.
+Con **PAGATO CON Bonifico**, se nel Conto Corrente c'è già un bonifico libero con lo stesso importo
+entro 30 giorni (della persona, della sua famiglia o Da classificare con il loro nome nella causale), il modulo lo mostra in **FORSE È
+GIÀ IN BANCA**: spunta **È questo: abbinalo alla ricevuta** e, fatta la ricevuta, il bonifico si abbina
+da solo. Non è obbligatorio, e lo vede solo chi ha CONTABILITÀ: per gli altri resta COLLEGATI PRIMA.
 
 ### Giroconto
 
@@ -245,50 +286,66 @@ a zero: i loro soldi sono sul Conto Corrente. Se dentro c'è qualcosa, tornano, 
 **Totale** si spiega.
 
 Chi ha pagato con Satispay (nome, importo, giorno, se l'app lo riconosce fra gli iscritti)
-lo dice lo scarico, ogni notte, in [IMPORTAZIONI → Chi ha pagato](importazioni.md#chi-ha-pagato).
+lo dice lo scarico, ogni notte, in [IMPORTAZIONI → Visualizza chi ha pagato](importazioni.md#chi-ha-pagato).
 Se lo scarico non riesce arriva un'email agli indirizzi degli avvisi (IMPOSTAZIONI → GLI
 AVVISI, vedi [Le regole](../segreteria/regole.md#gli-avvisi)).
 
 ### Importare dalla banca
 
-**Importa dalla banca**, in MOVIMENTI (o **Importa un file** in [IMPORTAZIONI](importazioni.md)), apre una pagina sua che legge il file della banca e scrive nel **Conto
-Corrente** i movimenti che mancano; **I movimenti**, in alto, torna indietro. Dall'home banking di BancoPosta scarica la
-**Lista movimenti** in formato CSV, poi scegli il file. Il file resta sul tuo computer:
+**Importa dalla banca**, nel menu **Altre azioni** di MOVIMENTI (o **Importa** in [IMPORTAZIONI](importazioni.md)), apre una pagina sua che legge il file della banca e scrive nel **Conto
+Corrente** i movimenti che mancano; il tasto in alto torna indietro. Dall'home banking di BancoPosta scarica la
+**Lista movimenti** in formato CSV, poi tocca **Scegli file**. Il file resta sul tuo computer:
 l'app ne legge solo i movimenti, e toglie dalla descrizione IBAN e codici fiscali.
 
 Di un bonifico in uscita la banca dà solo «Distinta: …», senza dire a chi hai pagato.
 Aprendo il movimento compare **MANCANO DEI DATI**: scrivi il destinatario e premi
 **Salva il destinatario**. Diventa il titolo del movimento, e la scritta della banca resta
-nella nota (con «Dalla banca:»), per ritrovarlo sull'estratto conto.
+nella nota (con «Dalla banca:»), per ritrovarlo sull'estratto conto. Il movimento resta
+aperto: scegli subito la **VOCE** (e la persona, se serve) e premi **Salva**.
 
-Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**. Dice
-quanti movimenti ci sono, quanti entrano e per quanto, e sotto elenca **tutte le righe
-del file**, nuove o già importate, una per riga: data, testo della banca, tipologia, persona,
-importo e uno **stato** in parole. Con i filtri sopra l'elenco (**Tutte**, **Nuove**, **Duplicate**,
-**Da decidere**, **Scartate**) vedi solo quelle che ti interessano, e accanto **Entrambe**,
-**Entrate** o **Uscite** tiene solo i soldi che entrano o che escono (le scartate, senza
-importo, restano fuori).
+Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**. In alto il conto delle
+righe del file: quante sono **nuove**, quante **forse già nell'app**, quante **già nell'app** e quante
+**scartate**, poi quanto entra e per quanto. Sotto, le righe: data, descrizione (il tipo d'operazione
+della banca in piccolo sopra, il testo senza codici TRN), tipologia, importo e, in fondo a destra,
+la persona o i tasti della riga. I filtri sopra l'elenco sono **Da fare** (la pagina parte da qui:
+le nuove e quelle da decidere), **Già nell'app**, **Scartate** e **Tutte**; accanto **Entrambe**,
+**Entrate** o **Uscite** tiene solo i soldi che entrano o che escono (le scartate, senza importo,
+restano fuori). Se il file non ha niente di nuovo, la pagina lo dice e mostra le già nell'app.
 
-- **Nuova**: entra come movimento nuovo.
-- **Da controllare**: entra, ma ricontrollala dopo (per esempio un versamento).
-- **Duplicata**: c'è già, anche come ricevuta o pagamento a mano in bonifico o POS: non si scrive una seconda volta. Al posto di tipologia e persona, **GIÀ SCRITTA COME** dice la voce già presente a cui si riferisce (descrizione, data, cassa, tipo e numero). Se l'abbinamento l'ha fatto l'anteprima e non è giusto, **È nuova** fa entrare la riga come movimento nuovo. Sulle righe già importate in una volta precedente il tasto non c'è, per non scrivere due volte lo stesso pagamento.
-- **Una ricevuta pagata in più rate**: se la ricevuta ha più pagamenti dello stesso giorno sul Conto Corrente (per esempio quota 50,00 + trimestre 170,00 in bonifico) e dalla banca arriva un bonifico solo con la somma (220,00), la ricevuta intera è una voce sola: **GIÀ SCRITTA COME** dice la persona, il numero della ricevuta e le rate («quota 50,00 + trimestre 170,00»). È **Duplicata** da sola solo se nel testo della banca ci sono nome e cognome di chi ha la ricevuta; se no è **Da decidere**, con la frase «Il nome nel testo non è quello della ricevuta: dimmi tu.». Si somma solo dentro una ricevuta: un bonifico che paga le ricevute di più persone entra come **Nuova** e si divide con **Assegna a quota e corsi**. Un bonifico importato come nuovo prima di questa regola si sistema annullando il movimento in **MOVIMENTI**: la ricevuta resta e i soldi contano una volta.
-- **Da decidere**: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo) e più di un possibile pagamento. Sotto **POTREBBE ESSERE** scegli quello giusto con la **spunta verde** (**È questa**), oppure **È nuova**. Finché non scegli, non entra. Se il testo ha nome e cognome di una persona (o del suo genitore), quella scheda è in evidenza con «Sembra questo»; se il nome è di una e il genitore di un'altra, sono in evidenza tutte e due e scegli tu: **Conferma quelli che sembrano giusti** li conferma tutti insieme, e una riga con una sola scheda così non cambia finché non confermi.
-- **Scartata**: la data o l'importo sono illeggibili, o la data è nel futuro. Il motivo è scritto nella riga. Correggila nel file e riprova.
+Le righe sono a gruppi:
 
-Sopra l'elenco, gli **avvisi**: i **versamenti di contanti** entrano, ma controlla che non siano già nella cassa contanti. I versamenti **«Da Satispay Europe S.A.»** entrano come gli altri: sono l'incasso di Satispay, sulla voce **Incassi Satispay** (vedi [Satispay](#satispay)). Le duplicate si ricontrollano dopo l'importazione in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
+- **Forse già nell'app**, per prime: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo). Accanto c'è il movimento dell'app che potrebbe essere (per esempio «Rossi Luca · ricevuta n. 119 · 26/10/2026»): **Conferma** se è quello, **Nuovo** se è un movimento diverso; finché non scegli, la riga non entra. **Nome diverso** vuol dire che nel testo della banca c'è un nome che non è quello della ricevuta. Sulla fascia del gruppo, **Conferma** collega insieme le righe dove nome e cognome (o il genitore) sono nel testo, **Tutti nuovi** le fa entrare tutte come movimenti nuovi.
+- **Movimenti nuovi**: entrano. Un **versamento di contanti** ha sotto la riga gialla «controlla che non siano già nella cassa contanti».
+- **Già nell'app**: c'è già, anche come ricevuta o pagamento a mano in bonifico o POS, e non si scrive una seconda volta. Accanto c'è il movimento dell'app a cui corrisponde. Se l'abbinamento l'ha fatto l'anteprima e non è giusto, **Nuovo** fa entrare la riga come movimento nuovo; sulle righe già importate in una volta precedente il tasto non c'è, per non scrivere due volte lo stesso pagamento.
+- **Una ricevuta pagata in più rate**: se la ricevuta ha più pagamenti dello stesso giorno sul Conto Corrente (per esempio quota 50,00 + trimestre 170,00 in bonifico) e dalla banca arriva un bonifico solo con la somma (220,00), la ricevuta intera è una voce sola, con le rate nel dettaglio. È **già nell'app** da sola solo se nel testo della banca ci sono nome e cognome di chi ha la ricevuta; se no è **forse già nell'app**, con **Nome diverso**. Si somma solo dentro una ricevuta: un bonifico che paga le ricevute di più persone entra come nuovo e si divide con **Assegna a quota e corsi**. Un bonifico importato come nuovo prima di questa regola si sistema annullando il movimento in **MOVIMENTI**: la ricevuta resta e i soldi contano una volta.
+- **Scartate**: la data o l'importo sono illeggibili, o la data è nel futuro. Il motivo è scritto nella riga. Correggila nel file e riprova.
+
+I versamenti **«Da Satispay Europe S.A.»** entrano come gli altri: sono l'incasso di Satispay, sulla voce **Incassi Satispay** (vedi [Satispay](#satispay)). Le righe già nell'app si ricontrollano dopo l'importazione in [IMPORTAZIONI → Cosa è entrato](importazioni.md#cosa-è-entrato).
 
 Sulle righe che entrano scegli la **tipologia**: parte da quella che l'app propone (come per
 i movimenti da classificare) o da **Da classificare**. Per una quota o un corso serve anche la
-**persona**: sulle entrate l'app propone quella col nome che c'è nel testo, e conta solo
-quando la confermi con la **spunta verde**; **Cambia**, **Cerca** o **Scegli** (se più schede
-hanno quel nome) la cercano a mano. In fondo l'app dice quante righe avranno la voce scelta e
-quante restano in **Da classificare**: una quota senza persona, per esempio, entra lo stesso e
-resta lì. Se esci dalla pagina con delle scelte fatte, l'app chiede prima.
+**persona**, in fondo alla riga: se nel testo c'è il nome di una sola scheda, l'app la mette già lì
+e all'importazione vale quella. Premendo il campo (o **Assegna**, se è vuoto) si apre **CHI HA
+PAGATO?**: in cima le schede col nome del testo, sotto la ricerca; scegli e premi **Assegna**.
+In fondo l'app dice quante righe avranno la voce scelta e quante restano in **Da classificare**:
+una quota senza persona, per esempio, entra lo stesso e resta lì. Se esci dalla pagina con delle
+scelte fatte, l'app chiede prima.
+
+Un bonifico in entrata su **Quota associativa** o **Corsi e altri pagamenti**, con la persona, entra
+già **con la sua ricevuta** se ne hai fatta una sola che gli va: in **Bonifico**, non ancora legata a
+un movimento, stesso importo, entro 30 giorni, della persona o della sua famiglia (come per
+[**Abbina**](#assegnare-un-bonifico-a-quota-e-corsi)). Sotto la riga, in verde, «Va con la ricevuta
+n. … di …», con la data e l'importo, e «(nucleo)» se è di un altro della famiglia. **Togli** la lascia
+fuori: il bonifico entra senza, resta in **Da assegnare** e lo abbini tu; **Abbina** la rimette.
+Con **più ricevute possibili**, o se due bonifici del file vogliono la stessa, la riga lo dice in
+giallo e non si abbina niente: la scegli dopo in **Da assegnare**. Se cambi persona o voce, la
+proposta si rifà. In fondo l'app dice anche quanti bonifici entrano con la ricevuta, e dopo
+l'importazione il riepilogo elenca le ricevute abbinate (numero e persona) e, in giallo, i bonifici
+che non si sono abbinati, col motivo.
 
 I movimenti entrano col segno **DALLA BANCA**, nella voce scelta o in **Da classificare**:
 quelle rimaste le sistemi dopo, con **Cambia voce**. Rileggere lo stesso file non duplica niente,
-nemmeno un movimento annullato. Se qualcosa non torna, **Annulla tutta l'importazione**
+nemmeno un movimento annullato. Se qualcosa non torna, **Annulla**, accanto all'ultima importazione in cima alla pagina,
 toglie in un colpo i movimenti dell'ultima importazione; uno annullato per sbaglio si
 recupera da **Annullati**. Solo l'amministrazione importa; la segreteria può poi
 classificare. Una volta sola al massimo 1000 movimenti.
@@ -350,6 +407,11 @@ Un pagamento segnato in [COMPENSI](../segreteria/compensi.md#il-pagamento) è un
 come le altre, con la voce di sistema **Compensi istruttori**, collegata al tecnico, e la
 descrizione «Compenso · Nome Cognome · ott 2026». Se è sbagliato si **annulla** qui: le sue
 ricevute tornano da pagare in COMPENSI e si ripagano da lì.
+
+Se il bonifico al tecnico è già arrivato dall'importazione della banca (di solito Da
+classificare), non serve scriverne un altro: in COMPENSI, **Segna pagato** lo propone in
+FORSE È GIÀ IN BANCA, e scelto prende il tecnico e la voce Compensi istruttori, con la sua
+descrizione della banca. Annullarlo qui rimette le ricevute da pagare, come sopra.
 
 ## Bilancio
 

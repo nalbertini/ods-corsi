@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta · dopo È questo bonifico</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .dialogo { display: flex; flex-direction: column; gap: 16px; width: 760px; padding: 20px 24px; background: #ffffff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; }
+    .riq { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #ffffff; border: 2px solid #cfe6f4; }
+    .avviso { border-color: #8f6a00; }
+    .avviso .et { color: #8f6a00; }
+    .link { font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+    .pericolo { color: #b81d1d; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .spento { opacity: 0.4; }
+  </style>
+</helmet>
+<!-- PROPOSTA dopo «È questo bonifico»: le righe di sempre (proponiRipartizione: prima la quota, poi i corsi dal più vecchio), con «pagato a mano» al posto di «manca». Si assegna come un bonifico qualunque: pagamenti_diretti col movimento, ricevuta se si vuole. -->
+<div style="padding: 20px">
+<div class="dialogo">
+  <span class="et">ASSEGNA IL BONIFICO DEL 12/10/2026</span>
+  <span class="sotto">Il bonifico è di 660,00 €, da assegnare 660,00 €. Ogni importo diventa un pagamento della persona: un saldo se copre quel che manca, se no un parziale.</span>
+  <div class="riq">
+    <span class="et">ROSSI LUCA · COLLEGATO AL BONIFICO · PAGATO A MANO</span>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-size: 15px; flex: 1 1 200px">Quota associativa 2026/27 <span class="sotto">· pagata a mano, 50,00 €</span></span><span class="campo">50,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-size: 15px; flex: 1 1 200px">Annuale Judo adulti <span class="sotto">· pagato a mano, 610,00 €</span></span><span class="campo">610,00</span><dc-import name="Badge" tipo="tag" label="Saldo" tono="verde" hint-size="90px,28px"></dc-import></div>
+  </div>
+  <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline"><span class="num" style="font-size: 15px">Assegnati 660,00 € di 660,00 € · Da assegnare 0,00 €</span><span class="link pericolo">Svuota tutto</span></div>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap">
+    <dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Assegna e fai la ricevuta" hint-size="250px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" variante="linea" label="Assegna senza ricevuta" hint-size="240px,48px"></dc-import>
+    <dc-import name="Bottone" contesto="segreteria" variante="linea" label="Lascia stare" hint-size="140px,48px"></dc-import>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":800,"height":470}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

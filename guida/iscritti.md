@@ -114,6 +114,10 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   calcola l'app. Anche qui vedi **PAGATO** al ritorno, e la segreteria prepara
   la ricevuta, che trovi in DOCUMENTI, sotto RICEVUTE. Il bonifico per ora
   si fa in palestra.
+  Quel che hai già pagato in segreteria (un bonifico, o in palestra) conta
+  subito, anche prima che sia pronta la ricevuta: la quota risulta **Pagata**,
+  o pagata in parte, e qui non si paga di nuovo; per quel che manca, chiedi in
+  segreteria. Lo stesso per un corso.
   Se sei iscritto a un corso a pagamento e non l'hai ancora pagato (o è finito il
   trimestre), sotto c'è la sezione **CORSI**: un riquadro per corso, col nome, la
   formula (**ANNUALE** o **TRIMESTRE**), la cifra e **PAGA … € CON SATISPAY**. La
@@ -121,7 +125,9 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   lo stesso trimestre di prima. Se per quel corso c'è uno sconto o più corsi
   insieme, il riquadro dice **PIÙ CORSI**: il prezzo lo fa la segreteria, chiedi
   lì o paga in palestra. Tornato da Satispay vedi **PAGATO**, e la segreteria
-  prepara la ricevuta. Un corso pagato non si offre più. In prova (`?prova`) Satispay non si apre: chiede
+  prepara la ricevuta. Un corso pagato non si offre più, come lo vede la segreteria: anche se
+  la ricevuta o il bonifico lo chiamano col nome del listino («Annuale Fitness 2 giorni») o
+  il trimestre pagato comincia più avanti. In prova (`?prova`) Satispay non si apre: chiede
   conferma e il pagamento è finto.
   Il titolare del nucleo (tab FAMIGLIA, o la pagina del familiare) vede **PAGA …
   € PER** *nome* (il resto) e **PAGA LA QUOTA … PER** *nome* (e **PAGA … € PER** *nome* in CORSI) per i familiari

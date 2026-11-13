@@ -206,6 +206,8 @@ const puckNativo = (r) => r.selettori.some((x) => /^\.sito-puck|^\.sito-(due|bar
 const schedaAffiancata = (r) => r.selettori.some((x) => /^\.sg-due-colonne( > \.sg-scheda)?$|^\.sg-torna$|^\.sg-lista$|^\.sg-scheda$/.test(x))
 // Le schede dell'iscritto e del personale non vanno più su due colonne: `.sg-scheda-griglia` è tolta di proposito, sia la regola sia quella dei telefoni.
 const grigliaScheda = (r) => r.selettori.includes('.sg-scheda-griglia')
+// Il ✓ davanti alla voce scelta dei Segmenti è tolto di proposito (`prova:look`): niente segni davanti a cartellini e tasti.
+const segmentiSenzaSegno = (r) => r.selettori.includes(".sg-segmenti > button[aria-pressed='true']::before")
 // La griglia della SETTIMANA ha ora una linea per fascia e niente tratteggio nelle caselle vuote: le cinque regole di prima (griglia, ora, casella, casella vuota, tessera chiusa) sono cambiate di proposito.
 const settimanaVecchia = (r) => r.selettori.some((x) => /^\.sg-griglia$|^\.sg-ora$|^\.sg-casella$|^\.sg-casella\[data-vuota='true'\]$|^\.sg-lezione\[data-chiusa='true'\]$/.test(x))
 // La riga dei movimenti ha ora la colonna della casella per scegliere (44px davanti, anche sul telefono): le tre regole di prima di `.sg-riga-movimento` (griglia, telefono: colonne e colonne nascoste) sono cambiate di proposito.
@@ -269,11 +271,16 @@ const listinoLargo = (r) => r.selettori.includes('.sg-listino') && /max-width:\s
 // ▲ ▼ ↕ delle colonne sono icone (`.sg-ordina-segno` non c'è più) e l'icona del contatto in ISCRITTI è la stessa dell'elenco unico.
 // L'anteprima «striscia dei corsi» 560×58 di «Dove stanno le persone» non era un taglio vero del sito: è tolta di proposito, al suo posto `.sito-punto-scheda` (`prova:sito-immagini`).
 const strisciaDeiCorsi = (r) => r.selettori.includes('.sito-punto-striscia')
+// MOVIMENTI ha i filtri semplici (`prova:filtri-movimenti`): niente più menu delle casse, pillole dei filtri accesi, chip e somme in una frase; i totali sono una striscia di cifre.
+const filtriMovimentiSemplici = (r) => r.selettori.some((x) => /\.sg-(pillola|elenco-somme|movimento-chip|filtro-casse|filtro-menu\.sg-casse)\b/.test(x))
 const iconeDappertutto = (r) => r.selettori.some((x) => /^\.rule-label$|^\.mie-ore-stato$|^\.tb-tasto\[data-piccolo='true'\]$|\.sg-ordina-segno$|^\.sg-icona-contatto$/.test(x))
 const senzaSalti = (r) => (/--cond:\s*'Big Shoulders Display', 'Arial Narrow'/.test(r.corpo) && /--body:\s*Inter, 'Helvetica Neue'/.test(r.corpo)) || r.selettori.includes('.iscrizioni-costi-attesa > *')
 // La scheda di una gara ha le righe degli atleti a due piani (`.sg-gara-atleta`, `prova:gare`): la tabella a colonne `.sg-riga-atleta-gara` e le sue regole (anche quelle condivise con `.sg-riga-gara`) sono tolte di proposito.
 // La finestra del movimento aperto è a colonna unica (testata, suggerimento a due colonne, piede): `.sg-movimento-colonne` e le sue regole sono tolte di proposito.
 const movimentoAColonnaUnica = (r) => r.selettori.some((x) => /sg-movimento-colonne/.test(x))
+// La scheda di un movimento mette in evidenza la persona (`prova:contabilita`, 96): la testata con l'importo a destra e la fila dei dati
+// sono tolte di proposito, e sul telefono il piede va in colonna rovesciata (Salva in cima), con una regola sua.
+const movimentoConPersona = (r) => r.selettori.some((x) => /^\.sg-movimento-(testata|dati|importo)\b/.test(x)) || r.selettori.join(',') === '.sg-movimento-piede,.sg-movimento-gruppo'
 const schedaGaraRivista = (r) => r.selettori.some((x) => /sg-riga-atleta-gara/.test(x))
 // La segreteria in ordine (`prova:segreteria-ordine`): le schede sono linguette sottolineate, `.sg-link` e `.sg-ordina` sono alti 44px
 // da sé (niente più ::after che allarga il tocco), la testata tiene i tasti a destra, il segno dello stato è a 14px e sta in styles.css,
@@ -316,7 +323,9 @@ const PAROLE_AL_TELEFONO = new Set([
   ".sg-riga-iscritti .sg-stato-elenco{justify-content: center;}",
   ".sg-riga-iscritti .sg-segno-elenco[data-tono='nota']::after{content: '–' / '';}",
 ])
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !segreteriaInOrdine(r) && !PAROLE_AL_TELEFONO.has(chiaveR(r)) && !senzaSalti(r) && !schedaGaraRivista(r) && !movimentoAColonnaUnica(r) && !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !rigaBancaConVoce(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !cosaServeSenzaCaselle(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !temiTolti(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !statCorsoAlto(r) && !iscrittiFamiglia(r) && !listinoLargo(r) && !finestraLarga(r) && !schedeTabletConIcona(r) && !iconeDappertutto(r) && !strisciaDeiCorsi(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// L'appello rivisto (`prova:istruttori-look`): AZZERA sta nel menu ⋯, CHIUDI nella barra ferma in fondo, quindi il tasto accanto al giallo, il link «CHIUDI IN FONDO ↓» e il blocco in fondo alla lista sono tolti di proposito.
+const appelloRivisto = (r) => r.selettori.some((x) => /^\.azzera(\[|$)|^\.appello-vai(::after)?$|^\.appello-fine$/.test(x))
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !segreteriaInOrdine(r) && !PAROLE_AL_TELEFONO.has(chiaveR(r)) && !senzaSalti(r) && !schedaGaraRivista(r) && !movimentoConPersona(r) && !movimentoAColonnaUnica(r) && !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !rigaBancaConVoce(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !cosaServeSenzaCaselle(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !temiTolti(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !segmentiSenzaSegno(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !statCorsoAlto(r) && !iscrittiFamiglia(r) && !listinoLargo(r) && !finestraLarga(r) && !schedeTabletConIcona(r) && !iconeDappertutto(r) && !strisciaDeiCorsi(r) && !appelloRivisto(r) && !filtriMovimentiSemplici(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

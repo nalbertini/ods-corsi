@@ -26,7 +26,7 @@ risposta, poi chiude, e quello che hai scritto non si perde. Dopo la
 chiusura il filo scende in fondo all'elenco, spento, con **Riapri**, e
 l'avviso in basso ha **Riapri** anche lui. **Riapri** riapre la
 segnalazione, ma la risposta mandata resta. Cambiando voce o ricaricando la
-pagina le chiuse si ritrovano con **Anche le chiuse**.
+pagina le chiuse si ritrovano con **Tutte**, sotto **MOSTRA**.
 
 Nel filo i messaggi degli altri hanno una riga a sinistra, così si vede chi
 ha scritto cosa.
@@ -52,7 +52,7 @@ Il menu dice quante aspettano una risposta della segreteria, aperte e con
 l'ultimo messaggio di un altro: **SEGNALAZIONI · 2**, e nell'elenco sono segnate
 **Da rispondere**, in giallo, con una riga gialla a sinistra. In cima ci
 sono quelle che aspettano la segreteria, poi le altre aperte, ognuna dalla più mossa
-di recente; **Anche le chiuse** mostra in fondo anche le chiuse.
+di recente; **MOSTRA** sceglie **Aperte** o **Tutte**: con **Tutte** si vedono in fondo anche le chiuse.
 
 ## Allegare un file
 

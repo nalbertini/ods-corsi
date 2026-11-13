@@ -59,8 +59,8 @@ Non ferma la ricevuta: si fa lo stesso. Se la ricevuta è già fatta e poi si
 segna **C'era**, la riga diventa **NON TORNA PIÙ**: si annulla e si rifà. Se è
 già **PAGATA**, prima si annulla il pagamento in CONTABILITÀ, poi si rifà la
 ricevuta del mese giusto e si ripaga. Chi nel mese ha solo lezioni senza la
-sua firma sta solo in ASPETTANO UNA FIRMA. La pastiglia **Manca la firma**, in
-alto, fa vedere solo quelle.
+sua firma sta solo in ASPETTANO UNA FIRMA. Sotto **MOSTRA**, **Manca la firma**
+fa vedere solo quelle.
 
 Nei corsi dove gli istruttori si alternano, in [Corsi](corsi.md) si spunta
 **Si alternano: a lezione basta uno**: lì, se uno ha firmato, agli altri non
@@ -112,8 +112,8 @@ c'è lo stesso, con **SOLO EXTRA**. Si segnano firmate, si ristampano e si
 pagano come quella del mese, dalla loro riga; il loro nome le apre per
 cambiarle. Finché non è pagata, **Modifica** cambia per cosa
 e quanto (e la ricevuta torna da firmare: si ristampa e si rifà firmare), e
-**Annulla** la toglie (resta nel registro, annullata). La pastiglia
-**Extra**, in alto, fa vedere solo i tecnici che ne hanno.
+**Annulla** la toglie (resta nel registro, annullata). Sotto **MOSTRA**,
+**Extra** fa vedere solo i tecnici che ne hanno; **Tutti** li rimette tutti.
 
 ## Il pagamento
 
@@ -125,6 +125,20 @@ riepilogo di quello che si scrive in CONTABILITÀ: un'uscita sola, con la voce
 **Compensi istruttori**, il totale e la descrizione «Compenso · Nome Cognome ·
 set, ott 2026»; un'extra ci aggiunge il suo «per cosa». **Segna pagato** la scrive, e le ricevute diventano **PAGATA**
 con la data.
+
+Se il bonifico è già arrivato in CONTABILITÀ dall'[importazione della
+banca](../amministrazione/contabilita.md), il pannello lo dice in **FORSE È GIÀ
+IN BANCA**: un'uscita del Conto Corrente con lo stesso importo delle ricevute
+spuntate, il nome e il cognome del tecnico nella descrizione, entro 45 giorni
+dalla fine del mese più recente, ancora Da classificare (o già su Compensi
+istruttori) e non pagamento di altre ricevute. Sotto, in **STESSO IMPORTO, NOME
+NON TROVATO**, quelle uguali ma con una sigla al posto del nome: si spuntano solo
+se si sa che sono lui. Si ricalcola a ogni spunta e non si sceglie mai da sé.
+Spuntato il bonifico, giorno e cassa sono i suoi e il tasto diventa **Abbina al
+bonifico**: non nasce un'uscita nuova, il bonifico prende il tecnico e la voce
+Compensi istruttori (la descrizione della banca resta) e le ricevute diventano
+**PAGATA** il giorno del bonifico. Così lo stesso pagamento non conta due
+volte.
 
 Una ricevuta pagata non si annulla da qui: prima si annulla il pagamento in
 [Contabilità](../amministrazione/contabilita.md) → MOVIMENTI, e le ricevute

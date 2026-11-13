@@ -275,7 +275,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'salva_bozza_sito')
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'sito_pagine_pubbliche')),
   ('53-codice-fiscale-stesso-nome.sql', 'accogliere aggancia dal codice fiscale solo chi ha lo stesso nome',
-    exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%lower(p.cognome) = lower(r.cognome)%')),
+    exists (select 1 from dentro where nome = 'accogli_iscrizione' and (corpo like '%lower(p.cognome) = lower(r.cognome)%' or corpo like '%nome_compatto(p.cognome) = nome_compatto(r.cognome)%'))),
   ('90-omonimi-codice-fiscale.sql', 'accogliere non aggancia l''omonimo che ha già un altro codice fiscale',
     exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%a.codice_fiscale <> r.codice_fiscale%')),
   ('54-pagamenti-diretti.sql', 'i pagamenti fatti a mano, senza ricevuta',
@@ -699,6 +699,44 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'segna_dal_tablet' and corpo like '%altro_turno%')
     and exists (select 1 from dentro where nome = 'statistiche' and corpo like '%presente_altrove%')
     and exists (select 1 from dentro where nome = 'iscritto_presenze' and corpo like '%presente_altrove%')
-    and exists (select 1 from dentro where nome = 'frequenze' and corpo like '%bool_or%'))
+    and exists (select 1 from dentro where nome = 'frequenze' and corpo like '%bool_or%')),
+  -- Rifà funzioni di 103, 105, 106 e 141: rilanciando quelli, il controllo torna «manca».
+  ('146-pagato-in-segreteria.sql', 'quel che la segreteria ha già (bonifico assegnato, pagamento a mano) conta anche per l''iscritto',
+    exists (select 1 from dentro where nome = 'quota_della_segreteria')
+    and exists (select 1 from dentro where nome = 'quota_importo' and corpo like '%quota_in_segreteria%')
+    and exists (select 1 from dentro where nome = 'saldo_mancano' and corpo like '%quota_in_segreteria%')
+    and exists (select 1 from dentro where nome = 'corso_importo' and corpo like '%corso_in_segreteria%')
+    and exists (select 1 from dentro where nome = 'satispay_corsi_chi' and corpo like '%corso_in_segreteria%')
+    and exists (select 1 from dentro where nome = 'iscritto_scheda_di' and corpo like '%quota_della_segreteria%')),
+  -- Rifà due funzioni del 77: rilanciando quello, il controllo torna «manca».
+  ('147-chat-bonifici-assegnati.sql', 'nei conti della chat un bonifico assegnato conta una volta sola',
+    coalesce((select pg_get_function_result(to_regprocedure('public.chat_ricevute()'))), '') like '%movimento_id%'
+    and coalesce((select pg_get_function_result(to_regprocedure('public.chat_pagamenti_diretti()'))), '') like '%movimento_id%'),
+  -- Rifà `accogli_iscrizione` di 100: rilanciando 06, 44, 45, 53, 90, 95, 99 o 100, il controllo torna «manca».
+  ('148-nome-compatto.sql', 'accogliere riconosce lo stesso nome scritto con un altro apostrofo, accento o trattino',
+    exists (select 1 from dentro where nome = 'nome_compatto')
+    and exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%nome_compatto(p.cognome) = nome_compatto(r.cognome)%')),
+  -- Rifà `anteprima_unione` del 29: rilanciando quello, il controllo torna «manca».
+  ('149-unione-non-si-ferma.sql', 'unire due schede non si ferma su presenze segnalate e pagamenti online in attesa; l''anteprima conta di più',
+    exists (select 1 from pg_trigger where tgname = 'presenze_segnalate_unione')
+    and exists (select 1 from pg_trigger where tgname = 'pagamenti_satispay_unione')
+    and exists (select 1 from dentro where nome = 'anteprima_unione' and corpo like '%pagamentiOnline%')),
+  ('150-corso-archiviato-il.sql', 'i conti di un corso archiviato si fermano al giorno dell''archiviazione',
+    exists (select 1 from pg_trigger where tgname = 'corsi_archiviato_il' and tgrelid = 'public.corsi'::regclass)),
+  -- Rifà `abbina_ricevuta_movimento` del 135: se si rilancia 135 dopo, va rilanciato anche questo.
+  ('151-abbina-famiglia-da-classificare.sql', 'il bonifico del genitore o Da classificare si abbina alla ricevuta in Bonifico',
+    position('da_classificare' in pg_get_functiondef('public.abbina_ricevuta_movimento(uuid,uuid)'::regprocedure)) > 0),
+  -- Rifà funzioni di 105, 106 e 146: rilanciando quelli, il controllo torna «manca».
+  ('152-corso-gia-pagato.sql', '«questo corso è già pagato» nel database come in segreteria (nomi del listino, voci che partono domani, fuori app fino a fine stagione)',
+    exists (select 1 from dentro where nome = 'nomi_del_corso')
+    and exists (select 1 from dentro where nome = 'corso_in_segreteria' and corpo like '%nome_corso%')
+    and exists (select 1 from dentro where nome = 'corso_importo' and corpo like '%nomi_del_corso%' and corpo like '%corso_in_segreteria%')
+    and exists (select 1 from dentro where nome = 'quota_importo' and corpo like '%fine_fuori_app%' and corpo like '%quota_in_segreteria%')
+    and exists (select 1 from dentro where nome = 'satispay_corsi_chi' and corpo like '%senzaPrezzoVaBene%' and corpo like '%corso_in_segreteria%')),
+  -- Rifà `abbina_ricevuta_movimento` del 151: se si rilancia 135 o 151 dopo, va rilanciato anche questo.
+  ('153-collegati-prima-nome.sql', 'un Da classificare si abbina solo se la causale nomina la famiglia della ricevuta',
+    position('parole_pagatori(m.descrizione)' in pg_get_functiondef('public.abbina_ricevuta_movimento(uuid,uuid)'::regprocedure)) > 0),
+  ('154-compensi-dal-bonifico.sql', 'i compensi si pagano con un bonifico già in banca',
+    to_regprocedure('public.abbina_compensi_movimento(uuid[],uuid)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

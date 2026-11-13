@@ -10,6 +10,149 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.244.3 — 12 novembre 2026
+
+### Modificato
+
+- Quota più prezzo di un corso: niente avviso «fuori listino»
+
+## 0.244.2 — 12 novembre 2026
+
+### Risolto
+
+- Il bonifico di chi è segnato pagato a mano si assegna a quota e corsi
+
+## 0.244.1 — 12 novembre 2026
+
+### Modificato
+
+- Il testo della banca accanto al suggerimento
+
+## 0.244.0 — 12 novembre 2026
+
+### Novità
+
+- L'import della banca abbina il bonifico alla ricevuta già fatta
+
+## 0.243.0 — 12 novembre 2026
+
+### Novità
+
+- Nel bonifico si abbina la ricevuta già fatta
+
+## 0.242.12 — 12 novembre 2026
+
+### Modificato
+
+- Movimenti: la colonna TIPO dice la voce, senza «Dalla banca»
+
+## 0.242.11 — 12 novembre 2026
+
+### Risolto
+
+- Un compenso pagato con un bonifico già arrivato dalla banca non si conta più due volte
+
+## 0.242.10 — 12 novembre 2026
+
+### Risolto
+
+- COLLEGATI PRIMA propone un bonifico Da classificare solo con la ricevuta di chi la causale nomina
+
+## 0.242.9 — 12 novembre 2026
+
+### Risolto
+
+- Un corso già pagato non risulta più da pagare e non si paga di nuovo online
+- Dopo «Salva il destinatario» il movimento resta aperto per scegliere voce e persona
+
+## 0.242.8 — 12 novembre 2026
+
+### Risolto
+
+- Lo stesso bonifico non conta più due volte in CONTABILITÀ, anche se la ricevuta è di un familiare o il bonifico è da classificare
+
+## 0.242.7 — 12 novembre 2026
+
+### Risolto
+
+- Un corso archiviato non fa più risultare «scaduto» chi l'aveva pagato, né parte il sollecito
+
+## 0.242.6 — 12 novembre 2026
+
+### Risolto
+
+- Unire due schede non si ferma più su una presenza segnalata o un pagamento online in attesa, e l'anteprima conta anche tessere, gare e pagamenti
+
+## 0.242.5 — 12 novembre 2026
+
+### Risolto
+
+- Aggiungere un istruttore che è anche allievo non sposta più la scheda del figlio né ne fa una doppia
+
+## 0.242.4 — 12 novembre 2026
+
+### Risolto
+
+- Accogliendo una richiesta, «D’Amico» e «D'Amico» sono la stessa persona e non nasce una seconda scheda
+
+## 0.242.3 — 12 novembre 2026
+
+### Risolto
+
+- Nei conti chiesti a Claude un bonifico assegnato a un iscritto conta una volta sola, come in BILANCIO
+
+## 0.242.2 — 12 novembre 2026
+
+### Risolto
+
+- Chi ha pagato in segreteria con un bonifico, prima della ricevuta, non risulta più da pagare nell'area iscritti e non paga due volte
+
+## 0.242.1 — 12 novembre 2026
+
+### Risolto
+
+- In MOVIMENTI si vede anche lo storico di prima della partenza delle casse
+
+## 0.242.0 — 12 novembre 2026
+
+### Novità
+
+- La scheda di un movimento mette in evidenza la persona
+
+## 0.241.0 — 12 novembre 2026
+
+### Novità
+
+- In MOVIMENTI torna il filtro per voce, e i filtri stanno su una riga
+
+## 0.240.2 — 12 novembre 2026
+
+### Risolto
+
+- Nell'appello, chi entra con + PROVA si vede subito e il menu ⋯ non perde la tastiera
+
+## 0.240.1 — 12 novembre 2026
+
+### Risolto
+
+- Nell'appello gli errori dicono cosa fare, senza i testi tecnici del server
+
+## 0.240.0 — 12 novembre 2026
+
+### Novità
+
+- L'appello è più comodo da usare con tanti nomi
+
+### Modificato
+
+- Importa dalla banca più snella: righe a gruppi, tasti a destra, meno testo
+
+## 0.239.0 — 12 novembre 2026
+
+### Novità
+
+- Nei corsi con due lezioni lo stesso giorno, chi è presente a una non si segna nell'altra
+
 ## 0.238.3 — 11 novembre 2026
 
 ### Modificato

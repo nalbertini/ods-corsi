@@ -3,7 +3,6 @@ import { piano } from './nomi'
 import { csv } from './vestiario'
 import { righeDaRicevute, righeDirette, type PagamentoDiretto, type RigaPagamento } from './pagamenti'
 import { righeSatispay, type PagamentoSatispay } from './satispay'
-import type { FiltroPersona } from './movimentiPersona'
 
 /**
  * La contabilità di base, per chi cura i conti (`supabase/59-contabilita.sql`):
@@ -481,6 +480,8 @@ export interface RigaEstratto {
   uscita: number
   /** Il saldo delle casse scelte dopo questo movimento. */
   saldo: number
+  /** Prima del «dal» della cassa: si vede in MOVIMENTI e conta in BILANCIO, ma non nel saldo. */
+  storico?: boolean
 }
 
 export interface EstrattoConto {
@@ -572,56 +573,18 @@ export function filtraMovimenti(righe: RigaMovimento[], f: FiltroMovimenti): Rig
   })
 }
 
-export type Periodo = 'mese' | 'scorso' | 'anno' | 'tutto'
-
-/** Il periodo con cui si apre l'elenco: tutto l'anno, non il mese, così un pagamento di qualche mese fa non resta nascosto. */
-export const PERIODO_INIZIALE: Periodo = 'anno'
-
-export interface FiltriElenco {
-  testo: string
-  periodo: Periodo
-  tipo: string
-  cassaId: string
-  voce: string
-  persona: FiltroPersona
-  annullati: boolean
-}
-
-export const FILTRI_INIZIALI: FiltriElenco = { testo: '', periodo: PERIODO_INIZIALE, tipo: '', cassaId: '', voce: '', persona: '', annullati: false }
-
-const NOME_TIPO: Record<string, string> = { entrata: 'Entrate', uscita: 'Uscite', giroconto: 'Giroconti' }
-const NOME_PERSONA: Record<string, string> = { collegati: 'Collegati', da_decidere: 'Da decidere', senza_scheda: 'Senza scheda', senza_persona: 'Quote e corsi senza persona' }
-
-/** Le pillole della riga di stato: un filtro acceso, una pillola con la sua ✕. `mese` è il nome del mese in corso («Ottobre 2026»). */
-export function filtriAccesi(f: FiltriElenco, nomi: { nomeCassa: (id: string) => string; mese: string }): { chiave: keyof FiltriElenco; testo: string }[] {
-  const periodo = { mese: nomi.mese, scorso: 'Mese scorso', anno: 'Tutto l’anno', tutto: 'Tutto' }[f.periodo]
-  const tutte: [keyof FiltriElenco, boolean, string][] = [
-    ['testo', f.testo.trim() !== '', `«${f.testo.trim()}»`],
-    ['periodo', f.periodo !== PERIODO_INIZIALE, periodo],
-    ['tipo', f.tipo !== '', NOME_TIPO[f.tipo] ?? f.tipo],
-    // Una cassa non più in elenco: la pillola non resta vuota, si può ancora togliere.
-    ['cassaId', f.cassaId !== '', nomi.nomeCassa(f.cassaId) || 'Cassa'],
-    ['voce', f.voce !== '', f.voce],
-    ['persona', f.persona !== '', NOME_PERSONA[f.persona] ?? f.persona],
-    ['annullati', f.annullati, 'Con gli annullati'],
-  ]
-  return tutte.filter(([, acceso]) => acceso).map(([chiave, , testo]) => ({ chiave, testo }))
-}
-
-/** La ✕ di una pillola: quel filtro torna com'era alla partenza, gli altri restano. */
-export const togliFiltro = (f: FiltriElenco, chiave: keyof FiltriElenco): FiltriElenco => ({ ...f, [chiave]: FILTRI_INIZIALI[chiave] })
-
 export type IconaConti = 'banconota' | 'banca' | 'telefono' | 'tessera' | 'persone' | 'lampadina' | 'manubrio' | 'casa'
 
 /** L'icona accanto al nome della cassa, per le tre casse della palestra; le altre restano senza. */
 const ICONE_CASSE: Record<string, IconaConti> = { [NOME_CASSA_CONTANTI]: 'banconota', [NOME_CASSA_CONTO]: 'banca', [NOME_CASSA_SATISPAY]: 'telefono', [NOME_CASSA_CARTA]: 'tessera' }
 export const iconaCassa = (nome: string): IconaConti | null => ICONE_CASSE[nome] ?? null
 
-/** Il tipo di un movimento, per la colonna TIPO dell'elenco: il nome e l'icona (quelle di `ICONE_CONTI`). */
-export const tipoMovimento = (r: Pick<RigaMovimento, 'origine' | 'tipo'>): { nome: string; icona: IconaConti | 'frecce' } =>
-  r.tipo === 'giroconto' ? { nome: 'Giroconto', icona: 'frecce' }
-  : r.origine !== 'movimento' ? { nome: 'Incasso iscritto', icona: 'tessera' }
-  : { nome: r.tipo === 'entrata' ? 'Entrata' : 'Uscita', icona: 'banconota' }
+/** Il tipo di un movimento, per la colonna TIPO dell'elenco: la voce con la sua icona; senza voce, il genere del movimento. */
+export const tipoMovimento = (r: Pick<RigaMovimento, 'origine' | 'tipo' | 'voce'>): { nome: string; icona: IconaConti | 'frecce' } => {
+  if (r.tipo === 'giroconto') return { nome: 'Giroconto', icona: 'frecce' }
+  const genere = r.origine !== 'movimento' ? { nome: 'Incasso iscritto', icona: 'tessera' as const } : { nome: r.tipo === 'entrata' ? 'Entrata' : 'Uscita', icona: 'banconota' as const }
+  return r.voce ? { nome: r.voce, icona: iconaVoce(r.voce) ?? genere.icona } : genere
+}
 
 /**
  * Da dove viene una riga, per la nota nell'elenco e nel movimento aperto: tutti i movimenti si correggono allo stesso modo, qualunque sia l'origine.
@@ -648,11 +611,9 @@ export function testoConDestinatario(descrizioneBanca: string, notaAttuale: stri
   return { descrizione, nota: nota.includes(traccia) ? nota : nota ? `${nota}\n${traccia}` : traccia }
 }
 
-/** La linea sotto il nome di una riga: la voce, e la persona solo se non è già il nome (negli incassi lo è). */
-export const lineaVoce = (r: Pick<RigaMovimento, 'descrizione' | 'voce'>, persona?: string): string => {
-  const uguale = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
-  return [r.voce, persona && !uguale(persona, r.descrizione) ? persona : ''].filter(Boolean).join(' · ')
-}
+/** La linea sotto il nome di una riga: la persona, solo se non è già il nome (negli incassi lo è). La voce sta nella colonna TIPO. */
+export const lineaPersona = (r: Pick<RigaMovimento, 'descrizione'>, persona?: string): string =>
+  persona && persona.trim().toLowerCase() !== r.descrizione.trim().toLowerCase() ? persona : ''
 
 // Le voci le scrive chi cura i conti: l'icona si trova solo per le parole che si riconoscono, il resto resta senza.
 const ICONE_VOCI: [RegExp, IconaConti][] = [
@@ -670,11 +631,6 @@ export const iconaVoce = (nome: string | null | undefined): IconaConti | null =>
   return ICONE_VOCI.find(([parole]) => parole.test(n))?.[1] ?? null
 }
 
-/** Quanti filtri sono diversi dalla partenza: serve a dire «N filtri attivi» e a mostrare «Togli i filtri». */
-export function filtriAttivi(f: FiltriElenco): number {
-  return [f.testo.trim() !== '', f.periodo !== PERIODO_INIZIALE, f.tipo !== '', f.cassaId !== '', f.voce !== '', f.persona !== '', f.annullati].filter(Boolean).length
-}
-
 /** Il movimento appena scritto com'è nell'elenco, per sapere se i filtri lo nascondono. */
 export const rigaAppenaScritta = (r: Pick<RigaMovimento, 'tipo' | 'data' | 'importo' | 'descrizione' | 'cassaId' | 'cassaAId' | 'personaId'> & { voce?: string | null }): RigaMovimento => ({
   id: 'nuovo',
@@ -684,12 +640,9 @@ export const rigaAppenaScritta = (r: Pick<RigaMovimento, 'tipo' | 'data' | 'impo
   ...r,
 })
 
-/**
- * Un movimento appena scritto resta fuori dall'elenco se i filtri lo escludono: la schermata lo dice, se no sembra perso.
- * Con una persona scelta si dice sempre: il filtro guarda i collegamenti letti prima di scriverlo.
- */
-export function nonSiVedra(r: RigaMovimento, f: Pick<FiltroMovimenti, 'testo' | 'dal' | 'al' | 'tipo' | 'cassaId' | 'voce'> & { persona?: string }): boolean {
-  return !!f.persona || filtraMovimenti([r], { ...f, annullati: false }).length === 0
+/** Il «Salva» del movimento aperto: la voce e il testo si scrivono a parte, e solo se sono cambiati (niente = tasto spento). */
+export function cosaSalvoMovimento(r: { descrizione: string; nota?: string | null }, ora: { voceCambiata: boolean; descrizione: string; nota: string }): { voce: boolean; testo: boolean } {
+  return { voce: ora.voceCambiata, testo: ora.descrizione.trim() !== r.descrizione.trim() || ora.nota.trim() !== (r.nota ?? '').trim() }
 }
 
 /** I totali per voce, le entrate prima e in ciascun gruppo la più grande: senza giroconti e annullati. */
@@ -898,6 +851,8 @@ export interface IncassoPerConti {
   metodo: string
   voce: string
   annullato: boolean
+  /** Il bonifico da cui vengono (135): quei soldi sono già nel movimento, e `incassiDerivati` li lascia fuori. */
+  movimentoId?: string
 }
 
 /**
@@ -913,12 +868,14 @@ export const incassiPerConti = (incassi: IncassoPerConti[], casse: Cassa[]): Rig
  * intestatario, note né persona: il server non li legge nemmeno.
  */
 export function incassiDaRighe(
-  ricevute: Array<{ voci: Array<{ descrizione: string; pagamenti: Array<{ data: string; importo: number; metodo: string }> }>; annullata_il: string | null }>,
-  diretti: Array<{ data: string; importo: number; metodo: string; voce: string; annullato_il: string | null }>,
+  ricevute: Array<{ voci: Array<{ descrizione: string; pagamenti: Array<{ data: string; importo: number; metodo: string }> }>; annullata_il: string | null; movimento_id?: string | null }>,
+  diretti: Array<{ data: string; importo: number; metodo: string; voce: string; annullato_il: string | null; movimento_id?: string | null }>,
 ): IncassoPerConti[] {
+  // `movimento_id` manca finché il 147 non è lanciato: si conta come prima.
+  const bonifico = (id: string | null | undefined) => (id ? { movimentoId: id } : {})
   return [
-    ...ricevute.flatMap((r) => r.voci.flatMap((v) => v.pagamenti.map((p) => ({ data: p.data, importo: p.importo, metodo: p.metodo, voce: v.descrizione, annullato: r.annullata_il !== null })))),
-    ...diretti.map((d) => ({ data: d.data, importo: d.importo, metodo: d.metodo, voce: d.voce, annullato: d.annullato_il !== null })),
+    ...ricevute.flatMap((r) => r.voci.flatMap((v) => v.pagamenti.map((p) => ({ data: p.data, importo: p.importo, metodo: p.metodo, voce: v.descrizione, annullato: r.annullata_il !== null, ...bonifico(r.movimento_id) })))),
+    ...diretti.map((d) => ({ data: d.data, importo: d.importo, metodo: d.metodo, voce: d.voce, annullato: d.annullato_il !== null, ...bonifico(d.movimento_id) })),
   ]
 }
 

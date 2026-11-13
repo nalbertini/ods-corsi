@@ -3,14 +3,16 @@
 // una per persona. In CONTABILITÀ quei soldi restano una volta sola, nel movimento: `incassiDerivati` salta le righe
 // col movimento. Le stesse regole sono in `supabase/135-assegna-movimento.sql` e `136-assegna-una-volta.sql`, e per la modalità prova in
 // `segreteriaProva.ts`.
-import { NOME_CASSA_CONTANTI, VOCE_CORSI, VOCE_QUOTA, type Cassa, type MovimentoManuale, type VoceContabile } from './contabilita'
+import { NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, VOCE_CORSI, VOCE_QUOTA, voceDiSistema, type Cassa, type MovimentoManuale, type VoceContabile } from './contabilita'
 import type { PagamentoDiretto } from './pagamenti'
+import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import type { VoceStorico } from './movimentiPersona'
-import { QUOTA, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { QUOTA, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { statoCorsi, type VoceCorso } from './corsiDaPagare'
 import { stagioneDi } from './costi'
-import type { CorsoRef, Listino } from './listino'
+import { nomeCorso, type CorsoRef, type Listino } from './listino'
 import { pagamentoDi, type PersonaSeg } from './segreteria'
+import { nomeOGenitore } from './abbinaMovimenti'
 
 /**
  * I soldi sempre con i centesimi, come nel canvas: «50,00 €». Il punto delle migliaia anche a quattro cifre
@@ -95,6 +97,13 @@ export function proponiRipartizione(importo: number, dovuti: VoceDovuta[]): { ri
     resta -= quanto
   }
   return { righe, daAssegnare: resta }
+}
+
+/** Dopo «È questo bonifico»: il bonifico è di quella persona, quindi va prima sulle sue cose e quel che avanza sugli altri. */
+export function propostaDopoIlSi(importo: number, dovuti: VoceDovuta[], personaId: string): { righe: RigaAssegnata[]; daAssegnare: number } {
+  const sue = proponiRipartizione(importo, dovuti.filter((v) => v.personaId === personaId))
+  const altre = proponiRipartizione(sue.daAssegnare, dovuti.filter((v) => v.personaId !== personaId))
+  return { righe: [...sue.righe, ...altre.righe], daAssegnare: altre.daAssegnare }
 }
 
 const stessa = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
@@ -191,11 +200,28 @@ const giorni = (a: string, b: string) => Math.abs(Date.parse(`${a}T12:00:00Z`) -
 /** Una ricevuta fatta prima a parte si abbina a un bonifico entro tanti giorni. */
 export const GIORNI_ABBINAMENTO = 30
 
-/** Perché la ricevuta non è quella del bonifico, o null. I controlli sul movimento li fa `cosaNonVaMovimentoDaAssegnare`. */
-export function cosaNonVaAbbinamento(m: { id: string; importo: number; data: string; personaId?: string }, r: Ricevuta): string | null {
+// Nome e genitore servono solo per un bonifico senza persona: chi non li ha non è mai nominato nella causale.
+export type PersonaNucleo = { id: string; nucleo?: string; attiva: boolean; nome?: string; cognome?: string; genitoreNome?: string; genitoreCognome?: string }
+type MovimentoAbbinabile = { id: string; importo: number; data: string; personaId?: string; descrizione?: string }
+type RicevutaAbbinabile = Pick<Ricevuta, 'personaId' | 'pagato' | 'voci' | 'data'> & Partial<Pick<Ricevuta, 'annullataIl' | 'movimentoId' | 'numero' | 'anno'>>
+
+/**
+ * Perché la ricevuta non è quella del bonifico, o null. I controlli sul movimento li fa `cosaNonVaMovimentoDaAssegnare`
+ * (o `movimentoDaClassificareAbbinabile`). La ricevuta è della persona del bonifico o del suo nucleo, come per «Assegna»
+ * (`personeDelNucleo`); senza `persone` vale solo la stessa persona. Un bonifico Da classificare senza persona va solo se la
+ * causale nomina, con nome e cognome interi, qualcuno del nucleo della ricevuta o il suo genitore (`nomeOGenitore`, come
+ * `abbina_testo_banca`): se no lo stesso importo basta a proporre la ricevuta di una famiglia che non c'entra.
+ */
+export function cosaNonVaAbbinamento(m: MovimentoAbbinabile, r: RicevutaAbbinabile, persone: PersonaNucleo[] = []): string | null {
   if (r.annullataIl) return 'La ricevuta è annullata.'
   if (r.movimentoId && r.movimentoId !== m.id) return `La ricevuta n. ${r.numero}/${r.anno} è già abbinata a un altro bonifico.`
-  if (r.personaId !== m.personaId) return 'La ricevuta è di un’altra persona.'
+  if (m.personaId && r.personaId !== m.personaId && !personeDelNucleo(m.personaId, persone).includes(r.personaId ?? '')) return 'La ricevuta è di un’altra persona.'
+  // Un bonifico senza persona la prende dalla ricevuta: una ricevuta senza persona non gliela può dare.
+  if (!m.personaId && !r.personaId) return 'La ricevuta non ha una persona.'
+  if (!m.personaId && !personeDelNucleo(r.personaId ?? '', persone).some((id) => {
+    const p = persone.find((x) => x.id === id)
+    return !!p && nomeOGenitore({ nome: p.nome ?? '', cognome: p.cognome ?? '', genitoreNome: p.genitoreNome ?? null, genitoreCognome: p.genitoreCognome ?? null }, m.descrizione ?? '') !== null
+  })) return 'La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.'
   if (r.pagato !== m.importo) return 'La ricevuta e il bonifico non hanno lo stesso importo.'
   const pagamenti = r.voci.flatMap((v) => v.pagamenti)
   if (!pagamenti.length || pagamenti.some((p) => !stessa(p.metodo, 'Bonifico'))) return 'La ricevuta non è tutta pagata con bonifico.'
@@ -203,16 +229,21 @@ export function cosaNonVaAbbinamento(m: { id: string; importo: number; data: str
   return null
 }
 
+/** Le persone con il nome del genitore della loro anagrafica (`genitori()`), per la causale di un bonifico senza persona. */
+export const conGenitori = <P extends { id: string }>(persone: P[], genitori: Map<string, { genitoreNome?: string; genitoreCognome?: string }>) =>
+  persone.map((p) => ({ ...p, genitoreNome: genitori.get(p.id)?.genitoreNome, genitoreCognome: genitori.get(p.id)?.genitoreCognome }))
+
 /**
  * «Collegati prima»: per i bonifici collegati prima di questo cambio, la ricevuta già fatta a parte che è la sua.
  * Una ricevuta va a un solo bonifico, il più vicino di data; un bonifico prende una ricevuta sola.
  */
 export function abbinamentiProposti(
-  movimenti: Array<{ id: string; importo: number; data: string; personaId?: string }>,
+  movimenti: MovimentoAbbinabile[],
   ricevute: Ricevuta[],
+  persone: PersonaNucleo[] = [],
 ): Array<{ movimentoId: string; ricevutaId: string }> {
   const coppie = movimenti
-    .flatMap((m) => ricevute.filter((r) => !r.movimentoId && cosaNonVaAbbinamento(m, r) === null).map((r) => ({ m, r, d: giorni(r.data, m.data) })))
+    .flatMap((m) => ricevute.filter((r) => !r.movimentoId && cosaNonVaAbbinamento(m, r, persone) === null).map((r) => ({ m, r, d: giorni(r.data, m.data) })))
     .sort((a, b) => a.d - b.d || a.m.data.localeCompare(b.m.data) || a.r.numero - b.r.numero)
   const presiM = new Set<string>()
   const presiR = new Set<string>()
@@ -224,6 +255,69 @@ export function abbinamentiProposti(
     fuori.push({ movimentoId: m.id, ricevutaId: r.id })
   }
   return fuori
+}
+
+/**
+ * «Collegati prima» della scheda Da assegnare: i bonifici collegati senza niente ancora assegnato (abbinare una ricevuta
+ * a uno già diviso conterebbe due volte), ciascuno con la ricevuta già fatta che è la sua.
+ */
+export function collegatiPrima(manuali: MovimentoManuale[], diretti: PagamentoDiretto[], ricevute: Ricevuta[], casse: Cassa[], voci: VoceContabile[], oggi: string, persone: PersonaNucleo[] = []) {
+  const liberi = manuali.filter((m) => daAssegnare(m, diretti, ricevute) === m.importo && cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggi) === null)
+  return abbinamentiProposti(liberi, ricevute, persone)
+}
+
+/** Nel bonifico aperto, la ricevuta già fatta da proporgli: la stessa coppia di «Collegati prima», o undefined. */
+export function ricevutaGiaFatta(movimentoId: string, manuali: MovimentoManuale[], diretti: PagamentoDiretto[], ricevute: Ricevuta[], casse: Cassa[], voci: VoceContabile[], oggi: string, persone: PersonaNucleo[] = []): string | undefined {
+  return collegatiPrima(manuali, diretti, ricevute, casse, voci, oggi, persone).find((x) => x.movimentoId === movimentoId)?.ricevutaId
+}
+
+/**
+ * Un'entrata Da classificare del Conto Corrente si abbina a una ricevuta in Bonifico (151): prende persona e voce della
+ * ricevuta (se ne ha già una la tiene, e la ricevuta dev'essere del suo nucleo). Non Satispay, non annullata, non lo
+ * storico del vecchio programma di una stagione passata.
+ */
+export function movimentoDaClassificareAbbinabile(
+  m: Pick<MovimentoManuale, 'tipo' | 'voceId' | 'cassaId' | 'annullatoIl' | 'data' | 'origineImport' | 'satispayId'>,
+  casse: Cassa[],
+  voci: VoceContabile[],
+  oggi: string,
+): boolean {
+  return !m.annullatoIl && m.tipo === 'entrata' && !m.satispayId
+    && voci.find((v) => v.id === m.voceId)?.nome === VOCE_DA_CLASSIFICARE
+    && casse.find((c) => c.id === m.cassaId)?.nome === NOME_CASSA_CONTO
+    && !(m.origineImport?.startsWith('prima-nota:') && m.data < stagioneDi(oggi).dal)
+}
+
+/**
+ * I bonifici Da classificare con le ricevute che possono essere loro (la causale nomina la famiglia), dalla data più vicina:
+ * mai una sola scelta da sé, perché lo stesso nome può tornare in più ricevute. Le ricevute di `esclusi` (già proposte a un bonifico collegato) no.
+ */
+export function daClassificareDaAbbinare(movimenti: MovimentoAbbinabile[], ricevute: Ricevuta[], esclusi: Set<string> = new Set(), persone: PersonaNucleo[] = []): Array<{ movimentoId: string; ricevute: string[] }> {
+  return movimenti
+    .map((m) => ({
+      movimentoId: m.id,
+      ricevute: ricevute
+        .filter((r) => !r.movimentoId && !esclusi.has(r.id) && cosaNonVaAbbinamento(m, r, persone) === null)
+        .sort((a, b) => giorni(a.data, m.data) - giorni(b.data, m.data) || a.data.localeCompare(b.data) || a.numero - b.numero)
+        .map((r) => r.id),
+    }))
+    .filter((x) => x.ricevute.length > 0)
+}
+
+/** La voce che prende un bonifico Da classificare abbinato: «Quota associativa» se la ricevuta è solo quota, se no «Corsi e altri pagamenti». */
+export const voceDaRicevuta = (r: Pick<Ricevuta, 'voci'>) => (r.voci.length > 0 && r.voci.every((v) => voceDiSistema(v.descrizione) === VOCE_QUOTA) ? VOCE_QUOTA : VOCE_CORSI)
+
+/** I bonifici liberi per un abbinamento: non ancora assegnati, collegati su quota o corsi, o Da classificare (151). */
+export function bonificiLiberi(manuali: MovimentoManuale[], diretti: PagamentoDiretto[], ricevute: Ricevuta[], casse: Cassa[], voci: VoceContabile[], oggi: string): MovimentoManuale[] {
+  return manuali.filter((m) => daAssegnare(m, diretti, ricevute) === m.importo && (cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggi) === null || movimentoDaClassificareAbbinabile(m, casse, voci, oggi)))
+}
+
+/**
+ * Il modulo ricevuta in Bonifico: i bonifici del Conto Corrente ancora liberi (collegati e non assegnati, o Da
+ * classificare) che possono essere questi soldi, dal più vicino. `movimenti` sono già quelli liberi.
+ */
+export function bonificiPerRicevuta<T extends MovimentoAbbinabile>(movimenti: T[], bozza: RicevutaAbbinabile, persone: PersonaNucleo[] = []): T[] {
+  return movimenti.filter((m) => cosaNonVaAbbinamento(m, bozza, persone) === null).sort((a, b) => giorni(a.data, bozza.data) - giorni(b.data, bozza.data) || a.id.localeCompare(b.id))
 }
 
 /** Le entrate che hanno ancora soldi da assegnare, dalla più vecchia, e quanto fanno in tutto. */
@@ -264,6 +358,40 @@ export function quoteConAssegnazioni(quote: QuotaRicevuta[], quota: { prezzo: nu
   const base = prima.length ? Math.min(...prima) : quota.prezzo
   // Numero 0: non c'è una ricevuta, ci sono i bonifici. La scheda lo dice così.
   return [...quote, { anno: Number(quota.dal.slice(0, 4)), numero: 0, dal: quota.dal, al: quota.al, mancano: Math.max(0, base - messo) }]
+}
+
+/** Le righe attive di `pagamenti_diretti` (bonifici assegnati e pagamenti a mano, non ancora ricevuta) di una persona. */
+const attiveDi = (diretti: PagamentoDiretto[], personaId: string) => diretti.filter((d) => d.personaId === personaId && !d.annullatoIl)
+
+/** I centesimi già in segreteria sulla quota di questa stagione, come `quota_in_segreteria` (146): l'area iscritti non li fa pagare di nuovo. */
+export const quotaInSegreteria = (diretti: PagamentoDiretto[], personaId: string, oggi: string): number =>
+  attiveDi(diretti, personaId)
+    .filter((d) => eQuota(d.voce) && annoQuota(d.voce, d.data) === annoQuota('', oggi))
+    .reduce((s, d) => s + d.importo, 0)
+
+/**
+ * C'è già qualcosa in segreteria sull'annuale, il trimestre o il saldo del corso, nella stagione dei corsi di oggi (dal
+ * 1° luglio); un trimestre solo per i suoi tre mesi (`fineTrimestre`). Come `corso_in_segreteria` (146).
+ */
+export const corsoInSegreteria = (diretti: PagamentoDiretto[], personaId: string, nomi: string[], oggi: string): boolean =>
+  attiveDi(diretti, personaId).some((d) => {
+    // Coi nomi come `statoCorsi`: «Annuale Fitness 2 giorni», senza accenti e maiuscole (152).
+    const m = d.voce.trim().match(/^(annuale|trimestre|saldo)\s+(.+)$/i)
+    const formula = m && nomi.some((n) => !!nomeCorso(n) && nomeCorso(n) === nomeCorso(m[2])) ? m[1].toLowerCase() : undefined
+    return !!formula && stagioneDi(d.data).corsi.dal === stagioneDi(oggi).corsi.dal && (formula !== 'trimestre' || oggi <= fineTrimestre(d.data))
+  })
+
+/**
+ * Le quote dell'iscritto con quel che la segreteria ha già, come `quota_della_segreteria` (146): una quota in più,
+ * numero 0, con quel che manca dopo le ricevute della stessa stagione (se no dal prezzo). Come `quoteConAssegnazioni`.
+ */
+export function quoteConSegreteria(quote: QuotaRicevuta[], prezzo: number, diretti: PagamentoDiretto[], personaId: string, oggi: string): QuotaRicevuta[] {
+  const messo = quotaInSegreteria(diretti, personaId, oggi)
+  if (!messo) return quote
+  const q = stagioneDi(oggi).quota
+  const prima = quote.filter((x) => !!x.dal && x.dal <= q.al && (x.al ?? '9999-12-31') >= q.dal).map((x) => x.mancano)
+  const base = prima.length ? Math.min(...prima) : prezzo
+  return [...quote, { anno: annoQuota('', oggi), numero: 0, dal: q.dal, al: q.al, mancano: Math.max(0, base - messo) }]
 }
 
 /** Due periodi si toccano. Senza le date del prezzo vale la sola descrizione; una voce senza date non si sa di quando sia. */
@@ -350,6 +478,30 @@ export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, ogg
   }
   return fuori
 }
+
+/**
+ * Segnata pagata a mano nella scheda, senza un pagamento nell'app: per `dovutiDi` non ha niente da pagare, e il
+ * bonifico che è quel pagamento resterebbe da assegnare per sempre.
+ */
+export const pagatoAMano = (p: PersonaSeg, oggi: string) => {
+  const q = pagamentoDi(p, oggi)
+  return q.come === 'pagato' && q.fonte === 'fuori_app'
+}
+
+/** La persona come se la scheda non fosse segnata a mano: le cose da pagare di «È questo bonifico». La scheda non cambia. */
+export const senzaSegnoAMano = (p: PersonaSeg): PersonaSeg => ({ ...p, pagamento: { ...p.pagamento, stato: 'da_pagare' } })
+
+/** Le cose da pagare del nucleo; per chi ha detto «È questo bonifico» come se la scheda non fosse segnata a mano. */
+export const dovutiDelNucleo = (chi: PersonaSeg[], eQuesto: string[], corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }) =>
+  chi.flatMap((p) => dovutiDi(conAssegnazioni(eQuesto.includes(p.id) ? senzaSegnoAMano(p) : p, gia.diretti, listino, oggi), corsi, listino, oggi, gia))
+
+/** A chi del nucleo chiedere «Già pagato a mano»: segnato a mano, niente da pagare, non ha ancora risposto. Con la data del segno. */
+export const daChiedereAMano = (chi: PersonaSeg[], risposto: string[], dovuti: VoceDovuta[], diretti: PagamentoDiretto[], listino: Listino, oggi: string) =>
+  chi.flatMap((p) => {
+    if (risposto.includes(p.id) || dovuti.some((v) => v.personaId === p.id)) return []
+    const conDiretti = conAssegnazioni(p, diretti, listino, oggi)
+    return pagatoAMano(conDiretti, oggi) ? [{ persona: p, fino: pagamentoDi(conDiretti, oggi).fino ?? '' }] : []
+  })
 
 /** La stagione di una quota assegnata: quella detta nel nome della voce («2026/27»), se no quella del giorno. */
 const stagioneQuota = (voce: string, giorno: string) => {

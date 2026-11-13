@@ -29,7 +29,7 @@ I corsi archiviati stanno in fondo: «N corsi archiviati · mostra», e
 
 ## Nuovo corso, o cambiare un corso
 
-**NUOVO CORSO**, o un clic su un corso esistente:
+**CREA UN CORSO**, o un clic su un corso esistente:
 
 - **NOME**, **SALA**, **POSTI** — il prezzo del corso sta in [LISTINO](listino.md) e
   segue il corso se ne cambi il nome (vedi lì); la sala è quella di tutti i giorni che non
@@ -144,3 +144,10 @@ posti `2 IN PIÙ DEI POSTI` (rosso); senza posti indicati, `16 ISCRITTI`.
 
 **Archivia** toglie il corso dal calendario: le lezioni future senza appello
 spariscono, il registro resta. Si ripristina quando si vuole.
+
+Gli iscritti restano iscritti, e i conti del corso si fermano al giorno in cui
+l'hai archiviato: chi aveva il corso pagato fino a quel giorno non diventa più
+«scaduto» né riceve solleciti per quel corso, chi non l'aveva pagato resta da
+pagare per le lezioni già fatte (in ISCRITTI, DA FARE, COSA MANCA e nel
+sollecito). Chi si è iscritto dopo quel giorno non ha niente da pagare.
+Rimesso in calendario, il corso torna nei conti fino a oggi.

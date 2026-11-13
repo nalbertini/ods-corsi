@@ -5,8 +5,11 @@ import { creaSegreteriaProva } from './segreteriaProva'
 import { creaRichiesteProva, pagamentiSatispayProva, salvaSatispay } from './richiesteProva'
 import { minorenne } from './richieste'
 import { quoteDi } from './ricevute'
+import { corsoInSegreteria, quoteConSegreteria, quotaInSegreteria } from './assegna'
 import { satispayCorsiPerPersona, satispayQuotaPerPersona, satispayPerPersona, saldoPerPersona } from './satispay'
 import { LISTINO_PREDEFINITO, listinoDa, listinoProva, nomeCorso, voceDelCorso } from './listino'
+import { aPagamento, nomiDel } from './corsiDaPagare'
+import { STAGIONE } from './costi'
 import { SALDO_SPENTO } from './saldoSatispay'
 import { QUOTA_SPENTA } from './quotaSatispay'
 import { CORSO_SPENTO, prezzoDelCorso, type ChiPagaCorsi, type Formula } from './corsoSatispay'
@@ -52,7 +55,8 @@ export function creaIscrittoProva(): DatiIscritto {
       certificato: { scade: p.certificato?.scade, inAttesaIl: p.certificato?.inAttesa?.il, entro: (await creaSegreteriaProva().persone()).find((x) => x.id === p.id)?.certificato.entro },
       // Senza `nota`, come col database: le note della segreteria non si vedono.
       pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino },
-      quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
+      // Come `iscritto_scheda` (146): anche quel che la segreteria ha già, da un bonifico assegnato o a mano.
+      quote: quoteConSegreteria(quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)), Math.round((listinoDa(listinoProva()) ?? LISTINO_PREDEFINITO).quota * 100), a().pagamentiDiretti ?? [], p.id, oggi),
       // Come la segreteria (`segreteriaProva`): quel che Satispay ha già incassato e non è ancora in una ricevuta.
       satispay: satispayPerPersona(pagamentiSatispayProva()).get(p.id),
       saldo: saldoPerPersona(pagamentiSatispayProva()).get(p.id),
@@ -263,8 +267,11 @@ export function creaIscrittoProva(): DatiIscritto {
             annuale: importoCorsoProva(personaId, corso.id, 'annuale'),
             trimestre: importoCorsoProva(personaId, corso.id, 'trimestre'),
             segreteria: (v?.prezzi.length ?? 0) > 1,
-            aPagamento: !!v?.prezzi.some((x) => [x.annuale, x.trimestre, x.saldo].some((y) => (y ?? 0) > 0)),
+            aPagamento: aPagamento(l, corso),
             pagato: pagati.includes(corso.id),
+            assegnato: corsoInSegreteria(archivio.dati.pagamentiDiretti ?? [], personaId, nomiDel(l, corso), oggi),
+            voce: v?.corso,
+            etichette: v?.prezzi.flatMap((x) => (x.etichetta ? [x.etichetta] : [])) ?? [],
           }]
         }),
       }
@@ -292,7 +299,9 @@ function quotaDaPagareProva(personaId: string): number {
   const q = (listinoDa(listinoProva()) ?? LISTINO_PREDEFINITO).quota
   const sue = (archivio.dati.ricevute ?? []).filter((r) => r.personaId === personaId && !r.annullataIl)
   if (quoteDi(sue).some((x) => (!x.dal || x.dal <= oggi) && (!x.al || x.al >= oggi))) throw new Error('La quota associativa ha già una ricevuta: per quel che manca c’è il saldo')
-  if (p.pagamento && p.pagamento.stato !== 'da_pagare' && (p.pagamento.fino ?? '9999-01-01') >= oggi) throw new Error('La quota risulta già pagata fuori dall’app: chiedi alla segreteria')
+  if (quotaInSegreteria(archivio.dati.pagamentiDiretti ?? [], personaId, oggi) > 0) throw new Error('La quota risulta già pagata in segreteria: per quel che manca chiedi alla segreteria')
+  // Senza data vale fino a fine stagione, come `pagamentoDi` (152).
+  if (p.pagamento && p.pagamento.stato !== 'da_pagare' && (p.pagamento.fino || STAGIONE.quota.al) >= oggi) throw new Error('La quota risulta già pagata fuori dall’app: chiedi alla segreteria')
   if (pagamentiSatispayProva().some((x) => x.personaId === personaId && x.stato === 'pagato' && !x.ricevutaId)) throw new Error('Hai già pagato con Satispay: la segreteria prepara la ricevuta')
   return Math.round(q * 100)
 }
@@ -336,9 +345,9 @@ function corsoDaPagareProva(personaId: string, corsoId: string, formula: string 
   const v = voceDelCorso(l.corsi, { id: corsoId, nome: corso?.nome ?? '' })
   if (v && v.prezzi.length > 1) throw new Error('Per questo corso il prezzo lo fa la segreteria: chiedi lì o paga in palestra')
   const importo = v ? prezzoDelCorso(v.prezzi[0], formula, oggi, l.saldoEntro) : null
-  if (importo === null) throw new Error('Il corso non è nel listino: chiedi alla segreteria')
-  // Una ricevuta del corso che vale oggi, pagata o in parte: per il resto lo fa la segreteria.
-  const nomi = [corso?.nome ?? '', v?.corso ?? ''].map(nomeCorso)
+  if (importo === null || importo <= 0 || l.senzaPrezzoVaBene?.includes(corsoId)) throw new Error('Il corso non è nel listino: chiedi alla segreteria')
+  // Una voce del corso pagata, o in parte, non finita (anche se parte domani o non ha date), coi nomi del listino come `statoCorsi`.
+  const nomi = nomiDel(l, { id: corsoId, nome: corso?.nome ?? '' })
   const FORMULE = /^(annuale|trimestre|saldo)\s+(.+)$/i
   const conRicevuta = (a.ricevute ?? []).some(
     (r) =>
@@ -346,12 +355,14 @@ function corsoDaPagareProva(personaId: string, corsoId: string, formula: string 
       !r.annullataIl &&
       r.voci.some((x) => {
         const m = x.descrizione.trim().match(FORMULE)
-        return !!m && nomi.includes(nomeCorso(m[2])) && !!x.dal && !!x.al && x.dal <= oggi && x.al >= oggi
+        return !!m && nomi.includes(nomeCorso(m[2])) && (!x.al || x.al >= oggi)
       }),
   )
   if (conRicevuta) throw new Error('Il corso ha già una ricevuta: per quel che manca chiedi alla segreteria')
+  if (corsoInSegreteria(a.pagamentiDiretti ?? [], personaId, nomi, oggi)) throw new Error('Il corso risulta già pagato in segreteria: per quel che manca chiedi alla segreteria')
   const p = a.persone.find((x) => x.id === personaId)
-  if (p?.pagamento && p.pagamento.stato !== 'da_pagare' && (p.pagamento.fino ?? '9999-01-01') >= oggi) throw new Error('Il corso risulta già pagato fuori dall’app: chiedi alla segreteria')
+  // Solo «pagato», fino a fine stagione se senza data, come `statoCorsi`: «in parte» è della quota.
+  if (p?.pagamento?.stato === 'pagato' && (p.pagamento.fino || STAGIONE.quota.al) >= oggi) throw new Error('Il corso risulta già pagato fuori dall’app: chiedi alla segreteria')
   // Una quota o un saldo pagati non coprono il corso; l'iscrizione di prima (senza voce) sì.
   if (pagamentiSatispayProva().some((x) => x.personaId === personaId && x.stato === 'pagato' && !x.ricevutaId && ((x.voce === 'corso' && x.corsoId === corsoId) || (!x.voce && !x.saldoDi))))
     throw new Error('Hai già pagato con Satispay: la segreteria prepara la ricevuta')
@@ -412,7 +423,7 @@ export async function pagaSaldoProva(personaId: string, ricevutaId: string): Pro
   const dei = pagamenti.filter((p) => p.personaId === personaId && p.saldoDi === ricevutaId)
   if (dei.some((p) => p.stato === 'attesa')) return
   // Come `saldo_mancano`: quel che è già arrivato e non è ancora in una ricevuta si toglie.
-  const resto = quota.mancano - dei.filter((p) => p.stato === 'pagato' && !p.ricevutaId).reduce((t, p) => t + p.importo, 0)
+  const resto = quota.mancano - dei.filter((p) => p.stato === 'pagato' && !p.ricevutaId).reduce((t, p) => t + p.importo, 0) - quotaInSegreteria(archivio.dati.pagamentiDiretti ?? [], personaId, oggi)
   if (resto <= 0) throw new Error('Non resta niente da pagare su questa quota')
   const p = archivio.dati.persone.find((x) => x.id === personaId)
   const ora = new Date().toISOString()

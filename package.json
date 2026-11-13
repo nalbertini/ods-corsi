@@ -1,7 +1,7 @@
 {
   "name": "ods-corsi",
   "private": true,
-  "version": "0.238.3",
+  "version": "0.244.3",
   "type": "module",
   "description": "Calendario dei corsi e registro delle presenze per Officine Dello Sport - Collegno",
   "scripts": {
@@ -45,6 +45,7 @@
     "prova:pericolo": "node scripts/prova-pericolo.mjs",
     "prova:ruoli": "node scripts/prova-ruoli.mjs",
     "prova:contabilita": "node scripts/prova-contabilita.mjs",
+    "prova:filtri-movimenti": "node scripts/prova-filtri-movimenti.mjs",
     "prova:bilancio": "node scripts/prova-bilancio.mjs",
     "prova:movimenti-persona": "node scripts/prova-movimenti-persona.mjs",
     "prova:suggerimento-movimento": "node scripts/prova-suggerimento-movimento.mjs",
@@ -86,6 +87,7 @@
     "prova:saldo-satispay": "node scripts/prova-saldo-satispay.mjs",
     "prova:quota-satispay": "node scripts/prova-quota-satispay.mjs",
     "prova:corso-satispay": "node scripts/prova-corso-satispay.mjs",
+    "prova:pagato-in-segreteria": "node scripts/prova-pagato-in-segreteria.mjs",
     "prova:dafare": "node scripts/prova-dafare.mjs",
     "prova:menu": "node scripts/prova-menu.mjs",
     "prova:scheda-finestra": "node scripts/prova-scheda-finestra.mjs",
@@ -192,7 +194,8 @@
     "prova:quadratura": "node scripts/prova-quadratura.mjs",
     "prova:edge": "node scripts/prova-edge.mjs",
     "prova:edge-certificato": "node scripts/prova-edge-certificato.mjs",
-    "prova:a11y-axe": "node scripts/prova-a11y-axe.mjs"
+    "prova:a11y-axe": "node scripts/prova-a11y-axe.mjs",
+    "prova:appello-browser": "node scripts/prova-appello-browser.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.24.0",

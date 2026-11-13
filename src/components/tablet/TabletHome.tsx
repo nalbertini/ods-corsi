@@ -88,7 +88,7 @@ export function TabletHome({
         {aperte.map((l) => (
           <Fragment key={l.id}>
             <div id={`lezione-${l.id}`} className="tb-aperta tb-aperta-lezione" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}>
-              <button type="button" className="tb-aperta-testo" aria-label={`Apri l'appello: ${l.corso}`} onClick={() => onSegna(l)}>
+              <button type="button" className="tb-aperta-testo" onClick={() => onSegna(l)}>
                 <span className="attivita-quando">
                   <span className="num tb-orario">{orario(l)}</span>
                   <EtichettaAttivita nome={l.attivita} grande />

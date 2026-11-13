@@ -93,10 +93,15 @@ function voceDaImporto(riga: RigaMovimento, voci: VoceContabile[], listino?: Lis
   }
   const centesimi = (x: number) => Math.round(x * 100)
   if (centesimi(listino?.quota ?? QUOTA_ASSOCIATIVA) === riga.importo) return voceDi(VOCE_QUOTA, `${inEuro(riga.importo / 100)} è la quota associativa`)
-  const trovati = (listino?.corsi ?? []).flatMap((c) => c.prezzi.flatMap((p) => PREZZI.flatMap((campo) => (p[campo] !== undefined && centesimi(p[campo]) === riga.importo ? [`${c.corso}${p.etichetta ? ` ${p.etichetta}` : ''}, ${campo}`] : []))))
-  if (!trovati.length) return voceDi(VOCE_CORSI, `${inEuro(riga.importo / 100)} non è un prezzo del listino: controlla che la voce sia giusta`, true)
-  const altri = trovati.length - 1
-  return voceDi(VOCE_CORSI, `${inEuro(riga.importo / 100)} è il prezzo di ${trovati[0]}${altri ? (altri === 1 ? ' e di un altro prezzo' : ` e di altri ${altri} prezzi`) : ''}`)
+  const prezziDa = (importo: number) => (listino?.corsi ?? []).flatMap((c) => c.prezzi.flatMap((p) => PREZZI.flatMap((campo) => (p[campo] !== undefined && centesimi(p[campo]) === importo ? [`${c.corso}${p.etichetta ? ` ${p.etichetta}` : ''}, ${campo}`] : []))))
+  const altriDi = (t: string[]) => (t.length === 1 ? '' : t.length === 2 ? ' e di un altro prezzo' : ` e di altri ${t.length - 1} prezzi`)
+  const trovati = prezziDa(riga.importo)
+  if (trovati.length) return voceDi(VOCE_CORSI, `${inEuro(riga.importo / 100)} è il prezzo di ${trovati[0]}${altriDi(trovati)}`)
+  // Al primo pagamento si versa spesso la quota insieme al corso.
+  const quota = listino?.quota ?? QUOTA_ASSOCIATIVA
+  const conQuota = prezziDa(riga.importo - centesimi(quota))
+  if (conQuota.length) return voceDi(VOCE_CORSI, `${inEuro(riga.importo / 100)} è la quota associativa (${inEuro(quota)}) più il prezzo di ${conQuota[0]}${altriDi(conQuota)}`)
+  return voceDi(VOCE_CORSI, `${inEuro(riga.importo / 100)} non è un prezzo del listino: controlla che la voce sia giusta`, true)
 }
 
 /** La parola con cui cercare le schede per questo movimento; `null` se il blocco non deve cercare niente (non è un'entrata da classificare, o ha già la persona). */
@@ -124,7 +129,7 @@ export interface SuggerimentoMovimento {
 /** Il blocco «Suggerito» di un movimento da classificare; `null` per ogni altro movimento: lì non c'è. */
 export function suggerisciMovimento(riga: RigaMovimento, righe: RigaMovimento[], voci: VoceContabile[], persone: PersonaPerNome[], listino?: Listino, abbinati: Abbinato[] = []): SuggerimentoMovimento | null {
   if (riga.origine !== 'movimento' || riga.annullato || (riga.tipo !== 'entrata' && riga.tipo !== 'uscita') || riga.voce !== VOCE_DA_CLASSIFICARE) return null
-  // Il versamento di Satispay non è di una persona: chi ha pagato lo dice IMPORTAZIONI → Chi ha pagato.
+  // Il versamento di Satispay non è di una persona: chi ha pagato lo dice IMPORTAZIONI → Visualizza chi ha pagato.
   if (riga.tipo === 'entrata' && /satispay\s+europe/i.test(riga.descrizione)) {
     const v = vociOfferte(voci, 'entrata').find((x) => x.nome === VOCE_INCASSI_SATISPAY)
     const voce = v ? { voceId: v.id, nome: v.nome, motivo: 'È il versamento di Satispay in banca' } : null

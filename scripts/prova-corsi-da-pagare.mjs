@@ -344,5 +344,42 @@ console.log('\n20. Il consiglio della scheda: con quale voce si rimette a posto'
   ok('annuale', consiglio({ corsoId: 'pilates', corso: 'Pilates', come: 'scaduto', formula: 'annuale', al: '2026-06-30' }), 'Una ricevuta nuova con «Annuale Pilates» lo rimette a posto. In sala entra lo stesso.')
 }
 
+console.log('\n21. Il corso archiviato: conta solo fino al giorno in cui si è archiviato')
+{
+  // Judo 3 archiviato il 30 ottobre: quel che era dovuto allora resta da riscuotere, dopo non matura più niente.
+  const archiviati = corsi.map((c) => (c.id === 'judo3' ? { ...c, attivo: false, archiviatoIl: '2026-10-30' } : c))
+  const st = (p, oggi = OGGI) => cs(statoCorsi(p, archiviati, listino, oggi))
+  const coperto = persona({ ricevute: [ricevuta([trimestre('Judo 3', '2026-09-16', '2026-12-15')])] })
+  ok('trimestre che copriva il giorno dell\'archiviazione: non diventa «scaduto» dopo', st(coperto), [['Judo 3', 'pagato', '2026-12-15']])
+  ok('… e non è da pagare né da sollecitare', corsiDaPagare(coperto, archiviati, listino, OGGI), [])
+  const coperto2 = persona({ ricevute: [ricevuta([trimestre('Judo 3', '2026-09-16', '2026-12-15')])], iscrizioni: [{ corsoId: 'judo3', dal: '2026-09-16' }, { corsoId: 'mga', dal: '2026-09-16' }] })
+  ok('DA FARE non lo conta fra chi ha corsi da pagare', corsiScaduti([coperto], archiviati, listino, OGGI), 0)
+  ok('un altro corso attivo non pagato resta da pagare', cs(corsiDaPagare(coperto2, archiviati, listino, OGGI)), [['MGA', 'da_pagare', null]])
+  const mai = persona({ ricevute: [] })
+  ok('mai pagato, con lezioni già fatte: resta da pagare', cs(corsiDaPagare(mai, archiviati, listino, OGGI)), [['Judo 3', 'da_pagare', null]])
+  const scaduto = persona({ ricevute: [ricevuta([trimestre('Judo 3', '2026-07-01', '2026-09-30')])] })
+  ok('scaduto prima dell\'archiviazione: resta scaduto', st(scaduto), [['Judo 3', 'scaduto', '2026-09-30']])
+  const parte = persona({ ricevute: [ricevuta([voce('Annuale Judo 3', '2026-09-16', '2027-06-30', { prezzo: 34000, pagato: 20000 })])] })
+  ok('pagato in parte: resta in parte', st(parte).map((x) => x.slice(0, 2)), [['Judo 3', 'in_parte']])
+  const dopo = persona({ ricevute: [], iscrizioni: [{ corsoId: 'judo3', dal: '2026-11-02' }] })
+  ok('iscritto dopo l\'archiviazione: non ha fatto lezioni, niente da pagare', st(dopo), [])
+  const eccezione = persona({ ricevute: [], pagamento: { stato: 'pagato', fino: '2026-11-15' } })
+  ok('pagato fuori dall\'app oltre il giorno dell\'archiviazione: non diventa «ora da pagare»', st(eccezione), [['Judo 3', 'fuori_app', '2026-11-15']])
+  const senzaData = corsi.map((c) => (c.id === 'judo3' ? { ...c, attivo: false } : c))
+  ok('archiviato senza data (database non aggiornato): come oggi', cs(statoCorsi(coperto, senzaData, listino, OGGI)), [['Judo 3', 'scaduto', '2026-12-15']])
+  ok('rimesso in calendario: conta di nuovo fino a oggi', cs(statoCorsi(coperto, corsi.map((c) => (c.id === 'judo3' ? { ...c, attivo: true } : c)), listino, OGGI)), [['Judo 3', 'scaduto', '2026-12-15']])
+}
+
+console.log('\n22. Modalità prova: archiviare segna il giorno, rimetterlo in calendario lo toglie')
+{
+  const s = seg.creaSegreteriaProva()
+  const c = (await s.corsi()).find((x) => x.attivo)
+  const oggi = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' })
+  await s.archiviaCorso(c.id, false)
+  ok('archiviato: il giorno è oggi', (await s.corsi()).find((x) => x.id === c.id)?.archiviatoIl, oggi)
+  await s.archiviaCorso(c.id, true)
+  ok('di nuovo in calendario: niente giorno', (await s.corsi()).find((x) => x.id === c.id)?.archiviatoIl, undefined)
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

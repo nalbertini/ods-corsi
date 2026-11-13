@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Proposta · c'è già la ricevuta</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: nella card della persona del movimento aperto, al posto di DA ASSEGNARE, quando il bonifico non ha niente assegnato e una ricevuta libera lo abbina (stessa regola di COLLEGATI PRIMA: stessa persona o famiglia, stesso importo, tutta in Bonifico, entro 30 giorni; la ricevuta più vicina di data). «Abbina» = abbinaRicevutaMovimento; «Non è questa» torna a DA ASSEGNARE. -->
+<div style="display: flex; flex-direction: column; gap: 12px; width: 560px; padding: 20px">
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; border: 2px solid #14709f; background: #ffffff">
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+      <span style="display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: #14709f; color: #ffffff; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 18px; font-weight: 700">RI</span>
+      <b style="flex: 1 1 160px; min-width: 0; font-size: 18px">Rus Irene</b>
+      <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; color: #0d2a3d; text-underline-offset: 3px">Apri scheda →</a>
+      <button type="button" aria-label="Altro su Rus Irene" style="min-width: 48px; min-height: 48px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; font-size: 16px; font-weight: 600; color: #14709f">⋯</button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #cfe6f4; padding-top: 14px">
+      <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00">C’È GIÀ LA RICEVUTA</span>
+      <span style="font-size: 15px">C’è già la ricevuta n. 324/2026 del 09/11 da 220,00 €: è questa?</span>
+      <span style="font-size: 13px; color: #46606f">Se è la stessa, abbinala: il bonifico prende quella ricevuta e i soldi non si contano due volte.</span>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 4px">
+        <dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Abbina" hint-size="110px,48px"></dc-import>
+        <a href="#" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; color: #0d2a3d; text-underline-offset: 3px">Non è questa</a>
+      </div>
+    </div>
+  </div>
+  <span style="font-size: 13px; color: #46606f">Se la ricevuta è di un familiare: «… da 220,00 €, intestata a Rus Marco: è questa?»</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":600,"height":360}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

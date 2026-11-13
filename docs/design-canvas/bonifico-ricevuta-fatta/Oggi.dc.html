@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Oggi · il bonifico chiede di assegnare</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI (AssegnaMovimento in AssegnaMovimento.tsx): il bonifico di Rus Irene del 06/11 ha già la sua ricevuta n. 324/2026 del 09/11, fatta a parte, ma dal bonifico non si vede. Si vede solo DA ASSEGNARE: chi preme «Assegna a quota e corsi» conta i 220,00 € due volte. -->
+<div style="display: flex; flex-direction: column; gap: 12px; width: 560px; padding: 20px">
+  <dc-import name="RigaPersonaMovimento" nome="Rus Irene" da-assegnare="220,00 €" hint-size="560px,240px"></dc-import>
+  <span style="font-size: 14px; color: #b81d1d">La ricevuta n. 324/2026 del 09/11 (220,00 €, Bonifico) compare solo in Da assegnare › COLLEGATI PRIMA.</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":600,"height":320}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

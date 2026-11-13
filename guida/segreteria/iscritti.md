@@ -38,8 +38,11 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   Un corso **da controllare** non conta qui né in DA FARE: si guarda nella
   scheda, ma non è da pagare. Il genitore non iscritto e il titolare senza
   corsi non sono né in **Da pagare** né in **Corsi scaduti**.
+  Un corso archiviato conta fino al giorno in cui l'hai archiviato: chi era
+  coperto quel giorno non c'è, chi non l'aveva pagato resta (vedi
+  [Archiviare](corsi.md#archiviare)).
 - **Non in regola** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
-  anche dal bottone **Chi non è in regola** delle [Statistiche](statistiche.md).
+  anche dal bottone **Visualizza chi non è in regola** delle [Statistiche](statistiche.md).
 - **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([Le tessere](#le-tessere)).
 - **Tesserati senza corso** — chi ha una tessera da atleta che vale oggi e nessun corso (può aver smesso e avere ancora la tessera dell'anno). C'è solo se il database ha le tessere.
 - **Senza documento** — chi non ha ancora la copia del documento d'identità in
@@ -369,7 +372,8 @@ scheda è disattivata, nessuno.
   Per chi ha pagato la quota fuori dall'app (prima dell'app, con una ricevuta
   di carta) c'è **Segna come pagata**: **VALE FINO AL** (di
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
-  PAGATA**. In elenco la quota è in regola, e nella scheda si legge **Fuori app**; alla sua data
+  PAGATA**. Senza **VALE FINO AL** vale fino al 31 luglio della stagione in cui la segni.
+  In elenco la quota è in regola, e nella scheda si legge **Fuori app**; alla sua data
   scade da sola, e **Togli**, nel riquadro della quota, la toglie prima.
 - **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima quanto ha pagato in questa stagione, tra ricevute e incassi; poi un elenco solo, dal più recente, con le ricevute (e i loro pagamenti sotto) e gli incassi senza ricevuta, col tag **Senza ricevuta**. Si vedono gli ultimi 5: **Mostra altre N** apre gli altri. Quelli di tutti sono in [CONTABILITÀ → MOVIMENTI](../amministrazione/contabilita.md#movimenti).
 - **ISCRIZIONI** — i corsi che fa, uno per riquadro, con da quando e se è
@@ -390,8 +394,8 @@ scheda è disattivata, nessuno.
   aggiunge di nuovo. Scegliete l'altra scheda (in cima chi ha lo stesso
   cognome, comunque scritto: D'Amico, Damico; già scelta se è l'unico
   possibile doppione, vedi **POSSIBILI DOPPIONI**). Si vede quale resta, quale se
-  ne va, i campi che non tornano e quante presenze, prove, iscrizioni e
-  ricevute passano; **TIENI L'ALTRA** scambia le due. Della scheda che resta
+  ne va, i campi che non tornano e quante presenze, prove, iscrizioni,
+  ricevute, tessere, gare, movimenti e pagamenti online passano; **TIENI L'ALTRA** scambia le due. Della scheda che resta
   vale quello che c'è scritto; dall'altra si prende solo quello che manca, e
   di certificato e quota la scadenza più lontana (e del certificato, il file
   di quella scheda: se ce n'è uno per parte resta uno solo, l'altro si
@@ -402,7 +406,11 @@ scheda è disattivata, nessuno.
   torna indietro.
   Non si uniscono due schede con due codici fiscali diversi, anche solo
   quello del modulo di iscrizione (sono due persone). Il file del certificato
-  non ferma l'unione: passa a chi resta. Unite quando gli appelli del giorno sono
+  non ferma l'unione: passa a chi resta. Una lezione segnalata dall'area
+  iscritti su tutte e due le schede resta una. Se tutte e due hanno un
+  pagamento online in corso per la stessa cosa, l'app dice di aspettare che
+  arrivi pagato o che scada; uno che Satispay non ha mai visto si chiude da
+  sé. Unite quando gli appelli del giorno sono
   arrivati: un appello fatto senza rete che arriva dopo sulla scheda che se
   ne va si perde.
 
@@ -424,7 +432,7 @@ Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a qu
 **Importa tessere**, in cima all'**Elenco**, apre il caricamento; **← Iscritti** torna all'elenco. Tre passi:
 
 1. **IL FOGLIO** — dal RASD, tab Tesseramenti, salva il foglio come **CSV** (da Excel: *File → Salva con nome → CSV UTF-8*). Le colonne sono **Organismo, Persona, Codice fiscale, Tipo, Codice tess., Valido dal**, con `;` o `,` come separatore. **Scegli il foglio**, poi **Controlla**.
-2. **IL CONTROLLO** — non scrive niente. Dice quante tessere sono nuove, quante ci sono già e non cambiano, e quante righe restano fuori, ognuna col motivo. **Metti N tessere** le scrive.
+2. **IL CONTROLLO** — non scrive niente. Dice quante tessere sono nuove, quante ci sono già e non cambiano, e quante righe restano fuori, ognuna col motivo. **Importa N tessere** le scrive.
 3. **NELL'APP** — le trovi nella scheda di ogni persona, sotto **TESSERE**.
 
 La persona si riconosce dal **codice fiscale e dallo stesso nome** (anche con accenti, apostrofi o nome e cognome scambiati): se il codice fiscale c'è ma il nome è un altro, la riga non entra. L'import **non crea nessuna persona**: chi non ha la scheda, o ha la scheda senza il codice fiscale, resta fuori. Si scrive il codice fiscale nella scheda e si rifà il foglio. Si può rifare quante volte si vuole: non duplica niente. La tessera vale fino al **31 dicembre** dell'anno di «Valido dal».

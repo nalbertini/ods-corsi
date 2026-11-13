@@ -3,14 +3,14 @@ import { indirizziDaSalvare } from './avvisoSegreteria'
 import type { Anagrafica, AnagraficaDi, UltimoSollecito, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
-import { cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagamento, extraDelPagamento, mancaPerRicevuta, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
+import { bonificiPerCompensi, cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagamento, extraDelPagamento, mancaPerRicevuta, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { statoCertificato, attivitaCambiata, cancellaFileIl, cosaNonVaGiorniCertificato, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO, termineCertificato, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
 import { unisciGare } from './gare'
 import { codicePulito, cosaNonVaNucleo, GENITORE_GIA_IN_ELENCO, GENITORE_SENZA_CF, GENITORE_SENZA_NOME, nuovoTitolare, type DatiGenitore } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
-import { nomeProprio } from './nomi'
+import { nomeProprio, personaleDaRiprendere } from './nomi'
 import { numeriDiProva } from './sitoStatistiche'
 import { insegna, segniDi, siElimina, type RuoloPersonale } from './ruoli'
 import type { IndiziDoppioni } from './doppioni'
@@ -46,7 +46,7 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { abbinaMovimento, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
-import { assegnato, conAssegnazioni, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, personeDelNucleo, SOLO_DAL_MOVIMENTO } from './assegna'
+import { assegnato, conAssegnazioni, conGenitori, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, movimentoDaClassificareAbbinabile, personeDelNucleo, SOLO_DAL_MOVIMENTO, voceDaRicevuta } from './assegna'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, giaNelPagamento, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
@@ -75,6 +75,7 @@ import {
   VOCE_GARE,
   VOCE_INCASSI_SATISPAY,
   contantiInGiornoChiuso,
+  giornoChiuso,
   VOCE_QUOTA,
   type Cassa,
   type VoceContabile,
@@ -537,6 +538,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
           istruttori: c.istruttori.map((id) => ({ id, nome: nomeIstruttore(id) })),
           capienza: c.capienza,
           attivo: c.attivo,
+          archiviatoIl: c.archiviatoIl,
           enteTessera: c.enteTessera,
           bastaUno: c.bastaUno ?? false,
           ricorrenze: c.ricorrenze
@@ -593,7 +595,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async archiviaCorso(corsoId, attivo) {
       corso(corsoId)
-      a().corsi = a().corsi.map((c) => (c.id === corsoId ? { ...c, attivo } : c))
+      // Come il trigger di `150-corso-archiviato-il.sql`.
+      a().corsi = a().corsi.map((c) => (c.id === corsoId ? { ...c, attivo, archiviatoIl: attivo ? undefined : c.attivo ? oggi() : c.archiviatoIl } : c))
       salva()
     },
 
@@ -1467,6 +1470,28 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async abbinaCompensiMovimento(ids, movimentoId) {
+      // Le stesse regole di `abbina_compensi_movimento` (154): quelle di `paga_compensi` sulle ricevute, poi il movimento.
+      const scelte = [...new Set(ids)]
+      if (!scelte.length) throw new Error('Scegli almeno una ricevuta da pagare')
+      const tutte = a().ricevuteCompensi ?? []
+      const rs = tutte.filter((r) => scelte.includes(r.id) && !r.annullataIl && !r.movimentoId)
+      if (rs.length !== scelte.length) throw new Error("Una delle ricevute non c'è più, è annullata o è già pagata: ricarica la pagina")
+      if (new Set(rs.map((r) => r.personaId)).size !== 1) throw new Error('Si pagano insieme solo le ricevute dello stesso tecnico')
+      const { casse, voci, chiusure, movimenti } = contabilita()
+      const p = persona(rs[0].personaId)
+      const m = movimenti.find((x) => x.id === movimentoId)
+      if (!m) throw new Error('Il bonifico non c’è più: ricarica la pagina')
+      const { colNome, senzaNome } = bonificiPerCompensi([m], tutte, rs, { id: p.id, nome: p.nome, cognome: p.cognome ?? '' }, casse, voci)
+      if (!colNome.length && !senzaNome.length) throw new Error('Questo bonifico non può essere il pagamento di queste ricevute: ricarica la pagina')
+      if (giornoChiuso(chiusure, [m.cassaId], m.data)) throw new Error('Quel giorno la cassa è già chiusa: scegli un altro giorno o annulla la chiusura')
+      const voce = voci.find((v) => v.tipo === 'uscita' && v.diSistema && v.nome.trim().toLowerCase() === VOCE_COMPENSI.toLowerCase())?.id
+      if (!voce) throw new Error('Manca la voce «Compensi istruttori»: va lanciato 81-compensi-pagati.sql')
+      a().movimenti = movimenti.map((x) => (x.id === m.id ? { ...x, personaId: p.id, voceId: voce } : x))
+      a().ricevuteCompensi = tutte.map((r) => (scelte.includes(r.id) ? { ...r, movimentoId: m.id, pagataIl: m.data } : r))
+      salva()
+    },
+
     async segnaFirmataCompenso(id, firmata) {
       a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((x) => (x.id === id ? { ...x, firmata } : x))
       salva()
@@ -1876,19 +1901,28 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async abbinaRicevutaMovimento(movimentoId, ricevutaId) {
-      // Come `abbina_ricevuta_movimento` (135): «Collegati prima», la ricevuta già fatta a parte diventa del movimento.
+      // Come `abbina_ricevuta_movimento` (151): «Collegati prima», la ricevuta già fatta a parte diventa del movimento;
+      // anche di una persona del nucleo, e un bonifico Da classificare prende persona e voce della ricevuta.
       const { casse, voci, movimenti } = contabilita()
       const m = movimenti.find((x) => x.id === movimentoId)
       if (!m) throw new Error('Il movimento non c’è più: ricarica la pagina.')
-      const no = cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggiARoma())
-      if (no) throw new Error(no)
+      const daClassificare = movimentoDaClassificareAbbinabile(m, casse, voci, oggiARoma())
+      if (!daClassificare) {
+        const no = cosaNonVaMovimentoDaAssegnare(m, casse, voci, oggiARoma())
+        if (no) throw new Error(no)
+      }
       const r = (a().ricevute ?? []).find((x) => x.id === ricevutaId)
       if (!r) throw new Error('La ricevuta non c’è più: ricarica la pagina.')
-      const nonVa = cosaNonVaAbbinamento(m, r)
+      const nonVa = cosaNonVaAbbinamento(m, r, conGenitori(a().persone, await this.genitori()))
       if (nonVa) throw new Error(nonVa)
       if (r.movimentoId === movimentoId) return
       if (assegnato(movimentoId, a().pagamentiDiretti ?? [], a().ricevute ?? []) > 0)
         throw new Error('Il bonifico ha già dei soldi assegnati: annulla prima le ricevute e le assegnazioni.')
+      if (daClassificare) {
+        const voceId = voci.find((v) => v.tipo === 'entrata' && v.nome === voceDaRicevuta(r))?.id
+        if (!voceId) throw new Error(`Manca la voce «${voceDaRicevuta(r)}»: ricarica la pagina.`)
+        a().movimenti = movimenti.map((x) => (x.id === movimentoId ? { ...x, personaId: x.personaId ?? r.personaId, voceId } : x))
+      }
       a().ricevute = (a().ricevute ?? []).map((x) => (x.id === ricevutaId ? { ...x, movimentoId } : x))
       salva()
     },
@@ -2549,18 +2583,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const cognome = nomeProprio(dati.cognome)
       const email = dati.email?.trim() || undefined
       if (!nome) throw new Error('Serve almeno il nome')
-      // Gli iscritti dividono le email: il conflitto è con chi ha l'accesso, se no si prende il primo iscritto.
-      const stesse = email ? a().persone.filter((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase()) : []
-      const altro = stesse.find((p) => p.ruolo !== 'iscritto') ?? stesse[0]
-      // Come nel database: un'iscritta con la stessa email diventa personale, non un doppione.
-      if (altro && altro.ruolo !== 'iscritto') throw new Error(`Questa email è già di ${nomeDi(altro)}`)
-      if (altro && !dati.id) {
-        a().persone = a().persone.map((p) => (p.id === altro.id ? { ...p, ...ruoloDi(dati), attiva: true } : p))
-        salva()
-        return altro.id
+      if (dati.id) {
+        // Come l'indice unico di 99-email-unica.sql: l'email non dev'essere di un altro del personale.
+        const altro = email && a().persone.find((p) => p.id !== dati.id && p.ruolo !== 'iscritto' && p.email?.toLowerCase() === email.toLowerCase())
+        if (altro) throw new Error(`Questa email è già di ${nomeDi(altro)}`)
       }
-      // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla.
-      const senza = !dati.id && a().persone.find((p) => p.ruolo !== 'iscritto' && !p.email && p.nome.toLowerCase() === nome.toLowerCase() && p.cognome.toLowerCase() === cognome.toLowerCase())
+      // Come nel database: si riprende il personale senza email con lo stesso nome, mai un iscritto.
+      const senza = !dati.id && personaleDaRiprendere(a().persone, { nome, cognome, email })
       if (senza) {
         a().persone = a().persone.map((p) => (p.id === senza.id ? { ...p, email, ...ruoloDi(dati), attiva: true } : p))
         salva()
@@ -2654,6 +2683,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
         prove: (a().prove ?? []).filter((x) => x.personaId === via).length,
         iscrizioni: a().iscrizioni.filter((x) => x.personaId === via).length,
         ricevute: (a().ricevute ?? []).filter((x) => x.personaId === via).length,
+        tessere: (a().tessere ?? []).filter((x) => x.personaId === via).length,
+        gare: (a().gareAtleti ?? []).filter((x) => x.personaId === via).length,
+        movimenti: (a().movimenti ?? []).filter((x) => x.personaId === via).length,
+        // In prova non ci sono pagamenti online.
+        pagamentiOnline: 0,
       }
     },
 
@@ -2761,7 +2795,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
         a().anagrafiche = { ...altre, [resta]: { ...suaA, ...Object.fromEntries(Object.entries(mia).filter(([, x]) => piena(x))), cambiataIl: new Date().toISOString() } }
       }
       spostaRichieste(via, resta)
-      a().segnalate = (a().segnalate ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      // Una segnalazione per lezione, come `presenze_segnalate_unione` (149): resta quella di chi resta, con lo stato dell'altra se solo quella è già gestita.
+      const segnalate = a().segnalate ?? []
+      a().segnalate = segnalate.flatMap((x) => {
+        const altra = segnalate.find((y) => y.sessioneId === x.sessioneId && y.personaId === (x.personaId === via ? resta : via))
+        if (x.personaId === via) return altra ? [] : [{ ...x, personaId: resta }]
+        if (x.personaId === resta && altra && x.stato === 'da_vedere' && altra.stato !== 'da_vedere') return [{ ...x, stato: altra.stato, gestitaIl: altra.gestitaIl, gestitaDa: altra.gestitaDa }]
+        return [x]
+      })
       const gare = unisciGare({ gare: a().gare ?? [], atleti: a().gareAtleti ?? [] }, via, resta)
       a().gare = gare.gare
       a().gareAtleti = gare.atleti

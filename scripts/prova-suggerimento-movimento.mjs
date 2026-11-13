@@ -140,6 +140,7 @@ ok('lo stesso prezzo su più corsi: ne cita uno e dice che ce ne sono altri', su
 ok('un prezzo con l\'etichetta la cita', prova(() => m.suggerisciMovimento(riga({ descrizione: 'Satispay · Elisa M.', importo: 15000 }), [], voci, elisa, { ...listino, corsi: [corso('Karate', [{ etichetta: '2 GIORNI', annuale: 150 }])] }).voce?.motivo), '150 € è il prezzo di Karate 2 GIORNI, annuale')
 const fuori = sugL(85)
 ok('importo fuori listino: Corsi e altri pagamenti con l\'avviso, e si conferma', [fuori.voce?.nome, fuori.voce?.motivo, prova(() => m.confermaDi(fuori, null))], ['Corsi e altri pagamenti', '85 € non è un prezzo del listino: controlla che la voce sia giusta', { voceId: 'vc', personaId: 'a' }])
+ok('quota più un corso: Corsi e altri pagamenti senza avviso, e dice quale', [sugL(330).voce?.nome, sugL(330).voce?.motivo, sugL(330).voce?.avviso], ['Corsi e altri pagamenti', '330 € è la quota associativa (50 €) più il prezzo di Pilates, annuale', undefined])
 ok('centesimi nell\'avviso', sugL(85.5).voce?.motivo, '85,50 € non è un prezzo del listino: controlla che la voce sia giusta')
 const piu = sugL(85, [P('a', 'Elisa', 'Mosca'), P('b', 'Elisa', 'Marchi')])
 ok('più candidati: la voce c\'è, il tasto resta spento finché non scegli', [piu.caso, piu.voce?.nome, prova(() => m.confermaDi(piu, null)), prova(() => m.confermaDi(piu, 'b'))], ['B', 'Corsi e altri pagamenti', null, { voceId: 'vc', personaId: 'b' }])

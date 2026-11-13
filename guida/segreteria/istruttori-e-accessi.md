@@ -18,6 +18,12 @@ TABLET**.
   di accesso, ed è la stessa per ricevute e avvisi: una sola persona di
   personale per indirizzo. Un iscritto con lo stesso indirizzo di un istruttore
   non diventa lui: l'accesso si lega al ruolo di chi lo ha.
+- Chi insegna e si allena anche come allievo ha due schede: questa, del
+  personale, e quella fra gli [iscritti](iscritti.md), con corsi, quote e
+  certificato. Aggiungendo una persona qui l'app non prende mai la scheda di un
+  iscritto, neanche con la stessa email o lo stesso nome. Riprende invece chi è
+  già nel personale senza email con lo stesso nome, anche scritto in un altro
+  modo (D'Amico e D’Amico): gli dà l'email, senza farne un secondo.
 
 ## La scheda di una persona
 
@@ -75,7 +81,7 @@ MODIFICA**: la modifica resta lì, torni a finirla.
 Quattro cifre, per l'**AREA ISTRUTTORE** del [tablet di sala](../sala.md).
 
 Nella scheda, **Imposta il PIN** (o **Cambia il PIN** se c'è già) → le quattro
-cifre → **OK**. Due persone non possono avere lo stesso PIN. Il PIN lo cambia
+cifre → **Salva**. Due persone non possono avere lo stesso PIN. Il PIN lo cambia
 solo la segreteria.
 
 Messo sul tablet durante una lezione, il PIN segna anche la presenza
@@ -102,7 +108,7 @@ stesso tecnico può avere tariffe diverse in corsi diversi.
 
 Ci sono i corsi di cui è titolare e quelli in cui ha fatto lezione nell'ultimo
 anno, anche **da sostituto**. Un corso senza tariffa è segnato **✕ SENZA
-TARIFFA**: **Scrivi** → gli euro l'ora (15 o 15,50) → **OK**. **Cambia** per
+TARIFFA**: **Scrivi** → gli euro l'ora (15 o 15,50) → **Salva**. **Cambia** per
 correggerla, **togli** per toglierla. Una tariffa scritta non sparisce se il
 corso passa a un altro: resta, con «non lo insegna più».
 

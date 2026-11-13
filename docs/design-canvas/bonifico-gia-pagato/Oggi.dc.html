@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Oggi · niente da pagare</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .dialogo { display: flex; flex-direction: column; gap: 16px; width: 760px; padding: 20px 24px; background: #ffffff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; }
+    .riq { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #ffffff; border: 2px solid #cfe6f4; }
+    .avviso { border-color: #8f6a00; }
+    .avviso .et { color: #8f6a00; }
+    .link { font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+    .pericolo { color: #b81d1d; }
+    .campo { width: 110px; padding: 9px 12px; font-size: 16px; text-align: right; font-variant-numeric: tabular-nums; background: #ffffff; border: 2px solid #14709f; }
+    .num { font-variant-numeric: tabular-nums; }
+    .spento { opacity: 0.4; }
+  </style>
+</helmet>
+<!-- OGGI (DialogoAssegna in AssegnaMovimento.tsx): la scheda di Rossi Luca è segnata a mano «pagato fino al 31/07/2027», senza ricevute né pagamenti. dovutiDi salta quota e corsi pagati fuori dall'app: il dialogo è vuoto, i tasti sono spenti e il bonifico resta per sempre in Da assegnare. -->
+<div style="padding: 20px">
+<div class="dialogo">
+  <span class="et">ASSEGNA IL BONIFICO DEL 12/10/2026</span>
+  <span class="sotto">Il bonifico è di 660,00 €, da assegnare 660,00 €. Ogni importo diventa un pagamento della persona: un saldo se copre quel che manca, se no un parziale.</span>
+  <span style="font-size: 15px">Nel nucleo non c’è niente da pagare: il bonifico resta da assegnare.</span>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap">
+    <span class="spento"><dc-import name="Bottone" contesto="segreteria" variante="pieno" label="Assegna e fai la ricevuta" hint-size="250px,48px"></dc-import></span>
+    <span class="spento"><dc-import name="Bottone" contesto="segreteria" variante="linea" label="Assegna senza ricevuta" hint-size="240px,48px"></dc-import></span>
+    <dc-import name="Bottone" contesto="segreteria" variante="linea" label="Lascia stare" hint-size="140px,48px"></dc-import>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":800,"height":300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

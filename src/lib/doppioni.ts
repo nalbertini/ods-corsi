@@ -162,3 +162,32 @@ export function stessoContatto(persona: PersonaSeg, tutte: PersonaSeg[]): string
 export function indirizziPersi(resta: PersonaSeg, via: PersonaSeg): string[] {
   return via.email && resta.email && !stessa(resta.email, via.email) ? [via.email] : []
 }
+
+/** Quante righe della scheda che se ne va passano a quella che resta (`anteprima_unione`). */
+export interface AnteprimaUnione {
+  presenze: number
+  prove: number
+  iscrizioni: number
+  ricevute: number
+  /** Senza `149-unione-non-si-ferma.sql` il database non le conta: valgono zero. */
+  tessere?: number
+  gare?: number
+  movimenti?: number
+  pagamentiOnline?: number
+}
+
+/** L'anteprima a parole, per chi sta per unire: «Passano 3 presenze, 1 tessera.» */
+export function cosaPassa(n: AnteprimaUnione): string {
+  const tutte: [number | undefined, string, string][] = [
+    [n.presenze, 'presenza', 'presenze'],
+    [n.prove, 'prova', 'prove'],
+    [n.iscrizioni, 'iscrizione', 'iscrizioni'],
+    [n.ricevute, 'ricevuta', 'ricevute'],
+    [n.tessere, 'tessera', 'tessere'],
+    [n.gare, 'gara', 'gare'],
+    [n.movimenti, 'movimento', 'movimenti'],
+    [n.pagamentiOnline, 'pagamento online', 'pagamenti online'],
+  ]
+  const voci = tutte.filter(([q]) => (q ?? 0) > 0).map(([q, uno, tanti]) => `${q} ${q === 1 ? uno : tanti}`)
+  return voci.length ? `Passano ${voci.join(', ')}.` : 'L’altra scheda non ha presenze, prove, iscrizioni, ricevute, tessere, gare, movimenti né pagamenti online.'
+}

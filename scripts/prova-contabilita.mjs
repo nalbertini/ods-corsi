@@ -17,7 +17,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/contabilita'; export { righeDaRicevute, righeDirette, intervalloDi } from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro, dataRicevuta } from './src/lib/ricevute'",
+      "export * from './src/lib/contabilita'; export { righeDaRicevute, righeDirette, intervalloDi } from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro, dataRicevuta } from './src/lib/ricevute'; export { iniziali } from './src/lib/sitoLayout'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -895,7 +895,7 @@ console.log('\n34. il dettaglio di un movimento è una pagina intera, come quell
   const corpo = da >= 0 && fino > da ? tsx.slice(da, fino) : ''
   ok('`SchedaPiena` arriva da ./comune', /import \{[^}]*\bSchedaPiena\b[^}]*\} from '\.\/comune'/.test(tsx), true)
   const k = corpo.indexOf('<MovimentoAperto')
-  const prima = k > 0 ? corpo.slice(corpo.lastIndexOf('{aperto &&', k), k) : ''
+  const prima = k > 0 ? corpo.slice(corpo.lastIndexOf('{rigaAperta &&', k), k) : ''
   ok('`MovimentoAperto` sta dentro una `SchedaPiena`', prima.includes('<SchedaPiena'), true)
   ok('…e non più in un `InVista`', prima.includes('<InVista'), false)
   ok('si torna all\'elenco chiedendo prima se c\'è una correzione non salvata (`lasciare`)', /lasciare\(\)/.test(corpo), true)
@@ -1024,64 +1024,32 @@ console.log('\n37. collegare alla persona: le righe dell\'elenco portano chiave 
   }), [undefined, undefined, 'Il movimento del 01/09/2026 (Rossi) non viene dal vecchio programma: non si collega'])
 }
 
-console.log('\n38. i movimenti partono da «Tutto l\'anno»; i filtri diversi dalla partenza si contano e si vedono')
+console.log('\n38. la riga di un movimento appena scritto è com\'è nell\'elenco (i filtri sono in prova-filtri-movimenti)')
 {
-  ok('il periodo di partenza è l\'anno', m.PERIODO_INIZIALE, 'anno')
-  const { dal, al } = prova(() => m.intervalloDi(m.PERIODO_INIZIALE, '2026-10-18', '', ''))
-  ok('con oggi 2026-10-18 va dal 1 gennaio al 31 dicembre', [dal, al], ['2026-01-01', '2026-12-31'])
-  const riga = (id, data) => ({ id, origine: 'movimento', tipo: 'uscita', data, importo: 100, descrizione: id, voce: 'Affitto sala', cassaId: 'c1', annullato: false })
-  const viste = m.filtraMovimenti([riga('a', '2025-12-31'), riga('b', '2026-01-01'), riga('c', '2026-12-31')], { dal, al }).map((r) => r.id)
-  ok('una riga del 31 dicembre dell\'anno scorso non c\'è, quelle dell\'anno sì', viste, ['b', 'c'])
-  const base = { testo: '', periodo: 'anno', tipo: '', cassaId: '', voce: '', persona: '', annullati: false }
-  ok('alla partenza i filtri attivi sono 0', prova(() => m.filtriAttivi(base)), 0)
-  ok('ricerca, tipo e cassa: 3', prova(() => m.filtriAttivi({ ...base, testo: 'affitto', tipo: 'uscita', cassaId: 'c1' })), 3)
-  ok('una ricerca di soli spazi non conta', prova(() => m.filtriAttivi({ ...base, testo: '   ' })), 0)
-  ok('«Tutto» al posto di «Tutto l\'anno» conta uno', prova(() => m.filtriAttivi({ ...base, periodo: 'tutto' })), 1)
-  ok('voce, persona e annullati contano', prova(() => m.filtriAttivi({ ...base, voce: 'Affitto sala', persona: 'collegati', annullati: true })), 3)
-  const f = { dal, al, persona: '' }
-  const nuovo = (o) => ({ ...riga('n', '2026-10-18'), ...o })
-  ok('un movimento dentro i filtri si vedrà', prova(() => m.nonSiVedra(nuovo({}), f)), false)
-  ok('uno dell\'anno scorso no', prova(() => m.nonSiVedra(nuovo({ data: '2025-06-01' }), f)), true)
-  ok('uno su un\'altra cassa, con la cassa filtrata, no', prova(() => m.nonSiVedra(nuovo({ cassaId: 'c2' }), { ...f, cassaId: 'c1' })), true)
-  ok('con una persona scelta un movimento nuovo non si vede (non ha persona)', prova(() => m.nonSiVedra(nuovo({}), { ...f, persona: 'collegati' })), true)
   const g = prova(() => m.rigaAppenaScritta({ tipo: 'giroconto', data: '2026-10-18', importo: 100, descrizione: 'Giroconto da Cassa Contanti a Conto Corrente', cassaId: 'c2', cassaAId: 'c1' }))
   ok('la riga di un giroconto appena scritto è com\'è nell\'elenco: senza voce, due casse, non annullata', [g?.origine, g?.voce, g?.cassaAId, g?.annullato], ['movimento', null, 'c1', false])
-  ok('cercando «contanti» un giroconto da Cassa Contanti si vede', prova(() => m.nonSiVedra(g, { ...f, testo: 'contanti' })), false)
-  ok('cercando «cena» no', prova(() => m.nonSiVedra(g, { ...f, testo: 'cena' })), true)
-  ok('un giroconto verso la cassa filtrata si vede', prova(() => m.nonSiVedra(nuovo({ tipo: 'giroconto', voce: null, cassaAId: 'c1', cassaId: 'c2' }), { ...f, cassaId: 'c1' })), false)
 }
 
-console.log('\n39. Contabilita.tsx: Nuovo movimento e Giroconto sono una pagina intera, e i filtri hanno il loro ordine')
+console.log('\n39. Contabilita.tsx: Nuovo movimento e Giroconto sono una pagina intera')
 {
   const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
   const da = tsx.indexOf('function Movimenti(')
   const fino = tsx.indexOf('function CambiaVoce(')
   const corpo = da >= 0 && fino > da ? tsx.slice(da, fino) : ''
-  ok('i filtri partono da FILTRI_INIZIALI', /useState<FiltriElenco>\(FILTRI_INIZIALI\)/.test(corpo), true)
   ok('Nuovo movimento non è più un riquadro sopra l\'elenco (`InVista`)', /<InVista><NuovoMovimento/.test(corpo), false)
   ok('…né il Giroconto', /<InVista><NuovoGiroconto/.test(corpo), false)
   ok('con il modulo aperto l\'elenco non c\'è: si torna con «I movimenti» chiedendo prima (`lasciare`)', /if \(scrivo\)/.test(corpo) && /I movimenti/.test(corpo) && /lasciare\(\)/.test(corpo), true)
   ok('«Raggruppa per voce» non è più un chip dei filtri', /Raggruppa per voce/.test(corpo), false)
   ok('c\'è la vista Elenco | Per voce, a segmenti', /<Segmenti[^>]*Vista/.test(corpo) && /Per voce/.test(corpo), true)
-  ok('il periodo è a segmenti, non quattro chip', /<Segmenti[^>]*Periodo/.test(corpo), true)
-  ok('le pillole della riga di stato vengono da `filtriAccesi`, e la ✕ toglie con `togliFiltro`', /filtriAccesi\(/.test(corpo) && /togliFiltro\(/.test(corpo), true)
   ok('«Scegli tutte» è la casella in testa alla tabella, non un tasto a sé', /Scegli tutte le/.test(corpo), false)
   ok('…la casella c\'è', /columnheader[^>]*>\s*<input type="checkbox"/.test(corpo), true)
   ok('le azioni della pagina vanno nella testata (`createPortal`)', /createPortal\(/.test(corpo), true)
-  ok('c\'è «Togli i filtri»', /Togli i filtri/.test(corpo), true)
   // Le azioni in testata restano in vista col dettaglio aperto: toccarle non deve buttare una correzione non salvata.
   ok('Giroconto e Nuovo movimento chiedono prima di lasciare il dettaglio', /const apri = async[^]*?if \(!\(await lasciare\(\)\)\) return[^]*?setScrivo\(cosa\)/.test(corpo), true)
   // Le regole dell'elenco stanno nel componente: queste fermano chi le cambia per sbaglio.
-  ok('la ✕ di una pillola toglie solo quel filtro (`togliFiltro(f, a.chiave)`)', /togliFiltro\(f, a\.chiave\)/.test(corpo), true)
-  ok('le somme della riga di stato sono dell\'estratto conto (`estrattoConto`)', /estrattoConto\(righe, casse,/.test(corpo) && /estratto\.saldoFinale/.test(corpo), true)
+  ok('le somme della riga di stato sono dell\'estratto conto (`estrattoMostra`)', /estrattoMostra\(righe, casse,/.test(corpo) && /striscia\(estratto, f\)/.test(corpo), true)
   ok('la casella in testa sceglie solo quelli che si possono cambiare', /const scegliibili = trovate\.filter\(cambiabile\)/.test(corpo), true)
-  ok('«Togli i filtri» riporta tutti i filtri alla partenza', /const azzera = \(\) => \{\s*setF\(FILTRI_INIZIALI\)/.test(corpo), true)
   ok('…anche «Collega i casi sicuri»', /const collegaSicuri = async[^]*?if \(!\(await lasciare\(\)\)\) return[^]*?setCollegando\('sicuri'\)/.test(corpo), true)
-  ok('«Vedi i da decidere» parte da filtri spenti, se no un filtro acceso li nasconde', /onVediDaDecidere=\{[^}]*setF\(\{ \.\.\.FILTRI_INIZIALI, periodo: 'tutto', persona: 'da_decidere' \}\)/.test(corpo), true)
-  ok('i filtri attivi si contano con `filtriAttivi`', /filtriAttivi\(/.test(corpo), true)
-  ok('dopo la registrazione fuori dai filtri lo dice (`nonSiVedra`)', /nonSiVedra\(/.test(tsx), true)
-  ok('PERSONA è un menu, non quattro chip', /id="filtro-persona"/.test(corpo), true)
-  ok('TIPO è un menu e le CASSE sono a scelta multipla', /<FiltroCasse /.test(corpo) && /id="filtro-tipo"/.test(corpo), true)
 }
 
 console.log('\n40. la colonna PERSONA mostra l\'iscritto anche per gli incassi; «Collegati» resta lo storico collegato a mano')
@@ -1212,38 +1180,6 @@ console.log('\n92. la ricerca di MOVIMENTI non bada agli spazi in più')
   const righe = [r('a', 'FERRAMENTA   bianchi'), r('b', 'ferramenta bianchi'), r('c', 'ferramentabianchi')]
   ok('«ferramenta bianchi» trova anche quella con tre spazi in mezzo, non quella attaccata', m.filtraMovimenti(righe, { testo: 'ferramenta bianchi' }).map((x) => x.id), ['a', 'b'])
   ok('…e scritta con due spazi trova le stesse', m.filtraMovimenti(righe, { testo: 'ferramenta  bianchi' }).map((x) => x.id), ['a', 'b'])
-}
-
-console.log('\n93. la riga di stato di MOVIMENTI dice quali filtri sono accesi, e ognuno si toglie da solo')
-{
-  const base = prova(() => m.FILTRI_INIZIALI)
-  ok('alla partenza: tutto l\'anno, il resto vuoto', base, { testo: '', periodo: 'anno', tipo: '', cassaId: '', voce: '', persona: '', annullati: false })
-  const nomi = { nomeCassa: (id) => ({ c1: 'Cassa Contanti', c2: 'Conto Corrente' })[id] ?? '', mese: 'Ottobre 2026' }
-  ok('alla partenza nessuna pillola', prova(() => m.filtriAccesi(base, nomi)), [])
-  const tutti = { testo: '  affitto ', periodo: 'mese', tipo: 'uscita', cassaId: 'c2', voce: 'Affitto sala', persona: 'da_decidere', annullati: true }
-  ok('ogni filtro acceso ha la sua pillola, nell\'ordine dei filtri', prova(() => m.filtriAccesi(tutti, nomi)), [
-    { chiave: 'testo', testo: '«affitto»' },
-    { chiave: 'periodo', testo: 'Ottobre 2026' },
-    { chiave: 'tipo', testo: 'Uscite' },
-    { chiave: 'cassaId', testo: 'Conto Corrente' },
-    { chiave: 'voce', testo: 'Affitto sala' },
-    { chiave: 'persona', testo: 'Da decidere' },
-    { chiave: 'annullati', testo: 'Con gli annullati' },
-  ])
-  ok('le pillole sono tante quanti i filtri attivi', prova(() => m.filtriAccesi(tutti, nomi).length === m.filtriAttivi(tutti)), true)
-  ok('«Mese scorso», «Tutto», «Entrate», «Giroconti», «Collegati», «Senza scheda»', prova(() => [
-    m.filtriAccesi({ ...base, periodo: 'scorso' }, nomi)[0].testo,
-    m.filtriAccesi({ ...base, periodo: 'tutto' }, nomi)[0].testo,
-    m.filtriAccesi({ ...base, tipo: 'entrata' }, nomi)[0].testo,
-    m.filtriAccesi({ ...base, tipo: 'giroconto' }, nomi)[0].testo,
-    m.filtriAccesi({ ...base, persona: 'collegati' }, nomi)[0].testo,
-    m.filtriAccesi({ ...base, persona: 'senza_scheda' }, nomi)[0].testo,
-  ]), ['Mese scorso', 'Tutto', 'Entrate', 'Giroconti', 'Collegati', 'Senza scheda'])
-  ok('una cassa che non si trova fa comunque una pillola che si legge', prova(() => m.filtriAccesi({ ...base, cassaId: 'sparita' }, nomi)), [{ chiave: 'cassaId', testo: 'Cassa' }])
-  ok('una ricerca di soli spazi non fa pillola', prova(() => m.filtriAccesi({ ...base, testo: '   ' }, nomi)), [])
-  ok('la ✕ del periodo lo riporta a tutto l\'anno, il resto resta', prova(() => m.togliFiltro(tutti, 'periodo')), { ...tutti, periodo: 'anno' })
-  ok('la ✕ della cassa toglie solo la cassa', prova(() => m.togliFiltro(tutti, 'cassaId')), { ...tutti, cassaId: '' })
-  ok('la ✕ di «Con gli annullati» li nasconde di nuovo', prova(() => m.togliFiltro(tutti, 'annullati').annullati), false)
 }
 
 console.log('\n94. le icone di casse e voci: solo per i nomi che si riconoscono')
@@ -1432,11 +1368,10 @@ console.log('\n98. il tipo di un movimento ha una colonna sua, e la riga non rip
   ok('un incasso di un iscritto (da ricevuta o diretto)', [tipo('ricevuta', 'entrata'), tipo('pagamento', 'entrata')], [{ nome: 'Incasso iscritto', icona: 'tessera' }, { nome: 'Incasso iscritto', icona: 'tessera' }])
   ok('un giroconto', tipo('movimento', 'giroconto'), { nome: 'Giroconto', icona: 'frecce' })
   ok('un\'entrata e un\'uscita a mano', [tipo('movimento', 'entrata'), tipo('movimento', 'uscita')], [{ nome: 'Entrata', icona: 'banconota' }, { nome: 'Uscita', icona: 'banconota' }])
-  const voce = (r, persona) => prova(() => m.lineaVoce(r, persona))
-  ok('la linea della voce dice la voce', voce({ descrizione: 'Rossi Giulia', voce: 'Quota associativa' }, undefined), 'Quota associativa')
-  ok('…e la persona solo se non è già il nome della riga', [voce({ descrizione: 'Affitto sala', voce: 'Affitto sala' }, 'Rossi Giulia'), voce({ descrizione: 'Rossi Giulia', voce: 'Quota associativa' }, 'Rossi Giulia')], ['Affitto sala · Rossi Giulia', 'Quota associativa'])
-  ok('…senza badare a maiuscole e spazi', voce({ descrizione: ' ROSSI giulia ', voce: 'Quota associativa' }, 'Rossi Giulia'), 'Quota associativa')
-  ok('un giroconto non ha voce', voce({ descrizione: 'Giroconto da A a B', voce: null }, undefined), '')
+  ok('con la voce, il tipo è la voce con la sua icona', [prova(() => m.tipoMovimento({ origine: 'ricevuta', tipo: 'entrata', voce: 'Quota associativa' })), prova(() => m.tipoMovimento({ origine: 'movimento', tipo: 'uscita', voce: 'Iscrizione gare e stage' }))], [{ nome: 'Quota associativa', icona: 'tessera' }, { nome: 'Iscrizione gare e stage', icona: 'banconota' }])
+  const chi = (r, persona) => prova(() => m.lineaPersona(r, persona))
+  ok('la linea sotto dice la persona solo se non è già il nome della riga', [chi({ descrizione: 'Affitto sala' }, 'Rossi Giulia'), chi({ descrizione: 'Rossi Giulia' }, 'Rossi Giulia'), chi({ descrizione: 'Affitto sala' }, undefined)], ['Rossi Giulia', '', ''])
+  ok('…senza badare a maiuscole e spazi', chi({ descrizione: ' ROSSI giulia ' }, 'Rossi Giulia'), '')
 }
 
 console.log('\n99. ogni riga dice da dove viene')
@@ -1480,6 +1415,42 @@ console.log('\n100. un\'uscita dalla banca senza destinatario lo chiede')
   ok('Contanti e Conto Corrente si mostrano anche a zero', mostrate(conti(0, 0, 0, 0)), ['Cassa Contanti', 'Conto Corrente'])
   ok('una Carta con qualcosa dentro torna a vedersi, anche in negativo', mostrate(conti(0, 0, 0, -500)), ['Cassa Contanti', 'Conto Corrente', 'Carta'])
   ok('Satispay con qualcosa dentro torna a vedersi', mostrate(conti(0, 0, 21000, 0)), ['Cassa Contanti', 'Conto Corrente', 'Satispay'])
+}
+
+console.log('\n95. il dettaglio di un movimento ha un solo «Salva»: scrive solo quel che è cambiato')
+{
+  const r = { descrizione: 'Affitto', nota: 'ottobre' }
+  ok('niente cambiato: Salva spento', prova(() => m.cosaSalvoMovimento(r, { voceCambiata: false, descrizione: 'Affitto', nota: 'ottobre' })), { voce: false, testo: false })
+  ok('solo la voce', prova(() => m.cosaSalvoMovimento(r, { voceCambiata: true, descrizione: 'Affitto', nota: 'ottobre' })), { voce: true, testo: false })
+  ok('solo la nota', prova(() => m.cosaSalvoMovimento(r, { voceCambiata: false, descrizione: 'Affitto', nota: 'novembre' })), { voce: false, testo: true })
+  ok('voce e descrizione', prova(() => m.cosaSalvoMovimento(r, { voceCambiata: true, descrizione: 'Affitto sala', nota: 'ottobre' })), { voce: true, testo: true })
+  ok('una riga senza nota e la nota vuota: niente da salvare', prova(() => m.cosaSalvoMovimento({ descrizione: 'x' }, { voceCambiata: false, descrizione: 'x', nota: '' })), { voce: false, testo: false })
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  const da = tsx.indexOf('function MovimentoAperto(')
+  const corpo = da >= 0 ? tsx.slice(da, tsx.indexOf('function Voci(')) : ''
+  ok('un solo tasto: niente più «Cambia la voce» e «Salva il testo»', [/>\s*Cambia la voce\s*</, /Salva il testo/].map((x) => x.test(corpo)), [false, false])
+  ok('il tasto Salva usa cosaSalvoMovimento', /cosaSalvoMovimento\(/.test(corpo), true)
+  ok('«Annulla movimento» è un link rosso discreto (sg-link sg-pericolo)', /className="sg-link sg-pericolo"[^\n]*\n\s*Annulla movimento/.test(corpo), true)
+  ok('niente più il riquadro SUGGERITO senza suggerimento (caso D)', /caso === 'D'/.test(corpo), false)
+  ok('la frase col lucchetto', /Importo, data e cassa non si cambiano: per correggerli annulla il movimento e rifallo\./.test(corpo), true)
+  ok('la conferma dice che resta in elenco ma non conta più nei saldi', /resta in elenco[^`]*non conta più nei saldi/i.test(corpo), true)
+}
+
+console.log('\n96. la scheda di un movimento mette in evidenza la persona')
+{
+  ok('le iniziali: due al massimo, maiuscole', prova(() => [m.iniziali('Rossi Mario'), m.iniziali('de Luca Anna Maria'), m.iniziali('Bianchi')]), ['RM', 'DL', 'B'])
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  const da = tsx.indexOf('function MovimentoAperto(')
+  const corpo = da >= 0 ? tsx.slice(da, tsx.indexOf('function Voci(')) : ''
+  const comune = readFileSync('src/components/segreteria/comune.tsx', 'utf8')
+  ok('il ⋯ ha un nome per chi legge lo schermo', [/nome=\{`Altro su /.test(corpo), /aria-label=\{nome\}/.test(comune)], [true, true])
+  ok('Salva solo quando qualcosa è cambiato', /\{!nienteDaSalvare && \([^{}]*<Tasto tono="pieno"[^\n]*onClick=\{salva\}/.test(corpo), true)
+  const card = corpo.slice(corpo.indexOf('<div className="sg-movimento-persona">'), corpo.indexOf('!riga.personaId && ('))
+  ok('Da assegnare sta dentro la card della persona', /<AssegnaMovimento /.test(card), true)
+  ok('«Collega una persona» solo senza persona', /!riga\.personaId && \([\s\S]*?Collega una persona/.test(corpo) && !/Collega una persona/.test(card), true)
+  ok('descrizione e storico in un details chiuso', /<details className="sg-spiega">/.test(corpo), true)
+  ok('il pannello Collega sta subito sotto la persona, e chiuso ridà il fuoco', [/Collega una persona<\/Tasto>\}\s*<\/div>\s*\)\}\s*\{collegando && <CollegaAPersona/.test(corpo), /onChiudi=\{chiudiCollega\}/.test(corpo)], [true, true])
+  ok('il lucchetto non prende il fuoco', /tabIndex=\{0\}[^\n]*lucchetto/.test(corpo), false)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

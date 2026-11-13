@@ -34,6 +34,11 @@ export interface CorsoPagabile {
   aPagamento: boolean
   /** Arrivato con Satispay e non ancora in una ricevuta. */
   pagato: boolean
+  /** Già in segreteria, da un bonifico assegnato o un pagamento a mano, non ancora in una ricevuta (146). */
+  assegnato?: boolean
+  /** Il nome del corso nel listino e le etichette delle righe (152): senza, le voci si riconoscono solo col nome del corso. */
+  voce?: string
+  etichette?: string[]
 }
 
 export interface ChiPagaCorsi extends Pick<ChiPaga, 'adulto' | 'haAccessoProprio' | 'comeTitolare'> {
@@ -111,7 +116,11 @@ export function statoCorsiDi(scheda: SchedaIscritto, ricevute: Ricevuta[], chi: 
     quota: 0,
     saldoEntro: '',
     offerte: [],
-    corsi: scheda.corsi.filter((c) => chi.corsi.some((x) => x.corsoId === c.id && x.aPagamento)).map((c) => ({ corso: c.nome, corsoId: c.id, eta: '', orari: [], prezzi: [{ annuale: 1 }] })),
+    corsi: chi.corsi.flatMap((x) => {
+      const c = scheda.corsi.find((k) => k.id === x.corsoId)
+      // I nomi del listino, come li legge la segreteria: senza, una voce «Annuale Fitness 2 giorni» resterebbe da pagare.
+      return c && x.aPagamento ? [{ corso: x.voce || c.nome, corsoId: c.id, eta: '', orari: [], prezzi: [{ annuale: 1 }, ...(x.etichette ?? []).map((etichetta) => ({ annuale: 1, etichetta }))] }] : []
+    }),
   }
   return (
     statoCorsi(
@@ -128,5 +137,8 @@ export function statoCorsiDi(scheda: SchedaIscritto, ricevute: Ricevuta[], chi: 
       listino,
       oggi,
     ) ?? []
+  ).filter(
+    // Coi soldi già in segreteria il corso non si paga qui (come con una ricevuta in parte): per il resto si chiede lì.
+    (s) => !(DA_PAGARE.includes(s.come) && chi.corsi.some((x) => x.corsoId === s.corsoId && x.assegnato)),
   )
 }

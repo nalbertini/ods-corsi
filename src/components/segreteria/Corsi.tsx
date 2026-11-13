@@ -172,7 +172,7 @@ export function Corsi({
       <div className="stack" style={{ gap: 18 }}>
         <Testa titolo="CORSI" sotto="Un corso è cosa si fa; le ricorrenze dicono quando. Le lezioni si generano da quelle.">
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void apri(null, true)}>
-            + Nuovo corso
+            Crea un corso
           </button>
         </Testa>
 
@@ -381,9 +381,9 @@ function Scheda({
         {corso ? (
           <button
             type="button"
-            className="sg-btn sg-btn-linea"
+            className="sg-btn sg-btn-linea sg-pericolo"
             onClick={async () => {
-              if ((await chiedi(`Archiviare ${corso.nome}? Le lezioni future senza appello spariscono dal calendario; il registro resta.`, 'Archivia il corso'))) {
+              if ((await chiedi(`Archiviare ${corso.nome}? Le lezioni future senza appello spariscono dal calendario; il registro resta. Chi non l’ha pagato fino a oggi resta da pagare, dopo non matura più niente.`, 'Archivia il corso'))) {
                 void fai(() => d.archiviaCorso(corso.id, false), `${corso.nome} archiviato`, () => {
                   onArchiviato()
                   onCambiato()
@@ -841,7 +841,7 @@ function IscrittiDelCorso({
           ))}
         </select>
         <button type="button" className="num sg-chip sg-chip-pieno" disabled={!daIscrivere} onClick={onIscrivi}>
-          + Iscrivi
+          Iscrivi
         </button>
       </div>
     </div>

@@ -40,8 +40,8 @@ export function TastoLink({ tono = 'linea', icona, className, children, ...resto
 }
 
 /**
- * Il segno di uno stato (DA PAGARE, PUBBLICATA…). Con l'icona, nel look sito,
- * diventa una pastiglia tinta: l'icona prende il posto di ✕ … ✓.
+ * Il segno di uno stato (DA PAGARE, PUBBLICATA…): bordo e colore dello stato, e
+ * la parola. Con l'icona, nel look sito, diventa una pastiglia tinta.
  */
 export function Tag({ tipo, icona, className, children }: { tipo?: 'manca' | 'aspetta' | 'sostituto' | 'presto' | 'fatto'; icona?: NomeIcona; className?: string; children: ReactNode }) {
   return (
@@ -780,7 +780,7 @@ export function scaricaCsv(nome: string, testo: string) {
 
 /**
  * Una scelta fra poche voci che si escludono (il periodo, la vista): tasti
- * attaccati, quello scelto pieno col ✓. Un gruppo di `aria-pressed` e non
+ * attaccati, quello scelto pieno di blu. Un gruppo di `aria-pressed` e non
  * dei tab: la scelta cambia l'elenco sotto, non apre un pannello.
  */
 export function Segmenti<T extends string>({ etichetta, voci, scelta, onScegli }: { etichetta: string; voci: readonly (readonly [T, string])[]; scelta: T; onScegli: (v: T) => void }) {
@@ -832,7 +832,7 @@ export function FiltroMenu({ id, nome, value, opzioni, onChange }: { id: string;
  * Le azioni secondarie di una schermata in un menu solo («Altre azioni ▾»). Si chiude con un clic su una voce,
  * fuori dal menu o con Esc.
  */
-export function MenuAzioni({ etichetta, children }: { etichetta: string; children: ReactNode }) {
+export function MenuAzioni({ etichetta, nome, children }: { etichetta: string; /** Il nome per chi legge lo schermo, quando l'etichetta è un segno («⋯»): allora niente ▾. */ nome?: string; children: ReactNode }) {
   const dettagli = useRef<HTMLDetailsElement>(null)
   useEffect(() => {
     const chiudi = () => { if (dettagli.current) dettagli.current.open = false }
@@ -850,7 +850,7 @@ export function MenuAzioni({ etichetta, children }: { etichetta: string; childre
   }, [])
   return (
     <details ref={dettagli} className="sg-menu-azioni" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.open = false }}>
-      <summary className="sg-btn sg-btn-linea">{etichetta} <span aria-hidden="true">▾</span></summary>
+      <summary className="sg-btn sg-btn-linea" aria-label={nome}>{nome ? <span aria-hidden="true">{etichetta}</span> : <>{etichetta} <span aria-hidden="true">▾</span></>}</summary>
       <div className="sg-menu-azioni-lista" role="menu">{children}</div>
     </details>
   )

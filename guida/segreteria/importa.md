@@ -33,8 +33,7 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
 
 ## I tre passi
 
-1. **I FOGLI** — **SCEGLI IL FOGLIO** per ognuno, poi **Controlla** (o
-   **Avanti**).
+1. **I FOGLI** — **SCEGLI IL FOGLIO** per ognuno, poi **Controlla i fogli**.
    - Per le risposte del modulo Google compaiono **LE COLONNE DEL MODULO** (quale
      domanda dice il nome, il cognome, l'email…) e **LE SCELTE DEI CORSI**
      (quale risposta corrisponde a quale corso). L'app prova a indovinarle; si

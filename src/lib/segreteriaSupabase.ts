@@ -1,7 +1,7 @@
 import { cosaNonVaSolleciti } from './sollecitiCertificato'
 import { indirizziDaSalvare } from './avvisoSegreteria'
 import { daSenzaIstruttore } from './ore'
-import type { IndiziDoppioni } from './doppioni'
+import type { AnteprimaUnione, IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import { giorniConLezioni } from './calendarioSettimana'
@@ -11,7 +11,7 @@ import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, cosaNonVaExtra, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cosaNonVaGiorniCertificato, GIORNI_CERTIFICATO, termineCertificato, cosaNonVaAnagrafica, emailNonValida, SERVE_IL_99, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
-import { nomeProprio } from './nomi'
+import { nomeProprio, personaleDaRiprendere } from './nomi'
 import { spentiDa } from './metodiPagamento'
 import { genitoriDa, type RigaGenitore } from './sollecito'
 import { tutteLeRighe } from './tutteLeRighe'
@@ -221,6 +221,7 @@ const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la 
 const MANCA_QUOTE_PERSONA = 'Il database non è ancora aggiornato per scrivere la persona di una quota o di un corso: va lanciato 98-quote-persona.sql'
 const MANCA_MOVIMENTI_PERSONA = 'Il database non è ancora aggiornato per collegare i movimenti alle persone: va lanciato 70-movimenti-persona.sql'
 const MANCA_PAGATI = 'Pagare i compensi non è ancora attivo sul database: va lanciato 81-compensi-pagati.sql'
+const MANCA_DAL_BONIFICO = 'Pagare i compensi con un bonifico già in banca non è ancora attivo sul database: va lanciato 154-compensi-dal-bonifico.sql'
 const MANCA_FIRMA = 'Segnare chi non c’era e «a lezione basta uno» non sono ancora attivi sul database: va lanciato 82-manca-la-firma.sql'
 const MANCA_EXTRA = 'Le ricevute di compenso extra non sono ancora attive sul database: va lanciato 96-compensi-extra.sql'
 const MANCA_COMPENSI = 'Le ricevute dei compensi non sono ancora attive sul database: va lanciato 80-ricevute-compensi.sql'
@@ -432,6 +433,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '23514' && /musica_sale_link_check/.test(e.message ?? ''))
     return new Error('Le radio nelle liste non sono ancora attive sul database: va lanciato 39-musica-radio.sql')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /paga_compensi/.test(e.message ?? '')) return new Error(MANCA_PAGATI)
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /abbina_compensi_movimento/.test(e.message ?? '')) return new Error(MANCA_DAL_BONIFICO)
   if (((e?.code === 'PGRST202' || e?.code === '42883') && /segna_istruttore_assente/.test(e.message ?? '')) || ((e?.code === '42703' || e?.code === 'PGRST204') && /basta_uno/.test(e.message ?? '')))
     return new Error(MANCA_FIRMA)
   // Prima di /ricevuta_compenso/, che la contiene.
@@ -981,6 +983,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const chi = await insegnanti(righe.map((r) => r.id))
       // Letta a parte: senza 82-manca-la-firma.sql la colonna non c'è, e CORSI non offre la spunta.
       const uno = bastaUnoDai(await db.from('corsi').select('id, basta_uno'))
+      // Letta a parte: senza 150-corso-archiviato-il.sql la colonna non c'è, e un archiviato conta fino a oggi come prima.
+      const arch = await db.from('corsi').select('id, archiviato_il').eq('attivo', false)
+      if (arch.error && !(arch.error.code === '42703' && /archiviato_il/.test(arch.error.message ?? ''))) throw guaio(arch.error)
+      // La forma è quella della select `id, archiviato_il`.
+      const archiviatoIl = new Map(((arch.error ? [] : arch.data) as Array<{ id: string; archiviato_il: string | null }>).map((x) => [x.id, x.archiviato_il ?? undefined]))
       const g = oggi()
       return righe.map(
         (r): CorsoSeg => ({
@@ -992,6 +999,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           istruttori: [...(chi.get(r.id) ?? [])].sort((x, y) => Number(y.id === r.istruttore_id) - Number(x.id === r.istruttore_id)),
           capienza: r.capienza ?? undefined,
           attivo: r.attivo,
+          archiviatoIl: archiviatoIl.get(r.id),
           enteTessera: r.ente_tessera ?? undefined,
           bastaUno: uno ? (uno.get(r.id) ?? false) : undefined,
           ricorrenze: r.ricorrenze
@@ -1599,6 +1607,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async pagaCompensi(ids, data, cassaId) {
       ok(await db.rpc('paga_compensi', { ricevute: ids, data, cassa: cassaId }))
+    },
+
+    async abbinaCompensiMovimento(ids, movimentoId) {
+      ok(await db.rpc('abbina_compensi_movimento', { ricevute: ids, movimento: movimentoId }))
     },
 
     async segnaFirmataCompenso(id, firmata) {
@@ -2477,24 +2489,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         ok(await db.from('persone').update(riga).eq('id', p.id))
         return p.id
       }
-      // Un'iscritta con la stessa email diventa personale, invece di un doppione.
-      if (email) {
-        // Gli iscritti dividono l'email: più righe sono normali, e conta chi ha un accesso.
-        const stesse = ok(await db.from('persone').select('id, ruolo').eq('email', email).order('creata_il')) as Array<{ id: string; ruolo: string }>
-        if (stesse.some((x) => x.ruolo !== 'iscritto')) throw new Error('Questa email è già di una persona del personale')
-        const c = stesse[0]
-        if (c) {
-          ok(await db.from('persone').update({ ...ruolo, attiva: true }).eq('id', c.id))
-          return c.id
-        }
-      }
-      // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla.
-      const senza = ok(
-        await db.from('persone').select('id').in('ruolo', [...RUOLI_DEL_PERSONALE]).is('email', null).ilike('nome', riga.nome).ilike('cognome', riga.cognome).limit(1),
-      ) as Array<{ id: string }>
-      if (senza[0]) {
-        ok(await db.from('persone').update({ email, ...ruolo, attiva: true }).eq('id', senza[0].id))
-        return senza[0].id
+      // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla. Mai un iscritto: vedi `personaleDaRiprendere`.
+      const personale = ok(await db.from('persone').select('id, nome, cognome, email, ruolo').in('ruolo', [...RUOLI_DEL_PERSONALE]).order('creata_il')) as Array<{ id: string; nome: string; cognome: string; email: string | null; ruolo: string }>
+      const stessa = personaleDaRiprendere(personale, riga)
+      if (stessa) {
+        ok(await db.from('persone').update({ email, ...ruolo, attiva: true }).eq('id', stessa.id))
+        return stessa.id
       }
       return (ok(await db.from('persone').insert(riga).select('id').single()) as { id: string }).id
     },
@@ -2524,7 +2524,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async anteprimaUnione(resta, via) {
-      return ok(await db.rpc('anteprima_unione', { resta, via })) as { presenze: number; prove: number; iscrizioni: number; ricevute: number }
+      return ok(await db.rpc('anteprima_unione', { resta, via })) as AnteprimaUnione
     },
 
     async unisciPersone(resta, via) {
