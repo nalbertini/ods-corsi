@@ -420,7 +420,7 @@ function Istruttori() {
           />
         )
         return (
-        <div className={largo ? 'sg' : 'app'}>
+        <div className={largo ? 'sg' : 'app'} data-tutto-schermo={tuttoSchermo || undefined}>
           {largo ? (
             <MenuIstruttori chi={chi} onEsci={onEsci} voci={voci} pagina={pagina} onPagina={dalMenu} />
           ) : (

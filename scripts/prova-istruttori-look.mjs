@@ -335,6 +335,9 @@ console.log('\nL\'appello fitto sul telefono (App, Sala, AppelloScreen, CSS)')
   ok('l\'aiuto «Un tocco sul nome» non c\'è con fitto', /!fitto[^\n]*Un tocco sul nome|aiuto && !fitto|!fitto && aiuto|fitto \|\| !aiuto/.test(sch), true)
   ok('l\'appello fitto lo dice al CSS: data-fitto', /data-fitto=\{/.test(sch), true)
 
+  // Senza la Testata (che porta il safe-area in alto) la cima è dell'appello: su iPhone con la tacca finiva sotto la barra di stato.
+  ok('a tutto schermo l\'app lo dice al CSS: data-tutto-schermo', /data-tutto-schermo=\{tuttoSchermo/.test(app), true)
+  ok('.app[data-tutto-schermo]: spazio per la barra di stato (--safe-t)', /padding-top:\s*var\(--safe-t\)/.test(corpo(/\.app\[data-tutto-schermo\]/)), true)
   ok('.appello-testa[data-fitto]: alta 90px (min-height)', /min-height:\s*90px/.test(corpo(/\.appello-testa\[data-fitto\]/)), true)
   ok('riga dell\'appello sotto [data-fitto]: 48px (min-height)', /min-height:\s*48px/.test(corpo(/\[data-fitto\][^,]*\.riga-appello/)), true)
   ok('.btn-chiudi-sotto: seconda riga del tasto CHIUDI a 12px', /font-size:\s*12px/.test(corpo(/\.btn-chiudi-sotto/)), true)

@@ -55,7 +55,11 @@ export function Sala({ soloDi, senzaLimiti = soloDi === undefined, onTimer, onAp
     if (s) setChiuso(null)
   }
   const conAppello = !!aperta
-  useEffect(() => onAppello?.(conAppello), [conAppello, onAppello])
+  useEffect(() => {
+    onAppello?.(conAppello)
+    // Se la sala sparisce con l'appello aperto, il telefono riavrebbe la cornice solo al prossimo appello.
+    return () => onAppello?.(false)
+  }, [conAppello, onAppello])
   useLayoutEffect(() => {
     const scorre = qui.current?.closest('.scroll')
     if (scorre && !largo) scorre.scrollTop = aperta ? 0 : eraA.current

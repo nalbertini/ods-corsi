@@ -712,8 +712,8 @@ export function AppelloScreen({
           le persone in una pagina a parte (`CercaPersona`). */}
       {onChiudi && !soloLettura && (
         <div className="barra-chiudi" data-fitto={fitto || undefined}>
-          {/* Sul telefono la frase c'è solo mentre CHIUDI chiede conferma: è il momento in cui va letta. */}
-          {(!fitto || sicuroChiudi) && (
+          {/* Sul telefono la frase la dice già CHIUDI, nella sua seconda riga: due volte farebbe crescere la barra mentre si tocca. */}
+          {!fitto && (
             <span className="barra-chiudi-frase" data-chiede={sicuroChiudi || undefined}>
               {barra.frase}
             </span>

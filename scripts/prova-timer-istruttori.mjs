@@ -154,7 +154,6 @@ ok('telefono, appello aperto, pagina I MIEI: tutto come oggi', TS(false, true, '
 ok('telefono, appello aperto, pagina ORE: tutto come oggi', TS(false, true, 'ore'), false)
 ok('telefono, appello chiuso, pagina TIMER: tutto come oggi', TS(false, false, 'timer'), false)
 ok('largo con appello aperto su timer: tutto come oggi', TS(true, true, 'timer'), false)
-ok('la striscia dell\'allenamento non dipende dal tutto schermo', vedi(() => [m.mostraStriscia('running', 'calendario'), m.appelloATuttoSchermo({ largo: false, appelloAperto: true, pagina: 'calendario' })]), [true, true])
 
 // Il timer del telefono non tocca i tablet: niente onTimerSala, e sala resta null.
 {

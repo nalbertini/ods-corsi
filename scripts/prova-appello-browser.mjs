@@ -59,7 +59,6 @@ try {
   await pagina.setViewportSize({ width: 390, height: 844 })
 
   const foglio = pagina.getByRole('dialog', { name: 'Altro dell’appello' })
-  await tasto.waitFor()
   /** Dove sta il fuoco: «foglio», «tasto ⋯», «nel foglio: <nome>» o «fuori: <nome>». */
   const fuoco = () =>
     pagina.evaluate(() => {

@@ -2693,3 +2693,5 @@ label.sg-btn { cursor: pointer; }
 :root[data-look='sito'] .btn-chiudi-sotto { font-family: var(--body); font-size: 12px; font-weight: 600; letter-spacing: 0; line-height: 1.1; text-transform: none; }
 /* Nell'appello fitto la data resta su una riga: a 375px andava a capo e la testa passava da 90 a 104px. */
 :root[data-look='sito'] .appello-testa[data-fitto] .chi-kanji > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A tutto schermo sul telefono manca la Testata, che teneva lo spazio della barra di stato (tacca, PWA). */
+:root[data-look='sito'] .app[data-tutto-schermo] { padding-top: var(--safe-t); }
