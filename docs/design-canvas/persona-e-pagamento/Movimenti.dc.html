@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Movimenti da assegnare</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .riq { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
+    .num { font-variant-numeric: tabular-nums; }
+    .riga { display: grid; grid-template-columns: 96px minmax(0,1fr) 170px 110px 170px; gap: 12px; align-items: center; min-height: 56px; padding: 8px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; font-size: 15px; }
+    .perche { font-size: 13px; color: #8f6a00; }
+    h1 { margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: .04em; line-height: 1; }
+  </style>
+</helmet>
+<!-- PROPOSTA: non c'è più la scheda DA ASSEGNARE. In MOVIMENTI, MOSTRA «Da assegnare» porta in cima i due riquadri che erano lì (si assegnano da soli, c'è già la ricevuta) e sotto le righe; ognuna apre la stessa finestra «Chi ha pagato e per cosa?» dell'import. -->
+<div style="display:flex;width:1440px;min-height:980px;background:#eef5fa">
+<div style="width:240px;flex-shrink:0"><dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Nicola Albertini" ruolo="Amministrazione" area="amministrazione" autorizzazioni="segreteria e amministrazione" altezza="980px" hint-size="240px,980px"></dc-import></div>
+<main style="display:flex;flex-direction:column;gap:16px;flex:1;min-width:0;padding:28px 36px">
+<div style="display:flex;flex-direction:column;gap:4px"><h1>CONTABILITÀ</h1><span style="font-size:14px;color:#46606f">Movimenti, bilancio e casse · solo l’amministrazione</span></div>
+<dc-import name="Linguette" schede="movimenti:Movimenti|bilancio:Bilancio|segnalibro:Voci|banca:Casse" accesa="1" hint-size="100%,46px"></dc-import>
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="et">MOSTRA</span>
+  <span style="padding:10px 14px;background:#0d2a3d;color:#ffffff;font-weight:600;font-size:14px">Da assegnare · 5</span>
+  <span style="padding:10px 14px;border:2px solid #cfe6f4;font-size:14px">Tutti</span>
+  <span style="padding:10px 14px;border:2px solid #cfe6f4;font-size:14px">Annullati</span>
+</div>
+<div class="riq">
+  <span class="et">SI ASSEGNANO DA SOLI · 2 BONIFICI · 340,00 €</span>
+  <span style="font-size:14px">La persona è sicura e c’è un solo modo di dividere: tutti qui, uno per riga.</span>
+  <div style="display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;border-top:1px solid #cfe6f4;padding-top:8px;font-size:15px"><span class="num" style="width:90px">06/11/2026</span><span style="flex:1 1 300px"><b>Rus Irene</b> <span class="sotto">· Da CRISTINA SILVI per Iscrizione IRENE RUS…</span></span><span>→ Annuale Avviamento Arti Marziali</span><b class="num">220,00 €</b></div>
+  <div style="display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;border-top:1px solid #cfe6f4;padding-top:8px;font-size:15px"><span class="num" style="width:90px">27/10/2026</span><span style="flex:1 1 300px"><b>Galli Matteo</b> <span class="sotto">· Da GALLI M. per trimestre judo</span></span><span>→ Trimestre Judo kids</span><b class="num">120,00 €</b></div>
+  <div><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Assegna i 2" hint-size="140px,48px"></dc-import></div>
+</div>
+<div class="riq">
+  <span class="et">C’È GIÀ LA RICEVUTA · 1</span>
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:15px"><span style="flex:1 1 380px"><b>Bonifico del 03/11/2026</b> <span class="sotto">· Bianchi Marco</span> → ricevuta n. 121/2026 di <b>Bianchi Sara</b> <span class="sotto">· della famiglia</span></span><b class="num">100,00 €</b><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Abbina" hint-size="110px,48px"></dc-import></div>
+</div>
+<div style="display:flex;flex-direction:column;background:#ffffff;border:2px solid #cfe6f4">
+  <div class="riga"><span class="num">05/11/2026</span><span style="display:flex;flex-direction:column;gap:2px"><span><b>Caracciolo Irene</b> <span class="sotto">· Da CARACCIOLO PIERO per Iscrizione Preparazione atletica</span></span><span class="perche">Ci sono più modi di dividere 440,00 €: scegli tu.</span></span><span class="sotto">Corsi e altri pagamenti</span><b class="num" style="text-align:right;color:#0b7a33">+ 440,00 €</b><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Chi e per cosa" hint-size="160px,48px"></dc-import></div>
+  <div class="riga"><span class="num">03/11/2026</span><span style="display:flex;flex-direction:column;gap:2px"><span>Distinta: 17936975633301LKHDEF BONIFICO SEPA</span><span class="perche">Uscita da classificare: scegli la tipologia.</span></span><span class="sotto">Da classificare</span><b class="num" style="text-align:right;color:#b81d1d">− 180,00 €</b><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Tipologia" hint-size="160px,48px"></dc-import></div>
+  <div class="riga"><span class="num">02/11/2026</span><span style="display:flex;flex-direction:column;gap:2px"><span>TRN … DA ROBERTO RAMPONE PER alessia rampone iscrizione e acconto</span><span class="perche">Senza persona: dì chi ha pagato e per cosa.</span></span><span class="sotto">Da classificare</span><b class="num" style="text-align:right;color:#0b7a33">+ 220,00 €</b><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Chi e per cosa" hint-size="160px,48px"></dc-import></div>
+</div>
+<span class="sotto" style="max-width:900px">«Chi e per cosa» apre la stessa finestra dell’import: persona, corsi, quota e pagamenti, la ricevuta già fatta se c’è. Le uscite e le entrate che non sono di una persona scelgono solo la tipologia, come oggi.</span>
+</main></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

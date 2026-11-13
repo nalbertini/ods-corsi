@@ -151,6 +151,11 @@ quando arriva la prova.
   collegamenti (135 non cambia persona a un movimento assegnato). Solo collaudo a mano.
 - I conteggi del riepilogo in `ImportaBanca.tsx` e il riquadro «Si assegnano da soli» in
   `AssegnaMovimento.tsx`: nessuna prova, solo collaudo a mano.
+- «Chi ha pagato e per cosa?» (`ChiEPerCosa.tsx`), da import, MOVIMENTI e movimento: le
+  regole sono provate (`chiEPerCosa`, `righeDaCampi`, `scriviChiEPerCosa`, `ricevutaPerChi`);
+  la finestra e i tre punti d'ingresso solo a mano.
+- La chiave della finestra è una per apertura (`useRef` in `ChiEPerCosa.tsx`): provato che
+  `scriviChiEPerCosa` la passa, non che il componente la tenga. Solo collaudo a mano.
 - Compensi: `tenuti` in `anagraficaDi` (IBAN e province), `cosaNonVaLettera`,
   `lettereDellaScheda` con `sostituitaIl`, il tetto di 100.000 € in
   `paga_compensi`, `bastaUno` in `segreteriaSupabase.ts`.
@@ -260,10 +265,10 @@ quando arriva la prova.
 - Verbali, «Carica un verbale» (`Verbali.tsx`): mostra DOVE, INIZIO, FINE e
   ordine del giorno, che la regola non chiede; se la firma cade dopo il
   caricamento resta una bozza col PDF. Solo collaudo a mano.
-- Bonifico aperto, «C'è già la ricevuta» (`AssegnaMovimento.tsx`): la regola (`ricevutaGiaFatta`, `collegatiPrima`) è provata, il riquadro con «Abbina» / «Non è questa» no. Solo collaudo a mano.
-- Bonifico su chi è pagato a mano («È questo bonifico», `AssegnaMovimento.tsx`): le regole (`daChiedereAMano`, `dovutiDelNucleo`, `propostaDopoIlSi`) sono provate, il riquadro no. Solo collaudo a mano.
+- «C'è già la ricevuta» nella finestra (`ChiEPerCosa.tsx`): la regola (`ricevutaPerChi`, `ricevutaDellaPersona`, `abbinaDaFinestra`) è provata, il riquadro con «Sì, è questa» no. Solo collaudo a mano.
+- Bonifico su chi è pagato a mano («È questo bonifico», `ChiEPerCosa.tsx`): le regole (`daChiedereAMano`, `dovutiDelNucleo`, `propostaDopoIlSi`) sono provate, il riquadro no. Solo collaudo a mano.
 - Scheda del movimento (`MovimentoAperto`): «Salva» solo con modifiche,
-  «Da assegnare» solo nella card della persona, nome del ⋯. Le regole sono
+  «Assegna a quota e corsi» solo nella card della persona, nome del ⋯. Le regole sono
   provate in lib; il cablaggio nel `.tsx` no. Solo collaudo a mano.
 
 ## Come si aggiorna
