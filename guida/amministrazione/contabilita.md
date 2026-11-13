@@ -232,7 +232,9 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   al riquadro di ogni persona, apre l'elenco delle voci del listino divise per corso, prima i suoi. La
   voce scelta diventa una riga come le altre, con «dal listino» e il prezzo: l'importo parte da quel che
   resta del bonifico e non supera il prezzo. **Togli** la toglie. Se la persona non è iscritta a quel
-  corso, la finestra lo dice: l'iscrizione si fa dalla scheda.
+  corso, la finestra lo dice: l'iscrizione si fa dalla scheda. In fondo all'elenco c'è anche
+  **Abbigliamento**: non ha un prezzo nel listino, l'importo parte da quel che resta del bonifico e si
+  corregge a mano. Non segna saldato l'ordine in VESTIARIO: quello si fa lì.
 - **Conferma** scrive persona, tipologia e assegnazione, senza ricevuta: la ricevuta si fa dopo, dal
   movimento, con **Fai la ricevuta**. Dal movimento c'è anche **Conferma e fai la ricevuta**, che apre la
   ricevuta già compilata (data del bonifico, modo **Bonifico**). All'import si scrive tutto quando

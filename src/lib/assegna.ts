@@ -31,7 +31,8 @@ export function euroAssegna(cent: number): string {
 export interface VoceDovuta {
   personaId: string
   voce: string
-  tipo: 'quota' | 'corso'
+  /** `abbigliamento`: aggiunta a mano, senza prezzo nel listino; `manca` è il bonifico. */
+  tipo: 'quota' | 'corso' | 'abbigliamento'
   dal: string
   manca: number
   /** Aggiunta a mano dal listino (`vociDaAggiungere`): `manca` è il prezzo del listino. */
@@ -497,11 +498,11 @@ export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, ogg
 /**
  * «Aggiungi una voce dal listino» della finestra: le voci dei corsi del listino di oggi, per corso, prima quelli a cui
  * la persona è iscritta, poi gli altri per nome. Servono quando il bonifico paga una cosa che `dovutiDi` non vede: un
- * corso senza iscrizione nell'app, o il trimestre al posto dell'annuale. Fuori le voci che sono già righe della persona
+ * corso senza iscrizione nell'app, il trimestre al posto dell'annuale, o l'abbigliamento (in fondo, con `importo`). Fuori le voci che sono già righe della persona
  * (`gia`, i nomi): due righe con lo stesso nome sarebbero un campo solo.
  */
 export function vociDaAggiungere(
-  p: Pick<PersonaSeg, 'id' | 'iscrizioni'>, corsi: CorsoRef[], listino: Listino, oggi: string, gia: string[],
+  p: Pick<PersonaSeg, 'id' | 'iscrizioni'>, corsi: CorsoRef[], listino: Listino, oggi: string, gia: string[], importo = 0,
 ): Array<{ corso: string; suo: boolean; voci: Array<{ etichetta: string; dovuta: VoceDovuta }> }> {
   const suoi = corsi.filter((c) => p.iscrizioni.some((i) => i.corsoId === c.id && i.dal <= oggi && (!i.al || i.al >= oggi)))
   const giaQui = new Set(gia.map((v) => v.trim().toLowerCase()))
@@ -522,8 +523,16 @@ export function vociDaAggiungere(
       gruppi.set(nome, g)
     }
   }
-  return [...gruppi.values()].sort((a, b) => Number(b.suo) - Number(a.suo) || a.corso.localeCompare(b.corso, 'it'))
+  const fuori = [...gruppi.values()].sort((a, b) => Number(b.suo) - Number(a.suo) || a.corso.localeCompare(b.corso, 'it'))
+  // In fondo l'abbigliamento: non ha un prezzo nel listino, il tetto è il bonifico (`importo`).
+  if (importo > 0 && !giaQui.has(VOCE_ABBIGLIAMENTO.toLowerCase())) {
+    const aggiunta = { corso: VOCE_ABBIGLIAMENTO, suo: true }
+    fuori.push({ ...aggiunta, voci: [{ etichetta: 'Prezzo a mano', dovuta: { personaId: p.id, voce: VOCE_ABBIGLIAMENTO, tipo: 'abbigliamento', dal: oggi, manca: importo, aggiunta } }] })
+  }
+  return fuori
 }
+
+export const VOCE_ABBIGLIAMENTO = 'Abbigliamento'
 
 /** L'importo di una voce appena aggiunta: quel che resta del bonifico (`importo` meno `messo`), non oltre il prezzo. */
 export const importoProposto = (prezzo: number, importo: number, messo: number) => Math.max(0, Math.min(prezzo, importo - messo))

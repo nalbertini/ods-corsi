@@ -355,6 +355,12 @@ console.log('\n3f. Una voce dal listino, anche per un corso a cui non è iscritt
   const trimestre = prova(() => vociDaAggiungere(leo, corsi, listino, oggi, []).find((g) => g.corso === 'Judo kids').voci[1].dovuta)
   ok('la voce scelta è una cosa da pagare di quella persona, col prezzo del listino come tetto', trimestre,
     { personaId: 'leo', voce: 'Trimestre Judo kids', tipo: 'corso', dal: oggi, manca: 13000, aggiunta: { corso: 'Judo kids', suo: false } })
+  const abbigliamento = prova(() => vociDaAggiungere(leo, corsi, listino, oggi, [], 7000).at(-1))
+  ok('col bonifico, in fondo al menu c’è l’abbigliamento: il prezzo si mette a mano, al massimo il bonifico', abbigliamento,
+    { corso: 'Abbigliamento', suo: true, voci: [{ etichetta: 'Prezzo a mano', dovuta: { personaId: 'leo', voce: 'Abbigliamento', tipo: 'abbigliamento', dal: oggi, manca: 7000, aggiunta: { corso: 'Abbigliamento', suo: true } } }] })
+  ok('…già una riga della persona: non si ripete', prova(() => vociDaAggiungere(leo, corsi, listino, oggi, ['Abbigliamento'], 7000).some((g) => g.corso === 'Abbigliamento')), false)
+  ok('…e una riga di abbigliamento si assegna come le altre', prova(() => righeDaCampi([abbigliamento.voci[0].dovuta], { [`leo\u0000Abbigliamento`]: '70,00' }, 7000)),
+    { righe: [{ personaId: 'leo', voce: 'Abbigliamento', importo: 7000 }], guaio: null })
   const quota = { personaId: 'leo', voce: 'Quota associativa 2026/27', tipo: 'quota', dal: '2026-09-01', manca: 5000 }
   const chiave = (v) => `${v.personaId}\u0000${v.voce}`
   ok('180 €: quota e trimestre, nessun guaio', prova(() => righeDaCampi([quota, trimestre], { [chiave(quota)]: '50,00', [chiave(trimestre)]: '130,00' }, 18000)),
