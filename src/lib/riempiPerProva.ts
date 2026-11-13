@@ -81,7 +81,9 @@ export function riempiPerProva(persone: StatoPassi[], i: number, tipo: TipoPasso
     if (manca.has('email')) r.email = `${(genitore ? r.genitoreNome : r.nome)?.trim().toLowerCase().normalize('NFD').replace(/[^a-z]/g, '') || 'prova'}@esempio.it`
     if (manca.has('telefono')) r.telefono = `333 000 00${String(10 + i)}`
     if (manca.has('telefono2')) r.telefono2 = ''
-    stato = { ...s, risposte: r, ...(manca.has('natoAGenitore') && { natoAGenitore: NATO_A }) }
+    // Il luogo del genitore manca solo a codice valido: se il codice lo scrive RIEMPI, il luogo va scritto con lui.
+    const luogo = manca.has('natoAGenitore') || (genitore && manca.has(cf) && !s.natoAGenitore.trim())
+    stato = { ...s, risposte: r, ...(luogo && { natoAGenitore: NATO_A }) }
   } else if (tipo === 'corso') {
     const nato = dataDaCf(v.risposte.codiceFiscale, v.risposte.natoIl, oggi) ?? v.risposte.natoIl
     const perEta = corsiPerEta(corsi, listino?.corsi ?? [], nato, listino?.senzaPrezzoVaBene, oggi)

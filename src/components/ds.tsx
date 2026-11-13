@@ -517,11 +517,12 @@ export function Chip({ children, acceso, numero, etichetta, disabled, onClick }:
  * (fatti verdi, quello di adesso in tinta testo, gli altri `line`) e il nome
  * sotto, poi il nome del passo. Il numero resta solo per lo screen reader. Fonte: docs/design-canvas/ods-design-system/Avanzamento.dc.html.
  */
-export function Avanzamento({ numero, totale, titolo, tappe, rif }: { numero: number; totale: number; titolo: string; tappe: Tappa[]; rif?: RefObject<HTMLDivElement> }) {
+/** `senzaNome`: il nome del passo lo mostra già chi sta sopra (la riga RICHIESTA DI ISCRIZIONE); resta solo per lo screen reader. */
+export function Avanzamento({ numero, totale, titolo, tappe, rif, senzaNome }: { numero: number; totale: number; titolo: string; tappe: Tappa[]; rif?: RefObject<HTMLDivElement>; senzaNome?: boolean }) {
   return (
     // tabIndex -1: a ogni cambio di passo il fuoco viene qui, e chi usa uno screen reader sente «Passo N di N: nome».
     // A schermo il numero non c'è: le tre tappe dicono dove si è senza contare.
-    <div ref={rif} tabIndex={-1} className="avanza" role="group" aria-label={`Passo ${numero} di ${totale}: ${titolo}`}>
+    <div ref={rif} tabIndex={-1} className={senzaNome ? 'avanza avanza-corta' : 'avanza'} role="group" aria-label={`Passo ${numero} di ${totale}: ${titolo}`}>
       <div className="avanza-tappe" aria-hidden>
         {tappe.map((t) => (
           <div key={t.nome} className="avanza-tappa" style={{ flexGrow: t.segmenti.length }}>
@@ -536,9 +537,11 @@ export function Avanzamento({ numero, totale, titolo, tappe, rif }: { numero: nu
           </div>
         ))}
       </div>
-      <span className="avanza-nome" aria-hidden>
-        {titolo}
-      </span>
+      {!senzaNome && (
+        <span className="avanza-nome" aria-hidden>
+          {titolo}
+        </span>
+      )}
     </div>
   )
 }

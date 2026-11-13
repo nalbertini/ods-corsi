@@ -479,8 +479,10 @@ function Flusso({
   const primo = P.nomeDellaPersona(tutte[0], 0)
 
   const errori = problemi(r)
+  // «Manca» solo sul primo da fare (e su quel che si è già toccato): un muro di rosso non dice da dove cominciare.
+  const primoDaFare = P.primoDaCorreggere(v, passo)
   const nota = (k: CampoModulo): Nota | undefined => {
-    const testo = P.notaSottoIlCampo(errori[k], provato, visti.has(k))
+    const testo = P.notaSottoIlCampo(errori[k], provato, visti.has(k), k === primoDaFare)
     return testo ? { testo, guaio: true } : undefined
   }
   const segna = (k: CampoModulo) => {
@@ -513,7 +515,7 @@ function Flusso({
 
   const controllo = P.controlloScelta(v)
   const mancaOra = P.mancaNelPasso(v, passo)
-  const manca = provato ? (ultimo && famiglia ? P.mancantiFamiglia(tutte) : P.mancanti(v, passo)) : []
+  const manca = provato ? (ultimo && famiglia ? P.mancantiFamiglia(tutte) : P.mancaInBarra(v, passo, provato)) : []
 
   // Chi esce (o ricarica) con risposte già scritte lo sente dal browser. Solo dopo una richiesta arrivata non c'è più niente da perdere:
   // negli esiti con qualcosa da rimandare (secondaNo, file) la richiesta è ancora in memoria.
@@ -899,8 +901,9 @@ function Flusso({
               id="n-natoA"
               {...segna('natoA')}
               className="campo"
-              readOnly={!!(luoghi && luogoDaCf(luoghi, pulisciCf(r.codiceFiscale), r.natoIl))}
-              placeholder={luoghi ? 'Lo dice il codice fiscale' : undefined}
+              // Senza un codice valido il luogo lo scriverà il codice: niente da fare qui, come per la data.
+              readOnly={!cfValido(pulisciCf(r.codiceFiscale)) || !!(luoghi && luogoDaCf(luoghi, pulisciCf(r.codiceFiscale), r.natoIl))}
+              placeholder={luoghi || !cfValido(pulisciCf(r.codiceFiscale)) ? 'Lo dice il codice fiscale' : undefined}
               value={r.natoA}
               onChange={metti('natoA')}
             />
@@ -1500,8 +1503,14 @@ function Flusso({
 
   return (
     <div className="modulo stack">
+      {/* Il nome del passo sta qui, sotto RICHIESTA DI ISCRIZIONE: una riga in meno in cima, più spazio al modulo sul telefono. */}
       <div className="pad passo-intesta">
-        <span className="passo-intesta-testo">RICHIESTA DI ISCRIZIONE</span>
+        <span className="passo-intesta-titoli">
+          <span className="passo-intesta-testo">RICHIESTA DI ISCRIZIONE</span>
+          <span className="passo-intesta-nome" aria-hidden>
+            {nomePasso}
+          </span>
+        </span>
         <span className="passo-intesta-prova">
           {d?.modo === 'prova' && P.riempibile(tipo) && (
             // Non è un `Tasto`: il tratteggiato giallo è del bollino PROVA, e c'è solo qui.
@@ -1517,7 +1526,7 @@ function Flusso({
           <Dettaglio tono="avviso">RIEMPI non si è caricato: ricarica la pagina.</Dettaglio>
         </div>
       )}
-      <Avanzamento rif={titoloRef} {...P.avanzamentoDelPasso(tutte, attivo, passo)} titolo={nomePasso} />
+      <Avanzamento rif={titoloRef} {...P.avanzamentoDelPasso(tutte, attivo, passo)} titolo={nomePasso} senzaNome />
       {vistaFamiglia.pastiglie && (
         <div className="pad passo-per">
           <span className="passo-per-etichetta">PER</span>
@@ -1563,7 +1572,7 @@ function Flusso({
         totale={P.totaleDellaFamiglia(tutte, attivo, passo, corsi ?? [], listino, chiaveGiorno(new Date()))}
         onVai={focus}
         // Il «tutto a posto» solo se davvero non manca niente: a passo vuoto, prima di provare, non c'è né elenco né ✓.
-        nota={mancaOra.length === 0 ? (ultimo ? undefined : tipo === 'famiglia' ? 'Nessuno da aggiungere? Vai avanti.' : 'Tutto a posto in questo passo.') : undefined}
+        nota={mancaOra.length === 0 ? (ultimo ? undefined : tipo === 'famiglia' ? 'Nessuno da aggiungere? Vai avanti.' : undefined) : undefined}
         avanti={inVolo ? 'MANDO…' : ultimo ? (famiglia ? 'MANDA LA RICHIESTA PER TUTTI' : 'MANDA LA RICHIESTA') : tipo === 'famiglia' ? P.avantiDellaFamiglia(tutte) : 'AVANTI'}
         tono={ultimo ? 'vai' : 'principale'}
         occupato={inVolo || (ultimo && !d)}
