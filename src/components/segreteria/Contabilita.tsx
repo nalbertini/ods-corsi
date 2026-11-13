@@ -303,7 +303,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, avvisa, onCam
   const collegatiTutti = filtraPerPersona(righe, 'collegati', {}).length
 
   const { dal, al } = intervalloDi(periodo, oggi, '', '')
-  const estratto = estrattoConto(righe, casse, { testo, dal, al, tipo, voce, annullati, cassaIds })
+  const estratto = estrattoConto(righe, casse, { testo, dal, al, tipo, voce, annullati, cassaIds, nomePersona: (id) => nomiPersone.get(id) })
   const trovate = filtraPerPersona(estratto.righe.map((x) => x.riga), persona, esiti)
   const dellEstratto = new Map(estratto.righe.map((x) => [x.riga.id, x] as const))
   // Cambiando i filtri la scelta si svuota e l'elenco riparte dalle prime righe: quel che si è scelto non si perde di vista.
