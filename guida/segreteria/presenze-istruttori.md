@@ -59,9 +59,13 @@ Si vedono tutte, **confermate** e **da confermare** (e le rifiutate, in
 grigio), dalla lezione più recente, con chi le ha decise (o **da sé: era
 previsto**). In cima i filtri:
 
-- **Periodo** — un mese (all'apertura è quello in corso), un **anno** intero
+- **Mese** — un mese (all'apertura è quello in corso, e la ✕ ci torna), un **anno** intero
   (quest'anno o quello prima), o gli **ultimi dodici mesi**.
-- **Corso** e **Istruttore** — solo quelli che nel mese scelto ci sono.
+- **Corso** e **Istruttore** — solo quelli che nel mese scelto ci sono; la ✕
+  li toglie.
+
+**Scarica CSV** e **Report PDF** stanno accanto al titolo; come si decide chi
+c'era lo dice **COME FUNZIONA?**, sopra l'elenco.
 - **MOSTRA** — **Tutte**, **Da confermare**, **Confermate** o **Rifiutate**.
 
 Una presenza **rifiutata** ha anche **Elimina** (rosso, chiede conferma): la toglie dall'elenco per

@@ -15,9 +15,9 @@ da sostituto si paga a chi c'era, con la sua tariffa per quel corso. Il netto
 
 ## La pagina
 
-Si sceglie il **MESE** (di solito quello appena finito). Accanto, il
-riepilogo: quanti tecnici, quanti fermi, quanto c'è da pagare e quanto è già
-pagato. Sotto, una tabella sola, coi tecnici in gruppi nell'ordine in cui si
+Sotto il titolo il riepilogo: quanti tecnici, quanti fermi, quanto c'è da
+pagare e quanto è già pagato. Il **Mese** si sceglie dal filtro (all'apertura è
+quello appena finito; la ✕ ci torna). Sotto, una tabella sola, coi tecnici in gruppi nell'ordine in cui si
 lavora:
 
 - **DA SISTEMARE PRIMA**: finché non sono a posto la ricevuta non si fa.
