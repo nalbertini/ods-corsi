@@ -160,8 +160,9 @@ export function Personale({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce) =>
                   {p.corsi.join(', ') || (insegna(p) ? 'nessun corso' : 'non insegna')}
                 </span>
               </span>
-              <span role="cell" className="sg-una-riga" style={{ fontSize: 13, color: p.email ? 'var(--sec)' : 'var(--rosso-testo)' }} title={p.email ?? 'Senza email non può entrare'}>
-                {p.email ?? 'nessuna email'}
+              {/* Senza email è normale per chi usa solo il PIN del tablet: un trattino grigio, non un rosso su quasi ogni riga. */}
+              <span role="cell" className="sg-una-riga" style={{ fontSize: 14, color: p.email ? 'var(--sec)' : 'var(--dim)' }} title={p.email ?? 'Senza email non può entrare'}>
+                {p.email ?? <span aria-label="nessuna email">—</span>}
               </span>
               <span role="cell" style={{ fontSize: 14, color: 'var(--sec)' }}>
                 {nomeDelRuolo(p)}
@@ -169,9 +170,9 @@ export function Personale({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce) =>
               <span role="cell">
                 <Accesso p={p} />
               </span>
-              <span role="cell" className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
-                <span className="sg-solo-stretto" style={{ color: 'var(--dim)' }}>PIN TABLET </span>
-                {p.haPin ? 'IMPOSTATO' : 'NESSUNO'}
+              <span role="cell" style={{ fontSize: 14, color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
+                <span className="sg-solo-stretto" style={{ color: 'var(--dim)' }}>PIN tablet: </span>
+                {p.haPin ? 'Impostato' : <span aria-label="nessuno">—</span>}
               </span>
             </div>
           ))}
@@ -226,8 +227,9 @@ const NOME_SCHEDA: Record<IdSchedaPersonale, string> = { dati: 'DATI', presenze:
 
 function Accesso({ p }: { p: PersonaleSeg }) {
   return (
-    <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde-testo)' : 'var(--giallo-testo)' }}>
-      {!p.attiva ? 'SENZA ACCESSO' : p.collegato ? 'HA FATTO L’ACCESSO' : 'NON ANCORA ENTRATO'}
+    // In minuscolo e senza colore: sono stati, non avvisi. In maiuscolo spaziato andavano a capo in ogni riga.
+    <span style={{ fontSize: 14, color: p.attiva && p.collegato ? 'var(--text)' : 'var(--dim)' }}>
+      {!p.attiva ? 'Senza accesso' : p.collegato ? 'Ha fatto l’accesso' : 'Non ancora entrato'}
     </span>
   )
 }
@@ -596,8 +598,8 @@ function Scheda({
           {dellaSala && (
             <div className="stack" style={{ gap: 8 }}>
               <Riga titolo="PIN TABLET" icona={<ICONE_SEZIONE_PERSONALE.pin size={18} />}>
-                <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
-                  {p.haPin ? 'IMPOSTATO' : 'NESSUNO'}
+                <span style={{ fontSize: 14, color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
+                  {p.haPin ? 'Impostato' : 'Nessuno'}
                 </span>
               </Riga>
               <span style={{ fontSize: 14, color: 'var(--sec)' }}>Quattro cifre, per l’AREA ISTRUTTORE del tablet di sala. Due persone non possono avere lo stesso PIN.</span>

@@ -31,7 +31,8 @@ const testi = (x, passata) => { const r = el(L(x), passata); return Array.isArra
 console.log('\nCosa dice la lezione')
 ok('annullata: solo «Annullata», senza «Senza appello» né «Manca l’istruttore»', el(L({ stato: 'annullata', istruttori: '' }), true), [{ testo: 'Annullata' }])
 ok('passata senza segni: «Senza appello», tipo manca', el(L(), true), [{ tipo: 'manca', testo: 'Senza appello' }])
-ok('passata con segni: «Appello fatto»', el(L({ segnati: 5 }), true), [{ tipo: 'fatto', testo: 'Appello fatto' }])
+// L'appello fatto lo dice già il conto verde (5/8): un tag su quasi ogni lezione passata copriva le eccezioni.
+ok('passata con segni: nessun tag', el(L({ segnati: 5 }), true), [])
 ok('non passata: l\'appello non si dice', testi(L(), false), [])
 ok('non passata, anche con segni: niente', testi({ segnati: 3 }, false), [])
 ok('senza istruttore: «Manca l’istruttore», tipo aspetta', el(L({ istruttori: '' }), false), [{ tipo: 'aspetta', testo: 'Manca l’istruttore' }])

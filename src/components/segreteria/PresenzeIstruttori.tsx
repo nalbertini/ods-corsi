@@ -446,7 +446,8 @@ function LezioniDaConfermare({ lezioni, lavora, onScegli }: { lezioni: LezioneSe
                     {l.sala ? ` · ${l.sala}` : ''} · {l.presenti === 1 ? 'un presente' : `${l.presenti} presenti`}
                   </span>
                 </span>
-                <span className="stack" style={{ gap: 4 }}>
+                {/* In riga e non in colonna: tre nomi uno sotto l'altro facevano ogni lezione alta tre volte. */}
+                <span className="row" style={{ gap: '0 12px', flexWrap: 'wrap' }}>
                   {daDecidere.length > 1 &&
                     daDecidere.map((x) => (
                       <label key={x.id} className="sg-elenco-casella" style={{ fontSize: 16, fontWeight: 600 }}>
