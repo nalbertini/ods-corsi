@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .riq { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
+    .link { font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+    .num { font-variant-numeric: tabular-nums; }
+    .riga { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+    .perche { font-size: 13px; color: #8f6a00; }
+    .ok { font-size: 13px; color: #0b7a33; font-weight: 600; }
+    h1 { margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: .04em; line-height: 1; }
+  </style>
+</helmet>
+<!-- OGGI: i bonifici collegati con nome intero restano tutti in DA ASSEGNARE, anche quando la proposta del dialogo è già quella giusta. -->
+<div style="display:flex;width:1440px;min-height:900px;background:#eef5fa">
+<div style="width:240px;flex-shrink:0"><dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Nicola Albertini" ruolo="Amministrazione" area="amministrazione" autorizzazioni="segreteria e amministrazione" altezza="900px" hint-size="240px,900px"></dc-import></div>
+<main style="display:flex;flex-direction:column;gap:16px;flex:1;min-width:0;padding:28px 36px">
+<div style="display:flex;flex-direction:column;gap:4px"><h1>CONTABILITÀ</h1><span style="font-size:14px;color:#46606f">Movimenti, bilancio e casse · solo l’amministrazione</span></div>
+<dc-import name="Linguette" schede="movimenti:Movimenti|movimenti:Da assegnare|bilancio:Bilancio|segnalibro:Voci|banca:Casse" accesa="2" numeri="2:4:r" hint-size="100%,48px"></dc-import>
+<div style="display:flex;flex-direction:column;gap:6px">
+<span class="et">DA ASSEGNARE · 4 ENTRATE · 1.060,00 €</span>
+<div class="riga"><span class="num" style="width:90px">06/11/2026</span><span style="flex:1 1 220px">Rus Irene <span class="sotto">· Da CRISTINA SILVI per Iscrizione IRENE RUS AVVIAMENTO ARTI MARZIALI</span></span><span class="sotto">Conto Corrente</span><span class="num">220,00 € · tutto</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Assegna" hint-size="110px,48px"></dc-import></div>
+<div class="riga"><span class="num" style="width:90px">05/11/2026</span><span style="flex:1 1 220px">Caracciolo Irene <span class="sotto">· Da CARACCIOLO PIERO per Iscrizione Preparazione atletica</span></span><span class="sotto">Conto Corrente</span><span class="num">440,00 € · tutto</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Assegna" hint-size="110px,48px"></dc-import></div>
+<div class="riga"><span class="num" style="width:90px">04/11/2026</span><span style="flex:1 1 220px">Riccardi Leonardo <span class="sotto">· Da DELLE ROSE SERENA per Iscrizione Leonardo Riccardi</span></span><span class="sotto">Conto Corrente</span><span class="num">180,00 € · tutto</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Assegna" hint-size="110px,48px"></dc-import></div>
+<div class="riga"><span class="num" style="width:90px">02/11/2026</span><span style="flex:1 1 220px">Rampone Alessia <span class="sotto">· Da ROBERTO RAMPONE per alessia rampone iscrizione e acconto</span></span><span class="sotto">Conto Corrente</span><span class="num">220,00 € · tutto</span><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Assegna" hint-size="110px,48px"></dc-import></div>
+</div>
+<span class="sotto" style="font-size:14px">Ognuno si apre, si guarda la proposta (già giusta per tre su quattro) e si preme «Assegna». In MOVIMENTI restano col pallino «Collegato» e il filtro «Da assegnare».</span>
+</main></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

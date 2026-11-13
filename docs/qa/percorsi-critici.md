@@ -39,7 +39,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Ricevuta da un pagamento a mano | segreteria, amministrazione | incasso contato due volte o perso | `prova:pagamenti`, `prova:satispay`, `pagamento-una-volta.sql`, `pagamento-diventa-ricevuta.sql`, `ricevuta-pagamento-perso.sql` | sì |
 | Contanti di un giorno di cassa chiusa | segreteria, amministrazione | chiusura rotta senza che nessuno lo sappia | `prova:contabilita`, `prova:pagamenti`, `ricevuta-cassa-chiusa.sql` | sì |
 | Ricevute e pagamenti | segreteria, amministrazione | quota o ricevuta sbagliata, ricevuta doppia | `prova:ricevuta`, `prova:segreteria`, `prova:pagamenti`, `prova:satispay`, `prova:righe-dovute`, `ricevute.sql`, `satispay.sql` | sì |
-| Bonifico collegato assegnato a quota e corsi | amministrazione, segreteria | bonifico contato due volte o fermo, quota sopra il listino, soldi persi | `prova:assegna-movimento`, `prova:pagamenti`, `prova:ricevuta`, `prova:pagato-prima`, `prova:schede-iscritto`, `assegna-movimento.sql`, `pagato-vecchio-programma.sql` | sì |
+| Bonifico collegato assegnato a quota e corsi | amministrazione, segreteria | bonifico contato due volte o fermo, quota sopra il listino, soldi persi | `prova:assegna-movimento`, `prova:assegna-da-soli`, `prova:pagamenti`, `prova:ricevuta`, `prova:pagato-prima`, `prova:schede-iscritto`, `assegna-movimento.sql`, `pagato-vecchio-programma.sql` | sì |
 | Corsi da pagare | segreteria | corso scaduto che non si vede, sollecito a chi ha pagato | `prova:dafare`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `prova:conteggi-dovuti`, `prova:cosa-manca`, `prova:filtri-iscritti`, `prova:scheda`, `prova:sollecito`, `prova:tessere`, `corso-archiviato-il.sql` | sì |
 | Annuale a rate (la quota non è una rata) | segreteria, amministrazione | quota contata come rata, annuale scaduto non visto, versamento doppio | `prova:ricevuta`, `prova:corsi-da-pagare`, `prova:righe-dovute`, `annuale-tre-rate.sql` | sì |
 | Ricevuta per email alla famiglia | segreteria, amministrazione, famiglie | ricevuta all'indirizzo sbagliato o annullata che parte | `prova:ricevute-email`, `prova:edge`, `prova:cornice-mail`, `prova:avvisi-segreteria`, `ricevute-email.sql` | sì |
@@ -68,14 +68,14 @@ prova tiene stanno in «Scoperti», in fondo.
 | Scheda del personale (schede e «Altro») | segreteria | accesso tolto o persona eliminata per sbaglio, dati visti da chi non deve | `prova:schede-personale`, `prova:ruoli`, `prova:segreteria`, `prova:pericolo`, `prova:edge`, `disattiva-chiude-iscrizioni.sql`, `elimina-istruttore.sql` | sì |
 | Ruolo «amministrazione» | amministrazione, segreteria | persone viste da chi tiene solo i conti | `prova:menu`, `prova:ruoli`, `prova:pagamenti`, `prova:segreteria`, `amministrazione.sql`, `rls.sql`, `elimina-istruttore.sql` | sì |
 | Contabilità (movimenti, chiusure, voci, prima nota) | amministrazione | residuo che non torna, giorno chiuso riscritto | `prova:contabilita`, `prova:filtri-movimenti`, `prova:indirizzi`, `prova:banco`, `prova:avvisi-segreteria`, `prova:segreteria`, `prova:chiusura-pdf`, `prova:importa-prima-nota`, `prova:pericolo`, `chiusura-cassa.sql`, `contabilita.sql`, `rls.sql`, `importa-prima-nota.sql`, `cambia-voce.sql`, `prova:gare` | sì |
-| Importa dalla banca | amministrazione | movimento perso o scritto due volte, voce o persona sbagliata | `prova:importa-banca`, `prova:importazioni`, `prova:abbina-movimenti`, `importa-banca.sql`, `importa-prima-nota.sql`, `importazioni.sql`, `abbina-movimenti.sql`, `cambia-voce.sql` | sì |
+| Importa dalla banca | amministrazione | movimento perso o scritto due volte, voce o persona sbagliata | `prova:importa-banca`, `prova:assegna-da-soli`, `prova:importazioni`, `prova:abbina-movimenti`, `importa-banca.sql`, `importa-prima-nota.sql`, `importazioni.sql`, `abbina-movimenti.sql`, `cambia-voce.sql` | sì |
 | Import della banca: bonifico con la sua ricevuta libera | amministrazione | incasso contato due volte, ricevuta di un'altra famiglia | `prova:importa-banca`, `assegna-movimento.sql` | sì |
 | Quadratura del Conto Corrente con l'estratto BancoPosta | amministrazione (scrive e verifica), segreteria (non la vede) | saldo sbagliato, mese «verificato» che non torna, saldo visto da chi non deve | `prova:quadratura`, `prova:importa-banca`, `quadratura-banca.sql` | sì, da fare |
 | Importazioni: Satispay e banca sullo stesso movimento a mano | amministrazione | stesso incasso contato due volte, o perso | `prova:importazioni`, `prova:satispay-scarico`, `prova:importa-banca`, `importazioni.sql`, `satispay-scarico.sql`, `importa-banca.sql` | sì |
 | Bonifico o POS già in una ricevuta (anche a rate) o in un pagamento | amministrazione | incasso contato due volte, o import fermo sulla riga | `prova:importa-banca`, `prova:quadratura`, `prova:importazioni`, `importazioni.sql` | sì, da fare |
 | Ricevuta in Bonifico abbinata al bonifico (familiare, Da classificare col nome) | amministrazione | incasso contato due volte, ricevuta di un'altra famiglia | `prova:assegna-movimento`, `assegna-movimento.sql` | sì |
 | Voci da classificare in IMPORTAZIONI | amministrazione | voce persa dalla lista, totale sbagliato | `prova:importazioni`, `prova:suggerimento-movimento` | sì, da fare |
-| Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:segreteria`, `prova:contabilita`, `prova:schede-iscritto`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
+| Movimenti dello storico collegati alla persona | amministrazione (scrive), segreteria (vede lo storico della scheda) | movimento sulla persona sbagliata | `prova:movimenti-persona`, `prova:assegna-da-soli`, `prova:segreteria`, `prova:contabilita`, `prova:schede-iscritto`, `quote-persona.sql`, `movimenti-persona.sql` | sì |
 | Quote e corsi scritti a mano hanno la persona | amministrazione (scrive), segreteria (vede la scheda) | quota che non si ritrova nella scheda | `prova:contabilita`, `prova:movimenti-persona`, `prova:segreteria`, `prova:suggerimento-movimento`, `quote-persona.sql`, `cambia-voce.sql`, `movimenti-persona.sql` | sì |
 | Movimento da classificare: voce (anche dall'importo) e persona proposte | amministrazione (conferma), segreteria | persona o voce sbagliata scritta con un clic | `prova:suggerimento-movimento`, `prova:abbina-movimenti`, `prova:importa-banca`, `abbina-movimenti.sql` | sì, da fare |
 | Filtro «Pagato nel vecchio programma» | segreteria | segnato pagato per un incasso non suo | `prova:pagato-prima`, `prova:filtri-iscritti`, `pagato-vecchio-programma.sql` | sì |
@@ -146,6 +146,17 @@ quando arriva la prova.
 - Chiave del bonifico assegnato: la chiave per apertura sta in `AssegnaMovimento.tsx`
   (`useRef`); se si rifà a ogni render, il tentativo ripetuto scrive due volte.
   Nessuna prova: solo collaudo a mano (rete caduta, riprova).
+- «Si assegnano da soli»: un bonifico scritto con la risposta persa non entra nel lotto,
+  e «Togli questo lotto» non lo toglie: si annulla dal movimento. Solo collaudo a mano.
+- `CollegaPersona.tsx`: «Togli questo lotto» toglie prima le assegnazioni del giro, poi i
+  collegamenti (135 non cambia persona a un movimento assegnato). Solo collaudo a mano.
+- I conteggi del riepilogo in `ImportaBanca.tsx` e il riquadro «Si assegnano da soli» in
+  `AssegnaMovimento.tsx`: nessuna prova, solo collaudo a mano.
+- «Chi ha pagato e per cosa?» (`ChiEPerCosa.tsx`), da import, MOVIMENTI e movimento: le
+  regole sono provate (`chiEPerCosa`, `righeDaCampi`, `scriviChiEPerCosa`, `ricevutaPerChi`);
+  la finestra e i tre punti d'ingresso solo a mano.
+- La chiave della finestra è una per apertura (`useRef` in `ChiEPerCosa.tsx`): provato che
+  `scriviChiEPerCosa` la passa, non che il componente la tenga. Solo collaudo a mano.
 - Compensi: `tenuti` in `anagraficaDi` (IBAN e province), `cosaNonVaLettera`,
   `lettereDellaScheda` con `sostituitaIl`, il tetto di 100.000 € in
   `paga_compensi`, `bastaUno` in `segreteriaSupabase.ts`.
@@ -257,10 +268,10 @@ quando arriva la prova.
 - Verbali, «Carica un verbale» (`Verbali.tsx`): mostra DOVE, INIZIO, FINE e
   ordine del giorno, che la regola non chiede; se la firma cade dopo il
   caricamento resta una bozza col PDF. Solo collaudo a mano.
-- Bonifico aperto, «C'è già la ricevuta» (`AssegnaMovimento.tsx`): la regola (`ricevutaGiaFatta`, `collegatiPrima`) è provata, il riquadro con «Abbina» / «Non è questa» no. Solo collaudo a mano.
-- Bonifico su chi è pagato a mano («È questo bonifico», `AssegnaMovimento.tsx`): le regole (`daChiedereAMano`, `dovutiDelNucleo`, `propostaDopoIlSi`) sono provate, il riquadro no. Solo collaudo a mano.
+- «C'è già la ricevuta» nella finestra (`ChiEPerCosa.tsx`): la regola (`ricevutaPerChi`, `ricevutaDellaPersona`, `abbinaDaFinestra`) è provata, il riquadro con «Sì, è questa» no. Solo collaudo a mano.
+- Bonifico su chi è pagato a mano («È questo bonifico», `ChiEPerCosa.tsx`): le regole (`daChiedereAMano`, `dovutiDelNucleo`, `propostaDopoIlSi`) sono provate, il riquadro no. Solo collaudo a mano.
 - Scheda del movimento (`MovimentoAperto`): «Salva» solo con modifiche,
-  «Da assegnare» solo nella card della persona, nome del ⋯. Le regole sono
+  «Assegna a quota e corsi» solo nella card della persona, nome del ⋯. Le regole sono
   provate in lib; il cablaggio nel `.tsx` no. Solo collaudo a mano.
 
 ## Come si aggiorna

@@ -515,7 +515,7 @@ export function estrattoConto(righe: RigaMovimento[], casse: Cassa[], f: FiltroM
   const prima = dal ? righe.filter((r) => !r.annullato && r.data < dal) : []
   const saldoIniziale = scelte.reduce((s, c) => s + c.saldoIniziale, 0) + prima.reduce((s, r) => s + effetto(r).entrata - effetto(r).uscita, 0)
   const periodo = { annullati: f.annullati, dal: f.dal, al: f.al }
-  const cercate = new Set(filtraMovimenti(righe, { ...periodo, testo: f.testo, voce: f.voce }).map((r) => r.id))
+  const cercate = new Set(filtraMovimenti(righe, { ...periodo, testo: f.testo, voce: f.voce, nomePersona: f.nomePersona }).map((r) => r.id))
   const viste = filtraMovimenti(righe, periodo)
     .sort((x, y) => y.data.localeCompare(x.data) || x.id.localeCompare(y.id))
     .map((riga) => ({ riga, ...effetto(riga) }))
@@ -552,6 +552,8 @@ export interface FiltroMovimenti {
   cassaId?: string
   voce?: string
   annullati?: boolean
+  /** Il nome della persona collegata, perché la ricerca trovi «Druetto» anche se la descrizione è «Bonifico SEPA». */
+  nomePersona?: (id: string) => string | undefined
 }
 
 /** Un testo come lo confronta la ricerca: senza accenti né maiuscole, e gli spazi in più contano come uno (lo storico ne ha). */
@@ -567,7 +569,7 @@ export function filtraMovimenti(righe: RigaMovimento[], f: FiltroMovimenti): Rig
     if (f.tipo && r.tipo !== f.tipo) return false
     if (f.cassaId && r.cassaId !== f.cassaId && r.cassaAId !== f.cassaId) return false
     if (f.voce && r.voce !== f.voce) return false
-    return !testo || cercabile(`${r.descrizione} ${r.voce} ${r.sotto ?? ''}`).includes(testo)
+    return !testo || cercabile(`${r.descrizione} ${r.voce} ${r.sotto ?? ''} ${(r.personaId && f.nomePersona?.(r.personaId)) || ''}`).includes(testo)
   })
 }
 

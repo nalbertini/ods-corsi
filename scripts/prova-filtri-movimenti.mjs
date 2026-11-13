@@ -153,6 +153,7 @@ console.log('\n8c. lo storico prima del «dal» della cassa: si vede e si può s
   ok('…ma il saldo finale resta quello della cassa', e.saldoFinale, 800)
   ok('…e la striscia tiene solo entrate e uscite', prova(() => m.striscia(e, tutti).map((x) => x.nome)), ['ENTRATE', 'USCITE'])
   ok('il 2023 da solo', prova(() => m.estrattoMostra(righe, casse, { ...base, mese: 0, anno: 2023 }, ctx).righe.map((x) => x.riga.id)), ['vecchia'])
+  ok('il TESTO trova il nome della persona collegata', prova(() => m.estrattoMostra([riga('druetto', { data: '2025-03-01', importo: 50, descrizione: 'Bonifico SEPA', personaId: 'p1' }), ...righe], casse, { ...tutti, testo: 'druetto' }, { ...ctx, nomePersona: (id) => (id === 'p1' ? 'Druetto Marco' : undefined) }).righe.map((x) => x.riga.id)), ['druetto'])
   ok('la VOCE trova le vecchie', prova(() => m.estrattoMostra(righe, casse, { ...tutti, voce: 'Pagamento istruttori' }, ctx).righe.map((x) => x.riga.id)), ['vecchia'])
   ok('Da assegnare trova le vecchie da classificare', prova(() => m.estrattoMostra(righe, casse, m.conMostra(base, 'da_assegnare'), ctx).righe.map((x) => x.riga.id)), ['vecchia-entrata'])
   ok('Annullati trova anche le vecchie annullate, a zero', prova(() => m.estrattoMostra(righe, casse, { ...tutti, mostra: 'annullati' }, ctx).righe.map((x) => [x.riga.id, x.uscita])), [['vecchia-annullata', 0]])

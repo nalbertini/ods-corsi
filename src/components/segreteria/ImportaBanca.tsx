@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { NOME_CASSA_CONTO, oggiARoma, vociOfferte, type Cassa, type RigaMovimento, type VoceContabile } from '../../lib/contabilita'
-import { abbinamentiImport, anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, filtroIniziale, gruppiRighe, leggiBanca, PREFISSO_CHIAVE_BANCA, testoDaMostrare, MASSIMO_PER_IMPORTAZIONE, pianoDiAbbinamento, pianoDiClassificazione, rigaComeMovimento, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type AbbinamentoBanca, type FiltroRigheBanca, type GruppoRigheBanca, type LetturaBanca, type MovimentoBanca, type RigaAnteprima, type SceltaVoceBanca, type SegnoBanca } from '../../lib/importaBanca'
+import { assegnaDaSoli, assegnaDopoIlCollegamento, euroAssegna } from '../../lib/assegna'
+import { ChiEPerCosa } from './ChiEPerCosa'
+import { abbinamentiImport, anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, filtroIniziale, gruppiRighe, leggiBanca, PREFISSO_CHIAVE_BANCA, testoDaMostrare, MASSIMO_PER_IMPORTAZIONE, pianoDiAbbinamento, pianoDiAssegnazione, pianoDiClassificazione, collegatiDaAssegnare, ricevutaDellaPersona, sceltaDaFinestra, rigaComeMovimento, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type AbbinamentoBanca, type FiltroRigheBanca, type GruppoRigheBanca, type LetturaBanca, type MovimentoBanca, type RigaAnteprima, type SceltaVoceBanca, type SegnoBanca } from '../../lib/importaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
-import type { CandidatoPersona, PersonaPerNome } from '../../lib/movimentiPersona'
+import type { PersonaPerNome } from '../../lib/movimentiPersona'
 import { parolaDelMovimento, suggerisciMovimento, type SuggerimentoMovimento } from '../../lib/suggerimentoMovimento'
 import { useListino } from '../Costi'
 import { erroreSegreteria } from '../../lib/chatSegreteria'
-import { CampoPersona, SchedaCandidata } from './CollegaPersona'
 import { dataRicevuta, euro, type Ricevuta } from '../../lib/ricevute'
 import { Icona } from '../Icons'
-import { chiedi, Guaio, Segmenti, type useAvviso, Tasto, useBozza, useCarica, useDialogo } from './comune'
+import { chiedi, Guaio, Segmenti, type useAvviso, Tasto, useBozza, useCarica } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 
@@ -39,7 +40,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const righe = useMemo(() => (coperti.dato ? segnaIncassiCoperti(tutte, coperti.dato.righe ?? []) : null), [tutte, coperti.dato])
   const [lettura, setLettura] = useState<LetturaBanca | null>(null)
   const [scelte, setScelte] = useState<Record<string, string>>({})
-  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[]; senzaAbbinare: string | null; incassi: number } | null>(null)
+  const [scritti, setScritti] = useState<{ n: number; classificati: number; guasto: string | null; abbinati: string[]; nonAbbinati: string[]; senzaAbbinare: string | null; incassi: number; assegnati: number; daScegliere: number; senzaAssegnare: string | null } | null>(null)
   // Le ricevute libere a cui può andare un bonifico che entra con la persona; se non si leggono, si importa senza abbinare.
   const archivio = useCarica(async () => {
     const [ricevute, persone] = await Promise.all([d.ricevute(), d.persone()])
@@ -155,6 +156,9 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
       const abbinati: string[] = []
       const nonAbbinati: string[] = []
       let senzaAbbinare: string | null = null
+      let assegnati = 0
+      let daScegliere = 0
+      let senzaAssegnare: string | null = null
       if (classificate) {
         // Un lotto che non va resta in «Da classificare» e gli altri vanno avanti; il primo motivo si dice nel riepilogo.
         try {
@@ -178,6 +182,7 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
           } catch (e) {
             senzaAbbinare = erroreSegreteria(e)
           }
+          const conRicevuta = new Set<string>()
           const oraAbbinamenti = ora ? abbinamentiImport(a.entrano, scelteValide, ora.ricevute, ora.persone, voci, conto.id) : {}
           for (const c of pianoDiAbbinamento(oraAbbinamenti, tolti, messi, scrittiOra)) {
             const r = ora?.ricevute.find((x) => x.id === c.ricevutaId)
@@ -185,16 +190,26 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
             if (!r || !mv) continue
             try {
               await d.abbinaRicevutaMovimento(c.movimentoId, c.ricevutaId)
+              conRicevuta.add(c.movimentoId)
               abbinati.push(`n. ${r.numero}/${r.anno} di ${nomeDi(r.personaId)}`)
             } catch (e) {
               nonAbbinati.push(`${nomeDi(sceltaDi(c.chiave)?.personaId)}, ${soldi(mv.importo)} del ${dataRicevuta(mv.data)} (${erroreSegreteria(e)})`)
             }
           }
+          // Quel che la finestra ha deciso si assegna così com'è; gli altri collegati senza ricevuta si assegnano da soli se è sicuro (sicuro.ts).
+          const scelti = pianoDiAssegnazione(scelteValide, messi, conRicevuta, scrittiOra)
+          const y = await assegnaDaSoli(d, scelti)
+          if (y.errore) senzaAssegnare = y.errore
+          const collegati = collegatiDaAssegnare(piano, scelteValide, scrittiOra, messi, conRicevuta)
+          const x = await assegnaDopoIlCollegamento(d, collegati, oggiARoma())
+          assegnati = y.chiavi.length + x.chiavi.length
+          daScegliere = x.restano + (scelti.length - y.chiavi.length)
+          if (x.errore) senzaAssegnare = x.errore
         } catch (e) {
           guasto ??= erroreSegreteria(e)
         }
       }
-      setScritti({ n, classificati, guasto, abbinati, nonAbbinati, senzaAbbinare, incassi: a.entrano.filter((m) => m.tipo === 'entrata').length })
+      setScritti({ n, classificati, guasto, abbinati, nonAbbinati, senzaAbbinare, incassi: a.entrano.filter((m) => m.tipo === 'entrata').length, assegnati, daScegliere, senzaAssegnare })
     }, undefined, () => {
       setLettura(null)
       onRileggi()
@@ -239,6 +254,17 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
             {scritti.classificati ? <>: <b>{scritti.classificati === 1 ? '1 ha' : `${scritti.classificati} hanno`} la voce che hai scelto</b>{scritti.n > scritti.classificati ? <>, {scritti.n - scritti.classificati === 1 ? 'l’altro è' : `gli altri ${scritti.n - scritti.classificati} sono`} in «Da classificare»: la voce la scegli dopo, con Cambia voce</> : ''}.</> : <>, in «Da classificare»: la voce la scegli dopo, con Cambia voce.</>}{' '}
             {scritti.senzaAbbinare ? null : scritti.abbinati.length ? <><b>{scritti.abbinati.length === 1 ? '1 bonifico è già con la sua ricevuta' : `${scritti.abbinati.length} bonifici sono già con la loro ricevuta`}</b> ({scritti.abbinati.join(', ')}){scritti.incassi > scritti.abbinati.length ? '; gli altri incassi non hanno ricevuta.' : '.'}</> : 'Gli incassi importati non hanno ricevuta.'}
           </span>
+          {scritti.assegnati + scritti.daScegliere > 0 && (
+            <span style={{ fontSize: 15 }}>
+              {scritti.assegnati > 0 && <><b>{scritti.assegnati === 1 ? '1 bonifico è già assegnato' : `${scritti.assegnati} bonifici sono già assegnati`}</b> a quota e corsi, senza ricevuta: la ricevuta si fa dal movimento, quando serve. </>}
+              {scritti.daScegliere > 0 && <>{scritti.daScegliere === 1 ? '1 bonifico con la persona resta' : `${scritti.daScegliere} bonifici con la persona restano`} in «Da assegnare»{scritti.senzaAssegnare ? '' : ': c’è da scegliere'}.</>}
+            </span>
+          )}
+          {scritti.senzaAssegnare && (
+            <span role="alert" className="sg-banca-avviso">
+              <b>Non si sono assegnati da soli</b>: {scritti.senzaAssegnare}. Li trovi in «Da assegnare», dove si assegnano con un tocco.
+            </span>
+          )}
           {scritti.senzaAbbinare && (
             <span role="alert" className="sg-banca-avviso">
               <b>Le ricevute non si sono abbinate</b>: {scritti.senzaAbbinare}. I bonifici sono in «Da assegnare», con la persona: li abbini da lì.
@@ -367,9 +393,24 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
             </div>
           </div>
           {mvAperto && (
-            <ScegliPersona
-              d={d} mv={mvAperto} sug={proposte[mvAperto.chiave] ?? null} scelta={sceltaDi(mvAperto.chiave)}
-              onChiudi={() => setPersonaDi(null)} onScegli={(p) => { scegli(mvAperto.chiave, p); setPersonaDi(null) }}
+            <ChiEPerCosa
+              d={d} data={mvAperto.data} testo={testoDaMostrare(mvAperto)} importo={mvAperto.importo}
+              suggerite={(proposte[mvAperto.chiave]?.candidati ?? []).map((c) => ({ ...c, corsi: [] }))} personaIniziale={sceltaDi(mvAperto.chiave)?.personaId}
+              ricevutaDi={(id) => ricevutaDi(ricevutaDellaPersona(mvAperto, id, ricevute, persone) ?? '')}
+              onRicevuta={(_, p) => {
+                const k = mvAperto.chiave
+                setVociScelte((v) => ({ ...v, [k]: sceltaDaFinestra({ ...p, righe: [] }, voci, sceltaDi(k)?.voceId) }))
+                setTolti((t) => { const n = new Set(t); n.delete(k); return n })
+                setPersonaDi(null)
+              }}
+              onConferma={(x) => {
+                const k = mvAperto.chiave
+                setVociScelte((v) => ({ ...v, [k]: sceltaDaFinestra(x, voci, sceltaDi(k)?.voceId) }))
+                // Ha diviso il bonifico: non va con una ricevuta già fatta.
+                if (x.righe.length) setTolti((t) => new Set(t).add(k))
+                setPersonaDi(null)
+              }}
+              onChiudi={() => setPersonaDi(null)}
             />
           )}
         </>
@@ -446,20 +487,29 @@ function RigaBanca({ r, voci, contoId, scelta, sug, abbina, onScegli, onCollega,
   }
   const offerte = vociOfferte(voci, mv.tipo)
   const voceId = scelta?.voceId ?? offerte.find((v) => v.nome === VOCE_DA_CLASSIFICARE)?.id ?? ''
-  const vuole = sceltaVuolePersona(mv, voci.find((v) => v.id === voceId), contoId)
+  const voceOra = voci.find((v) => v.id === voceId)
+  // Un'entrata da classificare può dire chi e per cosa: la tipologia viene da lì.
+  const vuole = sceltaVuolePersona(mv, voceOra, contoId) || (mv.tipo === 'entrata' && voceOra?.nome === VOCE_DA_CLASSIFICARE)
   const candidato = sug?.candidati.find((c) => c.id === scelta?.personaId)
   const nome = scelta?.personaId ? scelta.nomePersona ?? (candidato ? `${candidato.nome} ${candidato.cognome}` : '') : ''
   return (
     <div className="sg-banca-riga">
       {data}
       <Descrizione mv={mv} nota={r.stato === 'da-controllare' ? 'Contanti: controlla che non siano già nella cassa contanti.' : undefined} />
-      <select className="sg-campo" aria-label={`Tipologia di ${testoDaMostrare(mv)}`} value={voceId} onChange={(e) => onScegli({ voceId: e.target.value })}>
-        {offerte.map((v) => <option key={v.id} value={v.id}>{v.nome}</option>)}
-      </select>
+      {scelta?.righe?.length ? (
+        <span className="sg-sotto">{voceOra?.nome}</span>
+      ) : (
+        <select className="sg-campo" aria-label={`Tipologia di ${testoDaMostrare(mv)}`} value={voceId} onChange={(e) => onScegli({ voceId: e.target.value })}>
+          {offerte.map((v) => <option key={v.id} value={v.id}>{v.nome}</option>)}
+        </select>
+      )}
       {importo}
       {vuole ? (
-        <button type="button" className="sg-campo sg-banca-persona" data-manca={!nome} aria-haspopup="dialog" aria-label={nome ? `Persona: ${nome}, cambia` : `Assegna la persona di ${testoDaMostrare(mv)}`} onClick={onPersona}>
-          <span>{nome || 'Assegna'}</span>
+        <button type="button" className="sg-campo sg-banca-persona" data-manca={!nome} aria-haspopup="dialog" aria-label={nome ? `Persona: ${nome}, cambia` : `Chi ha pagato e per cosa: ${testoDaMostrare(mv)}`} onClick={onPersona}>
+          <span className="stack" style={{ gap: 2, minWidth: 0 }}>
+            <span>{nome || 'Chi e per cosa'}</span>
+            {nome && scelta?.righe?.length ? <span className="sg-sotto">{scelta.righe.map((x) => `${x.voce} ${euroAssegna(x.importo)}`).join(' + ')}</span> : null}
+          </span>
           <Icona nome="cerca" misura={16} />
         </button>
       ) : <span />}
@@ -497,38 +547,6 @@ function Abbinamento({ a, tolto, personaId, ricevutaDi, nomeDi, dataDi, onTogli 
           ? <Tasto aria-label={`Abbina alla ricevuta n. ${r.numero}/${r.anno}`} onClick={() => onTogli(false)}>Abbina</Tasto>
           : <Tasto tono="rosso" aria-label={`Togli la ricevuta n. ${r.numero}/${r.anno}`} onClick={() => onTogli(true)}>Togli</Tasto>}
       </span>
-    </>
-  )
-}
-
-/** La finestra della persona: in cima le schede col nome del testo, sotto la ricerca. */
-function ScegliPersona({ d, mv, sug, scelta, onChiudi, onScegli }: {
-  d: DatiSegreteria; mv: MovimentoBanca; sug: SuggerimentoMovimento | null; scelta: SceltaVoceBanca | null; onChiudi: () => void; onScegli: (x: Partial<SceltaVoceBanca>) => void
-}) {
-  const ref = useDialogo<HTMLDivElement>(onChiudi)
-  const suggerite: CandidatoPersona[] = (sug?.candidati ?? []).map((c) => ({ ...c, corsi: [] }))
-  const [qui, setQui] = useState<CandidatoPersona | null>(() => suggerite.find((c) => c.id === scelta?.personaId) ?? null)
-  const cercata = qui && !suggerite.some((c) => c.id === qui.id) ? qui : null
-  return (
-    <>
-      <button type="button" className="sg-velo" aria-label="Chiudi" onClick={onChiudi} />
-      <div ref={ref} role="dialog" aria-modal="true" tabIndex={-1} aria-labelledby="banca-persona" className="sg-dialogo" style={{ width: 'min(620px, calc(100% - 32px))', maxHeight: 'calc(100% - 32px)', overflowY: 'auto' }}>
-        <div className="stack" style={{ gap: 4 }}>
-          <h2 id="banca-persona" className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em' }}>CHI HA PAGATO?</h2>
-          <span className="sg-sotto">{dataRicevuta(mv.data)} · {testoDaMostrare(mv)} · <b className="num">{mv.tipo === 'entrata' ? '+ ' : '− '}{soldi(mv.importo)}</b></span>
-        </div>
-        {suggerite.length > 0 && (
-          <div className="stack" style={{ gap: 8 }} role="radiogroup" aria-label="Suggerite dal testo">
-            <span className="sg-etichetta">SUGGERITE DAL TESTO</span>
-            {suggerite.map((c) => <SchedaCandidata key={c.id} c={c} nome={`banca-${mv.chiave}`} scelta={c.id === qui?.id} onScegli={() => setQui(c)} />)}
-          </div>
-        )}
-        <CampoPersona d={d} scelta={cercata} manca="" onScegli={setQui} />
-        <div className="row" style={{ gap: 8, justifyContent: 'flex-end' }}>
-          <Tasto onClick={onChiudi}>Annulla</Tasto>
-          <button type="button" className="sg-btn sg-btn-pieno" disabled={!qui} onClick={() => qui && onScegli({ personaId: qui.id, nomePersona: `${qui.nome} ${qui.cognome}` })}>Assegna</button>
-        </div>
-      </div>
     </>
   )
 }

@@ -4,7 +4,7 @@
 
 Le entrate e le uscite della palestra, in due casse: **Cassa Contanti** e
 **Conto Corrente**. La vede solo chi ha il ruolo di amministrazione: la segreteria
-semplice, gli istruttori e il tablet no. Ha cinque schede, sotto il titolo come in IMPOSTAZIONI: **MOVIMENTI**, **DA ASSEGNARE**, **BILANCIO**, **VOCI**, **CASSE**.
+semplice, gli istruttori e il tablet no. Ha quattro schede, sotto il titolo come in IMPOSTAZIONI: **MOVIMENTI**, **BILANCIO**, **VOCI**, **CASSE**. Quel che resta da assegnare si trova in MOVIMENTI, con MOSTRA **Da assegnare**.
 
 ## Movimenti
 
@@ -183,6 +183,9 @@ storico qui, quelle scritte a mano dalla loro finestra (vedi sopra). Non si coll
   Niente si scrive finché non dici **Sì, collega**. Vanno a pacchetti da 500, ognuno tutto o niente; se uno
   si ferma, l'app dice quanti ne ha collegati e **Rifai il collegamento** riparte dagli altri. A fine
   lavoro **Togli questo lotto** scollega solo quelli appena collegati: quelli cambiati a mano dopo non si toccano.
+  Quelli della **stagione in corso** che si possono dividere in un modo solo si **assegnano da soli** (vedi
+  sotto, «Si assegnano da soli»), e il riepilogo dice quanti; **Togli questo lotto** toglie anche quelle
+  assegnazioni. Lo stesso vale quando colleghi a mano con **Collega a una persona**.
 - **Chi ha più schede dello stesso nome** (omonimi) non si collega mai da sé: il tag **Omonimi** e
   MOSTRA **Da assegnare** li mostrano. Scegli i movimenti e tocca **Collega a una persona**: l'app offre
   le persone con quel nome e quel che le distingue (anno di nascita, corsi, iscrizione). Se non basta,
@@ -208,16 +211,26 @@ Si assegnano le **entrate** su «Quota associativa» e «Corsi e altri pagamenti
 persona, sul **Conto Corrente**. I contanti no: si registrano in PAGAMENTI. Lo storico del vecchio
 programma solo dalla **stagione in corso**: quello delle stagioni passate resta nello storico.
 
-- **Dal movimento**: nella finestra, sotto la persona, il riquadro giallo **DA ASSEGNARE** dice quanto
-  manca. **Assegna a quota e corsi** apre l'elenco delle cose da pagare della persona e del suo
-  **nucleo** (un bonifico solo per due fratelli si divide fra tutti e due), già ripartito: prima la
-  quota, poi i corsi dal più vecchio. Gli importi si correggono a mano; accanto a ognuno il tag **Saldo** o **Parziale**, e sotto
+- **CHI HA PAGATO E PER COSA?** è la finestra che dice chi ha pagato un bonifico e a cosa va, in un passo
+  solo. È la stessa dovunque cominci: dal campo PERSONA di una riga dell'**import della banca**, dal tasto
+  **Chi e per cosa** di un'entrata in MOVIMENTI (Da classificare, o su quota e corsi ancora da assegnare,
+  con o senza persona) e da **Assegna a quota e corsi** nel movimento. In cima le schede col nome del
+  testo e la ricerca; scelta la persona, sotto c'è la sua situazione e quella del suo **nucleo**: cosa
+  deve (quota e corsi, con quel che manca) e i **pagamenti** già fatti. La **tipologia** la dice quel che
+  paga: solo la quota → «Quota associativa»; con un corso → «Corsi e altri pagamenti».
+  **Solo la persona, decido dopo** collega e basta. Se c'è una ricevuta fatta a parte che può essere
+  questo bonifico, la finestra chiede **C'È GIÀ LA RICEVUTA: è questa?**: **Sì, è questa** la lega,
+  **No, dividi il bonifico** torna alle cose da pagare.
+- Gli importi sono già proposti (un bonifico solo per due fratelli si divide fra tutti e due): prima la
+  quota, poi i corsi dal più vecchio; se c'è un solo modo di dividere, la finestra lo dice («Un solo modo
+  di dividere: già messo»). Per un corso ancora da pagare propone l'**annuale**, o il **trimestre** se il
+  testo del bonifico dice «trimestrale» o «trimestre». Gli importi si correggono a mano; accanto a ognuno il tag **Saldo** o **Parziale**, e sotto
   quanto resterà. **Svuota tutto** azzera la proposta. Non si assegna più di quel che manca a ogni voce,
   né più del bonifico.
-- **Assegna e fai la ricevuta** (o **le N ricevute**, una per persona) apre la ricevuta già compilata:
-  la data è quella del bonifico, il modo **Bonifico**. **Assegna senza ricevuta** scrive solo
-  l'assegnazione: la ricevuta si fa dopo, dalla stessa finestra, con **Fai la ricevuta**. Quel che non
-  assegni resta **da assegnare**.
+- **Conferma** scrive persona, tipologia e assegnazione, senza ricevuta: la ricevuta si fa dopo, dal
+  movimento, con **Fai la ricevuta**. Dal movimento c'è anche **Conferma e fai la ricevuta**, che apre la
+  ricevuta già compilata (data del bonifico, modo **Bonifico**). All'import si scrive tutto quando
+  importi. Quel che non assegni resta **da assegnare**.
 - Se la persona è segnata **pagata a mano** nella scheda, senza un pagamento nell'app, non c'è niente da
   pagare e la finestra mostra il riquadro giallo **GIÀ PAGATO A MANO**. Se il bonifico è quel
   pagamento, **È questo bonifico** propone la quota e i corsi interi, prima i suoi e quel che avanza ai
@@ -227,18 +240,32 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
   segnata pagata com'era.
 - Nella finestra, **ASSEGNATO A** elenca a chi e a cosa sono andati i soldi, con la ricevuta (e il
   **PDF**) o il tag **Senza ricevuta**.
-- La scheda **DA ASSEGNARE** elenca tutte le entrate collegate che hanno ancora soldi senza una voce,
-  col totale; **Assegna** apre il movimento. In cima, **COLLEGATI PRIMA**: i bonifici già nel Conto
+- **Si assegnano da soli** i bonifici collegati per cui c'è **un solo modo di dividere** l'importo fra
+  le cose che il nucleo deve, ognuna pagata per intero: 220,00 € e un annuale da 220,00 €, o 270,00 € e
+  quota da 50,00 € più un annuale da 220,00 €. Non si assegna da solo un bonifico che si può dividere in
+  più modi (due corsi dello stesso prezzo), pagato **in parte**, **più** di quel che deve, di chi è
+  segnato **pagato a mano**, con la ricevuta già fatta a parte (va abbinata), o già assegnato in parte.
+  Si assegnano **senza ricevuta**: la ricevuta si fa dal movimento, quando serve. Succede da sé dopo
+  l'**import della banca**, **Collega i casi sicuri** e **Collega a una persona**. Per quelli collegati
+  prima, in MOVIMENTI con MOSTRA **Da assegnare** in cima c'è il riquadro **SI ASSEGNANO DA SOLI**: tutti, uno per
+  riga, con persona, voce e importo; **Assegna i N** chiede conferma e li scrive. Subito dopo **Togli
+  questo lotto** li rimette in Da assegnare; uno solo si annulla anche dal movimento.
+- La persona di un bonifico è **sicura** con la stessa regola dappertutto: all'import il primo dei
+  proposti con almeno 4 punti e 2 più del secondo, anche se è già iscritto quando la causale ha il suo
+  **nome e cognome interi**; nello storico il nome della causale di una sola scheda.
+- MOSTRA **Da assegnare** in MOVIMENTI elenca le altre, e sotto ognuna perché non si assegna da sola
+  («Ci sono più modi di dividere…», «Pagato in parte: … di …»), col tasto **Chi e per cosa**. In cima,
+  oltre a SI ASSEGNANO DA SOLI, **C'È GIÀ LA RICEVUTA**: i bonifici già nel Conto
   Corrente per cui la ricevuta in Bonifico l'hai fatta a parte (stesso importo, pagata tutta con
   bonifico, entro 30 giorni). La ricevuta può essere della persona del bonifico o della sua famiglia
   (il genitore paga, la ricevuta è del figlio). **Abbina** li lega senza scrivere niente di nuovo, così i
   soldi non si contano due volte; **Non è questa** la toglie dalla proposta.
 - Lo stesso lo vedi **dal movimento**: se il bonifico non ha ancora niente assegnato e c'è la sua
-  ricevuta fatta a parte (la stessa che proporrebbe COLLEGATI PRIMA), al posto di **DA ASSEGNARE** c'è
+  ricevuta fatta a parte (la stessa che proporrebbe C'È GIÀ LA RICEVUTA), al posto di **DA ASSEGNARE** c'è
   **C'È GIÀ LA RICEVUTA**: «C'è già la ricevuta n. … del … da …: è questa?». **Abbina** la lega al
   bonifico, che resta aperto con la ricevuta in **ASSEGNATO A**; **Non è questa** torna a **DA
   ASSEGNARE**, finché non chiudi la finestra.
-- Anche un bonifico ancora **Da classificare** compare in COLLEGATI PRIMA, con le ricevute che possono
+- Anche un bonifico ancora **Da classificare** compare in C'È GIÀ LA RICEVUTA, con le ricevute che possono
   essere sue, dalla data più vicina: solo quelle di chi la causale nomina con nome e cognome interi (la
   persona della ricevuta, qualcuno della sua famiglia o il genitore scritto nella sua anagrafica). Se la
   causale non nomina nessuno, il bonifico non compare: collegalo a mano. Poi scegli quella giusta con **È questa** (o **Abbina**, se è una sola),
@@ -256,7 +283,7 @@ bonifico collegato da assegnare, il modulo lo dice: se è quello, falla dal boni
 Con **PAGATO CON Bonifico**, se nel Conto Corrente c'è già un bonifico libero con lo stesso importo
 entro 30 giorni (della persona, della sua famiglia o Da classificare con il loro nome nella causale), il modulo lo mostra in **FORSE È
 GIÀ IN BANCA**: spunta **È questo: abbinalo alla ricevuta** e, fatta la ricevuta, il bonifico si abbina
-da solo. Non è obbligatorio, e lo vede solo chi ha CONTABILITÀ: per gli altri resta COLLEGATI PRIMA.
+da solo. Non è obbligatorio, e lo vede solo chi ha CONTABILITÀ: per gli altri resta C'È GIÀ LA RICEVUTA.
 
 ### Giroconto
 
@@ -325,8 +352,10 @@ I versamenti **«Da Satispay Europe S.A.»** entrano come gli altri: sono l'inca
 Sulle righe che entrano scegli la **tipologia**: parte da quella che l'app propone (come per
 i movimenti da classificare) o da **Da classificare**. Per una quota o un corso serve anche la
 **persona**, in fondo alla riga: se nel testo c'è il nome di una sola scheda, l'app la mette già lì
-e all'importazione vale quella. Premendo il campo (o **Assegna**, se è vuoto) si apre **CHI HA
-PAGATO?**: in cima le schede col nome del testo, sotto la ricerca; scegli e premi **Assegna**.
+e all'importazione vale quella. Premendo il campo (o **Chi e per cosa**, se è vuoto) si apre **CHI HA
+PAGATO E PER COSA?** (vedi [Assegnare un bonifico](#assegnare-un-bonifico-a-quota-e-corsi)): scegli la
+persona e a cosa va. Il campo dice poi chi e per cosa («Trimestre Judo kids 120,00 €»), e la tipologia
+segue quel che paga. Un'entrata **Da classificare** può aprire la stessa finestra.
 In fondo l'app dice quante righe avranno la voce scelta e quante restano in **Da classificare**:
 una quota senza persona, per esempio, entra lo stesso e resta lì. Se esci dalla pagina con delle
 scelte fatte, l'app chiede prima.
@@ -341,7 +370,10 @@ Con **più ricevute possibili**, o se due bonifici del file vogliono la stessa, 
 giallo e non si abbina niente: la scegli dopo in **Da assegnare**. Se cambi persona o voce, la
 proposta si rifà. In fondo l'app dice anche quanti bonifici entrano con la ricevuta, e dopo
 l'importazione il riepilogo elenca le ricevute abbinate (numero e persona) e, in giallo, i bonifici
-che non si sono abbinati, col motivo.
+che non si sono abbinati, col motivo. I bonifici con la persona e senza ricevuta che si dividono in un
+modo solo **si assegnano da soli** a quota e corsi, senza ricevuta (vedi [«Si assegnano da
+soli»](#assegnare-un-bonifico-a-quota-e-corsi)): il riepilogo dice quanti, e quanti restano in **Da
+assegnare** perché c'è da scegliere.
 
 I movimenti entrano col segno **DALLA BANCA**, nella voce scelta o in **Da classificare**:
 quelle rimaste le sistemi dopo, con **Cambia voce**. Rileggere lo stesso file non duplica niente,

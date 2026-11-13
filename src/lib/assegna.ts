@@ -7,12 +7,13 @@ import { NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, VOCE_CORSI, VOCE_QUOTA, voceDiSi
 import type { PagamentoDiretto } from './pagamenti'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import type { VoceStorico } from './movimentiPersona'
-import { QUOTA, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { QUOTA, centesimi, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { statoCorsi, type VoceCorso } from './corsiDaPagare'
 import { stagioneDi } from './costi'
-import { nomeCorso, type CorsoRef, type Listino } from './listino'
-import { pagamentoDi, type PersonaSeg } from './segreteria'
+import { listinoUsabile, nomeCorso, type CorsoRef, type Listino } from './listino'
+import { pagamentoDi, type DatiSegreteria, type PersonaSeg } from './segreteria'
 import { nomeOGenitore } from './abbinaMovimenti'
+import { ripartizioneSicura } from './sicuro'
 
 /**
  * I soldi sempre con i centesimi, come nel canvas: «50,00 €». Il punto delle migliaia anche a quattro cifre
@@ -439,15 +440,22 @@ export const quotaDelListino = (listino: Listino, giorno: string) => ({ prezzo: 
  * sono quelli del listino nel giorno della prima assegnazione.
  */
 export function conAssegnazioni<P extends Pick<PersonaSeg, 'id' | 'quote' | 'vociCorsi'>>(p: P, diretti: PagamentoDiretto[], listino: Listino, oggi: string): P {
-  const sue = assegnazioniDi(diretti, p.id)
+  // Le schede lette dal database le hanno già dentro (`persone()`): ogni assegnazione si conta una volta sola.
+  const gia = (p as ConAssegnazioniDentro)[DENTRO] ?? []
+  const sue = assegnazioniDi(diretti, p.id).filter((d) => !gia.includes(d.id))
   if (!sue.length) return p
   const giorno = sue.map((d) => d.data).sort()[0]
   return {
     ...p,
-    quote: quoteConAssegnazioni(p.quote ?? [], quotaDelListino(listino, oggi), diretti, p.id),
-    vociCorsi: p.vociCorsi ? vociCorsiConAssegnazioni(p.vociCorsi, prezziDelListino(listino, giorno), diretti, p.id) : p.vociCorsi,
+    quote: quoteConAssegnazioni(p.quote ?? [], quotaDelListino(listino, oggi), sue, p.id),
+    vociCorsi: p.vociCorsi ? vociCorsiConAssegnazioni(p.vociCorsi, prezziDelListino(listino, giorno), sue, p.id) : p.vociCorsi,
+    [DENTRO]: [...gia, ...sue.map((d) => d.id)],
   }
 }
+
+/** Le assegnazioni già dentro quota e corsi di una scheda: un simbolo, che passa con le copie (`{ ...p }`) e non esce in JSON. */
+const DENTRO = Symbol('assegnazioni dentro')
+type ConAssegnazioniDentro = { [DENTRO]?: string[] }
 
 /**
  * Le cose ancora da pagare di una persona, per la ripartizione: la quota (intera, o quel che manca) e i corsi in cui è
@@ -455,7 +463,9 @@ export function conAssegnazioni<P extends Pick<PersonaSeg, 'id' | 'quote' | 'voc
  * tetto del database (`cosaNonVaQuota`) lascia mettere: una ricevuta fatta a un prezzo più alto del listino di adesso
  * direbbe di più, e il dialogo proporrebbe un importo che poi si rifiuta.
  */
-export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }): VoceDovuta[] {
+export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }, causale = ''): VoceDovuta[] {
+  // La causale che dice «trimestrale» propone il trimestre: con l'annuale restava da pagare un parziale che non c'è.
+  const daPagare = /trimestr/i.test(causale) ? 'trimestre' : 'annuale'
   const stagione = stagioneDi(oggi)
   const fuori: VoceDovuta[] = []
   const q = pagamentoDi(p, oggi)
@@ -469,8 +479,11 @@ export function dovutiDi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, ogg
     if (!['in_parte', 'da_pagare', 'scaduto'].includes(s.come)) continue
     const corso = corsi.find((c) => c.id === s.corsoId)
     if (!corso) continue
-    const formula = s.come === 'in_parte' ? s.formula : 'annuale'
-    const voce = vociDelCorso(corso, oggi, listino).map((v) => v.voce(oggi)).find((v) => v.descrizione.toLowerCase().startsWith(formula ?? 'annuale'))
+    const formula = s.come === 'in_parte' ? s.formula : daPagare
+    const voci = vociDelCorso(corso, oggi, listino).map((v) => v.voce(oggi))
+    const conFormula = (f = 'annuale') => voci.find((v) => v.descrizione.toLowerCase().startsWith(f))
+    // Un corso senza prezzo del trimestre resta sull'annuale.
+    const voce = conFormula(formula) ?? (s.come === 'in_parte' ? undefined : conFormula())
     if (!voce) continue
     const manca = s.come === 'in_parte' ? (s.mancano ?? 0) : voce.prezzo
     const dal = p.iscrizioni.find((i) => i.corsoId === s.corsoId)?.dal ?? stagione.corsi.dal
@@ -492,8 +505,8 @@ export const pagatoAMano = (p: PersonaSeg, oggi: string) => {
 export const senzaSegnoAMano = (p: PersonaSeg): PersonaSeg => ({ ...p, pagamento: { ...p.pagamento, stato: 'da_pagare' } })
 
 /** Le cose da pagare del nucleo; per chi ha detto «È questo bonifico» come se la scheda non fosse segnata a mano. */
-export const dovutiDelNucleo = (chi: PersonaSeg[], eQuesto: string[], corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }) =>
-  chi.flatMap((p) => dovutiDi(conAssegnazioni(eQuesto.includes(p.id) ? senzaSegnoAMano(p) : p, gia.diretti, listino, oggi), corsi, listino, oggi, gia))
+export const dovutiDelNucleo = (chi: PersonaSeg[], eQuesto: string[], corsi: CorsoRef[], listino: Listino, oggi: string, gia: { diretti: PagamentoDiretto[]; ricevute: Ricevuta[] }, causale = '') =>
+  chi.flatMap((p) => dovutiDi(conAssegnazioni(eQuesto.includes(p.id) ? senzaSegnoAMano(p) : p, gia.diretti, listino, oggi), corsi, listino, oggi, gia, causale))
 
 /** A chi del nucleo chiedere «Già pagato a mano»: segnato a mano, niente da pagare, non ha ancora risposto. Con la data del segno. */
 export const daChiedereAMano = (chi: PersonaSeg[], risposto: string[], dovuti: VoceDovuta[], diretti: PagamentoDiretto[], listino: Listino, oggi: string) =>
@@ -559,4 +572,260 @@ export function bonificiDaAssegnare(storico: VoceStorico[], diretti: PagamentoDi
     .map((v) => ({ movimentoId: v.id, data: v.data, importo: v.importo, daAssegnare: daAssegnare(v, diretti, ricevute) }))
     .filter((x) => x.daAssegnare > 0)
     .sort((a, b) => a.data.localeCompare(b.data) || a.movimentoId.localeCompare(b.movimentoId))
+}
+
+/** Quel che serve per dire quali bonifici si assegnano da soli: i dati di CONTABILITÀ e le schede con corsi e listino. */
+export interface ContestoDaSoli {
+  manuali: MovimentoManuale[]
+  diretti: PagamentoDiretto[]
+  ricevute: Ricevuta[]
+  casse: Cassa[]
+  voci: VoceContabile[]
+  persone: PersonaSeg[]
+  corsi: CorsoRef[]
+  listino: Listino
+  oggi: string
+}
+
+/** Un bonifico che si assegna da solo, con le sue righe. */
+export interface ProntoDaSolo {
+  movimentoId: string
+  personaId: string
+  data: string
+  importo: number
+  descrizione: string
+  righe: RigaAssegnata[]
+}
+
+/** Un pagamento già fatto da una persona, per la finestra «Chi ha pagato e per cosa?». */
+export interface PagamentoFatto {
+  data: string
+  voce: string
+  importo: number
+  ricevuta?: { anno: number; numero: number }
+}
+
+/** I pagamenti di una persona, dal più recente: le righe a mano attive e le voci delle ricevute non annullate. */
+export function pagamentiFatti(personaId: string, diretti: PagamentoDiretto[], ricevute: Ricevuta[]): PagamentoFatto[] {
+  const aMano = diretti.filter((x) => x.personaId === personaId && !x.annullatoIl).map((x) => ({ data: x.data, voce: x.voce, importo: x.importo }))
+  const inRicevuta = ricevute
+    .filter((r) => r.personaId === personaId && !r.annullataIl)
+    .flatMap((r) => r.voci.flatMap((v) => v.pagamenti.map((x) => ({ data: x.data || r.data, voce: v.descrizione, importo: x.importo, ricevuta: { anno: r.anno, numero: r.numero } }))))
+  return [...aMano, ...inRicevuta].sort((a, b) => b.data.localeCompare(a.data))
+}
+
+/** La tipologia del movimento la dice quel che paga: solo la quota → «Quota associativa»; con un corso → «Corsi e altri pagamenti». */
+export const tipologiaDaRighe = (righe: RigaAssegnata[]): string | null =>
+  !righe.length ? null : righe.every((r) => eQuota(r.voce)) ? VOCE_QUOTA : VOCE_CORSI
+
+/**
+ * Chi ha pagato e per cosa: la situazione del nucleo di chi ha pagato (cosa deve, i pagamenti fatti) e la divisione
+ * proposta del bonifico. È la stessa logica per la finestra (import, MOVIMENTI, il movimento) e per i bonifici che si
+ * assegnano da soli: `sicura` quando c'è un solo modo di dividere (`ripartizioneSicura`) e nessuno da chiedere; se no
+ * la proposta è quella di sempre (prima la quota, poi i corsi), da correggere a mano. `eQuesto`: chi ha detto «È questo
+ * bonifico» a «Già pagato a mano».
+ */
+export function chiEPerCosa(
+  personaId: string,
+  importo: number,
+  c: Pick<ContestoDaSoli, 'diretti' | 'ricevute' | 'persone' | 'corsi' | 'listino' | 'oggi'>,
+  eQuesto: string[] = [],
+  causale = '',
+) {
+  const chi = personeDelNucleo(personaId, c.persone).flatMap((id) => c.persone.filter((p) => p.id === id))
+  const dovuti = dovutiDelNucleo(chi, eQuesto, c.corsi, c.listino, c.oggi, { diretti: c.diretti, ricevute: c.ricevute }, causale)
+  const daChiedere = daChiedereAMano(chi, eQuesto, dovuti, c.diretti, c.listino, c.oggi).map((x) => x.persona.id)
+  const r = ripartizioneSicura(importo, dovuti)
+  const sicura = 'righe' in r && !daChiedere.length && cosaNonVaAssegnazione(r.righe, importo, dovuti) === null
+  const proposta = 'righe' in r && sicura ? r.righe : eQuesto.length ? propostaDopoIlSi(importo, dovuti, eQuesto[eQuesto.length - 1]).righe : proponiRipartizione(importo, dovuti).righe
+  return {
+    nucleo: chi.map((p) => ({ persona: p, dovuti: dovuti.filter((v) => v.personaId === p.id), pagamenti: pagamentiFatti(p.id, c.diretti, c.ricevute) })),
+    dovuti,
+    daChiedere,
+    proposta,
+    sicura,
+    motivo: 'motivo' in r ? r : null,
+  }
+}
+
+/**
+ * I bonifici collegati che si assegnano da soli (fra `ids`, se detti: quelli appena collegati), e per gli altri il
+ * perché in parole della segreteria. Solo le entrate che `cosaNonVaMovimentoDaAssegnare` lascia passare e ancora
+ * intere: uno già assegnato in parte si finisce a mano, e uno con la ricevuta già fatta va abbinato (COLLEGATI PRIMA),
+ * se no i soldi si contano due volte. Poi la stessa logica della finestra (`chiEPerCosa`): sicura, e si assegna senza
+ * ricevuta; quella resta a mano.
+ */
+export function daSoli(c: ContestoDaSoli, ids?: string[]): { pronti: ProntoDaSolo[]; perche: Record<string, string> } {
+  const voluti = ids ? new Set(ids) : null
+  const conRicevuta = new Set(collegatiPrima(c.manuali, c.diretti, c.ricevute, c.casse, c.voci, c.oggi, c.persone).map((x) => x.movimentoId))
+  const pronti: ProntoDaSolo[] = []
+  const perche: Record<string, string> = {}
+  const inizio = stagioneDi(c.oggi).dal
+  // Le righe dei bonifici già scelti nel giro contano per quelli dopo: due bonifici uguali non pagano due volte lo stesso corso.
+  const diretti = [...c.diretti]
+  for (const m of [...c.manuali].sort((a, b) => a.data.localeCompare(b.data) || a.id.localeCompare(b.id))) {
+    if (voluti && !voluti.has(m.id)) continue
+    if (!m.personaId || cosaNonVaMovimentoDaAssegnare(m, c.casse, c.voci, c.oggi) !== null || daAssegnare(m, c.diretti, c.ricevute) !== m.importo) continue
+    // Di una stagione passata, da qualunque parte venga: andrebbe sulle cose da pagare di adesso.
+    if (m.data < inizio) continue
+    if (conRicevuta.has(m.id)) {
+      perche[m.id] = 'C’è già la ricevuta: abbinala qui sopra.'
+      continue
+    }
+    const x = chiEPerCosa(m.personaId, m.importo, { ...c, diretti }, [], m.descrizione)
+    if (x.daChiedere.length) {
+      perche[m.id] = 'È segnato pagato a mano: di’ tu se è questo bonifico.'
+      continue
+    }
+    if (x.sicura) {
+      pronti.push({ movimentoId: m.id, personaId: m.personaId, data: m.data, importo: m.importo, descrizione: m.descrizione, righe: x.proposta })
+      diretti.push(...x.proposta.map((y, i) => ({ id: `${m.id}-${i}`, personaId: y.personaId, data: m.data, importo: y.importo, metodo: 'Bonifico', voce: y.voce, movimentoId: m.id, creatoIl: m.data })))
+      continue
+    }
+    perche[m.id] = x.motivo ? fraseNonDaSolo(x.motivo.motivo, m.importo, x.motivo.dovuto) : 'Decidi tu a cosa va.'
+  }
+  return { pronti, perche }
+}
+
+const fraseNonDaSolo = (motivo: 'niente' | 'piu modi' | 'in parte' | 'di piu', importo: number, dovuto: number): string =>
+  motivo === 'niente' ? 'Nel nucleo non c’è niente da pagare: decidi tu a cosa va.'
+    : motivo === 'piu modi' ? `Ci sono più modi di dividere ${euroAssegna(importo)}: scegli tu.`
+      : motivo === 'in parte' ? `Pagato in parte: ${euroAssegna(importo)} di ${euroAssegna(dovuto)}. Decidi tu su cosa.`
+        : `È più di quel che deve (${euroAssegna(dovuto)}): decidi tu dove va il resto.`
+
+/**
+ * Scrive i bonifici che si assegnano da soli, uno per volta, ognuno con una chiave sua (136). Un giro rifatto dopo
+ * una rete caduta non scrive due volte perché `daSoli` rilegge e salta i bonifici già assegnati, non per la chiave,
+ * che è nuova a ogni giro. Le chiavi sono il lotto, per «Togli questo lotto»: uno scritto ma con la risposta persa
+ * non c'è, e si annulla dal movimento. Non lancia mai: un guaio ferma il giro e lo dice, e quelli già scritti restano.
+ */
+export async function assegnaDaSoli(
+  d: Pick<DatiSegreteria, 'assegnaMovimento'>,
+  pronti: Array<Pick<ProntoDaSolo, 'movimentoId' | 'righe'>>,
+  suProgresso?: (fatti: number) => void,
+): Promise<{ chiavi: string[]; errore?: string }> {
+  const chiavi: string[] = []
+  for (const p of pronti) {
+    const chiave = crypto.randomUUID()
+    try {
+      await d.assegnaMovimento(p.movimentoId, p.righe, chiave)
+    } catch (e) {
+      return { chiavi, errore: e instanceof Error && e.message ? e.message : 'Non si è assegnato: riprova.' }
+    }
+    chiavi.push(chiave)
+    suProgresso?.(chiavi.length)
+  }
+  return { chiavi }
+}
+
+/**
+ * «Togli questo lotto»: annulla le assegnazioni scritte con quelle chiavi che sono ancora attive. Una diventata ricevuta
+ * è già annullata e resta della ricevuta: si toglie annullando la ricevuta.
+ */
+export async function togliLottoAssegnazioni(d: Pick<DatiSegreteria, 'pagamentiDiretti' | 'annullaPagamentoDiretto'>, chiavi: string[]): Promise<{ tolti: number }> {
+  const lotto = new Set(chiavi)
+  const attive = (await d.pagamentiDiretti()).filter((x) => !!x.chiave && lotto.has(x.chiave) && !x.annullatoIl)
+  for (const x of attive) await d.annullaPagamentoDiretto(x.id)
+  return { tolti: attive.length }
+}
+
+/**
+ * Dopo un collegamento (import della banca, «Collega i casi sicuri», a mano): legge i dati freschi e assegna da sé quei
+ * movimenti, se è sicuro. Non lancia: chi chiama ha già collegato, e un'assegnazione mancata resta in «Da assegnare».
+ */
+export async function assegnaDopoIlCollegamento(
+  d: Pick<DatiSegreteria, 'assegnaMovimento' | 'movimenti' | 'pagamentiDiretti' | 'ricevute' | 'casse' | 'voci' | 'persone' | 'corsi' | 'listino'>,
+  ids: string[],
+  oggi: string,
+): Promise<{ chiavi: string[]; restano: number; errore?: string }> {
+  if (!ids.length) return { chiavi: [], restano: 0 }
+  try {
+    const [manuali, diretti, ricevute, casse, voci, persone, corsi, letto] = await Promise.all([
+      d.movimenti(), d.pagamentiDiretti(), d.ricevute(), d.casse(), d.voci(), d.persone(), d.corsi(), d.listino(),
+    ])
+    const { pronti } = daSoli({ manuali, diretti, ricevute, casse, voci, persone, corsi, listino: listinoUsabile(letto.listino, corsi), oggi }, ids)
+    const x = await assegnaDaSoli(d, pronti)
+    return { ...x, restano: ids.length - x.chiavi.length }
+  } catch (e) {
+    return { chiavi: [], restano: ids.length, errore: e instanceof Error && e.message ? e.message : 'Non si è assegnato: riprova.' }
+  }
+}
+
+/**
+ * Scrive quel che la finestra «Chi ha pagato e per cosa?» ha deciso per un movimento già in CONTABILITÀ: la tipologia
+ * (da quel che paga, `tipologiaDaRighe`; senza righe resta quella che c'è, e un Da classificare va su «Corsi e altri
+ * pagamenti») e la persona, poi le righe, con una chiave (136). La tipologia cambia insieme alla persona; se cambia
+ * solo la persona, la collega e basta.
+ */
+export async function scriviChiEPerCosa(
+  d: Pick<DatiSegreteria, 'cambiaVoceMovimenti' | 'collegaMovimentiPersona' | 'assegnaMovimento'>,
+  m: { id: string; voceId?: string; personaId?: string },
+  scelta: { personaId: string; righe: RigaAssegnata[]; chiave?: string },
+  voci: VoceContabile[],
+): Promise<void> {
+  const daClassificare = voci.find((v) => v.id === m.voceId)?.nome === VOCE_DA_CLASSIFICARE
+  const tipologia = tipologiaDaRighe(scelta.righe) ?? (daClassificare || !m.voceId ? VOCE_CORSI : null)
+  const voceId = tipologia ? voci.find((v) => v.nome === tipologia)?.id : m.voceId
+  if (voceId && voceId !== m.voceId) await d.cambiaVoceMovimenti([m.id], voceId, scelta.personaId)
+  else if (scelta.personaId !== m.personaId) await d.collegaMovimentiPersona([m.id], scelta.personaId)
+  // La chiave è dell'apertura della finestra: riprovato dopo una rete caduta, il database non assegna due volte (136).
+  if (scelta.righe.length) await d.assegnaMovimento(m.id, scelta.righe, scelta.chiave ?? crypto.randomUUID())
+}
+
+/**
+ * Quali entrate di MOVIMENTI aprono «Chi ha pagato e per cosa?» dalla riga: le Da classificare del conto (non il
+ * versamento di Satispay, che non è di una persona) e quelle su quota e corsi ancora intere, con o senza persona.
+ * Una già assegnata in parte si finisce dal movimento; i contanti si registrano in PAGAMENTI.
+ */
+export function apreChiEPerCosa(
+  m: Pick<MovimentoManuale, 'id' | 'tipo' | 'importo' | 'data' | 'voceId' | 'cassaId' | 'annullatoIl' | 'origineImport' | 'descrizione'>,
+  casse: Cassa[], voci: VoceContabile[], diretti: PagamentoDiretto[], ricevute: Ricevuta[], oggi: string,
+): boolean {
+  if (m.annullatoIl || m.tipo !== 'entrata' || casse.find((c) => c.id === m.cassaId)?.nome === NOME_CASSA_CONTANTI) return false
+  const voce = voci.find((v) => v.id === m.voceId)?.nome
+  if (voce === VOCE_DA_CLASSIFICARE) return !/satispay\s+europe/i.test(m.descrizione)
+  if (voce !== VOCE_QUOTA && voce !== VOCE_CORSI) return false
+  if (m.origineImport?.startsWith('prima-nota:') && m.data < stagioneDi(oggi).dal) return false
+  return daAssegnare(m, diretti, ricevute) === m.importo
+}
+
+/**
+ * La ricevuta già fatta che può essere questo movimento, per la persona scelta nella finestra: le regole di «C'è già
+ * la ricevuta» (`ricevutaGiaFatta`), come se il movimento fosse già suo e, se Da classificare, su «Corsi e altri pagamenti».
+ */
+export function ricevutaPerChi(
+  m: MovimentoManuale, personaId: string,
+  c: Pick<ContestoDaSoli, 'manuali' | 'diretti' | 'ricevute' | 'casse' | 'voci' | 'persone' | 'oggi'>,
+): Ricevuta | undefined {
+  const corsi = c.voci.find((v) => v.nome === VOCE_CORSI)?.id
+  const daClassificare = c.voci.find((v) => v.id === m.voceId)?.nome === VOCE_DA_CLASSIFICARE
+  const comeSuo = c.manuali.map((x) => (x.id === m.id ? { ...x, personaId, voceId: daClassificare || !x.voceId ? corsi : x.voceId } : x))
+  const id = ricevutaGiaFatta(m.id, comeSuo, c.diretti, c.ricevute, c.casse, c.voci, c.oggi, c.persone)
+  return c.ricevute.find((r) => r.id === id)
+}
+
+/** Gli importi scritti nella finestra, per voce (`personaId` e voce uniti da \u0000): le righe e cosa non va, in parole. */
+export function righeDaCampi(dovuti: VoceDovuta[], valori: Record<string, string>, importo: number): { righe: RigaAssegnata[]; guaio: string | null } {
+  const letti = dovuti.map((v) => {
+    const t = valori[`${v.personaId}\u0000${v.voce}`] ?? ''
+    return { v, cent: t.trim() ? centesimi(t) : 0 }
+  })
+  const nonSiCapisce = letti.find((x) => x.cent === null)
+  const righe = letti.filter((x) => (x.cent ?? 0) > 0).map((x) => ({ personaId: x.v.personaId, voce: x.v.voce, importo: x.cent ?? 0 }))
+  if (nonSiCapisce) return { righe, guaio: `L’importo di «${nonSiCapisce.v.voce}» non si capisce.` }
+  return { righe, guaio: righe.length ? cosaNonVaAssegnazione(righe, importo, dovuti) : null }
+}
+
+/**
+ * «Sì, è questa» nella finestra: il bonifico prende la ricevuta già fatta. Un Da classificare si abbina e basta
+ * (`abbina_ricevuta_movimento` gli dà persona e voce della ricevuta, 151); uno già su quota o corsi prima prende la
+ * persona scelta, se è un'altra.
+ */
+export async function abbinaDaFinestra(
+  d: Pick<DatiSegreteria, 'collegaMovimentiPersona' | 'abbinaRicevutaMovimento'>,
+  m: { id: string; voceId?: string; personaId?: string }, personaId: string, ricevutaId: string, voci: VoceContabile[],
+): Promise<void> {
+  const daClassificare = !m.voceId || voci.find((v) => v.id === m.voceId)?.nome === VOCE_DA_CLASSIFICARE
+  if (!daClassificare && m.personaId !== personaId) await d.collegaMovimentiPersona([m.id], personaId)
+  await d.abbinaRicevutaMovimento(m.id, ricevutaId)
 }

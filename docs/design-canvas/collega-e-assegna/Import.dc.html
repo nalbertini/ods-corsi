@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .riq { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #ffffff; border: 2px solid #cfe6f4; min-width: 0; }
+    .link { font-size: 15px; font-weight: 600; color: #0d2a3d; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+    .num { font-variant-numeric: tabular-nums; }
+    .riga { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; border-top: 1px solid #cfe6f4; padding-top: 8px; font-size: 15px; }
+    .perche { font-size: 13px; color: #8f6a00; }
+    .ok { font-size: 13px; color: #0b7a33; font-weight: 600; }
+    h1 { margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: .04em; line-height: 1; }
+  </style>
+</helmet>
+<!-- PROPOSTA: l’import della banca e «Collega i casi sicuri» assegnano anche i soldi quando è sicuro, e lo dicono nel riepilogo. -->
+<div style="display:flex;width:1440px;min-height:900px;background:#eef5fa">
+<div style="width:240px;flex-shrink:0"><dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Nicola Albertini" ruolo="Amministrazione" area="amministrazione" autorizzazioni="segreteria e amministrazione" altezza="900px" hint-size="240px,900px"></dc-import></div>
+<main style="display:flex;flex-direction:column;gap:16px;flex:1;min-width:0;padding:28px 36px">
+<div><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="← I movimenti" hint-size="170px,44px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:4px"><h1>CONTABILITÀ</h1><span style="font-size:14px;color:#46606f">Importa dalla banca · solo l’amministrazione</span></div>
+<section class="riq" style="padding:20px 24px"><span class="et">IMPORTAZIONE FATTA</span><b style="font-size:22px">12 MOVIMENTI SCRITTI</b>
+<span style="font-size:15px;line-height:1.5">Sono nel Conto Corrente con la voce che hai scelto. <b>5 bonifici hanno la persona</b>: <b>3 sono già assegnati</b> a quota e corsi, senza ricevuta: la ricevuta si fa dal movimento, quando serve. 2 restano in «Da assegnare»: c’è da scegliere.</span>
+<div><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Guarda i da assegnare" larghezza="230px" hint-size="230px,44px"></dc-import></div></section>
+<span class="et" style="padding-top:12px">E IN «COLLEGA I CASI SICURI», A FINE GIRO</span>
+<section class="riq" style="padding:20px 24px"><b style="font-size:18px">84 movimenti collegati</b><span style="font-size:15px;line-height:1.5">Di questi, <b>6 della stagione in corso sono anche assegnati</b> a quota e corsi. Quelli delle stagioni passate restano solo collegati: sono storico.</span><div style="display:flex;gap:12px"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pericolo" label="Togli questo lotto" hint-size="190px,44px"></dc-import></div><span class="sotto">«Togli questo lotto» toglie anche le assegnazioni fatte nel giro.</span></section>
+</main></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
