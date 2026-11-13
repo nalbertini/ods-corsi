@@ -6,7 +6,7 @@ import { mesi } from '../../lib/ore'
 import { csv } from '../../lib/vestiario'
 import { SOCIETA } from '../../lib/cartaPdf'
 import { lette } from '../../lib/letture'
-import { chiedi, Guaio, suCarta, Testa, useAvviso, useCarica, useOrdina, Tasto, Segmenti } from './comune'
+import { chiedi, ComeFunziona, FiltroMenu, Guaio, suCarta, Testa, useAvviso, useCarica, useOrdina, Tasto, Segmenti } from './comune'
 
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 const perNome = (a: string, b: string) => a.localeCompare(b, 'it')
@@ -172,101 +172,70 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
               ? `${daConfermare} da confermare.`
               : 'Niente da confermare.'
         }
-      />
+      >
+        <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <Tasto
+            disabled={!lista.length}
+            onClick={() =>
+              scaricaCsv(
+                // Dalla più vecchia, come si legge un foglio.
+                [...lista].reverse(),
+                ['presenze istruttori', m ? m.nome : 'ultimi dodici mesi', corso, istruttori.find(([id]) => id === istruttore)?.[1] ?? '', stato ? STATI[stato] : '']
+                  .filter(Boolean)
+                  .join(' '),
+              )
+            }
+          >
+            Scarica CSV
+          </Tasto>
+          <button
+            type="button"
+            className="sg-btn sg-btn-linea"
+            disabled={!report.length || lavora}
+            onClick={() =>
+              void fai(
+                () =>
+                  suCarta(fai, async (carta) =>
+                    (await import('../../lib/reportIstruttoriPdf')).scaricaReportIstruttori(
+                    report,
+                    {
+                      periodo: m ? m.nome : 'Ultimi dodici mesi',
+                      corso: corso || undefined,
+                      istruttore: istruttori.find(([id]) => id === istruttore)?.[1],
+                      piuMesi: !m || m.chiave.startsWith('anno-'),
+                      lezioniDaConfermare: lezioniNelMese.filter((l) => (!corso || l.corso === corso) && (!istruttore || l.previsti.some((x) => x.id === istruttore && !x.stato))).length,
+                    },
+                    // Il report è della società, come gli altri documenti sulla carta intestata.
+                    SOCIETA,
+                    carta,
+                    ),
+                  ),
+                'Report scaricato',
+              )
+            }
+          >
+            Report PDF
+          </button>
+        </span>
+      </Testa>
 
-      <div role="group" aria-label="Filtri" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <label htmlFor="mese-pi" className="vh">
-          Mese
-        </label>
-        <select
+      <div role="group" aria-label="Filtri" className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+        {/* Il mese in corso viene per primo: è quello da cui si parte, e la ✕ del filtro ci torna. */}
+        <FiltroMenu
           id="mese-pi"
-          className="sg-campo"
+          nome="Mese"
           value={periodo}
-          onChange={(e) => {
+          opzioni={[...elencoMesi, ...anni, { chiave: '', nome: 'Ultimi dodici mesi' }].map((x) => [x.chiave, x.nome] as const)}
+          onChange={(v) => {
             // Un corso o un istruttore che nel mese nuovo non c'è sparirebbe
             // dal menu pur continuando a filtrare: si riparte da tutti.
-            setPeriodo(e.target.value)
+            setPeriodo(v)
             setCorso('')
             setIstruttore('')
           }}
-        >
-          {elencoMesi.map((x) => (
-            <option key={x.chiave} value={x.chiave}>
-              {x.nome}
-            </option>
-          ))}
-          {anni.map((x) => (
-            <option key={x.chiave} value={x.chiave}>
-              {x.nome}
-            </option>
-          ))}
-          <option value="">Ultimi dodici mesi</option>
-        </select>
-        {/* Larghezza fissa: con corsi e istruttori che arrivano dopo, i menu si allargherebbero e andrebbero a capo, spostando tutto. */}
-        <label htmlFor="corso-pi" className="vh">
-          Corso
-        </label>
-        <select id="corso-pi" className="sg-campo" style={{ width: 300, maxWidth: '100%' }} value={corso} onChange={(e) => setCorso(e.target.value)}>
-          <option value="">Tutti i corsi</option>
-          {corsi.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-        <label htmlFor="istr-pi" className="vh">
-          Istruttore
-        </label>
-        <select id="istr-pi" className="sg-campo" style={{ width: 300, maxWidth: '100%' }} value={istruttore} onChange={(e) => setIstruttore(e.target.value)}>
-          <option value="">Tutti gli istruttori</option>
-          {istruttori.map(([id, nome]) => (
-            <option key={id} value={id}>
-              {nome}
-            </option>
-          ))}
-        </select>
-        <Tasto
-          disabled={!lista.length}
-          onClick={() =>
-            scaricaCsv(
-              // Dalla più vecchia, come si legge un foglio.
-              [...lista].reverse(),
-              ['presenze istruttori', m ? m.nome : 'ultimi dodici mesi', corso, istruttori.find(([id]) => id === istruttore)?.[1] ?? '', stato ? STATI[stato] : '']
-                .filter(Boolean)
-                .join(' '),
-            )
-          }
-        >
-          Scarica CSV
-        </Tasto>
-        <button
-          type="button"
-          className="sg-btn sg-btn-linea"
-          disabled={!report.length || lavora}
-          onClick={() =>
-            void fai(
-              () =>
-                suCarta(fai, async (carta) =>
-                  (await import('../../lib/reportIstruttoriPdf')).scaricaReportIstruttori(
-                  report,
-                  {
-                    periodo: m ? m.nome : 'Ultimi dodici mesi',
-                    corso: corso || undefined,
-                    istruttore: istruttori.find(([id]) => id === istruttore)?.[1],
-                    piuMesi: !m || m.chiave.startsWith('anno-'),
-                    lezioniDaConfermare: lezioniNelMese.filter((l) => (!corso || l.corso === corso) && (!istruttore || l.previsti.some((x) => x.id === istruttore && !x.stato))).length,
-                  },
-                  // Il report è della società, come gli altri documenti sulla carta intestata.
-                  SOCIETA,
-                  carta,
-                  ),
-                ),
-              'Report scaricato',
-            )
-          }
-        >
-          Report PDF
-        </button>
+        />
+        <FiltroMenu id="corso-pi" nome="Corso" value={corso} opzioni={[['', 'Tutti'], ...corsi.map((c) => [c, c] as const)]} onChange={setCorso} />
+        <FiltroMenu id="istr-pi" nome="Istruttore" value={istruttore} opzioni={[['', 'Tutti'], ...istruttori]} onChange={setIstruttore} />
       </div>
 
       <div className="sg-elenco-barra sg-elenco-barra-due" style={{ padding: 0 }}>
@@ -286,11 +255,11 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
         </span>
       </div>
 
-      <p className="sg-sotto" style={{ maxWidth: 760, margin: 0 }}>
+      <ComeFunziona>
         Un istruttore che mette il suo PIN sul tablet di una sala durante una lezione, o che ne fa l'appello, c'era: se era previsto su quella
         lezione la presenza è confermata da sola, se no arriva qui da confermare. Le lezioni tenute (con qualcuno presente) in cui chi doveva farle
         non si è segnato arrivano qui anche loro: si sceglie chi c'era.
-      </p>
+      </ComeFunziona>
 
       {proposte.guaio && <Guaio testo={proposte.guaio} />}
       {pronte && lezioni.length > 0 && <LezioniDaConfermare lezioni={lezioni} lavora={lavora} onScegli={scegli} />}
