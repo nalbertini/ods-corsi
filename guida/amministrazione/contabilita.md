@@ -247,8 +247,9 @@ programma solo dalla **stagione in corso**: quello delle stagioni passate resta 
 - Se in VESTIARIO c'è un ordine **da saldare** che può essere della famiglia, sopra PAGA ANCHE compare
   **ORDINI DEL VESTIARIO**: per ogni ordine chi l'ha fatto e per chi, la data, i capi, le ultime cifre
   del telefono e quanto manca. Un ordine è della famiglia se l'ha fatto una persona del nucleo a nome suo,
-  o se in «per chi» c'è nome e cognome di una persona del nucleo; se il telefono dell'ordine e quello
-  della scheda ci sono tutti e due e sono diversi, l'ordine non compare. Due ordini simili si vedono
+  o se in «per chi» c'è nome e cognome di una persona del nucleo (anche col telefono del genitore, diverso da
+  quello della scheda). Un ordine fatto a nome di una persona del nucleo ma con un telefono diverso da quello
+  della scheda è di un omonimo e non compare. Due ordini simili si vedono
   tutti e due: la scelta è tua. **È questo ordine** lo fa diventare una riga «Abbigliamento, ordine del
   …», con quel che manca all'ordine e l'importo che non va oltre il bonifico. Se la riga copre tutto
   (**Saldo**), con **Conferma** l'ordine in VESTIARIO diventa saldato con bonifico. Se copre una parte
