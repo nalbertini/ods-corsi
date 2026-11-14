@@ -2069,6 +2069,28 @@ console.log('\n38. QUANTO PAGHI')
   ok('come paghi: coi contanti la ricevuta del bonifico si toglie', [chiama(() => m.ricevutaDelModulo(coi)), coi.map((p) => p.ricevutaPer)], [undefined, [undefined, undefined, undefined]])
   const colBonifico = lista(() => m.conComePaga(caricata, 'bonifico'))
   ok('come paghi: col bonifico la ricevuta resta', [colBonifico.map((p) => p.comePaga), chiama(() => m.ricevutaDelModulo(colBonifico)) === ric], [['bonifico', 'bonifico', 'bonifico'], true])
+  // Si sceglie contanti per sbaglio e si torna al bonifico: la ricevuta caricata torna, col suo totale (2026-11-14).
+  const tornata = lista(() => m.conComePaga(m.conComePaga(colBonifico, 'contanti'), 'bonifico'))
+  ok('come paghi: contanti e di nuovo bonifico, la ricevuta torna', chiama(() => m.ricevutaDelModulo(tornata)) === ric, true)
+  ok('come paghi: torna anche il totale di quando si è caricata', tornata[0]?.ricevutaPer, { totale: 80200, persone: 3 })
+  ok('come paghi: torna solo nella prima persona', tornata.slice(1).map((p) => p.file.ricevuta), [undefined, undefined])
+  const dueVolte = lista(() => m.conComePaga(m.conComePaga(m.conComePaga(tornata, 'contanti'), 'contanti'), 'bonifico'))
+  ok('come paghi: contanti due volte di fila, torna lo stesso', chiama(() => m.ricevutaDelModulo(dueVolte)) === ric, true)
+  const toltaPrima = lista(() => m.conComePaga(m.conComePaga(m.conLaRicevuta(colBonifico, undefined, 80200), 'contanti'), 'bonifico'))
+  ok('come paghi: tolta a mano, non torna', chiama(() => m.ricevutaDelModulo(toltaPrima)), undefined)
+  const unAltra = F('nuova.jpg')
+  const nuova = lista(() => m.conComePaga(m.conLaRicevuta(m.conComePaga(m.conComePaga(colBonifico, 'contanti'), 'bonifico'), unAltra, 90000), 'bonifico'))
+  ok('come paghi: una ricevuta nuova vince su quella di prima', [chiama(() => m.ricevutaDelModulo(nuova)) === unAltra, nuova[0]?.ricevutaPer], [true, { totale: 90000, persone: 3 }])
+  // Coi contanti scelti, cambiare adulto/figlio della prima persona non deve far perdere la ricevuta messa da parte.
+  const conCambio = lista(() => { const c = m.conComePaga(colBonifico, 'contanti'); return m.conComePaga([m.cambiaScelta(c[0], c[0].chi === 'figlio' ? 'adulto' : 'figlio'), ...c.slice(1)], 'bonifico') })
+  ok('come paghi: cambiata la scelta coi contanti, la ricevuta torna lo stesso', [chiama(() => m.ricevutaDelModulo(conCambio)) === ric, conCambio[0]?.ricevutaPer], [true, { totale: 80200, persone: 3 }])
+  // Messa da parte e poi tolta o sostituita a mano: col bonifico non torna quella vecchia.
+  const toltaDopo = lista(() => m.conComePaga(m.conLaRicevuta(m.conComePaga(colBonifico, 'contanti'), undefined, undefined), 'bonifico'))
+  ok('come paghi: tolta coi contanti, col bonifico non torna', chiama(() => m.ricevutaDelModulo(toltaDopo)), undefined)
+  const nuovaDopo = lista(() => m.conComePaga(m.conLaRicevuta(m.conComePaga(colBonifico, 'contanti'), unAltra, 90000), 'bonifico'))
+  ok('come paghi: caricata una nuova coi contanti, col bonifico resta la nuova', chiama(() => m.ricevutaDelModulo(nuovaDopo)) === unAltra, true)
+  const coiDaMandare = lista(() => m.richiesteDelModulo(m.conComePaga(colBonifico, 'contanti'), (p) => m.richiesteDaMandare(p, '', async () => F('modulo.pdf'))))
+  ok('come paghi: coi contanti la ricevuta messa da parte non parte', [coiDaMandare.length, coiDaMandare.map((d) => d.file.ricevuta)], [3, [undefined, undefined, undefined]])
 
   // B8: la ricevuta resta quando la famiglia cambia.
   const due = lista(() => m.conLaRicevuta([manuela, nicola], ric, 62200))

@@ -317,7 +317,7 @@ lezione: ci si iscrive lo stesso e si può venire a lezione. La causale ha i nom
 **ricevuta** del bonifico è facoltativa e una sola per tutti: chi la carica
 prima di aggiungere un familiare, o prima di cambiare corso, legge sotto di
 quanto è cambiato il totale e che la differenza si paga in segreteria o con un
-altro bonifico. Il bonifico vale come pagato solo quando la segreteria
+altro bonifico. Se dopo averla caricata si sceglie **In contanti** e poi si torna al **Bonifico**, la ricevuta è ancora lì; coi contanti non parte. Il bonifico vale come pagato solo quando la segreteria
 conferma la ricevuta. Nel riepilogo, la riga **Ricevuta del pagamento** porta qui. Col
 bonifico senza ricevuta, la schermata finale, sotto **DA PAGARE**, ripete IBAN e
 causale, con i tasti per copiarli, e dice di portare la ricevuta in segreteria.

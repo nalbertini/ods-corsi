@@ -65,6 +65,12 @@ export interface StatoPassi {
   nessunModo?: true
   /** Solo nella prima persona, con la ricevuta del modulo: il totale (centesimi) e quante persone c'erano quando si è caricata. */
   ricevutaPer?: { totale: number; persone: number }
+  /**
+   * Solo nella prima persona: la ricevuta del bonifico messa da parte quando si sceglie «contanti», con il suo
+   * `ricevutaPer`. Non parte con la richiesta; torna se si sceglie di nuovo il bonifico, così un cambio di idea
+   * non la fa sparire. Una ricevuta caricata o tolta a mano la cancella.
+   */
+  ricevutaDaParte?: { file: File; per?: { totale: number; persone: number } }
 }
 
 /** Il foglio vuoto, com'è quello del modulo di oggi. */
@@ -389,6 +395,7 @@ export function cambiaScelta(s: StatoPassi, a: Chi): StatoPassi {
     file,
     // La ricevuta è del modulo, non della scelta: resta, e col suo totale per l'avviso.
     ...(s.ricevutaPer && { ricevutaPer: s.ricevutaPer }),
+    ...(s.ricevutaDaParte && { ricevutaDaParte: s.ricevutaDaParte }),
     privacy: s.privacy,
     avvisoFirma: firmaDaRifare(a === 'figlio', { tratti: s.tratti, scelte: quanteCaselle(s.scelte), foto: !!modulo, avvisato: !!s.avvisoFirma }),
   }
@@ -1739,16 +1746,26 @@ export const conLaProvenienza = (daMandare: DaMandare[], origine: { provenienza?
 export function conLaRicevuta(persone: StatoPassi[], ricevuta: File | undefined, totale: number | undefined): StatoPassi[] {
   return persone.map((p, i) => {
     const { ricevuta: _, ...file } = p.file
-    const { ricevutaPer: __, ...resto } = p
+    const { ricevutaPer: __, ricevutaDaParte: ___, ...resto } = p
     if (i > 0 || !ricevuta) return { ...resto, file }
     return { ...resto, file: { ...file, ricevuta }, ...(totale !== undefined && { ricevutaPer: { totale, persone: persone.length } }) }
   })
 }
 
-/** COME PAGHI è uno per tutto il modulo, in ogni persona. Coi contanti la ricevuta del bonifico non c'entra più: si toglie, se no partirebbe lo stesso. */
+/**
+ * COME PAGHI è uno per tutto il modulo, in ogni persona. Coi contanti la ricevuta del bonifico non c'entra più:
+ * si mette da parte (se no partirebbe lo stesso), e col bonifico torna, col totale di quando si è caricata.
+ */
 export function conComePaga(persone: StatoPassi[], comePaga: ComePaga): StatoPassi[] {
-  const tutte = comePaga === 'contanti' ? conLaRicevuta(persone, undefined, undefined) : persone
-  return tutte.map((p) => ({ ...p, comePaga }))
+  const prima = persone[0]
+  const ricevuta = ricevutaDelModulo(persone)
+  if (comePaga === 'contanti') {
+    const daParte = ricevuta ? { file: ricevuta, ...(prima?.ricevutaPer && { per: prima.ricevutaPer }) } : prima?.ricevutaDaParte
+    return conLaRicevuta(persone, undefined, undefined).map((p, i) => ({ ...p, comePaga, ...(i === 0 && daParte && { ricevutaDaParte: daParte }) }))
+  }
+  const daParte = prima?.ricevutaDaParte
+  if (ricevuta || !daParte) return persone.map((p) => ({ ...p, comePaga }))
+  return conLaRicevuta(persone, daParte.file, undefined).map((p, i) => ({ ...p, comePaga, ...(i === 0 && daParte.per && { ricevutaPer: daParte.per }) }))
 }
 
 /**
