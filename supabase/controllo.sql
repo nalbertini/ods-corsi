@@ -758,6 +758,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regprocedure('public.collegamento_testo(text)') is not null
     and exists (select 1 from dentro where nome = 'candidati_persona_movimento' and corpo like '%collegamento_testo%')),
   ('160-abbina-pagatori-testo.sql', 'l''import della banca propone chi è nel testo del bonifico (nome intero o genitore)',
-    to_regprocedure('public.abbina_pagatori_testo(text)') is not null)
+    to_regprocedure('public.abbina_pagatori_testo(text)') is not null),
+  -- Rifà `abbina_pagatori_movimento` del 155 e `abbina_testo_banca` del 121: se si rilancia 121 o 155 dopo, va rilanciato anche questo.
+  ('161-genitore-senza-parole.sql', 'un genitore di sola punteggiatura non è nel testo di ogni bonifico',
+    exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%cardinality(parole_pagatori(a.genitore_nome%')
+    and exists (select 1 from dentro where nome = 'abbina_testo_banca' and corpo like '%cardinality(parole_pagatori(a.genitore_nome%'))
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -53,6 +53,7 @@ insert into persone (id, nome, cognome, ruolo, email, utente_id) values
 
 -- Le persone. Manuel Prudente è figlio di Domenico (che nelle persone non c'è); Luca Prudente è un altro.
 -- Sofia ed Elia Bruno sono figli di Andrea Vaccaro (Ines, spenta, anche); Marta Gallo è adulta, col suo codice.
+-- Zeno Punti ha il genitore scritto solo con la punteggiatura («-» «.»): nessuna parola, quindi nessun genitore.
 insert into persone (id, nome, cognome, ruolo, attiva) values
   ('eeeeeeee-0000-0000-0000-000000000001', 'Manuel', 'Prudente', 'iscritto', true),
   ('eeeeeeee-0000-0000-0000-000000000002', 'Luca', 'Prudente', 'iscritto', true),
@@ -64,14 +65,16 @@ insert into persone (id, nome, cognome, ruolo, attiva) values
   ('eeeeeeee-0000-0000-0000-000000000012', 'Bruno', 'Ferri', 'iscritto', true),
   ('eeeeeeee-0000-0000-0000-000000000013', 'Carlo', 'Ferri', 'iscritto', true),
   ('eeeeeeee-0000-0000-0000-000000000014', 'Dora', 'Ferri', 'iscritto', true),
-  ('eeeeeeee-0000-0000-0000-000000000015', 'Ennio', 'Ferri', 'iscritto', true);
+  ('eeeeeeee-0000-0000-0000-000000000015', 'Ennio', 'Ferri', 'iscritto', true),
+  ('eeeeeeee-0000-0000-0000-000000000016', 'Zeno', 'Punti', 'iscritto', true);
 insert into persone (nome, cognome, ruolo) select 'Pino' || i, 'Pini', 'iscritto' from generate_series(1, 10) i;
 insert into anagrafiche (persona_id, codice_fiscale, genitore_nome, genitore_cognome, genitore_codice_fiscale) values
   ('eeeeeeee-0000-0000-0000-000000000001', null, 'Domenico', 'Prudente', 'PRDDNC70A01L219K'),
   ('eeeeeeee-0000-0000-0000-000000000003', null, 'Andrea', 'Vaccaro', 'VCCNDR75B02L219Z'),
   ('eeeeeeee-0000-0000-0000-000000000004', null, 'Andrea', 'Vaccaro', 'VCCNDR75B02L219Z'),
   ('eeeeeeee-0000-0000-0000-000000000005', null, 'Andrea', 'Vaccaro', 'VCCNDR75B02L219Z'),
-  ('eeeeeeee-0000-0000-0000-000000000006', 'GLLMRT85C45L219P', null, null, null);
+  ('eeeeeeee-0000-0000-0000-000000000006', 'GLLMRT85C45L219P', null, null, null),
+  ('eeeeeeee-0000-0000-0000-000000000016', null, '-', '.', null);
 insert into anagrafiche (persona_id, genitore_nome, genitore_cognome)
   select id, 'Rosa', 'Pini' from persone where cognome = 'Pini';
 
@@ -241,6 +244,8 @@ select atteso('collegato a una persona, il codice non c''è più: resta il nome'
   tenta($$select abbinati('Da GALLO MARTA TRN 5 BONIFICO SEPA')$$), 'Marta Gallo (nome intero)');
 select atteso('un codice di nessuno non propone nessuno', tenta($$select abbinati('Da ROSSI GINO TRN 6 BONIFICO SEPA')$$), 'nessuno');
 select atteso('un movimento senza codice letto né altro: nessuno', tenta($$select abbinati('Da ROSSI GINO TRN 7 BONIFICO SEPA')$$), 'nessuno');
+select atteso('un genitore di sola punteggiatura non è nel testo di nessun bonifico (161)',
+  tenta($$select count(*)::text from abbina_pagatori_movimento(id_mov('Da ROSSI GINO TRN 7 BONIFICO SEPA')) a where a.cognome = 'Punti'$$), '0');
 select atteso('il cognome di due persone mai iscritte non basta (né il solo nome)', tenta($$select abbinati('Da PRUDENTE LUCIANO BONIFICO SEPA')$$), 'nessuno');
 select atteso('prima chi non è iscritto il giorno del movimento, in fondo chi lo è (anche se oggi non lo è più)',
   tenta($$select abbinati('Da Ferri Anna, Ferri Bruno, Ferri Carlo, Ferri Dora BONIFICO SEPA')$$),
@@ -322,7 +327,7 @@ reset role;
 insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione)
   select 'entrata', '2026-10-09', 5000, (select id from voci_contabili where nome = 'Quota associativa' and tipo = 'entrata'),
     (select id from casse where nome = 'Conto Corrente'), d
-  from unnest(array['Cliente PRUDENTE MANUEL per QUOTA ASSOCIATIVA', 'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA', 'Cliente BRUNO INES per QUOTA ASSOCIATIVA', 'Cliente GALLO MARTA per CORSO']) d;
+  from unnest(array['Cliente PRUDENTE MANUEL per QUOTA ASSOCIATIVA', 'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA', 'Cliente BRUNO INES per QUOTA ASSOCIATIVA', 'Cliente GALLO MARTA per CORSO', 'Cliente PUNTI ZENO per QUOTA ASSOCIATIVA']) d;
 -- security definer: la segreteria non legge i movimenti, e qui si prova abbina_testo_banca, non la lettura del libro.
 create or replace function candidati_di(testo text, variadic nomi text[]) returns text language plpgsql security definer set search_path = public as $$
 declare r text;
@@ -347,6 +352,8 @@ select atteso('nome e genitore della stessa persona: un segno solo, «nome inter
   tenta($$select candidati_di('Da PRUDENTE DOMENICO per PRUDENTE MANUEL', 'Cliente PRUDENTE MANUEL per QUOTA ASSOCIATIVA')$$), 'Cliente PRUDENTE MANUEL per QUOTA ASSOCIATIVA (nome intero)');
 select atteso('un nome solo del genitore non basta', tenta($$select candidati_di('Da VACCARO TRN 99', 'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA')$$), 'nessuno');
 select atteso('una persona non attiva non esce', tenta($$select candidati_di('Da VACCARO ANDREA TRN 99', 'Cliente BRUNO INES per QUOTA ASSOCIATIVA')$$), 'nessuno');
+select atteso('un genitore di sola punteggiatura non indica il movimento per un testo qualsiasi (161)',
+  tenta($$select candidati_di('Da ROSSI GINO TRN 99', 'Cliente PUNTI ZENO per QUOTA ASSOCIATIVA')$$), 'nessuno');
 select atteso('solo i candidati dati, non altri movimenti', tenta($$select candidati_di('Da VACCARO ANDREA TRN 99', 'Cliente GALLO MARTA per CORSO')$$), 'nessuno');
 select atteso('escono solo il movimento e il come: mai nome o codice del genitore',
   (select string_agg(p.parameter_name, ',' order by p.ordinal_position) from information_schema.routines r join information_schema.parameters p on p.specific_name = r.specific_name
