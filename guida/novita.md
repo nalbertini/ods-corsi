@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.0 — 14 novembre 2026
+
+### Novità
+
+- «Corsi e presenze» nella scheda e l'etichetta «Nuova» accanto al nome di chi si è appena iscritto
+
 ## 0.258.0 — 14 novembre 2026
 
 ### Novità
