@@ -37,11 +37,11 @@ ordine.
        password: chiede la foto o il PDF e la data di scadenza scritta sul
        certificato.
    - **DA FARE NELLA RICHIESTA**: **pagare la quota**, con Satispay, col
-     bonifico e la sua ricevuta, oppure in palestra direttamente. Se Satispay
-     è spento, la riga non lo nomina.
+     bonifico o in contanti in palestra. Se Satispay è spento, la riga non lo
+     nomina.
 3. **Quanto costa**, in breve: la quota associativa (quella del
    [listino](segreteria/listino.md)), lo sconto famiglia e il costo di più
-   corsi, come si paga in una riga (bonifico o Satispay, prima di mandare la
+   corsi, come si paga in una riga (Satispay, bonifico o contanti, nella
    richiesta) e il tasto **PREZZI E PAGAMENTO**.
 4. **Non sai ancora quale corso? Hai un dubbio?** Un riquadro solo: le
    **prove**, una lezione (3 €) o una settimana (10 €), indirizzo e telefono,
@@ -67,11 +67,13 @@ prezzi. In cima c'è **‹ TORNA ALLE ISCRIZIONI**, poi:
   vale più. Il PDF riporta i costi di partenza della stagione: se la segreteria
   li cambia da LISTINO, l'app mostra quelli nuovi ma il PDF resta quello di
   partenza, finché non lo si rigenera. Poi le **offerte**.
-- **Come si paga**: nella richiesta, con Satispay o col bonifico. L'IBAN si
+- **Come si paga**: nella richiesta si sceglie Satispay, bonifico o contanti
+  in segreteria, in palestra. L'IBAN si
   copia con un tocco (**COPIA IBAN**) e **PAGA CON SATISPAY** apre l'app sul
   negozio dell'associazione (il link è `PAGAMENTO.satispay` in
   `src/lib/iscrizione.ts`: questo pagamento la segreteria lo segna a mano).
-  Col bonifico, la sua ricevuta si carica nella richiesta.
+  Col bonifico la ricevuta è facoltativa: se c'è si carica nella richiesta,
+  se no si porta dopo.
 - **COMPILA LA RICHIESTA**: apre lo stesso modulo. Chiuso il modulo, si torna
   in cima alla pagina delle iscrizioni.
 
@@ -159,7 +161,8 @@ Chi si iscrive risponde alle domande dal telefono:
   segreteria.
 - **Il pagamento**, dopo aver scelto un corso: **QUANTO PAGHI**, quota e
   corso dal listino, e **PAGHI CON**, da scegliere fra **Satispay**,
-  **Carta** (quando c'è, vedi sotto) e **Bonifico** (nessuno è già scelto).
+  **Carta** (quando c'è, vedi sotto), **Bonifico** e **In contanti** (nessuno
+  è già scelto; un modo spento in IMPOSTAZIONI non c'è).
   - Con **Satispay** si paga **prima** di mandare, in fondo al modulo: dopo
     **ALTRO** c'è **PAGA** con l'importo, quello che calcola il database dal
     listino. Quando il resto del modulo è a posto (firma, caselle, documenti),
@@ -199,7 +202,12 @@ Chi si iscrive risponde alle domande dal telefono:
     offerte), con un corso a giorni, senza prezzo o fuori età non c'è, e una
     frase dice perché: si paga col bonifico.
   - Col **Bonifico**: IBAN e causale da copiare e la **ricevuta del bonifico**,
-    obbligatoria (una foto, lo screenshot o il PDF).
+    facoltativa (una foto, lo screenshot o il PDF): se non c'è, **RICHIESTA
+    ARRIVATA** dice di portarla in segreteria, e il bonifico vale come pagato
+    quando la segreteria lo vede sul conto.
+  - **In contanti**: si paga in segreteria, in palestra, entro la prima
+    lezione. **RICHIESTA ARRIVATA** dice quanto portare e che si può già
+    venire a lezione.
 
   Dal nucleo dell'area iscritti (**UNA PERSONA IN PIÙ**) resta **QUANTO
   COSTA** come prima, con la ricevuta fra i file.
@@ -300,16 +308,20 @@ tutti.
 
 **PAGAMENTO** viene dopo FAMIGLIA, prima del riepilogo, ed è uno
 solo per tutto il modulo: il conto di tutti con lo sconto famiglia, la cifra da
-pagare, l'IBAN con **COPIA IBAN**, la causale con **COPIA CAUSALE** e **PAGA CON
-SATISPAY**. La causale ha i nomi di tutti, il cognome uguale una volta sola
+pagare e **COME PAGHI**, da scegliere (è obbligatorio) fra **Bonifico** e **In
+contanti**; se uno dei due è spento in IMPOSTAZIONI, la scelta non c'è. Col
+bonifico ci sono l'IBAN con **COPIA IBAN**, la causale con **COPIA CAUSALE** e
+la ricevuta. In contanti si porta la cifra in segreteria, entro la prima
+lezione: ci si iscrive lo stesso e si può venire a lezione. La causale ha i nomi di tutti, il cognome uguale una volta sola
 («Iscrizione Manuela e Nicola Albertini»); da soli resta col corso. La
 **ricevuta** del bonifico è facoltativa e una sola per tutti: chi la carica
 prima di aggiungere un familiare, o prima di cambiare corso, legge sotto di
 quanto è cambiato il totale e che la differenza si paga in segreteria o con un
 altro bonifico. Il bonifico vale come pagato solo quando la segreteria
-conferma la ricevuta. Nel riepilogo, la riga **Ricevuta del pagamento** porta qui. Se la ricevuta non c'è, la
-schermata finale, sotto **DA PAGARE**, ripete IBAN e causale, con i tasti per
-copiarli.
+conferma la ricevuta. Nel riepilogo, la riga **Ricevuta del pagamento** porta qui. Col
+bonifico senza ricevuta, la schermata finale, sotto **DA PAGARE**, ripete IBAN e
+causale, con i tasti per copiarli, e dice di portare la ricevuta in segreteria.
+In contanti, dice quanto portare in segreteria e entro quando.
 
 Nel passo dei dati, scritto il **CAP**, il comune lo propone l'app, per i CAP
 della provincia di Torino: se il CAP è di un comune solo e **COMUNE** è vuoto si

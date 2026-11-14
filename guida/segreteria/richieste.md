@@ -20,6 +20,10 @@ richiamare, ma si può accogliere lo stesso. Se ha pagato col modulo:
 **Pagata** (Satispay arrivato), **Satispay in attesa** (non ancora
 confermato) o, rossa, **Da restituire** (pagata e poi rifiutata). Nella
 richiesta la stessa cosa è scritta per intero, con l'importo e il giorno.
+Se ha scelto di pagare dopo: **Contanti** (paga in segreteria, entro la prima
+lezione), **Bonifico · ricevuta** o, in giallo, **Bonifico · senza ricevuta**
+(la ricevuta la porta dopo). La scelta è di chi si iscrive e non si cambia
+dall'app.
 
 Sotto il titolo, **MOSTRA** sceglie cosa si vede: **Nuove** (la scelta di
 partenza), **Tutte** (anche le già gestite) e **Da stampare** (finché ce ne
@@ -38,6 +42,10 @@ Un clic apre la richiesta in una finestra sopra l'elenco ([come funziona](README
 un minore), email, telefono e l'eventuale telefono 2, corsi (con «fuori età: nati 2017–2019, richiama» — gli anni del corso —
 accanto a un corso che non è per la sua età, secondo
 **NATI DAL / AL** del [listino](listino.md) coi sei mesi di tolleranza), come paga (trimestre o annuale), note.
+Se ha scelto bonifico o contanti, **COME PAGA** lo dice con l'importo del
+listino, e finché la richiesta è nuova
+**QUOTA** ricorda che è da pagare: accogliere la richiesta non la segna pagata,
+la segnate voi quando incassate.
 
 Per un minore, se un iscritto ha lo stesso codice fiscale del genitore ed è
 in un nucleo, sotto il genitore compare **Stesso genitore di …**: dopo
@@ -70,8 +78,8 @@ arrivano al massimo sei richieste al giorno; la settima il modulo la rifiuta e
 chi la manda deve chiamare o scrivere alla segreteria.
 
 Sotto, **I FILE**: modulo firmato e ricevuta. La ricevuta non è obbligatoria:
-se non c'è, una riga dice «Nessuna ricevuta: il pagamento si fa in
-segreteria», e la richiesta si accoglie lo stesso. Se più persone della
+se non c'è, e chi si iscrive non ha scelto come pagare, una riga dice «Nessuna
+ricevuta: il pagamento si fa in segreteria»; la richiesta si accoglie lo stesso. Se più persone della
 famiglia hanno pagato con un bonifico solo, mettetelo intero su una ricevuta;
 sulle altre niente «Bonifico», se no il conto prende i soldi due volte.
 Sotto la ricevuta, «Confronta con la ricevuta» dice quanto ci si aspetta (per le
