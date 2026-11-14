@@ -882,7 +882,7 @@ export function CopiaLink({ link, testo, perche, className = 'num sg-btn sg-btn-
   return (
     <button type="button" className={className} onClick={copia} title={link}>
       <ICONE_MENU.link />
-      <span className="sg-voce-testo">{copiato ? 'Link copiato ✓' : testo}</span>
+      <span>{copiato ? 'Link copiato ✓' : testo}</span>
     </button>
   )
 }

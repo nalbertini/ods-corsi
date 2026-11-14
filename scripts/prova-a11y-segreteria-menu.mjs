@@ -22,7 +22,9 @@ for (const [file, classe] of [['src/components/segreteria/Segreteria.tsx', 'num 
   const da = src.indexOf(`<span className="${classe}"`)
   ok(`${file}: c'è un numero ${classe}`, da >= 0, true)
   if (da < 0) continue
-  const segno = src.slice(da, da + 300)
+  // Fino alla fine della parola letta: oltre, un aria-hidden del codice che segue farebbe passare la prova.
+  const vh = src.indexOf('className="vh"', da)
+  const segno = src.slice(da, vh < 0 ? da + 300 : src.indexOf('</span>', vh))
   ok(`${file}: il numero non ha un aria-label su uno span`, /aria-label=/.test(segno), false)
   ok(`${file}: la parola («nuove», «da vedere»…) è testo letto`, /className="vh"/.test(segno), true)
   ok(`${file}: il numero è fuori dall'albero di accessibilità`, /aria-hidden/.test(segno), true)

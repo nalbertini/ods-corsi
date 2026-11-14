@@ -1466,3 +1466,15 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 @media (min-width: 768px) and (max-width: 1119px) {
   :root[data-look='sito'] .sg-mancano-casella { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
+/* Il menu compatto da 768px in su: sta qui perché styles.css ha un tetto di byte (prova:css-ingresso). */
+/* Sul computer scorrono solo le voci: il marchio, la ricerca e il piede restano fermi. */
+@media (min-width: 768px) {
+  :root[data-look='sito'] #sg-menu { gap: 16px; padding-top: calc(var(--safe-t) + 20px); padding-bottom: 0; }
+  :root[data-look='sito'] .sg-scorre { flex: 1; min-height: 0; overflow-y: auto; }
+  /* Il piede: Aiuto, Impostazioni, chi è dentro ed Esci, un gradino più scuro del menu, fino ai
+     bordi (annulla il margine di #sg-menu). Solo qui: sul telefono Aiuto e Impostazioni stanno nella barra in alto. */
+  :root[data-look='sito'] .sg-piede { display: flex; flex-direction: column; margin: 0 -12px; padding: 8px 0 10px; background: var(--menu-piede); }
+  /* A 200px (fra 768 e 1000) Aiuto e Impostazioni non stanno in una riga: Impostazioni va sotto. */
+  :root[data-look='sito'] .sg-chi-voci { display: flex; flex-wrap: wrap; }
+  :root[data-look='sito'] .sg-piede-prova { flex-wrap: wrap; align-items: center; gap: 0 12px; padding: 0 12px; }
+}

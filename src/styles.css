@@ -209,32 +209,28 @@
   --tasto: #cfe6f4;
   --line: #46606f;
   --line-soft: #46606f;
+  /* Solo del menu di segreteria: la voce aperta un gradino più chiaro di --menu, il piede uno più scuro. */
+  --menu-aperta: #1d4560;
+  --menu-piede: #0a2232;
   color: #ffffff;
 }
 /* La voce aperta è un gradino di tono più chiaro, con l'icona gialla: il giallo pieno resta per quel che c'è da fare. */
-:root[data-look='sito'] .sg-voce[aria-current='page'] { border-left-color: transparent; background: #1d4560; color: #ffffff; }
-:root[data-look='sito'] .sg-voce[aria-current='page'] svg { color: #f4c31b; }
+:root[data-look='sito'] .sg-voce[aria-current='page'] { border-left-color: transparent; background: var(--menu-aperta); color: #ffffff; }
+:root[data-look='sito'] .sg-voce[aria-current='page'] svg { color: var(--giallo); }
 /* I numeri delle code da smaltire: cifre gialle, senza bollino. */
-:root[data-look='sito'] .sg-conta { flex: none; color: #f4c31b; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+:root[data-look='sito'] .sg-conta { flex: none; color: var(--giallo); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
 /* Niente titoli né filetti: i gruppi li separa uno spazio. */
 :root[data-look='sito'] .sg-gruppi { gap: 12px; }
 :root[data-look='sito'] .sg-gruppo { gap: 0; }
 :root[data-look='sito'] .sg-voci { gap: 0; }
 :root[data-look='sito'] .sg-scorre { display: flex; flex-direction: column; gap: 12px; }
-/* Sul computer scorrono solo le voci: il marchio, la ricerca e il piede restano fermi. */
+/* Il bollino DATI DI PROVA sta nella riga di Riparti: a ogni larghezza, senza il margine sopra. */
+:root[data-look='sito'] .sg-piede-prova > .sg-bollino { margin-top: 0; }
+/* Il resto del piede del menu compatto è in segreteria.css: queste classi servono anche fuori. */
 @media (min-width: 768px) {
-  :root[data-look='sito'] #sg-menu { gap: 16px; padding-top: calc(var(--safe-t) + 20px); padding-bottom: 0; }
-  :root[data-look='sito'] .sg-scorre { flex: 1; min-height: 0; overflow-y: auto; }
-  /* Il piede: Aiuto, Impostazioni, chi è dentro ed Esci, un gradino più scuro del menu, fino ai
-     bordi (annulla il margine di #sg-menu). Solo qui: sul telefono Aiuto e Impostazioni stanno nella barra in alto. */
-  :root[data-look='sito'] .sg-piede { display: flex; flex-direction: column; margin: 0 -12px; padding: 8px 0 10px; background: #0a2232; }
-  /* A 200px (fra 768 e 1000) Aiuto e Impostazioni non stanno in una riga: Impostazioni va sotto. */
-  :root[data-look='sito'] .sg-chi-voci { display: flex; flex-wrap: wrap; }
   :root[data-look='sito'] .sg-chi-voci > .sg-voce { flex: none; gap: 8px; }
   :root[data-look='sito'] .sg-chi { flex-direction: row; align-items: center; gap: 8px; padding: 0 12px; border: 0; }
   :root[data-look='sito'] .sg-chi > .sg-link { align-self: center; font-size: 14px; }
-  :root[data-look='sito'] .sg-piede-prova { flex-wrap: wrap; align-items: center; gap: 0 12px; padding: 0 12px; }
-  :root[data-look='sito'] .sg-piede-prova > .sg-bollino { margin-top: 0; }
   :root[data-look='sito'] .sg-piede > .versione { padding: 0 12px; }
 }
 :root[data-look='sito'] .sg-menu .sg-campo { background: #ffffff; border-color: #ffffff; color: var(--su-colore); }
@@ -410,6 +406,8 @@
 :root[data-look='sito'] .sg-link:focus-visible,
 :root[data-look='sito'] .sg-scelta:focus-visible { outline: 3px solid var(--blu); outline-offset: 3px; }
 :root[data-look='sito'] .sg-menu :focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+/* Le voci riempiono .sg-scorre e il piede, che tagliano quel che sporge: il contorno sta dentro. */
+:root[data-look='sito'] .sg-menu .sg-voce:focus-visible { outline-offset: -3px; }
 /* Segmenti, menu dei filtri e pillole: il blu dei campi, il raggio del sito; lo scelto è blu pieno. */
 :root[data-look='sito'] .sg-segmenti,
 :root[data-look='sito'] .sg-filtro-menu { border-color: var(--riga-campo); border-radius: 6px; overflow: hidden; }

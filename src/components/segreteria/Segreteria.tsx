@@ -530,7 +530,7 @@ export function Segreteria({
           </div>
           <div className="sg-chi">
             <span className="stack grow" style={{ gap: 0, minWidth: 0 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: '#ffffff' }}>{nome}</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{nome}</span>
               <span style={{ fontSize: 13, color: 'var(--dim)' }}>{ruolo}{conSegreteria ? ' · accesso completo' : ''}</span>
             </span>
             {onEsci && (

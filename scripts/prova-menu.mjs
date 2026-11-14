@@ -5,7 +5,7 @@
 //
 // src/lib/menuSegreteria.ts esporta GRUPPI_MENU (i cinque gruppi della segreteria) e `menuDi`, che
 // dà a ognuno le voci delle sue autorizzazioni; Segreteria.tsx lo importa. Amministrazione non è più
-// un'area a sé (vedi prova-ruoli.mjs): con l'amministrazione compare in più il gruppo «I conti».
+// un'area a sé (vedi prova-ruoli.mjs): con l'amministrazione Contabilità e Importazioni stanno in fondo a «Iscritti e soldi».
 // ---------------------------------------------------------------------------
 import { existsSync, readFileSync } from 'node:fs'
 import { build } from 'esbuild'
@@ -59,6 +59,8 @@ const SITO = ":root[data-look='sito']"
 // Le regole che hanno un selettore del look «sito» che finisce con `fine`.
 const delSito = (fine) => REGOLE.filter((r) => r.sel.some((x) => x.startsWith(SITO) && x.endsWith(fine)))
 const corpi = (rs) => rs.map((r) => r.corpo).join(' ; ')
+// I colori stanno in variabili (--menu-aperta, --giallo…): la prova guarda il valore, non il nome.
+const valori = (s) => s.replace(/var\(--([\w-]+)\)/g, (v, n) => CSS.match(new RegExp(`--${n}:\\s*(#[0-9a-fA-F]{6})`))?.[1] ?? v)
 
 console.log('\nI cinque gruppi')
 ok('titoli e voci, nell\'ordine', Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.titolo, g.voci]) : GRUPPI, [
@@ -94,7 +96,7 @@ ok('Segreteria.tsx disegna l\'icona di ogni voce', /ICONE_MENU\[id\]/.test(sg0()
 ok('«Istruttori →» e i link hanno la loro icona', [/ICONE_MENU\.areaIstruttori/.test(sg0()), /ICONE_MENU\.link/.test(readFileSync('src/components/segreteria/comune.tsx', 'utf8'))], [true, true])
 ok('nessun filetto separa un gruppo dal successivo', /\.sg-gruppo \+ \.sg-gruppo\s*\{[^}]*border-top/.test(CSS), false)
 
-console.log('\nIscritti e soldi e I conti, uniti (con l\'amministrazione)')
+console.log('\nContabilità e Importazioni in fondo a Iscritti e soldi (con l\'amministrazione)')
 const chi = (ruolo, ancheAmministrazione = false) => ({ ruolo, ancheIstruttore: false, ancheAmministrazione })
 const gruppi = (c) => (m.menuDi ? m.menuDi(c).map((g) => [g.titolo, g.voci]) : mancante)
 const titoliDi = (c) => (Array.isArray(gruppi(c)) ? gruppi(c).map(([t]) => t) : gruppi(c))
@@ -191,24 +193,30 @@ ok('nella nav: sg-scorre (le voci) viene prima di sg-piede', iS >= 0 && iP > iS,
 const piede = iP >= 0 ? nav.slice(iP) : ''
 const pos = ['{guidaNome}', '{impostazioniNome}', '{nome}', 'Esci', 'DATI DI PROVA', 'Riparti dall\'orario vero'].map((t) => piede.indexOf(t))
 ok('il piede ha, in ordine, Aiuto, Impostazioni, nome, Esci, DATI DI PROVA e il riavvio dell\'orario', pos.every((x) => x >= 0) && pos.every((x, k) => k === 0 || x > pos[k - 1]), true)
-ok('look sito: il piede ha lo sfondo #0a2232', /background(-color)?: #0a2232/i.test(corpi(delSito('.sg-piede'))), true)
+ok('look sito: il piede ha lo sfondo #0a2232', /background(-color)?: #0a2232/i.test(valori(corpi(delSito('.sg-piede')))), true)
 // A 200px (fra 768 e 1000px) Aiuto e Impostazioni insieme non ci stanno: Impostazioni usciva dal menu.
 ok('look sito: Aiuto e Impostazioni vanno a capo se non c\'è posto', /flex-wrap: wrap/.test(corpi(delSito('.sg-chi-voci'))), true)
 // Sul telefono Aiuto e Impostazioni stanno nella barra in alto: il display del look sito non deve battere il none del telefono.
 ok('look sito: la riga Aiuto e Impostazioni si mostra solo da 768px in su', delSito('.sg-chi-voci').filter((r) => /display:/.test(r.corpo)).map((r) => /min-width: 768px/.test(r.media ?? '')), [true])
+// L'altra metà: sotto i 768px .sg-chi-voci resta nascosta (Aiuto e Impostazioni sono nella barra del telefono).
+ok('telefono: la riga Aiuto e Impostazioni è nascosta sotto i 768px', REGOLE.some((r) => /max-width: 767px/.test(r.media ?? '') && r.sel.some((x) => x.endsWith('.sg-chi-voci')) && /display: none/.test(r.corpo)), true)
+// Il bollino DATI DI PROVA sta nella riga di Riparti: senza i 4px di margine sopra, anche sul telefono.
+ok('il bollino nel piede di prova non ha margine sopra, a ogni larghezza', REGOLE.some((r) => !r.media && r.sel.some((x) => x.endsWith('.sg-piede-prova > .sg-bollino')) && /margin-top: 0/.test(r.corpo)), true)
 ok('look sito: l\'area centrale scorre da sola (overflow-y auto, min-height 0)', [/overflow-y: auto/.test(corpi(delSito('.sg-scorre'))), /min-height: 0/.test(corpi(delSito('.sg-scorre')))], [true, true])
 const menuFermo = REGOLE.filter((r) => r.media === '@media (min-width: 768px)' && r.sel.some((x) => x.endsWith('.sg-menu') || x.endsWith('#sg-menu')) && /overflow: hidden/.test(r.corpo))
 ok('da 768px in su la nav non scorre lei (overflow hidden, dentro @media (min-width: 768px))', menuFermo.length > 0, true)
 
 console.log('\nVoce aperta e conteggi')
 const aperta = corpi(delSito(".sg-voce[aria-current='page']"))
-ok('voce aperta: sfondo #1d4560 e testo #ffffff', [/background(-color)?: #1d4560/i.test(aperta), /(^|[ ;])color: #ffffff/i.test(aperta)], [true, true])
+ok('voce aperta: sfondo #1d4560 e testo #ffffff', [/background(-color)?: #1d4560/i.test(valori(aperta)), /(^|[ ;])color: #ffffff/i.test(aperta)], [true, true])
 ok('voce aperta: non più sfondo giallo pieno', /background(-color)?: var\(--giallo\)/.test(aperta), false)
-ok('voce aperta: l\'icona è gialla #f4c31b', /color: #f4c31b|fill: #f4c31b|stroke: #f4c31b/i.test(corpi(delSito(".sg-voce[aria-current='page'] svg"))), true)
-const conta = corpi(REGOLE.filter((r) => r.sel.some((x) => x.endsWith('.sg-conta'))))
+ok('voce aperta: l\'icona è gialla #f4c31b', /color: #f4c31b|fill: #f4c31b|stroke: #f4c31b/i.test(valori(corpi(delSito(".sg-voce[aria-current='page'] svg")))), true)
+const conta = valori(corpi(REGOLE.filter((r) => r.sel.some((x) => x.endsWith('.sg-conta')))))
 ok('sg-conta: giallo #f4c31b, 14px, bold, cifre tabulari', [/(^|[ ;])color: #f4c31b/i.test(conta), /font-size: 14px/.test(conta), /font-weight: 700/.test(conta), /tabular-nums/.test(conta)], [true, true, true, true])
 // Il numero lo disegna `conta`, definita prima della nav: nella nav ci sono le sue chiamate, e nessun segno a bollino.
 ok('Segreteria.tsx: le voci del menu usano conta (sg-conta) e non sg-tag né segno', [/const conta = [\s\S]{0,120}className="num sg-conta"/.test(sg), (nav.match(/conta\(/g) ?? []).length, /sg-tag|segno\(/.test(nav)], [true, 5, false])
+// .sg-scorre e il piede tagliano quel che sporge: un contorno fuori dalla voce non si vedrebbe.
+ok('fuoco da tastiera: il contorno delle voci del menu sta dentro la voce', /outline-offset: -3px/.test(corpi(REGOLE.filter((r) => r.sel.some((x) => /\.sg-menu \.sg-voce:focus-visible$/.test(x))))), true)
 ok('le voci restano alte almeno 44px', /min-height: 44px/.test(corpi(delSito('.sg-voce'))), true)
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
