@@ -47,6 +47,8 @@ interface Riga {
   gestore: { nome: string; cognome: string } | null
   /** Arriva con 141-certificato-dopo.sql. */
   certificato_dopo?: boolean
+  /** Arriva con 163-come-paga.sql. */
+  come_paga?: 'bonifico' | 'contanti' | null
   /** Da `74-provenienza-richieste.sql`: prima le colonne non ci sono. */
   provenienza?: string | null
   conosciuto?: string | null
@@ -121,6 +123,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
     regolamento: r.regolamento,
     personaId: r.persona_id ?? undefined,
     ...(r.certificato_dopo && { certificatoDopo: true }),
+    comePaga: r.come_paga ?? null,
     gestitaIl: r.gestita_il ?? undefined,
     gestitaDa: r.gestore ? `${r.gestore.nome} ${r.gestore.cognome}`.trim() : undefined,
     provenienza: pulisciProvenienza(r.provenienza),
@@ -203,6 +206,8 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             nucleo_di: d.nucleoDi,
             // «Non ce l'ho ancora»: senza 141-certificato-dopo.sql la chiave si ignora.
             ...(d.certificatoDopo && { certificato_dopo: true }),
+            // Bonifico o contanti: senza 163-come-paga.sql la chiave si ignora.
+            ...(d.comePaga && { come_paga: d.comePaga }),
           },
         }),
       ) as string
@@ -318,6 +323,13 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
     async conDocumento() {
       const r = await db.rpc('richieste_con_documento')
       // Senza 06-iscrizioni.sql rilanciato la funzione non c'è: niente da segnalare, l'elenco si vede lo stesso.
+      if (r.error?.code === 'PGRST202') return new Set<string>()
+      return new Set((ok(r) as string[] | null) ?? [])
+    },
+
+    async conRicevuta() {
+      const r = await db.rpc('richieste_con_ricevuta')
+      // Senza 163-come-paga.sql la funzione non c'è: sulla riga resta «Bonifico · senza ricevuta», la richiesta aperta dice il vero.
       if (r.error?.code === 'PGRST202') return new Set<string>()
       return new Set((ok(r) as string[] | null) ?? [])
     },

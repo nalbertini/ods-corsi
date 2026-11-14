@@ -17,12 +17,19 @@
 
 -- `dentro` sono le funzioni con il loro corpo: una versione vecchia di un
 -- file lascia la funzione, ma con dentro quello che faceva prima.
--- `invia_iscrizione_0` è la `invia_iscrizione` di prima, avvolta da 141: i controlli dei file di prima la cercano lì,
--- ma solo finché la `invia_iscrizione` vera è quella che la avvolge (dopo un rilancio di 06 o 125 non lo è più).
-with dentro(nome, corpo) as (
-  select case when p.proname = 'invia_iscrizione_0' then 'invia_iscrizione' else p.proname::text end, p.prosrc from pg_proc p
+-- `invia_iscrizione_0`, `_1`… sono le `invia_iscrizione` di prima, avvolte da 141 e 163: i controlli dei file di prima
+-- le cercano lì, ma solo se la catena parte dalla `invia_iscrizione` vera (dopo un rilancio di 06 o 125 non è più così).
+-- La catena segue le chiamate (`invia_iscrizione_N(dati)`), non i nomi scritti nei commenti.
+with recursive catena(nome) as (
+  select 'invia_iscrizione'::name
+  union
+  select p.proname from catena c
+  join pg_proc w on w.pronamespace = 'public'::regnamespace and w.proname = c.nome
+  join pg_proc p on p.pronamespace = 'public'::regnamespace and p.proname ~ '^invia_iscrizione_[0-9]+$' and w.prosrc ~ ('\m' || p.proname || '\(dati\)')
+), dentro(nome, corpo) as (
+  select case when p.proname ~ '^invia_iscrizione_[0-9]+$' then 'invia_iscrizione' else p.proname::text end, p.prosrc from pg_proc p
   where p.pronamespace = 'public'::regnamespace
-    and (p.proname <> 'invia_iscrizione_0' or exists (select 1 from pg_proc w where w.pronamespace = p.pronamespace and w.proname = 'invia_iscrizione' and w.prosrc like '%invia_iscrizione_0%'))
+    and (p.proname !~ '^invia_iscrizione_[0-9]+$' or p.proname in (select nome from catena))
 )
 select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (values
   ('01-schema.sql', 'le tabelle',
@@ -668,7 +675,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('141-certificato-dopo.sql', 'ci si iscrive anche senza certificato, con un termine per portarlo',
     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'certificato_entro')
     and exists (select 1 from dentro where nome = 'iscrizioni_regole' and corpo like '%certificato_giorni%')
-    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%invia_iscrizione_0%')
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo ~ 'invia_iscrizione_[0-9]+\(dati\)')
     and exists (select 1 from dentro where nome = 'iscritto_scheda_di' and corpo like '%certificato_termine%')
     and to_regprocedure('public.certificati_con_pin(text,uuid)') is not null
     and exists (select 1 from pg_trigger where tgname = 'richieste_accolta_termine')),
@@ -767,6 +774,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('162-genitore-una-parola.sql', 'il genitore vale solo con almeno una lettera nel nome e una nel cognome',
     (select count(*) from dentro where nome in ('abbina_pagatori_movimento', 'abbina_testo_banca', 'abbina_pagatori_testo')
        and corpo like '%a.genitore_nome ~ ''[[:alpha:]]'' and a.genitore_cognome ~ ''[[:alpha:]]''%') = 3
-    and exists (select 1 from dentro where nome = 'abbina_ricevuta_movimento' and corpo like '%x.g ~ ''[[:alpha:]]''%'))
+    and exists (select 1 from dentro where nome = 'abbina_ricevuta_movimento' and corpo like '%x.g ~ ''[[:alpha:]]''%')),
+  -- Avvolge `invia_iscrizione` di 141, e con la catena vuole anche `certificato_dopo`: rilanciando 06 o 125, il controllo torna «manca».
+  ('163-come-paga.sql', 'nell''iscrizione online si sceglie bonifico o contanti, la ricevuta è facoltativa',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'richieste_iscrizione' and column_name = 'come_paga')
+    and exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'invia_iscrizione' and prosrc like '%come_paga%')
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%certificato_dopo%')
+    and to_regprocedure('public.richieste_con_ricevuta()') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

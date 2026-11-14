@@ -12,6 +12,7 @@ import { PAGAMENTO } from '../../lib/iscrizione'
 import { euroBreve } from '../../lib/ricevute'
 import { nomeConosciuto, nomeProvenienza } from '../../lib/provenienza'
 import { daRestituire, segnoRichiesta, type PagamentoSatispay } from '../../lib/satispay'
+import { campoComePaga, dicaNessunaRicevuta, segnoComePaga } from '../../lib/comePaga'
 import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
@@ -31,6 +32,12 @@ const TIPO_TAG = { aspetta: 'aspetta', fatto: 'fatto', guaio: 'manca' } as const
 /** Il bollino del pagamento Satispay nella riga dell'elenco. */
 function SegnoSatispay({ segno }: { segno: ReturnType<typeof segnoRichiesta> }) {
   return segno && <span className="num sg-tag" data-tipo={TIPO_TAG[segno.tono]}>{segno.tag}</span>
+}
+
+/** Come paga, scelto da chi si iscrive: il bonifico senza ricevuta in giallo, da cercare sul conto. */
+function SegnoComePaga({ comePaga, conRicevuta }: { comePaga: Richiesta['comePaga']; conRicevuta: boolean | undefined }) {
+  const tag = segnoComePaga(comePaga, conRicevuta)
+  return tag && <span className="num sg-tag" data-tipo={comePaga === 'bonifico' && conRicevuta === false ? 'aspetta' : undefined}>{tag}</span>
 }
 
 /**
@@ -87,6 +94,7 @@ export function Richieste({
   // I titoli delle pagine del sito, per dire da dove arriva una richiesta col suo nome («Judo kids» e non «corso-judo-kids»).
   const titoli = useCarica(() => d.titoliSito(), [d])
   const conDocumento = useCarica(async () => (await datiRichieste()).conDocumento(), [])
+  const conRicevuta = useCarica(async () => (await datiRichieste()).conRicevuta(), [])
   // Il pagamento Satispay vivo di ogni richiesta, in attesa o pagato: uno non andato non si dice (`73-satispay.sql`; senza il file, nessuno).
   const satispay = useCarica(() => d.pagamentiSatispay(), [d])
   const pagamentoDi = (id: string) => (satispay.dato ?? []).find((p) => p.richiestaId === id && p.stato !== 'non-andato')
@@ -241,6 +249,7 @@ export function Richieste({
                     {x.nucleoDi && <span className="num sg-tag">Nucleo</span>}
                     {doc.has(x.id) && <span className="num sg-tag">Da stampare</span>}
                     <SegnoSatispay segno={segnoRichiesta(pagamentoDi(x.id), x.stato)} />
+                    <SegnoComePaga comePaga={x.comePaga} conRicevuta={conRicevuta.dato?.has(x.id)} />
                     {/* La si richiama: meglio saperlo prima di aprirla. */}
                     {voci && x.corsi.some((c) => {
                       const nome = nomi.get(c)
@@ -332,7 +341,11 @@ function Scheda({
   const mancanti = FILE.filter((f) => f.obbligatorio && !DA_STAMPARE.includes(f.tipo) && !arrivati.has(f.tipo))
   const documenti = DA_STAMPARE.filter((t) => arrivati.has(t))
   // Il certificato si guarda prima di accogliere, con la data da scrivere: poi passa alla scheda.
-  const atteso = arrivati.has('ricevuta') ? attesoRicevuta(insieme, [...nomi].map(([id, nome]) => ({ id, nome })), letto?.listino, chiaveGiorno(new Date(x.creataIl))) : undefined
+  // Il conto serve per confrontare la ricevuta e per dire quanto porta chi ha scelto come pagare.
+  const conto = x.comePaga || arrivati.has('ricevuta') ? attesoRicevuta(insieme, [...nomi].map(([id, nome]) => ({ id, nome })), letto?.listino, chiaveGiorno(new Date(x.creataIl))) : undefined
+  const atteso = arrivati.has('ricevuta') ? conto : undefined
+  // Con un corso senza prezzo la cifra non è completa: meglio nessuna che una sbagliata.
+  const comePaga = campoComePaga(x.comePaga, conto && !conto.senzaPrezzo.length ? conto.totale : undefined)
   const certificato = x.stato === 'nuova' ? arrivati.get('certificato') : undefined
   const [scadeCert, setScadeCert] = useState('')
   useBozza(scadeCert !== '', `${x.nome} ${x.cognome}`)
@@ -405,6 +418,9 @@ function Scheda({
       </div>
 
       <div className="sg-dati">
+        {comePaga && <Dato etichetta="COME PAGA">{comePaga}</Dato>}
+        {/* Accogliere non segna la quota pagata: si segna quando i soldi arrivano. */}
+        {comePaga && x.stato === 'nuova' && <Dato etichetta="QUOTA">Da pagare: si segna pagata quando incassi</Dato>}
         {titolare && x.nucleoDi && (
           <Dato etichetta="NUCLEO">
             Aggiunto da{' '}
@@ -542,7 +558,7 @@ function Scheda({
           {segno ? (
             <span className="sg-sotto" data-tono={segno.tono}>{segno.testo}</span>
           ) : (
-            file.dato.length > 0 && !arrivati.has('ricevuta') && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>
+            dicaNessunaRicevuta(x.comePaga, file.dato.length > 0, arrivati.has('ricevuta')) && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>
           )}
           {documenti.length > 0 && (
             <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>

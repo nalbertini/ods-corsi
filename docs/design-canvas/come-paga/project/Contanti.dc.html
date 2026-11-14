@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo sono file locali OFL; un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA 3. Coi contanti spariscono IBAN, causale e ricevuta. Resta quanto portare e dove. La seconda frase (iscrizione subito, quota da pagare entro la prima lezione) è la risposta proposta alle domande 3 e 4: da confermare. -->
+<div style="display: flex; flex-direction: column; width: 375px; min-height: 780px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 20px">
+<div style="display: flex; align-items: center; gap: 12px; margin-top: 8px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; color: #46606f">IL PAGAMENTO</span><span style="flex-grow: 1; height: 2px; background: #cfe6f4"></span></div>
+<dc-import name="IlPagamentoProposta" righe="Quota associativa:30 €|Trimestre MGA metodo globale autodifesa:150 €" totale="180,00 €" modo="contanti" satispay="{{ true }}" carta="{{ true }}" contanti="{{ true }}" hint-size="100%,520px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 14px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px">
+<span style="font-size: 17px; font-weight: 700">Porti 180,00 € in segreteria, in palestra.</span>
+<span style="font-size: 14px; line-height: 1.4; color: #46606f">Ti iscrivi lo stesso: puoi venire a lezione, e la quota la paghi entro la prima. La ricevuta te la dà la segreteria.</span>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":375,"height":780}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

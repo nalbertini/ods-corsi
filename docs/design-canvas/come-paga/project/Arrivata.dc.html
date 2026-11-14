@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo sono file locali OFL; un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA 4. La pagina finale coi contanti: dice quanto portare e se si può già venire a lezione (domanda 4). Col bonifico senza ricevuta ripete IBAN e causale e dice di portare la ricevuta. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 375px; min-height: 420px; padding: 28px 20px; background: #eef5fa; color: #0d2a3d">
+<dc-import name="TitoloEsito" titolo="RICHIESTA ARRIVATA" tono="fatto" testi="Grazie. La segreteria controlla il modulo e il documento, e ti scrive a giulia.bianchi@esempio.it se manca qualcosa.|Hai scelto di pagare in contanti: porti 180,00 € in segreteria, in palestra, entro la prima lezione.|Puoi già venire a lezione." hint-size="100%,300px"></dc-import>
+<dc-import name="Bottone" label="TORNA ALL’INIZIO" variante="linea" hint-size="100%,48px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":375,"height":420}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

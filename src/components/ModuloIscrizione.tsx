@@ -13,6 +13,7 @@ import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import { useListino, useMetodiSpenti } from './Costi'
 import { acceso } from '../lib/metodiPagamento'
+import { comePagaDi, frasiPagamentoFinale, modiDaOffrire } from '../lib/comePaga'
 import type { SceltaModulo } from '../lib/firma'
 import { haUnServer } from '../lib/dati'
 import { contaIscrizione, EVENTI_ISCRIZIONE } from '../lib/contaIscrizione'
@@ -248,15 +249,16 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const cartaPuoi = puoi.satispay && !!carta
   const spenti = useMetodiSpenti()
   const bonificoAcceso = acceso(spenti, 'bonifico')
-  const modo = modoPagamento(pago, { ...puoi, carta: cartaPuoi }, !!nucleo, bonificoAcceso)
+  const contantiAcceso = acceso(spenti, 'contanti')
+  const modo = modoPagamento(pago, { ...puoi, carta: cartaPuoi }, !!nucleo, bonificoAcceso, contantiAcceso)
   const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || chiedeRicevuta(modo, !!nucleo)))
   // I file di I FILE: il modulo ha la sua sezione, e la ricevuta del bonifico sta in IL PAGAMENTO (dal nucleo, qui come prima).
   // Con la scelta (141), il certificato si chiede solo con «Lo carico ora».
   const chiedeScelta = giorni !== null && certificato !== 'nessuno'
   const fileQui = daChiedere.filter((f) => f.tipo !== 'modulo' && (f.tipo !== 'ricevuta' || !!nucleo) && (f.tipo !== 'certificato' || !chiedeScelta || sceltaCert === 'ora'))
   const nomeDi = minore || nucleo ? b.nome.trim() || undefined : undefined
-  // Col bonifico la ricevuta è obbligatoria (con Satispay non si chiede): come vuole anche `fileObbligatori` per la pagina pubblica.
-  const obbligatori = fileObbligatori(daChiedere, modo === 'bonifico')
+  // La ricevuta del bonifico è facoltativa (2026-11-14): obbligatori solo i file che lo sono sempre.
+  const obbligatori = fileObbligatori(daChiedere)
 
   // La scelta per cui si paga e chi paga: con Satispay o la carta sempre un corso solo (`nonSemplice`).
   const metodo: 'carta' | undefined = modo === 'carta' ? 'carta' : undefined
@@ -362,7 +364,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
   const blocco =
     mancaModulo ??
-    (stima && scelti.length ? cosaNonVaModo(modo, !!nucleo, !!file.ricevuta, { pronto: riquadroPaga?.cosa === 'pagato', giaPagato: sp?.stato === 'pagato', circuito: sp?.circuito }, cartaPuoi, puoi.satispay || bonificoAcceso) : null)
+    (stima && scelti.length ? cosaNonVaModo(modo, !!nucleo, !!file.ricevuta, { pronto: riquadroPaga?.cosa === 'pagato', giaPagato: sp?.stato === 'pagato', circuito: sp?.circuito }, cartaPuoi, puoi.satispay || bonificoAcceso || contantiAcceso) : null)
 
   // Si prepara da solo col modulo a posto, dopo un attimo senza modifiche (l'email non a metà), e di nuovo se cambiano
   // la scelta o chi paga. Dopo un errore si riprova col tasto, non a ogni lettera.
@@ -476,7 +478,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       // Da dove arriva: l'etichetta del link della visita e la risposta; dall'area iscritti «area-iscritti», senza domanda.
       const { conosciuto, ...risposte } = pronta
       // Con Satispay la richiesta prende con sé il pagamento già fatto: senza, il database la rifiuta.
-      id = await d!.invia({ ...risposte, ...(chiedeScelta && sceltaCert === 'dopo' && { certificatoDopo: true }), ...origineDellaRichiesta(!!nucleo, conosciuto), pagamentoSatispay: pagamentoDaMandare(modo, sp), chiavePagamento: chiaveDelBrowser() })
+      id = await d!.invia({ ...risposte, ...(chiedeScelta && sceltaCert === 'dopo' && { certificatoDopo: true }), ...origineDellaRichiesta(!!nucleo, conosciuto), pagamentoSatispay: pagamentoDaMandare(modo, sp), chiavePagamento: chiaveDelBrowser(), ...(comePagaDi(modo) && { comePaga: comePagaDi(modo) }) })
     } catch (e) {
       setFase({ tipo: 'compila' })
       return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')
@@ -505,7 +507,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           </span>
         )}
         {promemoriaDelCertificato && <span className="esito-testo">{promemoriaDelCertificato}</span>}
-        {!file.ricevuta && !modo && <span className="esito-testo">Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato.</span>}
+        {frasiPagamentoFinale(modo, stima?.totale, !!file.ricevuta).map((f) => (
+          <span key={f} className="esito-testo">{f}</span>
+        ))}
         <Tasto onClick={onChiudi}>{torna}</Tasto>
       </div>
     )
@@ -738,15 +742,18 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             puoi={puoi}
             carta={cartaPuoi}
             bonifico={bonificoAcceso}
+            contanti={contantiAcceso}
             onModo={setPago}
             causale={causale(b.nome.trim(), b.cognome.trim(), scelti.map((c) => c.nome))}
             ricevuta={
               <SceltaFile
                 tipo="ricevuta"
                 file={file.ricevuta}
-                dettaglio="Una foto, lo screenshot o il PDF."
+                etichetta="RICEVUTA DEL BONIFICO"
+                seManca="FACOLTATIVA"
+                dettaglio="Se l’hai già fatto, una foto o il PDF. Se no la porti dopo in segreteria."
                 onFile={(x) => setFile((p) => ({ ...p, ricevuta: x }))}
-                facoltativo={false}
+                facoltativo
               />
             }
           />
@@ -1083,6 +1090,7 @@ export function SceltaFile({
   dettaglio,
   seManca,
   errore,
+  etichetta,
 }: {
   tipo: TipoFile
   file?: File
@@ -1093,6 +1101,8 @@ export function SceltaFile({
   seManca?: string
   /** Cosa manca, detto sotto il file (il certificato con «Lo carico ora»). */
   errore?: string
+  /** Il nome del file quando quello della lista è troppo generico (la ricevuta del bonifico nel modulo pubblico). */
+  etichetta?: string
 }) {
   const f = FILE.find((x) => x.tipo === tipo)!
   const [guaio, setGuaio] = useState<string | null>(null)
@@ -1110,7 +1120,7 @@ export function SceltaFile({
   return (
     <CaricaFile
       id={`m-file-${tipo}`}
-      etichetta={f.etichetta}
+      etichetta={etichetta ?? f.etichetta}
       seManca={(facoltativo ?? !f.obbligatorio) ? (seManca ?? f.seManca ?? 'FACOLTATIVO') : undefined}
       dettaglio={lavoro ? 'Preparo la foto…' : (dettaglio ?? f.dettaglio)}
       file={file && !lavoro ? { nome: file.name, byte: file.size } : undefined}
@@ -1123,10 +1133,10 @@ export function SceltaFile({
 /**
  * Quanto costa una persona in più nel nucleo, con lo sconto famiglia, o chi si
  * iscrive dalla pagina pubblica, e come pagarlo: l'IBAN e la causale col suo
- * nome, da copiare. La ricevuta si carica qui sotto, fra i file: dalla pagina
- * pubblica è obbligatoria, dal nucleo no.
+ * nome, da copiare. La ricevuta si carica qui sotto, fra i file, ed è sempre
+ * facoltativa. `contanti`: chi paga in segreteria non ha bisogno dell'IBAN.
  */
-export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: CorsoRef[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
+export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti, contanti }: { nome: string; cognome: string; corsi: CorsoRef[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[]; contanti?: boolean }) {
   const letto = useListino()
   if (!letto) return null
   const s = stimaIscrizione({ chi: nome || 'Chi si iscrive', corsi, formula }, abbonamenti, chiaveGiorno(new Date()), letto.listino)
@@ -1145,7 +1155,7 @@ export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { no
         {s.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">Senza prezzo nel listino: {s.senzaPrezzo.join(', ')}. Lo dice la segreteria.</Dettaglio>}
         <Dettaglio>È una stima dal listino: le altre offerte e l’importo giusto li conferma la segreteria.</Dettaglio>
         {/* Senza nome il bonifico arriverebbe senza: la causale aspetta che lo si scriva. */}
-        <Bonifico causale={nome && cognome ? causale(nome, cognome, corsi.map((c) => c.nome)) : null} satispay />
+        {!contanti && <Bonifico causale={nome && cognome ? causale(nome, cognome, corsi.map((c) => c.nome)) : null} satispay />}
       </Riquadro>
     </div>
   )
@@ -1203,18 +1213,13 @@ function Bonifico({ causale: testo, satispay }: { causale: string | null; satisp
   )
 }
 
-const MODI: Array<{ id: Pago; testo: string; riga: string }> = [
-  { id: 'satispay', testo: 'Satispay', riga: 'Paghi subito, dall’app: l’importo è già scritto' },
-  { id: 'carta', testo: 'Carta di credito o di debito', riga: 'Paghi subito qui, senza app e senza aprire conti' },
-  { id: 'bonifico', testo: 'Bonifico', riga: 'Carichi la ricevuta del bonifico' },
-]
-
 /**
  * Il modulo pubblico: quanto si paga e come. Con Satispay l'importo è quello
  * che calcola il database, e si paga in fondo al modulo prima di mandare; col
- * bonifico IBAN, causale e la sua ricevuta stanno qui insieme.
+ * bonifico IBAN, causale e la sua ricevuta (facoltativa) stanno qui insieme; coi
+ * contanti quanto portare e quando.
  */
-function IlPagamento({ stima, modo, puoi, carta, bonifico, onModo, causale: testo, ricevuta }: { stima: Stima; modo: Pago | null; puoi: ReturnType<typeof comePuoiPagare>; carta: boolean; bonifico: boolean; onModo: (m: Pago) => void; causale: string; ricevuta: ReactNode }) {
+function IlPagamento({ stima, modo, puoi, carta, bonifico, contanti, onModo, causale: testo, ricevuta }: { stima: Stima; modo: Pago | null; puoi: ReturnType<typeof comePuoiPagare>; carta: boolean; bonifico: boolean; contanti: boolean; onModo: (m: Pago) => void; causale: string; ricevuta: ReactNode }) {
   return (
     <>
       <div className="modulo-campo modulo-largo">
@@ -1231,17 +1236,22 @@ function IlPagamento({ stima, modo, puoi, carta, bonifico, onModo, causale: test
             id="m-pago"
             etichetta="Paghi con"
             una
-            voci={MODI.filter((m) => (m.id === 'satispay' ? puoi.satispay : m.id === 'carta' ? carta : bonifico))}
+            voci={modiDaOffrire({ satispay: puoi.satispay, carta, bonifico, contanti })}
             scelti={modo ? [modo] : []}
-            // `as`: SceltaCorsi rende l'id di una delle voci date, cioè un modo di MODI.
+            // `as`: SceltaCorsi rende l'id di una delle voci date, cioè un modo di `modiDaOffrire`.
             onScegli={(m) => onModo(m as Pago)}
           />
         </div>
-        {!puoi.satispay && !carta && !bonifico && <Dettaglio>Come pagare te lo dice la segreteria.</Dettaglio>}
+        {!puoi.satispay && !carta && !bonifico && !contanti && <Dettaglio>Come pagare te lo dice la segreteria.</Dettaglio>}
         {!puoi.satispay && puoi.perche && <Dettaglio>{puoi.perche}.</Dettaglio>}
         {(modo === 'satispay' || modo === 'carta') && (
           <Dettaglio>
             Paghi in fondo al modulo, prima di mandare la richiesta: {soldi(stima.totale)} {modo === 'carta' ? 'con la carta' : 'con Satispay'}.
+          </Dettaglio>
+        )}
+        {modo === 'contanti' && (
+          <Dettaglio>
+            Porti {soldi(stima.totale)} in segreteria, in palestra. Ti iscrivi lo stesso: puoi venire a lezione, e la quota la paghi entro la prima. La ricevuta te la dà la segreteria.
           </Dettaglio>
         )}
       </div>
@@ -1249,6 +1259,7 @@ function IlPagamento({ stima, modo, puoi, carta, bonifico, onModo, causale: test
         <>
           <div className="modulo-campo modulo-largo">
             <Bonifico causale={testo} />
+            <Dettaglio>Il bonifico vale come pagato quando la segreteria lo vede sul conto.</Dettaglio>
           </div>
           {ricevuta}
         </>

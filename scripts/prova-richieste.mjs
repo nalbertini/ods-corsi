@@ -175,7 +175,7 @@ console.log('\n2b. il codice fiscale, letto')
   ok('il genitore col codice del figlio, senza nome: «del bambino»', stessoCf(''), 'Metti il tuo codice fiscale, non quello del bambino.')
   // La ricevuta non ferma la richiesta: si può pagare in contanti al banco.
   ok('la ricevuta non è obbligatoria', m.FILE.find((f) => f.tipo === 'ricevuta').obbligatorio, false)
-  ok('la ricevuta dice che si può pagare in segreteria', m.FILE.find((f) => f.tipo === 'ricevuta').seManca, 'PUOI PAGARE IN SEGRETERIA')
+  ok('la ricevuta dice che si può pagare in segreteria', m.FILE.find((f) => f.tipo === 'ricevuta').seManca, 'PUOI PORTARLA DOPO')
   ok('il certificato si può portare dopo', m.FILE.find((f) => f.tipo === 'certificato').seManca, 'PUOI PORTARLO DOPO')
   ok('il messaggio d’insieme non cambia, lungo', await errore(() => r.invia(adulto({ codiceFiscale: 'RSSLCU96A01L219KABCDE' }))), 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e numeri')
   ok('il messaggio d’insieme non cambia, col segno', await errore(() => r.invia(adulto({ codiceFiscale: 'RSSMRA80A01-123Z' }))), 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e numeri')
@@ -738,7 +738,9 @@ console.log('\n11b. la ricevuta obbligatoria nel modulo della pagina pubblica (n
   // Il legame sta nel modulo: dalla pagina pubblica col bonifico la ricevuta è obbligatoria, e la lista arriva a
   // `mancaPerInviare`. Con Satispay non si chiede (decisione del 2026-10-20: `modoPagamento`, `cosaNonVaModo` in prova:satispay).
   const moduloSorgente = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
-  ok('il modulo chiede la ricevuta col bonifico', moduloSorgente.includes("fileObbligatori(daChiedere, modo === 'bonifico')"), true)
+  // Decisione del 2026-11-14 («come paga»): col bonifico la ricevuta si offre ma è facoltativa, e senza la richiesta parte lo stesso.
+  ok('il modulo non rende obbligatoria la ricevuta, nemmeno col bonifico', /fileObbligatori\([^)]*bonifico/.test(moduloSorgente), false)
+  ok('il modulo chiama ancora fileObbligatori (i file obbligatori restano)', /fileObbligatori\(daChiedere/.test(moduloSorgente), true)
   ok('il modulo passa quella lista a mancaPerInviare', /mancaPerInviare\(\{[^}]*\bobbligatori,/.test(moduloSorgente), true)
 }
 

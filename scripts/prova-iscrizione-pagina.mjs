@@ -62,7 +62,12 @@ ok('nessun tempo promesso sul richiamo: niente cifre, «entro», «ore», «gior
 ok('AVVISO_RICHIESTA', P.AVVISO_RICHIESTA, 'La richiesta non è ancora l’iscrizione. Non si salva a metà: se esci, ricominci.')
 ok('SENZA_MODULO', P.SENZA_MODULO, 'Per iscriverti chiamaci o passa in palestra.')
 ok('INFORMATIVA_FRASE', P.INFORMATIVA_FRASE, 'Come trattiamo i tuoi dati:')
-ok('COME_SI_PAGA (nella pagina dei prezzi)', P.COME_SI_PAGA, { titolo: 'Nella richiesta: con Satispay o col bonifico.', ricevuta: 'Col bonifico, la sua ricevuta si carica nella richiesta.' })
+// Decisione del 2026-11-14 («come paga»): Satispay, bonifico (ricevuta facoltativa) o contanti in segreteria, in palestra.
+const comeSiPaga = JSON.stringify(P.COME_SI_PAGA ?? null)
+ok('COME_SI_PAGA nomina Satispay, il bonifico e i contanti', ['Satispay', 'bonifico', 'contanti'].map((x) => comeSiPaga.includes(x)), [true, true, true])
+ok('COME_SI_PAGA: i contanti si pagano in segreteria, in palestra', comeSiPaga.includes('in segreteria, in palestra'), true)
+ok('COME_SI_PAGA: la ricevuta del bonifico è facoltativa', /facoltativ/.test(P.COME_SI_PAGA?.ricevuta ?? ''), true)
+ok('COME_SI_PAGA: non dice più che la ricevuta si carica e basta', /si carica nella richiesta\.$/.test(P.COME_SI_PAGA?.ricevuta ?? ''), false)
 
 // --- 2. il fondo, uguale nelle due pagine -------------------------------------
 console.log('\nIl fondo (fondoDellaPagina)')
@@ -86,14 +91,15 @@ const SOTTO_MANO = (notaCert) => ({
 const NELLA_RICHIESTA = (nota) => ({ etichetta: 'DA FARE NELLA RICHIESTA', voci: [{ icona: 'carta', titolo: 'Pagare la quota', nota }] })
 ok('30 giorni, con Satispay', prova(() => P.cosaServe(30, true)), [
   SOTTO_MANO('Se non ce l’hai ancora, ti iscrivi lo stesso: hai 30 giorni per portarlo.'),
-  NELLA_RICHIESTA('Con Satispay, col bonifico e la sua ricevuta, oppure in palestra direttamente.'),
+  // La ricevuta del bonifico è facoltativa (2026-11-14): la nota non dice più «e la sua ricevuta».
+  NELLA_RICHIESTA('Con Satispay, col bonifico o in contanti in palestra.'),
 ])
 ok('i giorni sono quelli passati (da IMPOSTAZIONI): 45 → «hai 45 giorni»', prova(() => P.cosaServe(45, true)[0].voci[2].nota), 'Se non ce l’hai ancora, ti iscrivi lo stesso: hai 45 giorni per portarlo.')
 ok('un giorno solo: «hai 1 giorno»', prova(() => P.cosaServe(1, true)[0].voci[2].nota), 'Se non ce l’hai ancora, ti iscrivi lo stesso: hai 1 giorno per portarlo.')
 // Come il modulo: senza i giorni (server che non risponde, prima della 141) non si promette un numero.
 ok('senza i giorni (null): nessun numero', prova(() => P.cosaServe(null, true)[0].voci[2].nota), 'Se non ce l’hai ancora, ti iscrivi lo stesso e lo porti dopo.')
 // La stessa regola di costiBreve: Satispay spento non si nomina.
-ok('senza Satispay la nota non lo nomina', prova(() => P.cosaServe(30, false)[1].voci[0].nota), 'Col bonifico e la sua ricevuta, oppure in palestra direttamente.')
+ok('senza Satispay la nota non lo nomina', prova(() => P.cosaServe(30, false)[1].voci[0].nota), 'Col bonifico o in contanti in palestra.')
 ok('COSA_SERVE non c’è più (le voci dipendono dai giorni)', typeof P.COSA_SERVE, 'undefined')
 ok('nessuna voce dice «firma il genitore»', JSON.stringify(prova(() => P.cosaServe(30, true))).includes('firma il genitore'), false)
 ok('«Come paghi» non è più una cosa da preparare', JSON.stringify(prova(() => P.cosaServe(30, true))).includes('Come paghi'), false)
@@ -109,13 +115,14 @@ ok('con Satispay', prova(() => P.costiBreve(50, true)), {
   etichetta: 'QUANTO COSTA · 2026/27',
   titolo: 'Quota associativa 50 €, più il corso.',
   righe: RIGHE,
-  testo: 'I prezzi di ogni corso e come si paga: Satispay o bonifico, nella richiesta.',
+  testo: 'I prezzi di ogni corso e come si paga: Satispay, bonifico o contanti, nella richiesta.',
   tasto: 'PREZZI E PAGAMENTO',
 })
-ok('senza Satispay la frase non lo nomina', prova(() => P.costiBreve(50, false).testo), 'I prezzi di ogni corso e come si paga: bonifico, nella richiesta.')
+ok('senza Satispay la frase non lo nomina', prova(() => P.costiBreve(50, false).testo), 'I prezzi di ogni corso e come si paga: bonifico o contanti, nella richiesta.')
 // Il pagamento non si rimanda più: nessun testo della pagina dice di pagare in segreteria o dopo la richiesta.
+// COME_SI_PAGA è fuori: coi contanti si paga in segreteria, per decisione del 2026-11-14 (provato sopra).
 // Il certificato «lo porti in segreteria» resta: la sua voce si toglie prima di cercare.
-const testiPagamento = JSON.stringify([prova(() => P.cosaServe(30, true)[1]), prova(() => P.cosaServe(30, false)[1]), P.COME_SI_PAGA, prova(() => P.costiBreve(50, true)), prova(() => P.costiBreve(50, false))])
+const testiPagamento = JSON.stringify([prova(() => P.cosaServe(30, true)[1]), prova(() => P.cosaServe(30, false)[1]), prova(() => P.costiBreve(50, true)), prova(() => P.costiBreve(50, false))])
 ok('nessun testo del pagamento dice «in segreteria»', /in segreteria/i.test(testiPagamento), false)
 ok('nessun testo del pagamento dice «dopo la richiesta»', /dopo la richiesta/i.test(testiPagamento), false)
 ok('la quota è quella passata (dal listino), non scritta: 55 → «55 €»', prova(() => P.costiBreve(55, true).titolo), 'Quota associativa 55 €, più il corso.')

@@ -156,8 +156,10 @@ grant execute on function iscrizioni_regole() to anon, authenticated;
 
 -- Avvolge `invia_iscrizione` senza rifarla: se è ancora una di prima (o è tornata
 -- dopo un rilancio) diventa `invia_iscrizione_0`, e quella qui sotto la chiama.
+-- Se avvolge già una versione (questa, o quella di 163 che avvolge questa) non si tocca:
+-- rilanciato dopo 163, questo file non rifà la catena.
 do $$ begin
-  if not exists (select 1 from pg_proc where proname = 'invia_iscrizione' and pronamespace = 'public'::regnamespace and prosrc like '%invia_iscrizione_0%') then
+  if not exists (select 1 from pg_proc where proname = 'invia_iscrizione' and pronamespace = 'public'::regnamespace and prosrc ~ 'invia_iscrizione_[0-9]+\(dati\)') then
     drop function if exists invia_iscrizione_0(jsonb);
     alter function invia_iscrizione(jsonb) rename to invia_iscrizione_0;
   end if;
