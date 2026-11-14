@@ -86,11 +86,15 @@ const paroleCorso = (nome: string): string[] => parole(nome).map(senzaApostrofi)
 /** Le parole senza cifre (TRN, date, numeri di ricevuta cambiano da un bonifico all'altro dello stesso conto), in ordine. */
 const firma = (testo: string): string => [...new Set(parole(testo).filter((w) => !/[0-9]/.test(w)))].sort().join(' ')
 
+/** Il genitore nel testo: vale solo con almeno una lettera nel nome e una nel cognome («Gino» «-» o «1» «Verdi» non dicono chi è). */
+const genitoreNelTesto = (p: Pick<PersonaDaAbbinare, 'genitoreNome' | 'genitoreCognome'>, nelle: Set<string>): boolean =>
+  /\p{L}/u.test(p.genitoreNome ?? '') && /\p{L}/u.test(p.genitoreCognome ?? '') && nelTesto(`${p.genitoreNome} ${p.genitoreCognome}`, nelle)
+
 /** Nome e cognome interi, o quelli del genitore, nel testo: lo usa anche «Importa banca». Il genitore vale solo intero. */
 export function nomeOGenitore(p: Pick<PersonaDaAbbinare, 'nome' | 'cognome' | 'genitoreNome' | 'genitoreCognome'>, testo: string): 'nome intero' | 'genitore' | null {
   const nelle = new Set(parole(testo))
   if (nelTesto(`${p.nome} ${p.cognome}`, nelle)) return 'nome intero'
-  if (p.genitoreNome && p.genitoreCognome && nelTesto(`${p.genitoreNome} ${p.genitoreCognome}`, nelle)) return 'genitore'
+  if (genitoreNelTesto(p, nelle)) return 'genitore'
   return null
 }
 
@@ -134,7 +138,7 @@ export function abbinaMovimento(
   )
   const punti = attive.map((p) => {
     const n = nelTesto(`${p.nome} ${p.cognome}`, nelle)
-    const g = !!p.genitoreNome && !!p.genitoreCognome && nelTesto(`${p.genitoreNome} ${p.genitoreCognome}`, nelle)
+    const g = genitoreNelTesto(p, nelle)
     const cf = movimento.codiciFiscali.some((c) => c === p.codiceFiscale || c === p.genitoreCodiceFiscale)
     const s = storici.has(p.id)
     const c = p.iscrizioni.some((i) => i.corsoId !== undefined && corsi.includes(i.corsoId) && iscritta(i))

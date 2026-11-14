@@ -530,6 +530,29 @@ select atteso('il nome di chi è spento nel nucleo: no', abbina('DA GIADA ROSSI 
   '22023 La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.');
 select atteso('un Da classificare già collegato al padre non guarda la causale: si abbina la ricevuta del figlio', abbina('BONIFICO SENZA NOMI', :'rconpersona'), 'nessun errore');
 reset role;
+-- Il genitore vale solo con una parola vera nel nome e una nel cognome: «Gino» «-» (anagrafica di Dario) non dice chi è,
+-- «-» «.» (richiesta accolta di Rita) non ha parole, e `'{}' <@ t` è vero per ogni causale.
+insert into anagrafiche (persona_id, genitore_nome, genitore_cognome) values (pid(19), 'Gino', '-')
+  on conflict (persona_id) do update set genitore_nome = excluded.genitore_nome, genitore_cognome = excluded.genitore_cognome;
+insert into richieste_iscrizione (nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono,
+                                  corsi, formula, persona_id, stato, genitore_nome, genitore_cognome)
+values ('Rita', 'Blu', '2015-04-04', 'Torino', 'BLURTI15D44L219Z', 'via Roma 2', '10100', 'Torino', 'blu@esempio.it', '3335550001',
+        array[gen_random_uuid()], 'annuale', pid(18), 'accolta', '-', '.');
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, persona_id) values
+  ('entrata', '2026-09-01', 22010, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'DA GINO FERRARIS PER JUDO', null),
+  ('entrata', '2026-09-01', 22011, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'DA CHIUNQUE PER JUDO', null);
+select chi(:ANNA);
+set role authenticated;
+select vecchia(dati(19, jsonb_build_array(vr('TRIMESTRE JUDO', 22010, bon(22010, '2026-09-03'))), '{}', '2026-09-03')) as runaparola \gset
+select vecchia(dati(18, jsonb_build_array(vr('TRIMESTRE JUDO', 22011, bon(22011, '2026-09-03'))), '{}', '2026-09-03')) as rpunti \gset
+reset role;
+select chi(:ADA);
+set role authenticated;
+select atteso('un genitore con una parola sola («Gino» «-») non è nominato da «Gino Ferraris»: no', abbina('DA GINO FERRARIS PER JUDO', :'runaparola'),
+  '22023 La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.');
+select atteso('un genitore di sola punteggiatura in una richiesta accolta non è nominato da nessuna causale: no', abbina('DA CHIUNQUE PER JUDO', :'rpunti'),
+  '22023 La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.');
+reset role;
 
 \echo ''
 \echo '--- 10. il giorno è chiuso: si assegna e si fa la ricevuta lo stesso, la chiusura non cambia ---'
