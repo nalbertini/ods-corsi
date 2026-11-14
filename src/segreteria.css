@@ -1442,6 +1442,30 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* overflow hidden taglierebbe l'anello di fuoco scostato fuori: va dentro la casella, come in COSA MANCA. */
 :root[data-look='sito'] .bn-cifra:focus-visible { outline-offset: -2px; }
 :root[data-look='sito'] .bn-cifra-n { font-size: 28px; font-weight: 600; }
+/* La striscia COSA MANCA: cinque caselle in un contenitore solo, divise da un filo; sul telefono, due per riga.
+   Il numero da 28px nel colore dello stato basta: senza la barra sotto, la striscia non grida più del lavoro (canvas restyle-segreteria). */
+:root[data-look='sito'] .sg-mancano { grid-template-columns: repeat(5, minmax(0, 1fr)); border-radius: 6px; overflow: hidden; }
+:root[data-look='sito'] .sg-mancano-nota[data-fissa='true'] { display: none; }
+:root[data-look='sito'] .sg-mancano-n { font-family: var(--body); font-size: 28px; font-weight: 600; line-height: 1; }
+:root[data-look='sito'] .sg-mancano-titolo { font-family: var(--body); font-size: 14px; font-weight: 600; letter-spacing: 0; }
+:root[data-look='sito'] .sg-mancano-casella { min-height: 72px; gap: 12px; padding: 14px 18px; align-items: center; border-bottom: 0; }
+:root[data-look='sito'] .sg-mancano-casella + .sg-mancano-casella { border-left: 1px solid var(--line); }
+@media (max-width: 767px) {
+  :root[data-look='sito'] .sg-mancano { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :root[data-look='sito'] .sg-mancano-casella:nth-child(odd) { border-left: 0; }
+  :root[data-look='sito'] .sg-mancano-casella:nth-child(n + 3) { border-top: 1px solid var(--line); }
+}
+/* Fra 768 e 1360px il CSS di prima metteva due caselle per riga: qui sono cinque in riga, senza i bordi e lo spazio di quel caso. */
+@media (min-width: 768px) {
+  :root[data-look='sito'] .sg-mancano-casella:nth-child(n + 3) { border-top: 0; }
+  :root[data-look='sito'] .sg-mancano-casella:nth-child(odd) { border-left: 1px solid var(--line); }
+  :root[data-look='sito'] .sg-mancano-casella:nth-child(1) { border-left: 0; }
+  :root[data-look='sito'] .sg-mancano-casella:nth-child(5) { grid-column: auto; }
+}
+/* Sotto i 1360px caselle più strette: meno riempimento, così con tre cifre il titolo non esce. */
+@media (max-width: 1360px) {
+  :root[data-look='sito'] .sg-mancano-casella { padding: 12px; }
+}
 /* COSA MANCA fra 768 e 1119px: caselle sotto i 160px, il numero va sopra il titolo, se no con tre cifre il titolo esce. */
 @media (min-width: 768px) and (max-width: 1119px) {
   :root[data-look='sito'] .sg-mancano-casella { flex-direction: column; align-items: flex-start; gap: 4px; }

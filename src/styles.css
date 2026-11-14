@@ -256,26 +256,6 @@
 :root[data-look='sito'] .sg-voce[aria-current='page'] { font-weight: 700; }
 /* Titoli dei gruppi come sono scritti: il maiuscolo spaziato a 12px si leggeva male. */
 :root[data-look='sito'] .sg-gruppo-titolo { font-family: var(--body); font-size: 13px; font-weight: 600; letter-spacing: 0; }
-/* La striscia COSA MANCA: cinque caselle in un contenitore solo, divise da un filo; sul telefono, due per riga.
-   Il numero da 28px nel colore dello stato basta: senza la barra sotto, la striscia non grida più del lavoro (canvas restyle-segreteria). */
-:root[data-look='sito'] .sg-mancano { grid-template-columns: repeat(5, minmax(0, 1fr)); border-radius: 6px; overflow: hidden; }
-:root[data-look='sito'] .sg-mancano-nota[data-fissa='true'] { display: none; }
-:root[data-look='sito'] .sg-mancano-n { font-family: var(--body); font-size: 28px; font-weight: 600; line-height: 1; }
-:root[data-look='sito'] .sg-mancano-titolo { font-family: var(--body); font-size: 14px; font-weight: 600; letter-spacing: 0; }
-:root[data-look='sito'] .sg-mancano-casella { min-height: 72px; gap: 12px; padding: 14px 18px; align-items: center; border-bottom: 0; }
-:root[data-look='sito'] .sg-mancano-casella + .sg-mancano-casella { border-left: 1px solid var(--line); }
-@media (max-width: 767px) {
-  :root[data-look='sito'] .sg-mancano { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  :root[data-look='sito'] .sg-mancano-casella:nth-child(odd) { border-left: 0; }
-  :root[data-look='sito'] .sg-mancano-casella:nth-child(n + 3) { border-top: 1px solid var(--line); }
-}
-/* Fra 768 e 1360px il CSS di prima metteva due caselle per riga: qui sono cinque in riga, senza i bordi e lo spazio di quel caso. */
-@media (min-width: 768px) {
-  :root[data-look='sito'] .sg-mancano-casella:nth-child(n + 3) { border-top: 0; }
-  :root[data-look='sito'] .sg-mancano-casella:nth-child(odd) { border-left: 1px solid var(--line); }
-  :root[data-look='sito'] .sg-mancano-casella:nth-child(1) { border-left: 0; }
-  :root[data-look='sito'] .sg-mancano-casella:nth-child(5) { grid-column: auto; }
-}
 /* Il titolo di una riga di DA FARE è in Inter come il testo: Big Shoulders resta per il numero. */
 /* «Altri filtri» è un comando: più grande e col colore del testo, sottolineato. */
 :root[data-look='sito'] .sg-altri-filtri { font-size: 15px; font-weight: 600; color: var(--text); text-underline-offset: 4px; }
@@ -284,10 +264,6 @@
 :root[data-look='sito'] .sg-btn { letter-spacing: 0; font-size: 16px; font-weight: 600; }
 :root[data-look='sito'] .sg-chip { letter-spacing: 0; font-size: 15px; font-weight: 600; }
 :root[data-look='sito'] .sg-dafare-tasto { letter-spacing: 0; font-size: 16px; font-weight: 600; }
-/* Sotto i 1360px caselle più strette: meno riempimento, così con tre cifre il titolo non esce. */
-@media (max-width: 1360px) {
-  :root[data-look='sito'] .sg-mancano-casella { padding: 12px; }
-}
 :root[data-look='sito'] .sg-dafare-titolo { font-family: var(--body); font-size: 17px; font-weight: 600; letter-spacing: 0; }
 /* Il numero di DA FARE, nel colore dello stato, dice blocca o presto al posto della barra a sinistra. */
 :root[data-look='sito'] .sg-dafare-n { font-size: 28px; font-weight: 600; line-height: 1; }

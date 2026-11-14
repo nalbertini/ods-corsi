@@ -150,6 +150,7 @@ const PRINCIPALE = [
   { id: 'segreteria-ordine', nome: 'Segreteria · tasti, schede e stati in ordine', cartella: 'segreteria-ordine' },
   { id: 'segreteria-parole', nome: 'Segreteria · stati a parole al telefono', cartella: 'segreteria-parole' },
   { id: 'assegna-pagamento', nome: 'Segreteria · assegnare un bonifico a quota e corsi', cartella: 'assegna-pagamento' },
+  { id: 'restyle-segreteria', nome: 'Segreteria · più leggera', cartella: 'restyle-segreteria' },
 ]
 
 // Il canvas «ODS Corsi · Design · Storia» (modalità `storia`): i design sostituiti, spostati qui dal principale e non cancellati.
