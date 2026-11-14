@@ -87,7 +87,7 @@ ok('sul telefono la finestra prende tutto lo schermo', /@media \(max-width: 767p
 
 console.log('\nLa scheda dell\'iscritto non salta mentre arrivano i dati')
 const iscritti = leggi('src/components/segreteria/Iscritti.tsx')
-ok('timbri e sezioni aspettano i dati anagrafici: COSA MANCA, arrivando dopo, li spingerebbe giù (CLS)', [/&& letta && <Timbri/.test(iscritti), /\) : !letta \? \(/.test(iscritti)], [true, true])
+ok('DA SISTEMARE e sezioni aspettano i dati anagrafici: le voci dei dati, arrivando dopo, spingerebbero giù il resto (CLS)', [/&& letta && \(\s*<DaSistemare/.test(iscritti), /\) : !letta \? \(/.test(iscritti)], [true, true])
 
 console.log(guai ? `\n${guai} cosa non torna` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

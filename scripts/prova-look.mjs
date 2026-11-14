@@ -158,7 +158,7 @@ const ha = (sel, re) => re.test(esatto(sel))
 const GIALLO_PIENO = /var\(--giallo\)|#f4c31b/i
 const SENZA_BORDO = /(?<![-\w])border(-width)?:\s*(0|none)(px)?\s*(;|$)/
 
-for (const c of ['.sg-btn', '.sg-chip', '.sg-campo', '.sg-tag', '.sg-bollino', '.sg-riquadro', '.sg-dafare-riga', '.sg-scelta', '.card', '.sg-segno-regola', '.sg-dialogo', '.sg-scheda', '.sg-timbro', '.sg-lezione', '.sg-dafare-lezione'])
+for (const c of ['.sg-btn', '.sg-chip', '.sg-campo', '.sg-tag', '.sg-bollino', '.sg-riquadro', '.sg-dafare-riga', '.sg-scelta', '.card', '.sg-segno-regola', '.sg-dialogo', '.sg-scheda', '.sg-lezione', '.sg-dafare-lezione'])
   ok(`${c}: angoli da 6px`, ha(c, /border-radius:\s*6px/), true)
 ok('nessuna regola del look è obliqua', delLook.filter((r) => /font-style:\s*oblique/.test(r.corpo)).map((r) => r.selettori.join(',')), [])
 for (const c of ['.sg-btn', '.ob']) ok(`${c}: font-style normal`, ha(c, /font-style:\s*normal/), true)

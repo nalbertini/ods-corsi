@@ -308,7 +308,6 @@
 :root[data-look='sito'] .sg-dialogo,
 :root[data-look='sito'] .sg-conferma-spunta,
 :root[data-look='sito'] .sg-scheda,
-:root[data-look='sito'] .sg-timbro,
 :root[data-look='sito'] .sg-lezione,
 :root[data-look='sito'] .sg-dafare-lezione,
 :root[data-look='sito'] .bn-tessera { border-radius: 6px; }
@@ -443,8 +442,6 @@
 :root[data-look='sito'] .sg-giorno[data-oggi='true'] { border-bottom-color: var(--giallo-testo); }
 :root[data-look='sito'] .sg-giorno-tel[aria-pressed='true'][data-oggi='true'] { border-bottom-color: var(--giallo-testo); }
 :root[data-look='sito'] .sg-filo[data-tocca='true'] { border-left: 4px solid var(--giallo-testo); }
-:root[data-look='sito'] .sg-timbro[data-tono='giallo'] { --tono: var(--giallo-testo); --tono-testo: var(--giallo-testo); }
-:root[data-look='sito'] .sg-timbro-riga[data-tono='giallo'] { color: var(--giallo-testo); border: 2px solid var(--giallo-testo); }
 :root[data-look='sito'] .sg-quadretto[data-stato='giustificato'] { border-color: var(--giallo-testo); color: var(--giallo-testo); }
 :root[data-look='sito'] .sg-parte[data-tono='giallo'],
 :root[data-look='sito'] .sg-parte-segno[data-tono='giallo'] { background: var(--giallo-testo); }
@@ -2243,6 +2240,9 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-finestra-testa { padding: 10px 14px; flex-wrap: nowrap; gap: 6px; }
   .sg-finestra-testa .sg-btn { min-width: 0; padding: 0 14px; }
   .sg-finestra-nome { display: none; }
+  /* Si torna indietro in alto a sinistra, «‹ Iscritti». */
+  .sg-finestra-chiudi { order: -1; width: auto; border: 0; font-size: 0; color: var(--blu); }
+  .sg-finestra-chiudi::after { content: '‹ ' attr(data-torna); font-size: 15px; font-weight: 600; }
 }
 .sg-scheda-piena { position: static; gap: 24px; padding: 24px 28px; }
 .sg-scheda-piede > .sg-btn { flex: 0 0 auto; min-width: 180px; }
@@ -2657,11 +2657,12 @@ label.sg-btn { cursor: pointer; }
 
 /* La scheda iscritto a schede: la linguetta dice a parole se c'è qualcosa da sistemare, e il piede resta in vista. */
 .sg-schede-scheda .scheda { white-space: nowrap; gap: 8px; }
-.sg-schede-scheda .scheda[data-on='true'] { background: var(--text); color: var(--surface); }
-/* Sulla linguetta piena il giallo e il rosso non si leggerebbero: il segno prende il colore della scritta, il puntino e la parola dicono comunque il segno. */
-.sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno { color: var(--surface); }
+/* Titoli in minuscolo. `!important`: Riga li stila in linea. */
+[id^='pan-'] .sg-etichetta { text-transform: lowercase; letter-spacing: 0 !important; }
+[id^='pan-'] .sg-etichetta::first-letter { text-transform: uppercase; }
+[id^='pan-'] h2.sg-etichetta { font-size: 15px !important; font-weight: 600; color: var(--text); }
 @media (max-width: 1000px) {
-  .sg-schede-scheda .scheda { flex-direction: column; gap: 2px; padding: 4px; white-space: normal; text-align: center; letter-spacing: 0.08em; font-size: 13px; }
+  .sg-schede-scheda .scheda { flex-direction: column; gap: 2px; padding: 4px; white-space: normal; text-align: center; font-size: 13px; }
   /* Con «IN MODIFICA» sotto il nome PERSONA è più alta: tutte uguali, se no la riga salta. */
   .sg-schede-personale .scheda { min-height: 61px; }
 }

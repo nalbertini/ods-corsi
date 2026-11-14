@@ -17,10 +17,10 @@ export interface SchedaDef {
 }
 
 export const SCHEDE: readonly SchedaDef[] = [
-  { id: 'persona', etichetta: 'PERSONA', etichettaTelefono: 'PERSONA', nome: 'PERSONA' },
-  { id: 'documenti', etichetta: 'DOCUMENTI', etichettaTelefono: 'DOCUMENTI', nome: 'DOCUMENTI' },
-  { id: 'quota', etichetta: 'QUOTA E PAGAMENTI', etichettaTelefono: 'QUOTA', nome: 'QUOTA E PAGAMENTI' },
-  { id: 'corsi', etichetta: 'CORSI', etichettaTelefono: 'CORSI', nome: 'CORSI' },
+  { id: 'persona', etichetta: 'Persona', etichettaTelefono: 'Persona', nome: 'Persona' },
+  { id: 'documenti', etichetta: 'Documenti', etichettaTelefono: 'Documenti', nome: 'Documenti' },
+  { id: 'quota', etichetta: 'Quota e pagamenti', etichettaTelefono: 'Quota', nome: 'Quota e pagamenti' },
+  { id: 'corsi', etichetta: 'Corsi', etichettaTelefono: 'Corsi', nome: 'Corsi' },
 ]
 
 /** Gli id di linguetta e pannello: un posto solo, se no il collegamento fra i due si rompe senza errori. */
@@ -29,7 +29,7 @@ export const idPannello = (id: IdScheda) => `pan-${id}`
 
 export const SCHEDA_INIZIALE: IdScheda = SCHEDE[0].id
 
-const DELLA_SEZIONE: Record<string, IdScheda> = { 'sez-certificato': 'documenti', 'sez-tessere': 'documenti', 'sez-documento': 'documenti', 'sez-quota': 'quota' }
+const DELLA_SEZIONE: Record<string, IdScheda> = { 'sez-anagrafica': 'persona', 'sez-certificato': 'documenti', 'sez-tessere': 'documenti', 'sez-documento': 'documenti', 'sez-quota': 'quota' }
 
 /** L'evento con cui il Banco dice alla scheda sotto quale scheda aprire (detail: IdScheda). */
 export const APRI_SCHEDA = 'ods-apri-scheda'

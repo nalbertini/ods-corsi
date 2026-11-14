@@ -654,7 +654,7 @@ export function SchedaPiena({
             </>
           )}
           <span className="grow" />
-          <button type="button" className="icon-btn" aria-label={`Chiudi e torna a ${torna}`} onClick={onTorna}>
+          <button type="button" className="icon-btn sg-finestra-chiudi" data-torna={torna} aria-label={`Chiudi e torna a ${torna}`} onClick={onTorna}>
             <span aria-hidden="true">✕</span>
           </button>
         </div>

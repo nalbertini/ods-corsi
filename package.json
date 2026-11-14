@@ -166,6 +166,7 @@
     "prova:etichette-lezione": "node scripts/prova-etichette-lezione.mjs",
     "prova:precarica-aree": "node scripts/prova-precarica-aree.mjs",
     "prova:area-tab": "node scripts/prova-area-tab.mjs",
+    "prova:da-sistemare": "node scripts/prova-da-sistemare.mjs",
     "prova:scheda": "node scripts/prova-scheda.mjs",
     "prova:scheda-persona": "node scripts/prova-scheda-persona.mjs",
     "prova:schede-iscritto": "node scripts/prova-schede-iscritto.mjs",
