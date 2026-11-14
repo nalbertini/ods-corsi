@@ -17,9 +17,9 @@
   </style>
 </helmet>
 <div style="display: flex; align-items: flex-start; gap: 20px; width: 100%; padding: 16px 18px; background: {{c.surface}}; border: {{bordo}}; border-radius: {{raggio}}; box-shadow: {{barra}}; text-align: left">
-  <span style="min-width: 64px; font-family: {{fam}}; font-variant-numeric: tabular-nums; font-size: 44px; font-weight: 700; line-height: 0.9; text-align: right; color: {{coloreN}}">{{n}}</span>
+  <span style="min-width: 64px; font-family: {{fam}}; font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 600; line-height: 1; text-align: right; color: {{coloreN}}">{{n}}</span>
   <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
-    <span style="font-family: {{fam}}; font-size: {{titoloCorpo}}; font-weight: 700; letter-spacing: {{titoloSpazio}}; line-height: 1.1; color: {{c.text}}">{{titolo}}</span>
+    <span style="font-family: {{fam}}; font-size: {{titoloCorpo}}; font-weight: {{titoloPeso}}; letter-spacing: {{titoloSpazio}}; line-height: 1.1; color: {{c.text}}">{{titolo}}</span>
     <span style="font-size: 14px; line-height: 1.5; color: {{c.sec}}">{{sotto}}</span>
     <sc-if value="{{conElenco}}" hint-placeholder-val="{{ false }}">
       <ul style="list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: {{colonne}}; column-gap: 24px; border-top: 1px solid {{c.line}}">
@@ -44,8 +44,8 @@
 // giallo-testo se e' presto (il rosso solo per quello che e' gia' un guaio). Titolo Saira 22px 700; sotto, 14px `sec`.
 // Il tasto e' un .sg-btn-linea (Bottone, segreteria), lo stesso su ogni riga: «Vedi tutti» (TASTO_DA_FARE in daFareChi.ts).
 // Non riprodotti: le lezioni da aprire sotto gli appelli e il ritorno a capo sotto i 700px.
-// (`:root[data-look='sito']`): tessera bianca senza bordo, raggio 6px, barra a sinistra di 4px (rosso se blocca, giallo scuro se e' presto);
-// numero e titolo in Inter (il titolo 21px 700 senza spaziatura).
+// (`:root[data-look='sito']`, restyle della segreteria 2026-11-14): tessera bianca senza bordo, raggio 6px, senza barra a sinistra:
+// lo stato lo dice il numero, 28px 600 nel suo colore; numero e titolo in Inter (il titolo 17px 600 senza spaziatura).
 // `elenco` = «Nome~perché|…»: i primi nomi sotto la frase (.sg-dafare-chi, al massimo PRIMI_DA_FARE = 5), ognuno apre dove si
 // sistema. Nome 15px 600 sottolineato in `line`, alto 44px; perché 14px `sec`, in rosso-testo se contiene una parola di `rosso`
 // (separate da «|»: nell'app, il certificato). Se nome e perché non stanno insieme il perché va a capo. `colonne` 1 o 2
@@ -61,9 +61,9 @@ class Component extends DCLogic {
     const c = T.sito;
     const sito = true;
     return {
-      fam: sito ? INTER : COND, titoloCorpo: sito ? '21px' : '22px', titoloSpazio: sito ? '0' : '0.03em',
+      fam: sito ? INTER : COND, titoloCorpo: sito ? '17px' : '22px', titoloPeso: sito ? 600 : 700, titoloSpazio: sito ? '0' : '0.03em',
       bordo: sito ? '0' : '2px solid ' + c.line, raggio: sito ? '6px' : '0',
-      barra: sito ? 'inset 4px 0 0 ' + (p.livello === 'presto' ? c.gialloTesto : '#e4292a') : 'none',
+      barra: 'none',
       variante: 'linea',
       c, n: p.n ?? '3', titolo: p.titolo ?? 'iscritti senza certificato valido',
       sotto: p.sotto ?? 'Il certificato medico manca o è scaduto: senza, in sala non si entra.', tasto: p.tasto ?? 'Vedi tutti',

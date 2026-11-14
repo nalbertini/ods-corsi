@@ -233,7 +233,10 @@
 :root[data-look='sito'] .sg-tag,
 :root[data-look='sito'] .sg-etichetta { font-family: var(--body); font-style: normal; }
 :root[data-look='sito'] .ob,
-:root[data-look='sito'] .sg-titolo { font-style: normal; }
+:root[data-look='sito'] .sg-titolo { font-style: normal; font-size: 28px; }
+@media (max-width: 767px) {
+  :root[data-look='sito'] .sg-titolo { font-size: 24px; }
+}
 /* Inter è più larga di Saira: con la spaziatura di prima le voci lunghe andavano a capo. */
 :root[data-look='sito'] .sg-voce { letter-spacing: 0; min-height: 44px; border-radius: 6px; font-weight: 500; font-size: 15px; white-space: nowrap; }
 /* Nel menu di 240px una voce non va a capo col suo numero accanto: poco riempimento ai lati. */
@@ -251,21 +254,25 @@
 }
 :root[data-look='sito'] .sg-gruppo[data-secondario='true'] .sg-voce { font-size: 15px; }
 :root[data-look='sito'] .sg-voce[aria-current='page'] { font-weight: 700; }
-/* I titoli dei gruppi sono scritti con l'iniziale maiuscola nel codice; il maiuscolo è dello stile, come le etichette di colonna. */
-:root[data-look='sito'] .sg-gruppo-titolo { font-family: var(--body); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; }
-/* La striscia COSA MANCA: cinque caselle in una riga (numero e titolo, senza la nota); sul telefono, due per riga come prima. */
-:root[data-look='sito'] .sg-mancano { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+/* Titoli dei gruppi come sono scritti: il maiuscolo spaziato a 12px si leggeva male. */
+:root[data-look='sito'] .sg-gruppo-titolo { font-family: var(--body); font-size: 13px; font-weight: 600; letter-spacing: 0; }
+/* La striscia COSA MANCA: cinque caselle in un contenitore solo, divise da un filo; sul telefono, due per riga.
+   Il numero da 28px nel colore dello stato basta: senza la barra sotto, la striscia non grida più del lavoro (canvas restyle-segreteria). */
+:root[data-look='sito'] .sg-mancano { grid-template-columns: repeat(5, minmax(0, 1fr)); border-radius: 6px; overflow: hidden; }
 :root[data-look='sito'] .sg-mancano-nota[data-fissa='true'] { display: none; }
-:root[data-look='sito'] .sg-mancano-n { font-size: 44px; }
+:root[data-look='sito'] .sg-mancano-n { font-family: var(--body); font-size: 28px; font-weight: 600; line-height: 1; }
 :root[data-look='sito'] .sg-mancano-titolo { font-family: var(--body); font-size: 14px; font-weight: 600; letter-spacing: 0; }
-:root[data-look='sito'] .sg-mancano-casella { min-height: 72px; gap: 12px; padding: 14px 18px; align-items: center; }
+:root[data-look='sito'] .sg-mancano-casella { min-height: 72px; gap: 12px; padding: 14px 18px; align-items: center; border-bottom: 0; }
+:root[data-look='sito'] .sg-mancano-casella + .sg-mancano-casella { border-left: 1px solid var(--line); }
 @media (max-width: 767px) {
   :root[data-look='sito'] .sg-mancano { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :root[data-look='sito'] .sg-mancano-casella:nth-child(odd) { border-left: 0; }
+  :root[data-look='sito'] .sg-mancano-casella:nth-child(n + 3) { border-top: 1px solid var(--line); }
 }
 /* Fra 768 e 1360px il CSS di prima metteva due caselle per riga: qui sono cinque in riga, senza i bordi e lo spazio di quel caso. */
 @media (min-width: 768px) {
   :root[data-look='sito'] .sg-mancano-casella:nth-child(n + 3) { border-top: 0; }
-  :root[data-look='sito'] .sg-mancano-casella:nth-child(odd) { border-left: 2px solid var(--tratteggio); }
+  :root[data-look='sito'] .sg-mancano-casella:nth-child(odd) { border-left: 1px solid var(--line); }
   :root[data-look='sito'] .sg-mancano-casella:nth-child(1) { border-left: 0; }
   :root[data-look='sito'] .sg-mancano-casella:nth-child(5) { grid-column: auto; }
 }
@@ -277,12 +284,13 @@
 :root[data-look='sito'] .sg-btn { letter-spacing: 0; font-size: 16px; font-weight: 600; }
 :root[data-look='sito'] .sg-chip { letter-spacing: 0; font-size: 15px; font-weight: 600; }
 :root[data-look='sito'] .sg-dafare-tasto { letter-spacing: 0; font-size: 16px; font-weight: 600; }
-/* Sotto i 1360px le caselle sono più strette: numero e riempimento più piccoli, perché anche con tre cifre il titolo non esca. */
+/* Sotto i 1360px caselle più strette: meno riempimento, così con tre cifre il titolo non esce. */
 @media (max-width: 1360px) {
-  :root[data-look='sito'] .sg-mancano-n { font-size: 36px; }
   :root[data-look='sito'] .sg-mancano-casella { padding: 12px; }
 }
-:root[data-look='sito'] .sg-dafare-titolo { font-family: var(--body); font-size: 21px; font-weight: 700; letter-spacing: 0; }
+:root[data-look='sito'] .sg-dafare-titolo { font-family: var(--body); font-size: 17px; font-weight: 600; letter-spacing: 0; }
+/* Il numero di DA FARE, nel colore dello stato, dice blocca o presto al posto della barra a sinistra. */
+:root[data-look='sito'] .sg-dafare-n { font-size: 28px; font-weight: 600; line-height: 1; }
 /* L'inchiostro del sito sul verde dei tasti «vai» non arriva a 4,5:1 (3,6); il nero di prima sì (4,6). */
 :root[data-look='sito'] .sg-btn-verde,
 :root[data-look='sito'] .btn-go { color: #121212; }
@@ -319,8 +327,6 @@
 :root[data-look='sito'] .bn-tessera:hover { box-shadow: inset 0 0 0 2px var(--line); }
 :root[data-look='sito'] .bn-tessera[data-stato='presto'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 :root[data-look='sito'] .bn-tessera[data-stato='presto']:hover { box-shadow: inset 4px 0 0 var(--giallo-testo), inset 0 0 0 2px var(--line); }
-:root[data-look='sito'] .sg-dafare-riga[data-livello='blocca'] { box-shadow: inset 4px 0 0 var(--rosso); }
-:root[data-look='sito'] .sg-dafare-riga[data-livello='presto'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 :root[data-look='sito'] .sg-riquadro[data-fatto='true'] { box-shadow: inset 4px 0 0 var(--verde); }
 :root[data-look='sito'] .sg-riquadro[data-avviso='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 /* Il tasto principale è il giallo del marchio (uno per schermata); il tasto a linea e i filtri hanno il blu dei campi. */
@@ -367,6 +373,14 @@
 :root[data-look='sito'] .sg-chip,
 :root[data-look='sito'] .sg-scelta { border-color: var(--riga-campo); color: var(--text); }
 :root[data-look='sito'] .sg-btn-linea:hover { border-color: var(--text); }
+/* Bordi da 1px: il blu da 2px su ogni tasto e campo faceva rumore in una schermata usata tutto il giorno. */
+:root[data-look='sito'] .sg-btn-linea,
+:root[data-look='sito'] .sg-btn-tratteggio,
+:root[data-look='sito'] .sg-chip,
+:root[data-look='sito'] .sg-scelta,
+:root[data-look='sito'] .sg-campo,
+:root[data-look='sito'] .sg-segmenti,
+:root[data-look='sito'] .sg-filtro-menu { border-width: 1px; }
 :root[data-look='sito'] .sg-chip[aria-pressed='true'],
 :root[data-look='sito'] .sg-chip[aria-selected='true'],
 :root[data-look='sito'] .sg-chip-pieno { background: var(--blu); border-color: var(--blu); color: #ffffff; }
@@ -451,8 +465,6 @@
 :root[data-look='sito'] .riquadro[data-tono='prova'] { border-left: 4px solid var(--giallo-testo); }
 :root[data-look='sito'] .bn-adesso { border-top: 3px solid var(--giallo-testo); }
 :root[data-look='sito'] .bn-adesso .num { background: var(--giallo-testo); color: #ffffff; }
-:root[data-look='sito'] .bn-riga { border-left: 8px solid var(--giallo-testo); }
-:root[data-look='sito'] .bn-riga[data-livello='blocca'] { border-left-color: var(--rosso); }
 :root[data-look='sito'] .bn-blocca { border: 2px solid var(--giallo-testo); border-left: 8px solid var(--giallo-testo); }
 
 /* L'area istruttore nel look del sito (PR 1: calendario, appello, barre, menu). Valori da

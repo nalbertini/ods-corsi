@@ -117,7 +117,8 @@ ok('.num: font-family var(--body)', num.some((r) => fam(r) === 'var(--body)'), t
 ok('.num: tabular-nums', num.some((r) => /font-variant-numeric:\s*tabular-nums/.test(r.corpo)), true)
 for (const c of ['.sg-btn', '.sg-chip', '.sg-voce', '.sg-tag', '.sg-etichetta'])
   ok(`${c}: var(--body)`, sotto(c).some((r) => fam(r) === 'var(--body)'), true)
-for (const c of ['.sg-titolo', '.sg-dafare-n', '.sg-mancano-n'])
+// Il numero di COSA MANCA è in Inter dal restyle della segreteria: a 28px Big Shoulders si legge peggio.
+for (const c of ['.sg-titolo', '.sg-dafare-n'])
   ok(`${c}: non cambia famiglia (resta --cond)`, sotto(c).map(fam).filter((f) => f && f !== 'var(--cond)'), [])
 
 // --- 7. i contrasti ----------------------------------------------------------
@@ -177,11 +178,24 @@ ok('.sg-mancano-casella: niente barra colorata sotto', ha('.sg-mancano-casella',
 ok('.sg-mancano-n: 28px, Inter, peso 600', ha('.sg-mancano-n', /font-size:\s*28px/) && ha('.sg-mancano-n', /font-family:\s*var\(--body\)/) && ha('.sg-mancano-n', /font-weight:\s*600/), true)
 ok('nessuna casella di COSA MANCA ha più il numero da 36 o 44px', delLook.filter((r) => r.selettori.some((s) => s.includes('.sg-mancano-n')) && /font-size:\s*(36|44)px/.test(r.corpo)).length, 0)
 ok('nessun divisorio da 2px fra le caselle', delLook.filter((r) => r.selettori.some((s) => s.includes('.sg-mancano-casella')) && /border-left:\s*2px/.test(r.corpo)).length, 0)
-ok('.bn-cifre: un contenitore solo bianco, senza spazio fra le caselle', ha('.bn-cifre', /gap:\s*0/) && ha('.bn-cifre', /background(-color)?:\s*var\(--surface\)/), true)
-ok('.bn-cifra: niente bordo da 2px, filo da 1px fra le caselle', ha('.bn-cifra', SENZA_BORDO) && ha('.bn-cifra + .bn-cifra', /border-left:\s*1px solid var\(--line\)/), true)
-ok('.bn-cifra-n: 28px, peso 600', ha('.bn-cifra-n', /font-size:\s*28px/) && ha('.bn-cifra-n', /font-weight:\s*600/), true)
-ok('.bn-riga: niente barra da 8px, un punto da 8px', ha('.bn-riga', /border-left:\s*0/) && ha('.bn-riga::before', /width:\s*8px/) && ha('.bn-riga::before', /border-radius:\s*50%/), true)
-ok(".bn-riga[data-livello='blocca']::before: rosso", ha(".bn-riga[data-livello='blocca']::before", /background(-color)?:\s*var\(--rosso\)/), true)
+// Le regole del Banco stanno nel CSS della segreteria (styles.css ha un tetto di byte).
+const delLookSg = regole(pulisci(readFileSync('src/segreteria.css', 'utf8'))).filter((r) => r.selettori.some((s) => s.startsWith(LOOK)))
+const haSg = (sel, re) => re.test(delLookSg.filter((r) => r.selettori.includes(`${LOOK} ${sel}`)).map((r) => r.corpo).join(' ; '))
+ok('.bn-cifre: un contenitore solo bianco, senza spazio fra le caselle', haSg('.bn-cifre', /gap:\s*0/) && haSg('.bn-cifre', /background(-color)?:\s*var\(--surface\)/), true)
+// Con overflow hidden un figlio di una colonna flex si schiaccia a 0px: il collaudo l'ha visto, le cifre sparivano.
+ok('.bn-cifre: non si restringe nella colonna del corpo', haSg('.bn-cifre', /flex:\s*none/), true)
+// Il filo è un'ombra a destra e sotto ogni casella: vale anche quando le cifre vanno su due righe (sotto i 900px, tre per riga).
+ok('.bn-cifra: niente bordo da 2px, filo da 1px a destra e sotto', haSg('.bn-cifra', SENZA_BORDO) && haSg('.bn-cifra', /box-shadow:\s*1px 0 0 var\(--line\),\s*0 1px 0 var\(--line\)/), true)
+ok('.bn-cifra + .bn-cifra: nessun filo a sinistra, che sbagliava a capo riga', haSg('.bn-cifra + .bn-cifra', /border-left/), false)
+// Fra 768 e 1023px le caselle sono larghe ~106px: numero sopra e titolo sotto, se no con tre cifre il titolo esce.
+ok('.sg-mancano-casella fra 768 e 1119px: numero sopra il titolo', /@media \(min-width: 768px\) and \(max-width: 1119px\)\s*\{[^}]*\.sg-mancano-casella\s*\{[^}]*flex-direction:\s*column/.test(readFileSync('src/segreteria.css', 'utf8')), true)
+// Con overflow hidden l'anello di fuoco da tastiera, scostato di 2px, resta fuori e si taglia: dentro la casella si vede.
+ok('.bn-cifra:focus-visible: anello dentro la casella', haSg('.bn-cifra:focus-visible', /outline-offset:\s*-2px/), true)
+ok('.sg-mancano-casella + .sg-mancano-casella: filo da 1px, non il tratteggio da 2px', ha('.sg-mancano-casella + .sg-mancano-casella', /border-left:\s*1px solid var\(--line\)/), true)
+ok('COSA MANCA sul telefono: niente filo a sinistra a inizio riga, filo sopra dalla seconda riga', /border-left:\s*0/.test(esatto('.sg-mancano-casella:nth-child(odd)')) && /border-top:\s*1px solid var\(--line\)/.test(esatto('.sg-mancano-casella:nth-child(n + 3)')), true)
+ok('.bn-cifra-n: 28px, peso 600', haSg('.bn-cifra-n', /font-size:\s*28px/) && haSg('.bn-cifra-n', /font-weight:\s*600/), true)
+ok('.bn-riga: niente barra da 8px, un punto da 8px', haSg('.bn-riga', SENZA_BORDO) && haSg('.bn-riga::before', /width:\s*8px/) && haSg('.bn-riga::before', /border-radius:\s*50%/), true)
+ok(".bn-riga[data-livello='blocca']::before: rosso", haSg(".bn-riga[data-livello='blocca']::before", /background(-color)?:\s*var\(--rosso\)/), true)
 ok('.sg-titolo: 28px', ha('.sg-titolo', /font-size:\s*28px/), true)
 ok('.sg-dafare-titolo: 17px', ha('.sg-dafare-titolo', /font-size:\s*17px/), true)
 ok('.sg-dafare-n: 28px, peso 600', ha('.sg-dafare-n', /font-size:\s*28px/) && ha('.sg-dafare-n', /font-weight:\s*600/), true)
@@ -309,14 +323,14 @@ console.log('\nDA FARE e COSA MANCA')
 for (const [sel, re, cosa] of [
   ['.sg-mancano', /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/, 'cinque caselle in una riga'],
   [".sg-mancano-nota[data-fissa='true']", /display:\s*none/, 'senza la nota di sempre (gli avvisi sul conto si vedono)'],
-  ['.sg-mancano-n', /font-size:\s*44px/, 'numero a 44px'],
+  ['.sg-mancano-n', /font-size:\s*28px/, 'numero a 28px'],
   ['.sg-mancano-titolo', /font-family:\s*var\(--body\)/, 'titolo in Inter'],
   ['.sg-mancano-titolo', /font-size:\s*14px/, 'titolo a 14px'],
   ['.sg-mancano-titolo', /font-weight:\s*600/, 'titolo a 600'],
   ['.sg-mancano-titolo', /letter-spacing:\s*0\s*;/, 'titolo senza spaziatura'],
   ['.sg-dafare-titolo', /font-family:\s*var\(--body\)/, 'titolo della riga in Inter'],
-  ['.sg-dafare-titolo', /font-size:\s*21px/, 'titolo della riga a 21px'],
-  ['.sg-dafare-titolo', /font-weight:\s*700/, 'titolo della riga a 700'],
+  ['.sg-dafare-titolo', /font-size:\s*17px/, 'titolo della riga a 17px'],
+  ['.sg-dafare-titolo', /font-weight:\s*600/, 'titolo della riga a 600'],
   ['.sg-dafare-titolo', /letter-spacing:\s*0\s*;/, 'titolo della riga senza spaziatura'],
 ]) ok(`${sel}: ${cosa}`, ha(sel, re), true)
 ok('fra 768 e 1360px le cinque caselle non prendono i bordi e lo spazio del caso a due colonne (nth-child 5 e n+3)', /grid-column:\s*auto/.test(esatto(".sg-mancano-casella:nth-child(5)")) && /border-top:\s*0/.test(esatto('.sg-mancano-casella:nth-child(n + 3)')), true)

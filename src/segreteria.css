@@ -1427,3 +1427,22 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-totali[data-quanti='2'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .sg-totali[data-quanti='2'] > div:nth-child(n) { border-top: 0; }
 .sg-totali[data-quanti='2'] > div + div { border-left: 1px solid var(--line); }
+
+/* Il Banco nel restyle della segreteria. Qui e non in styles.css, che ha un tetto di byte (`prova:css-ingresso`). */
+/* Le righe: lo stato è un punto da 8px accanto alle parole, non una barra da 8px */
+:root[data-look='sito'] .bn-riga { border: 0; border-radius: 6px; }
+:root[data-look='sito'] .bn-riga::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--giallo-testo); }
+:root[data-look='sito'] .bn-riga[data-livello='blocca']::before { background: var(--rosso); }
+:root[data-look='sito'] .bn-riga-titolo { font-family: var(--body); font-size: 17px; font-weight: 600; letter-spacing: 0; }
+/* Le cifre di OGGI come COSA MANCA: un contenitore solo, caselle divise da un filo, numeri da 28px. */
+:root[data-look='sito'] .bn-cifre { flex: none; gap: 0; background: var(--surface); border-radius: 6px; overflow: hidden; }
+/* Il filo è un'ombra a destra e sotto: giusto anche su due righe; quella sul bordo la taglia overflow. */
+:root[data-look='sito'] .bn-cifra { border: 0; min-height: 0; background: transparent; box-shadow: 1px 0 0 var(--line), 0 1px 0 var(--line); }
+:root[data-look='sito'] button.bn-cifra:not(:disabled):hover { box-shadow: inset 0 0 0 2px var(--blu); }
+/* overflow hidden taglierebbe l'anello di fuoco scostato fuori: va dentro la casella, come in COSA MANCA. */
+:root[data-look='sito'] .bn-cifra:focus-visible { outline-offset: -2px; }
+:root[data-look='sito'] .bn-cifra-n { font-size: 28px; font-weight: 600; }
+/* COSA MANCA fra 768 e 1119px: caselle sotto i 160px, il numero va sopra il titolo, se no con tre cifre il titolo esce. */
+@media (min-width: 768px) and (max-width: 1119px) {
+  :root[data-look='sito'] .sg-mancano-casella { flex-direction: column; align-items: flex-start; gap: 4px; }
+}

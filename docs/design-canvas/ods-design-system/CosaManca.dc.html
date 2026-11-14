@@ -18,8 +18,8 @@
 </helmet>
 <div style="display: grid; grid-template-columns: repeat({{colonne}}, minmax(0, 1fr)); width: 100%; background: {{c.surface}}; border: {{bordo}}; border-radius: {{raggio}}; overflow: hidden">
   <sc-for list="{{voci}}" as="v" hint-placeholder-count="4">
-    <div style="display: flex; gap: {{vuoto}}; min-height: {{altezza}}; min-width: 0; padding: {{riempimento}}; border-left: {{v.cucitura}}; border-top: {{v.sopra}}; border-bottom: 8px solid {{v.segno}}; color: {{c.text}}; text-align: left; align-items: {{allinea}}">
-      <span style="font-family: {{cifraFam}}; font-variant-numeric: tabular-nums; font-size: {{cifraCorpo}}; font-weight: {{cifraPeso}}; line-height: 0.95; white-space: nowrap; color: {{v.colore}}">{{v.n}}</span>
+    <div style="display: flex; gap: {{vuoto}}; min-height: {{altezza}}; min-width: 0; padding: {{riempimento}}; border-left: {{v.cucitura}}; border-top: {{v.sopra}}; border-bottom: {{v.sotto}}; color: {{c.text}}; text-align: left; align-items: {{allinea}}">
+      <span style="font-family: {{cifraFam}}; font-variant-numeric: tabular-nums; font-size: {{cifraCorpo}}; font-weight: {{cifraPeso}}; line-height: 1; white-space: nowrap; color: {{v.colore}}">{{v.n}}</span>
       <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
         <span style="font-family: {{titoloFam}}; font-size: {{titoloCorpo}}; font-weight: {{titoloPeso}}; letter-spacing: {{titoloSpazio}}">{{v.titolo}}</span>
         
@@ -39,13 +39,13 @@
 // quando il conto non si sa: lo dice la regola di src/lib/cosaManca.ts). Con 2 colonne (sotto i 1240px) la riga dopo ha
 // il filetto sopra.
 // Look del sito (`:root[data-look='sito']`): tessera bianca senza bordo, raggio 6px; cinque caselle (`colonne` 5), alte 72px, padding 14px 18px, gap 12px,
-// contenuto centrato; cifra Big Shoulders 44px (36px sotto i 1360px), titolo Inter 14px 600 senza spaziatura, e niente nota (e' quella fissa, che il look
-// nasconde); tra le caselle il filetto da 2px blu; il segno 'aspetta' sotto e' giallo scuro, non il giallo del marchio.
+// contenuto centrato; cifra Inter 28px 600 (restyle della segreteria, 2026-11-14), titolo Inter 14px 600 senza spaziatura, e niente nota (e' quella
+// fissa, che il look nasconde); tra le caselle il filo da 1px `line`, niente segno colorato sotto: lo stato lo dice il colore del numero.
+// Sul telefono due per riga col filo sopra dalla seconda; fra 768 e 1119px il numero sta sopra il titolo; sotto i 1360px padding 12px.
 // Non riprodotti: il tasto RICONTA e le due misure intermedie (1241-1480px e schermo basso).
 const T = {
-  sito: { surface: '#ffffff', rigaCampo: '#14709f', tratteggio: '#14709f', text: '#0d2a3d', dim: '#46606f', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', rigaCampo: '#14709f', tratteggio: '#14709f', text: '#0d2a3d', dim: '#46606f', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33' },
 };
-const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 class Component extends DCLogic {
@@ -68,15 +68,15 @@ class Component extends DCLogic {
       const inPrimaRiga = i < colonne;
       return {
         n: zero ? '✓ 0' : n, titolo, nota, colore: k.colore, segno: k.segno,
-        cucitura: i % colonne === 0 ? '0' : '2px solid ' + t.tratteggio,
-        sopra: inPrimaRiga ? '0' : '2px solid ' + t.tratteggio,
+        cucitura: i % colonne === 0 ? '0' : '1px solid ' + t.line,
+        sopra: inPrimaRiga ? '0' : '1px solid ' + t.line, sotto: '0',
       };
     });
     return {
       c, voci, colonne,
       bordo: '0', raggio: '6px',
       vuoto: '12px', altezza: '72px', riempimento: '14px 18px', allinea: 'center',
-      cifraFam: BIG, cifraCorpo: '44px', cifraPeso: 800,
+      cifraFam: INTER, cifraCorpo: '28px', cifraPeso: 600,
       titoloFam: INTER, titoloCorpo: '14px', titoloPeso: 600, titoloSpazio: '0',
     };
   }

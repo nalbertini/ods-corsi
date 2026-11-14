@@ -14,15 +14,18 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start; width: 100%; min-height: 110px; padding: 14px 16px; text-align: left; background: {{c.surface}}; border: 2px solid {{c.line}}">
+<div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start; width: 100%; padding: 14px 16px; text-align: left; background: {{c.surface}}; box-shadow: 1px 0 0 {{c.line}}, 0 1px 0 {{c.line}}">
   <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 0.18em; color: {{c.dim}}">{{titolo}}</span>
-  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 44px; font-weight: 700; line-height: 1; color: {{coloreN}}">{{valore}}</span>
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 600; line-height: 1; color: {{coloreN}}">{{valore}}</span>
   <span style="font-size: 13px; color: {{c.dim}}">{{sotto}}</span>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"titolo":{"editor":"text","default":"SENZA CERTIFICATO"},"valore":{"editor":"text","default":"47"},"sotto":{"editor":"text","default":"in sala non entrano"},"guaio":{"editor":"boolean","default":true},"$preview":{"width":260,"height":110}}'>
 // Riproduzione di `Cifra` di src/components/segreteria/banco/Oggi.tsx con .bn-cifra, .bn-cifra-n e .bn-cifra-sotto (src/styles.css, sezione «Il Banco»).
-// Fondo `surface`, bordo 2px `line`, padding 14px 16px, minimo 110px; il numero Saira 44px, rosso-testo se `guaio` e il valore non e' zero.
+// Restyle della segreteria (2026-11-14): le cifre stanno in un contenitore bianco unico (.bn-cifre, raggio 6px, gap 0), ognuna senza bordo,
+// col filo 1px `line` a destra e sotto (box-shadow, il contenitore taglia quello sul bordo); padding 14px 16px; numero 28px 600,
+// rosso-testo se `guaio` e il valore non e' zero. Al passaggio contorno inset 2px `blu`; il fuoco da tastiera sta dentro (offset -2px).
+// Regole in src/segreteria.css (styles.css e' al tetto di byte).
 const T = {
   sito: { bg: '#eef5fa', surface: '#ffffff', surfaceAlta: '#cfe6f4', menu: '#0d2a3d', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33', suColore: '#0d2a3d' },
 };

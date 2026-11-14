@@ -17,7 +17,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Corso con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo sbagliato, corso pagato due volte o per un altro | `prova:corso-satispay`, `prova:pagato-in-segreteria`, `prova:edge`, `scripts/prova-iscritto-supabase.mjs`, `corso-satispay.sql`, `pagato-in-segreteria.sql`, `corso-gia-pagato.sql` | sì |
 | Saldo della quota con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | resto calcolato male o pagato due volte, nucleo sbagliato | `prova:saldo-satispay`, `prova:satispay`, `prova:pagato-in-segreteria`, `prova:edge`, `saldo-satispay.sql`, `pagato-in-segreteria.sql` | sì |
 | Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:campi`, `prova:listino`, `prova:moduli`, `prova:fogli-moduli`, `prova:richieste`, `prova:ricevuta`, `prova:avvisi-segreteria`, `iscrizioni.sql`, `listino.sql`, `orari-aperti.sql`, `rls.sql` | sì |
-| Aspetto del modulo di iscrizione | genitore | modulo illeggibile o col colore del sito sbagliato | `prova:iscrizione-sito`, `prova:campi`, `prova:iscrizione-pagina`, `prova:tema`, `prova:iscrizione-passi` | sì |
+| Aspetto del modulo di iscrizione | genitore | modulo illeggibile o col colore del sito sbagliato | `prova:iscrizione-sito`, `prova:look`, `prova:campi`, `prova:iscrizione-pagina`, `prova:tema`, `prova:iscrizione-passi` | sì |
 | Modulo di iscrizione da tastiera e a 320px | genitore, segreteria | chi usa la tastiera non riesce a iscriversi | `prova:accessibilita-iscrizione` | sì |
 | Pagina pubblica `/iscrizioni/` | genitore, segreteria | richiesta mai inviata, prezzo diverso dal listino | `prova:iscrizione-pagina`, `prova:iscrizione-sito`, `prova:iscrizione-passi` | sì |
 | Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste`, `prova:segreteria`, `prova:coda`, `prova:certificati`, `prova:iscritti`, `prova:scheda-finestra`, `prova:iscrizione-pagina`, `iscrizioni.sql` | sì |
@@ -33,7 +33,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Certificato portato dopo (termine per portarlo) | genitore, segreteria, istruttore | chi è nel termine visto in regola o rosso; termine perso; date al tablet | `prova:certificato-dopo`, `prova:iscrizione-passi`, `prova:banco`, `prova:dafare`, `prova:cosa-manca`, `prova:schede-iscritto`, `prova:certificato-iscritto`, `prova:gare`, `certificato-dopo.sql` | sì |
 | Certificato dal link, senza password | genitore, segreteria | link che apre il dato di un altro, file visibile, link che vale dopo la conferma | `prova:certificato-link`, `prova:edge-certificato`, `certificato-link.sql` | sì |
 | Solleciti del certificato per email | genitore, segreteria | mail a chi l'ha già portato, mail doppie, dati sanitari, sollecito perso | `prova:solleciti-certificato`, `prova:avvisi-segreteria`, `solleciti-certificato.sql` | sì |
-| Striscia COSA MANCA | segreteria | un «a posto» falso | `prova:dafare`, `prova:cosa-manca`, `prova:certificati`, `prova:segreteria`, `prova:conteggi-dovuti` | sì |
+| Striscia COSA MANCA | segreteria | un «a posto» falso | `prova:dafare`, `prova:cosa-manca`, `prova:certificati`, `prova:segreteria`, `prova:conteggi-dovuti`, `prova:look` | sì |
 | Chi deve pagare, in tutte le schermate | segreteria | numeri diversi fra le schermate, chi deve non chiamato | `prova:conteggi-dovuti`, `prova:righe-dovute`, `prova:dafare`, `prova:cosa-manca`, `prova:iscritti`, `prova:filtri-iscritti`, `prova:banco` | sì |
 | Storico dei pagamenti | segreteria | pagamento che non compare o conta due volte | `prova:schede-iscritto`, `prova:pagamenti`, `prova:segreteria`, `pagamenti-diretti.sql`, `ricevuta-pagamento-perso.sql` | sì |
 | Ricevuta da un pagamento a mano | segreteria, amministrazione | incasso contato due volte o perso | `prova:pagamenti`, `prova:satispay`, `pagamento-una-volta.sql`, `pagamento-diventa-ricevuta.sql`, `ricevuta-pagamento-perso.sql` | sì |
@@ -94,7 +94,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Esporta i dati di una persona | segreteria | file incompleto o con i dati di un altro | `prova:scheda-iscritto`, `prova:segreteria`, `prova:richieste`, `prova:compensi`, `prova:lettere` | sì |
 | Modifiche non salvate | segreteria, amministrazione | modifica persa senza avviso | `prova:scheda-finestra` | sì |
 | Musica, timer, tablet di sala | istruttore, sala | lezione senza timer o musica | `prova:musica`, `prova:timer-istruttori`, `prova:segreteria`, `prova:musica-file`, `prova:tablet`, `prova:scaletta`, `prova:strumenti`, `prova:anteprima`, `prova:discipline`, `musica.sql`, `categorie-esercizi.sql`, `discipline.sql`, `timer.sql`, `timer-lezioni.sql`, `tablet.sql` | sì |
-| Il Banco | segreteria | un guaio che non si vede | `prova:banco`, `prova:ruoli`, `prova:conteggi-dovuti` | sì |
+| Il Banco | segreteria | un guaio che non si vede | `prova:banco`, `prova:ruoli`, `prova:conteggi-dovuti`, `prova:look` | sì |
 | Scheda dell'iscritto a quattro schede | segreteria | un guaio nascosto su una scheda chiusa | `prova:scheda-iscritto`, `prova:schede-iscritto`, `prova:scheda` | sì |
 | COSA MANCA nella scheda dell'iscritto | segreteria | ricevuta bloccata senza CF, minore trattato da adulto | `prova:scheda-persona`, `prova:segreteria`, `prova:ricevuta` | sì |
 | Timbri di quota e corsi, Segna/Togli nella scheda iscritto | segreteria | importo sbagliato sul timbro, quota segnata o tolta per errore | `prova:scheda`, `prova:schede-iscritto`, `prova:scheda-iscritto`, `prova:segreteria`, `prova:corsi-da-pagare` | sì |
@@ -290,6 +290,7 @@ quando arriva la prova.
 - Disposizione dei timbri della scheda (`.sg-timbri`: righe da tre, sotto i
   1000px uno per riga): nessuna prova la guarda, il dato resta giusto anche se
   si spezza. Solo collaudo a mano sul telefono.
+- Filo fra le caselle di COSA MANCA (`styles.css`, look sito): nessuna prova lo tiene; se cade torna il filo tratteggiato di `segreteria.css`. Solo aspetto.
 
 ## Come si aggiorna
 
