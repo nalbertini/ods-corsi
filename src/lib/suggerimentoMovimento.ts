@@ -110,6 +110,11 @@ export function parolaDelMovimento(riga: RigaMovimento): string | null {
   return cercaPersonaDelMovimento(riga) ? parolaDaCercare(nomeDalTesto(riga.descrizione)) : null
 }
 
+/** Un bonifico da classificare senza un nome da cercare («DA MATERA ELISA PER … DIEGO ORRU»): le persone si cercano nel testo intero (`abbinaPagatoriTesto`). */
+export function cercaNelTesto(riga: RigaMovimento): boolean {
+  return cercaPersonaDelMovimento(riga) && !parolaDelMovimento(riga)
+}
+
 /** Il blocco deve cercare la persona (nome, genitore, codice fiscale, importo): anche se dal testo non si ricava un nome, come nei bonifici («Da VACCARO ANDREA»). */
 export function cercaPersonaDelMovimento(riga: RigaMovimento): boolean {
   return riga.origine === 'movimento' && !riga.annullato && riga.tipo === 'entrata' && !riga.personaId && riga.voce === VOCE_DA_CLASSIFICARE

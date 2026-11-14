@@ -249,5 +249,26 @@ console.log('\n11. il solo cognome e il nome di battesimo col corso: si propongo
   ok('il corso non esce mai dall\'abbinamento', prova(() => JSON.stringify(a.abbinaMovimento({ testo: "Retta psicomotricita' Giulia", data: '2026-12-10', codiciFiscali: [] }, pc)).toLowerCase().includes('psico')), false)
 }
 
+console.log('\nImporta banca, prima di scrivere: abbinaTesto (supabase/prova/abbina-movimenti.sql, sezione 5)')
+{
+  const t = (testo) => prova(() => a.abbinaTesto(testo, persone).map((x) => `${x.nome} ${x.cognome} ${x.come}${x.sicuro ? ' sicuro' : ''}`).join(' | ') || 'nessuno')
+  ok('il bonifico SEPA col nome del figlio: lui solo, preselezionato', t('DA PRUDENTE DOMENICO PER SALDO PSICOMOTRICITA MANUEL PRUDENTE TRN 7'), 'Manuel Prudente nome intero sicuro')
+  ok('il genitore senza il nome del figlio: i figli attivi, da scegliere', t('DA VACCARO ANDREA PER QUOTA'), 'Elia Bruno genitore | Sofia Bruno genitore')
+  ok('nome di una e genitore: prima il nome intero, nessuno preselezionato', t('DA VACCARO ANDREA PER SOFIA BRUNO'), 'Sofia Bruno nome intero | Elia Bruno genitore')
+  ok('il cognome solo non basta', t('DA VACCARO PER QUOTA PRUDENTE'), 'nessuno')
+  ok('un testo troppo lungo: nessuno', t('MANUEL PRUDENTE ' + 'x'.repeat(400)), 'nessuno')
+  ok('l\'apostrofo che fa da accento nel nome della scheda', prova(() => a.abbinaTesto('DA MATERA ELISA PER DIEGO ORRU', [P('diego', 'Diego', "Orru'")]).map((x) => x.id)), ['diego'])
+}
+
+console.log('\nImporta banca: quando cercare nel testo (cercaNelTesto)')
+{
+  const st = await carica("export { cercaNelTesto } from './src/lib/suggerimentoMovimento'")
+  const riga = { id: 'x', origine: 'movimento', annullato: false, tipo: 'entrata', voce: 'Da classificare', descrizione: 'DA MATERA ELISA PER SALDO DIEGO ORRU', importo: 30000, data: '2026-10-02' }
+  ok('un bonifico SEPA da classificare, senza «Cliente … per»: sì', prova(() => st.cercaNelTesto(riga)), true)
+  ok('«Cliente NOME per …»: no, si cerca già il nome', prova(() => st.cercaNelTesto({ ...riga, descrizione: 'Cliente Diego Orru per saldo' })), false)
+  ok('un\'uscita: no', prova(() => st.cercaNelTesto({ ...riga, tipo: 'uscita' })), false)
+  ok('con la persona già scelta: no', prova(() => st.cercaNelTesto({ ...riga, personaId: 'diego' })), false)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

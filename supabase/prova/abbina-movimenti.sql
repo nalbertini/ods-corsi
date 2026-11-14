@@ -384,3 +384,52 @@ select atteso('cinquecento in un giorno: basta fino a domani',
   tenta($$select count(*)::text from abbina_pagatori_movimento(id_mov('Da Ferri Ennio BONIFICO SEPA'))$$), 'NEGATO: troppe ricerche: riprova fra qualche minuto');
 reset role;
 select chi('');
+
+\echo ''
+\echo '--- 5. Importa banca, prima di scrivere: abbina_pagatori_testo (160; le stesse regole di scripts/prova-abbina-movimenti.mjs, «abbinaTesto») ---'
+-- Il bonifico non è ancora un movimento: si cerca dal testo chi ha nome e cognome interi, o il genitore, come nel 121.
+delete from ricerche_pagatori;
+create or replace function pagatori_testo(t text) returns text language plpgsql as $$
+declare r text;
+begin
+  select string_agg(a.nome || ' ' || a.cognome || ' ' || a.come || case when a.sicuro then ' sicuro' else '' end, ' | ') into r from abbina_pagatori_testo(t) a;
+  return coalesce(r, 'nessuno');
+end $$;
+grant execute on function pagatori_testo(text) to authenticated;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('il bonifico SEPA col nome del figlio: lui solo, preselezionato',
+  tenta($$select pagatori_testo('DA PRUDENTE DOMENICO PER SALDO PSICOMOTRICITA MANUEL PRUDENTE TRN 7')$$), 'Manuel Prudente nome intero sicuro');
+select atteso('il genitore senza il nome del figlio: i figli attivi, da scegliere',
+  tenta($$select pagatori_testo('DA VACCARO ANDREA PER QUOTA')$$), 'Elia Bruno genitore | Sofia Bruno genitore');
+select atteso('nome di una e genitore: prima il nome intero, nessuno preselezionato',
+  tenta($$select pagatori_testo('DA VACCARO ANDREA PER SOFIA BRUNO')$$), 'Sofia Bruno nome intero | Elia Bruno genitore');
+select atteso('il cognome solo non basta', tenta($$select pagatori_testo('DA VACCARO PER QUOTA PRUDENTE')$$), 'nessuno');
+reset role;
+insert into persone (id, nome, cognome, ruolo, attiva) values ('eeeeeeee-0000-0000-0000-0000000000f1', 'Bimba', 'Segreta', 'iscritto', true);
+insert into anagrafiche (persona_id, genitore_nome, genitore_cognome) values ('eeeeeeee-0000-0000-0000-0000000000f1', '-', '.');
+set role authenticated;
+select atteso('un genitore scritto solo con la punteggiatura non è nel testo di nessuno', tenta($$select pagatori_testo('')$$) || ' / ' || tenta($$select pagatori_testo('zzz')$$), 'nessuno / nessuno');
+select atteso('un testo troppo lungo: nessuno', tenta($$select pagatori_testo('MANUEL PRUDENTE ' || repeat('x', 400))$$), 'nessuno');
+select atteso('escono solo persona, nome, cognome, come e sicuro: mai il genitore',
+  (select string_agg(p.parameter_name, ',' order by p.ordinal_position) from information_schema.routines r join information_schema.parameters p on p.specific_name = r.specific_name
+    where r.routine_name = 'abbina_pagatori_testo' and p.parameter_mode = 'OUT'), 'persona_id,nome,cognome,come,sicuro');
+reset role;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria no', tenta($$select count(*)::text from abbina_pagatori_testo('MANUEL PRUDENTE')$$), 'NEGATO: i nomi dei movimenti li vede chi cura la contabilità');
+reset role;
+select chi('55555555-5555-5555-5555-555555555555');
+set role authenticated;
+select atteso('l''istruttore no', tenta($$select count(*)::text from abbina_pagatori_testo('MANUEL PRUDENTE')$$), 'NEGATO: i nomi dei movimenti li vede chi cura la contabilità');
+reset role;
+select chi('');
+set role anon;
+select atteso('chi non ha fatto l''accesso no', tenta($$select count(*)::text from abbina_pagatori_testo('MANUEL PRUDENTE')$$), 'NEGATO: permission denied for function abbina_pagatori_testo');
+reset role;
+insert into ricerche_pagatori (persona_id) select 'aaaaaaaa-0000-0000-0000-000000000002' from generate_series(1, 60);
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('lo stesso tetto di cerca_pagatori', tenta($$select count(*)::text from abbina_pagatori_testo('MANUEL PRUDENTE')$$), 'NEGATO: troppe ricerche: riprova fra qualche minuto');
+reset role;
+select chi('');
