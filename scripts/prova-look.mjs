@@ -117,7 +117,8 @@ ok('.num: font-family var(--body)', num.some((r) => fam(r) === 'var(--body)'), t
 ok('.num: tabular-nums', num.some((r) => /font-variant-numeric:\s*tabular-nums/.test(r.corpo)), true)
 for (const c of ['.sg-btn', '.sg-chip', '.sg-voce', '.sg-tag', '.sg-etichetta'])
   ok(`${c}: var(--body)`, sotto(c).some((r) => fam(r) === 'var(--body)'), true)
-for (const c of ['.sg-titolo', '.sg-dafare-n', '.sg-mancano-n'])
+// Il numero di COSA MANCA è in Inter dal restyle della segreteria: a 28px Big Shoulders si legge peggio.
+for (const c of ['.sg-titolo', '.sg-dafare-n'])
   ok(`${c}: non cambia famiglia (resta --cond)`, sotto(c).map(fam).filter((f) => f && f !== 'var(--cond)'), [])
 
 // --- 7. i contrasti ----------------------------------------------------------
@@ -163,8 +164,42 @@ for (const c of ['.sg-riquadro', '.sg-dafare-riga', '.card', '.sg-mancano']) {
   ok(`${c}: tessera senza bordo`, ha(c, SENZA_BORDO), true)
   ok(`${c}: tessera bianca (var(--surface))`, ha(c, /background(-color)?:\s*var\(--surface\)/), true)
 }
-for (const [c, colore] of [[".sg-dafare-riga[data-livello='blocca']", 'rosso'], [".sg-dafare-riga[data-livello='presto']", 'giallo-testo'], [".sg-riquadro[data-fatto='true']", 'verde']])
-  ok(`${c}: barra a sinistra var(--${colore})`, ha(c, new RegExp(`box-shadow:\\s*inset 4px 0 0 var\\(--${colore}\\)`)), true)
+ok(".sg-riquadro[data-fatto='true']: barra a sinistra var(--verde)", ha(".sg-riquadro[data-fatto='true']", /box-shadow:\s*inset 4px 0 0 var\(--verde\)/), true)
+
+// Il restyle della segreteria (canvas docs/design-canvas/restyle-segreteria): il blu pieno solo sui segni piccoli, i bordi da 1px,
+// i numeri di COSA MANCA e del Banco a 28px in un contenitore solo, le righe di DA FARE senza la barra (lo stato è nel colore del numero e nelle parole).
+// Le regole del Banco e di COSA MANCA stanno nel CSS della segreteria (styles.css ha un tetto di byte).
+const delLookSg = regole(pulisci(readFileSync('src/segreteria.css', 'utf8'))).filter((r) => r.selettori.some((s) => s.startsWith(LOOK)))
+const esattoSg = (sel) => delLookSg.filter((r) => r.selettori.includes(`${LOOK} ${sel}`)).map((r) => r.corpo).join(' ; ')
+const haSg = (sel, re) => re.test(esattoSg(sel))
+console.log('\nIl restyle della segreteria')
+for (const c of [".sg-dafare-riga[data-livello='blocca']", ".sg-dafare-riga[data-livello='presto']"])
+  ok(`${c}: niente barra a sinistra`, /inset 4px/.test(esatto(c)), false)
+for (const c of ['.sg-btn-linea', '.sg-btn-tratteggio', '.sg-chip', '.sg-scelta', '.sg-campo', '.sg-segmenti', '.sg-filtro-menu'])
+  ok(`${c}: bordo da 1px`, ha(c, /border-width:\s*1px/), true)
+ok('.sg-mancano: un contenitore solo, angoli 6px', haSg('.sg-mancano', /border-radius:\s*6px/) && haSg('.sg-mancano', /overflow:\s*hidden/), true)
+ok('.sg-mancano-casella: niente barra colorata sotto', haSg('.sg-mancano-casella', /border-bottom:\s*0/), true)
+ok('.sg-mancano-n: 28px, Inter, peso 600', haSg('.sg-mancano-n', /font-size:\s*28px/) && haSg('.sg-mancano-n', /font-family:\s*var\(--body\)/) && haSg('.sg-mancano-n', /font-weight:\s*600/), true)
+ok('nessuna casella di COSA MANCA ha più il numero da 36 o 44px', delLookSg.filter((r) => r.selettori.some((s) => s.includes('.sg-mancano-n')) && /font-size:\s*(36|44)px/.test(r.corpo)).length, 0)
+ok('nessun divisorio da 2px fra le caselle', delLookSg.filter((r) => r.selettori.some((s) => s.includes('.sg-mancano-casella')) && /border-left:\s*2px/.test(r.corpo)).length, 0)
+ok('.bn-cifre: un contenitore solo bianco, senza spazio fra le caselle', haSg('.bn-cifre', /gap:\s*0/) && haSg('.bn-cifre', /background(-color)?:\s*var\(--surface\)/), true)
+// Con overflow hidden un figlio di una colonna flex si schiaccia a 0px: il collaudo l'ha visto, le cifre sparivano.
+ok('.bn-cifre: non si restringe nella colonna del corpo', haSg('.bn-cifre', /flex:\s*none/), true)
+// Il filo è un'ombra a destra e sotto ogni casella: vale anche quando le cifre vanno su due righe (sotto i 900px, tre per riga).
+ok('.bn-cifra: niente bordo da 2px, filo da 1px a destra e sotto', haSg('.bn-cifra', SENZA_BORDO) && haSg('.bn-cifra', /box-shadow:\s*1px 0 0 var\(--line\),\s*0 1px 0 var\(--line\)/), true)
+ok('.bn-cifra + .bn-cifra: nessun filo a sinistra, che sbagliava a capo riga', haSg('.bn-cifra + .bn-cifra', /border-left/), false)
+// Fra 768 e 1023px le caselle sono larghe ~106px: numero sopra e titolo sotto, se no con tre cifre il titolo esce.
+ok('.sg-mancano-casella fra 768 e 1119px: numero sopra il titolo', /@media \(min-width: 768px\) and \(max-width: 1119px\)\s*\{[^}]*\.sg-mancano-casella\s*\{[^}]*flex-direction:\s*column/.test(readFileSync('src/segreteria.css', 'utf8')), true)
+// Con overflow hidden l'anello di fuoco da tastiera, scostato di 2px, resta fuori e si taglia: dentro la casella si vede.
+ok('.bn-cifra:focus-visible: anello dentro la casella', haSg('.bn-cifra:focus-visible', /outline-offset:\s*-2px/), true)
+ok('.sg-mancano-casella + .sg-mancano-casella: filo da 1px, non il tratteggio da 2px', haSg('.sg-mancano-casella + .sg-mancano-casella', /border-left:\s*1px solid var\(--line\)/), true)
+ok('COSA MANCA sul telefono: niente filo a sinistra a inizio riga, filo sopra dalla seconda riga', /border-left:\s*0/.test(esattoSg('.sg-mancano-casella:nth-child(odd)')) && /border-top:\s*1px solid var\(--line\)/.test(esattoSg('.sg-mancano-casella:nth-child(n + 3)')), true)
+ok('.bn-cifra-n: 28px, peso 600', haSg('.bn-cifra-n', /font-size:\s*28px/) && haSg('.bn-cifra-n', /font-weight:\s*600/), true)
+ok('.bn-riga: niente barra da 8px, un punto da 8px', haSg('.bn-riga', SENZA_BORDO) && haSg('.bn-riga::before', /width:\s*8px/) && haSg('.bn-riga::before', /border-radius:\s*50%/), true)
+ok(".bn-riga[data-livello='blocca']::before: rosso", haSg(".bn-riga[data-livello='blocca']::before", /background(-color)?:\s*var\(--rosso\)/), true)
+ok('.sg-titolo: 28px', ha('.sg-titolo', /font-size:\s*28px/), true)
+ok('.sg-dafare-titolo: 17px', ha('.sg-dafare-titolo', /font-size:\s*17px/), true)
+ok('.sg-dafare-n: 28px, peso 600', ha('.sg-dafare-n', /font-size:\s*28px/) && ha('.sg-dafare-n', /font-weight:\s*600/), true)
 
 // Il giallo pieno è di sei cose sole (con il tasto verde del tablet, che nella sala è giallo): il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
 // il tasto principale di tutto il resto (.btn-primary: CHIUDI e simili), la voce di menu corrente e la voce corrente
@@ -217,10 +252,11 @@ ok('colori nelle regole del look: solo i 12 del sito, #ffffff, #121212 e le tint
   delLook.flatMap((r) => (r.corpo.match(HEX) ?? []).map((h) => h.toLowerCase())).filter((h) => !AMMESSI_LOOK.has(h) && !Object.values(TINTE).includes(h)), [])
 
 
-// Il menu in cinque gruppi: il titolo resta maiuscolo per CSS (il testo è con l'iniziale maiuscola), voci da 44px.
-ok('.sg-gruppo-titolo: maiuscolo per CSS', ha('.sg-gruppo-titolo', /text-transform:\s*uppercase/), true)
+// Il menu in cinque gruppi: il titolo come è scritto (iniziale maiuscola), senza maiuscolo né spaziatura, voci da 44px.
+ok('.sg-gruppo-titolo: niente maiuscolo per CSS', ha('.sg-gruppo-titolo', /text-transform:\s*uppercase/), false)
+ok('.sg-gruppo-titolo: senza spaziatura', ha('.sg-gruppo-titolo', /letter-spacing:\s*0\s*(;|$)/), true)
 ok('.sg-gruppo-titolo: Inter (var(--body))', ha('.sg-gruppo-titolo', /font-family:\s*var\(--body\)/), true)
-ok('.sg-gruppo-titolo: 12px, peso 600', ha('.sg-gruppo-titolo', /font-size:\s*12px/) && ha('.sg-gruppo-titolo', /font-weight:\s*600/), true)
+ok('.sg-gruppo-titolo: 13px, peso 600', ha('.sg-gruppo-titolo', /font-size:\s*13px/) && ha('.sg-gruppo-titolo', /font-weight:\s*600/), true)
 ok('.mia-barra: in fondo anche a pagina corta (margin-top: auto)', /\n\.mia-barra \{[^}]*margin-top: auto/.test(readFileSync('src/styles.css', 'utf8')), true)
 ok('.mio-nome-scelta (cambio persona): alto almeno 44px', /\n\.mio-nome-scelta \{[^}]*min-height: 44px/.test(readFileSync('src/styles.css', 'utf8')), true)
 ok('.sg-voce: altezza minima 44px', ha('.sg-voce', /min-height:\s*44px/), true)
@@ -288,17 +324,17 @@ console.log('\nDA FARE e COSA MANCA')
 for (const [sel, re, cosa] of [
   ['.sg-mancano', /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/, 'cinque caselle in una riga'],
   [".sg-mancano-nota[data-fissa='true']", /display:\s*none/, 'senza la nota di sempre (gli avvisi sul conto si vedono)'],
-  ['.sg-mancano-n', /font-size:\s*44px/, 'numero a 44px'],
+  ['.sg-mancano-n', /font-size:\s*28px/, 'numero a 28px'],
   ['.sg-mancano-titolo', /font-family:\s*var\(--body\)/, 'titolo in Inter'],
   ['.sg-mancano-titolo', /font-size:\s*14px/, 'titolo a 14px'],
   ['.sg-mancano-titolo', /font-weight:\s*600/, 'titolo a 600'],
   ['.sg-mancano-titolo', /letter-spacing:\s*0\s*;/, 'titolo senza spaziatura'],
   ['.sg-dafare-titolo', /font-family:\s*var\(--body\)/, 'titolo della riga in Inter'],
-  ['.sg-dafare-titolo', /font-size:\s*21px/, 'titolo della riga a 21px'],
-  ['.sg-dafare-titolo', /font-weight:\s*700/, 'titolo della riga a 700'],
+  ['.sg-dafare-titolo', /font-size:\s*17px/, 'titolo della riga a 17px'],
+  ['.sg-dafare-titolo', /font-weight:\s*600/, 'titolo della riga a 600'],
   ['.sg-dafare-titolo', /letter-spacing:\s*0\s*;/, 'titolo della riga senza spaziatura'],
-]) ok(`${sel}: ${cosa}`, ha(sel, re), true)
-ok('fra 768 e 1360px le cinque caselle non prendono i bordi e lo spazio del caso a due colonne (nth-child 5 e n+3)', /grid-column:\s*auto/.test(esatto(".sg-mancano-casella:nth-child(5)")) && /border-top:\s*0/.test(esatto('.sg-mancano-casella:nth-child(n + 3)')), true)
+]) ok(`${sel}: ${cosa}`, (sel.startsWith('.sg-mancano') ? haSg : ha)(sel, re), true)
+ok('fra 768 e 1360px le cinque caselle non prendono i bordi e lo spazio del caso a due colonne (nth-child 5 e n+3)', /grid-column:\s*auto/.test(esattoSg(".sg-mancano-casella:nth-child(5)")) && /border-top:\s*0/.test(esattoSg('.sg-mancano-casella:nth-child(n + 3)')), true)
 for (const [sel, corpo] of [['.sg-btn', /letter-spacing:\s*0\s*;/], ['.sg-chip', /letter-spacing:\s*0\s*;/]])
   ok(`${sel}: senza la spaziatura da maiuscolo (i testi sono con l'iniziale maiuscola)`, ha(sel, corpo) && ha(sel, /font-weight:\s*600/), true)
 

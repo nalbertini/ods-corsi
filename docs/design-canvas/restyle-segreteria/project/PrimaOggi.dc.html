@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@600&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; background: #eef5fa; }</style>
+</helmet>
+<!-- PRIMA: schermata vera dell'app in modalità prova (14 novembre 2026), 1440×900. -->
+<div style="position: relative; width: 1440px; height: 900px; overflow: hidden; background: #eef5fa">
+  <img src="/_blob/4e3570e1e395af080d94d63229db30e3" alt="Oggi, com'è oggi" style="display: block; width: 1440px; height: auto">
+  <span style="position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 999px; background: #0d2a3d; color: #ffffff; font: 600 13px Inter, sans-serif">Prima</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

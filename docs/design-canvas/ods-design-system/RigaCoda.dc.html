@@ -8,15 +8,16 @@
 <x-dc>
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; align-items: center; gap: 14px; width: 100%; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-left: 8px solid {{colore}}">
+<div style="display: flex; align-items: center; gap: 14px; width: 100%; padding: 12px 14px; background: {{c.surface}}; border-radius: 6px">
+  <span style="flex: none; width: 8px; height: 8px; border-radius: 50%; background: {{colore}}"></span>
   <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
-    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.1; color: {{c.text}}">{{titolo}}</span>
+    <span style="font-size: 17px; font-weight: 600; line-height: 1.1; color: {{c.text}}">{{titolo}}</span>
     <span style="font-size: 13px; line-height: 1.35; color: {{c.sec}}">{{sotto}}</span>
   </div>
   <div style="flex-shrink: 0">
@@ -25,16 +26,16 @@
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"titolo":{"editor":"text","default":"Judo adulti · appello non fatto"},"sotto":{"editor":"text","default":"Erano alle 19:00. 12 iscritti da segnare."},"tasto":{"editor":"text","default":"FAI L&#39;APPELLO"},"livello":{"editor":"enum","options":["blocca","presto"],"default":"blocca"},"rosso":{"editor":"boolean","default":false},"$preview":{"width":440,"height":84}}'>
-// Riproduzione di una riga della coda DA FARE AL BANCO: .bn-riga, .bn-riga-titolo, .bn-riga-sotto (src/styles.css) disegnata da `Oggi` e prodotta da `codaBanco` (src/lib/codaBanco.ts).
-// Bordo sinistro 8px: rosso se `livello` e' blocca (e' gia' un guaio), giallo se e' presto (aspetta una risposta). Il tasto e' rosso solo per FAI LA RICEVUTA (`rosso`), se no a linea.
+// Riproduzione di una riga della coda DA FARE AL BANCO: .bn-riga, .bn-riga-titolo, .bn-riga-sotto (src/segreteria.css) disegnata da `Oggi` e prodotta da `codaBanco` (src/lib/codaBanco.ts).
+// Niente bordo, angoli da 6px; davanti al testo un punto da 8px (`::before`): rosso se `livello` e' blocca (e' gia' un guaio), giallo scuro (giallo-testo) se e' presto (aspetta una risposta). Titolo Inter 17px 600. Il tasto e' rosso solo per FAI LA RICEVUTA (`rosso`), se no a linea.
 const T = {
-  sito: { bg: '#eef5fa', surface: '#ffffff', surfaceAlta: '#cfe6f4', menu: '#0d2a3d', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33', suColore: '#0d2a3d' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', surfaceAlta: '#cfe6f4', menu: '#0d2a3d', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rosso: '#e4292a', giallo: '#f4c31b', gialloTesto: '#8f6a00', verde: '#12913f', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33', suColore: '#0d2a3d' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T.sito;
-    return { c, titolo: p.titolo ?? 'Judo adulti · appello non fatto', sotto: p.sotto ?? 'Erano alle 19:00. 12 iscritti da segnare.', tasto: p.tasto ?? "FAI L'APPELLO", colore: p.livello === 'presto' ? c.giallo : c.rosso, variante: p.rosso ? 'rosso' : 'linea' };
+    return { c, titolo: p.titolo ?? 'Judo adulti · appello non fatto', sotto: p.sotto ?? 'Erano alle 19:00. 12 iscritti da segnare.', tasto: p.tasto ?? "FAI L'APPELLO", colore: p.livello === 'presto' ? c.gialloTesto : c.rosso, variante: p.rosso ? 'rosso' : 'linea' };
   }
 }
 </script>

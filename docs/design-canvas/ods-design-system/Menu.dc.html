@@ -131,7 +131,7 @@ const cap = (s) => s.charAt(0) + s.slice(1).toLowerCase();
 // I cinque gruppi della segreteria (Segreteria.tsx, `GRUPPI_MENU` in menuSegreteria.ts); con l'amministrazione compare
 // in piu' I CONTI, con CONTABILITÀ, dopo ISCRITTI E SOLDI. Chi ha solo l'amministrazione vede I CONTI e basta, con
 // CONTABILITÀ, PAGAMENTI e LISTINO ridotti (nomi e importi, niente schede), senza ricerca di iscritti ne' link da copiare.
-// Un gruppo senza voci non c'e'. Il maiuscolo dei titoli e delle voci qui e' scritto: nell'app lo fa lo stile.
+// Un gruppo senza voci non c'e'. Titoli e voci qui sono in maiuscolo solo come chiavi: si mostrano come nell'app, con l'iniziale grande (`cap`).
 const DI_SEGRETERIA = [
   ['OGNI GIORNO', ['DA FARE', 'RICHIESTE ONLINE', 'PRESENZE']],
   ['ISCRITTI E SOLDI', ['ISCRITTI', 'TESSERE', 'PAGAMENTI']],
@@ -169,8 +169,8 @@ class Component extends DCLogic {
     conVoce(amm ? GRUPPI_AMMINISTRAZIONE : aut === 'segreteria e amministrazione' ? CON_AMMINISTRAZIONE : GRUPPI).forEach(([titolo, elenco], g) => {
       // Il filetto fra i gruppi: 14px sopra, 14px dentro, 1px `line-soft`. Il titolo e' una riga, le voci sono tasti.
       voci.push({
-        testo: titolo, haNumero: false, numero: '', haIcona: false, icona: '', altezza: '0', padding: '0 12px 0 16px', barra: 'transparent', sfondo: 'transparent', colore: c.dim,
-        fam: INTER, peso: 600, corpo: '12px', spazio: '0.12em', sopra: g === 0 ? '0' : '14px', sotto: '4px', vuoto: '0', raggio: '0',
+        testo: cap(titolo), haNumero: false, numero: '', haIcona: false, icona: '', altezza: '0', padding: '0 12px 0 16px', barra: 'transparent', sfondo: 'transparent', colore: c.dim,
+        fam: INTER, peso: 600, corpo: '13px', spazio: '0', sopra: g === 0 ? '0' : '14px', sotto: '4px', vuoto: '0', raggio: '0',
         filetto: g === 0 ? '0' : '1px solid ' + c.lineSoft, paddingSopra: g === 0 ? '0' : '14px',
       });
       elenco.forEach((testo, i) => {

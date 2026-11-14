@@ -15,7 +15,7 @@
   </style>
 </helmet>
 <span style="position: relative; display: inline-flex; flex-direction: column; gap: 6px; vertical-align: top">
-  <span style="display: inline-flex; align-items: stretch; height: 44px; border: 2px solid #14709f; border-radius: 6px; overflow: hidden; background: {{fondo}}">
+  <span style="display: inline-flex; align-items: stretch; height: 44px; border: 1px solid #14709f; border-radius: 6px; overflow: hidden; background: {{fondo}}">
     <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 15px; white-space: nowrap">
       <span style="font-weight: 500; color: #46606f">{{nome}}</span>
       <span style="font-weight: {{peso}}; color: #0d2a3d">{{valore}}</span>
@@ -26,7 +26,7 @@
     </sc-if>
   </span>
   <sc-if value="{{aperto}}" hint-placeholder-val="{{ false }}">
-    <span style="display: flex; flex-direction: column; min-width: 240px; padding: 6px 0; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; box-shadow: 0 8px 24px rgba(13, 42, 61, 0.18)">
+    <span style="display: flex; flex-direction: column; min-width: 240px; padding: 6px 0; background: #ffffff; border: 1px solid #14709f; border-radius: 6px; box-shadow: 0 8px 24px rgba(13, 42, 61, 0.18)">
       <sc-for list="{{opzioni}}" as="o" hint-placeholder-count="4">
         <span style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: {{o.fondo}}; font-size: 15px; font-weight: {{o.peso}}; color: #0d2a3d; white-space: nowrap"><span style="width: 14px">{{o.segno}}</span>{{o.testo}}<span style="margin-left: auto; padding-left: 16px; font-variant-numeric: tabular-nums; font-size: 13px; color: #46606f">{{o.conto}}</span></span>
       </sc-for>

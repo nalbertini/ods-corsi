@@ -21,7 +21,7 @@
     <span style="font-family: {{cond}}; font-size: {{etichettaCorpo}}; font-weight: {{etichettaPeso}}; letter-spacing: {{etichettaSpazio}}; color: {{coloreEtichetta}}">{{etichetta}}</span>
   </sc-if>
   <sc-if value="{{eControllo}}" hint-placeholder-val="{{ true }}">
-    <div style="display: flex; align-items: {{allinea}}; justify-content: space-between; gap: 8px; width: 100%; min-height: {{alto}}; padding: {{padding}}; background: {{sfondo}}; border: 2px {{stileBordo}} {{bordo}}; border-radius: {{raggio}}; color: {{coloreValore}}; font-family: {{famiglia}}; font-variant-numeric: {{tabulare}}; font-size: {{corpo}}; letter-spacing: {{spazio}}; line-height: {{interlinea}}">
+    <div style="display: flex; align-items: {{allinea}}; justify-content: space-between; gap: 8px; width: 100%; min-height: {{alto}}; padding: {{padding}}; background: {{sfondo}}; border: {{spessore}} {{stileBordo}} {{bordo}}; border-radius: {{raggio}}; color: {{coloreValore}}; font-family: {{famiglia}}; font-variant-numeric: {{tabulare}}; font-size: {{corpo}}; letter-spacing: {{spazio}}; line-height: {{interlinea}}">
       <span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: {{aCapo}}">{{testo}}</span>
       <sc-if value="{{eSelect}}" hint-placeholder-val="{{ false }}">
         <span style="color: {{c.dim}}; font-size: 12px">&#9662;</span>
@@ -29,7 +29,7 @@
     </div>
   </sc-if>
   <sc-if value="{{eScelta}}" hint-placeholder-val="{{ false }}">
-    <div style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 12px; background: {{sfondoScelta}}; border: 2px solid {{bordoScelta}}; border-radius: {{raggio}}; font-size: {{corpoScelta}}; font-weight: 600; text-align: left">
+    <div style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 12px; background: {{sfondoScelta}}; border: {{spessore}} solid {{bordoScelta}}; border-radius: {{raggio}}; font-size: {{corpoScelta}}; font-weight: 600; text-align: left">
       <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 22px; height: 22px; border: 2px solid {{bordoScelta}}; border-radius: {{raggioPiccolo}}; font-size: 18px; font-weight: 400; color: {{c.text}}">{{segno}}</span>
       <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
         {{testo}}
@@ -40,7 +40,7 @@
     </div>
   </sc-if>
   <sc-if value="{{eUna}}" hint-placeholder-val="{{ false }}">
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 100%; min-height: 52px; padding: 8px 12px; background: {{fondoUna}}; border: 2px solid {{bordoScelta}}; border-radius: {{raggio}}; font-size: {{corpoScelta}}; font-weight: 600; text-align: center; color: {{coloreUna}}">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 100%; min-height: 52px; padding: 8px 12px; background: {{fondoUna}}; border: {{spessore}} solid {{bordoScelta}}; border-radius: {{raggio}}; font-size: {{corpoScelta}}; font-weight: 600; text-align: center; color: {{coloreUna}}">
       {{testo}}
       <sc-if value="{{haRiga}}" hint-placeholder-val="{{ false }}">
         <span style="font-size: {{corpoRiga}}; font-weight: 400; line-height: 1.35; color: {{coloreRigaUna}}">{{riga}}</span>
@@ -125,7 +125,8 @@ class Component extends DCLogic {
       alto: area ? (sg ? '88px' : '104px') : sg ? '44px' : '52px',
       padding: area ? (sg ? '10px 12px' : '12px 14px 0') : sg ? '0 12px' : '0 14px',
       sfondo: sola ? 'transparent' : sg && !c.bg,
-      stileBordo: sola ? 'dashed' : 'solid',
+      // Nel restyle della segreteria (2026-11-14) campi e scelte hanno il bordo da 1px.
+      spessore: sgSito ? '1px' : '2px', stileBordo: sola ? 'dashed' : 'solid',
       bordo: guaio ? c.rosso : truthy(p.acceso) ? (sgSito ? c.gialloTesto : c.giallo) : c.lineCampo,
       coloreValore: sola ? c.dim : valore !== '' ? c.text : c.dim,
       famiglia: INTER,

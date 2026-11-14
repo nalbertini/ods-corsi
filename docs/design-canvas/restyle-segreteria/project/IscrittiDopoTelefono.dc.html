@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Iscritti sul telefono · dopo</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA ISCRITTI a 390px: barra da 56px, titolo 24px, i due tasti in una riga, filtri in una riga che scorre di lato
+     (oggi tre righe), poi l'elenco in righe da due: nome e 30 giorni sopra, cosa manca sotto. Il primo iscritto sale da 696px a ~330px. -->
+<div style="display: flex; flex-direction: column; width: 390px; height: 844px; overflow: hidden; background: #eef5fa">
+  <dc-import name="BarraTelefonoNuova" hint-size="390px,56px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 14px; padding: 18px 16px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 24px; font-weight: 800; letter-spacing: 0.02em; line-height: 1">ISCRITTI</h1>
+      <span style="font-size: 14px; color: #46606f">162 persone attive. 14 certificati da archiviare.</span>
+    </div>
+    <div style="display: flex; gap: 8px">
+      <button style="flex: 1; height: 44px; border: 0; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font: 600 15px Inter, sans-serif">Nuovo iscritto</button>
+      <button style="flex: 1; height: 44px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 15px Inter, sans-serif">Importa tessere</button>
+    </div>
+    <div style="display: flex; gap: 8px">
+      <span style="display: flex; align-items: center; gap: 8px; flex: 1; height: 44px; padding: 0 12px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #46606f; font-size: 15px">Cerca per nome o email</span>
+      <span style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; font-size: 15px">Corsi <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></span>
+    </div>
+    <div style="display: flex; gap: 8px; margin-right: -16px; overflow: hidden; white-space: nowrap">
+      <span style="display: flex; align-items: center; gap: 6px; flex: none; height: 44px; padding: 0 12px; border-radius: 6px; background: #e6eef3; font-size: 14px; font-weight: 500">Senza certificato <span style="color: #46606f">42</span></span>
+      <span style="display: flex; align-items: center; gap: 6px; flex: none; height: 44px; padding: 0 12px; border-radius: 6px; background: #e6eef3; font-size: 14px; font-weight: 500">Da pagare <span style="color: #46606f">33</span></span>
+      <span style="display: flex; align-items: center; gap: 6px; flex: none; height: 44px; padding: 0 12px; border-radius: 6px; background: #e6eef3; font-size: 14px; font-weight: 500">Corsi scaduti <span style="color: #46606f">33</span></span>
+      <span style="display: flex; align-items: center; gap: 6px; flex: none; height: 44px; padding: 0 12px; border-radius: 6px; background: #e6eef3; font-size: 14px; font-weight: 500">Altri filtri</span>
+    </div>
+    <div style="display: flex; flex-direction: column; margin: 0 -16px; background: #ffffff">
+      <sc-for list="{{righe}}" as="r" hint-placeholder-count="7">
+        <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 16px; border-bottom: 1px solid #cfe6f4">
+          <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+            <span style="font-size: 16px; font-weight: 600">{{r.nome}}</span>
+            <span style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; color: {{r.coloreN}}">{{r.fatte}}<span style="font-weight: 400; color: #46606f"> /{{r.su}}</span></span>
+          </span>
+          <span style="display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13px">
+            <span style="color: {{r.colore}}; font-weight: {{r.peso}}">{{r.nota}}</span>
+            <span style="color: #46606f">{{r.corsi}}</span>
+          </span>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+const RIGHE = [
+  ['Barbieri Alessandro', 'Manca la data di nascita', 'g', 'Giocomotricità', 7, 8],
+  ['Barbieri Aurora', 'Manca la data di nascita', 'g', 'Judo 3', 13, 13],
+  ['Barbieri Beatrice', 'Manca il certificato', 'r', 'Prepugilistica', 1, 4],
+  ['Barbieri Elena', 'Manca il certificato', 'r', 'Judo 3', 13, 13],
+  ['Barbieri Ludovica', 'Manca la data di nascita', 'g', 'Judo 2', 12, 13],
+  ['Barbieri Matteo', 'Manca la data di nascita', 'g', 'Judo 3', 11, 11],
+  ['Bellini Andrea', 'In regola', '', 'Judo 2', 6, 13],
+];
+class Component extends DCLogic {
+  renderVals() {
+    return { righe: RIGHE.map(([nome, nota, tono, corsi, fatte, su]) => ({
+      nome, nota, corsi, fatte, su,
+      colore: tono === 'r' ? '#b81d1d' : tono === 'g' ? '#8f6a00' : '#46606f', peso: tono ? 500 : 400,
+      coloreN: fatte / su < 0.5 ? '#8f6a00' : '#0d2a3d',
+    })) };
+  }
+}
+</script>
+</body>
+</html>

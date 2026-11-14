@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA per la barra della segreteria sul telefono (BarraTelefono, .sg-barra-telefono): una riga sola da 56px invece di due
+     (104px oggi). Marchio a sinistra, poi Aiuto, Impostazioni e MENU con il numero, tutti a 44px. 48px in più per il contenuto. -->
+<header style="display: flex; align-items: center; gap: 4px; width: 100%; height: 56px; padding: 0 6px 0 16px; background: #0d2a3d; color: #ffffff">
+  <span style="flex: 1; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 0.04em">ODS CORSI</span>
+  <button aria-label="Aiuto" style="width: 44px; height: 44px; border: 0; background: transparent; color: #ffffff; font: 700 17px Inter, sans-serif">?</button>
+  <button aria-label="Impostazioni" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; background: transparent; color: #ffffff"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 6h10 M18 6h2 M4 12h4 M12 12h8 M4 18h12 M16 4v4 M10 10v4 M16 16v4"></path></svg></button>
+  <button style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border: 1px solid #46606f; border-radius: 6px; background: transparent; color: #ffffff; font: 600 15px Inter, sans-serif">Menu <span style="padding: 0 7px; border-radius: 999px; background: #cfe6f4; color: #0d2a3d; font-size: 12px; font-variant-numeric: tabular-nums">13</span></button>
+</header>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":56}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
