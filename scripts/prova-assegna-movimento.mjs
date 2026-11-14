@@ -718,6 +718,8 @@ console.log('\n7b. «Collegati prima»: i bonifici Da classificare')
   ok('…la causale col nome giusto della persona: proposta', caso('BONIFICO DA USSEGLIO VERONICA', 'veronica'), [['m1', ['r308']]])
   ok('…solo il cognome, o solo il nome, non basta', [caso('DA USSEGLIO PER CORSO', 'veronica'), caso('Veronica judo', 'veronica')], [[], []])
   ok('…la ricevuta di un’altra famiglia con lo stesso genitore scritto nella sua anagrafica: sì, il genitore nominato è il suo', caso('DA ALLISIO STEFANIA', 'sara'), [['m1', ['r308']]])
+  ok('…un genitore con una parola sola («Stefania» «-») non è nominato da «Allisio Stefania»: nessuna proposta',
+    scelte([dc('m1', 22000, '2026-10-03', { descrizione: 'DA ALLISIO STEFANIA' })], [ric('r308', 'veronica', 22000, '2026-10-22')], [], lia.map((p) => (p.id === 'veronica' ? { ...p, genitoreNome: 'Stefania', genitoreCognome: '-' } : p))), [])
   ok('…senza le persone, nessuna proposta per un Da classificare', prova(() => daClassificareDaAbbinare([dc('m1', 22000, '2026-10-03', { descrizione: allisio })], [ric('r308', 'edoardo', 22000, '2026-10-22')]).length), 0)
 
   ok('la voce che prende il bonifico: solo quota → «Quota associativa»', prova(() => voceDaRicevuta(ricevuta('r1', 'a', [voceRic('QUOTA ASSOCIATIVA', 5000, 5000)]))), 'Quota associativa')

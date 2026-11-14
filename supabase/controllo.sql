@@ -762,6 +762,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rifà `abbina_pagatori_movimento` del 155 e `abbina_testo_banca` del 121: se si rilancia 121 o 155 dopo, va rilanciato anche questo.
   ('161-genitore-senza-parole.sql', 'un genitore di sola punteggiatura non è nel testo di ogni bonifico',
     exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%cardinality(parole_pagatori(a.genitore_nome%')
-    and exists (select 1 from dentro where nome = 'abbina_testo_banca' and corpo like '%cardinality(parole_pagatori(a.genitore_nome%'))
+    and exists (select 1 from dentro where nome = 'abbina_testo_banca' and corpo like '%cardinality(parole_pagatori(a.genitore_nome%')),
+  -- Rifà `abbina_pagatori_movimento` e `abbina_testo_banca` del 161, `abbina_pagatori_testo` del 160 e `abbina_ricevuta_movimento` del 153.
+  ('162-genitore-una-parola.sql', 'il genitore vale solo con una parola vera nel nome e una nel cognome',
+    (select count(*) from dentro where nome in ('abbina_pagatori_movimento', 'abbina_testo_banca', 'abbina_pagatori_testo')
+       and corpo like '%cardinality(parole_pagatori(a.genitore_nome)) > 0 and cardinality(parole_pagatori(a.genitore_cognome)) > 0%') = 3
+    and exists (select 1 from dentro where nome = 'abbina_ricevuta_movimento' and corpo like '%cardinality(parole_pagatori(x.g)) > 0%'))
 ) as x(file, cosa, c)
 order by file, cosa;
