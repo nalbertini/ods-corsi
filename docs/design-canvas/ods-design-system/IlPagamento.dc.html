@@ -34,11 +34,12 @@
   <span style="font-size: 14px; line-height: 1.4; color: #46606f">{{frase}}</span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"righe":{"editor":"text","default":"Quota associativa:50 €|Annuale Judo adulti:400 €"},"totale":{"editor":"text","default":"450,00 €"},"modo":{"editor":"enum","options":["satispay","carta","bonifico","nessuno"],"default":"satispay"},"satispay":{"editor":"boolean","default":true},"carta":{"editor":"boolean","default":false},"perche":{"editor":"text","default":"Niente Satispay per ora: con più corsi il prezzo lo conferma la segreteria"},"$preview":{"width":350,"height":480}}'>
+<script data-dc-script data-props='{"righe":{"editor":"text","default":"Quota associativa:50 €|Annuale Judo adulti:400 €"},"totale":{"editor":"text","default":"450,00 €"},"modo":{"editor":"enum","options":["satispay","carta","bonifico","contanti","nessuno"],"default":"satispay"},"satispay":{"editor":"boolean","default":true},"carta":{"editor":"boolean","default":false},"bonifico":{"editor":"boolean","default":true},"contanti":{"editor":"boolean","default":true},"perche":{"editor":"text","default":"Niente Satispay per ora: con più corsi il prezzo lo conferma la segreteria"},"$preview":{"width":350,"height":480}}'>
 // Riproduzione di IlPagamento di src/components/ModuloIscrizione.tsx (modulo pubblico): QUANTO PAGHI (il `Conto`: righe .stima e
-// totale nel Riquadro stretto) e PAGHI CON, Satispay o Bonifico (`SceltaCorsi` una, in colonna sotto i 560px: `.scelta-pago`), con la frase sotto. Satispay c'e'
+// totale nel Riquadro stretto) e PAGHI CON, Satispay, Bonifico o In contanti (`SceltaCorsi` una, in colonna sotto i 560px: `.scelta-pago`), con la frase sotto. Satispay c'e'
 // solo nei casi semplici (`nonSemplice`, `comePuoiPagare` in src/lib/satispay.ts): senza, non compare e la frase dice perche'.
-// Col bonifico, sotto, vengono IBAN, causale e la ricevuta, obbligatoria (`Bonifico`, `SceltaFile`). «In segreteria» non c'è (decisione del 2026-10-20).
+// Col bonifico, sotto, vengono IBAN, causale e la ricevuta, facoltativa (`Bonifico`, `SceltaFile`). COSTRUITO (`../come-paga/`, 2026-11-14): «In contanti»
+// è la quarta scelta, in segreteria entro la prima lezione; bonifico e contanti spenti in IMPOSTAZIONI tolgono la loro scelta (`modiDaOffrire` in src/lib/comePaga.ts).
 // righe = `Voce:importo` separate da `|`; modo = la scelta accesa (#cfe6f4, ●), `nessuno` nessuna; satispay = se la scelta c'e'; perche = la frase senza Satispay.
 // COSTRUITO (`../pagamento-carta/`): carta = la terza scelta, «Carta», fra Satispay e Bonifico, negli stessi casi di Satispay (senza Satispay sparisce anche lei).
 const COND = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
@@ -46,18 +47,30 @@ const truthy = (v) => v === true || v === 'true';
 const MODI = [
   { id: 'satispay', testo: 'Satispay', riga: 'Paghi subito, dall’app: l’importo è già scritto' },
   { id: 'carta', testo: 'Carta di credito o di debito', riga: 'Paghi subito qui, senza app e senza aprire conti' },
-  { id: 'bonifico', testo: 'Bonifico', riga: 'Carichi la ricevuta del bonifico' },
+  { id: 'bonifico', testo: 'Bonifico', riga: 'La ricevuta la carichi se ce l’hai, se no la porti dopo' },
+  { id: 'contanti', testo: 'In contanti', riga: 'Paghi in segreteria, in palestra' },
 ];
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const si = truthy(p.satispay ?? true);
     const carta = si && truthy(p.carta ?? false);
-    const modo = (p.modo === 'satispay' && !si) || (p.modo === 'carta' && !carta) ? 'bonifico' : (p.modo ?? 'satispay');
+    const bon = truthy(p.bonifico ?? true);
+    const cont = truthy(p.contanti ?? true);
+    const acceso = { satispay: si, carta, bonifico: bon, contanti: cont };
+    const modo = p.modo === 'nessuno' ? 'nessuno' : acceso[p.modo ?? 'satispay'] ? (p.modo ?? 'satispay') : 'nessuno';
     const totale = p.totale ?? '450,00 €';
     const righe = String(p.righe ?? '').split('|').filter(Boolean).map((x) => { const [testo, importo] = x.split(':'); return { testo, importo }; });
-    const scelte = MODI.filter((m) => (m.id !== 'satispay' || si) && (m.id !== 'carta' || carta)).map((m) => ({ ...m, fondo: m.id === modo ? '#cfe6f4' : '#ffffff', segno: m.id === modo ? '●' : '' }));
-    const frase = !si ? `${p.perche ?? ''}.` : modo === 'satispay' ? `Paghi in fondo al modulo, prima di mandare la richiesta: ${totale} con Satispay.` : modo === 'carta' ? `Paghi in fondo al modulo, prima di mandare la richiesta: ${totale} con la carta.` : '';
+    const scelte = MODI.filter((m) => acceso[m.id]).map((m) => ({ ...m, fondo: m.id === modo ? '#cfe6f4' : '#ffffff', segno: m.id === modo ? '●' : '' }));
+    // Come nel componente: la frase senza alcun modo, quella senza Satispay e quella del modo scelto, una dopo l'altra.
+    const frasi = [
+      !si && !carta && !bon && !cont ? 'Come pagare te lo dice la segreteria.' : '',
+      !si && p.perche ? `${p.perche}.` : '',
+      modo === 'satispay' ? `Paghi in fondo al modulo, prima di mandare la richiesta: ${totale} con Satispay.` : modo === 'carta' ? `Paghi in fondo al modulo, prima di mandare la richiesta: ${totale} con la carta.` : '',
+      modo === 'contanti' ? `Porti ${totale} in segreteria, in palestra. Ti iscrivi lo stesso: puoi venire a lezione, e la quota la paghi entro la prima. La ricevuta te la dà la segreteria.` : '',
+      modo === 'bonifico' ? 'Il bonifico vale come pagato quando la segreteria lo vede sul conto.' : '',
+    ];
+    const frase = frasi.filter(Boolean).join(' ');
     return { cond: COND, righe, totale, scelte, frase };
   }
 }
