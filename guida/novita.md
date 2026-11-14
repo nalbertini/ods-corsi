@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.257.0 — 14 novembre 2026
+
+### Novità
+
+- Il menu della segreteria sta in uno schermo, con Aiuto, Impostazioni ed Esci sempre in vista
+
 ## 0.256.1 — 14 novembre 2026
 
 ### Risolto
