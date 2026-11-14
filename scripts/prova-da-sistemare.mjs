@@ -20,7 +20,7 @@ const { outputFiles } = await build({
   stdin: { contents: "export * from './src/lib/daSistemare'", resolveDir: '.', loader: 'ts' },
   bundle: true, format: 'esm', write: false, logLevel: 'error', define: { 'import.meta.env': '{}' },
 })
-const { daSistemare, fraseScheda, totaleDaPagare, aPosto, comeFrase } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+const { daSistemare, fraseScheda, totaleDaPagare, aPosto, comeFrase, etichettaNuovo } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 
 const oggi = '2026-11-14'
 const persona = (x = {}) => ({
@@ -115,6 +115,18 @@ ok('una parola in maiuscolo diventa una frase', comeFrase('MANCANO 20,00 €'), 
 
 console.log('\nLa scheda disattivata')
 ok('niente da sistemare: resta la nota DISATTIVATA', daSistemare(persona({ attiva: false, certificato: {}, quote: [] }), oggi, { corsi: [], tessera: null, manca: [{ cosa: 'Codice fiscale' }] }), [])
+
+console.log('\nL\'etichetta accanto al nome di chi si è appena iscritto')
+const nuovo = (x = {}, cf) => etichettaNuovo({ attiva: true, creataIl: '2026-11-04', ...x }, cf, oggi)
+ok('in elenco da dieci giorni, codice fiscale di una donna: «Nuova»', nuovo({}, 'RSSMRA80A41H501Y'), 'Nuova')
+ok('…di un uomo: «Nuovo»', nuovo({}, 'RSSMRA80A01H501U'), 'Nuovo')
+ok('senza codice fiscale non si indovina dal nome: «Nuova iscrizione»', nuovo({}, undefined), 'Nuova iscrizione')
+ok('iscritta oggi', nuovo({ creataIl: oggi }, undefined), 'Nuova iscrizione')
+ok('al 29° giorno ancora sì', nuovo({ creataIl: '2026-10-16' }, undefined), 'Nuova iscrizione')
+ok('dal 30° giorno no: sono i giorni per portare il certificato', nuovo({ creataIl: '2026-10-15' }, undefined), null)
+ok('chi c\'era già a inizio stagione no', nuovo({ creataIl: '2026-09-14' }, undefined), null)
+ok('una scheda disattivata no', nuovo({ attiva: false }, undefined), null)
+ok('chi fa solo da genitore no: non si è iscritto', nuovo({ genitoreNonIscritto: true }, undefined), null)
 
 console.log(guai ? `\n${guai} prove non passano.` : '\nTutte le prove passano.')
 process.exit(guai ? 1 : 0)

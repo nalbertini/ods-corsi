@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Etichetta Nuova</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITA (`../scheda-iscritto/` AppenaIscritto, .sg-scheda-nuovo di src/segreteria.css, etichettaNuovo di src/lib/daSistemare.ts):
+     l'etichetta accanto al nome nella scheda iscritto, nei primi 30 giorni in elenco. «Nuova» o «Nuovo» dal codice fiscale,
+     «Nuova iscrizione» senza. Una pastiglia neutra (tinta-neutro #e6eef3, testo blu #14709f, Inter 12px 600): un'informazione,
+     non un avviso, quindi né rossa né gialla. -->
+<span style="display: inline-block; padding: 2px 8px; border-radius: 999px; background: #e6eef3; color: #14709f; font-size: 12px; font-weight: 600; white-space: nowrap">{{testo}}</span>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"testo":{"editor":"enum","options":["Nuova","Nuovo","Nuova iscrizione"],"default":"Nuova"},"$preview":{"width":140,"height":24}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { testo: this.props.testo ?? 'Nuova' };
+  }
+}
+</script>
+</body>
+</html>

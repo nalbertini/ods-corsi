@@ -1488,6 +1488,7 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-a-posto li + li { border-left: 1px solid var(--line); }
 .sg-a-posto-cosa { font-size: 14px; color: var(--dim); }
 .sg-a-posto-parola { font-size: 15px; font-weight: 600; color: var(--verde-testo); }
+.sg-scheda-nuovo { padding: 2px 8px; border-radius: 999px; background: var(--tinta-neutro); color: var(--blu); font-size: 12px; font-weight: 600; }
 .sg-schede-scheda { border-bottom: 1px solid var(--line); }
 /* Come le linguette delle aree: segno blu sotto la voce accesa. */
 :root[data-look='sito'] .sg-schede-scheda > button { margin-bottom: -1px; border-bottom: 2px solid transparent; }

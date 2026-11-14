@@ -3,7 +3,7 @@
 //
 //   node scripts/prova-scheda.mjs
 //
-// Quattro schede in ordine (PERSONA, DOCUMENTI, QUOTA E PAGAMENTI, CORSI);
+// Quattro schede in ordine (PERSONA, DOCUMENTI, QUOTA E PAGAMENTI, CORSI E PRESENZE);
 // quale timbro e quale sezione portano a quale scheda; la tastiera con il
 // giro; i segni (parola e tono) che documenti e quota mettono sulla loro
 // linguetta, presi da `timbriScheda` e `timbroTessera`; quale scheda si apre.
@@ -42,8 +42,8 @@ const f = (nome, ...args) => (typeof m[nome] === 'function' ? m[nome](...args) :
 
 console.log('Le schede, in ordine')
 ok('quattro, in ordine', (m.SCHEDE ?? []).map((s) => s.id), ['persona', 'documenti', 'quota', 'corsi'])
-ok('le etichette', (m.SCHEDE ?? []).map((s) => s.etichetta), ['Persona', 'Documenti', 'Quota e pagamenti', 'Corsi'])
-ok('sul telefono Quota è corta', (m.SCHEDE ?? []).map((s) => s.etichettaTelefono), ['Persona', 'Documenti', 'Quota', 'Corsi'])
+ok('le etichette', (m.SCHEDE ?? []).map((s) => s.etichetta), ['Persona', 'Documenti', 'Quota e pagamenti', 'Corsi e presenze'])
+ok('sul telefono Quota e Corsi sono corte', (m.SCHEDE ?? []).map((s) => s.etichettaTelefono), ['Persona', 'Documenti', 'Quota', 'Corsi'])
 ok('il nome per il lettore schermo resta intero', (m.SCHEDE ?? []).find((s) => s.id === 'quota')?.nome, 'Quota e pagamenti')
 ok('la prima è l’iniziale', m.SCHEDA_INIZIALE, 'persona')
 
