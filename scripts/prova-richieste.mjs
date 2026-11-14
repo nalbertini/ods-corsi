@@ -738,7 +738,9 @@ console.log('\n11b. la ricevuta obbligatoria nel modulo della pagina pubblica (n
   // Il legame sta nel modulo: dalla pagina pubblica col bonifico la ricevuta è obbligatoria, e la lista arriva a
   // `mancaPerInviare`. Con Satispay non si chiede (decisione del 2026-10-20: `modoPagamento`, `cosaNonVaModo` in prova:satispay).
   const moduloSorgente = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
-  ok('il modulo chiede la ricevuta col bonifico', moduloSorgente.includes("fileObbligatori(daChiedere, modo === 'bonifico')"), true)
+  // Decisione del 2026-11-14 («come paga»): col bonifico la ricevuta si offre ma è facoltativa, e senza la richiesta parte lo stesso.
+  ok('il modulo non rende obbligatoria la ricevuta, nemmeno col bonifico', /fileObbligatori\([^)]*bonifico/.test(moduloSorgente), false)
+  ok('il modulo chiama ancora fileObbligatori (i file obbligatori restano)', /fileObbligatori\(daChiedere/.test(moduloSorgente), true)
   ok('il modulo passa quella lista a mancaPerInviare', /mancaPerInviare\(\{[^}]*\bobbligatori,/.test(moduloSorgente), true)
 }
 

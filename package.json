@@ -84,6 +84,7 @@
     "prova:certificato-iscritto": "node scripts/prova-certificato-iscritto.mjs",
     "prova:listino": "node scripts/prova-listino.mjs",
     "prova:satispay": "node scripts/prova-satispay.mjs",
+    "prova:come-paga": "node scripts/prova-come-paga.mjs",
     "prova:satispay-scarico": "node scripts/prova-satispay-scarico.mjs",
     "prova:saldo-satispay": "node scripts/prova-saldo-satispay.mjs",
     "prova:quota-satispay": "node scripts/prova-quota-satispay.mjs",
