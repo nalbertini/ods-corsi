@@ -136,7 +136,7 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
     ['Il resto', ['statistiche', 'vestiario', 'segnalazioni', 'sito', 'verbali']],
   ]
   ok('solo segreteria: i cinque gruppi, senza CONTABILITÀ', gruppi('segreteria'), DELLA_SEGRETERIA_NEL_MENU)
-  ok('segreteria e amministrazione: gli stessi, e «I conti» con CONTABILITÀ e IMPORTAZIONI dopo «Iscritti e soldi»', gruppi('segreteria + amministrazione'), DELLA_SEGRETERIA_NEL_MENU.flatMap(([t, v]) => (t === 'Iscritti e soldi' ? [[t, v], ['I conti', ['contabilita', 'importazioni']]] : [[t, v]])))
+  ok('segreteria e amministrazione: gli stessi cinque gruppi, con CONTABILITÀ e IMPORTAZIONI in «Iscritti e soldi»', gruppi('segreteria + amministrazione'), DELLA_SEGRETERIA_NEL_MENU.map(([t, v]) => (t === 'Iscritti e soldi' ? [t, [...v, 'contabilita', 'importazioni']] : [t, v])))
   ok('solo amministrazione: solo «I conti», tre voci', gruppi('amministrazione'), [['I conti', ['contabilita', 'importazioni', 'listino']]])
   ok('insegnare non aggiunge voci a chi ha l\'amministrazione', gruppi('amministrazione + istruttore'), gruppi('amministrazione'))
   ok('insegnare non aggiunge voci a chi ha la segreteria', gruppi('segreteria + istruttore'), gruppi('segreteria'))
@@ -163,7 +163,7 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
   ok('le segnalate sono della segreteria, e solo in prova', [consenti('segnalate', 'segreteria', true).voce, consenti('segnalate', 'segreteria', false).voce], ['segnalate', 'dafare'])
   ok('l\'id della scheda aperta resta, se la voce spetta', m.postoConsentito({ voce: 'iscritti', persona: 'p1' }, chi.segreteria, { prova: false }), { voce: 'iscritti', persona: 'p1' })
   ok('e non resta se la voce non spetta', m.postoConsentito({ voce: 'iscritti', persona: 'p1' }, chi.amministrazione, { prova: false }), { voce: 'contabilita' })
-  ok('il titolo del posto: uno solo, non due sezioni', Object.keys(chi).map((c) => m.titoloDelMenu(chi[c])), ['SEGRETERIA', 'GESTIONE', 'AMMINISTRAZIONE', 'AMMINISTRAZIONE', 'SEGRETERIA', 'SEGRETERIA', 'SEGRETERIA'])
+  ok('il titolo del menu, in parole normali: uno solo, non due sezioni', Object.keys(chi).map((c) => m.titoloDelMenu(chi[c])), ['Segreteria', 'Gestione', 'Amministrazione', 'Amministrazione', 'Segreteria', 'Segreteria', 'Segreteria'])
 }
 
 console.log('\nil menu e i permessi dicono la stessa cosa')

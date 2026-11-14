@@ -34,7 +34,7 @@ import { DaFare, useDaFare } from './DaFare'
 import { CosaManca } from './CosaManca'
 import { strisciaVisibile } from '../../lib/cosaManca'
 import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
-import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio, lasciare, scordaBozze, useDialogo } from './comune'
+import { bozzaAperta, chiedi, Conferme, CopiaLink, dialogoAperto, Guaio, lasciare, LINK_PUBBLICO, scordaBozze, useDialogo } from './comune'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { aspettoInUso, useAspetto } from '../../lib/aspetto'
 import { BarraBanco } from './banco/BarraBanco'
@@ -43,8 +43,7 @@ import { PersonaBanco } from './banco/PersonaBanco'
 import { CercaIscritto } from './CercaIscritto'
 import type { Ricercata } from '../../lib/ricerca'
 import { indirizzoPagina } from '../../lib/guida'
-import { indirizzo, INDIRIZZI, linkOrdini } from '../../lib/aree'
-import { linkDellaSegreteria } from '../../lib/provenienza'
+import { linkOrdini } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 import { eScorciatoiaDiRicerca } from '../../lib/scorciatoiaRicerca'
@@ -82,34 +81,6 @@ function scrivi(hash: string, passo: 'push' | 'replace') {
 /** Se il passo di adesso è quello del menu aperto sul telefono (vedi `apriMenu`). */
 // `history.state` è `any`: qui ci scrive solo la segreteria, `{ menu: true }` o niente.
 const nelMenu = () => (window.history.state as { menu?: boolean } | null)?.menu === true
-
-/** L'indirizzo della pagina pubblica per iscriversi, quello da mandare su WhatsApp. */
-// Con ?da=segreteria: le richieste che arrivano da qui si contano come «Link della segreteria» (provenienza.ts).
-const LINK_PUBBLICO = linkDellaSegreteria(indirizzo(INDIRIZZI.iscrizioni))
-
-function CopiaLink({ link, testo, perche }: { link: string; testo: string; perche: string }) {
-  const [copiato, setCopiato] = useState(false)
-  useEffect(() => {
-    if (!copiato) return
-    const t = window.setTimeout(() => setCopiato(false), 2500)
-    return () => window.clearTimeout(t)
-  }, [copiato])
-  const copia = () => {
-    // Senza appunti (una pagina non sicura, un browser vecchio) si fa vedere
-    // l'indirizzo da copiare a mano.
-    if (!navigator.clipboard) return window.prompt(perche, link)
-    navigator.clipboard.writeText(link).then(
-      () => setCopiato(true),
-      () => window.prompt(perche, link),
-    )
-  }
-  return (
-    <button type="button" className="num sg-voce" onClick={copia} title={link}>
-      <ICONE_MENU.link />
-      <span className="sg-voce-testo">{copiato ? 'Link copiato ✓' : testo}</span>
-    </button>
-  )
-}
 
 /**
  * La segreteria: il menu a sinistra e la sezione scelta a destra.
@@ -305,6 +276,14 @@ export function Segreteria({
         <span className="vh"> {detto}</span>
       </span>
     )
+  // Nel menu il numero è una cifra gialla, senza bollino: il giallo dice che c'è da fare.
+  const conta = (n: number, detto: string) =>
+    n > 0 && (
+      <span className="num sg-conta">
+        <span aria-hidden="true">{n}</span>
+        <span className="vh"> {detto}</span>
+      </span>
+    )
   // Le segnalazioni che aspettano una risposta: aperte, e l'ultimo a scrivere è un altro.
   const [daRispondere, setDaRispondere] = useState(0)
   useEffect(() => {
@@ -450,7 +429,7 @@ export function Segreteria({
           nome={nome}
           ruolo={ruolo}
           consentite={consentite}
-          titolo={etichetta}
+          titolo={etichetta.toUpperCase()}
           segni={{
             richieste: { n: richiesteNuove, detto: 'nuove' },
             istruttori: { n: daConfermare, detto: 'da confermare' },
@@ -461,8 +440,8 @@ export function Segreteria({
           cerca={d && conSegreteria && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
           link={
             <>
-              <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" />
-              <CopiaLink link={linkOrdini()} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
+              <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" className="num sg-voce" />
+              <CopiaLink link={linkOrdini()} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" className="num sg-voce" />
             </>
           }
           guida={guida}
@@ -476,7 +455,7 @@ export function Segreteria({
         <Logo width={36} />
         <span className="stack grow" style={{ gap: 2 }}>
           <span className="ob" style={{ fontSize: 18, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
-          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>{etichetta}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>{etichetta.toUpperCase()}</span>
         </span>
         {guida}
         {impostazioni}
@@ -501,93 +480,92 @@ export function Segreteria({
           <Logo width={46} />
           <span className="stack" style={{ gap: 2 }}>
             <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
-            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>{etichetta}</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--dim)' }}>{etichetta}</span>
           </span>
         </div>
         {d && conSegreteria && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
-        <div className="sg-gruppi">
-          {gruppi.map((g) => (
-            <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo" data-secondario={g.secondario}>
-              <span className="sg-gruppo-titolo" aria-hidden="true">
-                {g.titolo}
-              </span>
-              <div className="sg-voci">
-                {g.voci.map(([id, testo]) => {
-                  const Icona = ICONE_MENU[id]
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      className="num sg-voce"
-                      aria-current={voce === id || (id === 'presenze' && inPresenze) ? 'page' : undefined}
-                      onClick={() => vai(id)}
-                    >
-                      <Icona />
-                      <span className="sg-voce-testo">{testo}</span>
-                      {id === 'richieste' && segno(richiesteNuove, 'nuove')}
-                      {id === 'presenze' && conSegnalate && segno(segnalateDaVedere, 'segnalate da vedere')}
-                      {id === 'istruttori' && segno(daConfermare, 'da confermare')}
-                      {id === 'segnalazioni' && segno(daRispondere, 'da rispondere')}
-                      {id === 'vestiario' && segno(daSaldare, 'ordini da saldare')}
-                    </button>
-                  )
-                })}
+        {/* Scorrono solo le voci: Aiuto, Impostazioni ed Esci restano in vista, sotto. */}
+        <div className="sg-scorre">
+          <div className="sg-gruppi">
+            {gruppi.map((g) => (
+              <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo" data-secondario={g.secondario}>
+                <div className="sg-voci">
+                  {g.voci.map(([id, testo]) => {
+                    const Icona = ICONE_MENU[id]
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        className="num sg-voce"
+                        aria-current={voce === id || (id === 'presenze' && inPresenze) ? 'page' : undefined}
+                        onClick={() => vai(id)}
+                      >
+                        <Icona />
+                        <span className="sg-voce-testo">{testo}</span>
+                        {id === 'richieste' && conta(richiesteNuove, 'nuove')}
+                        {id === 'presenze' && conSegnalate && conta(segnalateDaVedere, 'segnalate da vedere')}
+                        {id === 'istruttori' && conta(daConfermare, 'da confermare')}
+                        {id === 'segnalazioni' && conta(daRispondere, 'da rispondere')}
+                        {id === 'vestiario' && conta(daSaldare, 'ordini da saldare')}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-        <div className="grow" />
-        <div className="sg-voci">
+            ))}
+          </div>
           {onIstruttori && (
-            <button type="button" className="num sg-voce" onClick={onIstruttori}>
-              <ICONE_MENU.areaIstruttori />
-              <span className="sg-voce-testo">Istruttori →</span>
-            </button>
-          )}
-          {conSegreteria && (
-            <>
-              <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" />
-              <CopiaLink link={linkOrdini()} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
-            </>
+            <div className="sg-voci">
+              <button type="button" className="num sg-voce" onClick={onIstruttori}>
+                <ICONE_MENU.areaIstruttori />
+                <span className="sg-voce-testo">Istruttori →</span>
+              </button>
+            </div>
           )}
         </div>
-        <div className="sg-chi">
-          <div className="sg-voci sg-chi-voci">
+        <div className="sg-piede">
+          <div className="sg-chi-voci">
             {guidaNome}
             {impostazioniNome}
-              </div>
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
-          <span style={{ fontSize: 12, color: 'var(--dim)' }}>{ruolo}{conSegreteria ? ' · accesso completo' : ''}</span>
-          {prova && <span className="num sg-bollino">DATI DI PROVA</span>}
+          </div>
+          <div className="sg-chi">
+            <span className="stack grow" style={{ gap: 0, minWidth: 0 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#ffffff' }}>{nome}</span>
+              <span style={{ fontSize: 13, color: 'var(--dim)' }}>{ruolo}{conSegreteria ? ' · accesso completo' : ''}</span>
+            </span>
+            {onEsci && (
+              <button type="button" className="sg-link" onClick={onEsci}>
+                Esci
+              </button>
+            )}
+          </div>
           {prova && (
-            <button
-              type="button"
-              className="sg-link"
-              onClick={async () => {
-                // Prima la bozza aperta, con la domanda di sempre; poi quella dei dati di prova.
-                if (!(await lasciare())) return
-                if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze, le richieste e gli ordini fatti in prova su questo dispositivo?", 'Riparti dall’orario vero', { pericolo: true }))) return
-                void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino'), import('../../lib/vestiarioDati'), import('../../lib/vestiarioProva')]).then(([a, p, r, e, l, vd, vp]) => {
-                  a.archivio.azzera()
-                  l.scordaListinoProva()
-                  p.scordaProva()
-                  r.scordaRichiesteProva()
-                  e.scordaEsempi()
-                  vp.scordaVestiarioProva()
-                  vd.scordaEsempiVestiario()
-                  // La bozza è già stata lasciata: il browser non deve chiederlo di nuovo.
-                  scordaBozze()
-                  window.location.reload()
-                })
-              }}
-            >
-              Riparti dall'orario vero
-            </button>
-          )}
-          {onEsci && (
-            <button type="button" className="sg-link" onClick={onEsci}>
-              Esci
-            </button>
+            <div className="row sg-piede-prova">
+              <span className="num sg-bollino">DATI DI PROVA</span>
+              <button
+                type="button"
+                className="sg-link"
+                onClick={async () => {
+                  // Prima la bozza aperta, con la domanda di sempre; poi quella dei dati di prova.
+                  if (!(await lasciare())) return
+                  if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze, le richieste e gli ordini fatti in prova su questo dispositivo?", 'Riparti dall’orario vero', { pericolo: true }))) return
+                  void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino'), import('../../lib/vestiarioDati'), import('../../lib/vestiarioProva')]).then(([a, p, r, e, l, vd, vp]) => {
+                    a.archivio.azzera()
+                    l.scordaListinoProva()
+                    p.scordaProva()
+                    r.scordaRichiesteProva()
+                    e.scordaEsempi()
+                    vp.scordaVestiarioProva()
+                    vd.scordaEsempiVestiario()
+                    // La bozza è già stata lasciata: il browser non deve chiederlo di nuovo.
+                    scordaBozze()
+                    window.location.reload()
+                  })
+                }}
+              >
+                Riparti dall'orario vero
+              </button>
+            </div>
           )}
           <span className="num versione" title={VERSIONE_ESTESA}>
             {VERSIONE}

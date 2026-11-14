@@ -32,6 +32,34 @@ const m = c ? await impacchetta("export * from './src/lib/menuSegreteria'") : {}
 const mancante = 'src/lib/menuSegreteria.ts non esiste'
 const GRUPPI = m.GRUPPI_MENU ?? mancante
 
+// Il CSS letto a pezzi: regole (selettore, corpo, dentro quale @media) senza un parser.
+const CSS = readFileSync('src/styles.css', 'utf8') + readFileSync('src/segreteria.css', 'utf8')
+const norma = (t) => t.replace(/"/g, "'").replace(/\s+/g, ' ').trim()
+const regole = (css, media = null) => {
+  const fuori = []
+  const dentro = []
+  let i = 0
+  while (i < css.length) {
+    const ap = css.indexOf('{', i)
+    if (ap < 0) break
+    const testa = css.slice(i, ap)
+    // Salta i commenti prima del selettore.
+    const sel = norma(testa.replace(/\/\*[\s\S]*?\*\//g, ''))
+    let prof = 1, j = ap + 1
+    while (j < css.length && prof > 0) { if (css[j] === '{') prof++; else if (css[j] === '}') prof--; j++ }
+    const corpo = css.slice(ap + 1, j - 1)
+    if (sel.startsWith('@media')) dentro.push(...regole(corpo, sel).map((r) => ({ ...r, media: sel })))
+    else fuori.push({ sel: sel.split(',').map(norma), corpo: norma(corpo), media })
+    i = j
+  }
+  return [...fuori, ...dentro]
+}
+const REGOLE = regole(CSS)
+const SITO = ":root[data-look='sito']"
+// Le regole che hanno un selettore del look «sito» che finisce con `fine`.
+const delSito = (fine) => REGOLE.filter((r) => r.sel.some((x) => x.startsWith(SITO) && x.endsWith(fine)))
+const corpi = (rs) => rs.map((r) => r.corpo).join(' ; ')
+
 console.log('\nI cinque gruppi')
 ok('titoli e voci, nell\'ordine', Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.titolo, g.voci]) : GRUPPI, [
   ['Ogni giorno', [['dafare', 'Da fare'], ['richieste', 'Richieste online'], ['presenze', 'Presenze']]],
@@ -63,17 +91,19 @@ const attese = [...ID16, 'contabilita', 'importazioni', 'areaIstruttori', 'link'
 ok('ICONE_MENU ha una chiave per ogni voce, per la contabilità e le importazioni, il passaggio agli istruttori e i link', chiavi, attese)
 ok('ognuna è un componente che disegna', Object.values(ICONE).filter((f) => typeof f !== 'function').length, 0)
 ok('Segreteria.tsx disegna l\'icona di ogni voce', /ICONE_MENU\[id\]/.test(sg0()), true)
-ok('«Istruttori →» e i link hanno la loro icona', [/ICONE_MENU\.areaIstruttori/.test(sg0()), /ICONE_MENU\.link/.test(sg0())], [true, true])
-ok('un filetto separa un gruppo dal successivo', /\.sg-gruppo \+ \.sg-gruppo\s*\{[^}]*border-top/.test(readFileSync('src/styles.css', 'utf8') + readFileSync('src/segreteria.css', 'utf8')), true)
+ok('«Istruttori →» e i link hanno la loro icona', [/ICONE_MENU\.areaIstruttori/.test(sg0()), /ICONE_MENU\.link/.test(readFileSync('src/components/segreteria/comune.tsx', 'utf8'))], [true, true])
+ok('nessun filetto separa un gruppo dal successivo', /\.sg-gruppo \+ \.sg-gruppo\s*\{[^}]*border-top/.test(CSS), false)
 
-
-console.log('\nIl gruppo dei conti (con l\'amministrazione)')
+console.log('\nIscritti e soldi e I conti, uniti (con l\'amministrazione)')
 const chi = (ruolo, ancheAmministrazione = false) => ({ ruolo, ancheIstruttore: false, ancheAmministrazione })
 const gruppi = (c) => (m.menuDi ? m.menuDi(c).map((g) => [g.titolo, g.voci]) : mancante)
+const titoliDi = (c) => (Array.isArray(gruppi(c)) ? gruppi(c).map(([t]) => t) : gruppi(c))
 ok('solo segreteria: i cinque gruppi, e basta', gruppi(chi('staff')), Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.titolo, g.voci]) : GRUPPI)
-ok('segreteria e amministrazione: «I conti» con Contabilità dopo «Iscritti e soldi»', Array.isArray(gruppi(chi('staff', true))) ? gruppi(chi('staff', true)).map(([t]) => t) : gruppi(chi('staff', true)), ['Ogni giorno', 'Iscritti e soldi', 'I conti', 'Corsi e orari', 'Istruttori', 'Il resto'])
-ok('segreteria e amministrazione: «I conti» con Contabilità e poi Importazioni', Array.isArray(gruppi(chi('staff', true))) ? gruppi(chi('staff', true)).find(([t]) => t === 'I conti') : gruppi(chi('staff', true)), ['I conti', [['contabilita', 'Contabilità'], ['importazioni', 'Importazioni']]])
+ok('segreteria e amministrazione: cinque gruppi, nessun «I conti»', titoliDi(chi('staff', true)), ['Ogni giorno', 'Iscritti e soldi', 'Corsi e orari', 'Istruttori', 'Il resto'])
+ok('segreteria e amministrazione: «Iscritti e soldi» ha iscritti, contabilità e importazioni, in quest\'ordine', Array.isArray(gruppi(chi('staff', true))) ? gruppi(chi('staff', true)).find(([t]) => t === 'Iscritti e soldi') : gruppi(chi('staff', true)), ['Iscritti e soldi', [['iscritti', 'Iscritti'], ['contabilita', 'Contabilità'], ['importazioni', 'Importazioni']]])
+ok('solo segreteria: «Iscritti e soldi» ha solo gli iscritti', Array.isArray(gruppi(chi('staff'))) ? gruppi(chi('staff')).find(([t]) => t === 'Iscritti e soldi') : gruppi(chi('staff')), ['Iscritti e soldi', [['iscritti', 'Iscritti']]])
 ok('solo amministrazione: «I conti» e basta, con Contabilità, Importazioni e Listino', gruppi(chi('amministrazione')), [['I conti', [['contabilita', 'Contabilità'], ['importazioni', 'Importazioni'], ['listino', 'Listino']]]])
+ok('i titoli restano nei dati dei gruppi (sono l\'aria-label)', Array.isArray(m.menuDi?.(chi('staff', true))) ? m.menuDi(chi('staff', true)).every((g) => typeof g.titolo === 'string' && g.titolo) : false, true)
 
 console.log('\nIl piè del menu')
 const sg = readFileSync('src/components/segreteria/Segreteria.tsx', 'utf8')
@@ -87,11 +117,11 @@ ok('«DATI DI PROVA» resta maiuscolo (è una sigla di stato)', />DATI DI PROVA<
 if (existsSync('src/components/banco/BarraBanco.tsx'))
   ok('BarraBanco.tsx: niente COPIA LINK in maiuscolo', /COPIA LINK/.test(readFileSync('src/components/banco/BarraBanco.tsx', 'utf8')), false)
 
-console.log('\nAiuto e Impostazioni con il loro nome, nel riquadro di chi è dentro')
+console.log('\nAiuto e Impostazioni con il loro nome, nel piede del menu')
 const nav = sg.slice(sg.indexOf('<nav className="sg-menu"'), sg.indexOf('</nav>'))
-const chiBox = nav.slice(nav.indexOf('className="sg-chi"'))
+const chiBox = nav.slice(nav.indexOf('className="sg-piede"'))
 ok('in cima al menu non c\'è più la riga di icone con ? e impostazioni', /className="row sg-icone"/.test(nav), false)
-ok('nel riquadro di chi è dentro: «Aiuto» e «Impostazioni» scritti', [/sg-voce-testo">Aiuto</.test(sg) && /\{guidaNome\}/.test(chiBox), /sg-voce-testo">Impostazioni</.test(sg) && /\{impostazioniNome\}/.test(chiBox)], [true, true])
+ok('nel piede: «Aiuto» e «Impostazioni» scritti', [/sg-voce-testo">Aiuto</.test(sg) && /\{guidaNome\}/.test(chiBox), /sg-voce-testo">Impostazioni</.test(sg) && /\{impostazioniNome\}/.test(chiBox)], [true, true])
 ok('il riquadro non ha più il tasto del tema e la ricerca resta nel menu', [/<TastoTema/.test(chiBox), /<CercaIscritto/.test(nav)], [false, true])
 
 console.log('\nLa ricerca con ⌘K, in una finestra al centro')
@@ -130,6 +160,52 @@ for (const f of ['Presenze', 'PresenzeSegnalate']) {
 }
 ok('Segreteria.tsx: le schede delle presenze con la tastiera (`tastoLinguette`) e solo l\'aperta nel giro del Tab', /tastoLinguette\(/.test(sg) && /tabIndex=\{voce === 'presenze' \? 0 : -1\}/.test(sg), true)
 ok('Segreteria.tsx: il tablist delle presenze non sta più prima delle pagine', /\{d && inPresenze && conSegnalate && \(\s*<div role="tablist"/.test(sg), false)
+
+console.log('\nI titoli del menu, in parole normali')
+const cfg = (ruolo, ancheIstruttore, ancheAmministrazione) => ({ ruolo, ancheIstruttore, ancheAmministrazione })
+ok('titoloDelMenu: Segreteria, Gestione, Amministrazione', m.titoloDelMenu ? [m.titoloDelMenu(cfg('staff', false, false)), m.titoloDelMenu(cfg('staff', false, true)), m.titoloDelMenu(cfg('amministrazione', false, false))] : mancante, ['Segreteria', 'Gestione', 'Amministrazione'])
+
+console.log('\nMenu compatto: niente titoli di gruppo, gruppi a 12px')
+ok('nel menu non c\'è più sg-gruppo-titolo', /sg-gruppo-titolo/.test(nav), false)
+ok('i gruppi restano role="group" con aria-label del titolo', [/role="group"/.test(nav), /aria-label=\{g\.titolo\}/.test(nav)], [true, true])
+ok('look sito: i gruppi distano 12px', /(^|;)\s*gap: 12px/.test(corpi(delSito('.sg-gruppi'))), true)
+
+console.log('\nCopia link fuori dal menu')
+const navCopia = /Copia link/.test(nav)
+ok('nessun «Copia link» dentro la nav di Segreteria.tsx', navCopia, false)
+const ric = readFileSync('src/components/segreteria/Richieste.tsx', 'utf8')
+const ves = readFileSync('src/components/segreteria/Vestiario.tsx', 'utf8')
+const dentroTesta = (tsx, testo) => { const a = tsx.indexOf('<Testa'); const b = tsx.indexOf('</Testa>', a); return a >= 0 && b > a && tsx.slice(a, b).includes(`testo="${testo}"`) }
+ok('Richieste.tsx: «Copia link iscrizioni» fra i figli della Testa', dentroTesta(ric, 'Copia link iscrizioni'), true)
+ok('Vestiario.tsx: «Copia link ordini» fra i figli della Testa', dentroTesta(ves, 'Copia link ordini'), true)
+const com = readFileSync('src/components/segreteria/comune.tsx', 'utf8')
+ok('CopiaLink è esportato da comune.tsx', /export (function|const) CopiaLink\b/.test(com), true)
+ok('Segreteria.tsx non definisce più CopiaLink', /(function|const) CopiaLink\b/.test(sg), false)
+const bb = sg.indexOf('link={')
+ok('Segreteria.tsx: i due testi compaiono solo nel blocco link={…} del Banco', [(sg.match(/Copia link iscrizioni/g) ?? []).length, (sg.match(/Copia link ordini/g) ?? []).length, bb > 0 && sg.slice(bb, bb + 900).includes('Copia link iscrizioni') && sg.slice(bb, bb + 900).includes('Copia link ordini')], [1, 1, true])
+
+console.log('\nPiede fisso e area che scorre')
+const iS = nav.indexOf('className="sg-scorre"')
+const iP = nav.indexOf('className="sg-piede"')
+ok('nella nav: sg-scorre (le voci) viene prima di sg-piede', iS >= 0 && iP > iS, true)
+const piede = iP >= 0 ? nav.slice(iP) : ''
+const pos = ['{guidaNome}', '{impostazioniNome}', '{nome}', 'Esci', 'DATI DI PROVA', 'Riparti dall\'orario vero'].map((t) => piede.indexOf(t))
+ok('il piede ha, in ordine, Aiuto, Impostazioni, nome, Esci, DATI DI PROVA e il riavvio dell\'orario', pos.every((x) => x >= 0) && pos.every((x, k) => k === 0 || x > pos[k - 1]), true)
+ok('look sito: il piede ha lo sfondo #0a2232', /background(-color)?: #0a2232/i.test(corpi(delSito('.sg-piede'))), true)
+ok('look sito: l\'area centrale scorre da sola (overflow-y auto, min-height 0)', [/overflow-y: auto/.test(corpi(delSito('.sg-scorre'))), /min-height: 0/.test(corpi(delSito('.sg-scorre')))], [true, true])
+const menuFermo = REGOLE.filter((r) => r.media === '@media (min-width: 768px)' && r.sel.some((x) => x.endsWith('.sg-menu') || x.endsWith('#sg-menu')) && /overflow: hidden/.test(r.corpo))
+ok('da 768px in su la nav non scorre lei (overflow hidden, dentro @media (min-width: 768px))', menuFermo.length > 0, true)
+
+console.log('\nVoce aperta e conteggi')
+const aperta = corpi(delSito(".sg-voce[aria-current='page']"))
+ok('voce aperta: sfondo #1d4560 e testo #ffffff', [/background(-color)?: #1d4560/i.test(aperta), /(^|[ ;])color: #ffffff/i.test(aperta)], [true, true])
+ok('voce aperta: non più sfondo giallo pieno', /background(-color)?: var\(--giallo\)/.test(aperta), false)
+ok('voce aperta: l\'icona è gialla #f4c31b', /color: #f4c31b|fill: #f4c31b|stroke: #f4c31b/i.test(corpi(delSito(".sg-voce[aria-current='page'] svg"))), true)
+const conta = corpi(REGOLE.filter((r) => r.sel.some((x) => x.endsWith('.sg-conta'))))
+ok('sg-conta: giallo #f4c31b, 14px, bold, cifre tabulari', [/(^|[ ;])color: #f4c31b/i.test(conta), /font-size: 14px/.test(conta), /font-weight: 700/.test(conta), /tabular-nums/.test(conta)], [true, true, true, true])
+// Il numero lo disegna `conta`, definita prima della nav: nella nav ci sono le sue chiamate, e nessun segno a bollino.
+ok('Segreteria.tsx: le voci del menu usano conta (sg-conta) e non sg-tag né segno', [/const conta = [\s\S]{0,120}className="num sg-conta"/.test(sg), (nav.match(/conta\(/g) ?? []).length, /sg-tag|segno\(/.test(nav)], [true, 5, false])
+ok('le voci restano alte almeno 44px', /min-height: 44px/.test(corpi(delSito('.sg-voce'))), true)
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

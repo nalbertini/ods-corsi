@@ -211,7 +211,32 @@
   --line-soft: #46606f;
   color: #ffffff;
 }
-:root[data-look='sito'] .sg-voce[aria-current='page'] { border-left-color: var(--giallo); background: var(--giallo); color: var(--su-colore); }
+/* La voce aperta è un gradino di tono più chiaro, con l'icona gialla: il giallo pieno resta per quel che c'è da fare. */
+:root[data-look='sito'] .sg-voce[aria-current='page'] { border-left-color: transparent; background: #1d4560; color: #ffffff; }
+:root[data-look='sito'] .sg-voce[aria-current='page'] svg { color: #f4c31b; }
+/* I numeri delle code da smaltire: cifre gialle, senza bollino. */
+:root[data-look='sito'] .sg-conta { flex: none; color: #f4c31b; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+/* Niente titoli né filetti: i gruppi li separa uno spazio. */
+:root[data-look='sito'] .sg-gruppi { gap: 12px; }
+:root[data-look='sito'] .sg-gruppo { gap: 0; }
+:root[data-look='sito'] .sg-voci { gap: 0; }
+/* Il piede: Aiuto, Impostazioni, chi è dentro ed Esci, un gradino più scuro del menu. */
+:root[data-look='sito'] .sg-piede { display: flex; flex-direction: column; background: #0a2232; }
+:root[data-look='sito'] .sg-chi-voci { display: flex; }
+:root[data-look='sito'] .sg-chi-voci > .sg-voce { flex: none; gap: 8px; }
+:root[data-look='sito'] .sg-chi { flex-direction: row; align-items: center; gap: 8px; padding: 0 12px; border: 0; }
+:root[data-look='sito'] .sg-chi > .sg-link { align-self: center; font-size: 14px; }
+:root[data-look='sito'] .sg-piede-prova { flex-wrap: wrap; align-items: center; gap: 0 12px; padding: 0 12px; }
+:root[data-look='sito'] .sg-piede-prova > .sg-bollino { margin-top: 0; }
+:root[data-look='sito'] .sg-piede > .versione { padding: 0 12px; }
+:root[data-look='sito'] .sg-scorre { display: flex; flex-direction: column; gap: 12px; }
+/* Sul computer scorrono solo le voci: il marchio, la ricerca e il piede restano fermi. */
+@media (min-width: 768px) {
+  :root[data-look='sito'] #sg-menu { gap: 16px; padding-top: calc(var(--safe-t) + 20px); padding-bottom: 0; }
+  :root[data-look='sito'] .sg-scorre { flex: 1; min-height: 0; overflow-y: auto; }
+  /* Il piede arriva ai bordi del menu: annulla il margine di #sg-menu. */
+  :root[data-look='sito'] .sg-piede { margin: 0 -12px; padding: 8px 0 10px; }
+}
 :root[data-look='sito'] .sg-menu .sg-campo { background: #ffffff; border-color: #ffffff; color: var(--su-colore); }
 /* `--dim` nel menu è chiaro (testo su inchiostro): sul campo bianco il segnaposto usa `--faint`, che il menu non cambia. */
 :root[data-look='sito'] .sg-menu .sg-campo::placeholder { color: var(--faint); }
@@ -244,7 +269,6 @@
 :root[data-look='sito'] #sg-menu .sg-voce { padding-left: 12px; padding-right: 4px; letter-spacing: 0;
   /* Con l'icona davanti, «Presenze istruttori» e un numero a due cifre non ci stanno su una riga: va a capo invece di tagliarsi. */
   white-space: normal; line-height: 1.25; }
-:root[data-look='sito'] #sg-menu .sg-voce .sg-tag { margin-left: 4px; padding: 1px 6px; }
 @media (min-width: 768px) {
   :root[data-look='sito'] .sg-menu { padding-left: 12px; padding-right: 12px; }
 }
@@ -254,8 +278,6 @@
 }
 :root[data-look='sito'] .sg-gruppo[data-secondario='true'] .sg-voce { font-size: 15px; }
 :root[data-look='sito'] .sg-voce[aria-current='page'] { font-weight: 700; }
-/* Titoli dei gruppi come sono scritti: il maiuscolo spaziato a 12px si leggeva male. */
-:root[data-look='sito'] .sg-gruppo-titolo { font-family: var(--body); font-size: 13px; font-weight: 600; letter-spacing: 0; }
 /* Il titolo di una riga di DA FARE è in Inter come il testo: Big Shoulders resta per il numero. */
 /* «Altri filtri» è un comando: più grande e col colore del testo, sottolineato. */
 :root[data-look='sito'] .sg-altri-filtri { font-size: 15px; font-weight: 600; color: var(--text); text-underline-offset: 4px; }
@@ -1978,6 +2000,10 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 /* Il margine del menu di segreteria è più stretto: le voci col numero devono
    starci su una riga. */
 @media (min-width: 768px) { #sg-menu { padding-left: 12px; padding-right: 12px; } }
+/* Da 768px il menu è alto quanto lo schermo e non scorre lui: scorre .sg-scorre, il piede resta in vista. */
+@media (min-width: 768px) {
+  .sg-menu { overflow: hidden; }
+}
 .sg-voci { display: flex; flex-direction: column; gap: 2px; }
 .sg-corpo:focus { outline: none; }
 @media (max-width: 767px) {
@@ -1985,7 +2011,6 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 }
 .sg-cerca .sg-campo { width: 100%; background: var(--surface); }
 .sg-campo::placeholder { color: var(--dim); opacity: 1; }
-.sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
 .sg-schede .scheda { min-height: 44px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
 /* L'icona della linguetta sta accanto alla parola. */
 .sg-schede .scheda { gap: 8px; white-space: nowrap; }
@@ -2370,7 +2395,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-gruppo[data-secondario='true'] .sg-voce { font-size: 14px; }
   .sg-chi { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
   .sg-chi > .sg-link { align-self: center; }
-  .sg-chi > .sg-bollino { margin-top: 0; }
   .sg-corpo { padding: 16px; }
 }
 @media (max-width: 380px) {

@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type AnchorHTMLAttributes, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { NotaCampo, type Nota } from '../ds'
-import { Icona } from '../Icons'
+import { Icona, ICONE_MENU } from '../Icons'
+import { indirizzo, INDIRIZZI } from '../../lib/aree'
+import { linkDellaSegreteria } from '../../lib/provenienza'
 import { iconaAzione, iconaVerso, type NomeIcona } from '../../lib/icone'
 import { GuaioConAzione } from '../../lib/cartaPdf'
 import { clicFuoriChiude } from '../../lib/schedaFinestra'
@@ -853,5 +855,34 @@ export function MenuAzioni({ etichetta, nome, children }: { etichetta: string; /
       <summary className="sg-btn sg-btn-linea" aria-label={nome}>{nome ? <span aria-hidden="true">{etichetta}</span> : <>{etichetta} <span aria-hidden="true">▾</span></>}</summary>
       <div className="sg-menu-azioni-lista" role="menu">{children}</div>
     </details>
+  )
+}
+
+/** L'indirizzo della pagina pubblica per iscriversi, quello da mandare su WhatsApp. */
+// Con ?da=segreteria: le richieste che arrivano da qui si contano come «Link della segreteria» (provenienza.ts).
+export const LINK_PUBBLICO = linkDellaSegreteria(indirizzo(INDIRIZZI.iscrizioni))
+
+/** Un tasto che copia un link da mandare (WhatsApp, il gruppo dei genitori): fra le azioni della pagina, o nel menu LINK ▾ del Banco con `className="num sg-voce"`. */
+export function CopiaLink({ link, testo, perche, className = 'num sg-btn sg-btn-linea' }: { link: string; testo: string; perche: string; className?: string }) {
+  const [copiato, setCopiato] = useState(false)
+  useEffect(() => {
+    if (!copiato) return
+    const t = window.setTimeout(() => setCopiato(false), 2500)
+    return () => window.clearTimeout(t)
+  }, [copiato])
+  const copia = () => {
+    // Senza appunti (una pagina non sicura, un browser vecchio) si fa vedere
+    // l'indirizzo da copiare a mano.
+    if (!navigator.clipboard) return window.prompt(perche, link)
+    navigator.clipboard.writeText(link).then(
+      () => setCopiato(true),
+      () => window.prompt(perche, link),
+    )
+  }
+  return (
+    <button type="button" className={className} onClick={copia} title={link}>
+      <ICONE_MENU.link />
+      <span className="sg-voce-testo">{copiato ? 'Link copiato ✓' : testo}</span>
+    </button>
   )
 }
