@@ -35,9 +35,9 @@ function SegnoSatispay({ segno }: { segno: ReturnType<typeof segnoRichiesta> }) 
 }
 
 /** Come paga, scelto da chi si iscrive: il bonifico senza ricevuta in giallo, da cercare sul conto. */
-function SegnoComePaga({ comePaga, conRicevuta }: { comePaga: Richiesta['comePaga']; conRicevuta: boolean }) {
+function SegnoComePaga({ comePaga, conRicevuta }: { comePaga: Richiesta['comePaga']; conRicevuta: boolean | undefined }) {
   const tag = segnoComePaga(comePaga, conRicevuta)
-  return tag && <span className="num sg-tag" data-tipo={comePaga === 'bonifico' && !conRicevuta ? 'aspetta' : undefined}>{tag}</span>
+  return tag && <span className="num sg-tag" data-tipo={comePaga === 'bonifico' && conRicevuta === false ? 'aspetta' : undefined}>{tag}</span>
 }
 
 /**
@@ -249,7 +249,7 @@ export function Richieste({
                     {x.nucleoDi && <span className="num sg-tag">Nucleo</span>}
                     {doc.has(x.id) && <span className="num sg-tag">Da stampare</span>}
                     <SegnoSatispay segno={segnoRichiesta(pagamentoDi(x.id), x.stato)} />
-                    <SegnoComePaga comePaga={x.comePaga} conRicevuta={!!conRicevuta.dato?.has(x.id)} />
+                    <SegnoComePaga comePaga={x.comePaga} conRicevuta={conRicevuta.dato?.has(x.id)} />
                     {/* La si richiama: meglio saperlo prima di aprirla. */}
                     {voci && x.corsi.some((c) => {
                       const nome = nomi.get(c)

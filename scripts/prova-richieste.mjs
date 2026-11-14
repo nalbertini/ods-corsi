@@ -175,7 +175,7 @@ console.log('\n2b. il codice fiscale, letto')
   ok('il genitore col codice del figlio, senza nome: «del bambino»', stessoCf(''), 'Metti il tuo codice fiscale, non quello del bambino.')
   // La ricevuta non ferma la richiesta: si può pagare in contanti al banco.
   ok('la ricevuta non è obbligatoria', m.FILE.find((f) => f.tipo === 'ricevuta').obbligatorio, false)
-  ok('la ricevuta dice che si può pagare in segreteria', m.FILE.find((f) => f.tipo === 'ricevuta').seManca, 'PUOI PAGARE IN SEGRETERIA')
+  ok('la ricevuta dice che si può pagare in segreteria', m.FILE.find((f) => f.tipo === 'ricevuta').seManca, 'PUOI PORTARLA DOPO')
   ok('il certificato si può portare dopo', m.FILE.find((f) => f.tipo === 'certificato').seManca, 'PUOI PORTARLO DOPO')
   ok('il messaggio d’insieme non cambia, lungo', await errore(() => r.invia(adulto({ codiceFiscale: 'RSSLCU96A01L219KABCDE' }))), 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e numeri')
   ok('il messaggio d’insieme non cambia, col segno', await errore(() => r.invia(adulto({ codiceFiscale: 'RSSMRA80A01-123Z' }))), 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e numeri')

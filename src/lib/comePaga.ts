@@ -19,6 +19,33 @@ const MODI: ModoOfferto[] = [
 /** I modi accesi, sempre nello stesso ordine: chi torna sul modulo li ritrova dove erano. */
 export const modiDaOffrire = (acceso: Record<Pago, boolean>): ModoOfferto[] => MODI.filter((m) => acceso[m.id])
 
+/**
+ * Il modo del modulo a passi, che offre solo bonifico e contanti. `null` se tutti e due sono spenti in
+ * IMPOSTAZIONI: non si chiede, e come pagare lo dice la segreteria. Con uno solo acceso è già scelto, anche
+ * se prima era stato scelto l'altro: non resta in mano un modo che non c'è più. Con tutti e due resta la scelta.
+ */
+export function sceltaDelModulo(accesi: { bonifico: boolean; contanti: boolean }, scelta?: ComePaga): ComePaga | null | undefined {
+  if (!accesi.bonifico && !accesi.contanti) return null
+  if (!accesi.bonifico) return 'contanti'
+  if (!accesi.contanti) return 'bonifico'
+  return scelta
+}
+
+/** La frase del passo QUANTO PAGHI senza alcun modo acceso: la stessa del modulo pubblico. */
+export const NESSUN_MODO = 'Come pagare te lo dice la segreteria.'
+
+/** Nel riepilogo, la ricevuta del bonifico non caricata: è facoltativa, si porta dopo. */
+export const RICEVUTA_DOPO = 'non caricata: la porti dopo in segreteria'
+
+/** Gli errori di `invia_iscrizione` (160) e della modalità prova: gli stessi testi. */
+export const COME_PAGA_SBAGLIATO = 'Scegli come paghi: col bonifico o in contanti in segreteria.'
+export const CONTANTI_SPENTI = 'I contanti in segreteria ora non si possono scegliere: ricarica la pagina e scegli un altro modo.'
+export const BONIFICO_SPENTO = 'Il bonifico ora non si può scegliere: ricarica la pagina e scegli un altro modo.'
+
+/** Coi contanti, sotto la scelta: quanto, dove e quando. Senza listino la cifra la dice la segreteria. */
+export const fraseContantiDelPasso = (cent: number | undefined): string =>
+  `Porti ${cent === undefined ? 'la quota' : soldi(cent)} in segreteria, in palestra. Ti iscrivi lo stesso: puoi venire a lezione, e la quota la paghi entro la prima. La ricevuta te la dà la segreteria.`
+
 /** Quel che la richiesta porta al database: solo bonifico e contanti, che la segreteria deve aspettare. */
 export const comePagaDi = (modo: Pago | null): ComePaga | undefined => (modo === 'bonifico' || modo === 'contanti' ? modo : undefined)
 
@@ -35,10 +62,13 @@ export function frasiPagamentoFinale(modo: Pago | null, cent: number | undefined
   return []
 }
 
-/** Il segno nelle righe di RICHIESTE ONLINE. Le richieste senza scelta (Satispay, carta, nucleo, vecchie) non ne hanno. */
-export function segnoComePaga(comePaga: ComePaga | null | undefined, conRicevuta: boolean): string | null {
+/**
+ * Il segno nelle righe di RICHIESTE ONLINE. Le richieste senza scelta (Satispay, carta, nucleo, vecchie) non ne
+ * hanno. `conRicevuta` undefined: le ricevute non sono ancora lette (o 160 manca), e il segno non dice che manca.
+ */
+export function segnoComePaga(comePaga: ComePaga | null | undefined, conRicevuta: boolean | undefined): string | null {
   if (comePaga === 'contanti') return 'Contanti'
-  if (comePaga === 'bonifico') return conRicevuta ? 'Bonifico · ricevuta' : 'Bonifico · senza ricevuta'
+  if (comePaga === 'bonifico') return conRicevuta === undefined ? 'Bonifico' : conRicevuta ? 'Bonifico · ricevuta' : 'Bonifico · senza ricevuta'
   return null
 }
 

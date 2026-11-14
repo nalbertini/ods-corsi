@@ -230,7 +230,7 @@ export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string;
     etichetta: 'RICEVUTA DEL PAGAMENTO',
     dettaglio: 'Se hai già pagato la quota associativa e il trimestre, oppure l’annuale.',
     obbligatorio: false,
-    seManca: 'PUOI PAGARE IN SEGRETERIA',
+    seManca: 'PUOI PORTARLA DOPO',
   },
 ]
 

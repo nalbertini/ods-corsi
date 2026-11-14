@@ -9,6 +9,7 @@ import { MASSIMO_PERSONE } from './passiIscrizione'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { caricaListino } from './listino'
 import { acceso, spentiDa } from './metodiPagamento'
+import { BONIFICO_SPENTO, COME_PAGA_SBAGLIATO, CONTANTI_SPENTI } from './comePaga'
 import { cosaNonVaNucleo, stimaIscrizione } from './nucleo'
 import {
   ERRORE_CARTA,
@@ -264,6 +265,11 @@ export function creaRichiesteProva(): DatiRichieste {
         if (!uguale(pagato.email, email) || !uguale(pagato.nome, dati.nome) || !uguale(pagato.cognome, dati.cognome))
           throw new Error(carta ? PAGAMENTO_CARTA_ALTRA_PERSONA : PAGAMENTO_ALTRA_PERSONA)
       }
+      // Come `invia_iscrizione` in 160-come-paga.sql: un valore sbagliato o un modo spento in IMPOSTAZIONI ferma la richiesta.
+      if (dati.comePaga != null) {
+        if (dati.comePaga !== 'bonifico' && dati.comePaga !== 'contanti') throw new Error(COME_PAGA_SBAGLIATO)
+        if (!acceso(archivio.dati.impostazioni?.metodiSpenti ?? [], dati.comePaga)) throw new Error(dati.comePaga === 'contanti' ? CONTANTI_SPENTI : BONIFICO_SPENTO)
+      }
       const minore = minorenne(dati.natoIl)
       // Come il database: il luogo di nascita, se l'elenco lo conosce, è quello del codice.
       const luogo = luogoDaCf(await caricaLuoghi(), pulisciCf(dati.codiceFiscale), dati.natoIl)
@@ -287,8 +293,7 @@ export function creaRichiesteProva(): DatiRichieste {
         // Come il database: pulite, o scartate senza fermare la richiesta.
         provenienza: pulisciProvenienza(dati.provenienza),
         conosciuto: pulisciConosciuto(dati.conosciuto),
-        // Come la colonna di 160-come-paga.sql: solo bonifico o contanti, se no niente.
-        comePaga: dati.comePaga === 'bonifico' || dati.comePaga === 'contanti' ? dati.comePaga : null,
+        comePaga: dati.comePaga ?? null,
       }
       tutte = [r, ...tutte]
       salva()

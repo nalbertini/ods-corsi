@@ -162,3 +162,57 @@ select atteso('bonifico senza ricevuta: lo stesso, lo registra la segreteria qua
 select atteso('la persona nata dai contanti c''è', (select (persona_id is not null)::text from richieste_iscrizione where id = pz(11)), 'true');
 select atteso('la scelta resta sulla richiesta accolta', (select come_paga from richieste_iscrizione where id = pz(11)), 'contanti');
 select atteso('nessuna ricevuta emessa per lei', (select count(*)::text from ricevute where persona_id = (select persona_id from richieste_iscrizione where id = pz(11))), '0');
+
+\echo ''
+\echo '--- 5. un modo spento non si sceglie, e la scelta non si cambia dopo ---'
+-- La segreteria spegne i contanti in IMPOSTAZIONI mentre il modulo è aperto: chi lo manda dopo non li sceglie.
+update impostazioni set metodi_spenti = array['contanti'];
+select chi('');
+set role anon;
+select atteso('contanti spenti: la richiesta coi contanti è rifiutata', tenta($$select invia_iscrizione(dal_modulo('Spento', 'Contanti', 30, 'spento@esempio.it', '{"come_paga": "contanti"}'))::text$$),
+  'NEGATO: I contanti in segreteria ora non si possono scegliere: ricarica la pagina e scegli un altro modo.');
+select atteso('col bonifico, intanto, parte', tenta($$select (invia_iscrizione(dal_modulo('Acceso', 'Bonifico', 30, 'acceso@esempio.it', '{"come_paga": "bonifico"}')) is not null)::text$$), 'true');
+reset role;
+update impostazioni set metodi_spenti = array['bonifico'];
+set role anon;
+select atteso('bonifico spento: la richiesta col bonifico è rifiutata', tenta($$select invia_iscrizione(dal_modulo('Spento', 'Bonifico', 30, 'spento2@esempio.it', '{"come_paga": "bonifico"}'))::text$$),
+  'NEGATO: Il bonifico ora non si può scegliere: ricarica la pagina e scegli un altro modo.');
+reset role;
+update impostazioni set metodi_spenti = '{}';
+select atteso('i rifiutati non hanno lasciato righe', (select count(*)::text from richieste_iscrizione where nome = 'Spento'), '0');
+
+-- Chi ha già pagato con Satispay non ha anche «contanti» sulla richiesta: la segreteria leggerebbe due modi.
+insert into pagamenti_satispay (id, chi, importo, stato, corso_id, formula, nome, cognome, email, chiave, pagato_il)
+values ('f2000000-0000-0000-0000-0000000000a1', 'Sandra Satis', 5000, 'pagato', 'cccccccc-0000-0000-0000-000000000001', 'annuale', 'Sandra', 'Satis', 'sandra@esempio.it',
+        'f2000000-0000-0000-0000-0000000000a2', now());
+set role anon;
+select atteso('Satispay pagato e insieme «contanti»: la richiesta parte', tenta($$select (invia_iscrizione(dal_modulo('Sandra', 'Satis', 30, 'sandra@esempio.it',
+  '{"come_paga": "contanti", "pagamento_satispay": "f2000000-0000-0000-0000-0000000000a1", "chiave_pagamento": "f2000000-0000-0000-0000-0000000000a2"}')) is not null)::text$$), 'true');
+reset role;
+select atteso('ed è pagata con Satispay', (select (p.richiesta_id = r.id)::text from richieste_iscrizione r join pagamenti_satispay p on p.id = 'f2000000-0000-0000-0000-0000000000a1' where r.nome = 'Sandra'), 'true');
+select atteso('senza «contanti» sopra', coalesce((select come_paga from richieste_iscrizione where nome = 'Sandra'), 'null'), 'null');
+-- Lo stesso modulo rimandato (la rete che cade, il doppio clic) torna sulla richiesta di prima, e non la cambia.
+set role anon;
+select atteso('Sandra rimanda, ora col bonifico', tenta($$select (invia_iscrizione(dal_modulo('Sandra', 'Satis', 30, 'sandra@esempio.it',
+  '{"come_paga": "bonifico", "pagamento_satispay": "f2000000-0000-0000-0000-0000000000a1", "chiave_pagamento": "f2000000-0000-0000-0000-0000000000a2"}')) is not null)::text$$), 'true');
+reset role;
+select atteso('una richiesta sola, ancora senza modo', (select count(*)::text || ' · ' || coalesce(max(come_paga), 'null') from richieste_iscrizione where nome = 'Sandra'), '1 · null');
+
+\echo ''
+\echo '--- 6. l''iscritto e il tablet ---'
+insert into auth.users (id, email) values ('77777777-7777-7777-7777-777777777777', 'ivo@ods.it');
+insert into persone (id, nome, cognome, ruolo, utente_id) values (pz(40), 'Ivo', 'Iscritto', 'iscritto', '77777777-7777-7777-7777-777777777777');
+select chi('77777777-7777-7777-7777-777777777777');
+set role authenticated;
+select atteso('l''iscritto non legge le richieste', tenta($$select count(*)::text from richieste_iscrizione$$), '0');
+select atteso('l''iscritto non cambia la scelta', tenta($$update richieste_iscrizione set come_paga = 'bonifico'$$), 'NEGATO: …');
+select atteso('l''iscritto non scrive una richiesta a mano', tenta($$insert into richieste_iscrizione (nome, come_paga) values ('z', 'contanti')$$), 'NEGATO: …');
+select atteso('l''iscritto non sa chi ha la ricevuta', tenta($$select richieste_con_ricevuta()::text$$), 'NEGATO: solo la segreteria');
+reset role;
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('il tablet non legge le richieste', tenta($$select count(*)::text from richieste_iscrizione$$), '0');
+select atteso('il tablet non cambia la scelta', tenta($$update richieste_iscrizione set come_paga = 'bonifico'$$), 'NEGATO: …');
+select atteso('il tablet non scrive una richiesta a mano', tenta($$insert into richieste_iscrizione (nome, come_paga) values ('z', 'contanti')$$), 'NEGATO: …');
+select atteso('il tablet non sa chi ha la ricevuta', tenta($$select richieste_con_ricevuta()::text$$), 'NEGATO: solo la segreteria');
+reset role;

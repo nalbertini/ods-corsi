@@ -12,7 +12,7 @@ import { chiaveGiorno } from '../lib/sala'
 import * as P from '../lib/passiIscrizione'
 import { useListino, useMetodiSpenti } from './Costi'
 import { acceso } from '../lib/metodiPagamento'
-import { frasiPagamentoFinale, modiDaOffrire } from '../lib/comePaga'
+import { fraseContantiDelPasso, frasiPagamentoFinale, modiDaOffrire, NESSUN_MODO, RICEVUTA_DOPO } from '../lib/comePaga'
 import { Avanzamento, BarraPasso, Bollino, CaricaFile, Campo, Chip, Dettaglio, Etichetta, NotaCampo, Riepilogo, Riquadro, SceltaCorsi, Tasti, Tasto, TestoAPezzi, TitoloEsito, Titoletto, type Nota, type RigaRiepilogo } from './ds'
 import { Contatti, Prova } from './IscrizioniScreen'
 import { useDialogo } from './segreteria/comune'
@@ -444,9 +444,10 @@ function Flusso({
 
   // Data e luogo di nascita li dice il codice fiscale: si calcolano a ogni disegno, non si scrivono. Così i dati
   // che un familiare prende da chi firma e dalla prima persona sono sempre quelli di adesso.
+  // I modi spenti in IMPOSTAZIONI valgono anche per una scelta fatta prima: si calcolano qui, come i dati del codice fiscale.
   const tutte = useMemo<P.StatoPassi[]>(
     () =>
-      P.conDatiDellaFamiglia(persone).map((grezzo) => {
+      P.conModiAccesi(P.conDatiDellaFamiglia(persone), { bonifico, contanti }).map((grezzo) => {
       const r = grezzo.risposte
       const natoIl = dataDaCf(r.codiceFiscale, '') ?? ''
       const luogo = luoghi && luogoDaCf(luoghi, pulisciCf(r.codiceFiscale), natoIl)
@@ -460,7 +461,7 @@ function Flusso({
         ...(giorni !== null && { chiedeCertificato: true as const }),
       }
       }),
-    [persone, luoghi, come, corsi, listino, giorni],
+    [persone, luoghi, come, corsi, listino, giorni, bonifico, contanti],
   )
   const v = tutte[attivo]
   const r = v.risposte
@@ -783,7 +784,7 @@ function Flusso({
                   {bonifico && come !== 'contanti' && <ComePagare causale={P.causaleDelModulo(tutte, corsi ?? [])} />}
                 </>
               )}
-              {frasiPagamentoFinale(come ?? null, P.contoDelModulo(tutte, corsi ?? [], listino, chiaveGiorno(new Date()))?.totale, false).map((f) => (
+              {frasiPagamentoFinale(come ?? null, P.contoDelModulo(tutte, corsi ?? [], listino, chiaveGiorno(new Date()))?.totale, !!P.ricevutaDelModulo(tutte)).map((f) => (
                 <span key={f} className="esito-testo">
                   {f}
                 </span>
@@ -1353,19 +1354,19 @@ function Flusso({
             {insieme && <Dettaglio tono="testo">Un pagamento solo per tutti.</Dettaglio>}
             <div className="modulo-campo modulo-largo">
               <span className="modulo-etichetta">COME PAGHI</span>
-              <SceltaCorsi
-                id="n-comePaga"
-                etichetta="Come paghi"
-                una
-                voci={modiDaOffrire({ satispay: false, carta: false, bonifico, contanti })}
-                scelti={come ? [come] : []}
-                onScegli={(id) => setPersone((ps) => P.conComePaga(ps, id === 'contanti' ? 'contanti' : 'bonifico'))}
-              />
-              {come === 'contanti' && (
-                <Dettaglio tono="testo">
-                  Porti {conto ? euro(conto.totale) : 'la quota'} in segreteria, in palestra. Ti iscrivi lo stesso: puoi venire a lezione, e la quota la paghi entro la prima. La ricevuta te la dà la segreteria.
-                </Dettaglio>
+              {!bonifico && !contanti ? (
+                <Dettaglio tono="testo">{NESSUN_MODO}</Dettaglio>
+              ) : (
+                <SceltaCorsi
+                  id="n-comePaga"
+                  etichetta="Come paghi"
+                  una
+                  voci={modiDaOffrire({ satispay: false, carta: false, bonifico, contanti })}
+                  scelti={come ? [come] : []}
+                  onScegli={(id) => setPersone((ps) => P.conComePaga(ps, id === 'contanti' ? 'contanti' : 'bonifico'))}
+                />
               )}
+              {come === 'contanti' && <Dettaglio tono="testo">{fraseContantiDelPasso(conto?.totale)}</Dettaglio>}
             </div>
             <div className="modulo-campo modulo-largo">
               <span className="modulo-etichetta">{insieme ? 'IL CONTO DELLA FAMIGLIA' : 'IL CONTO'}</span>
@@ -1479,19 +1480,19 @@ function Flusso({
           ? giorni !== null && v.certificato === 'dopo'
             ? `non ce l’hai ancora: lo porti entro ${giorniDetti(giorni)} da quando la segreteria accoglie l’iscrizione`
             : 'non caricato: lo porti in segreteria'
-          : 'non caricata: paghi in segreteria'
+          : RICEVUTA_DOPO
         : x.valore
       return { stato: x.manca ? 'manca' : 'fatto', titolo: maiuscola(x.etichetta) + di, dettaglio, tasto }
     }
     const scelteDette = (sc: P.StatoPassi['scelte']) => `tesseramento: ${sc.tesseramento ? 'autorizzo' : 'non autorizzo'} · foto: ${sc.foto ? 'autorizzo' : 'non autorizzo'}`
-    // La ricevuta è una per tutto il modulo (sta nella prima persona): in famiglia una riga sola, sotto le persone.
-    const rigaRicevuta = [vistaDi(P.rigaDellaRicevuta(tutte))]
-    const righeVista: RigaRiepilogo[] = famiglia ? [...righePersone(), ...rigaRicevuta] : [
+    // Come paghi e la ricevuta sono uno per tutto il modulo (stanno nella prima persona): in famiglia sotto le persone.
+    const delPagamento = (x: (typeof righe)[number]) => x.cosa === 'comePaga' || x.cosa === 'ricevuta'
+    const righeVista: RigaRiepilogo[] = famiglia ? [...righePersone(), ...P.righeDelPagamento(tutte).map(vistaDi)] : [
       { stato: 'fatto', titolo: `${r.nome.trim()} ${r.cognome.trim()}`, dettaglio: r.natoIl ? `nato il ${r.natoIl.split('-').reverse().join('/')} · ${anniScritti(r.natoIl)}` : undefined, tasto: modifica('dati') },
-      ...righe.filter((x) => !x.manca && x.cosa !== 'ricevuta').map(vistaDi),
+      ...righe.filter((x) => !x.manca && !delPagamento(x)).map(vistaDi),
       { stato: 'fatto', titolo: figlio ? 'Firma del genitore' : 'Firma sul modulo', dettaglio: v.file.modulo ? 'foglio firmato, in foto' : scelteDette(v.scelte), tasto: modifica(P.passoDelRiepilogo('firma')) },
       ...(daChiedere.file.some((f) => f.tipo === 'documento') ? [{ stato: 'fatto' as const, titolo: P.cartaNelRiepilogo(v.chi, r.nome), dettaglio: v.file.documento?.name, tasto: modifica(P.passoDelRiepilogo('carta')) }] : []),
-      ...righe.filter((x) => x.manca || x.cosa === 'ricevuta').map(vistaDi),
+      ...righe.filter((x) => x.manca || delPagamento(x)).map(vistaDi),
     ]
     const senzaCertificato = famiglia ? tutte.some((p) => P.certificatiMancanti(p, corsi ?? []).includes('chi')) : righe.some((x) => x.carica === 'certificato')
     return (

@@ -19,7 +19,8 @@
 -- soldi si registrano in segreteria, quando arrivano.
 --
 -- `invia_iscrizione` è avvolta come in 141: la sua ultima versione diventa
--- `invia_iscrizione_1`, che nessun ruolo chiama da sé.
+-- `invia_iscrizione_1`, che nessun ruolo chiama da sé. Si lancia solo sopra
+-- la catena di 141: se no si ferma e chiede di rilanciare prima 141.
 --
 -- Si lancia dopo `141-certificato-dopo.sql`. Non chiede di rilanciare
 -- `06-iscrizioni.sql`. Rilanciare 06 o un file che rifà `invia_iscrizione`
@@ -34,9 +35,14 @@ alter table richieste_iscrizione drop constraint if exists richieste_come_paga;
 alter table richieste_iscrizione add constraint richieste_come_paga check (come_paga in ('bonifico', 'contanti'));
 
 -- --- invia_iscrizione: quella di 141, avvolta --------------------------------
+-- Si avvolge solo la catena di 141: senza, `invia_iscrizione_1` sarebbe una versione senza `certificato_dopo`.
 do $$ begin
   if not exists (select 1 from pg_proc where proname = 'invia_iscrizione' and pronamespace = 'public'::regnamespace
-                 and prosrc like '%invia_iscrizione_1%') then
+                 and prosrc ~ 'invia_iscrizione_[0-9]+\(dati\)') then
+    raise exception 'Prima rilancia 141-certificato-dopo.sql, poi questo.';
+  end if;
+  if not exists (select 1 from pg_proc where proname = 'invia_iscrizione' and pronamespace = 'public'::regnamespace
+                 and prosrc like '%invia_iscrizione_1(dati)%') then
     drop function if exists invia_iscrizione_1(jsonb);
     alter function invia_iscrizione(jsonb) rename to invia_iscrizione_1;
   end if;
@@ -46,16 +52,25 @@ declare
   nuova uuid;
   scelta jsonb := dati->'come_paga';
 begin
-  -- `invia_iscrizione_1` avvolge a sua volta `invia_iscrizione_0` (141). Il nome qui serve anche al controllo
-  -- di 141: rilanciato dopo questo file, vede la catena già fatta e non la avvolge una seconda volta.
-  -- Il controllo prima di scrivere: un valore sbagliato non lascia una richiesta a metà.
+  -- I controlli prima di scrivere: un valore sbagliato non lascia una richiesta a metà.
   if scelta is not null and jsonb_typeof(scelta) <> 'null'
      and (jsonb_typeof(scelta) <> 'string' or scelta #>> '{}' not in ('bonifico', 'contanti')) then
     raise exception 'Scegli come paghi: col bonifico o in contanti in segreteria.' using errcode = '22023';
   end if;
+  -- Un modo spento in IMPOSTAZIONI mentre il modulo era aperto (126). Senza 126 non si spegne niente.
+  if jsonb_typeof(scelta) = 'string' and to_regprocedure('public.metodi_spenti()') is not null
+     and scelta #>> '{}' = any (metodi_spenti()) then
+    raise exception '%', case scelta #>> '{}'
+      when 'contanti' then 'I contanti in segreteria ora non si possono scegliere: ricarica la pagina e scegli un altro modo.'
+      else 'Il bonifico ora non si può scegliere: ricarica la pagina e scegli un altro modo.' end using errcode = '22023';
+  end if;
   nuova := invia_iscrizione_1(dati);
+  -- Solo la prima volta: lo stesso modulo rimandato torna sulla stessa richiesta e non cambia la scelta.
+  -- Chi ha già pagato con Satispay o con la carta non ha anche un modo da fare in segreteria.
   if jsonb_typeof(scelta) = 'string' then
-    update richieste_iscrizione set come_paga = scelta #>> '{}' where id = nuova;
+    update richieste_iscrizione r set come_paga = scelta #>> '{}'
+    where r.id = nuova and r.stato = 'nuova' and r.come_paga is null
+      and not exists (select 1 from pagamenti_satispay p where p.richiesta_id = nuova);
   end if;
   return nuova;
 end $$;

@@ -79,7 +79,7 @@ const mp = await carica("export { acceso } from './src/lib/metodiPagamento'")
 const rp = await carica("export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'")
 const rs = await carica("export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'")
 const pa = await carica("export * from './src/lib/paginaIscrizioni'")
-const pi = await carica("export { nuovoStato, mancaNelPasso, risposteDaiPassi } from './src/lib/passiIscrizione'")
+const pi = await carica("export { nuovoStato, mancaNelPasso, risposteDaiPassi, conModiAccesi, righeRiepilogo, aggiungiFamiliare, conComePaga } from './src/lib/passiIscrizione'")
 const ri = await carica("export { fileObbligatori, FILE } from './src/lib/richieste'")
 
 const si = { satispay: true, carta: true }
@@ -141,6 +141,14 @@ console.log('\n4. i modi da offrire, nell’ordine')
   ok('contanti: si chiama «In contanti»', testo(tutti, 'contanti')?.testo, 'In contanti')
   ok('Satispay: il testo di oggi', testo(tutti, 'satispay')?.riga, 'Paghi subito, dall’app: l’importo è già scritto')
   ok('carta: il testo di oggi', testo(tutti, 'carta')?.riga, 'Paghi subito qui, senza app e senza aprire conti')
+  // Il modulo a passi offre solo bonifico e contanti: con uno solo acceso è già scelto, con nessuno non si chiede.
+  const scelta = (accesi, prima) => prova(() => c.sceltaDelModulo(accesi, prima))
+  ok('a passi, nessun modo acceso: null, non si chiede', scelta({ bonifico: false, contanti: false }), null)
+  ok('a passi, nessun modo acceso, anche con una scelta di prima', scelta({ bonifico: false, contanti: false }, 'bonifico'), null)
+  ok('a passi, solo i contanti: già scelti', scelta({ bonifico: false, contanti: true }), 'contanti')
+  ok('a passi, solo il bonifico, la scelta di prima era spenta: il bonifico', scelta({ bonifico: true, contanti: false }, 'contanti'), 'bonifico')
+  ok('a passi, tutti e due: nessuna scelta da sé', scelta({ bonifico: true, contanti: true }), undefined)
+  ok('a passi, tutti e due: resta la scelta di prima', scelta({ bonifico: true, contanti: true }, 'contanti'), 'contanti')
 }
 
 console.log('\n5. la pagina finale (RICHIESTA ARRIVATA)')
@@ -159,6 +167,14 @@ console.log('\n5. la pagina finale (RICHIESTA ARRIVATA)')
   ok('bonifico con la ricevuta: nessuna frase in più', frasi('bonifico', 18000, true), [])
   ok('Satispay e carta: nessuna frase in più', [frasi('satispay', 18000, false), frasi('carta', 18000, false)], [[], []])
   ok('dal nucleo (nessun modo): nessuna frase in più', frasi(null, 18000, false), [])
+  // Le frasi del passo QUANTO PAGHI stanno in src/lib, come quelle della pagina finale.
+  ok('il passo, contanti: quanto, dove, quando', prova(() => c.fraseContantiDelPasso(18000)), `Porti ${importo} in segreteria, in palestra. Ti iscrivi lo stesso: puoi venire a lezione, e la quota la paghi entro la prima. La ricevuta te la dà la segreteria.`)
+  ok('il passo, contanti senza listino: «la quota»', prova(() => c.fraseContantiDelPasso(undefined)), 'Porti la quota in segreteria, in palestra. Ti iscrivi lo stesso: puoi venire a lezione, e la quota la paghi entro la prima. La ricevuta te la dà la segreteria.')
+  ok('il passo, nessun modo acceso: la frase del design', c.NESSUN_MODO, 'Come pagare te lo dice la segreteria.')
+  ok('il riepilogo, ricevuta del bonifico non caricata: si porta dopo', c.RICEVUTA_DOPO, 'non caricata: la porti dopo in segreteria')
+  const passi = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  ok('il passo non dice più «paghi in segreteria» per la ricevuta', passi.includes('non caricata: paghi in segreteria'), false)
+  ok('la pagina finale sa se la ricevuta è caricata', /frasiPagamentoFinale\(.*ricevutaDelModulo/.test(passi), true)
   const modulo = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
   ok('la frase di oggi, «paga in segreteria, o portala lì», non c’è più', modulo.includes('o portala lì se hai già pagato'), false)
 }
@@ -172,6 +188,8 @@ console.log('\n6. la segreteria: RICHIESTE ONLINE')
   ok('bonifico senza ricevuta', segno('bonifico', false), 'Bonifico · senza ricevuta')
   ok('null (Satispay, carta, nucleo, richieste vecchie): nessun segno', segno(null, false), null)
   ok('campo non scritto: nessun segno', segno(undefined, true), null)
+  ok('bonifico, ricevute non ancora lette: «Bonifico», senza dire che manca', segno('bonifico', undefined), 'Bonifico')
+  ok('l’elenco non dice «senza ricevuta» prima di averle lette', /conRicevuta=\{!!/.test(readFileSync('src/components/segreteria/Richieste.tsx', 'utf8')), false)
   const campo = (comePaga, cent) => prova(() => c.campoComePaga(comePaga, cent))
   ok('campo COME PAGA, contanti', campo('contanti'), 'In contanti, in segreteria')
   ok('campo COME PAGA, bonifico', campo('bonifico'), 'Col bonifico')
@@ -204,6 +222,13 @@ console.log('\n7. i dati: invia manda comePaga, la richiesta lo rilegge')
   ok('in prova: contanti si salva e si rilegge', (await aspetta(() => letta({ comePaga: 'contanti' }, 'Luca')))?.comePaga, 'contanti')
   ok('in prova: bonifico si salva e si rilegge', (await aspetta(() => letta({ comePaga: 'bonifico', codiceFiscale: 'RSSMRA85T10A56NH', natoIl: '1985-12-10' }, 'Mario')))?.comePaga, 'bonifico')
   ok('in prova: senza scelta legge null', (await aspetta(() => letta({ email: 'altro@esempio.it' }, 'Luca')))?.comePaga, null)
+  // Come 160: un valore sbagliato o un modo spento ferma la richiesta, non resta in silenzio.
+  ok('in prova: un valore sbagliato ferma la richiesta', await aspetta(() => letta({ comePaga: 'assegno', email: 'assegno@esempio.it' }, 'Luca')), 'ERRORE: Scegli come paghi: col bonifico o in contanti in segreteria.')
+  const sp = rp.creaSegreteriaProva?.()
+  await aspetta(async () => sp.salvaImpostazioni({ ...(await sp.impostazioni()), metodiSpenti: ['contanti'] }))
+  ok('in prova: i contanti spenti fermano la richiesta coi contanti', await aspetta(() => letta({ comePaga: 'contanti', email: 'spenti@esempio.it' }, 'Luca')), 'ERRORE: I contanti in segreteria ora non si possono scegliere: ricarica la pagina e scegli un altro modo.')
+  ok('in prova: coi contanti spenti il bonifico passa', (await aspetta(() => letta({ comePaga: 'bonifico', email: 'spenti2@esempio.it' }, 'Luca')))?.comePaga, 'bonifico')
+  await aspetta(async () => sp.salvaImpostazioni({ ...(await sp.impostazioni()), metodiSpenti: [] }))
 
   // Il database: `invia_iscrizione` riceve `come_paga` dentro `dati`; una riga vecchia non ha la colonna.
   const reg = []
@@ -257,6 +282,28 @@ console.log('\n9. il modulo a passi: la scelta è obbligatoria')
   ok('la richiesta porta la scelta: contanti', prova(() => pi.risposteDaiPassi({ ...vuoto, comePaga: 'contanti' }).comePaga), 'contanti')
   ok('la richiesta porta la scelta: bonifico', prova(() => pi.risposteDaiPassi({ ...vuoto, comePaga: 'bonifico' }).comePaga), 'bonifico')
   ok('senza scelta la richiesta non porta niente', prova(() => pi.risposteDaiPassi(vuoto).comePaga), undefined)
+
+  // I modi spenti in IMPOSTAZIONI: con nessuno il passo non chiede, con uno solo è già scelto.
+  const accesi = (b, k, st = vuoto) => prova(() => pi.conModiAccesi([st], { bonifico: b, contanti: k })[0])
+  const nessuno = accesi(false, false)
+  ok('nessun modo acceso: il passo non ferma', prova(() => pi.mancaNelPasso(nessuno, PAGA)), [])
+  ok('nessun modo acceso: la richiesta non porta niente', prova(() => pi.risposteDaiPassi(nessuno).comePaga), undefined)
+  ok('nessun modo acceso: la ricevuta caricata prima si toglie', prova(() => accesi(false, false, { ...vuoto, comePaga: 'bonifico', file: { ...vuoto.file, ricevuta: new File(['x'], 'r.pdf') } }).file.ricevuta), undefined)
+  ok('solo i contanti: già scelti', accesi(false, true)?.comePaga, 'contanti')
+  ok('solo i contanti: il passo non ferma', prova(() => pi.mancaNelPasso(accesi(false, true), PAGA)), [])
+  ok('solo il bonifico, prima erano i contanti: il bonifico', accesi(true, false, { ...vuoto, comePaga: 'contanti' })?.comePaga, 'bonifico')
+  ok('tutti e due: la scelta resta da fare', accesi(true, true)?.comePaga, undefined)
+
+  // La famiglia: chi si aggiunge eredita come paga il modulo.
+  const famiglia = prova(() => pi.aggiungiFamiliare(pi.conComePaga([vuoto], 'contanti'), 'figlio', 0))
+  ok('chi si aggiunge alla famiglia paga come gli altri', Array.isArray(famiglia) && famiglia.map((p) => p.comePaga), ['contanti', 'contanti'])
+
+  // Il riepilogo dice come paghi; la ricevuta solo col bonifico.
+  const righe = (st) => prova(() => pi.righeRiepilogo(st, []).filter((x) => x.passo === 'pagamento').map((x) => [x.cosa, x.valore, !!x.manca]))
+  ok('riepilogo, contanti: come paghi, niente ricevuta', righe({ ...vuoto, comePaga: 'contanti' }), [['comePaga', 'In contanti, in segreteria', false]])
+  ok('riepilogo, bonifico senza ricevuta: come paghi, e la ricevuta si porta dopo', righe({ ...vuoto, comePaga: 'bonifico' }), [['comePaga', 'Col bonifico', false], ['ricevuta', 'PUOI PORTARLA DOPO', true]])
+  ok('riepilogo, nessun modo acceso: niente sul pagamento', righe(nessuno), [])
+  ok('la ricevuta che manca non dice più «paghi in segreteria»', prova(() => ri.FILE.find((f) => f.tipo === 'ricevuta').seManca), 'PUOI PORTARLA DOPO')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

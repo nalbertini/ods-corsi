@@ -6,7 +6,7 @@ import type { Abbonamento, RigaStima } from './nucleo'
 import { causale, SCONTO_FAMIGLIA, stimaIscrizione } from './nucleo'
 import type { CampoModulo, DatiRichiesta, DatiRichieste, Formula, OrarioAperto, TipoFile } from './richieste'
 import { certificatoDaPortare, compiuti, dataDaCf, mancaCertificato, type SceltaCertificato, NOTE_NEL_DATABASE, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf, tipiDaChiedere } from './richieste'
-import type { ComePaga } from './comePaga'
+import { campoComePaga, sceltaDelModulo, type ComePaga } from './comePaga'
 import type { Luoghi } from './codiceFiscale'
 import { cfValido, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { nomeProprio } from './nomi'
@@ -61,6 +61,8 @@ export interface StatoPassi {
    * scelto; in famiglia il componente la mette a tutte le persone, e ogni richiesta la porta con sé.
    */
   comePaga?: ComePaga
+  /** Bonifico e contanti tutti e due spenti in IMPOSTAZIONI: COME PAGHI non si chiede, lo dice la segreteria. */
+  nessunModo?: true
   /** Solo nella prima persona, con la ricevuta del modulo: il totale (centesimi) e quante persone c'erano quando si è caricata. */
   ricevutaPer?: { totale: number; persone: number }
 }
@@ -267,7 +269,7 @@ function sezione(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
       return documenti(s, oggi)
     case 'pagamento':
       // La ricevuta non ferma (è facoltativa), la scelta sì: la segreteria deve sapere cosa aspettarsi.
-      return s.comePaga ? [] : [{ chiave: 'comePaga', nome: 'COME PAGHI' }]
+      return s.comePaga || s.nessunModo ? [] : [{ chiave: 'comePaga', nome: 'COME PAGHI' }]
     default:
       return []
   }
@@ -885,7 +887,7 @@ export interface RigaRiepilogo {
   etichetta: string
   valore: string
   /** Di cosa parla la riga: la schermata sceglie da qui il titolo, non dall'etichetta. */
-  cosa: 'corso' | 'genitore' | 'certificato' | 'ricevuta'
+  cosa: 'corso' | 'genitore' | 'certificato' | 'comePaga' | 'ricevuta'
   /** A quale passo manda MODIFICA o CARICA. */
   passo: 'dati' | 'genitore' | 'corso' | 'modulo' | 'documenti' | 'pagamento'
   manca?: boolean
@@ -917,8 +919,20 @@ export function righeRiepilogo(s: StatoPassi, corsi: CorsoRef[], oggi = new Date
   const righe: RigaRiepilogo[] = [{ etichetta: 'CORSO', valore: nomi(r.corsi).join(', '), cosa: 'corso', passo: 'corso' }]
   if (s.chi === 'figlio') righe.push({ etichetta: 'GENITORE', valore: `${r.genitoreNome ?? ''} ${r.genitoreCognome ?? ''}`.trim(), cosa: 'genitore', passo: 'genitore' })
   righe.push(...certificato(r.natoIl, r.corsi, s.file.certificato))
-  righe.push(rigaDellaRicevuta([s]))
+  righe.push(...righeDelPagamento([s]))
   return righe
+}
+
+/**
+ * Le righe del pagamento nel riepilogo, una volta per tutto il modulo: come paghi, e la ricevuta solo col
+ * bonifico (coi contanti la dà la segreteria). Senza alcun modo acceso nessuna: lo dice la segreteria.
+ */
+export function righeDelPagamento(persone: StatoPassi[]): RigaRiepilogo[] {
+  const come = persone[0]?.comePaga
+  const valore = campoComePaga(come)
+  if (!come || !valore) return []
+  const riga: RigaRiepilogo = { etichetta: 'COME PAGHI', valore, cosa: 'comePaga', passo: 'pagamento' }
+  return come === 'bonifico' ? [riga, rigaDellaRicevuta(persone)] : [riga]
 }
 
 /** La riga della ricevuta nel riepilogo: una per tutto il modulo, chiunque l'abbia caricata; porta a QUANTO PAGHI. */
@@ -1735,6 +1749,17 @@ export function conLaRicevuta(persone: StatoPassi[], ricevuta: File | undefined,
 export function conComePaga(persone: StatoPassi[], comePaga: ComePaga): StatoPassi[] {
   const tutte = comePaga === 'contanti' ? conLaRicevuta(persone, undefined, undefined) : persone
   return tutte.map((p) => ({ ...p, comePaga }))
+}
+
+/**
+ * I modi spenti in IMPOSTAZIONI, su tutto il modulo: con nessuno acceso COME PAGHI non si chiede (e la
+ * ricevuta caricata prima si toglie, se no partirebbe), con uno solo è già scelto, con tutti e due resta com'è.
+ */
+export function conModiAccesi(persone: StatoPassi[], accesi: { bonifico: boolean; contanti: boolean }): StatoPassi[] {
+  const scelta = sceltaDelModulo(accesi, persone[0]?.comePaga)
+  if (scelta === null) return conLaRicevuta(persone, undefined, undefined).map(({ comePaga: _, ...p }) => ({ ...p, nessunModo: true as const }))
+  const senza = persone.map(({ nessunModo: _, ...p }) => p)
+  return scelta && scelta !== persone[0]?.comePaga ? conComePaga(senza, scelta) : persone.some((p) => p.nessunModo) ? senza : persone
 }
 
 /** Se il conto è cambiato dopo la ricevuta: quanto, perché e cosa fare. `undefined` se torna. */
