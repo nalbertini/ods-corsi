@@ -114,6 +114,9 @@ try {
   ok('chiuso col velo, il fuoco torna sul ⋯', await fuoco(), 'tasto ⋯')
 
   // AZZERA, col secondo tocco: azzera, chiude e il fuoco torna sul ⋯ (non resta su un tasto smontato).
+  // Con zero segni AZZERA è spento, e la prima lezione «da segnare» dipende dall'ora (una su undici
+  // non ha appello): passata la mezzanotte capitava quella vuota. Un segno prima, sempre.
+  await pagina.locator('.elenco-appello .riga-appello[data-stato="niente"]').first().click()
   await apri()
   await foglio.getByRole('button', { name: 'AZZERA L’APPELLO' }).click()
   // DueTocchi scarta un secondo tocco entro mezzo secondo dal primo: è il doppio tocco delle mani sudate.
