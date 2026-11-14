@@ -1626,15 +1626,20 @@ export function vociQuota(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay'
 
 /**
  * Cosa sta in testata accanto al nome. Mentre si unisce o si fa una ricevuta
- * niente: le azioni porterebbero fuori da quel che si sta facendo.
+ * niente: le azioni porterebbero fuori da quel che si sta facendo. Il tasto
+ * giallo è uno: «Segna un pagamento» se c'è da incassare o niente da
+ * sollecitare (la scheda si apre soprattutto per incassare), se no il
+ * sollecito. In modifica e per chi fa solo da genitore il pagamento non c'è.
  */
 export function azioniTestata(
   p: Pick<PersonaSeg, 'attiva'>,
   daSollecitare: boolean,
-  { modifica = false, unendo = false, pagando = false }: { modifica?: boolean; unendo?: boolean; pagando?: boolean },
-): { sollecito: boolean; altro: VoceAltro[] } {
-  if (unendo || pagando) return { sollecito: false, altro: [] }
-  return { sollecito: daSollecitare, altro: vociAltro(p, modifica) }
+  { modifica = false, unendo = false, pagando = false, soloGenitore = false, daPagare = false }: { modifica?: boolean; unendo?: boolean; pagando?: boolean; soloGenitore?: boolean; daPagare?: boolean },
+): { pieno: 'pagamento' | 'sollecito' | null; pagamento: boolean; sollecito: boolean; altro: VoceAltro[] } {
+  if (unendo || pagando) return { pieno: null, pagamento: false, sollecito: false, altro: [] }
+  const pagamento = !modifica && !soloGenitore
+  const pieno = pagamento && (daPagare || !daSollecitare) ? 'pagamento' : daSollecitare ? 'sollecito' : null
+  return { pieno, pagamento, sollecito: daSollecitare, altro: vociAltro(p, modifica) }
 }
 
 /**

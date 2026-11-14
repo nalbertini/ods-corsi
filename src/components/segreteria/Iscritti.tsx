@@ -3,8 +3,8 @@ import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, famiglia
 import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
-import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, PrezzoQuota, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, prezzoQuotaDi, timbriScheda, vienePoco, azioniTestata, vociQuota } from '../../lib/segreteria'
+import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, PrezzoQuota, Segno, StatoCertificato, Tono } from '../../lib/segreteria'
+import { avvisiGesto, cosaNonVaTermineCertificato, GIORNI_CERTIFICATO_MAX, spostaGiorno, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoAtteso, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, paroleTelefono, prezzoQuotaDi, vienePoco, azioniTestata, vociQuota } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -26,9 +26,11 @@ import { PagatoPrima } from './PagatoPrima'
 import { CellaSollecito, SollecitoWhatsApp, useSollecito } from './Sollecito'
 import { cellaSollecito, fraseSollecitato, quotaNelVecchioDi } from '../../lib/sollecito'
 import { corsiDaPagare, nonPagati, statoCorsi, testoCorsoBreve, type StatoCorso } from '../../lib/corsiDaPagare'
-import { bollinoCorso, iscrizioniDellaScheda, riquadroCertificato, riquadroDocumento, timbriCorsi } from '../../lib/schedeIscritto'
+import { bollinoCorso, iscrizioniDellaScheda, riquadroCertificato, riquadroDocumento } from '../../lib/schedeIscritto'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 import { Icona, ICONE_ISCRITTI } from '../Icons'
+import { aPosto, comeFrase, daSistemare, fraseScheda, totaleDaPagare, type AzioneVoce, type CosaAPosto, type PezzoFrase, type VoceDaSistemare } from '../../lib/daSistemare'
+import type { NomeIcona } from '../../lib/icone'
 
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
 const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto: 2, atteso: 1, in_scadenza: 1, in_arrivo: 1, valido: 0, non_serve: 0 }
@@ -845,10 +847,6 @@ function Scheda({
     return () => window.removeEventListener(APRI_SCHEDA, apri)
   }, [])
   const sollecito = useSollecito({ d, p, oggi, giro: giroAnagrafica, giroSolleciti, quotaNelVecchio, titolari, corsi: statiCorsi, aperto: sollecitoAperto })
-  const azioni = azioniTestata(p, !!sollecito.s, { modifica: !!modifica, unendo, pagando })
-  const voci = azioni.altro
-  // Chi fa solo da titolare non ha quota: niente voci della quota.
-  const quotaVoci = voci.length > 0 && !p.genitoreNonIscritto ? vociQuota(p, oggi) : []
   // «Segna la quota pagata…» dal menu: il modulo si apre in cima a PAGAMENTI.
   const [segnaQuota, setSegnaQuota] = useState(false)
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
@@ -862,7 +860,6 @@ function Scheda({
   const letta = !!(an.dato || an.guaio)
   // Maggiorenne nel nucleo di un genitore non iscritto: la segreteria chiede a chi intestare le ricevute.
   const diciotto = maggiorenneDal(tutti.map((x) => (x.id === p.id && natoIl ? { ...x, natoIl } : x)), p.id, chiaveGiorno(ora))
-  const manca = letta ? [...cosaManca(p, datiAn, ora), ...(diciotto ? [{ cosa: `Maggiorenne dal ${dataLunga(diciotto, false)}`, perche: 'chiedi a chi intestare le ricevute nuove' }] : [])] : []
   // Chi fa solo da titolare non ha certificato, quota né corsi: la scheda è PERSONA. «Iscrivilo a un corso» apre il resto.
   const [daIscrivere, setDaIscrivere] = useState(false)
   const soloGenitore = !!p.genitoreNonIscritto && !daIscrivere
@@ -882,6 +879,21 @@ function Scheda({
   // A segnalazioni spente niente timbro TESSERA né segno sulla linguetta: la sezione resta.
   const tessereDi = tessere && SEGNALA_TESSERE ? tessere.filter((t) => t.personaId === p.id) : undefined
   const segni = segniSchede({ ...p, tessere: tessereDi }, [...corsi.values()], oggi, { aperta, inModifica: !!modifica }, statiCorsi && nonPagati(statiCorsi))
+  // Finché i dati anagrafici non si sono letti, niente DA SISTEMARE: comparirebbe e poi cambierebbe.
+  const daFare = letta
+    ? daSistemare(p, oggi, {
+        prezzoQuota,
+        corsi: statiCorsi ?? [],
+        tessera: tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null,
+        manca: cosaManca(p, datiAn, ora),
+        maggiorenne: diciotto ? dataLunga(diciotto, false) : undefined,
+        soloDati: soloGenitore,
+      })
+    : []
+  const azioni = azioniTestata(p, !!sollecito.s, { modifica: !!modifica, unendo, pagando, soloGenitore, daPagare: daFare.some((v) => v.azione === 'pagamento') })
+  const voci = azioni.altro
+  // Chi fa solo da titolare non ha quota: niente voci della quota.
+  const quotaVoci = voci.length > 0 && !p.genitoreNonIscritto ? vociQuota(p, oggi) : []
   const tastiera = (e: KeyboardEvent) => {
     const dove = tastoScheda(aperta, e.key)
     if (!dove) return
@@ -902,22 +914,29 @@ function Scheda({
       <div className="sg-scheda-testa">
         <div className="stack" style={{ gap: 4 }}>
           <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-            <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
+            <h2 className="ob sg-scheda-nome">
               {`${p.cognome} ${p.nome}`.toUpperCase()}
             </h2>
             {p.genitoreNonIscritto && <SegnoStato tono="nota" parola="Genitore non iscritto" />}
           </div>
-          <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+          <span className="sg-scheda-sotto-nome">
             {soloGenitore
               ? `${figli.length ? `Paga e firma per ${figli.join(' e ')}. ` : ''}Non ha corsi, quota né certificato, e non conta fra gli iscritti.`
               : sottoNome(natoIl, p.creataIl, ora)}
           </span>
         </div>
-        {(azioni.sollecito || voci.length > 0) && (
+        {(azioni.pagamento || azioni.sollecito || voci.length > 0) && (
           <div className="sg-scheda-testa-azioni">
             <div className="sg-scheda-testa-tasti">
+              {/* Il tasto giallo è uno (`azioniTestata`): il pagamento se c'è da incassare, se no il sollecito. */}
+              {azioni.pagamento && (
+                <button type="button" className={`sg-btn ${azioni.pieno === 'pagamento' ? 'sg-btn-pieno' : 'sg-btn-linea'} sg-scheda-testa-paga`} onClick={() => setPagando(true)}>
+                  <Icona nome="euro" misura={18} />
+                  Segna un pagamento
+                </button>
+              )}
               {azioni.sollecito && (
-                <button type="button" className={`sg-btn ${sollecitoAperto ? 'sg-btn-linea' : 'sg-btn-pieno'} sg-scheda-testa-sollecito`} aria-expanded={sollecitoAperto} aria-controls="sg-sollecito" onClick={() => setSollecitoAperto((a) => !a)}>
+                <button type="button" className={`sg-btn ${azioni.pieno === 'sollecito' && !sollecitoAperto ? 'sg-btn-pieno' : 'sg-btn-linea'} sg-scheda-testa-sollecito`} aria-expanded={sollecitoAperto} aria-controls="sg-sollecito" onClick={() => setSollecitoAperto((a) => !a)}>
                   Sollecita su WhatsApp <span aria-hidden="true">{sollecitoAperto ? '▴' : '▾'}</span>
                 </button>
               )}
@@ -1000,19 +1019,15 @@ function Scheda({
       </div>
       {!unendo && !pagando && sollecito.guaio && <Guaio titolo="SOLLECITO SU WHATSAPP" testo={sollecito.guaio} />}
       {azioni.sollecito && sollecito.s && sollecitoAperto && <SollecitoWhatsApp d={d} p={p} s={sollecito.s} linkId={sollecito.linkId} giroSolleciti={giroSolleciti} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
-      {!unendo && !pagando && manca.length > 0 && (
-        <div className="sg-scheda-manca" role="status">
-          <span className="sg-scheda-manca-titolo">✕ COSA MANCA</span>
-          {manca.map((r) => (
-            <span key={r.cosa} className="sg-scheda-manca-riga">
-              {r.cosa}
-              {r.perche && <span className="sg-scheda-manca-perche"> · {r.perche}</span>}
-            </span>
-          ))}
-        </div>
+      {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: le voci porterebbero a niente. */}
+      {!unendo && !pagando && letta && (
+        <DaSistemare
+          voci={daFare}
+          frase={soloGenitore ? null : p.attiva ? fraseScheda(daFare) : undefined}
+          aPosto={daFare.length || soloGenitore || !p.attiva ? [] : aPosto(p, oggi, statiCorsi ?? [])}
+          onAzione={(a) => (a === 'pagamento' ? setPagando(true) : a === 'contatti' ? apriModifica() : vaiAlTimbro(SEZIONE_DELLA_VOCE[a]))}
+        />
       )}
-      {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
-      {!unendo && !pagando && !soloGenitore && letta && <Timbri p={p} oggi={oggi} prezzoQuota={prezzoQuota} statiCorsi={statiCorsi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -1090,7 +1105,7 @@ function Scheda({
               <span aria-hidden="true" className="sg-scheda-corta">{s.etichettaTelefono}</span>
               {segno && (
                 <span aria-hidden="true" className="sg-scheda-segno" data-tono={segno.tono}>
-                  ● {segno.parola}
+                  {comeFrase(segno.parola)}
                 </span>
               )}
             </button>
@@ -1147,7 +1162,7 @@ function Scheda({
             </div>
           )}
 
-          <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} an={an} natoIl={natoIl} minore={minore} fai={fai} onCambiato={() => { setGiroAnagrafica((g) => g + 1); onCambiato() }} />
+          <div id="sez-anagrafica"><DatiAnagrafici key={`a-${p.id}`} d={d} p={p} an={an} natoIl={natoIl} minore={minore} fai={fai} onCambiato={() => { setGiroAnagrafica((g) => g + 1); onCambiato() }} /></div>
           <NucleoFamiliare d={d} p={p} tutti={tutti} natoIl={natoIl} minore={minore} fai={fai} onCambiato={onCambiato} onApri={onApri} giroAnagrafica={giroAnagrafica} />
           {nonDoppioni.length > 0 && (
             <div className="stack" style={{ gap: 8 }}>
@@ -1378,37 +1393,95 @@ function vaiA(id: string) {
   dove?.focus({ preventScroll: true })
 }
 
+/** Dove porta il tasto di una voce che non apre una finestra. */
+const SEZIONE_DELLA_VOCE: Record<Exclude<AzioneVoce, 'pagamento' | 'contatti'>, string> = {
+  certificato: 'sez-certificato',
+  anagrafica: 'sez-anagrafica',
+  documento: 'sez-documento',
+  tessera: 'sez-tessere',
+}
+
+const TASTO_DELLA_VOCE: Record<Exclude<AzioneVoce, 'pagamento'>, string> = {
+  certificato: 'Carica il certificato',
+  anagrafica: 'Aggiungi',
+  contatti: 'Aggiungi',
+  documento: 'Al documento',
+  tessera: 'Alle tessere',
+}
+
+const ICONA_DELLA_VOCE: Record<AzioneVoce, NomeIcona> = {
+  certificato: 'certificato',
+  pagamento: 'corso',
+  anagrafica: 'persona',
+  contatti: 'telefono',
+  documento: 'documento',
+  tessera: 'tessera',
+}
+
 /**
- * In cima alla scheda: certificato, quota e i corsi da pagare in un colpo d'occhio,
- * con le parole dell'elenco (`timbriScheda`). Ognuno porta alla sua sezione.
+ * In cima alla scheda, al posto di COSA MANCA e dei timbri: la frase coi
+ * numeri e l'elenco unico di quel che c'è da sistemare (`daSistemare`), ogni
+ * voce col suo tasto. Con niente da sistemare, una riga con quel che è a
+ * posto. `frase` undefined: la scheda è disattivata e lo dice.
  */
-function Timbri({ p, oggi, tessera, onVai, prezzoQuota, statiCorsi }: { p: PersonaSeg; oggi: string; tessera: ReturnType<typeof timbroTessera>; onVai: (id: string) => void; prezzoQuota?: PrezzoQuota; statiCorsi?: StatoCorso[] }) {
-  const t = timbriScheda(p, oggi, prezzoQuota)
-  const uno = (titolo: string, x: Timbro, id: string) => (
-    <button type="button" className="sg-timbro" data-tono={x.tono} onClick={() => onVai(id)}>
-      <span className="sg-timbro-titolo">{titolo}</span>
-      <span className="sg-timbro-parola">{x.parola}</span>
-      {x.righe.map((r) => (
-        <span key={r.testo} className="sg-timbro-riga" data-tono={r.tono}>
-          {r.testo}
-        </span>
-      ))}
-    </button>
-  )
+const tastoDi = (v: VoceDaSistemare) => (v.azione !== 'pagamento' ? TASTO_DELLA_VOCE[v.azione] : v.chiave === 'quota' ? 'Segna pagata' : 'Segna pagato')
+
+function DaSistemare({ voci, frase, aPosto, onAzione }: { voci: VoceDaSistemare[]; frase: PezzoFrase[] | null | undefined; aPosto: CosaAPosto[]; onAzione: (a: AzioneVoce) => void }) {
+  const totale = totaleDaPagare(voci)
   return (
-    <div className="stack" style={{ gap: 12 }}>
-      {t.disattivata && (
-        <p className="sg-timbri-spenta">
-          <strong>DISATTIVATA</strong> Non è negli appelli né sul tablet. Per rimetterla: Altro → Riattiva.
+    <div className="stack" style={{ gap: 16 }}>
+      {frase === undefined && (
+        <p className="sg-scheda-spenta">
+          <strong>Disattivata.</strong> Non è negli appelli né sul tablet. Per rimetterla: Altro → Riattiva.
         </p>
       )}
-      <div className="sg-timbri">
-        {uno('CERTIFICATO MEDICO', t.certificato, 'sez-certificato')}
-        {uno('QUOTA ASSOCIATIVA', t.quota, 'sez-quota')}
-        {/* Un timbro per ogni corso da pagare: il pagato non si dice, si vede in PAGAMENTI. */}
-        {timbriCorsi(statiCorsi ?? []).map((c) => <Fragment key={c.titolo}>{uno(c.titolo, p.attiva ? c : { ...c, tono: 'spento' }, 'sez-quota')}</Fragment>)}
-        {tessera && uno('TESSERA', { ...tessera, tono: p.attiva ? tessera.tono : 'spento' }, 'sez-tessere')}
-      </div>
+      {frase && (
+        <p className="sg-scheda-frase" role="status">
+          {frase.map((x, i) => (x.tono ? <strong key={i} data-tono={x.tono}>{x.testo}</strong> : <Fragment key={i}>{x.testo}</Fragment>))}
+        </p>
+      )}
+      {aPosto.length > 0 && (
+        <ul className="sg-a-posto">
+          {aPosto.map((x) => (
+            <li key={x.chiave}>
+              <span className="sg-a-posto-cosa">{x.cosa}</span>
+              <span className="sg-a-posto-parola">{x.parola}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {voci.length > 0 && (
+        <section className="sg-da-sistemare" aria-labelledby="sg-da-sistemare-titolo">
+          <div className="sg-da-sistemare-testa">
+            <h3 id="sg-da-sistemare-titolo">
+              Da sistemare <span className="sg-da-sistemare-conto">{voci.length}</span>
+            </h3>
+            {totale !== null && (
+              <span className="sg-da-sistemare-totale">
+                Totale da pagare <strong>{euro(totale)} €</strong>
+              </span>
+            )}
+          </div>
+          <ul className="sg-da-sistemare-voci">
+            {voci.map((v) => (
+              <li key={v.chiave} className="sg-dsv" data-tono={v.tono}>
+                <span className="sg-dsv-icona" aria-hidden="true">
+                  <Icona nome={v.chiave === 'quota' ? 'quota' : ICONA_DELLA_VOCE[v.azione]} misura={20} />
+                </span>
+                <span className="sg-dsv-testo">
+                  <span className="sg-dsv-cosa">{v.cosa}</span>
+                  {v.perche && <span className="sg-dsv-perche">{v.perche}</span>}
+                </span>
+                <span className="sg-dsv-parola">{v.parola}</span>
+                <span className="sg-dsv-importo">{v.importo !== undefined ? `${euro(v.importo)} €` : ''}</span>
+                <button type="button" className="sg-btn sg-btn-linea sg-dsv-tasto" aria-label={`${tastoDi(v)}: ${v.cosa}`} onClick={() => onAzione(v.azione)}>
+                  {tastoDi(v)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   )
 }
@@ -1700,10 +1773,10 @@ function NucleoFamiliare({
       ) : !titolare ? (
         <span className="sg-sotto">Il titolare del nucleo non c’è più: toglilo dal nucleo.</span>
       ) : (
-        <>
+        <div className="sg-nucleo">
           {persona(titolare, titolare.genitoreNonIscritto ? 'Titolare · genitore non iscritto' : 'Titolare: vede tutto il nucleo nella sua pagina')}
           {membri.map((x) => persona(x, 'Nel nucleo'))}
-        </>
+        </div>
       )}
       {maggiorenne && (
         <Proposta

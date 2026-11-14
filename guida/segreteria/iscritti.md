@@ -167,40 +167,55 @@ accoglie la sua richiesta (vedi [Richieste online](richieste.md)).
 
 Un clic su un nome apre la sua scheda in una finestra sopra l'elenco;
 **✕** o Esc la chiudono e l'elenco è com'era, con la ricerca e i filtri di prima. Se hai aperto la scheda dalla scheda di un corso, ✕ riporta lì.
+Sul telefono la finestra prende tutto lo schermo e al posto della ✕ c'è, in alto
+a sinistra, **‹ Iscritti** (o **‹** e il nome della pagina da cui l'hai aperta).
 Anche il tasto Indietro del browser torna all'elenco, dalla scheda come dal
 modulo di un iscritto nuovo, e una scheda aperta
 resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
-Sotto il nome, l'età e da quando è in elenco. Se manca qualcosa, prima di tutto
-c'è il riquadro rosso **✕ COSA MANCA**, una riga per cosa: il telefono e
-l'email per ricevute e avvisi, il codice fiscale (**serve per la ricevuta**), la
-data di nascita, per un minorenne il nome e il codice fiscale del genitore, e il
-**Documento d’identità** (da portare in segreteria, non serve per entrare).
-Una scheda in regola per quota e certificato può avere lo stesso il riquadro:
-dice cosa completare nei dati. Quando non manca niente il riquadro non c'è.
+Sotto il nome, l'età e da quando è in elenco. Accanto, **Segna un pagamento**
+(giallo se c'è qualcosa da incassare), **Sollecita su WhatsApp ▾** quando serve e
+**Altro ▾**. Sul telefono **Segna un pagamento** sta da solo nella prima riga.
 
-Poi i timbri dicono subito come sta, tre per riga (sugli schermi stretti, come il telefono, uno sotto l'altro): **CERTIFICATO MEDICO**,
-**QUOTA ASSOCIATIVA** e un timbro per ogni corso da pagare (verde a posto, giallo da
-guardare, rosso manca; verde solo se non manca niente). Senza certificato il timbro
-dice **MANCA**, sotto **SENZA NON ENTRA**. La quota da pagare dice **DA PAGARE** e
-quanto (**50,00 €**): finché il listino non arriva, sotto c'è **STO LEGGENDO IL LISTINO…**, e se non si legge la cifra non c'è. Pagata, **PAGATA** e fin quando. Il timbro di un corso dice
-quanto manca (**JUDO 3 · MANCANO 350,00 €**) ed entro quando. Le parole sono
-dell'elenco ma la data intera: **SCADUTO IL 25/09/2026**, **VALIDO FINO
-AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
-(**SCADE IL 14/10/2026**, sotto **FRA 18 GIORNI**, o **DOMANI**). Sotto i 6 anni
-il timbro è grigio, **NON SERVE**, con **SOTTO I 6 ANNI**; un certificato già
-segnato si vede com'è, senza rosso. Nell'ultimo mese prima del compleanno è
-giallo, **SERVE DAL 14/10/2026**, sotto **FRA 14 GIORNI**. Senza certificato il timbro è rosso, **MANCA**, sotto **SENZA NON ENTRA**, anche senza data di nascita. Il documento
-d'identità non ha un timbro: se manca lo dice **COSA MANCA**. Un clic su
-un timbro apre la scheda che lo contiene (sotto) e porta alla sua parte. Se la scheda è disattivata i
-timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
-**Altro** → **Riattiva**.
+Poi una frase dice come sta, prima i soldi e il certificato, coi numeri:
+«Mancano **530,00 €** e il certificato, **scaduto il 09/09/2026**. Da sistemare
+anche: codice fiscale e data di nascita.» Se un importo non si sa (il listino non
+è ancora arrivato, un corso scaduto) dice «Mancano **dei pagamenti**», mai una
+cifra che poi cambia. Con niente da sistemare dice **In regola.** in verde.
 
-Se la quota è a posto ma un corso no, la linguetta **QUOTA E PAGAMENTI** dice
-quanto manca (**MANCANO 350,00 €**); con la quota da pagare dice **DA PAGARE**.
+Sotto la frase, l'elenco **Da sistemare**, col numero delle voci e a destra il
+**Totale da pagare**. Una riga per cosa, prima quel che tiene fuori di sala o è
+da incassare, poi i dati:
+
+- il **Certificato medico** che manca, è scaduto (rosso, «Senza, non può
+  allenarsi») o scade fra poco (giallo, coi giorni): tasto **Carica il certificato**;
+- la **Quota associativa** da pagare (con quanto, **50,00 €**), pagata in parte
+  o scaduta: tasto **Segna pagata**;
+- ogni corso da pagare, pagato in parte, scaduto o scritto a mano (**Da
+  controllare**): tasto **Segna pagato**;
+- la **Tessera** che manca, quando le tessere si segnalano (per ora no, vedi
+  sotto): tasto **Alle tessere**;
+- il telefono o l'email, il codice fiscale, la data di nascita, per un
+  minorenne il genitore: tasto **Aggiungi**; il **Documento d’identità** (da
+  portare in segreteria, non serve per entrare): tasto **Al documento**;
+- chi diventa maggiorenne nel nucleo: **Da chiedere** a chi intestare le ricevute nuove.
+
+Rosso è quel che manca o è scaduto, giallo quel che è da guardare. **Segna
+pagata** e **Segna pagato** aprono il pagamento; gli altri tasti portano alla
+parte della scheda dove si sistema. Quel che è a posto non è nell'elenco: con
+niente da sistemare al suo posto c'è una riga verde che dice cosa è a posto
+(**Certificato medico** valido fino al…, **Quota associativa** pagata con la
+ricevuta e fino a quando, i corsi pagati). Un certificato che non serve (sotto i
+6 anni) non c'è né in rosso né in verde. Chi fa solo da genitore ha nell'elenco
+solo i dati. Se la scheda è disattivata non c'è niente da sistemare: c'è scritto
+**Disattivata.**, e si rimette con **Altro** → **Riattiva**.
+
+Le linguette in basso dicono a parole se dentro c'è qualcosa da sistemare, con
+un pallino: **Documenti ● Da sistemare**, **Quota e pagamenti ● Da pagare** (o
+quanto manca, **Mancano 350,00 €**). La linguetta aperta ha un segno blu sotto.
 
 Accanto al nome, se la quota, un corso o il certificato sono da sistemare, c'è
-il tasto **Sollecita su WhatsApp ▾**: apre sotto il nome, sopra i timbri, il
+il tasto **Sollecita su WhatsApp ▾**: apre sotto il nome, sopra la frase, il
 riquadro **SOLLECITO SU WHATSAPP** (premuto di nuovo si chiude), con cosa manca (la quota da pagare, scaduta o pagata in
 parte; il corso scaduto o da pagare, col suo nome; il certificato mancante, scaduto, in scadenza nei prossimi 30 giorni, o
 che servirà al compimento dei 6 anni), il messaggio già scritto e **Apri
@@ -246,7 +261,7 @@ Poi la scheda è divisa in quattro schede, e se ne vede una alla volta. Ogni lin
 
 - **PERSONA** — i **CONTATTI** (con l'**EMAIL**), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
-- **QUOTA E PAGAMENTI** — i pagamenti: lo stato di quota e corsi lo dicono i timbri in alto. **+ AGGIUNGI INCASSO** e **+ FAI LA RICEVUTA** stanno accanto a **PAGAMENTI**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Ogni pagamento si vede una volta sola.
+- **QUOTA E PAGAMENTI** — i pagamenti: lo stato di quota e corsi lo dice **Da sistemare** in alto. **+ AGGIUNGI INCASSO** e **+ FAI LA RICEVUTA** stanno accanto a **PAGAMENTI**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Ogni pagamento si vede una volta sola.
   Un bonifico che l'amministrazione ha già **assegnato** (vedi [Assegnare un bonifico](../amministrazione/contabilita.md#assegnare-un-bonifico-a-quota-e-corsi))
   è una riga sola, **… · Bonifico**, con chi l'ha fatto (il nome della causale della banca: se non c'è, la riga non lo dice), l'importo arrivato e sotto come è stato diviso
   (quota, corsi). Senza ricevuta ha il tag **Senza ricevuta**: la ricevuta, e l'annullo, si fanno dal
@@ -270,7 +285,7 @@ scheda lo dice a parole, con un puntino giallo o rosso: **DA SISTEMARE** o
 **DA PAGARE**. Con una modifica aperta, da un'altra scheda, **PERSONA** dice
 **IN MODIFICA**. Cambiando scheda non si perde quello che stai scrivendo. Si
 cambia anche con la tastiera: le frecce spostano, **Home** e **Fine** vanno
-alla prima e all'ultima. Il nome, il sollecito, **Altro** e i timbri restano
+alla prima e all'ultima. Il nome, il sollecito, **Altro** e **Da sistemare** restano
 sempre in vista.
 
 Le azioni che servono di rado stanno nel menu **Altro ▾**, accanto al nome:
@@ -364,7 +379,7 @@ scheda è disattivata, nessuno.
   minore, quella del genitore): **IN SEGRETERIA** o **DA PORTARE**. **La copia è in segreteria** lo segna; **Non c'è più** la toglie senza
   chiedere (si rimette col tasto). **Senza documento**, sotto «Altri filtri», mostra chi non ce
   l'ha ancora.
-- **La quota** — se ha pagato lo dicono le ricevute, e il timbro **QUOTA ASSOCIATIVA** in alto:
+- **La quota** — se ha pagato lo dicono le ricevute, e in alto **Da sistemare** (o, con tutto a posto, la riga verde):
   **PAGATA** se c'è una ricevuta non annullata con la **QUOTA ASSOCIATIVA** che vale oggi, con fin
   quando; **IN PARTE** se della quota manca qualcosa (e quanto); **DA PAGARE** se no. Non si
   segna a mano: si fa la ricevuta.
@@ -421,7 +436,7 @@ anagrafica, iscrizioni e presenze, quello che una persona ha diritto di chiedere
 
 Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a quando vale (**FIJLKAM · agonista · fino al 31 dicembre 2026**), il numero, se viene dal RASD o è scritta a mano, e se è **IN REGOLA**, **SCADE A DICEMBRE** o **SCADUTA**. Senza tessera la scheda dice se il corso la chiede. **+ AGGIUNGI UNA TESSERA** serve per chi non è nel foglio del RASD; **Togli** la toglie, dopo una conferma, e **Annulla** nell'avviso la rimette com'era. Le tessere del RASD non si cambiano: si rifà l'import (sotto).
 
-> **Per ora le tessere non vengono segnalate.** Nessuna parte dell'app dice che una tessera manca, è scaduta o scade: niente casella TESSERE in COSA MANCA, niente parola nella colonna IN REGOLA, niente timbro TESSERA. Restano i filtri e le tessere nella scheda, che si vedono, si aggiungono e si tolgono come prima.
+> **Per ora le tessere non vengono segnalate.** Nessuna parte dell'app dice che una tessera manca, è scaduta o scade: niente casella TESSERE in COSA MANCA, niente parola nella colonna IN REGOLA, niente voce Tessera in Da sistemare. Restano i filtri e le tessere nella scheda, che si vedono, si aggiungono e si tolgono come prima.
 
 **Quale tessera chiede un corso.** In [CORSI](corsi.md), nei dati del corso, **TESSERA RICHIESTA**: l'ente, in maiuscolo (**FIJLKAM**, **FIPE**), o vuoto se il corso non la chiede. Judo, Lotta, Aikido, MGA e Avviamento chiedono FIJLKAM; i corsi della sala Pesi FIPE; psicomotricità, giocomotricità e prepugilistica nessuna. Si cambia quando si vuole.
 

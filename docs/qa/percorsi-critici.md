@@ -97,8 +97,8 @@ prova tiene stanno in «Scoperti», in fondo.
 | Musica, timer, tablet di sala | istruttore, sala | lezione senza timer o musica | `prova:musica`, `prova:timer-istruttori`, `prova:segreteria`, `prova:musica-file`, `prova:tablet`, `prova:scaletta`, `prova:strumenti`, `prova:anteprima`, `prova:discipline`, `musica.sql`, `categorie-esercizi.sql`, `discipline.sql`, `timer.sql`, `timer-lezioni.sql`, `tablet.sql` | sì |
 | Il Banco | segreteria | un guaio che non si vede | `prova:banco`, `prova:ruoli`, `prova:conteggi-dovuti`, `prova:look` | sì |
 | Scheda dell'iscritto a quattro schede | segreteria | un guaio nascosto su una scheda chiusa | `prova:scheda-iscritto`, `prova:schede-iscritto`, `prova:scheda` | sì |
-| COSA MANCA nella scheda dell'iscritto | segreteria | ricevuta bloccata senza CF, minore trattato da adulto | `prova:scheda-persona`, `prova:segreteria`, `prova:ricevuta` | sì |
-| Timbri di quota e corsi, Segna/Togli nella scheda iscritto | segreteria | importo sbagliato sul timbro, quota segnata o tolta per errore | `prova:scheda`, `prova:schede-iscritto`, `prova:scheda-iscritto`, `prova:segreteria`, `prova:corsi-da-pagare` | sì |
+| DA SISTEMARE nella scheda dell'iscritto | segreteria | ricevuta senza CF, minore come adulto, «in regola» falso, totale sbagliato | `prova:da-sistemare`, `prova:scheda-persona`, `prova:segreteria`, `prova:ricevuta` | sì |
+| Stato di quota e corsi, Segna/Togli nella scheda iscritto | segreteria | importo sbagliato sul timbro, quota segnata o tolta per errore | `prova:scheda`, `prova:schede-iscritto`, `prova:scheda-iscritto`, `prova:segreteria`, `prova:corsi-da-pagare` | sì |
 | Aspetto della segreteria e dell'amministrazione | segreteria, amministrazione | colori illeggibili, aspetto diverso dal sito | `prova:look`, `prova:menu`, `prova:banco`, `prova:sito-aspetto`, `prova:testi`, `prova:etichette-lezione`, `prova:segreteria`, `prova:richieste`, `prova:ricevuta`, `prova:pagamenti`, `prova:tessere`, `prova:certificati`, `prova:sito`, `prova:tema`, `prova:icone`, `scripts/prova-look.mjs` | sì |
 | Aspetto dell'area istruttori | istruttore | stato dell'appello letto male | `prova:istruttori-look`, `prova:look`, `prova:coda`, `prova:appello-cerca`, `prova:timer-istruttori`, `prova:icone` | sì |
 | Aspetto dei tasti del tablet di sala | sala, istruttore | un tasto che si legge come un altro | `prova:look`, `prova:tablet`, `prova:coda`, `prova:musica`, `prova:icone` | sì |
@@ -293,9 +293,8 @@ quando arriva la prova.
 - Più corsi, ricevuta dal bonifico in `Ricevute.tsx`: le regole (il prezzo è il
   tetto meno gli annuali già messi) sono provate in lib; il passaggio degli
   annuali delle altre assegnazioni nel modulo no. Solo collaudo a mano.
-- Disposizione dei timbri della scheda (`.sg-timbri`: righe da tre, sotto i
-  1000px uno per riga): nessuna prova la guarda, il dato resta giusto anche se
-  si spezza. Solo collaudo a mano sul telefono.
+- Voci di DA SISTEMARE (`.sg-dsv`, due righe sotto i 1000px) e i loro tasti
+  in `Iscritti.tsx`: nessuna prova li guarda. Solo collaudo a mano.
 - Filo fra le caselle di COSA MANCA (`styles.css`, look sito): nessuna prova lo tiene; se cade torna il filo tratteggiato di `segreteria.css`. Solo aspetto.
 - Menu sul telefono: la regola che nasconde Aiuto e Impostazioni (`segreteria.css`, sotto 768px) non è provata; se cade tornano nel menu. DA FARE in `prova-menu.mjs`.
 - I due Copia link (Richieste, Vestiario): nessuna prova tocca il link che copiano (`LINK_PUBBLICO`, `linkOrdini()`); si prova solo dove stanno. DA FARE.

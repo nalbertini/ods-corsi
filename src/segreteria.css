@@ -477,30 +477,9 @@
 .sg-segno-regola[data-tono='giallo'] { color: var(--giallo-testo); }
 .sg-segno-regola[data-tono='verde'] { color: var(--verde-testo); }
 .sg-segno-regola[data-tono='spento'] { color: var(--dim); }
-/* I timbri in cima alla scheda: bordo e parola del colore dello stato, il resto si legge sul fondo. */
-/* Larghi e alti uguali in una riga: un timbro più stretto o più basso sembrava meno importante, e il documento non lo è.
-   Righe da tre; quel che avanza oltre il terzo si allarga a riempire l'ultima riga, così non resta una riga zoppa. */
-.sg-timbri { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; }
-.sg-timbro {
-  flex: 1 1 calc((100% - 24px) / 3);
-  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 44px; min-width: 0;
-  padding: 12px 14px; text-align: left; background: var(--bg); border: 2px solid var(--tono, var(--line)); border-left-width: 4px;
-  font-family: var(--cond); font-weight: 700; color: var(--sec);
-}
-/* Solo col mouse: sul telefono il tocco lascerebbe il bordo nero al posto del colore. */
-@media (hover: hover) { .sg-timbro:hover { border-color: var(--text); } }
-.sg-timbro:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
-.sg-timbro[data-tono='rosso'] { --tono: var(--rosso); --tono-testo: var(--rosso-testo); }
-.sg-timbro[data-tono='giallo'] { --tono: var(--giallo); --tono-testo: var(--giallo-testo); }
-.sg-timbro[data-tono='verde'] { --tono: var(--verde); --tono-testo: var(--verde-testo); }
-.sg-timbro[data-tono='spento'] { --tono: var(--line); --tono-testo: var(--dim); color: var(--dim); }
-.sg-timbro-titolo { font-size: 12px; letter-spacing: 0.2em; color: var(--dim); }
-.sg-timbro-parola { font-size: 22px; line-height: 1.05; letter-spacing: 0.04em; color: var(--tono-testo, var(--text)); overflow-wrap: anywhere; }
-.sg-timbro-riga { font-size: 14px; letter-spacing: 0.12em; }
-.sg-timbro-riga[data-tono='giallo'] { color: var(--giallo-testo); border: 2px solid var(--giallo); padding: 0 6px; }
 /* Disattivata non è un guaio (si annulla con RIATTIVA): bordo `testo`, niente rosso. */
-.sg-timbri-spenta { margin: 0; padding: 10px 14px; border: 2px dashed var(--text); font-size: 15px; line-height: 1.4; color: var(--sec); }
-.sg-timbri-spenta strong { margin-right: 8px; font-family: var(--cond); font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--text); }
+.sg-scheda-spenta { margin: 0; padding: 10px 14px; border: 2px dashed var(--text); border-radius: 6px; font-size: 15px; line-height: 1.4; color: var(--sec); }
+.sg-scheda-spenta strong { margin-right: 8px; font-weight: 700; color: var(--text); }
 .sg-iscritto {
   width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid var(--surface-2); text-align: left;
 }
@@ -624,6 +603,9 @@
   .sg-scheda-testa { flex-direction: column; align-items: stretch; }
   .sg-scheda-testa-azioni { align-items: stretch; }
   .sg-scheda-testa-sollecito { flex: 1 1 auto; }
+  /* Il tasto giallo da solo nella prima riga, sollecito e «Altro» sotto. */
+  .sg-scheda-testa-tasti { flex-wrap: wrap; }
+  .sg-scheda-testa-paga { flex: 1 1 100%; justify-content: center; }
   .sg-scheda-testa-ultimo { text-align: left; }
 }
 :root[data-look='sito'] .sg-sollecito-testo { border-radius: 6px; }
@@ -1238,31 +1220,22 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* Le cifre grandi delle casse, a telefono, una per riga: affiancate toccavano il bordo. */
 @media (max-width: 480px) { .sg-numeri { grid-template-columns: minmax(0, 1fr); } }
 .sg-schede-scheda { align-self: stretch; }
-.sg-scheda-segno { font-size: 11px; letter-spacing: 0.1em; }
+.sg-scheda-segno { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; letter-spacing: 0; color: var(--dim); }
+/* Il pallino: il segno si vede anche a colpo d'occhio, la parola dice quale. */
+.sg-scheda-segno::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .sg-scheda-segno[data-tono='giallo'] { color: var(--giallo-testo); }
 .sg-scheda-segno[data-tono='rosso'] { color: var(--rosso-testo); }
 /* Sulla linguetta accesa (fondo surface-2) il giallo scuro non arriva a 4,5:1: lì vale il testo; il puntino e la parola dicono comunque il segno. */
 /* Le linguette stanno sopra il contenuto: un filo scuro sotto la fila e quella aperta piena, se no la fila sembrava quattro tasti. */
 .sg-schede-scheda { border-bottom: 2px solid var(--text); }
 .sg-scheda-corta { display: none; }
-/* COSA MANCA sopra i timbri: quel che c'è da completare prima ancora dello stato. */
-.sg-scheda-manca { display: flex; flex-direction: column; gap: 6px; border: 2px solid var(--rosso-testo); padding: 12px 16px; }
-:root[data-look='sito'] .sg-scheda-manca { border-radius: 6px; }
-.sg-scheda-manca-titolo { font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--rosso-testo); }
-.sg-scheda-manca-riga { font-size: 15px; font-weight: 600; color: var(--text); }
-.sg-scheda-manca-perche { font-weight: 500; color: var(--dim); }
 .sg-scheda-piede-fisso { position: sticky; bottom: 0; z-index: 2; padding-bottom: 12px; background: var(--surface); }
 /* Stretto: tre timbri in fila non stanno, due per due lasciavano mezza riga vuota col terzo. Uno per riga, compatti,
    così le schede restano vicine. Le quattro linguette stanno tutte nella larghezza, il segno va sotto il nome (niente scorrimento nascosto). */
 @media (max-width: 1000px) {
-  .sg-timbro { flex-basis: 100%; gap: 2px; padding: 8px 14px; }
   .sg-schede-scheda { grid-auto-columns: minmax(0, 1fr); align-self: stretch; width: 100%; }
-  .sg-schede-scheda .sg-scheda-segno { letter-spacing: 0.04em; }
   .sg-scheda-lunga { display: none; }
   .sg-scheda-corta { display: inline; }
-}
-@media (max-width: 480px) {
-  .sg-timbro-parola { font-size: 18px; letter-spacing: 0.02em; }
 }
 
 /* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */
@@ -1477,4 +1450,59 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   /* A 200px (fra 768 e 1000) Aiuto e Impostazioni non stanno in una riga: Impostazioni va sotto. */
   :root[data-look='sito'] .sg-chi-voci { display: flex; flex-wrap: wrap; }
   :root[data-look='sito'] .sg-piede-prova { flex-wrap: wrap; align-items: center; gap: 0 12px; padding: 0 12px; }
+}
+
+/* La scheda dell'iscritto (docs/design-canvas/scheda-iscritto): nome, una frase coi numeri, e l'elenco unico DA SISTEMARE
+   al posto di COSA MANCA e dei timbri. Il colore sta sulla parola e sulla barra a sinistra, mai su tutta la riga. */
+.sg-scheda-nome { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 0.02em; line-height: 1; }
+.sg-scheda-sotto-nome { font-size: 14px; color: var(--dim); }
+.sg-scheda-frase { margin: 0; font-size: 18px; font-weight: 500; line-height: 1.4; color: var(--text); }
+.sg-scheda-frase strong { font-weight: 700; font-variant-numeric: tabular-nums; }
+.sg-scheda-frase strong[data-tono='rosso'] { color: var(--rosso-testo); }
+.sg-scheda-frase strong[data-tono='giallo'] { color: var(--giallo-testo); }
+.sg-scheda-frase strong[data-tono='verde'] { color: var(--verde-testo); }
+.sg-da-sistemare { display: flex; flex-direction: column; gap: 8px; }
+.sg-da-sistemare-testa { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+.sg-da-sistemare-testa h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.sg-da-sistemare-conto { margin-left: 6px; padding: 0 7px; border-radius: 999px; background: var(--tinta-rosso); color: var(--rosso-testo); font-size: 12px; font-variant-numeric: tabular-nums; }
+.sg-da-sistemare-totale { font-size: 14px; color: var(--dim); }
+.sg-da-sistemare-totale strong { margin-left: 6px; font-size: 16px; color: var(--text); font-variant-numeric: tabular-nums; }
+.sg-da-sistemare-voci { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.sg-dsv {
+  display: grid; grid-template-columns: 20px minmax(0, 1fr) 180px 96px 200px; align-items: center; gap: 16px;
+  min-height: 72px; padding: 10px 16px 10px 20px; box-shadow: inset 4px 0 0 var(--tono);
+}
+.sg-dsv + .sg-dsv { border-top: 1px solid var(--line); }
+.sg-dsv[data-tono='rosso'] { --tono: var(--rosso); --tono-testo: var(--rosso-testo); }
+.sg-dsv[data-tono='giallo'] { --tono: var(--giallo); --tono-testo: var(--giallo-testo); }
+.sg-dsv-icona { display: flex; color: var(--tono-testo); }
+.sg-dsv-testo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sg-dsv-cosa { font-size: 15px; font-weight: 600; color: var(--text); }
+.sg-dsv-perche { font-size: 14px; color: var(--dim); }
+.sg-dsv-tasto { justify-self: end; }
+.sg-dsv-parola { font-size: 14px; font-weight: 600; color: var(--tono-testo); text-align: right; }
+/* Gli importi in colonna, a destra, con le cifre larghe uguali: si sommano a occhio. */
+.sg-dsv-importo { font-size: 15px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+.sg-a-posto { display: flex; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; border: 1px solid var(--line); border-radius: 6px; box-shadow: inset 4px 0 0 var(--verde); overflow: hidden; }
+.sg-a-posto li { display: flex; flex-direction: column; flex: 1 1 220px; min-height: 56px; justify-content: center; padding: 8px 20px; }
+.sg-a-posto li + li { border-left: 1px solid var(--line); }
+.sg-a-posto-cosa { font-size: 14px; color: var(--dim); }
+.sg-a-posto-parola { font-size: 15px; font-weight: 600; color: var(--verde-testo); }
+.sg-schede-scheda { border-bottom: 1px solid var(--line); }
+/* Come le linguette delle aree: segno blu sotto la voce accesa. */
+:root[data-look='sito'] .sg-schede-scheda > button { margin-bottom: -1px; border-bottom: 2px solid transparent; }
+:root[data-look='sito'] .sg-schede-scheda > button[data-on='true'] { border-bottom-color: var(--blu); font-weight: 600; }
+/* Il nucleo come un elenco: le persone una sotto l'altra, separate da un filo. */
+.sg-nucleo { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 6px; }
+.sg-nucleo > .sg-iscrizione { border: 0; border-radius: 0; padding: 8px 16px; }
+.sg-nucleo > .sg-iscrizione + .sg-iscrizione { border-top: 1px solid var(--line); }
+@media (max-width: 1000px) {
+  .sg-dsv { grid-template-columns: 20px minmax(0, 1fr) auto; grid-template-areas: 'icona testo testo' 'icona parola importo' 'icona tasto tasto'; gap: 6px 12px; padding-block: 12px; }
+  .sg-dsv-icona { grid-area: icona; align-self: start; }
+  .sg-dsv-testo { grid-area: testo; }
+  .sg-dsv-importo { grid-area: importo; }
+  .sg-dsv-parola { grid-area: parola; text-align: left; }
+  .sg-dsv-tasto { grid-area: tasto; justify-self: stretch; }
+  .sg-scheda-frase { font-size: 16px; }
+  .sg-a-posto li + li { border-left: 0; border-top: 1px solid var(--line); }
 }

@@ -42,12 +42,13 @@ const f = (nome, ...args) => (typeof m[nome] === 'function' ? m[nome](...args) :
 
 console.log('Le schede, in ordine')
 ok('quattro, in ordine', (m.SCHEDE ?? []).map((s) => s.id), ['persona', 'documenti', 'quota', 'corsi'])
-ok('le etichette', (m.SCHEDE ?? []).map((s) => s.etichetta), ['PERSONA', 'DOCUMENTI', 'QUOTA E PAGAMENTI', 'CORSI'])
-ok('sul telefono QUOTA è corta', (m.SCHEDE ?? []).map((s) => s.etichettaTelefono), ['PERSONA', 'DOCUMENTI', 'QUOTA', 'CORSI'])
-ok('il nome per il lettore schermo resta intero', (m.SCHEDE ?? []).find((s) => s.id === 'quota')?.nome, 'QUOTA E PAGAMENTI')
+ok('le etichette', (m.SCHEDE ?? []).map((s) => s.etichetta), ['Persona', 'Documenti', 'Quota e pagamenti', 'Corsi'])
+ok('sul telefono Quota è corta', (m.SCHEDE ?? []).map((s) => s.etichettaTelefono), ['Persona', 'Documenti', 'Quota', 'Corsi'])
+ok('il nome per il lettore schermo resta intero', (m.SCHEDE ?? []).find((s) => s.id === 'quota')?.nome, 'Quota e pagamenti')
 ok('la prima è l’iniziale', m.SCHEDA_INIZIALE, 'persona')
 
 console.log('\nDa un timbro o una sezione alla scheda')
+ok('i dati anagrafici stanno in Persona', f('schedaDellaSezione', 'sez-anagrafica'), 'persona')
 ok('le sezioni: sez-certificato, sez-tessere, sez-documento, sez-quota', ['sez-certificato', 'sez-tessere', 'sez-documento', 'sez-quota'].map((s) => f('schedaDellaSezione', s)), ['documenti', 'documenti', 'documenti', 'quota'])
 ok('una sezione sconosciuta: nessuna scheda', f('schedaDellaSezione', 'sez-boh'), null)
 
