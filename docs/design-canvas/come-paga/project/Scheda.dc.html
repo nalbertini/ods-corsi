@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo sono file locali OFL; un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA 6. La richiesta aperta: COME PAGA è il primo campo. Coi contanti non c'è «Confronta con la ricevuta» e non c'è «Nessuna ricevuta: il pagamento si fa in segreteria». Accogliere non segna la quota pagata: resta da pagare finché la segreteria non incassa. -->
+<div style="width: 1000px">
+<dc-import name="SchedaPopover" titolo="GIULIA BIANCHI" sotto="Arrivata il 14 novembre 2026, 9:12" passaggio="{{ true }}" posizione="1 DI 5" campi="COME PAGA:In contanti, in segreteria · 180,00 €|NATA IL:3 marzo 1994|CODICE FISCALE:BNCGLI94C43L219K|EMAIL:giulia.bianchi@esempio.it|TELEFONO:347 000 0000|CORSI:Trimestre MGA metodo globale autodifesa|QUOTA:Da pagare: si segna pagata quando incassi" azioni="ELIMINA RICHIESTA E FILE:rosso|RIFIUTA:linea|ACCOGLI:pieno" larghezza="760px" altezza="620px" hint-size="100%,620px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1000,"height":620}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

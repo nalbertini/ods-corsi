@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo sono file locali OFL; un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA 5. RICHIESTE ONLINE: come paga si legge già sulla riga, accanto a Minore e Nucleo, senza aprire la richiesta. Il bonifico con e senza ricevuta si distinguono. In una famiglia la scelta è su ogni richiesta. Le richieste arrivate prima non hanno il segno. -->
+<div style="display: flex; flex-direction: column; width: 760px; padding: 24px; background: #eef5fa; color: #0d2a3d">
+<span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 12px">RICHIESTE ONLINE</span>
+<div style="display: flex; flex-direction: column; border: 2px solid #cfe6f4; border-radius: 6px; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 16px; background: #ffffff; border-top: 1px solid #cfe6f4"><div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0"><span style="font-size: 15px; font-weight: 600">Bianchi Giulia</span><span style="font-size: 13px; color: #46606f">MGA · arrivata oggi, 9:12</span></div><div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end"><dc-import name="Badge" tipo="tag" label="Contanti" tono="giallo" hint-size="auto,22px"></dc-import></div></div>
+<div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 16px; background: #ffffff; border-top: 1px solid #cfe6f4"><div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0"><span style="font-size: 15px; font-weight: 600">Ferrero Davide</span><span style="font-size: 13px; color: #46606f">Judo adulti · arrivata ieri, 20:45</span></div><div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end"><dc-import name="Badge" tipo="tag" label="Bonifico · ricevuta" tono="neutro" hint-size="auto,22px"></dc-import></div></div>
+<div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 16px; background: #ffffff; border-top: 1px solid #cfe6f4"><div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0"><span style="font-size: 15px; font-weight: 600">Rossi Tommaso</span><span style="font-size: 13px; color: #46606f">Aikido 2 · arrivata ieri, 18:30</span></div><div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end"><dc-import name="Badge" tipo="tag" label="Minore" tono="neutro" hint-size="auto,22px"></dc-import><dc-import name="Badge" tipo="tag" label="Nucleo" tono="neutro" hint-size="auto,22px"></dc-import><dc-import name="Badge" tipo="tag" label="Bonifico · senza ricevuta" tono="giallo" hint-size="auto,22px"></dc-import></div></div>
+<div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 16px; background: #ffffff; border-top: 1px solid #cfe6f4"><div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0"><span style="font-size: 15px; font-weight: 600">Rossi Marta</span><span style="font-size: 13px; color: #46606f">Aikido 2 · arrivata ieri, 18:30</span></div><div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end"><dc-import name="Badge" tipo="tag" label="Nucleo" tono="neutro" hint-size="auto,22px"></dc-import><dc-import name="Badge" tipo="tag" label="Bonifico · senza ricevuta" tono="giallo" hint-size="auto,22px"></dc-import></div></div>
+<div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 16px; background: #ffffff; border-top: 1px solid #cfe6f4"><div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0"><span style="font-size: 15px; font-weight: 600">Gallo Pietro</span><span style="font-size: 13px; color: #46606f">Karate bambini · arrivata il 10 novembre</span></div><div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end"><dc-import name="Badge" tipo="tag" label="Minore" tono="neutro" hint-size="auto,22px"></dc-import><dc-import name="Badge" tipo="tag" label="Satispay pagato" tono="verde" hint-size="auto,22px"></dc-import></div></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":760,"height":420}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
