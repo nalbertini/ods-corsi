@@ -173,7 +173,11 @@ Anche il tasto Indietro del browser torna all'elenco, dalla scheda come dal
 modulo di un iscritto nuovo, e una scheda aperta
 resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
-Sotto il nome, l'età e da quando è in elenco. Accanto, **Segna un pagamento**
+Sotto il nome, l'età e da quando è in elenco. Nei primi 30 giorni in elenco
+(gli stessi che ha per portare il certificato), accanto al nome c'è
+l'etichetta **Nuova** o **Nuovo**: lo dice il codice fiscale, e senza codice
+fiscale c'è scritto **Nuova iscrizione**. Non c'è se la scheda è disattivata o
+se la persona fa solo da genitore. Accanto ai dati, **Segna un pagamento**
 (giallo se c'è qualcosa da incassare), **Sollecita su WhatsApp ▾** quando serve e
 **Altro ▾**. Sul telefono **Segna un pagamento** sta da solo nella prima riga.
 
@@ -273,7 +277,7 @@ Poi la scheda è divisa in quattro schede, e se ne vede una alla volta. Ogni lin
   l'amministrazione ha collegato alla persona dei pagamenti del vecchio programma, c'è il blocco **DAL VECCHIO
   PROGRAMMA**: è lo storico, a parte. Non è nei pagamenti qui sopra e non conta per «quota pagata»: se la persona
   ha pagato anche nell'app negli stessi giorni, lo stesso incasso può comparire in tutti e due.
-- **CORSI** — le iscrizioni, le ultime 12 lezioni e i corsi terminati.
+- **CORSI E PRESENZE** — le iscrizioni, le ultime 12 lezioni e i corsi terminati. Sul telefono la scheda si chiama **CORSI**.
 
 In queste tre schede ogni cosa è un riquadro: com'è, in grande (**VALIDO FINO
 AL 30 GIUGNO 2027**, **DA PORTARE**, **LOTTA 3 · DA PAGARE**), sotto il

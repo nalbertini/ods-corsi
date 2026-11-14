@@ -29,7 +29,7 @@ import { corsiDaPagare, nonPagati, statoCorsi, testoCorsoBreve, type StatoCorso 
 import { bollinoCorso, iscrizioniDellaScheda, riquadroCertificato, riquadroDocumento } from '../../lib/schedeIscritto'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 import { Icona, ICONE_ISCRITTI } from '../Icons'
-import { aPosto, comeFrase, daSistemare, fraseScheda, totaleDaPagare, type AzioneVoce, type CosaAPosto, type PezzoFrase, type VoceDaSistemare } from '../../lib/daSistemare'
+import { aPosto, comeFrase, daSistemare, etichettaNuovo, fraseScheda, totaleDaPagare, type AzioneVoce, type CosaAPosto, type PezzoFrase, type VoceDaSistemare } from '../../lib/daSistemare'
 import type { NomeIcona } from '../../lib/icone'
 
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
@@ -858,6 +858,7 @@ function Scheda({
   const minore = eMinorenne(p, datiAn, ora)
   // Finché non si sono letti, niente COSA MANCA: comparirebbe e poi cambierebbe. Se non si leggono, almeno i contatti.
   const letta = !!(an.dato || an.guaio)
+  const nuovo = letta ? etichettaNuovo(p, datiAn?.codiceFiscale, oggi) : null
   // Maggiorenne nel nucleo di un genitore non iscritto: la segreteria chiede a chi intestare le ricevute.
   const diciotto = maggiorenneDal(tutti.map((x) => (x.id === p.id && natoIl ? { ...x, natoIl } : x)), p.id, chiaveGiorno(ora))
   // Chi fa solo da titolare non ha certificato, quota né corsi: la scheda è PERSONA. «Iscrivilo a un corso» apre il resto.
@@ -917,6 +918,8 @@ function Scheda({
             <h2 className="ob sg-scheda-nome">
               {`${p.cognome} ${p.nome}`.toUpperCase()}
             </h2>
+            {/* Dopo l'anagrafica: il codice fiscale decide «Nuova» o «Nuovo», se no cambierebbe sotto gli occhi. */}
+            {nuovo && <span className="sg-scheda-nuovo">{nuovo}</span>}
             {p.genitoreNonIscritto && <SegnoStato tono="nota" parola="Genitore non iscritto" />}
           </div>
           <span className="sg-scheda-sotto-nome">

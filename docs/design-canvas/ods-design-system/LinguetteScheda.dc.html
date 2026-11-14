@@ -17,7 +17,7 @@
 <!-- COSTRUITO (`../scheda-iscritto/`, .sg-schede-scheda di src/segreteria.css): le linguette della scheda (.sg-schede-scheda, SCHEDE di Iscritti.tsx), con le stesse quattro voci.
      Cambia l'aspetto, come le linguette delle aree nel restyle: niente riquadro inchiostro sulla voce accesa ma un segno blu
      #14709f da 2px sotto; parole in minuscolo, Inter 15px; il segno (segniSchede) è un pallino e una parola, non in maiuscolo
-     spaziato. Al telefono le voci scorrono in orizzontale, ognuna alta 48px. -->
+     spaziato. Al telefono le voci scorrono in orizzontale, ognuna alta 48px, coi nomi corti di schedaSezioni.ts: Quota, Corsi. -->
 <nav aria-label="Parti della scheda" style="display: flex; gap: {{spazio}}; height: 52px; border-bottom: 1px solid #cfe6f4; overflow-x: auto; white-space: nowrap">
   <sc-for list="{{voci}}" as="v" hint-placeholder-count="4">
     <a href="#" style="display: flex; align-items: center; gap: 8px; flex: 0 0 auto; margin-bottom: -1px; border-bottom: {{v.segno}}; color: {{v.colore}}; text-decoration: none; font-size: 15px; font-weight: {{v.peso}}">
@@ -35,12 +35,13 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const acceso = p.acceso ?? 'persona';
+    const tel = p.telefono ?? false;
     const toni = { rosso: '#b81d1d', giallo: '#8f6a00' };
     const voci = [
       { id: 'persona', nome: 'Persona', icona: 'persona', segno: '', parola: '' },
       { id: 'documenti', nome: 'Documenti', icona: 'documento', segno: p.segnoDocumenti ?? 'rosso', parola: p.parolaDocumenti ?? 'da sistemare' },
-      { id: 'quota', nome: 'Quota e pagamenti', icona: 'quota', segno: p.segnoQuota ?? 'rosso', parola: p.parolaQuota ?? 'da pagare' },
-      { id: 'corsi', nome: 'Corsi e presenze', icona: 'corso', segno: '', parola: '' },
+      { id: 'quota', nome: tel ? 'Quota' : 'Quota e pagamenti', icona: 'quota', segno: p.segnoQuota ?? 'rosso', parola: p.parolaQuota ?? 'da pagare' },
+      { id: 'corsi', nome: tel ? 'Corsi' : 'Corsi e presenze', icona: 'corso', segno: '', parola: '' },
     ].map((v) => ({
       ...v,
       conParola: Boolean(v.segno) && Boolean(v.parola),
@@ -49,7 +50,7 @@ class Component extends DCLogic {
       colore: v.id === acceso ? '#0d2a3d' : '#46606f',
       peso: v.id === acceso ? 600 : 500,
     }));
-    return { voci, spazio: (p.telefono ?? false) ? '20px' : '32px' };
+    return { voci, spazio: tel ? '20px' : '32px' };
   }
 }
 </script>

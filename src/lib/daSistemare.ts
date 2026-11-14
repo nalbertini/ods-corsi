@@ -1,6 +1,7 @@
 import { type StatoCorso } from './corsiDaPagare'
 import { euro } from './ricevute'
-import { dataTimbro, pagamentoDi, timbriScheda, type PersonaSeg, type PrezzoQuota, type RigaCheManca } from './segreteria'
+import { cfSesso } from './codiceFiscale'
+import { dataTimbro, GIORNI_CERTIFICATO, pagamentoDi, spostaGiorno, timbriScheda, type PersonaSeg, type PrezzoQuota, type RigaCheManca } from './segreteria'
 import { type timbroTessera } from './tessere'
 
 /** Dove porta il tasto di una voce: la scheda sa a quale sezione o finestra. */
@@ -180,4 +181,16 @@ export function fraseScheda(voci: VoceDaSistemare[]): PezzoFrase[] {
     else acc.push({ ...x })
     return acc
   }, [])
+}
+
+/**
+ * L'etichetta accanto al nome di chi si è appena iscritto: per i primi 30
+ * giorni in elenco, gli stessi che ha per portare il certificato. «Nuova» o
+ * «Nuovo» lo dice il codice fiscale; senza, «Nuova iscrizione»: dal nome non
+ * si indovina. Chi fa solo da genitore non si è iscritto.
+ */
+export function etichettaNuovo(p: Pick<PersonaSeg, 'attiva' | 'creataIl' | 'genitoreNonIscritto'>, codiceFiscale: string | undefined, oggi: string): string | null {
+  if (!p.attiva || p.genitoreNonIscritto || spostaGiorno(p.creataIl, GIORNI_CERTIFICATO) <= oggi) return null
+  const sesso = cfSesso(codiceFiscale ?? '')
+  return sesso === 'F' ? 'Nuova' : sesso === 'M' ? 'Nuovo' : 'Nuova iscrizione'
 }

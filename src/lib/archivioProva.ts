@@ -482,6 +482,9 @@ function iniziale(): Archivio {
     // `piccoli` viene dalle iscrizioni, che hanno sempre la persona.
     persone.get(piccoli[2])!.certificato = undefined
   }
+  // Caruso Anna si è iscritta dieci giorni fa: nella prova si vede l'etichetta accanto al nome dei nuovi.
+  const anna = persone.get('p-caruso-anna')
+  if (anna) anna.creataIl = natoIlDa(0, -10)
   return {
     versione: VERSIONE,
     anagrafiche,

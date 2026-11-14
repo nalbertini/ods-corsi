@@ -20,7 +20,7 @@ export const SCHEDE: readonly SchedaDef[] = [
   { id: 'persona', etichetta: 'Persona', etichettaTelefono: 'Persona', nome: 'Persona' },
   { id: 'documenti', etichetta: 'Documenti', etichettaTelefono: 'Documenti', nome: 'Documenti' },
   { id: 'quota', etichetta: 'Quota e pagamenti', etichettaTelefono: 'Quota', nome: 'Quota e pagamenti' },
-  { id: 'corsi', etichetta: 'Corsi', etichettaTelefono: 'Corsi', nome: 'Corsi' },
+  { id: 'corsi', etichetta: 'Corsi e presenze', etichettaTelefono: 'Corsi', nome: 'Corsi e presenze' },
 ]
 
 /** Gli id di linguetta e pannello: un posto solo, se no il collegamento fra i due si rompe senza errori. */
