@@ -47,7 +47,7 @@ interface Riga {
   gestore: { nome: string; cognome: string } | null
   /** Arriva con 141-certificato-dopo.sql. */
   certificato_dopo?: boolean
-  /** Arriva con 160-come-paga.sql. */
+  /** Arriva con 162-come-paga.sql. */
   come_paga?: 'bonifico' | 'contanti' | null
   /** Da `74-provenienza-richieste.sql`: prima le colonne non ci sono. */
   provenienza?: string | null
@@ -206,7 +206,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             nucleo_di: d.nucleoDi,
             // «Non ce l'ho ancora»: senza 141-certificato-dopo.sql la chiave si ignora.
             ...(d.certificatoDopo && { certificato_dopo: true }),
-            // Bonifico o contanti: senza 160-come-paga.sql la chiave si ignora.
+            // Bonifico o contanti: senza 162-come-paga.sql la chiave si ignora.
             ...(d.comePaga && { come_paga: d.comePaga }),
           },
         }),
@@ -329,7 +329,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
 
     async conRicevuta() {
       const r = await db.rpc('richieste_con_ricevuta')
-      // Senza 160-come-paga.sql la funzione non c'è: sulla riga resta «Bonifico · senza ricevuta», la richiesta aperta dice il vero.
+      // Senza 162-come-paga.sql la funzione non c'è: sulla riga resta «Bonifico · senza ricevuta», la richiesta aperta dice il vero.
       if (r.error?.code === 'PGRST202') return new Set<string>()
       return new Set((ok(r) as string[] | null) ?? [])
     },

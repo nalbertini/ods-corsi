@@ -37,7 +37,7 @@ export const NESSUN_MODO = 'Come pagare te lo dice la segreteria.'
 /** Nel riepilogo, la ricevuta del bonifico non caricata: è facoltativa, si porta dopo. */
 export const RICEVUTA_DOPO = 'non caricata: la porti dopo in segreteria'
 
-/** Gli errori di `invia_iscrizione` (160) e della modalità prova: gli stessi testi. */
+/** Gli errori di `invia_iscrizione` (162) e della modalità prova: gli stessi testi. */
 export const COME_PAGA_SBAGLIATO = 'Scegli come paghi: col bonifico o in contanti in segreteria.'
 export const CONTANTI_SPENTI = 'I contanti in segreteria ora non si possono scegliere: ricarica la pagina e scegli un altro modo.'
 export const BONIFICO_SPENTO = 'Il bonifico ora non si può scegliere: ricarica la pagina e scegli un altro modo.'
@@ -64,7 +64,7 @@ export function frasiPagamentoFinale(modo: Pago | null, cent: number | undefined
 
 /**
  * Il segno nelle righe di RICHIESTE ONLINE. Le richieste senza scelta (Satispay, carta, nucleo, vecchie) non ne
- * hanno. `conRicevuta` undefined: le ricevute non sono ancora lette (o 160 manca), e il segno non dice che manca.
+ * hanno. `conRicevuta` undefined: le ricevute non sono ancora lette (o 162 manca), e il segno non dice che manca.
  */
 export function segnoComePaga(comePaga: ComePaga | null | undefined, conRicevuta: boolean | undefined): string | null {
   if (comePaga === 'contanti') return 'Contanti'

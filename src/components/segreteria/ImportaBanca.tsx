@@ -6,7 +6,8 @@ import { ChiEPerCosa } from './ChiEPerCosa'
 import { abbinamentiImport, anteprimaBanca, contaRighe, copertiDaSalvare, datiImportBanca, filtraRighe, filtroIniziale, gruppiRighe, leggiBanca, PREFISSO_CHIAVE_BANCA, testoDaMostrare, MASSIMO_PER_IMPORTAZIONE, pianoDiAbbinamento, pianoDiAssegnazione, pianoDiClassificazione, collegatiDaAssegnare, ricevutaDellaPersona, sceltaDaFinestra, rigaComeMovimento, sceltaVuolePersona, scelteDaScrivere, segnaIncassiCoperti, ultimaImportazione, type AbbinamentoBanca, type FiltroRigheBanca, type GruppoRigheBanca, type LetturaBanca, type MovimentoBanca, type RigaAnteprima, type SceltaVoceBanca, type SegnoBanca } from '../../lib/importaBanca'
 import { VOCE_DA_CLASSIFICARE } from '../../lib/importaPrimaNota'
 import type { PersonaPerNome } from '../../lib/movimentiPersona'
-import { parolaDelMovimento, suggerisciMovimento, type SuggerimentoMovimento } from '../../lib/suggerimentoMovimento'
+import type { Abbinato } from '../../lib/abbinaMovimenti'
+import { cercaNelTesto, parolaDelMovimento, suggerisciMovimento, type SuggerimentoMovimento } from '../../lib/suggerimentoMovimento'
 import { useListino } from '../Costi'
 import { erroreSegreteria } from '../../lib/chatSegreteria'
 import { dataRicevuta, euro, type Ricevuta } from '../../lib/ricevute'
@@ -57,6 +58,8 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
   const [personaDi, setPersonaDi] = useState<string | null>(null)
   // Chi può aver pagato, dal solo nome nel testo: per parola cercata, perché più bonifici hanno lo stesso nome.
   const [pagatori, setPagatori] = useState<Record<string, PersonaPerNome[]>>({})
+  // I bonifici senza un nome da cercare («DA MATERA ELISA PER … DIEGO ORRU»): chi è nel testo, lo dice il database.
+  const [nelTesto, setNelTesto] = useState<Record<string, Abbinato[]>>({})
   const listino = useListino()
   const conto = casse.find((c) => c.nome === NOME_CASSA_CONTO)
   const ultima = useMemo(() => ultimaImportazione(tutte), [tutte])
@@ -77,7 +80,16 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
     }
     for (const m of prima?.entrano ?? []) {
       if (chiesti.current.size >= 30 || !conto) return
-      const parola = parolaDelMovimento(rigaComeMovimento(m, conto.id))
+      const riga = rigaComeMovimento(m, conto.id)
+      if (cercaNelTesto(riga) && !chiesti.current.has(`testo:${m.chiave}`)) {
+        chiesti.current.add(`testo:${m.chiave}`)
+        d.abbinaPagatoriTesto(m.descrizione)
+          .then((r) => setNelTesto((x) => ({ ...x, [m.chiave]: r })))
+          // Senza risposta la persona si cerca a mano.
+          .catch(() => undefined)
+        continue
+      }
+      const parola = parolaDelMovimento(riga)
       if (!parola || chiesti.current.has(`nome:${parola}`)) continue
       chiesti.current.add(`nome:${parola}`)
       d.cercaPagatori(parola)
@@ -94,10 +106,10 @@ export function ImportaBanca({ d, casse, voci, righe: tutte, fai, onRileggi, onV
     for (const m of a.entrano) {
       const riga = rigaComeMovimento(m, conto.id)
       const parola = parolaDelMovimento(riga)
-      fuori[m.chiave] = suggerisciMovimento(riga, righe, voci, parola ? pagatori[parola] ?? [] : [], listino?.listino)
+      fuori[m.chiave] = suggerisciMovimento(riga, righe, voci, parola ? pagatori[parola] ?? [] : [], listino?.listino, nelTesto[m.chiave] ?? [])
     }
     return fuori
-  }, [a, conto, righe, voci, pagatori, listino])
+  }, [a, conto, righe, voci, pagatori, nelTesto, listino])
   const scelteValide = scelteDaScrivere(a?.entrano ?? [], vociScelte, proposte)
   const sceltaDi = (chiave: string): SceltaVoceBanca | null => scelteValide[chiave] ?? null
   // Prima di scrivere il piano si fa sulle chiavi: dice quante righe avranno la voce scelta.

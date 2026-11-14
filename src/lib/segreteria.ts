@@ -875,6 +875,8 @@ export interface DatiSegreteria {
    * `corsi`: i corsi che costano quell'importo (`corsiConImporto`). Senza il file, ricade sul solo nome: lista vuota.
    */
   abbinaPagatori(movimentoId: string, corsi?: string[]): Promise<Abbinato[]>
+  /** Per «Importa banca», prima di scrivere: chi ha nome e cognome interi, o il genitore, nel testo del bonifico (`160-abbina-pagatori-testo.sql`). Senza il file: lista vuota. */
+  abbinaPagatoriTesto(testo: string): Promise<Abbinato[]>
   /** Per «Importa banca»: di questi movimenti già scritti, quali portano a persone col nome intero o col genitore nel testo. */
   abbinaTestoBanca(testo: string, movimentoIds: string[]): Promise<Array<{ movimentoId: string; come: 'nome intero' | 'genitore' }>>
   /** Le casse con il loro saldo iniziale (`59-contabilita.sql`). Solo per l'amministrazione, come tutto quello che segue. */

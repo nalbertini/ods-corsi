@@ -94,6 +94,21 @@ export function nomeOGenitore(p: Pick<PersonaDaAbbinare, 'nome' | 'cognome' | 'g
   return null
 }
 
+/**
+ * Per «Importa banca», prima che il bonifico sia scritto: chi ha nome e cognome interi nel testo, poi i figli del
+ * genitore, solo persone attive, al massimo otto. Si preseleziona solo se è uno e per nome intero. Come
+ * `abbina_pagatori_testo` (160-abbina-pagatori-testo.sql), che ha lo stesso limite di 400 caratteri.
+ */
+export function abbinaTesto(testo: string, persone: PersonaDaAbbinare[]): Abbinato[] {
+  if (testo.length > 400) return []
+  const trovati = persone.flatMap((p) => {
+    const come = p.attiva ? nomeOGenitore(p, testo) : null
+    return come ? [{ id: p.id, nome: p.nome, cognome: p.cognome, come, giaIscritto: false, sicuro: false }] : []
+  })
+  const ordinati = trovati.sort((a, b) => Number(b.come === 'nome intero') - Number(a.come === 'nome intero') || ordine(a, b)).slice(0, MASSIMO_ABBINATI)
+  return ordinati.length === 1 && ordinati[0].come === 'nome intero' ? [{ ...ordinati[0], sicuro: true }] : ordinati
+}
+
 export function abbinaMovimento(
   movimento: { testo: string; data: string; codiciFiscali: string[]; corsiImporto?: string[]; precedenti?: Array<{ testo: string; personaId: string }> },
   persone: PersonaDaAbbinare[],

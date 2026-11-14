@@ -47,7 +47,7 @@ import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
-import { abbinaMovimento, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
+import { abbinaMovimento, abbinaTesto, nomeOGenitore, type PersonaDaAbbinare } from './abbinaMovimenti'
 import { assegnato, conAssegnazioni, conGenitori, cosaNonVaAbbinamento, cosaNonVaAnnullaLotto, cosaNonVaCambioMovimento, cosaNonVaAssegnazione, cosaNonVaMovimentoDaAssegnare, cosaNonVaQuota, cosaNonVaRicevutaDaMovimento, daAssegnare, euroAssegna, mancaOrdine, movimentoDaClassificareAbbinabile, ORDINE_NON_DA_SALDARE, personeDelNucleo, SOLO_DAL_MOVIMENTO, voceDaRicevuta } from './assegna'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, giaNelPagamento, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
@@ -1773,6 +1773,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
       })
       const precedenti = contabilita().movimenti.flatMap((x) => (x.personaId && !x.annullatoIl && x.id !== m.id ? [{ testo: x.descrizione, personaId: x.personaId }] : []))
       return abbinaMovimento({ testo: m.descrizione, data: m.data, codiciFiscali: m.codiciLetti ?? [], corsiImporto: corsi, precedenti }, persone).candidati
+    },
+
+    async abbinaPagatoriTesto(testo) {
+      const persone = a().persone.map((p): PersonaDaAbbinare => {
+        const dati = anagraficaDi(p.id)?.dati
+        return { id: p.id, nome: p.nome, cognome: p.cognome, attiva: p.attiva, codiceFiscale: null, genitoreNome: dati?.genitoreNome ?? null, genitoreCognome: dati?.genitoreCognome ?? null, genitoreCodiceFiscale: null, iscrizioni: [] }
+      })
+      return abbinaTesto(testo, persone)
     },
 
     async abbinaTestoBanca(testo, movimentoIds) {

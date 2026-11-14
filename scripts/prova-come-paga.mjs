@@ -9,7 +9,7 @@
 // `src/lib/satispay.ts` (`Pago`, `modoPagamento`, `chiedeRicevuta`,
 // `cosaNonVaModo`) e in `src/lib/comePaga.ts` (i modi da offrire, le frasi
 // della pagina finale, i segni della segreteria). Il database è provato da
-// `supabase/prova/come-paga.sql` (`supabase/160-come-paga.sql`): stessi casi.
+// `supabase/prova/come-paga.sql` (`supabase/162-come-paga.sql`): stessi casi.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { readFileSync } from 'node:fs'
@@ -222,7 +222,7 @@ console.log('\n7. i dati: invia manda comePaga, la richiesta lo rilegge')
   ok('in prova: contanti si salva e si rilegge', (await aspetta(() => letta({ comePaga: 'contanti' }, 'Luca')))?.comePaga, 'contanti')
   ok('in prova: bonifico si salva e si rilegge', (await aspetta(() => letta({ comePaga: 'bonifico', codiceFiscale: 'RSSMRA85T10A56NH', natoIl: '1985-12-10' }, 'Mario')))?.comePaga, 'bonifico')
   ok('in prova: senza scelta legge null', (await aspetta(() => letta({ email: 'altro@esempio.it' }, 'Luca')))?.comePaga, null)
-  // Come 160: un valore sbagliato o un modo spento ferma la richiesta, non resta in silenzio.
+  // Come 162: un valore sbagliato o un modo spento ferma la richiesta, non resta in silenzio.
   ok('in prova: un valore sbagliato ferma la richiesta', await aspetta(() => letta({ comePaga: 'assegno', email: 'assegno@esempio.it' }, 'Luca')), 'ERRORE: Scegli come paghi: col bonifico o in contanti in segreteria.')
   const sp = rp.creaSegreteriaProva?.()
   await aspetta(async () => sp.salvaImpostazioni({ ...(await sp.impostazioni()), metodiSpenti: ['contanti'] }))
@@ -261,7 +261,7 @@ console.log('\n7. i dati: invia manda comePaga, la richiesta lo rilegge')
   ok('in prova: quelle senza ricevuta no', conR?.insieme?.size, 1)
   const rpc = (risposta) => rs.creaRichiesteSupabase({ rpc: async (nome) => (nome === 'richieste_con_ricevuta' ? risposta : { data: null, error: { code: 'X' } }) }).conRicevuta()
   ok('Supabase: legge richieste_con_ricevuta', [...((await aspetta(() => rpc({ data: ['r-1'], error: null }))) ?? [])], ['r-1'])
-  ok('Supabase: senza 160 la funzione non c’è, insieme vuoto e l’elenco si vede', (await aspetta(() => rpc({ data: null, error: { code: 'PGRST202', message: 'x' } })))?.size, 0)
+  ok('Supabase: senza 162 la funzione non c’è, insieme vuoto e l’elenco si vede', (await aspetta(() => rpc({ data: null, error: { code: 'PGRST202', message: 'x' } })))?.size, 0)
 }
 
 console.log('\n8. la pagina Iscrizioni')
