@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Scheda iscritto · dopo, telefono</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #14709f; } a:hover { color: #0d2a3d; }
+  </style>
+</helmet>
+<!-- PROPOSTA «Scheda iscritto» al telefono (390px), Bruno Sofia, dati finti. La scheda prende tutto lo schermo: in cima «‹ Iscritti»
+     al posto della ✕ in una fascia vuota; nome, corso e telefono; la scoperta; il tasto giallo a tutta larghezza; sollecito e Altro
+     in una riga. DA SISTEMARE va su due piani per riga, col tasto sotto. Le linguette scorrono. Prima della piega (844px) si vede
+     già cosa manca e cosa fare; oggi a quell'altezza si vedono i timbri e l'inizio dei contatti. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 390px; height: 1560px; overflow: hidden; background: #ffffff">
+  <dc-import name="BarraTelefonoNuova" hint-size="390px,56px"></dc-import>
+  <div style="display: flex; flex-direction: column; gap: 16px; padding: 8px 16px 24px">
+    <a href="#" style="display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-size: 15px; font-weight: 600; text-decoration: none"><dc-import name="Icona" nome="indietro" misura="18" colore="currentColor" hint-size="18px,18px"></dc-import>Iscritti</a>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 24px; font-weight: 800; letter-spacing: 0.02em; line-height: 1">BRUNO SOFIA</h2>
+      <span style="font-size: 14px; color: #46606f">Lotta 3 · in elenco dal 14 settembre 2026</span>
+      <a href="#" style="display: inline-flex; align-items: center; gap: 6px; min-height: 32px; font-size: 15px; font-weight: 600; text-decoration: none; font-variant-numeric: tabular-nums"><dc-import name="Icona" nome="telefono" misura="16" colore="currentColor" hint-size="16px,16px"></dc-import>340 201 7591</a>
+    </div>
+    <p style="margin: 0; font-size: 17px; font-weight: 500; line-height: 1.4">Mancano <strong style="color: #b81d1d; font-weight: 700; font-variant-numeric: tabular-nums">530,00 €</strong> e il certificato, <strong style="color: #b81d1d; font-weight: 700">scaduto il 09/09/2026</strong>.</p>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border: 0; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font: 600 16px Inter, sans-serif"><dc-import name="Icona" nome="euro" misura="18" colore="#0d2a3d" hint-size="18px,18px"></dc-import>Segna un pagamento</button>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px">
+        <button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 15px Inter, sans-serif"><dc-import name="Icona" nome="messaggio" misura="18" colore="#0d2a3d" hint-size="18px,18px"></dc-import>Sollecita su WhatsApp</button>
+        <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 15px Inter, sans-serif">Altro <svg width="12" height="12" viewBox="0 0 24 24" fill="#0d2a3d" aria-hidden="true"><path d="M5 8h14l-7 9z"></path></svg></button>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600">Da sistemare <span style="margin-left: 4px; padding: 0 7px; border-radius: 999px; background: #fbe9e9; color: #b81d1d; font-size: 12px; font-weight: 600">5</span></h3>
+        <span style="font-size: 14px; color: #46606f">Totale <strong style="color: #0d2a3d; font-variant-numeric: tabular-nums">530,00 €</strong></span>
+      </div>
+      <div style="display: flex; flex-direction: column; border: 1px solid #cfe6f4; border-radius: 6px; overflow: hidden">
+        <dc-import name="VoceDaSistemare" icona="certificato" cosa="Certificato medico" perche="Senza, non può allenarsi" parola="Scaduto il 09/09/2026" tono="rosso" importo="" tasto="Carica il certificato" telefono="{{ true }}" hint-size="100%,140px"></dc-import>
+        <dc-import name="VoceDaSistemare" icona="quota" cosa="Quota associativa 2026/27" perche="Nessun pagamento" parola="Da pagare" tono="rosso" importo="50,00 €" tasto="Segna pagata" filo="si" telefono="{{ true }}" hint-size="100%,140px"></dc-import>
+        <dc-import name="VoceDaSistemare" icona="corso" cosa="Lotta 3 · annuale" perche="Nessun pagamento" parola="Da pagare" tono="rosso" importo="480,00 €" tasto="Segna pagato" filo="si" telefono="{{ true }}" hint-size="100%,140px"></dc-import>
+        <dc-import name="VoceDaSistemare" icona="documento" cosa="Codice fiscale" perche="Serve per la ricevuta" parola="Manca" tono="giallo" importo="" tasto="Aggiungi" filo="si" telefono="{{ true }}" hint-size="100%,140px"></dc-import>
+        <dc-import name="VoceDaSistemare" icona="calendario" cosa="Data di nascita" perche="Serve anche per il certificato" parola="Manca" tono="giallo" importo="" tasto="Aggiungi" filo="si" telefono="{{ true }}" hint-size="100%,140px"></dc-import>
+      </div>
+    </div>
+    <dc-import name="LinguetteScheda" acceso="persona" segno-documenti="rosso" segno-quota="rosso" telefono="{{ true }}" hint-size="100%,52px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600">Contatti</h3>
+        <button type="button" style="min-height: 44px; padding: 0 14px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 14px Inter, sans-serif">Modifica</button>
+      </div>
+      <dl style="display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 10px 12px; margin: 0; font-size: 15px">
+        <dt style="color: #46606f; font-size: 14px">Email</dt><dd style="margin: 0; overflow-wrap: anywhere">sofia.bruno@esempio.it</dd>
+        <dt style="color: #46606f; font-size: 14px">Telefono</dt><dd style="margin: 0; font-variant-numeric: tabular-nums">340 201 7591</dd>
+      </dl>
+    </div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 844px; border-top: 2px dashed #14709f"></div>
+  <span style="position: absolute; top: 850px; right: 8px; padding: 2px 8px; border-radius: 999px; background: #14709f; color: #ffffff; font-size: 12px; font-weight: 600">piega a 844px</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1560}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
