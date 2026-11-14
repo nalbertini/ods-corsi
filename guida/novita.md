@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.255.3 — 14 novembre 2026
+
+### Risolto
+
+- Un genitore scritto con una parola sola non fa più comparire il figlio per ogni bonifico che la contiene
+
 ## 0.255.2 — 14 novembre 2026
 
 ### Risolto

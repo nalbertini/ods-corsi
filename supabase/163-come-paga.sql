@@ -1,5 +1,5 @@
 -- ---------------------------------------------------------------------------
--- 162 · Come paga chi si iscrive online
+-- 163 · Come paga chi si iscrive online
 --
 -- Nel modulo online chi si iscrive sceglie se pagare col bonifico (la ricevuta
 -- è facoltativa) o in contanti in segreteria, entro la prima lezione. La

@@ -1,4 +1,4 @@
--- «Come paga» nell'iscrizione online (162-come-paga.sql): chi si iscrive dice se
+-- «Come paga» nell'iscrizione online (163-come-paga.sql): chi si iscrive dice se
 -- paga col bonifico o in contanti, e la segreteria lo legge.
 --   • `richieste_iscrizione.come_paga`: solo 'bonifico', 'contanti' o null (null per
 --     Satispay, carta, il nucleo di un iscritto e le richieste vecchie);

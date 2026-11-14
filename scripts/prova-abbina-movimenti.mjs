@@ -81,6 +81,9 @@ ok('…nessuno preselezionato, perché sono due', abbina('Da VACCARO ANDREA TRN 
 ok('un solo figlio: preselezionato, col segno «genitore»', prova(() => { const r = a.abbinaMovimento({ testo: 'Da VACCARO ANDREA TRN 2', data: '2026-10-09', codiciFiscali: [] }, persone.filter((p) => p.id !== 'elia')); return [elenca(r), r.preselezionato] }), ['Sofia Bruno (genitore)', 'sofia'])
 ok('il cognome del genitore da solo (o il nome) non basta', elenca(abbina('Da VACCARO TRN 2')), 'nessuno')
 ok('un genitore senza cognome nella scheda non si abbina per il solo nome', elenca(abbina('Da Andrea TRN 2', [], '2026-10-09', [P('x', 'Ugo', 'Rizzo', { genitoreNome: 'Andrea' })])), 'nessuno')
+ok('un genitore con una parola sola («Gino» «-») non si abbina per quella', elenca(abbina('Da ROSSI GINO TRN 2', [], '2026-10-09', [P('x', 'Ugo', 'Mezzo', { genitoreNome: 'Gino', genitoreCognome: '-' })])), 'nessuno')
+ok('…né «-» «Rossi»: resta il solo cognome del genitore', elenca(abbina('Da ROSSI GINO TRN 2', [], '2026-10-09', [P('x', 'Ugo', 'Mezzo', { genitoreNome: '-', genitoreCognome: 'Rossi' })])), 'Ugo Mezzo (cognome)')
+ok('…e nomeOGenitore non lo dice', prova(() => [a.nomeOGenitore({ nome: 'Ugo', cognome: 'Mezzo', genitoreNome: 'Gino', genitoreCognome: '-' }, 'Da ROSSI GINO'), a.nomeOGenitore({ nome: 'Ugo', cognome: 'Mezzo', genitoreNome: '-', genitoreCognome: 'Rossi' }, 'Da ROSSI GINO')]), [null, null])
 ok('il nome pesa più del genitore, ma non lo nasconde: tutti, Marta per prima', elenca(abbina('Da VACCARO ANDREA per Gallo Marta TRN 2')), 'Marta Gallo (nome intero); Elia Bruno (genitore); Sofia Bruno (genitore)')
 ok('…e nessuno preselezionato: il primo non è staccato abbastanza dal secondo', abbina('Da VACCARO ANDREA per Gallo Marta TRN 2').preselezionato, null)
 
@@ -256,6 +259,10 @@ console.log('\nImporta banca, prima di scrivere: abbinaTesto (supabase/prova/abb
   ok('il genitore senza il nome del figlio: i figli attivi, da scegliere', t('DA VACCARO ANDREA PER QUOTA'), 'Elia Bruno genitore | Sofia Bruno genitore')
   ok('nome di una e genitore: prima il nome intero, nessuno preselezionato', t('DA VACCARO ANDREA PER SOFIA BRUNO'), 'Sofia Bruno nome intero | Elia Bruno genitore')
   ok('il cognome solo non basta', t('DA VACCARO PER QUOTA PRUDENTE'), 'nessuno')
+  ok('un genitore con una parola sola («Gino» «-», «-» «Rossi») non è nel testo di «Rossi Gino»',
+    prova(() => a.abbinaTesto('DA ROSSI GINO PER QUOTA', [P('x', 'Ugo', 'Mezzo', { genitoreNome: 'Gino', genitoreCognome: '-' }), P('y', 'Bimbo', 'Mezzano', { genitoreNome: '-', genitoreCognome: 'Rossi' })]).length), 0)
+  ok('un nome del genitore senza lettere («\'», «1») non è una parola',
+    prova(() => [a.abbinaTesto("DA ROSSI ' MARIO PER QUOTA", [P('x', 'Bimbo', 'Apos', { genitoreNome: "'", genitoreCognome: 'Rossi' })]).length, a.abbinaTesto('DA VERDI MARIO RATA 1 CORSO', [P('y', 'Bimba', 'Cifra', { genitoreNome: '1', genitoreCognome: 'Verdi' })]).length]), [0, 0])
   ok('un testo troppo lungo: nessuno', t('MANUEL PRUDENTE ' + 'x'.repeat(400)), 'nessuno')
   ok('l\'apostrofo che fa da accento nel nome della scheda', prova(() => a.abbinaTesto('DA MATERA ELISA PER DIEGO ORRU', [P('diego', 'Diego', "Orru'")]).map((x) => x.id)), ['diego'])
 }

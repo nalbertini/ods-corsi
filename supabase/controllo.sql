@@ -17,7 +17,7 @@
 
 -- `dentro` sono le funzioni con il loro corpo: una versione vecchia di un
 -- file lascia la funzione, ma con dentro quello che faceva prima.
--- `invia_iscrizione_0`, `_1`… sono le `invia_iscrizione` di prima, avvolte da 141 e 162: i controlli dei file di prima
+-- `invia_iscrizione_0`, `_1`… sono le `invia_iscrizione` di prima, avvolte da 141 e 163: i controlli dei file di prima
 -- le cercano lì, ma solo se la catena parte dalla `invia_iscrizione` vera (dopo un rilancio di 06 o 125 non è più così).
 -- La catena segue le chiamate (`invia_iscrizione_N(dati)`), non i nomi scritti nei commenti.
 with recursive catena(nome) as (
@@ -770,8 +770,13 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('161-genitore-senza-parole.sql', 'un genitore di sola punteggiatura non è nel testo di ogni bonifico',
     exists (select 1 from dentro where nome = 'abbina_pagatori_movimento' and corpo like '%cardinality(parole_pagatori(a.genitore_nome%')
     and exists (select 1 from dentro where nome = 'abbina_testo_banca' and corpo like '%cardinality(parole_pagatori(a.genitore_nome%')),
+  -- Rifà `abbina_pagatori_movimento` e `abbina_testo_banca` del 161, `abbina_pagatori_testo` del 160 e `abbina_ricevuta_movimento` del 153.
+  ('162-genitore-una-parola.sql', 'il genitore vale solo con almeno una lettera nel nome e una nel cognome',
+    (select count(*) from dentro where nome in ('abbina_pagatori_movimento', 'abbina_testo_banca', 'abbina_pagatori_testo')
+       and corpo like '%a.genitore_nome ~ ''[[:alpha:]]'' and a.genitore_cognome ~ ''[[:alpha:]]''%') = 3
+    and exists (select 1 from dentro where nome = 'abbina_ricevuta_movimento' and corpo like '%x.g ~ ''[[:alpha:]]''%')),
   -- Avvolge `invia_iscrizione` di 141, e con la catena vuole anche `certificato_dopo`: rilanciando 06 o 125, il controllo torna «manca».
-  ('162-come-paga.sql', 'nell''iscrizione online si sceglie bonifico o contanti, la ricevuta è facoltativa',
+  ('163-come-paga.sql', 'nell''iscrizione online si sceglie bonifico o contanti, la ricevuta è facoltativa',
     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'richieste_iscrizione' and column_name = 'come_paga')
     and exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'invia_iscrizione' and prosrc like '%come_paga%')
     and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%certificato_dopo%')

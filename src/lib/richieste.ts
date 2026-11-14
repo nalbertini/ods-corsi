@@ -73,7 +73,7 @@ export interface DatiRichiesta {
   certificatoDopo?: boolean
   /**
    * Come paga chi si iscrive dalla pagina pubblica, quando paga dopo: col bonifico o in contanti in
-   * segreteria (`162-come-paga.sql`). La segreteria lo legge e non lo cambia; Satispay, carta, nucleo e
+   * segreteria (`163-come-paga.sql`). La segreteria lo legge e non lo cambia; Satispay, carta, nucleo e
    * le richieste di prima non l'hanno (`null`).
    */
   comePaga?: ComePaga | null

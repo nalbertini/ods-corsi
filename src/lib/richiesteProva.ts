@@ -265,7 +265,7 @@ export function creaRichiesteProva(): DatiRichieste {
         if (!uguale(pagato.email, email) || !uguale(pagato.nome, dati.nome) || !uguale(pagato.cognome, dati.cognome))
           throw new Error(carta ? PAGAMENTO_CARTA_ALTRA_PERSONA : PAGAMENTO_ALTRA_PERSONA)
       }
-      // Come `invia_iscrizione` in 162-come-paga.sql: un valore sbagliato o un modo spento in IMPOSTAZIONI ferma la richiesta.
+      // Come `invia_iscrizione` in 163-come-paga.sql: un valore sbagliato o un modo spento in IMPOSTAZIONI ferma la richiesta.
       if (dati.comePaga != null) {
         if (dati.comePaga !== 'bonifico' && dati.comePaga !== 'contanti') throw new Error(COME_PAGA_SBAGLIATO)
         if (!acceso(archivio.dati.impostazioni?.metodiSpenti ?? [], dati.comePaga)) throw new Error(dati.comePaga === 'contanti' ? CONTANTI_SPENTI : BONIFICO_SPENTO)
