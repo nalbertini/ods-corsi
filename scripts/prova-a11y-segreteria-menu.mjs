@@ -16,12 +16,18 @@ const ok = (cosa, avuto, voluto) => {
   console.log(`${bene ? 'ok  ' : 'KO  '}${cosa}${bene ? '' : ` — avuto ${JSON.stringify(avuto)}, voluto ${JSON.stringify(voluto)}`}`)
 }
 
-for (const file of ['src/components/segreteria/Segreteria.tsx', 'src/components/segreteria/banco/BarraBanco.tsx']) {
+// Il menu usa sg-conta (cifre gialle), il Banco resta con sg-tag.
+for (const [file, classe] of [['src/components/segreteria/Segreteria.tsx', 'num sg-conta'], ['src/components/segreteria/banco/BarraBanco.tsx', 'num sg-tag']]) {
   const src = readFileSync(file, 'utf8')
-  const da = src.indexOf('<span className="num sg-tag"')
-  const segno = src.slice(da, da + 300)
+  const da = src.indexOf(`<span className="${classe}"`)
+  ok(`${file}: c'è un numero ${classe}`, da >= 0, true)
+  if (da < 0) continue
+  // Fino alla fine della parola letta: oltre, un aria-hidden del codice che segue farebbe passare la prova.
+  const vh = src.indexOf('className="vh"', da)
+  const segno = src.slice(da, vh < 0 ? da + 300 : src.indexOf('</span>', vh))
   ok(`${file}: il numero non ha un aria-label su uno span`, /aria-label=/.test(segno), false)
   ok(`${file}: la parola («nuove», «da vedere»…) è testo letto`, /className="vh"/.test(segno), true)
+  ok(`${file}: il numero è fuori dall'albero di accessibilità`, /aria-hidden/.test(segno), true)
 }
 
 // Le linguette delle tre barre piccole hanno la loro icona, decorativa (`voce` mette aria-hidden).

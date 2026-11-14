@@ -39,7 +39,7 @@ import { avvisoSaldato, doveSpostare, raccoltaAperta, tagliaDopo, type CosaManca
 import { datiVestiario, fotoAttive, FOTO_VESTIARIO } from '../../lib/vestiarioDati'
 import { NON_SI_APRE, riduciFoto, TROPPO_GRANDE } from '../../lib/foto'
 import { Numero } from './Presenze'
-import { chiedi, Campo, lasciare, Guaio, Riga as Titolo, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, Tasto } from './comune'
+import { chiedi, Campo, CopiaLink, lasciare, Guaio, Riga as Titolo, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, Tasto } from './comune'
 
 /**
  * VESTIARIO: gli ordini di judogi, costumini e felpe di una raccolta, il
@@ -202,6 +202,7 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
 
       <div className="stack" style={{ gap: 18 }}>
         <Testa titolo="VESTIARIO" sotto="Judogi, costumini e felpe. I genitori ordinano dal link, la segreteria segna chi ha pagato; al fornitore va solo il saldato.">
+          <CopiaLink link={linkOrdini()} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
           {vedi}
         </Testa>
 

@@ -131,6 +131,9 @@ for (const f of ['--bg', '--surface']) {
 }
 arriva('--su-colore su --giallo: 4,5:1', T['--su-colore'], T['--giallo'], 4.5)
 arriva('bianco su --menu: 4,5:1', '#ffffff', T['--menu'], 4.5)
+// I due gradini del menu: il testo bianco sulla voce aperta, l'azzurro del ruolo nel piede.
+arriva('bianco su #1d4560 (voce aperta): 4,5:1', '#ffffff', '#1d4560', 4.5)
+arriva('#cfe6f4 su #0a2232 (piede del menu): 4,5:1', '#cfe6f4', '#0a2232', 4.5)
 // Queste due coppie non arrivano: non si usano (il giallo e il verde del testo non vanno sul riquadro azzurro).
 nonArriva('--giallo-testo su --surface-2 è sotto 4,5: non va usato', T['--giallo-testo'], T['--surface-2'], 4.5)
 nonArriva('--verde-testo su --surface-2 è sotto 4,5: non va usato', T['--verde-testo'], T['--surface-2'], 4.5)
@@ -204,7 +207,9 @@ ok('.sg-dafare-n: 28px, peso 600', ha('.sg-dafare-n', /font-size:\s*28px/) && ha
 // Il giallo pieno è di sei cose sole (con il tasto verde del tablet, che nella sala è giallo): il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
 // il tasto principale di tutto il resto (.btn-primary: CHIUDI e simili), la voce di menu corrente e la voce corrente
 // della barra in basso dell'istruttore.
-const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .striscia-assenti .btn-go`, `${LOOK} .barra-chiudi .btn-rimedio`, `${LOOK} .barra-chiudi .btn-chiudi[data-pieno]`, `${LOOK} .btn-primary`, `${LOOK} .tb-btn-verde`]
+const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`, `${LOOK} .striscia-assenti .btn-go`, `${LOOK} .barra-chiudi .btn-rimedio`, `${LOOK} .barra-chiudi .btn-chiudi[data-pieno]`, `${LOOK} .btn-primary`, `${LOOK} .tb-btn-verde`,
+  // Nel menu il giallo è testo, non fondo: l'icona della voce aperta e i numeri delle code.
+  `${LOOK} .sg-voce[aria-current='page'] svg`, `${LOOK} .sg-conta`]
 ok('giallo pieno nel look: solo .sg-btn-pieno, .btn-primary, .tb-btn-verde, TUTTI PRESENTI (testa, striscia, rimedio), .barra-chiudi .btn-chiudi[data-pieno] e le due voci di menu correnti',
   delLook.filter((r) => r !== bloccoLook && GIALLO_PIENO.test(r.corpo) && !r.selettori.every((s) => PIENO_AMMESSO.includes(s))).map((r) => r.selettori.join(',')), [])
 ok('.sg-btn-pieno: fondo var(--giallo), testo var(--su-colore)', ha('.sg-btn-pieno', /background(-color)?:\s*var\(--giallo\)/) && ha('.sg-btn-pieno', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
@@ -247,16 +252,14 @@ arriva('bianco su --blu (chip e campi pieni): 4,5:1', '#ffffff', T['--blu'], 4.5
 arriva('#121212 su --verde (tasto «vai»): 4,5:1', '#121212', T['--verde'], 4.5)
 for (const x of ['--giallo-testo', '--rosso-testo', '--verde-testo', '--dim']) arriva(`${x} su --surface (tag bianco): 4,5:1`, T[x], T['--surface'], 4.5)
 
-const AMMESSI_LOOK = new Set([...AMMESSI, '#121212'])
+// #1d4560 e #0a2232: i due gradini del menu di segreteria (voce aperta e piede, DESIGN.md menu-aperta e menu-piede).
+const AMMESSI_LOOK = new Set([...AMMESSI, '#121212', '#1d4560', '#0a2232'])
 ok('colori nelle regole del look: solo i 12 del sito, #ffffff, #121212 e le tinte',
   delLook.flatMap((r) => (r.corpo.match(HEX) ?? []).map((h) => h.toLowerCase())).filter((h) => !AMMESSI_LOOK.has(h) && !Object.values(TINTE).includes(h)), [])
 
 
 // Il menu in cinque gruppi: il titolo come è scritto (iniziale maiuscola), senza maiuscolo né spaziatura, voci da 44px.
-ok('.sg-gruppo-titolo: niente maiuscolo per CSS', ha('.sg-gruppo-titolo', /text-transform:\s*uppercase/), false)
-ok('.sg-gruppo-titolo: senza spaziatura', ha('.sg-gruppo-titolo', /letter-spacing:\s*0\s*(;|$)/), true)
-ok('.sg-gruppo-titolo: Inter (var(--body))', ha('.sg-gruppo-titolo', /font-family:\s*var\(--body\)/), true)
-ok('.sg-gruppo-titolo: 13px, peso 600', ha('.sg-gruppo-titolo', /font-size:\s*13px/) && ha('.sg-gruppo-titolo', /font-weight:\s*600/), true)
+// I titoli dei gruppi non si disegnano più (menu compatto): lo controlla prova-menu.mjs.
 ok('.mia-barra: in fondo anche a pagina corta (margin-top: auto)', /\n\.mia-barra \{[^}]*margin-top: auto/.test(readFileSync('src/styles.css', 'utf8')), true)
 ok('.mio-nome-scelta (cambio persona): alto almeno 44px', /\n\.mio-nome-scelta \{[^}]*min-height: 44px/.test(readFileSync('src/styles.css', 'utf8')), true)
 ok('.sg-voce: altezza minima 44px', ha('.sg-voce', /min-height:\s*44px/), true)

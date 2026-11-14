@@ -58,7 +58,7 @@ In fondo ai dati, due righe che vede solo la segreteria:
 - **ARRIVATA DA** — da quale link è arrivata: **Home del sito**, il titolo
   della pagina del sito da cui è partita (la pagina di un corso, Orari…,
   anche se nel frattempo ha cambiato indirizzo), **Link della segreteria**
-  (quello di COPIA LINK ISCRIZIONI), **Area iscritti** (una persona aggiunta da
+  (quello di **Copia link iscrizioni**, in cima a questa pagina), **Area iscritti** (una persona aggiunta da
   un iscritto al suo nucleo), o la parola del link com'è scritta
   (`volantino-ottobre`, per un link fatto a mano: vedi [Sito](sito.md#un-link-per-i-social-o-un-volantino));
 - **CI HA CONOSCIUTO** — la risposta a «Come ci hai conosciuto?».

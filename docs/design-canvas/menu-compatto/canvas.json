@@ -1,0 +1,13 @@
+{
+ "pages": [{ "id": "page-1", "name": "Menu compatto · proposta" }, { "id": "page-2", "name": "Libreria" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "1 · Oggi, schermo da 900px: il menu si ferma a Compensi", "x": 0, "y": 160, "w": 240, "h": 900, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "2 · Proposta, schermo da 900px: tutto il lavoro di ogni giorno in vista, scorre solo «Il resto»", "x": 360, "y": 160, "w": 240, "h": 900, "page": "page-1" },
+  { "file": "PropostaAlta.dc.html", "title": "3 · Proposta, schermo da 1080px: niente da scorrere", "x": 720, "y": 160, "w": 240, "h": 1080, "page": "page-1" },
+  { "file": "Menu.dc.html", "title": "Menu · com'è nella libreria", "x": 0, "y": 0, "w": 240, "h": 900, "page": "page-2" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1100, "text": "Il menu della segreteria sta in uno schermo: Aiuto, Impostazioni ed Esci sempre in vista" },
+  { "id": "nota", "kind": "body", "x": 1080, "y": 160, "maxW": 440, "text": "Cosa cambia. 1) Niente titoli di gruppo in maiuscoletto né filetti: i cinque gruppi li separa uno spazio di 12px, e «Iscritti e soldi» e «I conti» diventano un gruppo solo (Iscritti, Contabilità, Importazioni). 2) La voce aperta non è più un blocco giallo pieno: un gradino di tono più chiaro, il nome in grassetto bianco e l'icona gialla; il giallo resta per quel che c'è da fare. 3) I numeri accanto alle voci sono cifre gialle, senza bollino bianco. 4) «Copia link iscrizioni» e «Copia link ordini» non sono pagine: vanno fra le azioni di RICHIESTE ONLINE e VESTIARIO. 5) Aiuto, Impostazioni, il nome ed Esci stanno fissi in fondo, su un fondo un gradino più scuro, senza riquadri. 6) «Gestione» sotto il marchio in parole normali. Le voci restano alte 44px (Regola del Dito di Fretta): su 900px scorre solo «Il resto». In prova, DATI DI PROVA e «Riparti dall'orario vero» si aggiungono al piede." }
+ ]
+}

@@ -53,12 +53,16 @@ Se non si riesce a leggere un elenco, il campo lo dice («Non riesco ad
 aggiornare l'elenco: questi sono i dati di prima»), non scrive «niente».
 Dentro ISCRITTI c'è sempre il campo per cercare e filtrare l'elenco.
 
-A sinistra il menu, a destra la voce scelta. Le voci sono in cinque gruppi (sei con l'amministrazione):
-**Ogni giorno** (Da fare, Richieste online, Presenze),
-**Iscritti e soldi** (Iscritti), **I conti** (Contabilità, solo per chi ha anche
-l'amministrazione), **Corsi e orari** (Settimana, Corsi, Listino), **Istruttori** (Presenze istruttori,
-Istruttori e accessi) e **Il resto** (Statistiche, Vestiario, Esercizi, Segnalazioni, Sito). Un filetto separa un gruppo dal successivo e ogni voce ha la sua icona, per ritrovarla a colpo d'occhio. Le
-**AIUTO** e **IMPOSTAZIONI** stanno in fondo al menu, nel riquadro col tuo nome. Ogni voce ha la
+A sinistra il menu, a destra la voce scelta. Sotto **ODS CORSI** il menu dice chi sei:
+**Gestione** (segreteria e amministrazione), **Segreteria** o **Amministrazione**.
+Le voci sono in cinque gruppi, separati da uno spazio, senza titolo: Da fare,
+Richieste online, Presenze; Iscritti (con l'amministrazione anche Contabilità e
+Importazioni); Settimana, Corsi, Listino; Presenze istruttori, Istruttori e accessi;
+Statistiche, Vestiario, Segnalazioni, Sito. Ogni voce ha la sua icona, per ritrovarla
+a colpo d'occhio; quella aperta è su fondo blu, con l'icona gialla. Il numero giallo
+accanto a una voce dice quante cose aspettano (richieste nuove, presenze segnalate,
+presenze istruttori da confermare, segnalazioni da rispondere, ordini da saldare).
+**Aiuto** e **Impostazioni** stanno nel piede del menu, sempre in vista. Ogni voce ha la
 sua guida:
 
 Anche le linguette di CONTABILITÀ, del corso (Dati, Iscritti) e di PRESENZE (Il mese, Segnalate) hanno la loro icona, la stessa del menu.
@@ -103,9 +107,11 @@ la nasconde da **IMPOSTAZIONI → QUESTO COMPUTER** ([guida](regole.md)): la sce
 | **Sito** | Le pagine del sito della palestra, il menu in alto e il footer: si scrive la bozza e si pubblica | [Apri](sito.md) |
 | **Verbali** | Le riunioni dei soci e del direttivo: bozza, firma con la scansione, rettifiche, ricerca per anno e argomento | [Apri](verbali.md) |
 
-In fondo al menu, nel riquadro col tuo nome, ci sono due voci: **AIUTO**, la
-guida della voce aperta, in un'altra scheda, e **IMPOSTAZIONI**. In prova, nel
-riquadro, il bollino **DATI DI PROVA**.
+Sul computer il piede del menu resta fermo, e scorrono solo le voci sopra. Nel
+piede: **Aiuto**, la guida della voce aperta, in un'altra scheda, e
+**Impostazioni**; sotto, chi è entrato ed **Esci**. In prova anche il bollino
+**DATI DI PROVA** e **Riparti dall'orario vero**, che toglie i cambi fatti in
+prova su quel computer.
 
 Per cercare un iscritto da qualunque pagina premi **⌘K** (su Windows **Ctrl+K**):
 la ricerca si apre in una finestra al centro; ogni risultato ha l'icona del suo
@@ -113,16 +119,12 @@ tipo (iscritto, richiesta, corso, istruttore). **Esc** la chiude. La segreteria 
 sempre l'aspetto chiaro del sito della palestra, blu e giallo: il tasto del tema
 qui non c'è più (nero, bianco e Tatami restano per istruttori, tablet e timer).
 
-In fondo al menu:
+I link da mandare su WhatsApp stanno nella pagina a cui servono:
 
-- **Copia link iscrizioni** — copia l'indirizzo della pagina pubblica, da
-  incollare su WhatsApp.
-- **Copia link ordini** — copia l'indirizzo della pagina degli ordini di
-  vestiario (vedi [Vestiario](vestiario.md)).
-- Chi è entrato ed **Esci**.
-
-In prova c'è anche **Riparti
-dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
+- **Copia link iscrizioni**, in cima a [Richieste online](richieste.md), copia
+  l'indirizzo della pagina pubblica per iscriversi.
+- **Copia link ordini**, in cima a [Vestiario](vestiario.md), copia l'indirizzo
+  della pagina degli ordini.
 
 Il tasto Indietro del browser riporta dov'eri: alla voce di prima, all'elenco
 degli iscritti dalla scheda di uno, all'elenco dei corsi da un corso, alla
@@ -187,11 +189,11 @@ filtro scelto si riconosce dal blu pieno, senza ✓.
    i file → **ACCOGLI**.
 3. **Quando un istruttore manca**: la lezione nella [Settimana](settimana.md) →
    **ISTRUTTORE** → il sostituto. Se la lezione salta: **ANNULLATA**.
-4. **Quando il menu dice PRESENZE ISTRUTTORI · 1**: un istruttore è entrato
+4. **Quando accanto a Presenze istruttori c'è un numero giallo**: un istruttore è entrato
    col PIN (o ha fatto l'appello) in una lezione non sua, o una lezione tenuta
    non ha l'istruttore segnato → [Presenze istruttori](presenze-istruttori.md)
    → **CONFERMA** o **RIFIUTA**, o si sceglie chi c'era.
-5. **Quando il menu dice PRESENZE SEGNALATE · 1**: un iscritto dice di essere
+5. **Quando accanto a Presenze c'è un numero giallo**: un iscritto dice di essere
    stato a una lezione e non risulta → [Presenze segnalate](presenze-segnalate.md)
    → **PRESENTE** o **RIFIUTA**.
 6. **A fine mese**: [Presenze](presenze.md) → chi si sta perdendo, e

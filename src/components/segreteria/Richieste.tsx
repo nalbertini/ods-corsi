@@ -17,7 +17,7 @@ import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { posizione, vicina } from '../../lib/schedaFinestra'
-import { chiedi, Campo, dataLunga, Guaio, lasciare, Proposta, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, Tasto, Segmenti } from './comune'
+import { chiedi, Campo, CopiaLink, dataLunga, Guaio, LINK_PUBBLICO, lasciare, Proposta, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, Tasto, Segmenti } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 const STATI: Record<StatoRichiesta, string> = { nuova: 'Nuova', accolta: 'Accolta', rifiutata: 'Rifiutata' }
@@ -184,7 +184,9 @@ export function Richieste({
           sotto={`${nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}${
             stampare === 1 ? ' Una con il documento da stampare e cancellare.' : stampare ? ` ${stampare} con il documento da stampare e cancellare.` : ''
           }`}
-        />
+        >
+          <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" />
+        </Testa>
         <div className="sg-elenco-barra sg-elenco-barra-due">
           <span className="sg-filtro-gruppo">
             <span className="sg-etichetta" aria-hidden="true">MOSTRA</span>

@@ -5,8 +5,8 @@ import { spunteDi, type AreaDiAccount } from './ruoli'
  * Il menu di chi lavora in segreteria o in amministrazione: un menu solo, con le
  * voci delle autorizzazioni che ha la persona. Segreteria e amministrazione non sono
  * due aree ma due autorizzazioni: chi le ha tutte e due vede tutte le voci, in un
- * posto solo. I CONTI raccoglie PAGAMENTI e LISTINO, e CONTABILITÀ per chi ha
- * l'amministrazione. Un gruppo senza voci non c'è.
+ * posto solo. Con l'amministrazione CONTABILITÀ e IMPORTAZIONI stanno accanto a
+ * ISCRITTI; chi ha solo l'amministrazione ha «I conti». Un gruppo senza voci non c'è.
  *
  * Quel che la persona legge davvero lo decide il database (`55-amministrazione.sql`):
  * qui si sceglie cosa mostrare, non cosa è permesso.
@@ -29,7 +29,7 @@ export interface GruppoMenu {
  * a quello che si tocca una volta a stagione. Ogni gruppo dice cosa ci si
  * trova: Corsi non è una «persona», e «La palestra» teneva insieme sei cose
  * diverse. Le presenze segnalate sono una scheda di PRESENZE, non una voce.
- * Il maiuscolo dei titoli lo fa lo stile (`.sg-gruppo-titolo`), non il testo.
+ * I titoli non si vedono (li separa uno spazio): li legge lo screen reader, come nome del gruppo.
  */
 export const GRUPPI_MENU: GruppoMenu[] = [
   {
@@ -77,13 +77,13 @@ export const GRUPPI_MENU: GruppoMenu[] = [
   },
 ]
 
-/** Il gruppo dei conti per chi ha l'amministrazione: la contabilità; chi ha solo i conti ha anche il listino. */
+/** Il gruppo di chi ha solo l'amministrazione: la contabilità, le importazioni e il listino. */
 export const TITOLO_CONTI = 'I conti'
 
 /**
- * Il menu: i cinque gruppi della segreteria per chi la ha; con l'amministrazione in più «I conti» con CONTABILITÀ
- * (dopo «Iscritti e soldi»). Chi ha solo l'amministrazione vede «I conti» e basta, con il listino.
- * Un gruppo senza voci non c'è.
+ * Il menu: i cinque gruppi della segreteria per chi la ha; con l'amministrazione CONTABILITÀ e IMPORTAZIONI
+ * si aggiungono a «Iscritti e soldi», senza un gruppo in più. Chi ha solo l'amministrazione vede «I conti»
+ * e basta, con il listino. Un gruppo senza voci non c'è.
  */
 export function menuDi(chi: Chi): GruppoMenu[] {
   const spunte = spunteDi(chi)
@@ -91,8 +91,7 @@ export function menuDi(chi: Chi): GruppoMenu[] {
   const amministrazione = spunte.includes('amministrazione')
   if (segreteria) {
     if (!amministrazione) return GRUPPI_MENU
-    const conti: GruppoMenu = { titolo: TITOLO_CONTI, voci: [['contabilita', 'Contabilità'], ['importazioni', 'Importazioni']] }
-    return GRUPPI_MENU.flatMap((g) => (g.titolo === 'Iscritti e soldi' ? [g, conti] : [g]))
+    return GRUPPI_MENU.map((g): GruppoMenu => (g.titolo === 'Iscritti e soldi' ? { ...g, voci: [...g.voci, ['contabilita', 'Contabilità'], ['importazioni', 'Importazioni']] } : g))
   }
   if (amministrazione)
     return [
@@ -108,11 +107,11 @@ export function menuDi(chi: Chi): GruppoMenu[] {
   return []
 }
 
-/** Il titolo sotto «ODS CORSI» e sul tasto che porta qui: con tutte e due le autorizzazioni è uno solo, non due sezioni. */
+/** Il titolo sotto «ODS CORSI», in parole normali: con tutte e due le autorizzazioni è uno solo, non due sezioni. */
 export function titoloDelMenu(chi: Chi): string {
   const spunte = spunteDi(chi)
-  if (spunte.includes('segreteria')) return spunte.includes('amministrazione') ? 'GESTIONE' : 'SEGRETERIA'
-  return spunte.includes('amministrazione') ? 'AMMINISTRAZIONE' : 'SEGRETERIA'
+  if (spunte.includes('segreteria')) return spunte.includes('amministrazione') ? 'Gestione' : 'Segreteria'
+  return spunte.includes('amministrazione') ? 'Amministrazione' : 'Segreteria'
 }
 
 
@@ -163,7 +162,8 @@ export const rimandaAmministrazione = (search: string, hash: string): string => 
 
 /** Come si chiama un posto per chi ci passa dal calendario o lo sceglie all'accesso: segreteria e amministrazione sono un posto solo. */
 export function nomeDellArea(area: AreaDiAccount, chi: Chi): string {
-  if (area === 'segreteria' || area === 'amministrazione') return titoloDelMenu(chi)
+  // Sui tasti dell'accesso e del calendario i posti sono in maiuscolo, come ISTRUTTORI e SALA.
+  if (area === 'segreteria' || area === 'amministrazione') return titoloDelMenu(chi).toUpperCase()
   return area === 'istruttori' ? 'ISTRUTTORI' : 'SALA'
 }
 

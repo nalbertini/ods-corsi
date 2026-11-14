@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>* { box-sizing: border-box; } body { margin: 0; background: #eef5fa; }</style>
+</helmet>
+<!-- OGGI · il menu di chi ha segreteria e conti su uno schermo da 900px: si ferma a COMPENSI. Istruttori e accessi, Il resto, i due Copia link, Aiuto, Impostazioni ed Esci stanno sotto la piega (il menu intero è alto circa 1.560px). -->
+<dc-import name="Menu" attiva="DA FARE" numeri="RICHIESTE ONLINE:3, PRESENZE:2, PRESENZE ISTRUTTORI:8, VESTIARIO:2" autorizzazioni="segreteria e amministrazione" compensi="true" verbali="true" altezza="900px" hint-size="240px,900px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":240,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

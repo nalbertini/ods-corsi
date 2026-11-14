@@ -21,7 +21,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Aspetto del modulo di iscrizione | genitore | modulo illeggibile o col colore del sito sbagliato | `prova:iscrizione-sito`, `prova:look`, `prova:campi`, `prova:iscrizione-pagina`, `prova:tema`, `prova:iscrizione-passi` | sì |
 | Modulo di iscrizione da tastiera e a 320px | genitore, segreteria | chi usa la tastiera non riesce a iscriversi | `prova:accessibilita-iscrizione` | sì |
 | Pagina pubblica `/iscrizioni/` | genitore, segreteria | richiesta mai inviata, prezzo diverso dal listino | `prova:iscrizione-pagina`, `prova:iscrizione-sito`, `prova:iscrizione-passi` | sì |
-| Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste`, `prova:come-paga`, `prova:segreteria`, `prova:coda`, `prova:certificati`, `prova:iscritti`, `prova:scheda-finestra`, `prova:iscrizione-pagina`, `iscrizioni.sql` | sì |
+| Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste`, `prova:come-paga`, `prova:segreteria`, `prova:coda`, `prova:certificati`, `prova:iscritti`, `prova:scheda-finestra`, `prova:iscrizione-pagina`, `prova:menu` (Copia link), `iscrizioni.sql` | sì |
 | Da dove arrivano le richieste (`?da=`) | genitore, segreteria | richiesta fermata da un'etichetta, conteggi sbagliati | `prova:richieste`, `prova:provenienza`, `prova:sito-genera`, `prova:sito-statistiche`, `provenienza-richieste.sql` | sì |
 | Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:istruttori-look`, `prova:appello-browser`, `prova:timer-istruttori`, `prova:coda`, `prova:appello-cerca`, `prova:appello-ordine`, `prova:tablet`, `prova:colleghi`, `prova:segreteria`, `prova:testi`, `prova:etichette-lezione`, `prova:appello-liste`, `prova:frequenza`, `prova:cosa-manca`, `prova:presenze-csv`, `prova:segreteria-ordine`, `prova:turni`, `doppio-turno.sql`, `presenze-istruttori.sql`, `istruttori-dalle-lezioni.sql`, `tablet-conto-prove.sql`, `tablet.sql`, `presenze-finestra.sql`, `istruttore-collega.sql`, `accessi-piu-stretti.sql`, `rls.sql` | sì |
 | Chiusura della palestra (lezioni annullate per un periodo, e tolte) | segreteria | presenze o appelli persi, lezione rimessa com'era sbagliata | `prova:chiusure`, `prova:cosa-manca`, `prova:segreteria`, `chiusure.sql` | sì, da fare |
@@ -51,7 +51,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Carta dal modulo di iscrizione (PayPal) | genitore, segreteria, amministrazione | soldi senza richiesta, pagato due volte, importo sbagliato, dati della carta | `prova:pagamento-carta`, `prova:paypal-cattura`, `prova:satispay`, `prova:csp`, `prova:contabilita`, `carta.sql`, `satispay.sql`, `contabilita.sql` | sì |
 | Satispay: chi ha pagato, l'incasso è il versamento | amministrazione, segreteria | incasso contato due volte, pagamento non riconosciuto che nessuno vede | `prova:satispay-scarico`, `prova:suggerimento-movimento`, `prova:importazioni`, `prova:importa-banca`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:pagamenti`, `prova:segreteria`, `satispay-scarico.sql`, `importazioni.sql`, `116-satispay-separato.sql`, `avvisi-scarico-satispay.sql`, `chiusura-cassa.sql`, `contabilita.sql`, `update-con-where.sql` | sì |
 | Tessere | segreteria | non tesserato che frequenta, tessera alla persona sbagliata | `prova:tessere`, `prova:cosa-manca`, `prova:indirizzi`, `prova:filtri-iscritti`, `prova:menu`, `tessere.sql` | sì |
-| Ordini di vestiario | genitore, segreteria | ordine perso, totale sbagliato | `prova:vestiario`, `vestiario.sql`, `rls.sql` | sì |
+| Ordini di vestiario | genitore, segreteria | ordine perso, totale sbagliato | `prova:vestiario`, `prova:menu` (Copia link), `vestiario.sql`, `rls.sql` | sì |
 | Gare: chi ci va, certificato | segreteria, istruttore, iscritto | certificato scaduto alla gara visto come valido; atleta sbagliato | `prova:gare`, `gare.sql` | sì, da fare |
 | Gare: quota a voci e incasso | segreteria, amministrazione | quota sbagliata, incasso due volte, pagato che cambia con le voci | `prova:gare`, `gare.sql` | sì, da fare |
 | Gare: chi le vede | segreteria, istruttore, iscritto, titolare del nucleo | gara o atleti visti da chi non deve, figlio di un altro nucleo | `prova:gare`, `gare.sql` | sì, da fare |
@@ -297,6 +297,8 @@ quando arriva la prova.
   1000px uno per riga): nessuna prova la guarda, il dato resta giusto anche se
   si spezza. Solo collaudo a mano sul telefono.
 - Filo fra le caselle di COSA MANCA (`styles.css`, look sito): nessuna prova lo tiene; se cade torna il filo tratteggiato di `segreteria.css`. Solo aspetto.
+- Menu sul telefono: la regola che nasconde Aiuto e Impostazioni (`segreteria.css`, sotto 768px) non è provata; se cade tornano nel menu. DA FARE in `prova-menu.mjs`.
+- I due Copia link (Richieste, Vestiario): nessuna prova tocca il link che copiano (`LINK_PUBBLICO`, `linkOrdini()`); si prova solo dove stanno. DA FARE.
 
 ## Come si aggiorna
 

@@ -16,7 +16,7 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<nav style="display: flex; flex-direction: column; gap: 28px; width: 240px; height: {{altezza}}; overflow: hidden; padding: 28px 12px 24px; background: {{c.menu}}; border-right: 2px solid {{c.lineSoft}}; color: {{c.text}}; font-family: {{fam}}">
+<nav style="display: flex; flex-direction: column; gap: 16px; width: 240px; height: {{altezza}}; overflow: hidden; padding: 20px 12px 0; background: {{c.menu}}; color: {{c.text}}; font-family: {{fam}}">
   <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
     <svg width="46" height="31.6" viewBox="0 0 160 110" role="img" aria-label="Officine Dello Sport">
       <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
@@ -36,7 +36,7 @@
     </svg>
     <span style="display: flex; flex-direction: column; gap: 2px">
       <span style="font-family: {{cond}}; font-style: {{inclina}}; font-size: 20px; font-weight: {{titoloPeso}}; letter-spacing: 0.04em; line-height: 1">ODS CORSI</span>
-      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.22em; color: {{c.dim}}">{{nomeArea}}</span>
+      <span style="font-size: 13px; font-weight: 500; color: {{c.dim}}">{{nomeArea}}</span>
     </span>
   </div>
 
@@ -46,81 +46,67 @@
   </div>
   </sc-if>
 
-  <div style="display: flex; flex-direction: column">
+  <div style="display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden">
     <sc-for list="{{voci}}" as="v" hint-placeholder-count="12">
-      <div style="display: flex; align-items: center; gap: {{v.vuoto}}; min-height: {{v.altezza}}; margin-top: {{v.sopra}}; margin-bottom: {{v.sotto}}; padding: {{v.padding}}; padding-top: {{v.paddingSopra}}; border-top: {{v.filetto}}; border-left: 4px solid {{v.barra}}; border-radius: {{v.raggio}}; background: {{v.sfondo}}; color: {{v.colore}}; font-family: {{v.fam}}; font-variant-numeric: tabular-nums; font-size: {{v.corpo}}; font-weight: {{v.peso}}; letter-spacing: {{v.spazio}}; text-align: left">
-        <sc-if value="{{v.haIcona}}" hint-placeholder-val="{{ false }}">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none" aria-hidden="true"><path d="{{v.icona}}"></path></svg>
-        </sc-if>
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 44px; margin-top: {{v.sopra}}; padding: 0 4px 0 12px; border-radius: 6px; background: {{v.sfondo}}; color: {{v.colore}}; font-size: 15px; font-weight: {{v.peso}}; text-align: left">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{v.iconaColore}}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none" aria-hidden="true"><path d="{{v.icona}}"></path></svg>
         <span style="flex: 1; min-width: 0">{{v.testo}}</span>
         <sc-if value="{{v.haNumero}}" hint-placeholder-val="{{ false }}">
-          <span style="margin-left: 8px; padding: {{c.numRiemp}}; border: {{c.numBordo}}; border-radius: {{raggio}}; background: {{c.numSfondo}}; color: {{c.numColore}}; font-size: 12px; font-weight: 700; letter-spacing: {{c.numSpazio}}; white-space: nowrap">{{v.numero}}</span>
+          <span style="flex: none; color: {{c.giallo}}; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums">{{v.numero}}</span>
         </sc-if>
       </div>
     </sc-for>
   </div>
 
-  <div style="flex-grow: 1"></div>
-
-  <sc-if value="{{conLink}}" hint-placeholder-val="{{ true }}">
-  <div style="display: flex; flex-direction: column; gap: 2px">
-    <sc-for list="{{link}}" as="v" hint-placeholder-count="2">
-    <div style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 8px 0 12px; border-left: 4px solid transparent; border-radius: {{raggio}}; color: {{c.sec}}; font-family: {{vocePrimo.fam}}; font-variant-numeric: tabular-nums; font-size: {{vocePrimo.corpo}}; font-weight: {{vocePrimo.peso}}; letter-spacing: {{vocePrimo.spazio}}">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none" aria-hidden="true"><path d="{{iconaLink}}"></path></svg>
-      <span>{{v}}</span>
+  <div style="display: flex; flex-direction: column; margin: 0 -12px; padding: 8px 0 10px; background: {{c.piede}}">
+    <div style="display: flex; flex-wrap: wrap">
+      <span style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; color: {{c.sec}}; font-size: 15px; font-weight: 500"><span style="display: flex; align-items: center; justify-content: center; width: 20px; font-weight: 700">?</span><span>Aiuto</span></span>
+      <span style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; color: {{impColore}}; font-size: 15px; font-weight: {{impPeso}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H4"></path><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg><span>Impostazioni</span></span>
     </div>
-    </sc-for>
-  </div>
-  </sc-if>
-
-  <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 2px solid {{c.lineSoft}}">
-    <div style="display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid {{c.lineSoft}}">
-    <span style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-size: 15px; font-weight: 500"><span style="display: flex; align-items: center; justify-content: center; width: 20px; font-weight: 700">?</span><span>Aiuto</span></span>
-    <span style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border: 2px solid {{impBordo}}; color: {{impColore}}; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9M14 17H4"></path><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg><span>Impostazioni</span></span>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 12px">
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+        <span style="font-size: 14px; font-weight: 600">{{nome}}</span>
+        <span style="font-size: 13px; color: {{c.dim}}">{{ruolo}} · accesso completo</span>
+      </span>
+      <sc-if value="{{conEsci}}" hint-placeholder-val="{{ true }}">
+        <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Esci</span>
+      </sc-if>
     </div>
-    <span style="font-size: 14px; font-weight: 600">{{nome}}</span>
-    <span style="font-size: 12px; color: {{c.dim}}">{{ruolo}} · accesso completo</span>
     <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
-      <span style="align-self: flex-start; padding: 2px 6px; background: #f4c31b; color: #121212; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; letter-spacing: 0.18em">DATI DI PROVA</span>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; padding: 0 12px">
+        <span style="padding: 2px 6px; background: #f4c31b; color: #121212; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; letter-spacing: 0.18em">DATI DI PROVA</span>
+        <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Riparti dall'orario vero</span>
+      </div>
     </sc-if>
-    <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
-      <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 13px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Riparti dall'orario vero</span>
-    </sc-if>
-    <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 13px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Esci</span>
   </div>
 </nav>
 </x-dc>
 <script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"impostazioni":{"editor":"boolean","default":false},"compensi":{"editor":"boolean","default":false},"importazioni":{"editor":"boolean","default":true},"iscrittiUnico":{"editor":"boolean","default":false},"gare":{"editor":"boolean","default":true},"verbali":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"area":{"editor":"enum","options":["segreteria","amministrazione"],"default":"segreteria"},"autorizzazioni":{"editor":"enum","options":["segreteria","segreteria e amministrazione","amministrazione"],"default":"segreteria"},"altezza":{"editor":"text","default":"900px"},"$preview":{"width":240,"height":900}}'>
-// Riproduzione 1:1 del menu di segreteria: src/components/segreteria/Segreteria.tsx (righe 402-494, GRUPPI alle
-// righe 50-86) con .sg-menu, .sg-voce, .sg-gruppo, .sg-chi e figli di src/styles.css (righe 1201-1270).
-// Misure del computer (da 1001px): colonna di 240px su `menu`, padding 28px 12px 24px, gap 28px, bordo destro
-// 2px `line-soft`; voci Saira 16px, 0.1em, alte 44px, barra sinistra di 4px (la voce corrente la porta in
-// `text` su fondo `surface`, MAI rossa: il rosso e' per cio' che manca). I numeri accanto alle voci sono
-// bollini gialli (.sg-tag data-tipo="presto"). Sul telefono il menu sta dietro una barra: non riprodotto.
-// attiva: il testo della voce corrente, come nel codice ("PRESENZE"). numeri: "VOCE:n" separati da virgola.
-// Aiuto e Impostazioni (col nome) stanno in cima al riquadro di chi e' dentro, non piu' come tre icone sotto il marchio. prova: nel riquadro compare DATI DI PROVA e in fondo "Riparti dall'orario vero".
-// Il logo e' Logo.tsx; nell'app l'ingranaggio bianco segue il colore del testo (qui bianco sull'inchiostro).
-// I tasti (?, impostazioni) mostrano l'icona che porta altrove.
-// impostazioni: il tasto coi cursori e' la pagina corrente (.icon-btn[aria-current='page']: bordo e icona in `text`).
-// altezza: l'altezza dello schermo. Il menu dell'app scorre (overflow-y: auto) e, su uno schermo da 900px, taglia
-// le ultime voci: qui il taglio e' lo stesso. Per vederlo intero basta "1140px".
-// SITO e' l'ultima voce di LA PALESTRA, dopo SEGNALAZIONI (Segreteria.tsx, GRUPPI). VESTIARIO sta in LA PALESTRA dopo LISTINO: il suo numero (in `numeri`, "VESTIARIO:6") sono gli ordini da saldare della raccolta di
-// adesso, giallo come gli altri. In fondo COPIA LINK ISCRIZIONI e COPIA LINK ORDINI (`CopiaLink`, righe 453-454).
-// PAGAMENTI sta in PERSONE, dopo ISCRITTI (Segreteria.tsx, GRUPPI).
-// ICONE: una per voce (`ICONE_MENU` di src/components/Icons.tsx, tratto 1,75, 20px, davanti al testo, gap 12px), qui riscritte come un tracciato solo; fra un gruppo
-// e il successivo un filetto di 1px `line-soft` con 14px sopra e sotto (`.sg-gruppo + .sg-gruppo`).
-// Look del sito (`:root[data-look='sito']`): menu inchiostro #0d2a3d con testo bianco (`sec` e `dim` #cfe6f4, filetti #46606f); Inter 15px 500, voci alte 44px
-// con raggio 6px, in parole con l'iniziale maiuscola (i titoli dei gruppi restano maiuscoli: lo fa lo stile, Inter 12px 600, 0.12em); la voce corrente
-// ha il giallo del marchio pieno col testo inchiostro e in grassetto; il numero e' un tag bianco col bordo giallo scuro #8f6a00; il campo di ricerca e'
-// bianco; titolo e tasto «?» in Big Shoulders 800.
-// Non riprodotti: l'elenco della ricerca aperto, ISTRUTTORI →, il passaggio del mouse.
-// iscrittiUnico (PROPOSTA, ../iscritti-unico/): in ISCRITTI E SOLDI resta la sola voce ISCRITTI (TESSERE sparisce, PAGAMENTI e' una scheda di CONTABILITÀ); il menu dell'amministrazione sola non cambia.
-// gare (COSTRUITO, src/lib/menuSegreteria.ts): la voce GARE in CORSI E ORARI dopo CORSI, con l'icona di una coppa; di default c'e' sempre.
-// compensi (PROPOSTA, ../compensi-tecnici/): la voce COMPENSI in ISTRUTTORI dopo PRESENZE ISTRUTTORI, con l'icona di un foglio. Nell'app non c'e' ancora.
-// importazioni (acceso di serie, com'e' l'app): la voce IMPORTAZIONI in I CONTI dopo CONTABILITÀ, con l'icona dello scarico; spento, il menu di prima.
+// Riproduzione 1:1 del menu di segreteria da 768px: src/components/segreteria/Segreteria.tsx (la nav #sg-menu, GRUPPI_MENU e
+// menuDi in src/lib/menuSegreteria.ts) con .sg-menu, .sg-scorre, .sg-voce, .sg-conta, .sg-piede e .sg-chi di src/styles.css
+// (look sito). Menu compatto (../menu-compatto/, COSTRUITO): colonna di 240px su `menu` #0d2a3d, padding 20px 12px 0, gap 16px,
+// senza bordo destro. Sotto ODS CORSI il titolo in parole, Inter 13px 500 `dim` (Segreteria, Gestione, Amministrazione).
+// Le voci: Inter 15px 500 `sec`, alte 44px, raggio 6px, icona 20px tratto 1,75 (`ICONE_MENU`, qui un tracciato solo).
+// Gruppi senza titolo ne' filetto: fra un gruppo e l'altro 12px (il titolo resta solo nell'aria-label del gruppo).
+// Voce aperta: fondo `menu-aperta` #1d4560, testo bianco 700, icona `giallo` (mai rossa: il rosso e' per cio' che manca).
+// I numeri: cifre `giallo` 14px 700 a destra, senza bollino (.sg-conta). numeri: "VOCE:n" separati da virgola.
+// attiva: il testo della voce corrente, come nel codice ("PRESENZE").
+// Scorrono solo le voci (.sg-scorre): marchio e ricerca restano in cima, il piede in fondo. altezza: l'altezza dello
+// schermo; a 900px le voci che non ci stanno si tagliano come nell'app prima di scorrere. Per vederle tutte, "1140px".
+// Il piede (.sg-piede): fondo `menu-piede` #0a2232 fino ai bordi, padding 8px 0 10px. Aiuto e Impostazioni in una riga
+// (a 200px, fra 768 e 1000, Impostazioni va sotto), poi nome 14px 600 col ruolo 13px `dim` ed Esci 14px sottolineato.
+// prova: nel piede DATI DI PROVA e "Riparti dall'orario vero", ed Esci non c'e' (in prova non si esce).
+// impostazioni: Impostazioni e' la pagina aperta (testo bianco 700).
+// Copia link iscrizioni e Copia link ordini non stanno nel menu: sono nella testa di RICHIESTE ONLINE e VESTIARIO (`CopiaLink`).
+// Il logo e' Logo.tsx. Sul telefono il menu sta dietro una barra: non riprodotto. Non riprodotti anche l'elenco della
+// ricerca aperto, ISTRUTTORI →, la versione in fondo al piede, il passaggio del mouse.
+// iscrittiUnico (PROPOSTA, ../iscritti-unico/): in ISCRITTI E SOLDI resta la sola voce ISCRITTI (TESSERE sparisce, PAGAMENTI e' una scheda di CONTABILITÀ).
+// gare (COSTRUITO): la voce GARE in CORSI E ORARI dopo CORSI, con l'icona di una coppa; di default c'e' sempre.
+// compensi (PROPOSTA, ../compensi-tecnici/): la voce COMPENSI in ISTRUTTORI dopo PRESENZE ISTRUTTORI.
+// importazioni (acceso di serie, com'e' l'app): IMPORTAZIONI dopo CONTABILITÀ, con l'icona dello scarico.
 const ICONE = {"verbali": "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M8 13h8 M8 17h5", "gare": "M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16 M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22 M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22 M18 2H6v7a6 6 0 0 0 12 0V2Z", "dafare": "M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11", "richieste": "M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2z M3,7 L12,13 L21,7", "presenze": "M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2 M10 3h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1z M9,14 L11,16 L15,12", "iscritti": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75", "tessere": "M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-16a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2z M6 11a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M5.5 16c.5-1.5 1.5-2 2.5-2s2 .5 2.5 2 M14 10h4M14 14h4", "pagamenti": "M18 7c-1.2-1.3-3-2-5-2a7 7 0 0 0 0 14c2 0 3.8-.7 5-2 M4 10h9M4 14h9", "settimana": "M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2z M16 2v4M8 2v4M3 10h18", "corsi": "M6 8a6 6 0 1 0 12 0a6 6 0 1 0 -12 0 M15.5 12.9 17 22l-5-3-5 3 1.5-9.1", "listino": "M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z M6 7a1 1 0 1 0 2 0a1 1 0 1 0 -2 0", "istruttori": "M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M12,6 L12,12 L16,14", "personale": "M3 15.5a4.5 4.5 0 1 0 9 0a4.5 4.5 0 1 0 -9 0 M10.7 12.3 21 2M16 7l3 3M14 9l2 2", "statistiche": "M12 20V10M18 20V4M6 20v-4", "vestiario": "M20.4 3.5 16 2a4 4 0 0 1-8 0L3.6 3.5a2 2 0 0 0-1.3 2.2l.6 3.5a1 1 0 0 0 1 .8H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.2a1 1 0 0 0 1-.8l.6-3.5a2 2 0 0 0-1.4-2.2z", "segnalazioni": "M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z M4 22v-7", "sito": "M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M2 12h20 M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z", "contabilita": "M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3", "areaIstruttori": "M8 8a4 4 0 1 0 8 0a4 4 0 1 0 -8 0 M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1", "compensi": "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8", "importazioni": "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3", "link": "M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7 M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"};
 const T = {
-  sito: { surface: '#ffffff', menu: '#0d2a3d', line: '#46606f', lineSoft: '#46606f', text: '#ffffff', sec: '#cfe6f4', dim: '#cfe6f4', tasto: '#cfe6f4', giallo: '#f4c31b', ink: '#0d2a3d', gialloTesto: '#8f6a00', faint: '#46606f' },
+  sito: { surface: '#ffffff', menu: '#0d2a3d', aperta: '#1d4560', piede: '#0a2232', line: '#46606f', lineSoft: '#46606f', text: '#ffffff', sec: '#cfe6f4', dim: '#cfe6f4', tasto: '#cfe6f4', giallo: '#f4c31b', ink: '#0d2a3d', gialloTesto: '#8f6a00', faint: '#46606f' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
@@ -128,10 +114,10 @@ const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const IDENT = { 'VERBALI': 'verbali', 'GARE': 'gare', 'DA FARE': 'dafare', 'RICHIESTE ONLINE': 'richieste', 'PRESENZE': 'presenze', 'ISCRITTI': 'iscritti', 'TESSERE': 'tessere', 'PAGAMENTI': 'pagamenti', 'SETTIMANA': 'settimana', 'CORSI': 'corsi', 'LISTINO': 'listino', 'PRESENZE ISTRUTTORI': 'istruttori', 'ISTRUTTORI E ACCESSI': 'personale', 'STATISTICHE': 'statistiche', 'VESTIARIO': 'vestiario', 'SEGNALAZIONI': 'segnalazioni', 'SITO': 'sito', 'CONTABILITÀ': 'contabilita', 'COMPENSI': 'compensi', 'IMPORTAZIONI': 'importazioni' };
 const cap = (s) => s.charAt(0) + s.slice(1).toLowerCase();
 // Un solo menu: le voci sono quelle delle autorizzazioni della persona (`autorizzazioni`), non di due aree.
-// I cinque gruppi della segreteria (Segreteria.tsx, `GRUPPI_MENU` in menuSegreteria.ts); con l'amministrazione compare
-// in piu' I CONTI, con CONTABILITÀ, dopo ISCRITTI E SOLDI. Chi ha solo l'amministrazione vede I CONTI e basta, con
-// CONTABILITÀ, PAGAMENTI e LISTINO ridotti (nomi e importi, niente schede), senza ricerca di iscritti ne' link da copiare.
-// Un gruppo senza voci non c'e'. Titoli e voci qui sono in maiuscolo solo come chiavi: si mostrano come nell'app, con l'iniziale grande (`cap`).
+// I cinque gruppi della segreteria (`GRUPPI_MENU`); con l'amministrazione CONTABILITÀ (e IMPORTAZIONI) si aggiungono in
+// fondo a ISCRITTI E SOLDI, senza un gruppo in piu'. Chi ha solo l'amministrazione vede I CONTI e basta, con CONTABILITÀ,
+// PAGAMENTI e LISTINO, senza ricerca di iscritti. Un gruppo senza voci non c'e'. Le voci qui sono in maiuscolo solo
+// come chiavi: si mostrano come nell'app, con l'iniziale grande (`cap`).
 const DI_SEGRETERIA = [
   ['OGNI GIORNO', ['DA FARE', 'RICHIESTE ONLINE', 'PRESENZE']],
   ['ISCRITTI E SOLDI', ['ISCRITTI', 'TESSERE', 'PAGAMENTI']],
@@ -140,7 +126,7 @@ const DI_SEGRETERIA = [
   ['IL RESTO', ['STATISTICHE', 'VESTIARIO', 'SEGNALAZIONI', 'SITO']],
 ];
 const GRUPPI = DI_SEGRETERIA;
-const CON_AMMINISTRAZIONE = DI_SEGRETERIA.flatMap(([titolo, elenco]) => (titolo === 'ISCRITTI E SOLDI' ? [[titolo, elenco], ['I CONTI', ['CONTABILITÀ']]] : [[titolo, elenco]]));
+const CON_AMMINISTRAZIONE = DI_SEGRETERIA.map(([titolo, elenco]) => [titolo, titolo === 'ISCRITTI E SOLDI' ? [...elenco, 'CONTABILITÀ'] : elenco]);
 // Solo amministrazione (la vecchia area="amministrazione"): il menu ridotto ai conti.
 const GRUPPI_AMMINISTRAZIONE = [
   ['I CONTI', ['CONTABILITÀ', 'PAGAMENTI', 'LISTINO']],
@@ -150,7 +136,7 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c0 = T.sito;
-    const c = { ...c0, campo: '#ffffff', campoBordo: '#ffffff', campoTesto: c0.faint, numSfondo: '#ffffff', numColore: c0.ink, numBordo: '1.5px solid ' + c0.gialloTesto, numRiemp: '1px 6px', numSpazio: '0.02em' };
+    const c = { ...c0, campo: '#ffffff', campoBordo: '#ffffff', campoTesto: c0.faint };
     const numeri = {};
     for (const s of String(p.numeri ?? 'RICHIESTE ONLINE:3, PRESENZE:2').split(',')) {
       const i = s.lastIndexOf(':');
@@ -163,37 +149,30 @@ class Component extends DCLogic {
     const conVoce0 = (gruppi) => (unico ? gruppi.map(([t, e]) => [t, t === 'ISCRITTI E SOLDI' ? ['ISCRITTI'] : e]) : gruppi);
     const conGare = p.gare === undefined || truthy(p.gare);
     const conVerbali = truthy(p.verbali);
-    const conVoce = (gruppi00) => { const gruppi0 = conVoce0(gruppi00).map(([t, e]) => [t, conVerbali && t === 'IL RESTO' ? e.flatMap((v) => (v === 'SITO' ? [v, 'VERBALI'] : [v])) : e]); const gruppi = conGare ? gruppi0.map(([t, e]) => [t, t === 'CORSI E ORARI' ? e.flatMap((v) => (v === 'CORSI' ? ['CORSI', 'GARE'] : [v])) : e]) : gruppi0; const g2 = conCompensi ? gruppi.map(([t, e]) => [t, t === 'ISTRUTTORI' ? ['PRESENZE ISTRUTTORI', 'COMPENSI', 'ISTRUTTORI E ACCESSI'] : e]) : gruppi; return conImportazioni ? g2.map(([t, e]) => [t, t === 'I CONTI' ? e.flatMap((v) => (v === 'CONTABILITÀ' ? [v, 'IMPORTAZIONI'] : [v])) : e]) : g2; };
+    const conVoce = (gruppi00) => { const gruppi0 = conVoce0(gruppi00).map(([t, e]) => [t, conVerbali && t === 'IL RESTO' ? e.flatMap((v) => (v === 'SITO' ? [v, 'VERBALI'] : [v])) : e]); const gruppi = conGare ? gruppi0.map(([t, e]) => [t, t === 'CORSI E ORARI' ? e.flatMap((v) => (v === 'CORSI' ? ['CORSI', 'GARE'] : [v])) : e]) : gruppi0; const g2 = conCompensi ? gruppi.map(([t, e]) => [t, t === 'ISTRUTTORI' ? ['PRESENZE ISTRUTTORI', 'COMPENSI', 'ISTRUTTORI E ACCESSI'] : e]) : gruppi; return conImportazioni ? g2.map(([t, e]) => [t, e.flatMap((v) => (v === 'CONTABILITÀ' ? [v, 'IMPORTAZIONI'] : [v]))]) : g2; };
     const aut = p.autorizzazioni || (p.area === 'amministrazione' ? 'amministrazione' : 'segreteria');
     const amm = aut === 'amministrazione';
     conVoce(amm ? GRUPPI_AMMINISTRAZIONE : aut === 'segreteria e amministrazione' ? CON_AMMINISTRAZIONE : GRUPPI).forEach(([titolo, elenco], g) => {
-      // Il filetto fra i gruppi: 14px sopra, 14px dentro, 1px `line-soft`. Il titolo e' una riga, le voci sono tasti.
-      voci.push({
-        testo: cap(titolo), haNumero: false, numero: '', haIcona: false, icona: '', altezza: '0', padding: '0 12px 0 16px', barra: 'transparent', sfondo: 'transparent', colore: c.dim,
-        fam: INTER, peso: 600, corpo: '13px', spazio: '0', sopra: g === 0 ? '0' : '14px', sotto: '4px', vuoto: '0', raggio: '0',
-        filetto: g === 0 ? '0' : '1px solid ' + c.lineSoft, paddingSopra: g === 0 ? '0' : '14px',
-      });
+      // Niente titolo ne' filetto: il primo tasto di ogni gruppo dopo il primo sta 12px piu' giu'.
       elenco.forEach((testo, i) => {
         const corrente = testo === String(p.attiva ?? '').toUpperCase();
         voci.push({
-          testo: cap(testo), haNumero: !!numeri[testo], numero: numeri[testo] ?? '', haIcona: !!IDENT[testo], icona: ICONE[IDENT[testo]] ?? '',
-          altezza: '44px', padding: '0 4px 0 12px', paddingSopra: '0', filetto: '0', vuoto: '12px',
-          barra: corrente ? (c.giallo) : 'transparent', sfondo: corrente ? (c.giallo) : 'transparent', colore: corrente ? (c.ink) : c.sec,
-          fam: INTER, peso: (corrente ? 700 : 500), corpo: '15px', spazio: '0', raggio: '6px', sopra: i === 0 ? '0' : '2px', sotto: '0',
+          testo: cap(testo), haNumero: !!numeri[testo], numero: numeri[testo] ?? '', icona: ICONE[IDENT[testo]] ?? '',
+          sopra: i === 0 && g > 0 ? '12px' : '0',
+          sfondo: corrente ? c.aperta : 'transparent', colore: corrente ? c.text : c.sec, iconaColore: corrente ? c.giallo : c.sec,
+          peso: corrente ? 700 : 500,
         });
       });
     });
-    const vocePrimo = { fam: INTER, corpo: '15px', peso: 500, spazio: '0'};
     return {
-      c, voci, vocePrimo, fam: INTER, cond: BIG, inclina: 'normal', titoloPeso: 800,
-      raggio: '6px', iconaLink: ICONE.link,
-      link: ['Copia link iscrizioni', 'Copia link ordini'],
-      nomeArea: aut === 'segreteria e amministrazione' ? 'GESTIONE' : aut.toUpperCase(),
+      c, voci, fam: INTER, cond: BIG, inclina: 'normal', titoloPeso: 800,
+      raggio: '6px',
+      nomeArea: aut === 'segreteria e amministrazione' ? 'Gestione' : cap(aut),
       conRicerca: !amm,
-      conLink: !amm,
       prova: truthy(p.prova),
-      impBordo: truthy(p.impostazioni) ? c.text : c.line,
-      impColore: truthy(p.impostazioni) ? c.text : c.tasto,
+      conEsci: !truthy(p.prova),
+      impColore: truthy(p.impostazioni) ? c.text : c.sec,
+      impPeso: truthy(p.impostazioni) ? 700 : 500,
       nome: p.nome ?? 'Marco Rossi',
       ruolo: p.ruolo ?? 'Segreteria',
       altezza: p.altezza || '900px',

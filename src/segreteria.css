@@ -87,7 +87,6 @@
 .sg-cerca-voce { gap: 12px; }
 .sg-cerca-voce > .sg-cerca-testo { flex-grow: 1; }
 .sg-ricerca-finestra .sg-cerca-elenco { width: 536px; border: 0; box-shadow: none; }
-.sg-chi-voci { padding-bottom: 6px; border-bottom: 1px solid var(--line-soft); }
 .sg-voce-aiuto { display: inline-flex; align-items: center; justify-content: center; width: 20px; flex: none; font-weight: 700; }
 /* La ricerca con ⌘K: una finestra al centro, sopra tutto, sul fondo scurito. */
 .sg-ricerca-finestra { position: fixed; inset: 0; z-index: 40; display: flex; align-items: flex-start; justify-content: center; padding-top: 18vh; background: rgba(0, 0, 0, 0.6); }
@@ -109,9 +108,6 @@
 .sg-gruppo { display: flex; flex-direction: column; gap: 4px; }
 /* Le schede di PRESENZE: larghe quanto serve, non quanto la sezione. */
 .sg-schede { flex-basis: auto; align-self: flex-start; grid-auto-columns: minmax(min-content, 1fr); }
-/* Un filetto fra un gruppo e l'altro: il solo titolo non bastava a far vedere dove finisce una sezione e comincia la successiva. */
-.sg-gruppi { gap: 14px; }
-.sg-gruppo + .sg-gruppo { padding-top: 14px; border-top: 1px solid var(--line-soft); }
 /* Il testo prende lo spazio, il numero sta a destra: una voce lunga che va a capo non lo lascia storto. */
 .sg-voce-testo { flex: 1; min-width: 0; }
 /* Il valore si legge più grande e più scuro dell'etichetta, che resta piccola e spenta. */
@@ -1469,4 +1465,16 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* COSA MANCA fra 768 e 1119px: caselle sotto i 160px, il numero va sopra il titolo, se no con tre cifre il titolo esce. */
 @media (min-width: 768px) and (max-width: 1119px) {
   :root[data-look='sito'] .sg-mancano-casella { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+/* Il menu compatto da 768px in su: sta qui perché styles.css ha un tetto di byte (prova:css-ingresso). */
+/* Sul computer scorrono solo le voci: il marchio, la ricerca e il piede restano fermi. */
+@media (min-width: 768px) {
+  :root[data-look='sito'] #sg-menu { gap: 16px; padding-top: calc(var(--safe-t) + 20px); padding-bottom: 0; }
+  :root[data-look='sito'] .sg-scorre { flex: 1; min-height: 0; overflow-y: auto; }
+  /* Il piede: Aiuto, Impostazioni, chi è dentro ed Esci, un gradino più scuro del menu, fino ai
+     bordi (annulla il margine di #sg-menu). Solo qui: sul telefono Aiuto e Impostazioni stanno nella barra in alto. */
+  :root[data-look='sito'] .sg-piede { display: flex; flex-direction: column; margin: 0 -12px; padding: 8px 0 10px; background: var(--menu-piede); }
+  /* A 200px (fra 768 e 1000) Aiuto e Impostazioni non stanno in una riga: Impostazioni va sotto. */
+  :root[data-look='sito'] .sg-chi-voci { display: flex; flex-wrap: wrap; }
+  :root[data-look='sito'] .sg-piede-prova { flex-wrap: wrap; align-items: center; gap: 0 12px; padding: 0 12px; }
 }
