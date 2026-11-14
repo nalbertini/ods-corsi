@@ -7,7 +7,8 @@
 -- `abbina_ricevuta_movimento` (153) guardava solo che non fossero vuoti: con un genitore «-» «.» la causale nominava
 -- sempre la famiglia, e un bonifico Da classificare si abbinava alla ricevuta di chi la causale non nomina.
 -- Ora, in tutte e quattro, il nome e il cognome del genitore devono avere almeno una lettera ciascuno: una parola di
--- `parole_pagatori` (121) può essere anche solo «'» o cifre («1» «Verdi» usciva per ogni causale con «rata 1»). La stessa regola nell'app: `nomeOGenitore` e `abbinaMovimento` (src/lib/abbinaMovimenti.ts).
+-- `parole_pagatori` (121) può essere anche solo «'» o cifre («1» «Verdi» usciva per ogni causale con «rata 1»).
+-- La stessa regola nell'app: `nomeOGenitore` e `abbinaMovimento` (src/lib/abbinaMovimenti.ts).
 -- Il resto delle funzioni è quello di 161, 160 e 153.
 --
 -- Chi può: come prima. `abbina_pagatori_movimento`, `abbina_testo_banca` e `abbina_pagatori_testo` l'amministrazione
