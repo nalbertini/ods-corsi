@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.256.0 — 14 novembre 2026
+
+### Novità
+
+- Nell'iscrizione online scegli se pagare con il bonifico o in contanti in palestra, e la ricevuta del bonifico è facoltativa
+
 ## 0.255.3 — 14 novembre 2026
 
 ### Risolto
