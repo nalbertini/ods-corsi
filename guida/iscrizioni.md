@@ -244,9 +244,9 @@ Il modulo ha l'aspetto del sito della palestra: sfondo chiaro, blu e giallo.
 
 ## Il modulo a passi (solo in prova)
 
-È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa sette passi (**DATI**, **CORSO**, **FIRMA**, **DOCUMENTI**, **FAMIGLIA**, **PAGAMENTO**, **INVIO**); per un figlio sono otto (**BAMBINO** al posto di DATI, e in più **CHI FIRMA**). In cima i passi sono raggruppati in tre tappe, **CHI**, **IL CORSO** e **PAGA E MANDA**, ognuna con un segmento per passo (verde quelli fatti, scuro quello di adesso) e il nome sotto, con ✓ quando è finita; sotto le tappe c'è il nome del passo. Per un altro adulto della famiglia il primo passo si chiama **DATI DI** e il suo nome. Nel passo del corso, sopra i tasti, c'è sempre il **TOTALE** da pagare, che cambia a ogni scelta: con più persone è quello di tutti, e lo dice (**TOTALE FAMIGLIA**). A PAGAMENTO il conto è nel passo. Prima
+È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa sette passi (**DATI**, **CORSO**, **FIRMA**, **DOCUMENTI**, **FAMIGLIA**, **PAGAMENTO**, **INVIO**); per un figlio sono otto (**BAMBINO** al posto di DATI, e in più **CHI FIRMA**). In cima i passi sono raggruppati in tre tappe, **CHI**, **IL CORSO** e **PAGA E MANDA**, ognuna con un segmento per passo (verde quelli fatti, scuro quello di adesso) e il nome sotto, con ✓ quando è finita. Il nome del passo sta nella riga in alto, sotto RICHIESTA DI ISCRIZIONE; nei passi la testata del sito non c'è, così sul telefono resta più spazio per il modulo. Per un altro adulto della famiglia il primo passo si chiama **DATI DI** e il suo nome. Nel passo del corso, sopra i tasti, c'è sempre il **TOTALE** da pagare, che cambia a ogni scelta: con più persone è quello di tutti, e lo dice (**TOTALE FAMIGLIA**). A PAGAMENTO il conto è nel passo. Prima
 si sceglie **IO, SONO ADULTO** o **MIO FIGLIO O MIA FIGLIA**, poi si va avanti
-con **AVANTI**. Se tocchi AVANTI e manca qualcosa, in fondo allo schermo una riga dice quante cose mancano e **VAI A** la prima: un tocco e il cursore è già nel campo. La freccia accanto apre l'elenco di tutto quel che manca, e ogni voce porta al suo campo. L'ultimo passo
+con **AVANTI**. Se tocchi AVANTI e manca qualcosa, in fondo allo schermo una riga dice quante cose mancano e **VAI A** la prima: un tocco e il cursore è già nel campo. La freccia accanto apre l'elenco di tutto quel che manca, e ogni voce porta al suo campo. Prima di toccare AVANTI quella riga non c'è. Sotto i campi «Manca» compare in rosso solo sul primo da riempire e su quelli che hai già toccato, non su tutti insieme. Data e luogo di nascita li scrive il codice fiscale: finché il codice non è giusto non contano fra quel che manca, manca il codice (un adulto che non ha scritto niente vede MANCANO 8, non 10). L'ultimo passo
 è il riepilogo: da lì **MODIFICA** riporta al passo da cambiare, e **MANDA LA
 RICHIESTA** la manda.
 
@@ -320,7 +320,7 @@ CAP non è di Poste (che non lo pubblica): se un comune manca o è sbagliato, va
 corretto in `scripts/cap-torino.mjs`.
 
 Chi si aggiunge prende indirizzo e contatti già scritti, e ognuno sceglie i
-suoi corsi. Nei passi di ognuno (CHI e IL CORSO), sotto il nome del passo c'è **PER** coi nomi di
+suoi corsi. Nei passi di ognuno (CHI e IL CORSO), sotto le tappe c'è **PER** coi nomi di
 tutti, per passare dall'uno all'altro. FAMIGLIA, PAGAMENTO e INVIO invece sono
 uno solo per tutti, senza PER: per tornare ai dati di qualcuno si tocca
 **MODIFICA** accanto al suo nome in **NEL MODULO** (o nell'elenco di INVIO). Le

@@ -147,7 +147,8 @@ ok('nessun hash: la pagina, senza testata', V(true, ''), { vista: 'pagina', test
 ok('nessun hash, in prova: la pagina, senza testata', V(false, ''), { vista: 'pagina', testata: false })
 ok('#prezzi: la pagina dei prezzi, con la testata', V(true, '#prezzi'), { vista: 'prezzi', testata: true })
 ok('#vestiario: il vestiario, con la testata', V(true, '#vestiario'), { vista: 'vestiario', testata: true })
-ok('#nuova in prova: il flusso a passi, con la testata', V(false, '#nuova'), { vista: 'passi', testata: true })
+// Nei passi la testata del sito non c'è: sul telefono lo spazio va al modulo (passi compatti, approvato il 2026-11-13).
+ok('#nuova in prova: il flusso a passi, senza testata', V(false, '#nuova'), { vista: 'passi', testata: false })
 ok('#nuova col database vero: la pagina', V(true, '#nuova'), { vista: 'pagina', testata: false })
 ok('un hash sconosciuto: la pagina', V(true, '#altro'), { vista: 'pagina', testata: false })
 // COMPILA LA RICHIESTA della pagina dei prezzi apre il modulo sulla pagina, al posto di #prezzi nella cronologia:

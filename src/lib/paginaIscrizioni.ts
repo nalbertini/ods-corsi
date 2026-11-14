@@ -120,13 +120,14 @@ export type VistaIscrizioni = 'pagina' | 'prezzi' | 'vestiario' | 'passi'
 
 /**
  * Cosa mostra `iscrizioni/` dal cancelletto. La pagina ha già il marchio sopra
- * il titolo, quindi la testata dell'app la hanno solo le altre viste. Il
- * flusso a passi (`#nuova`) c'è solo in prova.
+ * il titolo, quindi la testata dell'app la hanno solo prezzi e vestiario. Il
+ * flusso a passi (`#nuova`) c'è solo in prova, e senza testata: sul telefono
+ * lo spazio va al modulo, la riga RICHIESTA DI ISCRIZIONE dice dove si è.
  */
 export function vistaIscrizioni(haUnServer: boolean, hash: string): { vista: VistaIscrizioni; testata: boolean } {
   if (hash === INDIRIZZO_PREZZI) return { vista: 'prezzi', testata: true }
   if (hash === INDIRIZZO_VESTIARIO) return { vista: 'vestiario', testata: true }
-  if (flussoNuovoAcceso(haUnServer, hash)) return { vista: 'passi', testata: true }
+  if (flussoNuovoAcceso(haUnServer, hash)) return { vista: 'passi', testata: false }
   return { vista: 'pagina', testata: false }
 }
 

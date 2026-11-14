@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { chiama, scrivi } from '../lib/sito'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, OrarioAperto, TipoFile } from '../lib/richieste'
-import { anniScritti, dataDaCf, datiRichieste, domandaCertificato, giorniDetti, mancaCertificato, promemoriaCertificato, testoCertificatoDopo, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
+import { anniScritti, dataDaCf, datiRichieste, domandaCertificato, giorniDetti, mancaCertificato, promemoriaCertificato, testoCertificatoDopo, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, pulisciCf } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO } from '../lib/iscrizione'
@@ -478,9 +478,11 @@ function Flusso({
   // Il bambino 0, per l'io: i suoi dati, la sua firma sono anche dell'io.
   const primo = P.nomeDellaPersona(tutte[0], 0)
 
-  const errori = problemi(r)
+  const errori = P.problemiDeiDati(r)
+  // «Manca» solo sul primo da fare (e su quel che si è già toccato): un muro di rosso non dice da dove cominciare.
+  const primoDaFare = P.primoDaCorreggere(v, passo)
   const nota = (k: CampoModulo): Nota | undefined => {
-    const testo = P.notaSottoIlCampo(errori[k], provato, visti.has(k))
+    const testo = P.notaSottoIlCampo(errori[k], provato, visti.has(k), k === primoDaFare)
     return testo ? { testo, guaio: true } : undefined
   }
   const segna = (k: CampoModulo) => {
@@ -513,7 +515,7 @@ function Flusso({
 
   const controllo = P.controlloScelta(v)
   const mancaOra = P.mancaNelPasso(v, passo)
-  const manca = provato ? (ultimo && famiglia ? P.mancantiFamiglia(tutte) : P.mancanti(v, passo)) : []
+  const manca = provato ? (ultimo && famiglia ? P.mancantiFamiglia(tutte) : P.mancaInBarra(v, passo, provato)) : []
 
   // Chi esce (o ricarica) con risposte già scritte lo sente dal browser. Solo dopo una richiesta arrivata non c'è più niente da perdere:
   // negli esiti con qualcosa da rimandare (secondaNo, file) la richiesta è ancora in memoria.
@@ -867,7 +869,8 @@ function Flusso({
 
   const cf = (chiave: 'codiceFiscale' | 'genitoreCodiceFiscale', etichetta: string, nascita: string) => {
     const a = nascita ? `${anniScritti(nascita)}: lo dice il codice fiscale` : undefined
-    const notaNascita = a ? { testo: a, guaio: false } : { testo: 'Compare dal codice fiscale', guaio: false }
+    // Senza data la dice il segnaposto, come per il luogo: una nota gialla in più non serve.
+    const notaNascita = a ? { testo: a, guaio: false } : undefined
     const valoreNascita = nascita ? nascita.split('-').reverse().join('/') : ''
     return (
       <>
@@ -886,11 +889,11 @@ function Flusso({
         {/* La voce DATA DI NASCITA della barra (chiave natoIl) porta qui: la data la dice il codice fiscale di chi si iscrive. */}
         {chiave === 'codiceFiscale' ? (
           <Campo id="n-natoIl" etichetta="DATA DI NASCITA" nota={notaNascita}>
-            <input id="n-natoIl" className="campo" readOnly value={valoreNascita} />
+            <input id="n-natoIl" className="campo" readOnly placeholder="Lo dice il codice fiscale" value={valoreNascita} />
           </Campo>
         ) : (
           <Campo id="n-nascita-genitoreCodiceFiscale" etichetta="DATA DI NASCITA" nota={notaNascita}>
-            <input id="n-nascita-genitoreCodiceFiscale" className="campo" readOnly value={valoreNascita} />
+            <input id="n-nascita-genitoreCodiceFiscale" className="campo" readOnly placeholder="Lo dice il codice fiscale" value={valoreNascita} />
           </Campo>
         )}
         {chiave === 'codiceFiscale' ? (
@@ -899,8 +902,8 @@ function Flusso({
               id="n-natoA"
               {...segna('natoA')}
               className="campo"
-              readOnly={!!(luoghi && luogoDaCf(luoghi, pulisciCf(r.codiceFiscale), r.natoIl))}
-              placeholder={luoghi ? 'Lo dice il codice fiscale' : undefined}
+              readOnly={P.luogoInSolaLettura(r, luoghi ?? undefined)}
+              placeholder={luoghi || !cfValido(pulisciCf(r.codiceFiscale)) ? 'Lo dice il codice fiscale' : undefined}
               value={r.natoA}
               onChange={metti('natoA')}
             />
@@ -1058,7 +1061,7 @@ function Flusso({
                 <Campo id="n-natoAGenitore" etichetta="DOVE SEI NATO">
                   <input id="n-natoAGenitore" className="campo" placeholder="Comune" value={v.natoAGenitore} onChange={(e) => setGrezzo((p) => ({ ...p, natoAGenitore: e.target.value }))} />
                 </Campo>
-                <Campo id="n-provincia" etichetta="PROVINCIA" nota={cfValido(pulisciCf(r.genitoreCodiceFiscale ?? '')) ? { testo: 'Non lo ricaviamo dal tuo codice fiscale: scrivilo tu.', guaio: false } : undefined}>
+                <Campo id="n-provincia" etichetta="PROVINCIA" nota={{ testo: 'Non lo ricaviamo dal tuo codice fiscale: scrivilo tu.', guaio: false }}>
                   <input id="n-provincia" className="campo campo-codice" autoCapitalize="characters" maxLength={2} placeholder="ES. TO" value={provinciaGenitore} onChange={(e) => setProvincia(e.target.value.toUpperCase())} />
                 </Campo>
               </>
@@ -1500,8 +1503,14 @@ function Flusso({
 
   return (
     <div className="modulo stack">
+      {/* Il nome del passo sta qui, sotto RICHIESTA DI ISCRIZIONE: una riga in meno in cima, più spazio al modulo sul telefono. */}
       <div className="pad passo-intesta">
-        <span className="passo-intesta-testo">RICHIESTA DI ISCRIZIONE</span>
+        <span className="passo-intesta-titoli">
+          <span className="passo-intesta-testo">RICHIESTA DI ISCRIZIONE</span>
+          <span className="passo-intesta-nome" aria-hidden>
+            {nomePasso}
+          </span>
+        </span>
         <span className="passo-intesta-prova">
           {d?.modo === 'prova' && P.riempibile(tipo) && (
             // Non è un `Tasto`: il tratteggiato giallo è del bollino PROVA, e c'è solo qui.
@@ -1517,7 +1526,7 @@ function Flusso({
           <Dettaglio tono="avviso">RIEMPI non si è caricato: ricarica la pagina.</Dettaglio>
         </div>
       )}
-      <Avanzamento rif={titoloRef} {...P.avanzamentoDelPasso(tutte, attivo, passo)} titolo={nomePasso} />
+      <Avanzamento rif={titoloRef} {...P.avanzamentoDelPasso(tutte, attivo, passo)} titolo={nomePasso} senzaNome />
       {vistaFamiglia.pastiglie && (
         <div className="pad passo-per">
           <span className="passo-per-etichetta">PER</span>
@@ -1563,7 +1572,7 @@ function Flusso({
         totale={P.totaleDellaFamiglia(tutte, attivo, passo, corsi ?? [], listino, chiaveGiorno(new Date()))}
         onVai={focus}
         // Il «tutto a posto» solo se davvero non manca niente: a passo vuoto, prima di provare, non c'è né elenco né ✓.
-        nota={mancaOra.length === 0 ? (ultimo ? undefined : tipo === 'famiglia' ? 'Nessuno da aggiungere? Vai avanti.' : 'Tutto a posto in questo passo.') : undefined}
+        nota={mancaOra.length === 0 ? (ultimo ? undefined : tipo === 'famiglia' ? 'Nessuno da aggiungere? Vai avanti.' : undefined) : undefined}
         avanti={inVolo ? 'MANDO…' : ultimo ? (famiglia ? 'MANDA LA RICHIESTA PER TUTTI' : 'MANDA LA RICHIESTA') : tipo === 'famiglia' ? P.avantiDellaFamiglia(tutte) : 'AVANTI'}
         tono={ultimo ? 'vai' : 'principale'}
         occupato={inVolo || (ultimo && !d)}

@@ -256,9 +256,10 @@ console.log('\n5. ogni AVANTI guarda solo il suo passo')
   ok('con la carta di Matteo avanza anche se manca quella di Paola', lista(() => m.mancantiFamiglia([adulto({}, { file: {} }), figlio()])).map((x) => x.nome), ["CARTA D'IDENTITÀ DI LUCA"])
   ok('figlio con il genitore col codice del bambino: ferma', nomi(figlio({ genitoreCodiceFiscale: CF_MATTEO }), 2), ['CODICE FISCALE DEL GENITORE'])
 
-  const sotto = (e, provato, visto) => m.notaSottoIlCampo(e, provato, visto)
+  const sotto = (e, provato, visto, primo = false) => m.notaSottoIlCampo(e, provato, visto, primo)
   ok('«Manca» prima di provare: niente', sotto('Manca', false, true), undefined)
-  ok('«Manca» dopo il tentativo: si scrive', sotto('Manca', true, false), 'Manca')
+  // Dopo AVANTI «Manca» si scrive sul primo che manca (4° argomento) e sui campi già visitati; gli altri: prova 49.
+  ok('«Manca» dopo il tentativo, sul primo che manca: si scrive', sotto('Manca', true, false, true), 'Manca')
   ok('«scritto male» appena si lascia il campo', sotto('Non torna', false, true), 'Non torna')
   ok('«scritto male» finché non si lascia il campo: niente', sotto('Non torna', false, false), undefined)
   ok('senza errore: niente', sotto(undefined, true, true), undefined)
@@ -879,8 +880,9 @@ console.log('\n16. l’ordine di «manca» è quello della pagina: il focus va a
     // primoDaCorreggere dà solo il primo: per l'ordine intero si toglie un campo alla volta dalla lista.
     return tutte.concat(m.mancaNelPasso(stato, passo))
   }
-  ok('adulto, passo 1: nome, cognome, codice fiscale, nascita, luogo, indirizzo, cap, comune, contatti', chiavi(vuoto('adulto'), 1), [
-    'NOME', 'COGNOME', 'CODICE FISCALE', 'DATA DI NASCITA', 'LUOGO DI NASCITA', 'INDIRIZZO', 'CAP', 'COMUNE', 'EMAIL', 'TELEFONO',
+  // Senza codice fiscale data e luogo non si contano: li scrive il codice (vedi la 49).
+  ok('adulto, passo 1: nome, cognome, codice fiscale, indirizzo, cap, comune, contatti', chiavi(vuoto('adulto'), 1), [
+    'NOME', 'COGNOME', 'CODICE FISCALE', 'INDIRIZZO', 'CAP', 'COMUNE', 'EMAIL', 'TELEFONO',
   ])
   ok('adulto, passo 1: il focus va al nome', m.primoDaCorreggere(vuoto('adulto'), 1), 'nome')
   ok('bambino, passo 2: il genitore e poi i contatti', chiavi(figlio({ genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '', email: '', telefono: '' }), 2), ['NOME DEL GENITORE', 'COGNOME DEL GENITORE', 'CODICE FISCALE DEL GENITORE', 'EMAIL', 'TELEFONO'])
@@ -896,7 +898,8 @@ console.log('\n16. l’ordine di «manca» è quello della pagina: il focus va a
   ok('adulto, passo 4: il focus va alla carta d’identità', m.primoDaCorreggere(vuoto('adulto'), 4), 'documento')
   ok('bambino, passo 4 (il modulo): dove è nato il genitore prima della firma', chiavi(figlio({}, { scelte: {}, tratti: 0, file: {}, privacy: false, natoAGenitore: '' }), 4), ['TESSERAMENTO', 'FOTO', 'FIRMA', 'INFORMATIVA PRIVACY'])
   ok('bambino, passo 5 (i documenti): la carta del genitore', chiavi(figlio({}, { file: {} }), 5), ['CARTA D\'IDENTITÀ'])
-  ok('bambino, passo 2: «dove sei nato» sta dopo il codice del genitore, prima dei contatti', chiavi(figlio({ genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '', email: '', telefono: '' }, { natoAGenitore: '' }), 2), ['NOME DEL GENITORE', 'COGNOME DEL GENITORE', 'CODICE FISCALE DEL GENITORE', 'DOVE SEI NATO', 'EMAIL', 'TELEFONO'])
+  // «Dove sei nato» si chiede solo col codice del genitore valido (vedi la 49): qui il codice c'è.
+  ok('bambino, passo 2: «dove sei nato» sta dopo i dati del genitore, prima dei contatti', chiavi(figlio({ genitoreNome: '', genitoreCognome: '', email: '', telefono: '' }, { natoAGenitore: '' }), 2), ['NOME DEL GENITORE', 'COGNOME DEL GENITORE', 'DOVE SEI NATO', 'EMAIL', 'TELEFONO'])
   ok('bambino, l’ultimo passo (8): «dove sei nato» una volta sola', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 8), ['DOVE SEI NATO'])
   ok('l’io, passo 3 (il modulo): solo tesseramento e foto, la firma e l’ok sono del bambino', chiavi(io({}, { scelte: {} }), 3), ['TESSERAMENTO', 'FOTO'])
 }
@@ -934,7 +937,8 @@ console.log('\n16b. le parole per il genitore, nel flusso del figlio')
   ok('luogo del genitore: il codice lo dice, non si chiede', m.luogoGenitoreDaChiedere(figlio(), luoghi), false)
   ok('luogo del genitore: codice di un luogo che non c’è in elenco, si chiede', m.luogoGenitoreDaChiedere(figlio(), { Z999: [['ROMA', 'RM']] }), true)
   ok('luogo del genitore: elenco assente, si chiede', m.luogoGenitoreDaChiedere(figlio(), undefined), true)
-  ok('luogo del genitore: codice non scritto ancora, si chiede', m.luogoGenitoreDaChiedere(figlio({ genitoreCodiceFiscale: '' }), luoghi), true)
+  // Prima il codice non scritto faceva comparire «dove sei nato»: ora finché il codice non è valido il luogo non conta (sezione 49).
+  ok('luogo del genitore: codice non scritto ancora, non si chiede', m.luogoGenitoreDaChiedere(figlio({ genitoreCodiceFiscale: '' }), luoghi), false)
   ok('luogo del genitore: l’adulto non lo chiede mai', m.luogoGenitoreDaChiedere(adulto(), undefined), false)
 }
 
@@ -988,7 +992,8 @@ console.log('\n18. la barra di quel che manca: una riga, e ogni voce è un tasto
   ok('mancanti: la prima chiave è quella del focus', voci(vuoto('adulto'), 1)[0]?.chiave, m.primoDaCorreggere(vuoto('adulto'), 1))
   ok('mancanti: a posto, nessuna voce', voci(adulto(), 1), [])
   ok('mancanti: ogni voce ha nome e chiave', voci(vuoto('adulto'), 1).length > 0 && voci(vuoto('adulto'), 1).every((v) => v.nome && v.chiave), true)
-  ok('mancanti: la data di nascita ha la sua chiave', voci(vuoto('adulto'), 1).find((v) => v.nome === 'DATA DI NASCITA')?.chiave, 'natoIl')
+  // La data col codice valido si ricava e non manca mai (vedi la 49): la chiave si prova sul luogo.
+  ok('mancanti: il luogo di nascita ha la sua chiave', voci({ ...adulto(), risposte: { ...adulto().risposte, natoA: '' } }, 1).find((v) => v.nome === 'LUOGO DI NASCITA')?.chiave, 'natoA')
 
   // Bambino e io sono due persone: all'ultimo passo le loro voci restano distinte in `mancantiFamiglia` (sezione 35).
 
@@ -1967,7 +1972,8 @@ console.log('\n38. QUANTO PAGHI')
   ok('il passo del pagamento non ferma mai: figlio', m.mancaNelPasso(m.nuovoStato('figlio'), PAGA.figlio), [])
   ok('il passo del pagamento: la barra non ha voci', m.mancanti(m.nuovoStato('adulto'), PAGA.adulto), [])
   // Un figlio vuoto non ha ancora la data: l'età non c'è e la carta (dai 6 anni) non si conta, quindi una cosa in meno di prima.
-  ok('quanto manca: 17 cose a un adulto vuoto, 17 a un figlio vuoto (senza data la carta non si conta), 0 a chi ha fatto tutto', [m.quantoManca(m.nuovoStato('adulto')), m.quantoManca(m.nuovoStato('figlio')), m.quantoManca(adulto())], [17, 17, 0])
+  // Senza codici fiscali data, luogo e «dove sei nato» non si contano (vedi la 49): 2 in meno all'adulto, 3 al figlio.
+  ok('quanto manca: 15 cose a un adulto vuoto, 14 a un figlio vuoto (senza data la carta non si conta), 0 a chi ha fatto tutto', [m.quantoManca(m.nuovoStato('adulto')), m.quantoManca(m.nuovoStato('figlio')), m.quantoManca(adulto())], [15, 14, 0])
   ok('l’ultimo passo è il riepilogo, dopo QUANTO PAGHI', [m.passiDi('adulto').at(-2), m.passiDi('adulto').at(-1)], ['PAGAMENTO', 'INVIO'])
   ok('la riga della ricevuta nel riepilogo porta a QUANTO PAGHI, caricata o no', [adulto(), adulto({}, { file: { documento: F('d.jpg'), ricevuta: F('r.jpg') } })].map((s) => m.righeRiepilogo(s, corsi).find((r) => r.cosa === 'ricevuta')?.passo), ['pagamento', 'pagamento'])
   ok('la carta e la firma del riepilogo restano ai documenti e al modulo', [m.passoDelRiepilogo('carta'), m.passoDelRiepilogo('firma')], ['documenti', 'modulo'])
@@ -3183,6 +3189,90 @@ console.log('\n48. IL CERTIFICATO PORTATO DOPO')
   ok('«Lo carico ora» col file: va', m.mancaNelPasso(adulto({}, { chiedeCertificato: true, certificato: 'ora', file: { documento: F('documento.jpg'), certificato: F('cert.pdf') } }), doc).includes('CERTIFICATO MEDICO'), false)
   ok('«Non ce l’ho ancora»: va, e la richiesta lo dice', [m.mancaNelPasso(adulto({}, { chiedeCertificato: true, certificato: 'dopo' }), doc).includes('CERTIFICATO MEDICO'), m.risposteDaiPassi(adulto({}, { chiedeCertificato: true, certificato: 'dopo' })).certificatoDopo], [false, true])
   ok('«Lo carico ora» non scrive certificatoDopo', m.risposteDaiPassi(adulto({}, { chiedeCertificato: true, certificato: 'ora' })).certificatoDopo, undefined)
+}
+
+// ---------------------------------------------------------------------------
+// Dopo AVANTI l'errore fa meno rumore e conta giusto: data e luogo di nascita li
+// dice il codice fiscale, quindi finché non è valido non sono «mancanti».
+// ---------------------------------------------------------------------------
+console.log('\n49. DOPO AVANTI: MENO RUMORE, CONTO GIUSTO')
+{
+  const DATI_ADULTO = ['NOME', 'COGNOME', 'CODICE FISCALE', 'INDIRIZZO', 'CAP', 'COMUNE', 'EMAIL', 'TELEFONO']
+  const vuotoA = m.nuovoStato('adulto')
+  const vuotoF = m.nuovoStato('figlio')
+  const sotto = (e, provato, visto, primo) => m.notaSottoIlCampo(e, provato, visto, primo)
+
+  // 1. Senza codice fiscale valido, data e luogo non entrano in elenco, conto ed errore.
+  ok('adulto, DATI vuoto: la data di nascita non manca', m.mancaNelPasso(vuotoA, 1).includes('DATA DI NASCITA'), false)
+  ok('adulto, DATI vuoto: il luogo di nascita non manca', m.mancaNelPasso(vuotoA, 1).includes('LUOGO DI NASCITA'), false)
+  ok('adulto, codice fiscale scritto a metà: data e luogo non mancano', m.mancaNelPasso(adulto({ codiceFiscale: 'RSSLCU96A01', natoIl: '', natoA: '' }), 1), ['CODICE FISCALE'])
+  ok('figlio, DATI vuoto: nome, cognome, codice, residenza (6)', m.mancaNelPasso(vuotoF, 1), ['NOME', 'COGNOME', 'CODICE FISCALE', 'INDIRIZZO', 'CAP', 'COMUNE'])
+  ok('figlio, col codice del bambino a metà: data e luogo non mancano', m.mancaNelPasso(figlio({ codiceFiscale: 'RSSLCU96', natoIl: '', natoA: '' }), 1), ['CODICE FISCALE'])
+  ok('figlio, CHI FIRMA vuoto (anche il codice del bambino): mancano solo i contatti', m.mancaNelPasso(vuotoF, 2), ['EMAIL', 'TELEFONO'])
+  ok('figlio maggiorenne di codice, codice del genitore vuoto: «dove sei nato» non manca', m.mancaNelPasso(figlio({ genitoreCodiceFiscale: '' }, { natoAGenitore: '' }), 2).includes('DOVE SEI NATO'), false)
+  ok('figlio, codice del genitore a metà: «dove sei nato» non manca', m.mancaNelPasso(figlio({ genitoreCodiceFiscale: 'RSSPLA80' }, { natoAGenitore: '' }), 2), ['CODICE FISCALE DEL GENITORE'])
+
+  // 2. Col codice valido data e luogo si ricavano; se il luogo non si ricava e resta vuoto, torna a mancare.
+  ok('codice valido, data vuota nello stato: si ricava, non manca', m.mancaNelPasso(adulto({ natoIl: '' }), 1), [])
+  ok('codice valido, luogo già ricavato: niente manca', m.mancaNelPasso(adulto({ natoIl: '', natoA: 'TORINO (TO)' }), 1), [])
+  ok('codice valido, luogo non ricavato e vuoto: manca il luogo', m.mancaNelPasso(adulto({ natoIl: '', natoA: '' }), 1), ['LUOGO DI NASCITA'])
+  ok('figlio, codice del genitore valido, luogo non ricavato: «dove sei nato» manca', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 2), ['DOVE SEI NATO'])
+  ok('figlio, codice del genitore valido, luogo ricavato: non manca', m.mancaNelPasso(figlio(), 2), [])
+
+  // 3. Il passo vuoto: 8 cose, non 10.
+  ok('adulto, DATI tutto vuoto: dopo AVANTI mancano 8 cose', m.avanti(vuotoA, 1), { passo: 1, manca: DATI_ADULTO })
+  ok('adulto, DATI tutto vuoto: sono 8', m.avanti(vuotoA, 1).manca.length, 8)
+
+  // 4. Il conto mostrato è la lunghezza dell'elenco.
+  const conto = (s, passo) => lista(() => m.mancaInBarra(s, passo, true)).length
+  ok('il conto della barra è la lunghezza dell’elenco (adulto, passo 1)', [conto(vuotoA, 1), m.mancanti(vuotoA, 1).length], [8, 8])
+  ok('il conto della barra è la lunghezza dell’elenco (figlio, passo 1)', [conto(vuotoF, 1), m.mancanti(vuotoF, 1).length], [6, 6])
+  ok('all’ultimo passo il conto della barra è la lunghezza dell’elenco (figlio)', [conto(vuotoF, 8), m.mancanti(vuotoF, 8).length], [m.mancanti(vuotoF, 8).length, m.mancanti(vuotoF, 8).length])
+  ok('all’ultimo passo non si contano data e luogo (adulto)', m.mancanti(vuotoA, 7).some((p) => p.chiave === 'natoIl' || p.chiave === 'natoA'), false)
+
+  // 5. «Manca» in rosso solo sul primo che manca e sui campi già visitati.
+  ok('«Manca» dopo AVANTI sul primo che manca: rosso', sotto('Manca', true, false, true), 'Manca')
+  ok('«Manca» dopo AVANTI su un campo non primo e non visitato: niente', sotto('Manca', true, false, false), undefined)
+  ok('«Manca» dopo AVANTI su un campo non primo ma già visitato: rosso', sotto('Manca', true, true, false), 'Manca')
+  ok('«Manca» prima di AVANTI, anche sul primo: niente', sotto('Manca', false, false, true), undefined)
+  ok('«Manca» prima di AVANTI, su un campo visitato: niente', sotto('Manca', false, true, false), undefined)
+  ok('«scritto male» dopo AVANTI resta su tutti, primo o no', sotto('Non torna', true, false, false), 'Non torna')
+  ok('il primo che manca nel DATI vuoto è il nome', m.primoDaCorreggere(vuotoA, 1), 'nome')
+
+  // 6. VAI A all'ultimo passo non punta a un campo ricavato dal codice.
+  const ricavati = ['natoIl', 'natoA', 'natoAGenitore']
+  const senzaCf = adulto({ codiceFiscale: '', natoIl: '', natoA: '' })
+  ok('adulto senza codice, ultimo passo: VAI A punta al codice fiscale', m.primoDaCorreggere(senzaCf, 7), 'codiceFiscale')
+  ok('adulto senza codice, ultimo passo: nessuna voce toccabile è ricavata', m.mancanti(senzaCf, 7).filter((p) => ricavati.includes(p.chiave)), [])
+  const figlioSenzaCf = figlio({ codiceFiscale: '', natoIl: '', natoA: '' })
+  ok('figlio senza codice, ultimo passo: VAI A punta al codice fiscale', m.primoDaCorreggere(figlioSenzaCf, 8), 'codiceFiscale')
+  const figlioSenzaCfGenitore = figlio({ genitoreCodiceFiscale: '' }, { natoAGenitore: '' })
+  ok('figlio senza codice del genitore, ultimo passo: VAI A punta al suo codice', m.primoDaCorreggere(figlioSenzaCfGenitore, 8), 'genitoreCodiceFiscale')
+  ok('figlio senza codice del genitore: nessuna voce toccabile è «dove sei nato»', m.mancanti(figlioSenzaCfGenitore, 8).filter((p) => ricavati.includes(p.chiave)), [])
+  ok('famiglia: VAI A non punta a un campo ricavato', lista(() => m.mancantiFamiglia([senzaCf, figlioSenzaCfGenitore])).filter((p) => ricavati.some((k) => p.chiave.endsWith(':' + k))), [])
+
+  // 7. La riga del mancante nella barra: solo dopo un AVANTI non riuscito.
+  ok('a riposo (nessun AVANTI) la barra non mostra il mancante', lista(() => m.mancaInBarra(vuotoA, 1, false)), [])
+  ok('dopo un AVANTI non riuscito la barra mostra gli 8 mancanti', lista(() => m.mancaInBarra(vuotoA, 1, true)).map((p) => p.nome), DATI_ADULTO)
+  ok('dopo AVANTI, col passo a posto, la barra è vuota', lista(() => m.mancaInBarra(adulto(), 1, true)), [])
+  ok('la prima voce della barra è il primo da correggere', lista(() => m.mancaInBarra(vuotoA, 1, true))[0]?.chiave, m.primoDaCorreggere(vuotoA, 1))
+
+  // 8. Sotto i campi, gli stessi errori della barra: senza codice valido niente «Manca» su data e luogo, neanche dopo averli toccati.
+  const errDati = (cambi) => m.problemiDeiDati(adulto(cambi).risposte)
+  ok('codice vuoto: sotto il luogo niente «Manca»', errDati({ codiceFiscale: '', natoIl: '', natoA: '' }).natoA, undefined)
+  ok('codice vuoto: sotto la data niente «Manca»', errDati({ codiceFiscale: '', natoIl: '', natoA: '' }).natoIl, undefined)
+  ok('codice a metà: manca il codice, non il luogo', [errDati({ codiceFiscale: 'RSSLCU96A01', natoA: '' }).codiceFiscale !== undefined, errDati({ codiceFiscale: 'RSSLCU96A01', natoA: '' }).natoA], [true, undefined])
+  ok('codice valido, luogo vuoto: sotto il luogo «Manca»', errDati({ natoA: '' }).natoA, 'Manca')
+
+  // 9. Il luogo si scrive a mano solo col codice valido e un luogo che l'elenco non sa dire.
+  const torino = { L219: [['TORINO', 'TO']] }
+  const solaLettura = (cambi, l) => m.luogoInSolaLettura(adulto(cambi).risposte, l)
+  ok('luogo: codice vuoto, in sola lettura', solaLettura({ codiceFiscale: '' }, torino), true)
+  ok('luogo: codice a metà, in sola lettura', solaLettura({ codiceFiscale: 'RSSLCU96A01' }, undefined), true)
+  ok('luogo: codice valido e l’elenco lo dice, in sola lettura', solaLettura({}, torino), true)
+  ok('luogo: codice valido, elenco assente, si scrive', solaLettura({}, undefined), false)
+  ok('luogo: codice valido, luogo che l’elenco non ha, si scrive', solaLettura({}, { Z999: [['ROMA', 'RM']] }), false)
+  ok('luogo del genitore: codice a metà, non si chiede', m.luogoGenitoreDaChiedere(figlio({ genitoreCodiceFiscale: 'RSSPLA80' }), undefined), false)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

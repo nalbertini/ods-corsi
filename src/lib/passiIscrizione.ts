@@ -180,9 +180,26 @@ const DATI: CampoModulo[] = ['nome', 'cognome', 'codiceFiscale', 'natoIl', 'nato
 const CONTATTI: CampoModulo[] = ['email', 'telefono', 'telefono2']
 const GENITORE: CampoModulo[] = ['genitoreNome', 'genitoreCognome', 'genitoreCodiceFiscale']
 
-/** I campi di `quali` che non vanno, coi controlli di oggi (`problemi`) e il verdetto sul codice fiscale. */
+/**
+ * I controlli di oggi (`problemi`) come li vede il modulo a passi: data e luogo li scrive il codice fiscale, quindi
+ * finché non è valido manca lui, non loro (una cosa da fare, non tre). La barra e le note sotto i campi usano questi.
+ */
+export function problemiDeiDati(r: DatiRichiesta, oggi = new Date()): Partial<Record<CampoModulo, string>> {
+  const g = { ...problemi(r, oggi) }
+  if (!cfValido(pulisciCf(r.codiceFiscale))) {
+    delete g.natoIl
+    delete g.natoA
+  }
+  return g
+}
+
+/** Il luogo di nascita si scrive a mano solo col codice valido e un luogo che l'elenco non sa dire: se no lo scrive il codice. */
+export const luogoInSolaLettura = (r: DatiRichiesta, luoghi: Luoghi | undefined): boolean =>
+  !cfValido(pulisciCf(r.codiceFiscale)) || !!(luoghi && luogoDaCf(luoghi, pulisciCf(r.codiceFiscale), r.natoIl))
+
+/** I campi di `quali` che non vanno, coi controlli del modulo a passi e il verdetto sul codice fiscale. */
 function campi(s: StatoPassi, oggi: Date, quali: CampoModulo[]): Pastiglia[] {
-  const g: Partial<Record<CampoModulo, string>> = { ...problemi(risposteDaiPassi(s, oggi), oggi) }
+  const g = problemiDeiDati(risposteDaiPassi(s, oggi), oggi)
   if (controlloScelta(s, oggi)) g.codiceFiscale = g.codiceFiscale ?? 'Non torna'
   return quali.filter((k) => g[k]).map((k) => ({ chiave: k, nome: NOMI[k] }))
 }
@@ -222,6 +239,9 @@ function caselleDellIo(s: StatoPassi): Pastiglia[] {
   return m
 }
 
+const luogoGenitoreManca = (s: StatoPassi): boolean =>
+  cfValido(pulisciCf(s.risposte.genitoreCodiceFiscale ?? '')) && !s.natoAGenitore.trim() && !s.file.modulo && !s.firmaInFoto
+
 function sezione(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
   switch (tipiDiPassi(s.chi)[passo - 1]) {
     case 'dati':
@@ -230,8 +250,9 @@ function sezione(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
       return campi(s, oggi, s.chi === 'adulto' ? [...DATI, ...CONTATTI] : DATI)
     case 'genitore':
       // Il luogo del genitore lo dice il suo codice fiscale (il componente lo riempie): se resta vuoto lo chiede qui, dove si parla a lui.
+      // Finché il codice non è valido manca il codice, non il luogo.
       // Serve solo al PDF del modulo: col foglio firmato in foto il PDF non si fa e non lo chiede.
-      return [...campi(s, oggi, GENITORE), ...(s.natoAGenitore.trim() || s.file.modulo || s.firmaInFoto ? [] : [{ chiave: 'natoAGenitore', nome: 'DOVE SEI NATO' }]), ...campi(s, oggi, CONTATTI)]
+      return [...campi(s, oggi, GENITORE), ...(luogoGenitoreManca(s) ? [{ chiave: 'natoAGenitore', nome: 'DOVE SEI NATO' }] : []), ...campi(s, oggi, CONTATTI)]
     case 'corso':
       return campi(s, oggi, ['corsi', 'formula'])
     case 'modulo':
@@ -317,11 +338,17 @@ export const primoDaCorreggere = (s: StatoPassi, passo: number, oggi = new Date(
 /** I campi del modulo sono tutti da compilare, tranne il secondo telefono: serve per `aria-required`. */
 export const campoObbligatorio = (k: string): boolean => k !== 'telefono2'
 
-/** Sotto il campo: «Manca» solo dopo il tentativo, «scritto male» anche appena si lascia il campo. */
-export function notaSottoIlCampo(errore: string | undefined, provato: boolean, visto: boolean): string | undefined {
+/**
+ * Sotto il campo: «Manca» solo dopo il tentativo, e solo sul primo che manca (dove va il focus) o su un campo già
+ * toccato, perché un modulo tutto rosso non dice da dove cominciare. «Scritto male» anche appena si lascia il campo.
+ */
+export function notaSottoIlCampo(errore: string | undefined, provato: boolean, visto: boolean, primo: boolean): string | undefined {
   if (!errore) return undefined
-  return errore === 'Manca' ? (provato ? errore : undefined) : provato || visto ? errore : undefined
+  return errore === 'Manca' ? (provato && (primo || visto) ? errore : undefined) : provato || visto ? errore : undefined
 }
+
+/** Le voci della riga di stato della barra: niente finché non si prova AVANTI, così a riposo il modulo ha più spazio. */
+export const mancaInBarra = (s: StatoPassi, passo: number, provato: boolean, oggi = new Date()): Pastiglia[] => (provato ? mancanti(s, passo, oggi) : [])
 
 // --- cambiare scelta, uscire, un altro figlio -------------------------------
 
@@ -713,13 +740,14 @@ export function testoFile(chi: Chi, tipo: TipoFile, nome: string): { etichetta: 
 }
 
 /**
- * Il luogo di nascita del genitore si chiede solo se il suo codice fiscale non lo dice (elenco dei luoghi assente,
- * codice non ancora scritto o luogo che non c'è). Segue `natoAGenitore`, che il componente riempie dallo stesso elenco:
- * se uno dei due cambia, cambia anche l'altro (la mancanza «DOVE SEI NATO» in `sezione`).
+ * Il luogo di nascita del genitore si chiede solo a codice fiscale valido, e solo se il codice non lo dice (elenco dei
+ * luoghi assente o luogo che non c'è): prima manca il codice, non il luogo. Segue `natoAGenitore`, che il componente
+ * riempie dallo stesso elenco: se uno dei due cambia, cambia anche l'altro (la mancanza «DOVE SEI NATO» in `sezione`).
  */
 export function luogoGenitoreDaChiedere(s: StatoPassi, luoghi: Luoghi | undefined): boolean {
   if (s.chi !== 'figlio') return false
-  return !(luoghi && luogoDaCf(luoghi, pulisciCf(s.risposte.genitoreCodiceFiscale ?? '')))
+  const cf = pulisciCf(s.risposte.genitoreCodiceFiscale ?? '')
+  return cfValido(cf) && !(luoghi && luogoDaCf(luoghi, cf))
 }
 
 /** La frase sotto l'elenco dei corsi di un minore, se qualche corso per grandi non compare. */
