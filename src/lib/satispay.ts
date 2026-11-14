@@ -288,29 +288,36 @@ export function cosaNonVaSatispay(voci: Array<{ pagamenti: Array<{ importo: numb
   return qui === p.importo ? null : `${Con(p)} sono arrivati ${soldi(p.importo)}: nel pagato di questa ricevuta ce ne sono ${soldi(qui)}`
 }
 
-/** Come si paga dal modulo pubblico: con Satispay o la carta subito, o col bonifico e la sua ricevuta (decisioni del 2026-10-20 e del 2026-10-25). */
-export type Pago = 'satispay' | 'carta' | 'bonifico'
+/**
+ * Come si paga dal modulo pubblico: con Satispay o la carta subito, col bonifico (la ricevuta è facoltativa) o in
+ * contanti in segreteria (decisioni del 2026-10-20, del 2026-10-25 e del 2026-11-14).
+ */
+export type Pago = 'satispay' | 'carta' | 'bonifico' | 'contanti'
 
 /**
  * Il modo che vale davvero. Satispay scelto ma non possibile (un corso senza
  * prezzo, il servizio spento) è il bonifico; la carta vale negli stessi casi
  * di Satispay, e solo col suo servizio acceso. Dal nucleo di un iscritto non
  * si sceglie: si paga come prima (`null`); `null` anche finché non si sceglie, e col bonifico spento
- * (REGOLE → COME SI PAGA) quando non resta nessun altro modo.
+ * (REGOLE → COME SI PAGA) quando non resta nessun altro modo. I contanti non dipendono da Satispay: valgono
+ * finché sono accesi, spenti ripiegano sul bonifico come Satispay non possibile.
  */
-export const modoPagamento = (scelto: Pago | null, puoi: { satispay: boolean; carta?: boolean }, nucleo: boolean, bonifico = true): Pago | null =>
+export const modoPagamento = (scelto: Pago | null, puoi: { satispay: boolean; carta?: boolean }, nucleo: boolean, bonifico = true, contanti = true): Pago | null =>
   nucleo || !scelto
     ? null
-    : (scelto === 'satispay' && !puoi.satispay) || (scelto === 'carta' && !(puoi.satispay && puoi.carta)) || (scelto === 'bonifico' && !bonifico)
+    : (scelto === 'satispay' && !puoi.satispay) ||
+        (scelto === 'carta' && !(puoi.satispay && puoi.carta)) ||
+        (scelto === 'bonifico' && !bonifico) ||
+        (scelto === 'contanti' && !contanti)
       ? bonifico
         ? 'bonifico'
         : null
       : scelto
 
 /**
- * La ricevuta del bonifico si chiede solo a chi paga col bonifico; dal nucleo
+ * La ricevuta del bonifico si offre solo a chi paga col bonifico, facoltativa; dal nucleo
  * resta fra i file, come prima. Dalla pagina pubblica, finché non si sceglie
- * come pagare, non si chiede: la chiederà il bonifico.
+ * come pagare, non si offre: la offrirà il bonifico. Coi contanti non c'è niente da caricare.
  */
 export const chiedeRicevuta = (modo: Pago | null, nucleo: boolean) => nucleo || modo === 'bonifico'
 
@@ -396,13 +403,15 @@ export function saldoPerPersona(pagamenti: PagamentoSatispay[]): Map<string, num
 
 /**
  * Il modo si sceglie: niente già scelto, così nessuno paga una cosa che non
- * ha guardato. Col bonifico la ricevuta è obbligatoria: senza, non si sa se
- * ha pagato. Dal nucleo non si sceglie, e si paga come prima.
+ * ha guardato. Col bonifico la ricevuta è facoltativa (decisione del 2026-11-14):
+ * il bonifico vale quando la segreteria lo vede sul conto. Coi contanti si paga in
+ * segreteria. Dal nucleo non si sceglie, e si paga come prima.
  */
 export function cosaNonVaModo(
   modo: Pago | null,
   nucleo: boolean,
-  conRicevuta: boolean,
+  // La ricevuta non ferma più niente (2026-11-14): resta nella firma, chi chiama la passa ancora.
+  _conRicevuta: boolean,
   satispay: {
     /** pagato per la scelta di adesso */ pronto: boolean
     /** un pagamento arrivato, per qualunque scelta */ giaPagato: boolean
@@ -418,9 +427,10 @@ export function cosaNonVaModo(
   // Pagato e poi cambiato modo: i soldi ci sono già, in un altro modo si pagherebbe due volte.
   const pagatoCon = satispay.circuito ?? 'satispay'
   if (satispay.giaPagato && modo !== pagatoCon) return pagatoCon === 'carta' ? GIA_PAGATO_CARTA : GIA_PAGATO_SATISPAY
-  if (modo === 'bonifico' && !conRicevuta) return 'Manca la ricevuta del bonifico: una foto, lo screenshot o il PDF'
+  // Col bonifico e coi contanti la richiesta parte subito: si paga dopo, e la segreteria lo segna.
+  if (modo === 'bonifico' || modo === 'contanti') return null
   // Con Satispay o la carta si paga prima, in fondo al modulo: la richiesta parte solo pagata (83-satispay-prima.sql).
-  if (modo !== 'bonifico' && !satispay.pronto) return `Prima paga ${modo === 'carta' ? 'con la carta' : 'con Satispay'}, in fondo al modulo: la richiesta parte dopo`
+  if (!satispay.pronto) return `Prima paga ${modo === 'carta' ? 'con la carta' : 'con Satispay'}, in fondo al modulo: la richiesta parte dopo`
   return null
 }
 

@@ -6,6 +6,7 @@ import type { Abbonamento, RigaStima } from './nucleo'
 import { causale, SCONTO_FAMIGLIA, stimaIscrizione } from './nucleo'
 import type { CampoModulo, DatiRichiesta, DatiRichieste, Formula, OrarioAperto, TipoFile } from './richieste'
 import { certificatoDaPortare, compiuti, dataDaCf, mancaCertificato, type SceltaCertificato, NOTE_NEL_DATABASE, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf, tipiDaChiedere } from './richieste'
+import type { ComePaga } from './comePaga'
 import type { Luoghi } from './codiceFiscale'
 import { cfValido, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { nomeProprio } from './nomi'
@@ -55,6 +56,11 @@ export interface StatoPassi {
   chiedeCertificato?: true
   /** «Lo carico ora» (il file diventa obbligatorio) o «Non ce l'ho ancora» (si iscrive lo stesso, con un termine). */
   certificato?: SceltaCertificato
+  /**
+   * COME PAGHI: col bonifico o in contanti in segreteria (decisione del 2026-11-14). Si sceglie, niente già
+   * scelto; in famiglia il componente la mette a tutte le persone, e ogni richiesta la porta con sé.
+   */
+  comePaga?: ComePaga
   /** Solo nella prima persona, con la ricevuta del modulo: il totale (centesimi) e quante persone c'erano quando si è caricata. */
   ricevutaPer?: { totale: number; persone: number }
 }
@@ -118,8 +124,8 @@ const NOME_PASSO: Record<Chi, Partial<Record<TipoPasso, string>>> = {
   },
 }
 
-/** I passi dove RIEMPI (solo in prova) ha qualcosa da scrivere: FAMIGLIA non chiede niente, a PAGAMENTO la ricevuta resta facoltativa, INVIO rimette insieme. */
-export const riempibile = (tipo: TipoPasso): boolean => tipo === 'dati' || tipo === 'genitore' || tipo === 'corso' || tipo === 'modulo' || tipo === 'documenti'
+/** I passi dove RIEMPI (solo in prova) ha qualcosa da scrivere: FAMIGLIA non chiede niente, a PAGAMENTO c'è come paghi (la ricevuta resta facoltativa), INVIO rimette insieme. */
+export const riempibile = (tipo: TipoPasso): boolean => tipo === 'dati' || tipo === 'genitore' || tipo === 'corso' || tipo === 'modulo' || tipo === 'documenti' || tipo === 'pagamento'
 
 export const passiDi = (chi: Chi): string[] => tipiDiPassi(chi).map((t) => NOME_PASSO[chi][t] ?? '')
 
@@ -128,7 +134,7 @@ export function risposteDaiPassi(s: StatoPassi, oggi = new Date()): DatiRichiest
   const natoIl = dataDaCf(s.risposte.codiceFiscale, s.risposte.natoIl, oggi) ?? s.risposte.natoIl
   // «Non ce l'ho ancora» parte solo se il certificato serve: sotto i 6 anni la scelta non c'è.
   const dopo = s.chiedeCertificato && s.certificato === 'dopo' && compiuti(natoIl, 6, oggi)
-  const r = { ...s.risposte, regolamento: true, natoIl, ...(dopo && { certificatoDopo: true }) }
+  const r = { ...s.risposte, regolamento: true, natoIl, ...(dopo && { certificatoDopo: true }), ...(s.comePaga && { comePaga: s.comePaga }) }
   return s.chi === 'adulto' ? { ...r, genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '' } : r
 }
 
@@ -259,6 +265,9 @@ function sezione(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
       return s.io ? caselleDellIo(s) : moduloEFile(s)
     case 'documenti':
       return documenti(s, oggi)
+    case 'pagamento':
+      // La ricevuta non ferma (è facoltativa), la scelta sì: la segreteria deve sapere cosa aspettarsi.
+      return s.comePaga ? [] : [{ chiave: 'comePaga', nome: 'COME PAGHI' }]
     default:
       return []
   }
@@ -473,7 +482,9 @@ export function aggiungiFamiliare(persone: StatoPassi[], chi: Chi, indiceFirmata
   if (io && persone.some((p) => p.io)) throw new Error('Ci sei già, nel modulo: scegli UN ALTRO ADULTO.')
   if (chi === 'figlio' && persone[indiceFirmatario]?.chi !== 'adulto' && !firmaChiCompila(persone, indiceFirmatario))
     throw new Error('Per firmare serve un adulto della famiglia: scegline un altro.')
-  const nuova: StatoPassi = { ...nuovoStato(chi), ...(chi === 'figlio' ? { firmatario: indiceFirmatario } : {}), ...(io ? { io: true as const } : {}) }
+  // Come paga si sceglie una volta per la famiglia (il passo è comune): chi arriva dopo prende quella già scelta.
+  const comePaga = persone[0]?.comePaga
+  const nuova: StatoPassi = { ...nuovoStato(chi), ...(chi === 'figlio' ? { firmatario: indiceFirmatario } : {}), ...(io ? { io: true as const } : {}), ...(comePaga && { comePaga }) }
   return [...persone, nuova].map((p) => {
     const { modulo, ...file } = p.file
     return { ...p, file }
@@ -561,15 +572,18 @@ function conDatiDelBambino(s: StatoPassi, bambino: StatoPassi): StatoPassi {
 export function conDatiDellaFamiglia(persone: StatoPassi[]): StatoPassi[] {
   if (persone.length < 2) return persone
   const prima = persone[0].risposte
+  // Come paga è della famiglia (il passo è comune): chi non l'ha presa la prende dalla persona 0.
+  const comePaga = persone[0].comePaga
+  const conLaScelta = (s: StatoPassi): StatoPassi => (s.comePaga || !comePaga ? s : { ...s, comePaga })
   return persone.map((s, i) => {
     if (i === 0) return s
-    if (s.io) return conDatiDelBambino(s, persone[0])
+    if (s.io) return conLaScelta(conDatiDelBambino(s, persone[0]))
     const r = s.risposte
     const firma = datiDiChiFirma(persone, s)
     // Un fratello firmato da chi compila ha lo stesso genitore del bambino 0: la sua carta, il suo ok e dove è nato.
     // La firma no: il modulo del fratello si firma per lui.
     const genitore0 = s.chi === 'figlio' && firma && s.firmatario !== undefined && (firmaChiCompila(persone, s.firmatario) || persone[s.firmatario]?.io) ? persone[0] : undefined
-    return {
+    return conLaScelta({
       ...s,
       ...(genitore0 && {
         privacy: s.privacy || genitore0.privacy,
@@ -586,7 +600,7 @@ export function conDatiDellaFamiglia(persone: StatoPassi[]): StatoPassi[] {
         ...(firma ? { genitoreNome: oppure(r.genitoreNome, firma.nome), genitoreCognome: oppure(r.genitoreCognome, firma.cognome), genitoreCodiceFiscale: oppure(r.genitoreCodiceFiscale, firma.codiceFiscale) } : {}),
         ...(genitore0 && { regolamento: r.regolamento || genitore0.risposte.regolamento }),
       },
-    }
+    })
   })
 }
 
@@ -1715,6 +1729,12 @@ export function conLaRicevuta(persone: StatoPassi[], ricevuta: File | undefined,
     if (i > 0 || !ricevuta) return { ...resto, file }
     return { ...resto, file: { ...file, ricevuta }, ...(totale !== undefined && { ricevutaPer: { totale, persone: persone.length } }) }
   })
+}
+
+/** COME PAGHI è uno per tutto il modulo, in ogni persona. Coi contanti la ricevuta del bonifico non c'entra più: si toglie, se no partirebbe lo stesso. */
+export function conComePaga(persone: StatoPassi[], comePaga: ComePaga): StatoPassi[] {
+  const tutte = comePaga === 'contanti' ? conLaRicevuta(persone, undefined, undefined) : persone
+  return tutte.map((p) => ({ ...p, comePaga }))
 }
 
 /** Se il conto è cambiato dopo la ricevuta: quanto, perché e cosa fare. `undefined` se torna. */

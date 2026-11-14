@@ -17,12 +17,18 @@
 
 -- `dentro` sono le funzioni con il loro corpo: una versione vecchia di un
 -- file lascia la funzione, ma con dentro quello che faceva prima.
--- `invia_iscrizione_0` è la `invia_iscrizione` di prima, avvolta da 141: i controlli dei file di prima la cercano lì,
--- ma solo finché la `invia_iscrizione` vera è quella che la avvolge (dopo un rilancio di 06 o 125 non lo è più).
-with dentro(nome, corpo) as (
-  select case when p.proname = 'invia_iscrizione_0' then 'invia_iscrizione' else p.proname::text end, p.prosrc from pg_proc p
+-- `invia_iscrizione_0`, `_1`… sono le `invia_iscrizione` di prima, avvolte da 141 e 160: i controlli dei file di prima
+-- le cercano lì, ma solo se la catena parte dalla `invia_iscrizione` vera (dopo un rilancio di 06 o 125 non è più così).
+with recursive catena(nome) as (
+  select 'invia_iscrizione'::name
+  union
+  select p.proname from catena c
+  join pg_proc w on w.pronamespace = 'public'::regnamespace and w.proname = c.nome
+  join pg_proc p on p.pronamespace = 'public'::regnamespace and p.proname ~ '^invia_iscrizione_[0-9]+$' and w.prosrc ~ ('\m' || p.proname || '\M')
+), dentro(nome, corpo) as (
+  select case when p.proname ~ '^invia_iscrizione_[0-9]+$' then 'invia_iscrizione' else p.proname::text end, p.prosrc from pg_proc p
   where p.pronamespace = 'public'::regnamespace
-    and (p.proname <> 'invia_iscrizione_0' or exists (select 1 from pg_proc w where w.pronamespace = p.pronamespace and w.proname = 'invia_iscrizione' and w.prosrc like '%invia_iscrizione_0%'))
+    and (p.proname !~ '^invia_iscrizione_[0-9]+$' or p.proname in (select nome from catena))
 )
 select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (values
   ('01-schema.sql', 'le tabelle',
@@ -756,6 +762,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rifà `candidati_persona_movimento` del 70: se si rilancia 70 dopo, va rilanciato anche questo.
   ('159-candidati-dal-testo.sql', '«Chi e per cosa» suggerisce chi ha nome e cognome nel testo del bonifico',
     to_regprocedure('public.collegamento_testo(text)') is not null
-    and exists (select 1 from dentro where nome = 'candidati_persona_movimento' and corpo like '%collegamento_testo%'))
+    and exists (select 1 from dentro where nome = 'candidati_persona_movimento' and corpo like '%collegamento_testo%')),
+  -- Avvolge `invia_iscrizione` (141): rilanciando 06, 125 o 141, il controllo torna «manca».
+  ('160-come-paga.sql', 'nell''iscrizione online si sceglie bonifico o contanti, la ricevuta è facoltativa',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'richieste_iscrizione' and column_name = 'come_paga')
+    and exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'invia_iscrizione' and prosrc like '%come_paga%')
+    and to_regprocedure('public.richieste_con_ricevuta()') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

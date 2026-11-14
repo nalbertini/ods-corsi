@@ -104,6 +104,9 @@ export function riempiPerProva(persone: StatoPassi[], i: number, tipo: TipoPasso
   } else if (tipo === 'documenti') {
     // Solo la carta d'identità: retro e certificato restano vuoti, così si prova anche «PUOI PORTARLO DOPO».
     if (manca.has('documento')) stato = { ...s, file: { ...s.file, documento: new File([PNG], 'carta-di-prova.png', { type: 'image/png' }) } }
+  } else if (tipo === 'pagamento') {
+    // In contanti: niente ricevuta, così si prova anche la richiesta senza file del pagamento.
+    if (manca.has('comePaga')) stato = { ...s, comePaga: 'contanti' }
   }
   return { stato, ...(firma && { firma }) }
 }

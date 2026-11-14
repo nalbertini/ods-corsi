@@ -137,6 +137,17 @@ set role authenticated;
 select atteso('l''istruttrice non legge le richieste', tenta($$select count(*)::text from richieste_iscrizione$$), '0');
 reset role;
 
+-- Il segno sulla riga: quali richieste hanno la ricevuta del bonifico, senza aprirle.
+insert into storage.objects (bucket_id, name) values ('iscrizioni', (select id from richieste_iscrizione where nome = 'Bruno') || '/ricevuta.pdf'),
+  ('iscrizioni', (select id from richieste_iscrizione where nome = 'Cora') || '/documento.jpg');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria sa chi ha la ricevuta: solo Bruno', tenta($$select array_to_string(richieste_con_ricevuta(), ',')$$), (select id::text from richieste_iscrizione where nome = 'Bruno'));
+reset role;
+set role anon;
+select atteso('anon non lo sa', rifiutata($$select richieste_con_ricevuta()::text$$), 'rifiutata');
+reset role;
+
 \echo ''
 \echo '--- 4. accogliere coi contanti non segna la quota pagata ---'
 select richiesta_con(11, 'contanti');

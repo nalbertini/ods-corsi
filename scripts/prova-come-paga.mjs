@@ -225,6 +225,18 @@ console.log('\n7. i dati: invia manda comePaga, la richiesta lo rilegge')
   ok('Supabase: legge bonifico', (await aspetta(() => leggi([{ ...riga, come_paga: 'bonifico' }])))?.[0]?.comePaga, 'bonifico')
   ok('Supabase: colonna null legge null', (await aspetta(() => leggi([{ ...riga, come_paga: null }])))?.[0]?.comePaga, null)
   ok('Supabase: una richiesta vecchia, senza la colonna, legge null', (await aspetta(() => leggi([riga])))?.[0]?.comePaga, null)
+
+  // Il segno «Bonifico · ricevuta / senza ricevuta» sulla riga: quali richieste hanno la ricevuta, senza aprirle.
+  const conR = await aspetta(async () => {
+    const id = await r.invia(adulto({ comePaga: 'bonifico', email: 'ricevuta@esempio.it' }))
+    await r.caricaFile(id, 'ricevuta', new File(['x'], 'ricevuta.pdf', { type: 'application/pdf' }))
+    return { id, insieme: await r.conRicevuta() }
+  })
+  ok('in prova: la richiesta con la ricevuta è fra quelle con la ricevuta', typeof conR === 'string' ? conR : conR?.insieme?.has(conR.id), true)
+  ok('in prova: quelle senza ricevuta no', conR?.insieme?.size, 1)
+  const rpc = (risposta) => rs.creaRichiesteSupabase({ rpc: async (nome) => (nome === 'richieste_con_ricevuta' ? risposta : { data: null, error: { code: 'X' } }) }).conRicevuta()
+  ok('Supabase: legge richieste_con_ricevuta', [...((await aspetta(() => rpc({ data: ['r-1'], error: null }))) ?? [])], ['r-1'])
+  ok('Supabase: senza 160 la funzione non c’è, insieme vuoto e l’elenco si vede', (await aspetta(() => rpc({ data: null, error: { code: 'PGRST202', message: 'x' } })))?.size, 0)
 }
 
 console.log('\n8. la pagina Iscrizioni')

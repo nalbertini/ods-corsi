@@ -1,3 +1,4 @@
+import type { ComePaga } from './comePaga'
 import { haUnServer } from './dati'
 import type { Conosciuto } from './provenienza'
 import { cfNatoIl, cfTornaColNome, cfTornaConLaData, cfValido } from './codiceFiscale'
@@ -70,6 +71,12 @@ export interface DatiRichiesta {
    * (`141-certificato-dopo.sql`). Senza 141 il database lo ignora.
    */
   certificatoDopo?: boolean
+  /**
+   * Come paga chi si iscrive dalla pagina pubblica, quando paga dopo: col bonifico o in contanti in
+   * segreteria (`160-come-paga.sql`). La segreteria lo legge e non lo cambia; Satispay, carta, nucleo e
+   * le richieste di prima non l'hanno (`null`).
+   */
+  comePaga?: ComePaga | null
   /**
    * L'etichetta del link da cui si è arrivati (`?da=`) e la risposta a «Come ci
    * hai conosciuto?», le stesse per tutte le richieste di un modulo. Le pulisce
@@ -184,6 +191,8 @@ export interface DatiRichieste {
   file(richiestaId: string): Promise<FileRichiesta[]>
   /** Le richieste che hanno ancora un file `DA_STAMPARE` caricato, per id. */
   conDocumento(): Promise<Set<string>>
+  /** Le richieste con la ricevuta del bonifico caricata, per id: il segno sulla riga di RICHIESTE ONLINE. */
+  conRicevuta(): Promise<Set<string>>
   /** Un file solo, per sempre: il documento o il certificato, dopo averlo stampato. */
   eliminaFile(richiestaId: string, tipo: TipoFile): Promise<void>
   /**
@@ -226,11 +235,11 @@ export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string;
 ]
 
 /**
- * I file senza i quali il modulo non parte. Dalla pagina pubblica anche la
- * ricevuta: lì si paga prima, con bonifico o Satispay. «Una persona in più»
- * dall'area iscritti la lascia facoltativa, come `FILE`.
+ * I file senza i quali il modulo non parte. La ricevuta è facoltativa ovunque
+ * (decisione del 2026-11-14: col bonifico si porta dopo, coi contanti non c'è);
+ * `ricevuta` resta per chi la volesse obbligatoria, e di partenza è no.
  */
-export const fileObbligatori = (chiesti: Array<{ tipo: TipoFile; obbligatorio: boolean }>, ricevuta: boolean): TipoFile[] =>
+export const fileObbligatori = (chiesti: Array<{ tipo: TipoFile; obbligatorio: boolean }>, ricevuta = false): TipoFile[] =>
   chiesti.filter((f) => f.obbligatorio || (ricevuta && f.tipo === 'ricevuta')).map((f) => f.tipo)
 
 /** Sotto la ricevuta, quando è obbligatoria. */
@@ -422,7 +431,7 @@ export function tipiDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new D
 }
 
 /** I campi del modulo che possono non andare, per segnarli uno per uno. */
-export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'certificatoDopo' | 'provenienza' | 'conosciuto' | 'pagamentoSatispay' | 'chiavePagamento' | 'invio'>
+export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'certificatoDopo' | 'comePaga' | 'provenienza' | 'conosciuto' | 'pagamentoSatispay' | 'chiavePagamento' | 'invio'>
 
 /**
  * Una cosa che non va: `messaggio` è quello del server, `testo` quello corto

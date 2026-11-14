@@ -287,6 +287,8 @@ export function creaRichiesteProva(): DatiRichieste {
         // Come il database: pulite, o scartate senza fermare la richiesta.
         provenienza: pulisciProvenienza(dati.provenienza),
         conosciuto: pulisciConosciuto(dati.conosciuto),
+        // Come la colonna di 160-come-paga.sql: solo bonifico o contanti, se no niente.
+        comePaga: dati.comePaga === 'bonifico' || dati.comePaga === 'contanti' ? dati.comePaga : null,
       }
       tutte = [r, ...tutte]
       salva()
@@ -410,6 +412,10 @@ export function creaRichiesteProva(): DatiRichieste {
 
     async conDocumento() {
       return new Set([...file].filter(([, suoi]) => DA_STAMPARE.some((t) => suoi.has(t))).map(([id]) => id))
+    },
+
+    async conRicevuta() {
+      return new Set([...file].filter(([, suoi]) => suoi.has('ricevuta')).map(([id]) => id))
     },
 
     async eliminaFile(richiestaId, tipo) {

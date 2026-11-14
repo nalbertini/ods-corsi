@@ -117,6 +117,8 @@ const adulto = (cambi = {}, sul = {}) => ({
   tratti: 5,
   file: { documento: F('documento.jpg') },
   privacy: true,
+  // Ha compilato tutto: anche come paga (dal 2026-11-14 si sceglie, e senza il passo del pagamento ferma).
+  comePaga: 'bonifico',
   ...sul,
 })
 /** Un bambino di dieci anni col genitore che firma, tutto compilato. */
@@ -131,6 +133,7 @@ const figlio = (cambi = {}, sul = {}) => ({
   file: { documento: F('documento.jpg') },
   privacy: true,
   natoAGenitore: 'Torino',
+  comePaga: 'bonifico',
   ...sul,
 })
 /**
@@ -891,8 +894,8 @@ console.log('\n16. l’ordine di «manca» è quello della pagina: il focus va a
     'TESSERAMENTO', 'FOTO', 'FIRMA', 'REGOLAMENTO', 'INFORMATIVA PRIVACY',
   ])
   ok('adulto, passo 4 (i documenti): la carta d’identità', chiavi(vuoto('adulto'), 4), ['CARTA D\'IDENTITÀ'])
-  ok('adulto, l’ultimo passo (7): prima il modulo, poi i documenti', chiavi({ ...vuoto('adulto'), risposte: { ...vuoto('adulto').risposte, regolamento: false } }, 7).slice(-6), [
-    'TESSERAMENTO', 'FOTO', 'FIRMA', 'REGOLAMENTO', 'INFORMATIVA PRIVACY', 'CARTA D\'IDENTITÀ',
+  ok('adulto, l’ultimo passo (7): prima il modulo, poi i documenti', chiavi({ ...vuoto('adulto'), risposte: { ...vuoto('adulto').risposte, regolamento: false } }, 7).slice(-7), [
+    'TESSERAMENTO', 'FOTO', 'FIRMA', 'REGOLAMENTO', 'INFORMATIVA PRIVACY', 'CARTA D\'IDENTITÀ', 'COME PAGHI',
   ])
   ok('adulto, passo 3: il focus va alla prima casella', m.primoDaCorreggere(vuoto('adulto'), 3), 'tesseramento')
   ok('adulto, passo 4: il focus va alla carta d’identità', m.primoDaCorreggere(vuoto('adulto'), 4), 'documento')
@@ -1968,12 +1971,14 @@ console.log('\n38. QUANTO PAGHI')
 
   // --- il passo ---
   ok('il passo del pagamento non ferma mai: adulto senza ricevuta', m.mancaNelPasso(adulto(), PAGA.adulto), [])
-  ok('il passo del pagamento non ferma mai: nemmeno con tutto vuoto', m.mancaNelPasso(m.nuovoStato('adulto'), PAGA.adulto), [])
-  ok('il passo del pagamento non ferma mai: figlio', m.mancaNelPasso(m.nuovoStato('figlio'), PAGA.figlio), [])
-  ok('il passo del pagamento: la barra non ha voci', m.mancanti(m.nuovoStato('adulto'), PAGA.adulto), [])
+  // Dal 2026-11-14 il passo chiede come paghi (bonifico o contanti): la ricevuta resta facoltativa.
+  ok('il passo del pagamento non ferma per la ricevuta: tutto vuoto, scelti i contanti', m.mancaNelPasso({ ...m.nuovoStato('adulto'), comePaga: 'contanti' }, PAGA.adulto), [])
+  ok('il passo del pagamento non ferma per la ricevuta: figlio, scelto il bonifico', m.mancaNelPasso({ ...m.nuovoStato('figlio'), comePaga: 'bonifico' }, PAGA.figlio), [])
+  ok('il passo del pagamento: la barra ha solo come paghi', m.mancanti(m.nuovoStato('adulto'), PAGA.adulto), [{ chiave: 'comePaga', nome: 'COME PAGHI' }])
   // Un figlio vuoto non ha ancora la data: l'età non c'è e la carta (dai 6 anni) non si conta, quindi una cosa in meno di prima.
   // Senza codici fiscali data, luogo e «dove sei nato» non si contano (vedi la 49): 2 in meno all'adulto, 3 al figlio.
-  ok('quanto manca: 15 cose a un adulto vuoto, 14 a un figlio vuoto (senza data la carta non si conta), 0 a chi ha fatto tutto', [m.quantoManca(m.nuovoStato('adulto')), m.quantoManca(m.nuovoStato('figlio')), m.quantoManca(adulto())], [15, 14, 0])
+  // Come paghi si conta (dal 2026-11-14): una in più a tutti e due.
+  ok('quanto manca: 16 cose a un adulto vuoto, 15 a un figlio vuoto (senza data la carta non si conta), 0 a chi ha fatto tutto', [m.quantoManca(m.nuovoStato('adulto')), m.quantoManca(m.nuovoStato('figlio')), m.quantoManca(adulto())], [16, 15, 0])
   ok('l’ultimo passo è il riepilogo, dopo QUANTO PAGHI', [m.passiDi('adulto').at(-2), m.passiDi('adulto').at(-1)], ['PAGAMENTO', 'INVIO'])
   ok('la riga della ricevuta nel riepilogo porta a QUANTO PAGHI, caricata o no', [adulto(), adulto({}, { file: { documento: F('d.jpg'), ricevuta: F('r.jpg') } })].map((s) => m.righeRiepilogo(s, corsi).find((r) => r.cosa === 'ricevuta')?.passo), ['pagamento', 'pagamento'])
   ok('la carta e la firma del riepilogo restano ai documenti e al modulo', [m.passoDelRiepilogo('carta'), m.passoDelRiepilogo('firma')], ['documenti', 'modulo'])
@@ -2057,6 +2062,13 @@ console.log('\n38. QUANTO PAGHI')
   const tolta = lista(() => m.conLaRicevuta(caricata, undefined, 80200))
   ok('tolta: nessuno ha la ricevuta', [tolta.length, tolta.map((p) => p.file.ricevuta)], [3, [undefined, undefined, undefined]])
   ok('tolta: niente più «ricevutaPer»', tolta.map((p) => p.ricevutaPer), [undefined, undefined, undefined])
+
+  // Come paghi (2026-11-14): una scelta per tutto il modulo; coi contanti la ricevuta del bonifico non parte.
+  const coi = lista(() => m.conComePaga(caricata, 'contanti'))
+  ok('come paghi: la scelta va a tutte le persone', coi.map((p) => p.comePaga), ['contanti', 'contanti', 'contanti'])
+  ok('come paghi: coi contanti la ricevuta del bonifico si toglie', [chiama(() => m.ricevutaDelModulo(coi)), coi.map((p) => p.ricevutaPer)], [undefined, [undefined, undefined, undefined]])
+  const colBonifico = lista(() => m.conComePaga(caricata, 'bonifico'))
+  ok('come paghi: col bonifico la ricevuta resta', [colBonifico.map((p) => p.comePaga), chiama(() => m.ricevutaDelModulo(colBonifico)) === ric], [['bonifico', 'bonifico', 'bonifico'], true])
 
   // B8: la ricevuta resta quando la famiglia cambia.
   const due = lista(() => m.conLaRicevuta([manuela, nicola], ric, 62200))
@@ -2299,7 +2311,8 @@ console.log('\n40. LA FAMIGLIA')
   const ordinato = (o) => o && Object.fromEntries(Object.entries(o).sort(([x], [y]) => x.localeCompare(y)))
   ok('bambino e io: due richieste', daMandare.length, 2)
   ok('la richiesta del bambino è quella delle sue risposte', daMandare[0]?.dati, m.risposteDaiPassi(bimboRic))
-  ok('la richiesta dell’io è quella di oggi del genitore, campo per campo', ordinato(daMandare[1]?.dati), ordinato(richiestaDiPaola({ natoA: 'Torino (TO)' })))
+  // Più come paga, della famiglia (dal 2026-11-14): il bambino ha scelto il bonifico.
+  ok('la richiesta dell’io è quella di oggi del genitore, campo per campo', ordinato(daMandare[1]?.dati), ordinato(richiestaDiPaola({ natoA: 'Torino (TO)', comePaga: 'bonifico' })))
   ok('la ricevuta in tutte e due', daMandare.map((x) => x.file.ricevuta === ric), [true, true])
   ok('l’io porta la sua carta, non quella del bambino', [daMandare[1]?.file.documento?.name, daMandare[0]?.file.documento === doc, daMandare[1]?.file['documento-retro']], ['documento-lei.jpg', true, undefined])
   const inviati = []
@@ -2815,7 +2828,7 @@ console.log('\n45. RIEMPI, solo in prova')
   //   riempiPerProva(persone, i, tipo, { corsi, listino, oggi, fotoDelFoglio? }) → { stato, firma? }
   // `persone` è il grezzo (senza `conDatiDellaFamiglia`), `stato` è la persona `i` riempita, `firma` i tratti da
   // mettere nel riquadro (con `stato.tratti === firma.length`). `fotoDelFoglio`: «Ho il foglio firmato» vale
-  // (`firmaInFoto`), il modulo va come file. Nei passi senza tasto (famiglia, pagamento, riepilogo) lo stato resta com'è.
+  // (`firmaInFoto`), il modulo va come file. Nei passi senza tasto (famiglia, riepilogo) lo stato resta com'è.
   // `riempibile(tipo)` sta in passiIscrizione: la schermata lo chiama senza caricare il modulo dei dati finti.
   const voce = (corso, corsoId, extra = {}) => ({ corso, corsoId, eta: '', orari: [], prezzi: [{ saldo: 300, annuale: 300, trimestre: 120 }], ...extra })
   const listino = {
@@ -2833,7 +2846,7 @@ console.log('\n45. RIEMPI, solo in prova')
   const scritto = (s) =>
     JSON.stringify(s, (_, v) =>
       v instanceof File ? { file: v.name, tipo: v.type, grande: v.size } : v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([x], [y]) => x.localeCompare(y))) : v)
-  const RIEMPIBILI = ['dati', 'genitore', 'corso', 'modulo', 'documenti']
+  const RIEMPIBILI = ['dati', 'genitore', 'corso', 'modulo', 'documenti', 'pagamento']
   /** Una persona riempita passo per passo dall'inizio, come chi tocca RIEMPI a ogni passo. */
   const tuttoRiempito = (chi) => {
     let s = m.nuovoStato(chi)
@@ -2842,9 +2855,10 @@ console.log('\n45. RIEMPI, solo in prova')
   }
 
   // --- dove c'è il tasto ---
-  ok('il tasto c’è nei passi dati, genitore, corso, modulo, documenti; non a famiglia, pagamento, riepilogo',
+  // Pagamento: dal 2026-11-14 c'è come paghi da scegliere.
+  ok('il tasto c’è nei passi dati, genitore, corso, modulo, documenti, pagamento; non a famiglia, riepilogo',
     ['dati', 'genitore', 'corso', 'modulo', 'documenti', 'famiglia', 'pagamento', 'riepilogo'].map((t) => chiama(() => m.riempibile(t))),
-    [true, true, true, true, true, false, false, false])
+    [true, true, true, true, true, false, true, false])
   ok('il modulo dei dati finti c’è (src/lib/riempiPerProva.ts)', typeof m.riempi?.riempiPerProva, 'function')
 
   // --- 1. l'adulto al passo DATI ---

@@ -58,15 +58,15 @@ export function cosaServe(giorni: number | null, satispay: boolean): Array<{ eti
     },
     {
       etichetta: 'DA FARE NELLA RICHIESTA',
-      voci: [{ icona: 'carta', titolo: 'Pagare la quota', nota: satispay ? 'Con Satispay, col bonifico e la sua ricevuta, oppure in palestra direttamente.' : 'Col bonifico e la sua ricevuta, oppure in palestra direttamente.' }],
+      voci: [{ icona: 'carta', titolo: 'Pagare la quota', nota: satispay ? 'Con Satispay, col bonifico o in contanti in palestra.' : 'Col bonifico o in contanti in palestra.' }],
     },
   ]
 }
 
-/** Si paga nella richiesta: con Satispay, o col bonifico e la sua ricevuta (decisione del 2026-10-20). */
+/** Nella richiesta si sceglie come pagare: Satispay, bonifico (la ricevuta è facoltativa) o contanti in palestra (decisioni del 2026-10-20 e del 2026-11-14). */
 export const COME_SI_PAGA = {
-  titolo: 'Nella richiesta: con Satispay o col bonifico.',
-  ricevuta: 'Col bonifico, la sua ricevuta si carica nella richiesta.',
+  titolo: 'Nella richiesta scegli: Satispay, bonifico o contanti in segreteria, in palestra.',
+  ricevuta: 'Col bonifico la ricevuta è facoltativa: se ce l’hai la carichi nella richiesta, se no la porti dopo.',
 }
 
 /**
@@ -83,7 +83,7 @@ export function costiBreve(quota: number, satispay: boolean) {
       { testo: 'Sconto famiglia, sull’annuale che costa meno', cifra: `−${Math.round(SCONTO_FAMIGLIA * 100)}%` },
       { testo: 'Più corsi nella struttura, in tutto', cifra: `${PIU_CORSI} €` },
     ],
-    testo: `I prezzi di ogni corso e come si paga: ${satispay ? 'Satispay o bonifico' : 'bonifico'}, nella richiesta.`,
+    testo: `I prezzi di ogni corso e come si paga: ${satispay ? 'Satispay, bonifico o contanti' : 'bonifico o contanti'}, nella richiesta.`,
     tasto: 'PREZZI E PAGAMENTO',
   }
 }
