@@ -1,13 +1,13 @@
 -- ---------------------------------------------------------------------------
--- ODS Corsi · il genitore vale solo se nome e cognome hanno ognuno una parola vera
+-- ODS Corsi · il genitore vale solo se nome e cognome hanno ognuno almeno una lettera
 --
 -- Il 161 contava le parole del genitore tutte insieme: con «Gino» «-» (o «-» «Rossi») restava una parola sola, e il
 -- figlio usciva col segno «genitore» per ogni testo con «gino», contro la regola «il genitore vale solo con nome e
 -- cognome: uno solo non dice chi è». Lo stesso in `abbina_pagatori_testo` (160). E il controllo di
 -- `abbina_ricevuta_movimento` (153) guardava solo che non fossero vuoti: con un genitore «-» «.» la causale nominava
 -- sempre la famiglia, e un bonifico Da classificare si abbinava alla ricevuta di chi la causale non nomina.
--- Ora, in tutte e quattro, il nome e il cognome del genitore devono avere almeno una parola ciascuno
--- (`parole_pagatori`, 121). La stessa regola nell'app: `nomeOGenitore` e `abbinaMovimento` (src/lib/abbinaMovimenti.ts).
+-- Ora, in tutte e quattro, il nome e il cognome del genitore devono avere almeno una lettera ciascuno: una parola di
+-- `parole_pagatori` (121) può essere anche solo «'» o cifre («1» «Verdi» usciva per ogni causale con «rata 1»). La stessa regola nell'app: `nomeOGenitore` e `abbinaMovimento` (src/lib/abbinaMovimenti.ts).
 -- Il resto delle funzioni è quello di 161, 160 e 153.
 --
 -- Chi può: come prima. `abbina_pagatori_movimento`, `abbina_testo_banca` e `abbina_pagatori_testo` l'amministrazione
@@ -61,8 +61,8 @@ begin
     ), b as (
       select p.id as pid, p.nome as pn, p.cognome as pc,
              cardinality(parole_pagatori(p.nome || ' ' || p.cognome)) > 0 and parole_pagatori(p.nome || ' ' || p.cognome) <@ t as n,
-             -- il genitore vale solo con nome e cognome, ognuno con una parola vera: uno solo non dice chi è
-             coalesce(cardinality(parole_pagatori(a.genitore_nome)) > 0 and cardinality(parole_pagatori(a.genitore_cognome)) > 0
+             -- il genitore vale solo con nome e cognome, ognuno con almeno una lettera: uno solo non dice chi è
+             coalesce(a.genitore_nome ~ '[[:alpha:]]' and a.genitore_cognome ~ '[[:alpha:]]'
                       and parole_pagatori(a.genitore_nome || ' ' || a.genitore_cognome) <@ t, false) as g,
              coalesce(a.codice_fiscale = any(cf) or a.genitore_codice_fiscale = any(cf), false) as f,
              exists (select 1 from storici s where s.pid = p.id) as s,
@@ -124,7 +124,7 @@ begin
     ), c as (
       select distinct m.mid, p.id as pid,
              cardinality(parole_pagatori(p.nome || ' ' || p.cognome)) > 0 and parole_pagatori(p.nome || ' ' || p.cognome) <@ t as nome_ok,
-             coalesce(cardinality(parole_pagatori(a.genitore_nome)) > 0 and cardinality(parole_pagatori(a.genitore_cognome)) > 0
+             coalesce(a.genitore_nome ~ '[[:alpha:]]' and a.genitore_cognome ~ '[[:alpha:]]'
                       and parole_pagatori(a.genitore_nome || ' ' || a.genitore_cognome) <@ t, false) as genitore_ok
       from m join persone p on p.id = m.pid and p.attiva left join anagrafiche a on a.persona_id = p.id
     )
@@ -144,9 +144,9 @@ begin
     with c as (
       select p.id as pid, p.nome as pn, p.cognome as pc,
              case when cardinality(parole_pagatori(p.nome || ' ' || p.cognome)) > 0 and parole_pagatori(p.nome || ' ' || p.cognome) <@ t then 'nome intero'
-                  -- il genitore vale solo con nome e cognome, ognuno con una parola vera: uno solo non dice chi è,
-                  -- e «-» o «.» non ne hanno
-                  when cardinality(parole_pagatori(a.genitore_nome)) > 0 and cardinality(parole_pagatori(a.genitore_cognome)) > 0
+                  -- il genitore vale solo con nome e cognome, ognuno con almeno una lettera: uno solo non dice chi è,
+                  -- e «-», «.», «'» o «1» non dicono nessuno
+                  when a.genitore_nome ~ '[[:alpha:]]' and a.genitore_cognome ~ '[[:alpha:]]'
                        and parole_pagatori(a.genitore_nome || ' ' || a.genitore_cognome) <@ t then 'genitore' end as cm
       from persone p left join anagrafiche a on a.persona_id = p.id
       where p.attiva
@@ -197,8 +197,8 @@ begin
   if m.persona_id is null and r.persona_id is null then raise exception 'La ricevuta non ha una persona.' using errcode = '22023'; end if;
   -- Senza persona, la causale deve nominare (nome e cognome interi, in qualunque ordine) qualcuno del nucleo della ricevuta
   -- o il suo genitore: le parole di `abbina_testo_banca` (121), il nucleo di `personeDelNucleo`. Il genitore anche dalla
-  -- richiesta accolta, come `genitori()` dell'app, così quel che l'app propone qui passa. Il genitore vale con una parola
-  -- vera nel nome e una nel cognome (162): «-» «.» non ne ha, e `'{}' <@ t` è vero per ogni causale.
+  -- richiesta accolta, come `genitori()` dell'app, così quel che l'app propone qui passa. Il genitore vale con almeno una
+  -- lettera nel nome e una nel cognome (162): «-» «.» non ha parole, e `'{}' <@ t` è vero per ogni causale.
   if m.persona_id is null then
     t := parole_pagatori(m.descrizione);
     if not exists (
@@ -209,7 +209,7 @@ begin
         or exists (select 1 from (select a.genitore_nome g, a.genitore_cognome c from anagrafiche a where a.persona_id = p.id
                                   union all
                                   select q.genitore_nome, q.genitore_cognome from richieste_iscrizione q where q.persona_id = p.id and q.stato = 'accolta') x
-                   where cardinality(parole_pagatori(x.g)) > 0 and cardinality(parole_pagatori(x.c)) > 0 and parole_pagatori(x.g || ' ' || x.c) <@ t))
+                   where x.g ~ '[[:alpha:]]' and x.c ~ '[[:alpha:]]' and parole_pagatori(x.g || ' ' || x.c) <@ t))
     ) then
       raise exception 'La causale del bonifico non nomina la persona della ricevuta, il suo genitore o qualcuno della sua famiglia.' using errcode = '22023';
     end if;

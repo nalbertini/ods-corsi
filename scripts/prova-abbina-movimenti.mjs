@@ -261,6 +261,8 @@ console.log('\nImporta banca, prima di scrivere: abbinaTesto (supabase/prova/abb
   ok('il cognome solo non basta', t('DA VACCARO PER QUOTA PRUDENTE'), 'nessuno')
   ok('un genitore con una parola sola («Gino» «-», «-» «Rossi») non è nel testo di «Rossi Gino»',
     prova(() => a.abbinaTesto('DA ROSSI GINO PER QUOTA', [P('x', 'Ugo', 'Mezzo', { genitoreNome: 'Gino', genitoreCognome: '-' }), P('y', 'Bimbo', 'Mezzano', { genitoreNome: '-', genitoreCognome: 'Rossi' })]).length), 0)
+  ok('un nome del genitore senza lettere («\'», «1») non è una parola',
+    prova(() => [a.abbinaTesto("DA ROSSI ' MARIO PER QUOTA", [P('x', 'Bimbo', 'Apos', { genitoreNome: "'", genitoreCognome: 'Rossi' })]).length, a.abbinaTesto('DA VERDI MARIO RATA 1 CORSO', [P('y', 'Bimba', 'Cifra', { genitoreNome: '1', genitoreCognome: 'Verdi' })]).length]), [0, 0])
   ok('un testo troppo lungo: nessuno', t('MANUEL PRUDENTE ' + 'x'.repeat(400)), 'nessuno')
   ok('l\'apostrofo che fa da accento nel nome della scheda', prova(() => a.abbinaTesto('DA MATERA ELISA PER DIEGO ORRU', [P('diego', 'Diego', "Orru'")]).map((x) => x.id)), ['diego'])
 }

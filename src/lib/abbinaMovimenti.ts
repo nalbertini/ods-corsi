@@ -86,9 +86,9 @@ const paroleCorso = (nome: string): string[] => parole(nome).map(senzaApostrofi)
 /** Le parole senza cifre (TRN, date, numeri di ricevuta cambiano da un bonifico all'altro dello stesso conto), in ordine. */
 const firma = (testo: string): string => [...new Set(parole(testo).filter((w) => !/[0-9]/.test(w)))].sort().join(' ')
 
-/** Il genitore nel testo: vale solo con almeno una parola nel nome e una nel cognome («Gino» «-» non dice chi è). */
+/** Il genitore nel testo: vale solo con almeno una lettera nel nome e una nel cognome («Gino» «-» o «1» «Verdi» non dicono chi è). */
 const genitoreNelTesto = (p: Pick<PersonaDaAbbinare, 'genitoreNome' | 'genitoreCognome'>, nelle: Set<string>): boolean =>
-  parole(p.genitoreNome ?? '').length > 0 && parole(p.genitoreCognome ?? '').length > 0 && nelTesto(`${p.genitoreNome} ${p.genitoreCognome}`, nelle)
+  /\p{L}/u.test(p.genitoreNome ?? '') && /\p{L}/u.test(p.genitoreCognome ?? '') && nelTesto(`${p.genitoreNome} ${p.genitoreCognome}`, nelle)
 
 /** Nome e cognome interi, o quelli del genitore, nel testo: lo usa anche «Importa banca». Il genitore vale solo intero. */
 export function nomeOGenitore(p: Pick<PersonaDaAbbinare, 'nome' | 'cognome' | 'genitoreNome' | 'genitoreCognome'>, testo: string): 'nome intero' | 'genitore' | null {

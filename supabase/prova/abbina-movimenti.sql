@@ -424,8 +424,13 @@ insert into persone (id, nome, cognome, ruolo, attiva) values ('eeeeeeee-0000-00
 insert into anagrafiche (persona_id, genitore_nome, genitore_cognome) values ('eeeeeeee-0000-0000-0000-0000000000f1', '-', '.');
 insert into persone (id, nome, cognome, ruolo, attiva) values ('eeeeeeee-0000-0000-0000-0000000000f2', 'Bimbo', 'Mezzano', 'iscritto', true);
 insert into anagrafiche (persona_id, genitore_nome, genitore_cognome) values ('eeeeeeee-0000-0000-0000-0000000000f2', '-', 'Rossi');
+insert into persone (id, nome, cognome, ruolo, attiva) values ('eeeeeeee-0000-0000-0000-0000000000f3', 'Bimbo', 'Apos', 'iscritto', true),
+  ('eeeeeeee-0000-0000-0000-0000000000f4', 'Bimba', 'Cifra', 'iscritto', true);
+insert into anagrafiche (persona_id, genitore_nome, genitore_cognome) values ('eeeeeeee-0000-0000-0000-0000000000f3', '''', 'Rossi'),
+  ('eeeeeeee-0000-0000-0000-0000000000f4', '1', 'Verdi');
 set role authenticated;
 select atteso('un genitore scritto solo con la punteggiatura non è nel testo di nessuno', tenta($$select pagatori_testo('')$$) || ' / ' || tenta($$select pagatori_testo('zzz')$$), 'nessuno / nessuno');
+select atteso('un nome del genitore senza lettere («''», «1») non è una parola', tenta($$select pagatori_testo('DA ROSSI '' MARIO PER QUOTA')$$) || ' / ' || tenta($$select pagatori_testo('DA VERDI MARIO RATA 1 CORSO')$$), 'nessuno / nessuno');
 select atteso('un genitore con una parola sola («Gino» «-», «-» «Rossi») non è nel testo di «Rossi Gino»', tenta($$select pagatori_testo('DA ROSSI GINO PER QUOTA')$$), 'nessuno');
 select atteso('un testo troppo lungo: nessuno', tenta($$select pagatori_testo('MANUEL PRUDENTE ' || repeat('x', 400))$$), 'nessuno');
 select atteso('escono solo persona, nome, cognome, come e sicuro: mai il genitore',
