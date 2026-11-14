@@ -756,6 +756,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rifà `candidati_persona_movimento` del 70: se si rilancia 70 dopo, va rilanciato anche questo.
   ('159-candidati-dal-testo.sql', '«Chi e per cosa» suggerisce chi ha nome e cognome nel testo del bonifico',
     to_regprocedure('public.collegamento_testo(text)') is not null
-    and exists (select 1 from dentro where nome = 'candidati_persona_movimento' and corpo like '%collegamento_testo%'))
+    and exists (select 1 from dentro where nome = 'candidati_persona_movimento' and corpo like '%collegamento_testo%')),
+  ('160-abbina-pagatori-testo.sql', 'l''import della banca propone chi è nel testo del bonifico (nome intero o genitore)',
+    to_regprocedure('public.abbina_pagatori_testo(text)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

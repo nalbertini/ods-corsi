@@ -2234,6 +2234,14 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return righe.map((x) => ({ id: x.persona_id, nome: x.nome, cognome: x.cognome, come: x.come, giaIscritto: x.gia_iscritto, sicuro: x.sicuro === true }))
     },
 
+    async abbinaPagatoriTesto(testo) {
+      const r = await db.rpc('abbina_pagatori_testo', { testo })
+      // Senza 160-abbina-pagatori-testo.sql la funzione non c'è: la persona si cerca a mano, come prima.
+      if (r.error && funzioneAssente(r.error)) return []
+      const righe = ok(r) as Array<{ persona_id: string; nome: string; cognome: string; come: Abbinato['come']; sicuro: boolean }>
+      return righe.map((x) => ({ id: x.persona_id, nome: x.nome, cognome: x.cognome, come: x.come, giaIscritto: false, sicuro: x.sicuro }))
+    },
+
     async abbinaTestoBanca(testo, movimenti) {
       const r = await db.rpc('abbina_testo_banca', { testo, movimenti })
       if (r.error && funzioneAssente(r.error)) return []

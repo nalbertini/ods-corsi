@@ -161,6 +161,8 @@ quando arriva la prova.
   la finestra e i tre punti d'ingresso solo a mano.
 - Le persone suggerite dal testo in quella finestra aperta da MOVIMENTI: `prova:contabilita`,
   caso 38 (la finestra le riceve, lette per il movimento aperto).
+- All'import della banca, chi è nel testo di un bonifico SEPA (nome intero o genitore): `abbinaTesto` e
+  `cercaNelTesto` (`prova:abbina-movimenti`) e `supabase/prova/abbina-movimenti.sql`, 5.
 - Chi ha nome e cognome nel testo, anche di un bonifico Da classificare: `personeNelTesto`
   (`prova:movimenti-persona`, 12) e `supabase/prova/movimenti-persona.sql`, 21.
 - La testata di quella finestra, chi ha pagato e la causale senza codici: `causaleInBreve`,

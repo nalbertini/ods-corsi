@@ -394,7 +394,9 @@ Un'entrata con **«cashback»** nel testo (per esempio il cashback di Postepay) 
 Sulle righe che entrano scegli la **tipologia**: parte da quella che l'app propone (come per
 i movimenti da classificare) o da **Da classificare**. Per una quota o un corso serve anche la
 **persona**, in fondo alla riga: se nel testo c'è il nome di una sola scheda, l'app la mette già lì
-e all'importazione vale quella. Premendo il campo (o **Chi e per cosa**, se è vuoto) si apre **CHI HA
+e all'importazione vale quella. Anche in un bonifico come «DA MATERA ELISA PER SALDO … DIEGO ORRU»
+l'app cerca nel testo chi ha nome e cognome interi, e i figli di chi ha pagato se nella scheda c'è il
+genitore: li propone, e mette già lì solo una persona trovata per nome intero. Premendo il campo (o **Chi e per cosa**, se è vuoto) si apre **CHI HA
 PAGATO E PER COSA?** (vedi [Assegnare un bonifico](#assegnare-un-bonifico-a-quota-e-corsi)): scegli la
 persona e a cosa va. Il campo dice poi chi e per cosa («Trimestre Judo kids 120,00 €»), e la tipologia
 segue quel che paga. Un'entrata **Da classificare** può aprire la stessa finestra.
