@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Linguette della scheda</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «Scheda iscritto»: le linguette della scheda (.sg-schede-scheda, SCHEDE di Iscritti.tsx), con le stesse quattro voci.
+     Cambia l'aspetto, come le linguette delle aree nel restyle: niente riquadro inchiostro sulla voce accesa ma un segno blu
+     #14709f da 2px sotto; parole in minuscolo, Inter 15px; il segno (segniSchede) è un pallino e una parola, non in maiuscolo
+     spaziato. Al telefono le voci scorrono in orizzontale, ognuna alta 48px. -->
+<nav aria-label="Parti della scheda" style="display: flex; gap: {{spazio}}; height: 52px; border-bottom: 1px solid #cfe6f4; overflow-x: auto; white-space: nowrap">
+  <sc-for list="{{voci}}" as="v" hint-placeholder-count="4">
+    <a href="#" style="display: flex; align-items: center; gap: 8px; flex: 0 0 auto; margin-bottom: -1px; border-bottom: {{v.segno}}; color: {{v.colore}}; text-decoration: none; font-size: 15px; font-weight: {{v.peso}}">
+      <dc-import name="Icona" nome="{{v.icona}}" misura="18" colore="currentColor" hint-size="18px,18px"></dc-import>
+      {{v.nome}}
+      <sc-if value="{{v.conParola}}" hint-placeholder-val="{{ false }}">
+        <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: {{v.tono}}"><span style="width: 7px; height: 7px; border-radius: 50%; background: {{v.tono}}"></span>{{v.parola}}</span>
+      </sc-if>
+    </a>
+  </sc-for>
+</nav>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"acceso":{"editor":"enum","options":["persona","documenti","quota","corsi"],"default":"persona"},"segnoDocumenti":{"editor":"enum","options":["","giallo","rosso"],"default":"rosso"},"segnoQuota":{"editor":"enum","options":["","giallo","rosso"],"default":"rosso"},"parolaDocumenti":{"editor":"text","default":"da sistemare"},"parolaQuota":{"editor":"text","default":"da pagare"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1060,"height":52}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const acceso = p.acceso ?? 'persona';
+    const toni = { rosso: '#b81d1d', giallo: '#8f6a00' };
+    const voci = [
+      { id: 'persona', nome: 'Persona', icona: 'persona', segno: '', parola: '' },
+      { id: 'documenti', nome: 'Documenti', icona: 'documento', segno: p.segnoDocumenti ?? 'rosso', parola: p.parolaDocumenti ?? 'da sistemare' },
+      { id: 'quota', nome: 'Quota e pagamenti', icona: 'quota', segno: p.segnoQuota ?? 'rosso', parola: p.parolaQuota ?? 'da pagare' },
+      { id: 'corsi', nome: 'Corsi e presenze', icona: 'corso', segno: '', parola: '' },
+    ].map((v) => ({
+      ...v,
+      conParola: Boolean(v.segno) && Boolean(v.parola),
+      tono: toni[v.segno] || '#46606f',
+      segno: v.id === acceso ? '2px solid #14709f' : '2px solid transparent',
+      colore: v.id === acceso ? '#0d2a3d' : '#46606f',
+      peso: v.id === acceso ? 600 : 500,
+    }));
+    return { voci, spazio: (p.telefono ?? false) ? '20px' : '32px' };
+  }
+}
+</script>
+</body>
+</html>

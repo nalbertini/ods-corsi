@@ -1,0 +1,38 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-14T00:41:01Z" },
+  "title": "Scheda iscritto · proposta",
+  "launch": { "view": "canvas", "page": "prima-dopo" },
+  "pages": [
+    { "id": "prima-dopo", "name": "Prima e dopo" },
+    { "id": "libreria", "name": "Libreria" }
+  ],
+  "boards": {
+    "PrimaComputer.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 900, "title": "Con cose che mancano · prima (1440)", "page": "prima-dopo" },
+    "Main.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 1180, "title": "Con cose che mancano · dopo (1440)", "page": "prima-dopo" },
+    "PrimaTelefono.dc.html": { "x": 3040, "y": 0, "w": 390, "h": 844, "title": "Con cose che mancano · prima (390)", "page": "prima-dopo" },
+    "DopoTelefono.dc.html": { "x": 3510, "y": 0, "w": 390, "h": 1560, "title": "Con cose che mancano · dopo (390)", "page": "prima-dopo" },
+    "PrimaTuttoAPosto.dc.html": { "x": 0, "y": 1900, "w": 1440, "h": 900, "title": "Tutto a posto · prima (1440)", "page": "prima-dopo" },
+    "TuttoAPosto.dc.html": { "x": 1520, "y": 1900, "w": 1440, "h": 900, "title": "Tutto a posto · dopo (1440)", "page": "prima-dopo" },
+    "AppenaIscritto.dc.html": { "x": 1520, "y": 3320, "w": 1440, "h": 900, "title": "Appena iscritta, senza storico · dopo (1440)", "page": "prima-dopo" },
+    "VoceDaSistemare.dc.html": { "x": 0, "y": 0, "w": 1060, "h": 72, "title": "VoceDaSistemare", "page": "libreria" },
+    "LinguetteScheda.dc.html": { "x": 0, "y": 192, "w": 1060, "h": 52, "title": "LinguetteScheda", "page": "libreria" },
+    "MenuNuovo.dc.html": { "x": 1200, "y": 0, "w": 240, "h": 900, "title": "MenuNuovo (dal restyle)", "page": "libreria" },
+    "BarraTelefonoNuova.dc.html": { "x": 1520, "y": 0, "w": 390, "h": 56, "title": "BarraTelefonoNuova (dal restyle)", "page": "libreria" },
+    "Icona.dc.html": { "x": 1520, "y": 176, "w": 24, "h": 24, "title": "Icona", "page": "libreria" }
+  },
+  "order": [
+    "PrimaComputer.dc.html", "Main.dc.html", "PrimaTelefono.dc.html", "DopoTelefono.dc.html",
+    "PrimaTuttoAPosto.dc.html", "TuttoAPosto.dc.html", "AppenaIscritto.dc.html",
+    "VoceDaSistemare.dc.html", "LinguetteScheda.dc.html", "MenuNuovo.dc.html", "BarraTelefonoNuova.dc.html", "Icona.dc.html"
+  ],
+  "notes": {
+    "t1": { "x": 0, "y": -300, "text": "Con cose che mancano: la scoperta sotto il nome, un elenco solo al posto di Cosa manca e dei timbri", "kind": "title1", "maxW": 3900, "page": "prima-dopo" },
+    "t2": { "x": 0, "y": 1600, "text": "Tutto a posto: una riga verde, niente riquadri", "kind": "title1", "maxW": 2960, "page": "prima-dopo" },
+    "t3": { "x": 0, "y": 3020, "text": "Appena iscritta: vuoti che dicono cosa succede dopo", "kind": "title1", "maxW": 2960, "page": "prima-dopo" },
+    "n1": { "x": 4000, "y": 0, "w": 440, "fill": "teal", "text": "La domanda della scheda: «Questa persona è in regola? Se no, cosa faccio adesso?». La scoperta va sotto il nome, in una frase coi numeri: «Mancano 530,00 € e il certificato, scaduto il 09/09/2026». Accanto c'è il lavoro più frequente al banco, «Segna un pagamento», che oggi sta nella terza linguetta.", "page": "prima-dopo" },
+    "n2": { "x": 4000, "y": 640, "w": 440, "fill": "blue", "text": "Lo stile è quello della PR #876 (Restyle segreteria): fondo #eef5fa, riquadri bianchi con raggio 6, bordi da 1px, titolo 28px, etichette in minuscolo, giallo solo sul tasto principale, la barra dello stato dentro a sinistra (4px). L'elemento firma è la riga di «Da sistemare»: barra rossa, cosa e perché, l'importo a destra e il suo tasto.", "page": "prima-dopo" },
+    "n3": { "x": 4000, "y": 1280, "w": 440, "fill": "gray", "text": "Le tavole «prima» sono schermate vere dell'app in modalità prova (14 novembre 2026), con dati finti. La linea tratteggiata sulle tavole «dopo» è la piega dei 900px.", "page": "prima-dopo" }
+  },
+  "designSystems": []
+}

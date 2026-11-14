@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Scheda iscritto · dopo</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #14709f; } a:hover { color: #0d2a3d; }
+  </style>
+</helmet>
+<!-- PROPOSTA «Scheda iscritto» (Scheda in Iscritti.tsx), iscritta con cose che mancano (Bruno Sofia, dati finti della prova).
+     Cambiano: la fascia vuota sopra il nome sparisce (la ✕ va nella riga del nome); sotto il nome il corso e il telefono, sempre a vista;
+     la scoperta in una frase coi numeri; il tasto giallo è «Segna un pagamento» (oggi in QUOTA E PAGAMENTI), il sollecito passa a linea;
+     COSA MANCA e i tre timbri diventano un elenco solo, DA SISTEMARE, con l'azione su ogni riga; etichette in minuscolo, niente
+     maiuscolo spaziato; il nucleo è un elenco con un filo fra le righe invece di riquadri azzurri. -->
+<div style="position: relative; display: flex; width: 1440px; height: 1180px; overflow: hidden; background: #0d2a3d">
+  <dc-import name="MenuNuovo" corrente="Iscritti" hint-size="240px,900px"></dc-import>
+  <div style="position: relative; flex: 1; min-width: 0; background: #eef5fa">
+    <div style="position: absolute; inset: 0; background: rgba(13, 42, 61, 0.55)"></div>
+    <section aria-label="Scheda di Bruno Sofia" style="position: absolute; top: 16px; left: 20px; right: 20px; bottom: 16px; display: flex; flex-direction: column; gap: 20px; padding: 24px 28px; border-radius: 6px; background: #ffffff; overflow: hidden">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+          <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 28px; font-weight: 800; letter-spacing: 0.02em; line-height: 1">BRUNO SOFIA</h2>
+          <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 14px; color: #46606f">
+            <span>Lotta 3</span>
+            <span>In elenco dal 14 settembre 2026</span>
+            <a href="#" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; text-decoration: none; font-variant-numeric: tabular-nums"><dc-import name="Icona" nome="telefono" misura="16" colore="currentColor" hint-size="16px,16px"></dc-import>340 201 7591</a>
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex: 0 0 auto">
+          <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 0; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font: 600 15px Inter, sans-serif"><dc-import name="Icona" nome="euro" misura="18" colore="#0d2a3d" hint-size="18px,18px"></dc-import>Segna un pagamento</button>
+          <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 15px Inter, sans-serif"><dc-import name="Icona" nome="messaggio" misura="18" colore="#0d2a3d" hint-size="18px,18px"></dc-import>Sollecita su WhatsApp</button>
+          <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 15px Inter, sans-serif">Altro <svg width="12" height="12" viewBox="0 0 24 24" fill="#0d2a3d" aria-hidden="true"><path d="M5 8h14l-7 9z"></path></svg></button>
+          <button type="button" aria-label="Chiudi la scheda" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: 8px; border: 0; border-radius: 6px; background: #e6eef3; color: #0d2a3d"><dc-import name="Icona" nome="chiudi" misura="20" colore="#0d2a3d" hint-size="20px,20px"></dc-import></button>
+        </div>
+      </div>
+
+      <p style="margin: 0; font-size: 18px; font-weight: 500; line-height: 1.4">Mancano <strong style="color: #b81d1d; font-weight: 700; font-variant-numeric: tabular-nums">530,00 €</strong> e il certificato, <strong style="color: #b81d1d; font-weight: 700">scaduto il 09/09/2026</strong>. Per la ricevuta servono anche codice fiscale e data di nascita.</p>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px">
+          <h3 style="margin: 0; font-size: 16px; font-weight: 600">Da sistemare <span style="margin-left: 6px; padding: 0 7px; border-radius: 999px; background: #fbe9e9; color: #b81d1d; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums">5</span></h3>
+          <span style="font-size: 14px; color: #46606f">Totale da pagare <strong style="margin-left: 6px; color: #0d2a3d; font-size: 16px; font-variant-numeric: tabular-nums">530,00 €</strong></span>
+        </div>
+        <div style="display: flex; flex-direction: column; border: 1px solid #cfe6f4; border-radius: 6px; overflow: hidden">
+          <dc-import name="VoceDaSistemare" icona="certificato" cosa="Certificato medico" perche="Senza, non può allenarsi" parola="Scaduto il 09/09/2026" tono="rosso" importo="" tasto="Carica il certificato" hint-size="100%,72px"></dc-import>
+          <dc-import name="VoceDaSistemare" icona="quota" cosa="Quota associativa 2026/27" perche="Nessun pagamento" parola="Da pagare" tono="rosso" importo="50,00 €" tasto="Segna pagata" filo="si" hint-size="100%,72px"></dc-import>
+          <dc-import name="VoceDaSistemare" icona="corso" cosa="Lotta 3 · annuale" perche="Nessun pagamento" parola="Da pagare" tono="rosso" importo="480,00 €" tasto="Segna pagato" filo="si" hint-size="100%,72px"></dc-import>
+          <dc-import name="VoceDaSistemare" icona="documento" cosa="Codice fiscale" perche="Serve per la ricevuta" parola="Manca" tono="giallo" importo="" tasto="Aggiungi" filo="si" hint-size="100%,72px"></dc-import>
+          <dc-import name="VoceDaSistemare" icona="calendario" cosa="Data di nascita" perche="Serve anche per il certificato" parola="Manca" tono="giallo" importo="" tasto="Aggiungi" filo="si" hint-size="100%,72px"></dc-import>
+        </div>
+      </div>
+
+      <dc-import name="LinguetteScheda" acceso="persona" segno-documenti="rosso" segno-quota="rosso" hint-size="100%,52px"></dc-import>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 40px">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600">Contatti</h3>
+            <button type="button" style="min-height: 44px; padding: 0 14px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 14px Inter, sans-serif">Modifica</button>
+          </div>
+          <dl style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px 16px; margin: 0; font-size: 15px">
+            <dt style="color: #46606f; font-size: 14px">Email</dt><dd style="margin: 0">sofia.bruno@esempio.it</dd>
+            <dt style="color: #46606f; font-size: 14px">Telefono</dt><dd style="margin: 0; font-variant-numeric: tabular-nums">340 201 7591</dd>
+          </dl>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600">Dati anagrafici</h3>
+            <button type="button" style="min-height: 44px; padding: 0 14px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 14px Inter, sans-serif">Aggiungi</button>
+          </div>
+          <p style="margin: 0; font-size: 15px; color: #46606f; line-height: 1.45">Ancora nessun dato. Arrivano col modulo di iscrizione o con l'import delle risposte del modulo Google; se no si scrivono a mano.</p>
+        </div>
+        <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px">
+          <h3 style="margin: 0; font-size: 16px; font-weight: 600">Nucleo familiare</h3>
+          <div style="display: flex; flex-direction: column; border: 1px solid #cfe6f4; border-radius: 6px; overflow: hidden">
+            <div style="display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 6px 16px">
+              <a href="#" style="font-size: 15px; font-weight: 600">Giuseppe Bruno</a>
+              <span style="padding: 1px 8px; border-radius: 999px; background: #cfe6f4; font-size: 12px; font-weight: 600">Titolare</span>
+              <span style="flex: 1; font-size: 14px; color: #46606f">Vede tutto il nucleo nella sua pagina</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 6px 16px; border-top: 1px solid #cfe6f4">
+              <a href="#" style="font-size: 15px; font-weight: 600">Pietro Bruno</a>
+              <span style="flex: 1; font-size: 14px; color: #46606f">Nel nucleo</span>
+              <button type="button" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; color: #14709f; font: 600 14px Inter, sans-serif">Fai titolare</button>
+              <button type="button" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; color: #b81d1d; font: 600 14px Inter, sans-serif">Togli dal nucleo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 900px; border-top: 2px dashed #14709f"></div>
+  <span style="position: absolute; top: 906px; right: 12px; padding: 2px 8px; border-radius: 999px; background: #14709f; color: #ffffff; font-size: 12px; font-weight: 600">piega a 900px</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

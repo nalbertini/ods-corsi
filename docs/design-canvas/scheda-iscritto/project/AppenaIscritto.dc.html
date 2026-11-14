@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Scheda iscritto · appena iscritta</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #14709f; } a:hover { color: #0d2a3d; }
+  </style>
+</helmet>
+<!-- PROPOSTA «Scheda iscritto», iscritta oggi (Conti Giulia, dati finti). Nessuno storico: DA SISTEMARE elenca quel che serve
+     per cominciare, senza toni d'allarme per cose che non sono in ritardo (giallo, non rosso); CORSI E PRESENZE è aperta e dice
+     onestamente che non c'è ancora niente, e cosa succede dopo. -->
+<div style="position: relative; display: flex; width: 1440px; height: 900px; overflow: hidden; background: #0d2a3d">
+  <dc-import name="MenuNuovo" corrente="Iscritti" hint-size="240px,900px"></dc-import>
+  <div style="position: relative; flex: 1; min-width: 0; background: #eef5fa">
+    <div style="position: absolute; inset: 0; background: rgba(13, 42, 61, 0.55)"></div>
+    <section aria-label="Scheda di Conti Giulia" style="position: absolute; top: 16px; left: 20px; right: 20px; bottom: 16px; display: flex; flex-direction: column; gap: 20px; padding: 24px 28px; border-radius: 6px; background: #ffffff; overflow: hidden">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+          <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 28px; font-weight: 800; letter-spacing: 0.02em; line-height: 1">CONTI GIULIA <span style="margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #e6eef3; color: #14709f; font: 600 12px Inter, sans-serif; letter-spacing: 0; vertical-align: middle">Nuova</span></h2>
+          <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 14px; color: #46606f">
+            <span>Judo 1</span>
+            <span>In elenco da oggi, 14 novembre 2026</span>
+            <a href="#" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; text-decoration: none; font-variant-numeric: tabular-nums"><dc-import name="Icona" nome="telefono" misura="16" colore="currentColor" hint-size="16px,16px"></dc-import>347 000 1234</a>
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex: 0 0 auto">
+          <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 0; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font: 600 15px Inter, sans-serif"><dc-import name="Icona" nome="euro" misura="18" colore="#0d2a3d" hint-size="18px,18px"></dc-import>Segna un pagamento</button>
+          <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 15px Inter, sans-serif">Altro <svg width="12" height="12" viewBox="0 0 24 24" fill="#0d2a3d" aria-hidden="true"><path d="M5 8h14l-7 9z"></path></svg></button>
+          <button type="button" aria-label="Chiudi la scheda" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: 8px; border: 0; border-radius: 6px; background: #e6eef3; color: #0d2a3d"><dc-import name="Icona" nome="chiudi" misura="20" colore="#0d2a3d" hint-size="20px,20px"></dc-import></button>
+        </div>
+      </div>
+
+      <p style="margin: 0; font-size: 18px; font-weight: 500; line-height: 1.4">Per cominciare servono il certificato medico e <strong style="font-variant-numeric: tabular-nums">190,00 €</strong>: quota associativa e primo trimestre di Judo 1.</p>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px">
+          <h3 style="margin: 0; font-size: 16px; font-weight: 600">Da sistemare <span style="margin-left: 6px; padding: 0 7px; border-radius: 999px; background: #fcf6e6; color: #8f6a00; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums">3</span></h3>
+          <span style="font-size: 14px; color: #46606f">Totale da pagare <strong style="margin-left: 6px; color: #0d2a3d; font-size: 16px; font-variant-numeric: tabular-nums">190,00 €</strong></span>
+        </div>
+        <div style="display: flex; flex-direction: column; border: 1px solid #cfe6f4; border-radius: 6px; overflow: hidden">
+          <dc-import name="VoceDaSistemare" icona="certificato" cosa="Certificato medico" perche="Serve prima della prima lezione" parola="Da caricare" tono="giallo" importo="" tasto="Carica il certificato" hint-size="100%,72px"></dc-import>
+          <dc-import name="VoceDaSistemare" icona="quota" cosa="Quota associativa 2026/27" perche="Nessun pagamento ancora" parola="Da pagare" tono="giallo" importo="50,00 €" tasto="Segna pagata" filo="si" hint-size="100%,72px"></dc-import>
+          <dc-import name="VoceDaSistemare" icona="corso" cosa="Judo 1 · trimestre" perche="Nessun pagamento ancora" parola="Da pagare" tono="giallo" importo="140,00 €" tasto="Segna pagato" filo="si" hint-size="100%,72px"></dc-import>
+        </div>
+      </div>
+
+      <dc-import name="LinguetteScheda" acceso="corsi" segno-documenti="giallo" segno-quota="giallo" hint-size="100%,52px"></dc-import>
+
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 40px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600">Iscrizioni</h3>
+            <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px dashed #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 14px Inter, sans-serif"><dc-import name="Icona" nome="aggiungi" misura="16" colore="#0d2a3d" hint-size="16px,16px"></dc-import>Iscrivi a un corso</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 8px 16px; border: 1px solid #cfe6f4; border-radius: 6px; box-shadow: inset 4px 0 0 #f4c31b">
+            <span style="display: flex; flex-direction: column; flex: 1"><span style="font-size: 15px; font-weight: 600">Judo 1</span><span style="font-size: 14px; color: #46606f">Dal 14 novembre 2026 · lunedì e mercoledì 17:00</span></span>
+            <span style="font-size: 14px; font-weight: 600; color: #8f6a00">Da pagare</span>
+            <button type="button" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; color: #b81d1d; font: 600 14px Inter, sans-serif">Termina</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: center; min-height: 44px">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600">Presenze</h3>
+          </div>
+          <div style="display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 64px; padding: 12px 16px; border: 1px dashed #cfe6f4; border-radius: 6px">
+            <span style="font-size: 15px; font-weight: 600">Nessuna lezione ancora</span>
+            <span style="font-size: 14px; color: #46606f; line-height: 1.45">La prima è lunedì 16 novembre. Le presenze compaiono qui quando l'istruttore fa l'appello.</span>
+          </div>
+        </div>
+        <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px">
+          <h3 style="margin: 0; font-size: 16px; font-weight: 600">Pagamenti</h3>
+          <p style="margin: 0; font-size: 15px; color: #46606f">Nessun pagamento ancora. Quando lo segni, la ricevuta parte da qui.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Scheda iscritto · tutto a posto</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #14709f; } a:hover { color: #0d2a3d; }
+  </style>
+</helmet>
+<!-- PROPOSTA «Scheda iscritto», iscritto in regola (Bellini Andrea, dati finti). Niente DA SISTEMARE e niente timbri verdi a riquadro:
+     la scoperta è una frase verde e sotto una riga sola con quel che è in regola. Il sollecito non c'è (non c'è niente da sollecitare,
+     come oggi); il tasto giallo resta «Segna un pagamento». Aperta su CORSI E PRESENZE per far vedere le ultime lezioni. -->
+<div style="position: relative; display: flex; width: 1440px; height: 900px; overflow: hidden; background: #0d2a3d">
+  <dc-import name="MenuNuovo" corrente="Iscritti" hint-size="240px,900px"></dc-import>
+  <div style="position: relative; flex: 1; min-width: 0; background: #eef5fa">
+    <div style="position: absolute; inset: 0; background: rgba(13, 42, 61, 0.55)"></div>
+    <section aria-label="Scheda di Bellini Andrea" style="position: absolute; top: 16px; left: 20px; right: 20px; bottom: 16px; display: flex; flex-direction: column; gap: 20px; padding: 24px 28px; border-radius: 6px; background: #ffffff; overflow: hidden">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+          <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 28px; font-weight: 800; letter-spacing: 0.02em; line-height: 1">BELLINI ANDREA</h2>
+          <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 14px; color: #46606f">
+            <span>Judo 2</span>
+            <span>45 anni · in elenco dal 14 settembre 2026</span>
+            <a href="#" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; text-decoration: none; font-variant-numeric: tabular-nums"><dc-import name="Icona" nome="telefono" misura="16" colore="currentColor" hint-size="16px,16px"></dc-import>333 174 4579</a>
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex: 0 0 auto">
+          <button type="button" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 0; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font: 600 15px Inter, sans-serif"><dc-import name="Icona" nome="euro" misura="18" colore="#0d2a3d" hint-size="18px,18px"></dc-import>Segna un pagamento</button>
+          <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 15px Inter, sans-serif">Altro <svg width="12" height="12" viewBox="0 0 24 24" fill="#0d2a3d" aria-hidden="true"><path d="M5 8h14l-7 9z"></path></svg></button>
+          <button type="button" aria-label="Chiudi la scheda" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: 8px; border: 0; border-radius: 6px; background: #e6eef3; color: #0d2a3d"><dc-import name="Icona" nome="chiudi" misura="20" colore="#0d2a3d" hint-size="20px,20px"></dc-import></button>
+        </div>
+      </div>
+
+      <p style="margin: 0; font-size: 18px; font-weight: 500; line-height: 1.4"><strong style="color: #0b7a33; font-weight: 700">In regola.</strong> In palestra <strong style="font-variant-numeric: tabular-nums">6 volte su 13</strong> negli ultimi 30 giorni.</p>
+
+      <div style="display: flex; flex-wrap: wrap; border: 1px solid #cfe6f4; border-radius: 6px; box-shadow: inset 4px 0 0 #12913f; overflow: hidden">
+        <span style="display: flex; align-items: center; gap: 10px; flex: 1 1 260px; min-height: 56px; padding: 8px 20px"><dc-import name="Icona" nome="certificato" misura="20" colore="#0b7a33" hint-size="20px,20px"></dc-import><span style="display: flex; flex-direction: column"><span style="font-size: 14px; color: #46606f">Certificato medico</span><span style="font-size: 15px; font-weight: 600; color: #0b7a33">Valido fino al 21/06/2027</span></span></span>
+        <span style="display: flex; align-items: center; gap: 10px; flex: 1 1 260px; min-height: 56px; padding: 8px 20px; border-left: 1px solid #cfe6f4"><dc-import name="Icona" nome="quota" misura="20" colore="#0b7a33" hint-size="20px,20px"></dc-import><span style="display: flex; flex-direction: column"><span style="font-size: 14px; color: #46606f">Quota associativa</span><span style="font-size: 15px; font-weight: 600; color: #0b7a33">Pagata · ricevuta 8/2026, fino al 31/07/2027</span></span></span>
+        <span style="display: flex; align-items: center; gap: 10px; flex: 1 1 200px; min-height: 56px; padding: 8px 20px; border-left: 1px solid #cfe6f4"><dc-import name="Icona" nome="corso" misura="20" colore="#0b7a33" hint-size="20px,20px"></dc-import><span style="display: flex; flex-direction: column"><span style="font-size: 14px; color: #46606f">Judo 2</span><span style="font-size: 15px; font-weight: 600; color: #0b7a33">Pagato</span></span></span>
+      </div>
+
+      <dc-import name="LinguetteScheda" acceso="corsi" segno-documenti="" segno-quota="" hint-size="100%,52px"></dc-import>
+
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 40px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600">Iscrizioni</h3>
+            <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px dashed #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 600 14px Inter, sans-serif"><dc-import name="Icona" nome="aggiungi" misura="16" colore="#0d2a3d" hint-size="16px,16px"></dc-import>Iscrivi a un corso</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 8px 16px; border: 1px solid #cfe6f4; border-radius: 6px; box-shadow: inset 4px 0 0 #12913f">
+            <span style="display: flex; flex-direction: column; flex: 1"><span style="font-size: 15px; font-weight: 600">Judo 2</span><span style="font-size: 14px; color: #46606f">Dal 14 settembre 2026</span></span>
+            <span style="font-size: 14px; font-weight: 600; color: #0b7a33">Pagato</span>
+            <button type="button" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; color: #b81d1d; font: 600 14px Inter, sans-serif">Termina</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; min-height: 44px">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600">Ultime 12 lezioni</h3>
+            <span style="font-size: 14px; color: #46606f">Ultimi 30 giorni <strong style="color: #0d2a3d; font-variant-numeric: tabular-nums">6 su 13</strong></span>
+          </div>
+          <div role="img" aria-label="Ultime 12 lezioni: 7 presenze, 4 assenze, 1 giustificata" style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{lezioni}}" as="l" hint-placeholder-count="12">
+              <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 52px; border-radius: 6px; background: {{l.fondo}}; color: {{l.colore}}; font-size: 13px; font-weight: 700">{{l.segno}}<span style="font-size: 11px; font-weight: 500; color: #46606f; font-variant-numeric: tabular-nums">{{l.giorno}}</span></span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const toni = {
+      p: { segno: '✓', fondo: '#e3f2e8', colore: '#0b7a33' },
+      a: { segno: '–', fondo: '#e6eef3', colore: '#46606f' },
+      g: { segno: 'G', fondo: '#fcf6e6', colore: '#8f6a00' },
+    };
+    const giorni = ['19/10', '21/10', '26/10', '28/10', '2/11', '4/11', '6/11', '9/11', '11/11', '12/11', '13/11', '14/11'];
+    const stati = ['p', 'a', 'p', 'p', 'a', 'g', 'p', 'a', 'p', 'p', 'a', 'p'];
+    return { lezioni: giorni.map((g, i) => ({ giorno: g, ...toni[stati[i]] })) };
+  }
+}
+</script>
+</body>
+</html>
