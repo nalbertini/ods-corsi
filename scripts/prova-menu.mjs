@@ -192,6 +192,10 @@ const piede = iP >= 0 ? nav.slice(iP) : ''
 const pos = ['{guidaNome}', '{impostazioniNome}', '{nome}', 'Esci', 'DATI DI PROVA', 'Riparti dall\'orario vero'].map((t) => piede.indexOf(t))
 ok('il piede ha, in ordine, Aiuto, Impostazioni, nome, Esci, DATI DI PROVA e il riavvio dell\'orario', pos.every((x) => x >= 0) && pos.every((x, k) => k === 0 || x > pos[k - 1]), true)
 ok('look sito: il piede ha lo sfondo #0a2232', /background(-color)?: #0a2232/i.test(corpi(delSito('.sg-piede'))), true)
+// A 200px (fra 768 e 1000px) Aiuto e Impostazioni insieme non ci stanno: Impostazioni usciva dal menu.
+ok('look sito: Aiuto e Impostazioni vanno a capo se non c\'è posto', /flex-wrap: wrap/.test(corpi(delSito('.sg-chi-voci'))), true)
+// Sul telefono Aiuto e Impostazioni stanno nella barra in alto: il display del look sito non deve battere il none del telefono.
+ok('look sito: la riga Aiuto e Impostazioni si mostra solo da 768px in su', delSito('.sg-chi-voci').filter((r) => /display:/.test(r.corpo)).map((r) => /min-width: 768px/.test(r.media ?? '')), [true])
 ok('look sito: l\'area centrale scorre da sola (overflow-y auto, min-height 0)', [/overflow-y: auto/.test(corpi(delSito('.sg-scorre'))), /min-height: 0/.test(corpi(delSito('.sg-scorre')))], [true, true])
 const menuFermo = REGOLE.filter((r) => r.media === '@media (min-width: 768px)' && r.sel.some((x) => x.endsWith('.sg-menu') || x.endsWith('#sg-menu')) && /overflow: hidden/.test(r.corpo))
 ok('da 768px in su la nav non scorre lei (overflow hidden, dentro @media (min-width: 768px))', menuFermo.length > 0, true)

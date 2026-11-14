@@ -220,22 +220,22 @@
 :root[data-look='sito'] .sg-gruppi { gap: 12px; }
 :root[data-look='sito'] .sg-gruppo { gap: 0; }
 :root[data-look='sito'] .sg-voci { gap: 0; }
-/* Il piede: Aiuto, Impostazioni, chi è dentro ed Esci, un gradino più scuro del menu. */
-:root[data-look='sito'] .sg-piede { display: flex; flex-direction: column; background: #0a2232; }
-:root[data-look='sito'] .sg-chi-voci { display: flex; }
-:root[data-look='sito'] .sg-chi-voci > .sg-voce { flex: none; gap: 8px; }
-:root[data-look='sito'] .sg-chi { flex-direction: row; align-items: center; gap: 8px; padding: 0 12px; border: 0; }
-:root[data-look='sito'] .sg-chi > .sg-link { align-self: center; font-size: 14px; }
-:root[data-look='sito'] .sg-piede-prova { flex-wrap: wrap; align-items: center; gap: 0 12px; padding: 0 12px; }
-:root[data-look='sito'] .sg-piede-prova > .sg-bollino { margin-top: 0; }
-:root[data-look='sito'] .sg-piede > .versione { padding: 0 12px; }
 :root[data-look='sito'] .sg-scorre { display: flex; flex-direction: column; gap: 12px; }
 /* Sul computer scorrono solo le voci: il marchio, la ricerca e il piede restano fermi. */
 @media (min-width: 768px) {
   :root[data-look='sito'] #sg-menu { gap: 16px; padding-top: calc(var(--safe-t) + 20px); padding-bottom: 0; }
   :root[data-look='sito'] .sg-scorre { flex: 1; min-height: 0; overflow-y: auto; }
-  /* Il piede arriva ai bordi del menu: annulla il margine di #sg-menu. */
-  :root[data-look='sito'] .sg-piede { margin: 0 -12px; padding: 8px 0 10px; }
+  /* Il piede: Aiuto, Impostazioni, chi è dentro ed Esci, un gradino più scuro del menu, fino ai
+     bordi (annulla il margine di #sg-menu). Solo qui: sul telefono Aiuto e Impostazioni stanno nella barra in alto. */
+  :root[data-look='sito'] .sg-piede { display: flex; flex-direction: column; margin: 0 -12px; padding: 8px 0 10px; background: #0a2232; }
+  /* A 200px (fra 768 e 1000) Aiuto e Impostazioni non stanno in una riga: Impostazioni va sotto. */
+  :root[data-look='sito'] .sg-chi-voci { display: flex; flex-wrap: wrap; }
+  :root[data-look='sito'] .sg-chi-voci > .sg-voce { flex: none; gap: 8px; }
+  :root[data-look='sito'] .sg-chi { flex-direction: row; align-items: center; gap: 8px; padding: 0 12px; border: 0; }
+  :root[data-look='sito'] .sg-chi > .sg-link { align-self: center; font-size: 14px; }
+  :root[data-look='sito'] .sg-piede-prova { flex-wrap: wrap; align-items: center; gap: 0 12px; padding: 0 12px; }
+  :root[data-look='sito'] .sg-piede-prova > .sg-bollino { margin-top: 0; }
+  :root[data-look='sito'] .sg-piede > .versione { padding: 0 12px; }
 }
 :root[data-look='sito'] .sg-menu .sg-campo { background: #ffffff; border-color: #ffffff; color: var(--su-colore); }
 /* `--dim` nel menu è chiaro (testo su inchiostro): sul campo bianco il segnaposto usa `--faint`, che il menu non cambia. */
