@@ -135,6 +135,9 @@ quando arriva la prova.
 - Carta: la richiesta del browser non contiene campi della carta
   (`CampiCarta.tsx`, `ModuloIscrizione.tsx`): nessuna prova. Il database non ha
   colonne per la carta, ma è l'unica metà coperta.
+- Modulo a passi, cablaggio nel `.tsx` (`IscrizioneAPassi.tsx`): quale campo
+  mostra «Manca» e la barra dopo AVANTI. Le regole sono provate
+  (`prova:iscrizione-passi`, sezione 49); il collegamento no. Solo collaudo a mano.
 - `prova-csp.mjs`: il filtro «paypal|google|apple» è largo, un host che lo
   contiene passa. Va stretto agli host esatti.
 - `update-con-where.sql`: il controllo cerca un WHERE dopo l'UPDATE, nello
