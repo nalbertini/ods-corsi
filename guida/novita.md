@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.255.1 — 14 novembre 2026
+
+### Modificato
+
+- Segreteria più leggera: titoli, bordi e numeri più piccoli
+
 ## 0.255.0 — 14 novembre 2026
 
 ### Novità
