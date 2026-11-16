@@ -1215,7 +1215,8 @@ function documento(c: Contesto, o: { titolo: string; descrizione: string; percor
   const url = `${c.d.dominio}${o.percorso}`
   // In fondo a tutto: le regole dei punti vincono sul ritaglio di ogni riquadro (vedi sitoFoto.ts).
   const punti = cssPunti(c.d.punti ?? {})
-  const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
+  // In home il titolo è una frase: da sola non dice a Google chi siamo, così il nome va davanti e la frase fa da sottotitolo.
+  const completo = o.percorso === '/' ? `${NOME} · ${o.titolo.replace(/\.$/, '')}` : `${o.titolo} · ${NOME}`
   return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}${PRELOAD_FONT}<style>${CSS_SITO}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}${punti ? `<style>${punti}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${conSalto(o.corpo)}</body></html>`
 }
 
