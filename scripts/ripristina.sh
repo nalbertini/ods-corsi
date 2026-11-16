@@ -31,15 +31,17 @@ trap 'dropdb --if-exists "$db" 2>/dev/null || true' EXIT
 # Un Postgres vuoto non ha quello che Supabase mette da sé (lo schema auth, lo Storage, i ruoli anon e simili):
 # la stessa impalcatura delle prove del database.
 psql -d "$db" -v ON_ERROR_STOP=1 -f supabase/prova/finto-supabase.sql >/dev/null
-# Su Supabase citext sta nello schema `extensions`, che è nel percorso di ricerca: lo schema della copia lo cita così.
-psql -d "$db" -v ON_ERROR_STOP=1 -c 'create schema if not exists extensions; create extension if not exists citext with schema extensions' >/dev/null
-psql -d "$db" -v ON_ERROR_STOP=1 -c "alter database $db set search_path = public, extensions" >/dev/null
+# Su Supabase lo schema `extensions` c'è sempre; citext invece sta in `public`, e la copia lo crea da sé lì.
+psql -d "$db" -v ON_ERROR_STOP=1 -c 'create schema if not exists extensions' >/dev/null
 
 # I ruoli di Supabase in un Postgres vuoto: gli errori «esiste già» o «non si può» sono attesi.
 psql -d "$db" -f "$cartella/ruoli.sql" >/dev/null 2>&1 || true
 
-# Lo schema: «esiste già» è atteso (l'impalcatura ha già auth e storage), il resto no. Lo schema non ha dati: si può dire.
-errori=$(psql -d "$db" -f "$cartella/schema.sql" 2>&1 >/dev/null | grep -i 'error' | grep -vi 'already exists' || true)
+# Lo schema: «esiste già» è atteso (l'impalcatura ha già auth e storage), e così le estensioni che ha solo Supabase
+# (pg_cron e pg_net per i lavori pianificati, il vault): servono al database vero, non a contare le righe. Il resto
+# no. Lo schema non ha dati: si può dire.
+errori=$(psql -d "$db" -f "$cartella/schema.sql" 2>&1 >/dev/null | grep -i 'error' | grep -vi 'already exists' \
+  | grep -Ev 'extension "(pg_cron|pg_net|supabase_vault)" is not available' || true)
 if [ -n "$errori" ]; then
   echo "✗ lo schema non si rimette a posto:"
   echo "$errori" | sed 's/^/    /' | head -20
