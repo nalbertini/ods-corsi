@@ -49,9 +49,11 @@ if [ -n "$errori" ]; then
   exit 1
 fi
 
-# I dati: auth.users non è nella copia (lo gestisce Supabase), quindi le righe che la puntano non passerebbero i
-# controlli di chiave esterna; qui si guardano le righe, non i collegamenti. Dei guai si dice quanti, non cosa.
-guai=$(psql -d "$db" -c 'set session_replication_role = replica' -f "$cartella/dati.sql" 2>&1 >/dev/null | grep -ci 'error' || true)
+# I dati, senza i controlli di chiave esterna: qui si guardano le righe, non i collegamenti. Le tabelle di auth e
+# storage le gestisce Supabase e l'impalcatura ne ha solo un pezzo: i loro errori non contano, quelli della
+# palestra sì. Dei guai si dice quanti, non cosa.
+guai=$(psql -d "$db" -c 'set session_replication_role = replica' -f "$cartella/dati.sql" 2>&1 >/dev/null | grep -i 'error' \
+  | grep -Evc 'relation "(auth|storage)\.|of relation "(users|buckets|objects)"' || true)
 if [ "$guai" != 0 ]; then
   echo "✗ i dati non si rimettono a posto: $guai errori (il testo non si stampa: i log sono pubblici; rilancia in locale con la password)"
   exit 1
