@@ -32,7 +32,8 @@ trap 'dropdb --if-exists "$db" 2>/dev/null || true' EXIT
 # la stessa impalcatura delle prove del database.
 psql -d "$db" -v ON_ERROR_STOP=1 -f supabase/prova/finto-supabase.sql >/dev/null
 # Su Supabase lo schema `extensions` c'è sempre; citext invece sta in `public`, e la copia lo crea da sé lì.
-psql -d "$db" -v ON_ERROR_STOP=1 -c 'create schema if not exists extensions' >/dev/null
+# E la pubblicazione del Realtime, a cui la copia aggiunge le sue tabelle.
+psql -d "$db" -v ON_ERROR_STOP=1 -c 'create schema if not exists extensions; create publication supabase_realtime' >/dev/null
 
 # I ruoli di Supabase in un Postgres vuoto: gli errori «esiste già» o «non si può» sono attesi.
 psql -d "$db" -f "$cartella/ruoli.sql" >/dev/null 2>&1 || true
