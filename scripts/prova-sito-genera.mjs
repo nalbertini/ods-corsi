@@ -173,7 +173,9 @@ console.log('\nOgni pagina: la struttura')
   ok('judo: <title> col titolo', j.includes('<title>Titolo judo'), true)
   ok('judo: meta description', j.includes('<meta name="description" content="Descrizione judo"'), true)
   ok('judo: canonical = dominio + /judo/', j.includes(`<link rel="canonical" href="${DOMINIO}/judo/"`), true)
-  ok('home: canonical = dominio + /', c(r, 'index.html').includes(`<link rel="canonical" href="${DOMINIO}/"`), true)
+  // la frase della home da sola non dice a Google chi siamo: il nome viene prima, la frase fa da sottotitolo
+  ok('home: <title> col nome e la frase come sottotitolo', /<title>([^<]*)/.exec(c(r, 'index.html'))?.[1], `Officine dello Sport · ${pag('home').titolo}`)
+  ok('home: canonical = dominio + /',c(r, 'index.html').includes(`<link rel="canonical" href="${DOMINIO}/"`), true)
   // senza questi link il sito non ha l'icona nella scheda del browser né nei risultati di Google
   const testa = c(r, 'index.html')
   ok('home: link a icona svg, png e apple-touch-icon', ['<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg">', '<link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png">', '<link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png">'].map((l) => testa.includes(l)), [true, true, true])
