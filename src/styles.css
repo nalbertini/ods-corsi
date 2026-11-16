@@ -226,8 +226,12 @@
 :root[data-look='sito'] .sg-scorre { display: flex; flex-direction: column; gap: 12px; }
 /* Il bollino DATI DI PROVA sta nella riga di Riparti: a ogni larghezza, senza il margine sopra. */
 :root[data-look='sito'] .sg-piede-prova > .sg-bollino { margin-top: 0; }
-/* Il resto del piede del menu compatto è in segreteria.css: queste classi servono anche fuori. */
+/* Il piede del menu, anche degli istruttori. */
+.sg-voce-aiuto { display: inline-flex; justify-content: center; width: 20px; flex: none; font-weight: 700; }
+.sg-voce-testo { flex: 1; min-width: 0; }
 @media (min-width: 768px) {
+  :root[data-look='sito'] #sg-menu { gap: 16px; padding-top: calc(var(--safe-t) + 20px); padding-bottom: 0; }
+  :root[data-look='sito'] .sg-piede { display: flex; flex-direction: column; margin: 0 -12px; padding: 8px 0 10px; background: var(--menu-piede); }
   :root[data-look='sito'] .sg-chi-voci > .sg-voce { flex: none; gap: 8px; }
   :root[data-look='sito'] .sg-chi { flex-direction: row; align-items: center; gap: 8px; padding: 0 12px; border: 0; }
   :root[data-look='sito'] .sg-chi > .sg-link { align-self: center; font-size: 14px; }
@@ -877,7 +881,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
   .appello-testa .appello-titolo { font-size: 20px; }
   .appello-testa .conto-appello { font-size: 40px; }
 }
-.appello-futura { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--giallo-testo); }
 .appello-titolo { font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05; }
 .appello-stato { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); }
 .appello-stato[data-fatto='true'] { color: var(--verde-testo); }
@@ -2026,7 +2029,6 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-voce { gap: 12px; }
 a.sg-voce { text-decoration: none; }
 .sg-voce[aria-current='page'] { border-left-color: var(--text); background: var(--surface); color: var(--text); }
-.sg-icone { gap: 8px; padding: 0 4px; }
 .sg-chi { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 2px solid var(--line-soft); }
 .sg-bollino {
   font-size: 11px; font-weight: 700; letter-spacing: 0.18em; color: var(--su-colore); background: var(--giallo);
@@ -2372,8 +2374,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg { flex-direction: column; }
   /* 8 + 44 + 8 + il bordo: alta 62, ed è lì che il menu aperto comincia. */
   .sg-barra-tel > .icon-btn { border: none; }
-  /* Sul telefono Aiuto, tema e Impostazioni stanno già nella barra in cima. */
-  .sg-icone { display: none; }
   .sg-tasto-menu .sg-tag { font-size: 12px; padding: 1px 6px; }
 
   .sg-menu {
