@@ -174,7 +174,17 @@ console.log('\nOgni pagina: la struttura')
   ok('judo: meta description', j.includes('<meta name="description" content="Descrizione judo"'), true)
   ok('judo: canonical = dominio + /judo/', j.includes(`<link rel="canonical" href="${DOMINIO}/judo/"`), true)
   // la frase della home da sola non dice a Google chi siamo: il nome viene prima, la frase fa da sottotitolo
-  ok('home: <title> col nome e la frase come sottotitolo', /<title>([^<]*)/.exec(c(r, 'index.html'))?.[1], `Officine dello Sport · ${pag('home').titolo}`)
+  // chi cerca su Google scrive cosa e dove («judo Collegno»): la home dice cosa facciamo e dove, la frase resta nel titolo in pagina e sui social
+  ok('home: <title> col nome, cosa facciamo e dove', /<title>([^<]*)/.exec(c(r, 'index.html'))?.[1], 'Officine dello Sport · Arti marziali a Collegno')
+  ok('home: og:title resta la frase della pagina', c(r, 'index.html').includes(`<meta property="og:title" content="${pag('home').titolo}">`), true)
+  const conCorsi = genera(dati({ pagine: [pag('home'), pag('corsi', { testo: '<p><a href="/judo/">Judo</a> <a href="/lotta/">Lotta</a> <a href="/aikido/">Aikido</a></p>' }), pag('judo'), pag('lotta', { titolo: 'LOTTA COLLEGNO' }), pag('aikido', { titolo: 'Aikido per tutti.' }), pag('orari')], rinvii: [{ da: 'vecchio-judo', a: 'judo' }] }))
+  ok('corso: <title> col comune', /<title>([^<]*)/.exec(c(conCorsi, 'judo/index.html'))?.[1], 'Titolo judo a Collegno · Officine dello Sport')
+  ok('corso col comune già nel titolo, in maiuscolo: non si ripete', /<title>([^<]*)/.exec(c(conCorsi, 'lotta/index.html'))?.[1], 'LOTTA COLLEGNO · Officine dello Sport')
+  ok('corso col punto in fondo: il punto non resta prima del comune', /<title>([^<]*)/.exec(c(conCorsi, 'aikido/index.html'))?.[1], 'Aikido per tutti a Collegno · Officine dello Sport')
+  ok('404: <title> senza comune', /<title>([^<]*)/.exec(c(conCorsi, '404.html'))?.[1], 'Pagina non trovata · Officine dello Sport')
+  ok('rinvio: <title> senza comune', /<title>([^<]*)/.exec(c(conCorsi, 'vecchio-judo/index.html'))?.[1], 'Pagina spostata')
+  ok('pagina che non è un corso: <title> senza comune', /<title>([^<]*)/.exec(c(conCorsi, 'orari/index.html'))?.[1], 'Titolo orari · Officine dello Sport')
+  ok('corso: h1 senza comune', /<h1[^>]*>([^<]*)/.exec(c(conCorsi, 'judo/index.html'))?.[1], 'Titolo judo')
   ok('home: canonical = dominio + /',c(r, 'index.html').includes(`<link rel="canonical" href="${DOMINIO}/"`), true)
   // senza questi link il sito non ha l'icona nella scheda del browser né nei risultati di Google
   const testa = c(r, 'index.html')

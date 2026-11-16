@@ -15,7 +15,7 @@ import { CSS_ORARIO_AUTOMATICO, corsoNuovo, eCorsoNuovo } from './sitoCorso'
 import { testiOrario, type OrarioAperto } from './sitoOrario'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
 import { ACCESSO, CONTATTI, ISCRIZIONE, chiama, scrivi } from './sito'
-import { corsiDa, datiStrutturati } from './sitoDati'
+import { POSTALE, corsiDa, datiStrutturati } from './sitoDati'
 
 /**
  * Il sito pubblico: dalle pagine pubblicate nel pannello SITO ai file statici.
@@ -118,6 +118,8 @@ const TESTI = {
   iscrizione: ISCRIZIONE,
 }
 const NOME = TESTI.nome
+/** Il titolo della home per Google: cosa facciamo e dove, corto perché Google ne mostra una sessantina di caratteri. */
+const COSA_FACCIAMO = `Arti marziali a ${POSTALE.comune}`
 /** L'immagine di condivisione, 1200×630, nella cartella delle risorse del sito. */
 const IMMAGINE_SOCIALE = '/risorse/social.png'
 const DOMINIO = /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i
@@ -1215,8 +1217,9 @@ function documento(c: Contesto, o: { titolo: string; descrizione: string; percor
   const url = `${c.d.dominio}${o.percorso}`
   // In fondo a tutto: le regole dei punti vincono sul ritaglio di ogni riquadro (vedi sitoFoto.ts).
   const punti = cssPunti(c.d.punti ?? {})
-  // In home il titolo è una frase: da sola non dice a Google chi siamo, così il nome va davanti e la frase fa da sottotitolo.
-  const completo = o.percorso === '/' ? `${NOME} · ${o.titolo.replace(/\.$/, '')}` : `${o.titolo} · ${NOME}`
+  // Chi cerca su Google scrive cosa e dove («judo Collegno»): la home dice cosa facciamo e dove (la sua frase resta nell'h1 e sui social), un corso aggiunge il comune.
+  const corso = c.corsi.has(o.percorso.replace(/^\/|\/$/g, '')) && !o.titolo.toLowerCase().includes(POSTALE.comune.toLowerCase())
+  const completo = o.percorso === '/' ? `${NOME} · ${COSA_FACCIAMO}` : corso ? `${o.titolo.replace(/\.$/, '')} a ${POSTALE.comune} · ${NOME}` : `${o.titolo} · ${NOME}`
   return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}${PRELOAD_FONT}<style>${CSS_SITO}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}${punti ? `<style>${punti}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${conSalto(o.corpo)}</body></html>`
 }
 
