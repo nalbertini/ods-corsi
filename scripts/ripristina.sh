@@ -31,24 +31,29 @@ trap 'dropdb --if-exists "$db" 2>/dev/null || true' EXIT
 # Un Postgres vuoto non ha quello che Supabase mette da sé (lo schema auth, lo Storage, i ruoli anon e simili):
 # la stessa impalcatura delle prove del database.
 psql -d "$db" -v ON_ERROR_STOP=1 -f supabase/prova/finto-supabase.sql >/dev/null
-# Su Supabase citext sta nello schema `extensions`, che è nel percorso di ricerca: lo schema della copia lo cita così.
-psql -d "$db" -v ON_ERROR_STOP=1 -c 'create schema if not exists extensions; create extension if not exists citext with schema extensions' >/dev/null
-psql -d "$db" -v ON_ERROR_STOP=1 -c "alter database $db set search_path = public, extensions" >/dev/null
+# Su Supabase lo schema `extensions` c'è sempre; citext invece sta in `public`, e la copia lo crea da sé lì.
+# E la pubblicazione del Realtime, a cui la copia aggiunge le sue tabelle.
+psql -d "$db" -v ON_ERROR_STOP=1 -c 'create schema if not exists extensions; create publication supabase_realtime' >/dev/null
 
 # I ruoli di Supabase in un Postgres vuoto: gli errori «esiste già» o «non si può» sono attesi.
 psql -d "$db" -f "$cartella/ruoli.sql" >/dev/null 2>&1 || true
 
-# Lo schema: «esiste già» è atteso (l'impalcatura ha già auth e storage), il resto no. Lo schema non ha dati: si può dire.
-errori=$(psql -d "$db" -f "$cartella/schema.sql" 2>&1 >/dev/null | grep -i 'error' | grep -vi 'already exists' || true)
+# Lo schema: «esiste già» è atteso (l'impalcatura ha già auth e storage), e così le estensioni che ha solo Supabase
+# (pg_cron e pg_net per i lavori pianificati, il vault): servono al database vero, non a contare le righe. Il resto
+# no. Lo schema non ha dati: si può dire.
+errori=$(psql -d "$db" -f "$cartella/schema.sql" 2>&1 >/dev/null | grep -i 'error' | grep -vi 'already exists' \
+  | grep -Ev 'extension "(pg_cron|pg_net|supabase_vault)" is not available' || true)
 if [ -n "$errori" ]; then
   echo "✗ lo schema non si rimette a posto:"
   echo "$errori" | sed 's/^/    /' | head -20
   exit 1
 fi
 
-# I dati: auth.users non è nella copia (lo gestisce Supabase), quindi le righe che la puntano non passerebbero i
-# controlli di chiave esterna; qui si guardano le righe, non i collegamenti. Dei guai si dice quanti, non cosa.
-guai=$(psql -d "$db" -c 'set session_replication_role = replica' -f "$cartella/dati.sql" 2>&1 >/dev/null | grep -ci 'error' || true)
+# I dati, senza i controlli di chiave esterna: qui si guardano le righe, non i collegamenti. Le tabelle di auth e
+# storage le gestisce Supabase e l'impalcatura ne ha solo un pezzo: i loro errori non contano, quelli della
+# palestra sì. Dei guai si dice quanti, non cosa.
+guai=$(psql -d "$db" -c 'set session_replication_role = replica' -f "$cartella/dati.sql" 2>&1 >/dev/null | grep -i 'error' \
+  | grep -Evc 'relation "(auth|storage)\.|of relation "(users|buckets|objects)"' || true)
 if [ "$guai" != 0 ]; then
   echo "✗ i dati non si rimettono a posto: $guai errori (il testo non si stampa: i log sono pubblici; rilancia in locale con la password)"
   exit 1
