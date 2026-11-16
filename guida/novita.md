@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.2 — 16 novembre 2026
+
+### Modificato
+
+- La prova di ripristino del backup torna a funzionare
+
 ## 0.259.1 — 16 novembre 2026
 
 ### Modificato
