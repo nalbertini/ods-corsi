@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.1 — 16 novembre 2026
+
+### Modificato
+
+- Il menu degli istruttori come quello della segreteria, più ordinato in fondo
+
 ## 0.259.0 — 14 novembre 2026
 
 ### Novità
