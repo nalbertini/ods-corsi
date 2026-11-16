@@ -64,10 +64,7 @@
       <span style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; color: {{impColore}}; font-size: 15px; font-weight: {{impPeso}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H4"></path><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg><span>Impostazioni</span></span>
     </div>
     <div style="display: flex; align-items: center; gap: 8px; padding: 0 12px">
-      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
-        <span style="font-size: 14px; font-weight: 600">{{nome}}</span>
-        <span style="font-size: 13px; color: {{c.dim}}">{{ruolo}} · accesso completo</span>
-      </span>
+      <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600">{{nome}}</span>
       <sc-if value="{{conEsci}}" hint-placeholder-val="{{ true }}">
         <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Esci</span>
       </sc-if>
@@ -94,7 +91,7 @@
 // Scorrono solo le voci (.sg-scorre): marchio e ricerca restano in cima, il piede in fondo. altezza: l'altezza dello
 // schermo; a 900px le voci che non ci stanno si tagliano come nell'app prima di scorrere. Per vederle tutte, "1140px".
 // Il piede (.sg-piede): fondo `menu-piede` #0a2232 fino ai bordi, padding 8px 0 10px. Aiuto e Impostazioni in una riga
-// (a 200px, fra 768 e 1000, Impostazioni va sotto), poi nome 14px 600 col ruolo 13px `dim` ed Esci 14px sottolineato.
+// (a 200px, fra 768 e 1000, Impostazioni va sotto), poi il nome 14px 600 (senza ruolo) ed Esci 14px sottolineato.
 // prova: nel piede DATI DI PROVA e "Riparti dall'orario vero", ed Esci non c'e' (in prova non si esce).
 // impostazioni: Impostazioni e' la pagina aperta (testo bianco 700).
 // Copia link iscrizioni e Copia link ordini non stanno nel menu: sono nella testa di RICHIESTE ONLINE e VESTIARIO (`CopiaLink`).

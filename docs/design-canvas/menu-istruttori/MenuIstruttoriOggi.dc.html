@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<nav style="display: flex; flex-direction: column; gap: 28px; width: 240px; height: {{altezza}}; overflow: hidden; padding: 28px 16px 24px; background: {{c.menu}}; border-right: 2px solid {{c.lineSoft}}; color: {{c.text}}; font-family: {{fam}}">
+  <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+    <svg width="46" height="31.6" viewBox="0 0 160 110" role="img" aria-label="Officine Dello Sport">
+      <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
+        <circle cx="38" cy="40" r="22" stroke="#1b8ac4"></circle>
+        <circle cx="80" cy="40" r="22" stroke="{{c.text}}"></circle>
+        <circle cx="122" cy="40" r="22" stroke="#e4292a"></circle>
+        <circle cx="59" cy="74" r="22" stroke="#f4c31b"></circle>
+        <circle cx="101" cy="74" r="22" stroke="#16a54a"></circle>
+      </g>
+      <g fill="none" stroke-width="5">
+        <circle cx="38" cy="40" r="14" stroke="#1b8ac4"></circle>
+        <circle cx="80" cy="40" r="14" stroke="{{c.text}}"></circle>
+        <circle cx="122" cy="40" r="14" stroke="#e4292a"></circle>
+        <circle cx="59" cy="74" r="14" stroke="#f4c31b"></circle>
+        <circle cx="101" cy="74" r="14" stroke="#16a54a"></circle>
+      </g>
+    </svg>
+    <span style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-family: {{cond}}; font-style: {{inclina}}; font-size: 20px; font-weight: {{titoloPeso}}; letter-spacing: 0.04em; line-height: 1">ODS CORSI</span>
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.2em; color: {{c.dim}}">ISTRUTTORI</span>
+    </span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 2px">
+    <sc-for list="{{voci}}" as="v" hint-placeholder-count="4">
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-left: 4px solid {{v.barra}}; border-radius: {{raggio}}; background: {{v.sfondo}}; color: {{v.colore}}; font-family: {{v.fam}}; font-variant-numeric: tabular-nums; font-size: {{v.corpo}}; font-weight: {{v.peso}}; letter-spacing: {{v.spazio}}; text-align: left">
+        <span>{{v.testo}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex-grow: 1"></div>
+
+  <sc-if value="{{ancheSegreteria}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <div style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-left: 4px solid transparent; border-radius: {{raggio}}; color: {{c.sec}}; font-family: {{famVoce}}; font-variant-numeric: tabular-nums; font-size: {{corpoVoce}}; font-weight: {{pesoVoce}}; letter-spacing: {{spazioVoce}}">GESTIONE →</div>
+    </div>
+  </sc-if>
+
+  <div style="display: flex; align-items: center; gap: 8px; padding: 0 4px">
+    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-size: 20px; font-weight: {{titoloPeso}}">?</span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid {{c.lineSoft}}">
+    <span style="font-size: 14px; font-weight: 600">{{nome}}</span>
+    <span style="font-size: 12px; color: {{c.dim}}">{{ruolo}}</span>
+    <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
+      <span style="align-self: flex-start; margin-top: 4px; padding: 2px 6px; border: {{bollino.bordo}}; border-radius: {{raggio}}; background: {{bollino.sfondo}}; color: {{bollino.colore}}; font-family: {{famVoce}}; font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; letter-spacing: {{bollino.spazio}}">DATI DI PROVA</span>
+    </sc-if>
+    <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 13px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Esci</span>
+    <span style="font-family: {{famVoce}}; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; letter-spacing: {{spazioVersione}}; color: {{c.dim}}">{{versione}}</span>
+  </div>
+</nav>
+</x-dc>
+<script data-dc-script data-props='{"attiva":{"editor":"enum","options":["CALENDARIO","TIMER","I MIEI TIMER","LE MIE ORE","I MIEI","ORE"],"default":"CALENDARIO"},"elenco":{"editor":"text","default":""},"conTimer":{"editor":"boolean","default":false},"conOre":{"editor":"boolean","default":true},"ancheSegreteria":{"editor":"boolean","default":false},"prova":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Maurizio Verdi"},"ruolo":{"editor":"text","default":"Istruttore · calendario e appello"},"versione":{"editor":"text","default":"v0.37.1"},"altezza":{"editor":"text","default":"900px"},"$preview":{"width":240,"height":900}}'>
+// Riproduzione 1:1 del menu degli istruttori sullo schermo largo: MenuIstruttori in src/App.tsx (righe 296-366),
+// fatto con le classi del menu di segreteria (.sg-menu, .sg-voci, .sg-voce, .sg-icone, .sg-chi, .sg-bollino,
+// .sg-link: src/styles.css righe 1238-1310) ma SENZA id #sg-menu: quindi margini di 16px (non 12), voci con
+// 0.12em e padding 0 12px (non 0.1em / 0 8px), niente gruppi, niente ricerca, e il bollino DATI DI PROVA resta nel
+// riquadro in fondo (la regola che lo nasconde e' solo di #sg-menu). Colonna di 240px, gap 28px, bordo destro 2px
+// `line-soft`, fondo `menu`.
+// Marchio come in Menu.dc.html, con ISTRUTTORI sotto (12px 600 0.2em `dim`). Voci: CALENDARIO, I MIEI TIMER, LE MIE
+// ORE (solo a chi insegna: conOre; la segreteria che vede le lezioni di tutti non ne ha) e TIMER ↗ (apre il timer in
+// un'altra scheda); la corrente ha barra sinistra, fondo `surface` e testo `text`, mai rossa. In fondo, dopo lo spazio
+// libero: SEGRETERIA → (solo a chi e' di segreteria e insegna: ancheSegreteria), il tasto ? (qui non c'e'
+// il tasto delle impostazioni), il riquadro con nome, ruolo, DATI DI PROVA (prova), Esci e la versione (.versione).
+// conTimer: PROPOSTA (non ancora nell'app), la voce TIMER che apre il timer dentro l'app, subito dopo CALENDARIO; con conTimer TIMER ↗ non c'è più.
+// elenco: PROPOSTA «Navigazione», le voci scritte a mano separate da | (es. CALENDARIO|TIMER|ORE): sostituisce quelle di sopra, stesse voci della barra in basso del telefono (BarraNavigazione).
+// Look del sito (COSTRUITO, `MenuIstruttori` di src/App.tsx con le classi del menu di segreteria nel look del sito): menu inchiostro #0d2a3d con testo bianco (`sec` e `dim` #cfe6f4, filetti #46606f),
+// voci in Inter 15px (500, la corrente 700) alte 44px con raggio 6px, SENZA icone (la barra in basso del telefono le ha, il menu largo no); la voce corrente e' gialla #f4c31b con l'inchiostro, l'unico giallo pieno del menu;
+// ODS CORSI in Big Shoulders 700 dritto (il peso e' inline nel codice, non 800) e il «?» in Big Shoulders 700; DATI DI PROVA e' il `.sg-bollino` del look:
+// bianco, testo e bordo 1,5px giallo scuro #8f6a00, 0.18em. La versione ha 0.08em. Le voci restano quelle dell'app (CALENDARIO, TIMER, I MIEI, ORE): senza `elenco` ci sono tutte e quattro (`conOre` le toglie ORE).
+// attiva: la voce corrente. prova: nome "<Nome> · di prova" e bollino. altezza: come in Menu.dc.html.
+// Non riprodotti: il passaggio del mouse e il fuoco.
+const T = {
+  sito: { surface: '#f4c31b', menu: '#0d2a3d', line: '#46606f', lineSoft: '#46606f', text: '#ffffff', sec: '#cfe6f4', dim: '#cfe6f4', tasto: '#cfe6f4', ink: '#0d2a3d', gialloTesto: '#8f6a00' },
+};
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T.sito;
+    const conOre = truthy(p.conOre ?? true);
+    const conTimer = truthy(p.conTimer);
+    const dellElenco = String(p.elenco || '').split('|').map((t) => t.trim()).filter(Boolean).map((t) => [t]);
+    const voci = (dellElenco.length ? dellElenco : [['CALENDARIO'], ['TIMER'], ['I MIEI'], conOre ? ['ORE'] : null].filter(Boolean)).map(([testo, fuori]) => {
+      const corrente = !fuori && testo === (p.attiva || 'CALENDARIO');
+      return { testo, fam: INTER, corpo: '15px', peso: (corrente ? 700 : 500), spazio: '0', barra: corrente ? (c.surface) : 'transparent', sfondo: corrente ? c.surface : 'transparent', colore: corrente ? (c.ink) : c.sec };
+    });
+    return {
+      c, voci, conOre, fam: INTER, cond: BIG, inclina: 'normal', titoloPeso: 700, raggio: '6px',
+      famVoce: INTER, corpoVoce: '15px', pesoVoce: 500, spazioVoce: '0', spazioVersione: '0.08em',
+      bollino: { bordo: '1.5px solid #8f6a00', sfondo: '#ffffff', colore: '#8f6a00', spazio: '0.18em' },
+      ancheSegreteria: truthy(p.ancheSegreteria), prova: truthy(p.prova),
+      nome: p.nome ?? 'Maurizio Verdi', ruolo: p.ruolo ?? 'Istruttore · calendario e appello', versione: p.versione ?? 'v0.37.1',
+      altezza: p.altezza || '900px',
+    };
+  }
+}
+</script>
+</body>
+</html>

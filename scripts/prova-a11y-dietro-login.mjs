@@ -43,6 +43,6 @@ ok('la testata fa del luogo un h1 solo se glielo si chiede', /\{h1 \? <h1 classN
 for (const luogo of ['CORSI', 'CONTABILITÀ'])
   ok(`la pagina «${luogo}» ha l'h1`, new RegExp(`<Testata luogo="${luogo}"[^>]*\\bh1\\b`).test(app), true)
 ok('le due testate di «ISTRUTTORI» (telefono) hanno l\'h1', (app.match(/<Testata luogo="ISTRUTTORI"[^>]*\bh1\b/g) ?? []).length, 2)
-ok('il menu di «ISTRUTTORI» (schermo largo) ha l\'h1', /<h1[^>]*>ISTRUTTORI<\/h1>/.test(app), true)
+ok('il menu di «ISTRUTTORI» (schermo largo) ha l\'h1', /<h1[^>]*>Istruttori<\/h1>/.test(app), true)
 
 process.exit(fallite ? 1 : 0)

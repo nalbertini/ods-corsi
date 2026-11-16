@@ -24,8 +24,8 @@ import { Gear, Pause, Play } from '../../timer/src/components/Icons'
 /** Il timer pesa quanto il resto dell'app: si scarica solo alla prima visita. */
 const TimerSala = lazy(() => import('./tablet/TimerSala').then((m) => ({ default: m.TimerSala })))
 
-/** Le icone a linea delle voci, come nel design (BarraNavigazione). */
-const ICONE: Record<PaginaIstruttori, NomeIcona> = { calendario: 'calendario', timer: 'cronometro', mieiTimer: 'segnalibro', ore: 'documento' }
+/** Le icone a linea delle voci, come nel design (BarraNavigazione); le stesse nel menu dello schermo largo. */
+export const ICONE_PAGINE: Record<PaginaIstruttori, NomeIcona> = { calendario: 'calendario', timer: 'cronometro', mieiTimer: 'segnalibro', ore: 'documento' }
 
 /**
  * La barra in basso del telefono. La voce di dove si è si legge anche senza
@@ -44,7 +44,7 @@ export function BarraNavigazione({
     <nav className="barra-nav" aria-label="Pagine">
       {voci.map((v) => (
         <button key={v.pagina} type="button" className="barra-voce" aria-current={attiva === v.pagina ? 'page' : undefined} onClick={() => onPagina(v.pagina)}>
-          <Icona nome={ICONE[v.pagina]} misura={24} />
+          <Icona nome={ICONE_PAGINE[v.pagina]} misura={24} />
           <span className="num">{v.nome}</span>
         </button>
       ))}

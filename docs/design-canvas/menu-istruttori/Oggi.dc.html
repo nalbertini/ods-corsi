@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Oggi</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>body { margin: 0; }</style>
+</helmet>
+<!-- OGGI: MenuIstruttori com'è su main (v0.259.0), per chi è di segreteria e amministrazione e insegna. -->
+<div style="width: 240px; height: 900px">
+  <dc-import name="MenuIstruttoriOggi" attiva="CALENDARIO" anche-segreteria="{{ true }}" nome="Marco Rossi" ruolo="Segreteria, amministrazione e istruttore · le tue lezioni" versione="v0.259.0 · 461cd86" altezza="900px" hint-size="240px,900px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":240,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

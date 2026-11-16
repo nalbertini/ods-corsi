@@ -529,10 +529,8 @@ export function Segreteria({
             {impostazioniNome}
           </div>
           <div className="sg-chi">
-            <span className="stack grow" style={{ gap: 0, minWidth: 0 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{nome}</span>
-              <span style={{ fontSize: 13, color: 'var(--dim)' }}>{ruolo}{conSegreteria ? ' · accesso completo' : ''}</span>
-            </span>
+            {/* Solo il nome, come nel menu degli istruttori: il ruolo qui non serve. */}
+            <span className="grow" style={{ minWidth: 0, fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{nome}</span>
             {onEsci && (
               <button type="button" className="sg-link" onClick={onEsci}>
                 Esci

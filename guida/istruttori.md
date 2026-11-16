@@ -26,8 +26,8 @@ torna alla pagina di accesso. Da qui non si va nelle altre parti dell'app
 
 Chi è della segreteria (o dell'amministrazione) e insegna anche sceglie, dopo l'accesso, se andare
 nel menu della segreteria o qui; qui vede le sue lezioni, come un istruttore, e torna
-al menu da **SEGRETERIA →** (**GESTIONE →** con tutte e due le autorizzazioni; **AMMINISTRAZIONE →**
-per chi ha solo i conti) nel menu (sul telefono, accanto al nome).
+al menu da **Segreteria →** (**Gestione →** con tutte e due le autorizzazioni; **Amministrazione →**
+per chi ha solo i conti), sotto le pagine nel menu (sul telefono, accanto al nome).
 
 La prima volta che entrate, l'account si lega da solo alla vostra scheda di
 istruttore, purché l'email sia la stessa che ha in elenco la segreteria. Se
@@ -84,8 +84,8 @@ Le pagine sono quattro, con lo stesso nome ovunque: **CALENDARIO**, **TIMER**,
 **I MIEI** (i timer collegati ai vostri corsi) e **ORE** (le vostre ore). Sul
 telefono stanno nella barra in basso; la pagina in cui siete ha una riga sopra
 ed è scritta più chiara, non solo di un altro colore. Sul computer e sul tablet
-in orizzontale sono nel menu a sinistra, che ha la stessa faccia della
-segreteria, e in fondo il tasto **?** della guida e, sotto il vostro nome, **Esci**. Ha l'aspetto del sito della palestra. Chi è della segreteria e non insegna non ha **ORE**: non
+in orizzontale sono nel menu a sinistra, con la stessa faccia di quello della
+segreteria: ogni pagina ha la sua icona, e in fondo ci sono **Aiuto** (la guida) e il vostro nome con **Esci** accanto. Ha l'aspetto del sito della palestra. Chi è della segreteria e non insegna non ha **ORE**: non
 ha ore sue.
 
 ## L'appello

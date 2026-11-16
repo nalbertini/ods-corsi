@@ -8,11 +8,12 @@ import { vistaIscrizioni } from './lib/paginaIscrizioni'
 import { MieiTimer } from './components/MieiTimer'
 import { MieGare } from './components/MieGare'
 import { MieOre } from './components/MieOre'
-import { BarraMusicaTelefono, BarraNavigazione, MusicaMini, PaginaTimer, StrisciaTimer, useMusicaTelefono } from './components/TimerIstruttori'
+import { BarraMusicaTelefono, BarraNavigazione, ICONE_PAGINE, MusicaMini, PaginaTimer, StrisciaTimer, useMusicaTelefono } from './components/TimerIstruttori'
 import { Conferme, chiedi } from './components/segreteria/comune'
 import { indirizzo, INDIRIZZI, useArea } from './lib/aree'
 import { titolo } from './lib/luoghiBanco'
 import { nomeDellArea, rimandaAmministrazione } from './lib/menuSegreteria'
+import { ICONE_MENU, Icona } from './components/Icons'
 import { account, altreAree, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
@@ -487,46 +488,53 @@ function MenuIstruttori({
   onPagina: (p: PaginaIstruttori) => void
 }) {
   const esci = onEsci ?? (inProvaScelta ? () => scegliProva(false) : undefined)
+  // Come il menu di segreteria (id compreso, per gli stessi margini): icona e voce in minuscolo, il passaggio all'altra area sotto, e in fondo il piede con Aiuto, chi è dentro ed Esci.
   return (
-    <nav className="sg-menu" aria-label="Istruttori">
-      <div className="row" style={{ gap: 10, padding: '0 8px' }}>
+    <nav className="sg-menu" id="sg-menu" aria-label="Istruttori">
+      <div className="row sg-marchio" style={{ gap: 10, padding: '0 8px' }}>
         <Logo width={46} />
         <span className="stack" style={{ gap: 2 }}>
           <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
-          <h1 style={{ margin: 0, fontSize: 12, fontWeight: 600, letterSpacing: '0.2em', color: 'var(--dim)' }}>ISTRUTTORI</h1>
+          <h1 style={{ margin: 0, fontSize: 13, fontWeight: 500, color: 'var(--dim)' }}>Istruttori</h1>
         </span>
       </div>
       <div className="sg-voci">
         {voci.map((v) => (
           <button key={v.pagina} type="button" className="num sg-voce" aria-current={pagina === v.pagina ? 'page' : undefined} onClick={() => onPagina(v.pagina)}>
-            {v.nome}
+            <Icona nome={ICONE_PAGINE[v.pagina]} misura={20} />
+            <span className="sg-voce-testo">{maiuscolaIniziale(v.nome)}</span>
           </button>
         ))}
       </div>
-      <div className="grow" />
-      <div className="sg-voci">
-        {chi &&
-          altreAree(chi, 'istruttori').map((a) => (
+      {chi && altreAree(chi, 'istruttori').length > 0 && (
+        <div className="sg-voci">
+          {altreAree(chi, 'istruttori').map((a) => (
             <button key={a} type="button" className="num sg-voce" onClick={() => passaA(a)}>
-              {nomeDellArea(a, chi)} →
+              <ICONE_MENU.dafare />
+              <span className="sg-voce-testo">{maiuscolaIniziale(nomeDellArea(a, chi))} →</span>
             </button>
           ))}
-      </div>
-      <div className="row sg-icone">
-        <a className="icon-btn tasto-guida" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida">
-          ?
+        </div>
+      )}
+      <div className="grow" />
+      <div className="sg-piede">
+        <a className="num sg-voce" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener">
+          <span className="sg-voce-aiuto" aria-hidden="true">?</span>
+          <span className="sg-voce-testo">Aiuto</span>
         </a>
-      </div>
-      <div className="sg-chi">
-        <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : `${ISTRUTTORE_PROVA.nome} · di prova`}</span>
-        <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-          {!chi || chi.ruolo === 'istruttore' ? 'Istruttore · calendario e appello' : chi.ancheIstruttore ? `${nomeDelRuolo(chi)} · le tue lezioni` : 'Segreteria · anche l’appello'}
-        </span>
-        {!chi && <span className="num sg-bollino">DATI DI PROVA</span>}
-        {esci && (
-          <button type="button" className="sg-link" onClick={esci}>
-            Esci
-          </button>
+        <div className="sg-chi">
+          {/* Solo il nome: il ruolo qui non serve, chi è dentro sa cosa fa. */}
+          <span className="grow" style={{ minWidth: 0, fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{chi ? `${chi.nome} ${chi.cognome}` : ISTRUTTORE_PROVA.nome}</span>
+          {esci && (
+            <button type="button" className="sg-link" onClick={esci}>
+              Esci
+            </button>
+          )}
+        </div>
+        {!chi && (
+          <div className="row" style={{ padding: '0 12px' }}>
+            <span className="num sg-bollino">DATI DI PROVA</span>
+          </div>
         )}
         <span className="num versione" title={VERSIONE_ESTESA}>
           {VERSIONE}
@@ -535,6 +543,9 @@ function MenuIstruttori({
     </nav>
   )
 }
+
+/** CALENDARIO → Calendario: nel menu largo le voci sono scritte come quelle della segreteria. */
+const maiuscolaIniziale = (t: string) => t[0] + t.slice(1).toLowerCase()
 
 /** La guida, senza porta: non c'è niente di riservato, e serve anche a chi non è ancora entrato. */
 function AreaGuida() {
