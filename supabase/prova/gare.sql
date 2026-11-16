@@ -113,7 +113,7 @@ grant execute on function tenta(text), rifiuto(text), riuscito(text), atteso(tex
 \echo '--- 1. la segreteria crea una gara, e i vincoli ---'
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
-select atteso('una gara con nome e data', tenta($$insert into gare (id, nome, dal, al, luogo, organizzatore) values ('99990000-0000-0000-0000-000000000001', 'Trofeo Varese', '2026-11-14', '2026-11-15', 'PalaWhirlpool', 'FIJLKAM Lombardia')$$), 'FATTO (1 righe)');
+select atteso('una gara con nome e data', tenta($$insert into gare (id, nome, dal, al, luogo, organizzatore) values ('99990000-0000-0000-0000-000000000001', 'Trofeo Varese', current_date + 10, current_date + 11, 'PalaWhirlpool', 'FIJLKAM Lombardia')$$), 'FATTO (1 righe)');
 select atteso('compare con 0 atleti', (select count(*)::text from gare_atleti where gara_id = '99990000-0000-0000-0000-000000000001'), '0');
 select atteso('e non è annullata', (select annullata::text from gare where id = '99990000-0000-0000-0000-000000000001'), 'false');
 select atteso('senza nome no', riuscito($$insert into gare (nome, dal) values ('', '2026-11-14')$$), 'no');
@@ -121,7 +121,7 @@ select atteso('un nome di soli spazi no', riuscito($$insert into gare (nome, dal
 select atteso('senza data no', riuscito($$insert into gare (nome, dal) values ('Senza data', null)$$), 'no');
 select atteso('AL prima di DAL no', riuscito($$insert into gare (nome, dal, al) values ('Al contrario', '2026-11-15', '2026-11-14')$$), 'no');
 select atteso('AL uguale a DAL sì', riuscito($$insert into gare (nome, dal, al) values ('Un giorno', '2026-11-15', '2026-11-15')$$), 'sì');
-select atteso('AL vuoto sì: una gara di un giorno', riuscito($$insert into gare (nome, dal) values ('Solo DAL', '2026-11-15')$$), 'sì');
+select atteso('AL vuoto sì: una gara di un giorno', riuscito($$insert into gare (nome, dal) values ('Solo DAL', current_date + 10)$$), 'sì');
 select atteso('una voce con importo', riuscito($$insert into gare_voci (gara_id, voce, importo) values ('99990000-0000-0000-0000-000000000001', 'Iscrizione', 3000)$$), 'sì');
 select atteso('altre due voci insieme', tenta($$insert into gare_voci (gara_id, voce, importo) values ('99990000-0000-0000-0000-000000000001', 'Trasferimento in pullman', 1500), ('99990000-0000-0000-0000-000000000001', 'Hotel, una notte', 4500)$$), 'FATTO (2 righe)');
 select atteso('una voce a zero no', riuscito($$insert into gare_voci (gara_id, voce, importo) values ('99990000-0000-0000-0000-000000000001', 'Gratis', 0)$$), 'no');
@@ -132,7 +132,7 @@ reset role;
 
 -- Le altre gare, scritte dal proprietario: Pesi, la passata, due gare di due giorni.
 insert into gare (id, nome, dal, al) values
-  ('99990000-0000-0000-0000-000000000002', 'Gara Torino', '2026-12-05', null),
+  ('99990000-0000-0000-0000-000000000002', 'Gara Torino', current_date + 20, null),
   ('99990000-0000-0000-0000-000000000003', 'Gara di settembre', current_date - 30, null),
   -- Finita ieri dopo due giorni: conta l'ultimo giorno, non il primo.
   ('99990000-0000-0000-0000-000000000004', 'Gara di due giorni appena finita', current_date - 2, current_date - 1),
