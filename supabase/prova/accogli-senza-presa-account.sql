@@ -45,20 +45,20 @@ begin
   return 'ok  ' || cosa || ' → ' || avuto;
 end $$;
 -- Il codice fiscale giusto per nome e cognome, di chi ha trent'anni oggi (il
--- giorno si sposta con la prova). Definer: le funzioni del codice sono della
+-- giorno si sposta con la prova; con altri `anni` è un omonimo con un altro codice). Definer: le funzioni del codice sono della
 -- segreteria e del modulo, non di `anon`.
-create or replace function cf_di(nome text, cognome text) returns text
+create or replace function cf_di(nome text, cognome text, anni int default 30) returns text
   language sql stable security definer set search_path = public as $$
   select x || cf_controllo(x) from (
-    select cf_lettere(nome, cognome) || to_char((current_date - interval '30 years')::date, 'YY')
-           || substr('ABCDEHLMPRST', extract(month from (current_date - interval '30 years')::date)::int, 1)
-           || lpad(extract(day from (current_date - interval '30 years')::date)::int::text, 2, '0') || 'L219' as x) q
+    select cf_lettere(nome, cognome) || to_char((current_date - make_interval(years => anni))::date, 'YY')
+           || substr('ABCDEHLMPRST', extract(month from (current_date - make_interval(years => anni))::date)::int, 1)
+           || lpad(extract(day from (current_date - make_interval(years => anni))::date)::int::text, 2, '0') || 'L219' as x) q
 $$;
 -- Una richiesta valida di un adulto, come la manda il modulo pubblico.
-create or replace function manda(nome text, cognome text, email text, telefono text) returns uuid language sql as $$
+create or replace function manda(nome text, cognome text, email text, telefono text, anni int default 30) returns uuid language sql as $$
   select invia_iscrizione(jsonb_build_object(
-    'nome', nome, 'cognome', cognome, 'nato_il', (current_date - interval '30 years')::date, 'nato_a', 'Torino',
-    'codice_fiscale', cf_di(initcap(nome), initcap(cognome)), 'indirizzo', 'Via Roma 1', 'cap', '10093', 'comune', 'Collegno',
+    'nome', nome, 'cognome', cognome, 'nato_il', (current_date - make_interval(years => anni))::date, 'nato_a', 'Torino',
+    'codice_fiscale', cf_di(initcap(nome), initcap(cognome), anni), 'indirizzo', 'Via Roma 1', 'cap', '10093', 'comune', 'Collegno',
     'email', email, 'telefono', telefono,
     'corsi', jsonb_build_array('cccccccc-0000-0000-0000-000000000001'), 'formula', 'annuale', 'regolamento', true))
 $$;
@@ -70,7 +70,7 @@ $$;
 create or replace function scheda_di(mail text) returns uuid language sql stable security definer set search_path = public as $$
   select persona_id from richieste_iscrizione where email = lower(mail) order by creata_il desc limit 1
 $$;
-grant execute on function tenta(text), atteso(text, text, text), chi(text), cf_di(text, text), manda(text, text, text, text), rid(text), scheda_di(text) to anon, authenticated;
+grant execute on function tenta(text), atteso(text, text, text), chi(text), cf_di(text, text, int), manda(text, text, text, text, int), rid(text), scheda_di(text) to anon, authenticated;
 
 \echo ''
 \echo '--- 1. l''attacco: il nome di un iscritto senza email, l''email di chi scrive ---'
@@ -211,6 +211,29 @@ set role authenticated;
 select atteso('chi ha mandato la richiesta nemmeno', tenta($$select accogli_iscrizione(rid('ruolo@esempio.it'))::text$$), 'NEGATO: solo la segreteria');
 reset role;
 select atteso('e la richiesta è ancora da accogliere', (select stato::text from richieste_iscrizione where email = 'ruolo@esempio.it'), 'nuova');
+
+\echo ''
+\echo '--- 6. lo stesso nome e la stessa email, ma un altro codice fiscale: un'altra persona ---'
+-- Due cugini con lo stesso nome, iscritti dalla stessa nonna con la sua email.
+set role anon;
+select atteso('la nonna manda la richiesta del primo Ugo Rana', tenta($$select (manda('Ugo', 'Rana', 'nonna.rana@esempio.it', '347 100 0007') is not null)::text$$), 'true');
+reset role;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('il primo accolto', tenta($$select (accogli_iscrizione(rid('nonna.rana@esempio.it')) is not null)::text$$), 'true');
+reset role;
+create temp table primo_rana as select scheda_di('nonna.rana@esempio.it') as id;
+grant select on primo_rana to anon, authenticated;
+set role anon;
+select atteso('e quella del secondo, nato un anno prima', tenta($$select (manda('Ugo', 'Rana', 'nonna.rana@esempio.it', '347 100 0007', 31) is not null)::text$$), 'true');
+reset role;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('il secondo accolto', tenta($$select (accogli_iscrizione(rid('nonna.rana@esempio.it')) is not null)::text$$), 'true');
+reset role;
+select atteso('il secondo ha una scheda sua', (scheda_di('nonna.rana@esempio.it') <> (select id from primo_rana))::text, 'true');
+select atteso('due Ugo Rana', (select count(*)::text from persone where cognome = 'Rana'), '2');
+select atteso('e il primo resta iscritto con la sua richiesta sola', (select count(*)::text from richieste_iscrizione where persona_id = (select id from primo_rana)), '1');
 
 \echo ''
 \echo 'TUTTO A POSTO'
