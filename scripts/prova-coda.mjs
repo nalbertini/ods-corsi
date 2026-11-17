@@ -321,3 +321,4 @@ const dimmi = (s) => { console.log('  ✗', s); guai++ }
 }
 
 console.log(guai ? `\n${guai} PROBLEMI` : '\nTUTTO A POSTO')
+process.exit(guai ? 1 : 0)

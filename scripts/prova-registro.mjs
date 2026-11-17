@@ -51,6 +51,13 @@ ok('ogni prova citata esiste', mancano, [])
 const buchi = testo.split(/\n(?=- |\n|## )/).filter((b) => b.startsWith('- '))
 ok('nessun punto oltre 250 caratteri', buchi.filter((b) => b.length > 250).map((b) => b.slice(0, 40)), [])
 
+// La CI decide col codice di uscita: una prova che conta i guai e li stampa
+// soltanto resta verde anche quando cade, come è stato per `prova-coda.mjs`.
+const mute = readdirSync('scripts')
+  .filter((f) => /^prova-.*\.mjs$/.test(f))
+  .filter((f) => !/process\.exit(Code)?\b/.test(readFileSync(`scripts/${f}`, 'utf8')))
+ok('ogni scripts/prova-*.mjs esce con errore quando cade', mute, [])
+
 // Il diario si riconosceva dai rami citati: quelli stanno nelle PR.
 ok('nessun ramo', testo.match(/\bclaude\/(?!agents)[\w-]+/g) ?? [], [])
 
