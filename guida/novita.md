@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.10 — 17 novembre 2026
+
+### Risolto
+
+- La verifica del mese con la banca conta anche ricevute e pagamenti a mano, come CONTABILITÀ
+
 ## 0.259.9 — 17 novembre 2026
 
 ### Risolto
