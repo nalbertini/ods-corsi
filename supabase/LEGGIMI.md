@@ -1079,11 +1079,19 @@ codice non può farlo):
   pannello. Apre tutto il progetto, saltando le policy: sta solo nei segreti
   di GitHub, mai nel codice, nell'app o in un file del repository.
 
-Senza uno dei due il passo «Copia i certificati» si salta con un avviso
-(*notice*) e la copia del database si fa lo stesso: i certificati nello
-Storage restano fuori, e il backup non è completo finché i segreti mancano. Con
-tutti e due, il passo si ferma rosso se un file non si scarica, invece di
-dare per completa una copia a metà.
+Senza uno dei due il passo «Copia i certificati» si salta: la copia del
+database si fa e si carica lo stesso, ma i certificati nello Storage restano
+fuori, il backup non è completo e la run finisce rossa (passo «Controlla i
+certificati», che dice quali segreti aggiungere). Con tutti e due, se un file
+non si scarica succede lo stesso: la copia del database si carica, con i
+certificati arrivati fin lì, e la run finisce rossa invece di dare per
+completa una copia a metà.
+
+Un backup o una prova di ripristino che finisce rosso sul ramo principale
+apre una issue «Non riuscito: Backup del database» (o «Non riuscito: Prova di
+ripristino del backup») col link alla run, e i lunedì dopo la commenta finché
+resta aperta (`.github/workflows/avviso-backup.yml`): GitHub la manda per
+mail a chi segue il repository. Si chiude a mano quando la run torna verde.
 
 Ogni copia è un artefatto `backup-AAAA-MM-GG`, nella pagina del suo lancio in
 **Actions**, e resta novanta giorni: ci sono sempre le ultime tredici
@@ -1095,7 +1103,8 @@ riaccende dalla stessa pagina con **Enable workflow**.
 
 `.github/workflows/ripristino.yml` parte ogni lunedì alle 4:17 UTC, un'ora dopo
 il backup (o da **Actions → Prova di ripristino del backup → Run workflow**):
-scarica l'ultima copia, la decifra con `BACKUP_PASSWORD`, la rimette in un
+scarica la copia dell'ultimo backup finito (anche rosso: senza i certificati
+la copia del database c'è lo stesso), la decifra con `BACKUP_PASSWORD`, la rimette in un
 Postgres usa e getta e conta le righe di persone, iscrizioni, presenze e
 ricevute (e i file dei certificati). Si ferma rosso se la copia manca, non si
 apre, non si rimette a posto o non ha nessuna persona. Non vede mai il
