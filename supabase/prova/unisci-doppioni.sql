@@ -95,6 +95,14 @@ insert into anagrafiche (persona_id, comune, codice_fiscale, cap, genitore_nome)
   ('aaaaaaaa-0000-0000-0000-000000000011', 'Rivoli', 'DMCMRA10A01L219X', '10098', 'Anna'),
   ('aaaaaaaa-0000-0000-0000-000000000012', null, 'BNCSRA10A41L219X', null, null),
   ('aaaaaaaa-0000-0000-0000-000000000013', null, 'BNCSRA12B41L219Y', null, null);
+-- Le colonne di 78-tariffe-tecnici.sql: una per parte e una in tutte e due.
+update anagrafiche set provincia = 'TO' where persona_id = 'aaaaaaaa-0000-0000-0000-000000000010';
+update anagrafiche set provincia = 'AT', provincia_nascita = 'CN', iban = 'IT60X0542811101000000123456'
+ where persona_id = 'aaaaaaaa-0000-0000-0000-000000000011';
+-- Una Sara le ha solo lei: un'unione rifiutata non le passa (sezione 3).
+update anagrafiche set provincia = 'MI', iban = 'IT60X0542811101000000123456' where persona_id = 'aaaaaaaa-0000-0000-0000-000000000013';
+-- Chi resta senza anagrafica, il doppione con: le prende tutte (sezione 7).
+insert into anagrafiche (persona_id, provincia, provincia_nascita) values ('aaaaaaaa-0000-0000-0000-000000000016', 'MI', 'CN');
 
 create or replace function chi(u text) returns void language plpgsql as $$
 begin perform set_config('prova.utente', u, false); end $$;
@@ -169,6 +177,8 @@ select atteso('una persona che non c''è no', rifiuta($$select unisci_persone('a
 select atteso('due codici fiscali diversi no', rifiuta($$select unisci_persone('aaaaaaaa-0000-0000-0000-000000000012', 'aaaaaaaa-0000-0000-0000-000000000013')$$),
   'RIFIUTATO: Hanno due codici fiscali diversi: non sono la stessa persona…');
 select atteso('le due Sara restano', (select count(*)::text from persone where nome = 'Sara'), '2');
+select atteso('e chi doveva restare non ha preso provincia né IBAN',
+  (select coalesce(provincia, '') || coalesce(iban, '') from anagrafiche where persona_id = 'aaaaaaaa-0000-0000-0000-000000000012'), '');
 
 \echo ''
 \echo '--- 4. l''anteprima dice cosa passa ---'
@@ -242,6 +252,14 @@ select atteso('la scheda: le due scadenze, la più lontana; la nota vuota si rie
 select atteso('l''anagrafica: vince chi resta, i vuoti dal doppione',
   (select comune || ' ' || codice_fiscale || ' ' || cap || ' ' || genitore_nome from anagrafiche where persona_id = 'aaaaaaaa-0000-0000-0000-000000000010'),
   'Collegno DMCMRA10A01L219X 10098 Anna');
+select atteso('anche provincia, provincia di nascita e IBAN',
+  (select concat_ws(' ', provincia, provincia_nascita, iban) from anagrafiche where persona_id = 'aaaaaaaa-0000-0000-0000-000000000010'),
+  'TO CN IT60X0542811101000000123456');
+-- Una colonna nuova dell'anagrafica va anche in `unisci_persone` (164), se no l'unione la perde.
+select atteso('le colonne dell''anagrafica sono quelle che l''unione conosce',
+  (select string_agg(column_name::text, ' ' order by column_name) from information_schema.columns
+    where table_schema = 'public' and table_name = 'anagrafiche'),
+  'cambiata_da cambiata_il cap codice_fiscale comune genitore_codice_fiscale genitore_cognome genitore_nato genitore_nome iban indirizzo nato_a nato_il persona_id provincia provincia_nascita');
 select atteso('del doppione non resta niente',
   (select count(*)::text from (
      select persona_id from presenze union all select persona_id from prove union all select persona_id from iscrizioni
@@ -255,6 +273,8 @@ select chi('44444444-4444-4444-4444-444444444444');
 set role authenticated;
 select atteso('la segreteria che insegna anche unisce', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000015', 'aaaaaaaa-0000-0000-0000-000000000016')$$), 'fatto');
 select atteso('l''email di chi resta resta', (select string_agg(email::text, ',') from persone where nome = 'Elena'), 'elena@ods.it');
+select atteso('senza anagrafica sua, chi resta prende provincia e provincia di nascita del doppione',
+  (select provincia || ' ' || provincia_nascita from anagrafiche where persona_id = 'aaaaaaaa-0000-0000-0000-000000000015'), 'MI CN');
 reset role;
 
 \echo ''

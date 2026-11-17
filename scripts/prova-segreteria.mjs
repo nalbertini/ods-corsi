@@ -1535,9 +1535,13 @@ console.log('\nunire due schede')
   const elena2 = await nuova('Elena', 'Verdi', { email: 'elena.verdi@esempio.it' })
   await s.salvaPagamento(elena, { stato: 'pagato', fino: '2026-10-31' })
   await s.salvaPagamento(elena2, { stato: 'pagato', fino: '2027-01-31', nota: 'carta n. 12' })
+  await s.salvaAnagrafica(elena2, { provincia: 'MI', provinciaNascita: 'CN', iban: 'IT60X0542811101000000123456' })
   await s.unisciPersone(elena, elena2)
   const e = await di(elena)
   ok('due email diverse: resta quella di chi resta', e.email, 'elena@esempio.it')
+  ok('senza anagrafica sua, chi resta prende provincia, provincia di nascita e IBAN del doppione',
+    (({ provincia, provinciaNascita, iban }) => ({ provincia, provinciaNascita, iban }))((await s.anagraficaDi(elena)).dati),
+    { provincia: 'MI', provinciaNascita: 'CN', iban: 'IT60X0542811101000000123456' })
   ok('pagata fuori dall\'app: la scadenza più lontana, e la nota vuota si riempie', [e.pagamento.fino, e.pagamento.nota], ['2027-01-31', 'carta n. 12'])
 
   // «Pagato» senza «fino»: pagato senza scadenza, come l'`al` vuoto delle iscrizioni.

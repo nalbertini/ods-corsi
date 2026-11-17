@@ -780,6 +780,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'richieste_iscrizione' and column_name = 'come_paga')
     and exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'invia_iscrizione' and prosrc like '%come_paga%')
     and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%certificato_dopo%')
-    and to_regprocedure('public.richieste_con_ricevuta()') is not null)
+    and to_regprocedure('public.richieste_con_ricevuta()') is not null),
+  -- Rilanciando 102 dopo, `unisci_persone` torna quella senza le tre colonne: il controllo dice «manca».
+  ('164-unione-tiene-anagrafica.sql', 'unire due schede tiene provincia, provincia di nascita e IBAN',
+    exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'unisci_persone' and prosrc like '%iban = coalesce(r.iban, v.iban)%'))
 ) as x(file, cosa, c)
 order by file, cosa;
