@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.7 — 17 novembre 2026
+
+### Risolto
+
+- Nell'appello sul telefono il nome di un corso lungo non spinge più giù l'elenco
+- L'import dai fogli non mette più i corsi di un omonimo sulla scheda sbagliata
+
 ## 0.259.6 — 17 novembre 2026
 
 ### Risolto
