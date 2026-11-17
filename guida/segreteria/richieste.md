@@ -135,9 +135,13 @@ Accolta o rifiutata, la finestra si chiude da sola e si torna all'elenco, alla p
   iscritto lo può scrivere chiunque, e con l'email si entra nell'app. Se la
   scheda è senza email e senza quel telefono, ACCOGLI ne fa una nuova. Se
   sapete che è la stessa persona, sceglietela dalla lista **IN ELENCO C'È
-  GIÀ**: solo così l'email e il telefono della richiesta finiscono su una
-  scheda che non li aveva (riconosciuta dal solo codice fiscale, la scheda
-  tiene i suoi contatti, e quelli nuovi si scrivono a mano). Se l'email della richiesta
+  GIÀ**. L'email e il telefono della richiesta finiscono su una scheda che
+  non li aveva in due casi soli: se la scheda l'avete scelta voi dalla
+  lista, o se ACCOGLI l'ha ritrovata dalla stessa email o dallo stesso
+  telefono (con lo stesso telefono, una scheda senza email prende l'email
+  della richiesta). Ritrovata dal solo codice fiscale, la scheda resta coi
+  suoi contatti: se servono quelli della richiesta, li scrivete voi nella
+  scheda. Un contatto già scritto sulla scheda non viene mai cambiato. Se l'email della richiesta
   è già di un fratello o del genitore, la nuova scheda entra con la stessa
   email. **Apri la scheda** porta
   alla sua scheda in [Iscritti](iscritti.md).
