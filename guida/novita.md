@@ -10,6 +10,35 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.10 — 17 novembre 2026
+
+### Risolto
+
+- La verifica del mese con la banca conta anche ricevute e pagamenti a mano, come CONTABILITÀ
+
+## 0.259.9 — 17 novembre 2026
+
+### Risolto
+
+- In OGGI e in SETTIMANA chi viene a provare non conta fra i presenti
+
+### Modificato
+
+- Il backup senza certificati finisce rosso e un backup caduto apre una issue
+
+## 0.259.8 — 17 novembre 2026
+
+### Modificato
+
+- La prova della coda offline delle presenze ora può risultare rossa
+
+## 0.259.7 — 17 novembre 2026
+
+### Risolto
+
+- Nell'appello sul telefono il nome di un corso lungo non spinge più giù l'elenco
+- L'import dai fogli non mette più i corsi di un omonimo sulla scheda sbagliata
+
 ## 0.259.6 — 17 novembre 2026
 
 ### Risolto

@@ -50,7 +50,9 @@ e in rosso **Appello non fatto**. Toccare un blocco apre la lezione in
 PRESENZE.
 
 Sotto il titolo, la data, le lezioni, gli appelli da fare e quanti sono
-venuti su quanti attesi («15 presenti su 27 attesi»).
+venuti su quanti attesi («15 presenti su 27 attesi»). Chi è venuto a provare
+non è fra gli attesi, e non si conta nemmeno fra i presenti; lo stesso nel
+blocco di ogni lezione.
 
 Sopra il tabellone, i numeri della striscia **COSA MANCA**, con lo stesso
 conto: **APPELLI NON FATTI** (ultimi 30 giorni), **CERTIFICATI SCADUTI**,

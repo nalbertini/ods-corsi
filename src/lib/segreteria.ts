@@ -128,7 +128,9 @@ export interface LezioneSeg {
   straordinaria: boolean
   iscritti: number
   capienza?: number
+  /** Tutti i presenti, chi prova compreso; di questi, `prove` non sono fra gli `iscritti` (come `LezioneSala`). */
   presenti: number
+  prove?: number
   /** Quanti hanno un segno qualsiasi: zero vuol dire che l'appello non c'è. */
   segnati: number
 }

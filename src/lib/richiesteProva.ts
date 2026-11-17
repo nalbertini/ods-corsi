@@ -444,7 +444,7 @@ export function creaRichiesteProva(): DatiRichieste {
       // Come nel database: prima il codice fiscale di una richiesta già
       // accolta, poi stesso nome e cognome, e la stessa email o lo stesso
       // telefono: il solo nome lo scrive chiunque, e con l'email si entra
-      // nell'app (165-accogli-senza-presa-account.sql). Il codice vale solo con lo stesso nome e cognome: lo
+      // nell'app (167-accogli-senza-presa-account.sql). Il codice vale solo con lo stesso nome e cognome: lo
       // sanno in tanti, e un nome diverso la segreteria lo sceglie a mano.
       // Sempre fra gli iscritti: un istruttore omonimo non è chi si iscrive.
       const stessoNome = (p: { nome: string; cognome: string; ruolo: string }) => p.ruolo === 'iscritto' && stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome)

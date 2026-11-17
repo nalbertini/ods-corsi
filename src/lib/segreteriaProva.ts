@@ -396,6 +396,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
   const vista = (l: LezioneTrovata): LezioneSeg => {
     const k = comeE(l)
     const c = conti(l.id)
+    const iscritti = new Set(iscrittiDellAppello(l).map((p) => p.id))
     return {
       id: l.id,
       corsoId: l.corso.id,
@@ -412,9 +413,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
       attivitaId: attivitaDi(l) ?? undefined,
       attivita: nomeAttivita(attivitaDi(l)),
       attivitaCambiata: attivitaCambiata({ attivitaId: attivitaDi(l), straordinaria: l.straordinaria, inizio: l.inizio.toISOString(), segnati: c.segnati }, { attivitaId: l.ricorrenza?.attivitaId }),
-      iscritti: iscrittiDellAppello(l).length,
+      iscritti: iscritti.size,
       capienza: l.corso.capienza,
       ...c,
+      prove: Object.entries(memoria.segnate[l.id] ?? {}).filter(([id, s]) => s === 'presente' && !iscritti.has(id)).length,
     }
   }
 

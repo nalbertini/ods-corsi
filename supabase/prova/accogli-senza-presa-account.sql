@@ -8,7 +8,7 @@
 -- telefono si scrivono su una scheda solo in quei due casi, mai quando è il
 -- codice fiscale (che lo sanno in tanti) a farla trovare.
 -- Si lancia dopo finto-supabase.sql e i file dello schema
--- (la correzione è `165-accogli-senza-presa-account.sql`).
+-- (la correzione è `167-accogli-senza-presa-account.sql`).
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 

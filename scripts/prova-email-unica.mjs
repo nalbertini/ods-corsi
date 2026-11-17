@@ -253,7 +253,7 @@ console.log('\n7. il modulo online: l\'email della richiesta è quella della sch
   ok('già di un\'istruttrice: lo stesso', istr.email ?? null, 'rita.istr@esempio.it')
   ok('l\'istruttrice non cambia', (await s.personale()).filter((p) => p.cognome === 'Istruttrice' && p.nome === 'Rita').map((p) => [p.email, p.ruolo]), [['rita.istr@esempio.it', 'istruttore']])
   // La scheda c'era già (senza email né telefono) e la segreteria la sceglie: prende l'email della richiesta, senza duplicarsi.
-  // Con il solo nome non si abbinerebbe più (165-accogli-senza-presa-account.sql).
+  // Con il solo nome non si abbinerebbe più (167-accogli-senza-presa-account.sql).
   const ivoScheda = await s.salvaPersona({ nome: 'Ivo', cognome: 'Gialli' })
   const ivo = await accogli('Ivo', 'Gialli', 'madre@esempio.it', ivoScheda)
   ok('scheda già in elenco: prende l\'email, una persona sola', [ivo.email?.toLowerCase() ?? null, (await persone()).filter((p) => p.nome === 'Ivo').length], ['madre@esempio.it', 1])

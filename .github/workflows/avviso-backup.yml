@@ -1,0 +1,53 @@
+name: Avviso sul backup
+
+# Un backup o una prova di ripristino che cade di notte non lo guarda nessuno:
+# la prova di ripristino è stata rossa ogni lunedì dal 12 ottobre al 16
+# novembre 2026 senza che nessuno lo sapesse. Qui, quando uno dei due finisce
+# rosso sul ramo principale, si apre una issue col link alla run (o si
+# commenta quella già aperta): GitHub la manda per mail a chi segue il
+# repository. Sta in un file suo, e non in un passo `if: failure()` dei due
+# workflow, per prendere anche una run caduta prima di cominciare.
+#
+# I nomi qui sotto sono i `name:` di backup.yml e ripristino.yml: se cambiano
+# là, cambiano qui (lo controlla scripts/prova-backup.mjs).
+on:
+  workflow_run:
+    workflows: ['Backup del database', 'Prova di ripristino del backup']
+    types: [completed]
+
+permissions:
+  issues: write
+
+jobs:
+  avviso:
+    name: Apri o aggiorna la issue
+    # Solo le run del ramo principale: quella lanciata a mano da un ramo di
+    # lavoro la guarda chi l'ha lanciata.
+    if: >-
+      contains(fromJSON('["failure", "timed_out", "startup_failure"]'), github.event.workflow_run.conclusion)
+      && github.event.workflow_run.head_branch == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      LAVORO: ${{ github.event.workflow_run.name }}
+      RUN_URL: ${{ github.event.workflow_run.html_url }}
+    steps:
+      # Una issue per lavoro, riconosciuta dal titolo: finché resta aperta, i
+      # lunedì dopo la commentano invece di aprirne un'altra. Nel testo solo
+      # il link alla run: il repository è pubblico.
+      - name: Apri o aggiorna la issue
+        run: |
+          set -euo pipefail
+          titolo="Non riuscito: $LAVORO"
+          testo="«$LAVORO» è finito rosso: $RUN_URL
+
+          Cosa guardare e come rimettere a posto: supabase/LEGGIMI.md, «Il backup». Chiudi questa issue quando la run torna verde."
+          n=$(gh issue list --state open --limit 200 --json number,title \
+            | jq -r --arg t "$titolo" 'map(select(.title == $t))[0].number // empty')
+          if [ -n "$n" ]; then
+            gh issue comment "$n" --body "$testo"
+          else
+            gh issue create --title "$titolo" --body "$testo"
+          fi

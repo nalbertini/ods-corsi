@@ -2,7 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import type { DatiSegreteria, LezioneSeg } from '../../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../../lib/sala'
 import { codaBanco } from '../../../lib/codaBanco'
-import { fasciaDelleLezioni, ORA_PX, riepilogoGiornata, sottotitoloOggi, tabellone, type Blocco, type StatoBlocco } from '../../../lib/giornata'
+import { fasciaDelleLezioni, ORA_PX, presentiIscritti, riepilogoGiornata, sottotitoloOggi, tabellone, type Blocco, type StatoBlocco } from '../../../lib/giornata'
 import { caselleDaMostrare, type Casella } from '../../../lib/cosaManca'
 import { Guaio, Testa, useCarica } from '../comune'
 import { DaFare, type ContiDaFare } from '../DaFare'
@@ -122,7 +122,7 @@ export function Oggi({ d, conti, onVai, onRiprova }: { d: DatiSegreteria; conti:
                     <span className="bn-blocco-sotto">
                       {b.lezione.istruttori || 'Senza istruttore'} · {b.lezione.iscritti} iscritti
                     </span>
-                    <span className="num bn-blocco-stato">{b.stato === 'fatto' || b.stato === 'in_corso' ? `${PAROLE_BLOCCO[b.stato]} · ${b.lezione.presenti} su ${b.lezione.iscritti}` : PAROLE_BLOCCO[b.stato]}</span>
+                    <span className="num bn-blocco-stato">{b.stato === 'fatto' || b.stato === 'in_corso' ? `${PAROLE_BLOCCO[b.stato]} · ${presentiIscritti(b.lezione)} su ${b.lezione.iscritti}` : PAROLE_BLOCCO[b.stato]}</span>
                   </button>
                 ))}
               </div>

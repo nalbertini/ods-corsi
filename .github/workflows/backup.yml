@@ -9,8 +9,11 @@ name: Backup del database
 # Il piano gratuito di Supabase non lascia scaricare i suoi backup: questa è
 # l'unica copia che la palestra ha in mano. Come rimetterla a posto è in
 # supabase/LEGGIMI.md, «Il backup». Nella stessa copia cifrata ci sono anche i
-# file del contenitore `certificati` dello Storage (i certificati medici), se
-# ci sono i segreti SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.
+# file del contenitore `certificati` dello Storage (i certificati medici): per
+# quelli servono i segreti SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY. Se mancano,
+# o se la copia dei certificati non riesce, la copia del database si carica lo
+# stesso e poi la run finisce rossa: un backup senza certificati non è verde.
+# Una run rossa apre una issue (avviso-backup.yml).
 on:
   schedule:
     - cron: '17 3 * * 1'
@@ -57,9 +60,10 @@ jobs:
           fi
           echo "pronto=si" >> "$GITHUB_OUTPUT"
           # I file dei certificati servono altri due segreti: senza, la copia
-          # del database si fa lo stesso e si dice cosa manca.
+          # del database si fa e si carica lo stesso, poi il passo «Controlla
+          # i certificati» ferma la run rossa e dice cosa manca.
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            echo "::notice::Mancano i segreti SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY: i certificati medici nello Storage non entrano nella copia (vedi supabase/LEGGIMI.md, «Il backup»)."
+            echo "::warning::Mancano i segreti SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY: i certificati medici nello Storage non entrano nella copia, e la run finirà rossa dopo aver caricato la copia del database."
             echo "certificati=no" >> "$GITHUB_OUTPUT"
           else
             echo "certificati=si" >> "$GITHUB_OUTPUT"
@@ -94,17 +98,22 @@ jobs:
       # I certificati medici stanno nello Storage, non nel dump: si scaricano
       # dal contenitore `certificati` con la chiave di servizio, nella stessa
       # cartella del dump, così escono nella stessa copia cifrata. Una
-      # cartella per persona. Se qualcosa non va si ferma rosso: una copia
-      # senza i file, detta completa, è peggio di nessuna.
+      # cartella per persona. Se qualcosa non va la run va avanti
+      # (`continue-on-error`) per non perdere la copia del database, che si
+      # cifra e si carica con i certificati arrivati fin lì; poi «Controlla i
+      # certificati» la ferma rossa: una copia senza i file, detta completa, è
+      # peggio di nessuna.
       - name: Copia i certificati
+        id: certificati
+        continue-on-error: true
         if: steps.segreti.outputs.pronto == 'si' && steps.segreti.outputs.certificati == 'si'
         run: |
           set -euo pipefail
           base="${SUPABASE_URL%/}/storage/v1"
           dest="backup-$GIORNO/certificati"
           mkdir -p "$dest"
-          # Se qualcosa non va, il passo si ferma rosso e dice cosa guardare: mai la chiave.
-          trap 'rc=$?; [ "$rc" -eq 0 ] || echo "::error::Copia dei certificati non riuscita (vedi sopra). Controlla i segreti SUPABASE_URL (https://<id>.supabase.co) e SUPABASE_SERVICE_ROLE_KEY (la chiave service_role) e che il contenitore «certificati» esista (supabase/45-certificati-online.sql). La copia del database NON è stata cifrata né caricata: va rifatta."' EXIT
+          # Se qualcosa non va, il passo dice cosa guardare: mai la chiave.
+          trap 'rc=$?; [ "$rc" -eq 0 ] || echo "::error::Copia dei certificati non riuscita (vedi sopra). Controlla i segreti SUPABASE_URL (https://<id>.supabase.co) e SUPABASE_SERVICE_ROLE_KEY (la chiave service_role) e che il contenitore «certificati» esista (supabase/45-certificati-online.sql). La copia del database si carica lo stesso, ma i certificati dentro non sono tutti."' EXIT
           guaio() {
             echo "Errore: $1" >&2
             exit 1
@@ -185,3 +194,23 @@ jobs:
           if-no-files-found: error
           # È già compresso e cifrato: ricomprimerlo non guadagna niente.
           compression-level: 0
+
+      # Dopo il caricamento, non prima: la copia del database non si deve
+      # perdere per colpa dei certificati. Ma senza i certificati il backup
+      # non è completo e la run non può restare verde: per due lunedì (9 e 16
+      # novembre 2026) è stata verde con questo passo saltato, e nessuno l'ha
+      # saputo. Qui si leggono solo l'esito e il sì/no, mai i segreti.
+      - name: Controlla i certificati
+        if: steps.segreti.outputs.pronto == 'si'
+        env:
+          CERTIFICATI: ${{ steps.segreti.outputs.certificati }}
+          ESITO: ${{ steps.certificati.outcome }}
+        run: |
+          if [ "$CERTIFICATI" != si ]; then
+            echo "::error::I certificati medici non sono nella copia: mancano i segreti SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY. Aggiungili in Settings → Secrets and variables → Actions (vedi supabase/LEGGIMI.md, «Il backup») e rilancia il backup. La copia del database è stata caricata, ma senza i certificati il backup non è completo."
+            exit 1
+          fi
+          if [ "$ESITO" != success ]; then
+            echo "::error::La copia dei certificati medici non è riuscita (vedi il passo «Copia i certificati»): controlla i segreti SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY in Settings → Secrets and variables → Actions e rilancia il backup. La copia del database è stata caricata, ma i certificati dentro non sono tutti."
+            exit 1
+          fi

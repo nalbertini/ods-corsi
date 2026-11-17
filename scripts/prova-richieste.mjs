@@ -293,7 +293,7 @@ console.log('\n5. chi torna non diventa un doppione')
   await s.attivaPersona(vecchia.id, false)
   const base = m.lettereCognome(vecchia.cognome) + m.lettereNome(vecchia.nome) + '96A01L219'
   const id = await r.invia(adulto({ nome: vecchia.nome.toUpperCase(), cognome: vecchia.cognome.toLowerCase(), codiceFiscale: base + m.carattereControllo(base), email: 'torno@esempio.it', corsi: [corso] }))
-  // La scheda non ha email né telefono: niente la lega alla richiesta (come `165-accogli-senza-presa-account.sql`),
+  // La scheda non ha email né telefono: niente la lega alla richiesta (come `167-accogli-senza-presa-account.sql`),
   // la sceglie la segreteria. Senza scelta nascerebbe una scheda nuova (prova 7c).
   ok('accolta sulla scheda che c’era, scelta dalla segreteria', await r.accogli(id, vecchia.id), vecchia.id)
   const p = (await s.persone()).find((x) => x.id === vecchia.id)
@@ -372,7 +372,7 @@ console.log('\n7b. lo stesso nome, un altro codice fiscale: le regole di accogli
   ok('Ivo l’istruttore resta istruttore: l’iscritto è una scheda nuova', [iscrittoIvo !== ivo, a.persone.find((p) => p.id === ivo).ruolo], [true, 'istruttore'])
 
   // Due Eva senza codice: la più vecchia senza email né telefono, la più nuova con un’altra email e lo stesso telefono.
-  // Come il database (165-accogli-senza-presa-account.sql): il solo nome non lega, vince chi ha un contatto uguale, anche se è la più nuova.
+  // Come il database (167-accogli-senza-presa-account.sql): il solo nome non lega, vince chi ha un contatto uguale, anche se è la più nuova.
   persona({ id: 'p-eva-1', nome: 'Eva', cognome: 'Rana', creataIl: '2025-01-01' })
   persona({ id: 'p-eva-2', nome: 'Eva', cognome: 'Rana', email: 'eva.vecchia@esempio.it', telefono: '347 666 0006', creataIl: '2026-02-01' })
   ok('fra due Eva, quella con lo stesso telefono: la più vecchia senza contatti non conta', await r.accogli(await r.invia(adulto({ nome: 'Eva', cognome: 'Rana', codiceFiscale: cf('Rana', 'Eva', '96A41L219'), email: 'eva@esempio.it', telefono: '347 666 0006' }))), 'p-eva-2')
@@ -416,7 +416,7 @@ console.log('\n7b. lo stesso nome, un altro codice fiscale: le regole di accogli
 console.log('\n7c. senza una scheda scelta il solo nome non basta: serve un contatto che torna')
 {
   // Chi manda dal modulo il nome di un iscritto senza email con la propria email non deve finire sulla sua scheda
-  // (e col suo account vederne i dati): come `accogli_iscrizione` di `165-accogli-senza-presa-account.sql`.
+  // (e col suo account vederne i dati): come `accogli_iscrizione` di `167-accogli-senza-presa-account.sql`.
   const a = m.archivio.dati
   const cf = (cognome, nome) => {
     const b = m.lettereCognome(cognome) + m.lettereNome(nome) + '96A01L219'

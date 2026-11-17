@@ -1,5 +1,5 @@
 -- ---------------------------------------------------------------------------
--- 165 · Accogliere non dà la scheda di un iscritto a chi ne scrive il nome
+-- 167 · Accogliere non dà la scheda di un iscritto a chi ne scrive il nome
 --
 -- Accogliendo una richiesta senza scegliere la scheda, `accogli_iscrizione`
 -- (148) prendeva per buona una scheda con lo stesso nome e cognome quando

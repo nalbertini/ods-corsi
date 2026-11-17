@@ -299,7 +299,7 @@ reset role;
 insert into storage.objects (bucket_id, name) select 'iscrizioni', id || '/certificato.pdf' from richieste_iscrizione where email = 'sara@esempio.it';
 set role authenticated;
 select atteso('il file sbagliato lo toglie prima', tenta($$delete from storage.objects where bucket_id = 'iscrizioni' and name ~ '/certificato\.' and name like (select id::text from richieste_iscrizione where email = 'sara@esempio.it') || '/%'$$), 'FATTO (1 righe)');
--- Sara non ha email né telefono: niente la lega alla richiesta (165-accogli-senza-presa-account.sql),
+-- Sara non ha email né telefono: niente la lega alla richiesta (167-accogli-senza-presa-account.sql),
 -- la scheda la sceglie la segreteria. Senza scelta nascerebbe una Sara nuova.
 select atteso('accolta sulla scheda che c''era, scelta dalla segreteria', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'sara@esempio.it'), 'aaaaaaaa-0000-0000-0000-000000000003') = 'aaaaaaaa-0000-0000-0000-000000000003')::text$$), 'true');
 select atteso('una Sara sola', (select count(*)::text from persone where cognome = 'Bianchi'), '1');
@@ -465,7 +465,7 @@ select atteso('Lia la manda con l''email di Maura', tenta($$select (invia_iscriz
   'nome', 'Lia', 'cognome', 'Gialli', 'codice_fiscale', cf_prova('GLLLIA', (current_date - interval '30 years')::date), 'email', 'Maura@ods.it', 'telefono', '347 555 0002'))) is not null)::text$$), 'true');
 reset role;
 set role authenticated;
--- Ivo non ha email né telefono: la scheda la sceglie la segreteria (165-accogli-senza-presa-account.sql).
+-- Ivo non ha email né telefono: la scheda la sceglie la segreteria (167-accogli-senza-presa-account.sql).
 select atteso('Ivo accolta, sulla scheda scelta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Ivo' and cognome = 'Gialli'),
   (select id from persone where nome = 'Ivo' and cognome = 'Gialli')) is not null)::text$$), 'true');
 select atteso('Lia accolta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Lia')) is not null)::text$$), 'true');
@@ -566,7 +566,7 @@ select atteso('nome_compatto come compatto',
 insert into persone (id, nome, cognome, ruolo) values ('aaaaaaaa-0000-0000-0000-000000000013', 'Luca', 'D''Amico', 'iscritto');
 insert into anagrafiche (persona_id, codice_fiscale) values ('aaaaaaaa-0000-0000-0000-000000000013', cf_prova('DMCLCU', (current_date - interval '30 years')::date));
 -- Ennio De Luca, senza email ma col telefono: senza un contatto uguale il solo nome non lo ritroverebbe
--- (165-accogli-senza-presa-account.sql).
+-- (167-accogli-senza-presa-account.sql).
 insert into persone (id, nome, cognome, ruolo, telefono) values ('aaaaaaaa-0000-0000-0000-000000000014', 'Ennio', 'De Luca', 'iscritto', '347 888 0003');
 set role anon;
 select atteso('Luca scrive D’Amico con l''apostrofo curvo', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
