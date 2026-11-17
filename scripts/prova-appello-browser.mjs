@@ -34,7 +34,8 @@ try {
   await pagina.goto('http://localhost:4398/istruttori/?prova')
   await pagina.waitForLoadState('networkidle')
   // Un appello aperto a qualunque ora: le lezioni passate con qualcuno da segnare (i dati di prova sono relativi a oggi).
-  await pagina.getByRole('button', { name: /APPELLI DA CHIUDERE/ }).click()
+  // «UN APPELLO DA CHIUDERE» quando è uno solo (il 2026-11-24 dei dati di prova).
+  await pagina.getByRole('button', { name: /APPELL[OI] DA CHIUDERE/ }).click()
   await pagina.getByRole('button', { name: /da segnare/ }).first().click()
 
   const tasto = pagina.getByRole('button', { name: /^Altro: azzera/ })
@@ -43,7 +44,16 @@ try {
   // L'appello fitto (proposta in docs/design-canvas/appello-telefono-spazio/): la testa resta a 90px anche a 375,
   // dove «lunedì 9 novembre 19:00 · Tatami» andava a capo e la portava a 104 (l'ha trovato il collaudo).
   await pagina.setViewportSize({ width: 375, height: 667 })
-  const altaTesta = await pagina.locator('.appello-testa').evaluate((e) => Math.round(e.getBoundingClientRect().height))
+  // Col corso dal nome più lungo dei dati di prova, qualunque lezione sia la prima da segnare oggi: il 2026-11-17
+  // capitava «Preparazione atletica, pesi e Mobility», il titolo andava su tre righe e la testa a 132px.
+  const altaTesta = await pagina.locator('.appello-testa').evaluate((e) => {
+    const titolo = e.querySelector('.appello-titolo')
+    const era = titolo.textContent
+    titolo.textContent = 'PREPARAZIONE ATLETICA, PESI E MOBILITY'
+    const alta = Math.round(e.getBoundingClientRect().height)
+    titolo.textContent = era
+    return alta
+  })
   ok('a 375px la testa dell\'appello è alta al più 92px', altaTesta <= 92 ? 'sì' : `${altaTesta}px`, 'sì')
   // A 390×760, striscia dei dati di prova compresa, i nomi interi sopra CHIUDI sono almeno 9.
   await pagina.setViewportSize({ width: 390, height: 760 })
