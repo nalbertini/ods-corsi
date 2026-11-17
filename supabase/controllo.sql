@@ -787,6 +787,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rilanciando 131 dopo, `saldo_banca_regole` torna a contare i soli movimenti: il controllo dice «manca».
   ('165-quadratura-come-contabilita.sql', 'la verifica col saldo della banca conta anche ricevute e pagamenti a mano',
     exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'saldo_banca_regole' and prosrc like '%from pagamenti_diretti d%')),
+  -- Rifà funzioni di 21 e 145: rilanciando quelli, il controllo torna «manca».
+  ('166-pin-nella-finestra.sql', 'dal tablet col PIN l''appello si segna solo nella finestra della lezione',
+    (select count(*) = 4 from pg_proc where pronamespace = 'public'::regnamespace
+      and proname in ('segna_con_pin', 'aggiungi_prova_con_pin', 'segna_prova_con_pin', 'elenco_sala')
+      and prosrc like '%lezione_nella_finestra%')),
   -- Rifà `accogli_iscrizione` di 148: rilanciando 06, 44, 45, 53, 90, 95, 99, 100 o 148 dopo, il controllo torna «manca».
   ('167-accogli-senza-presa-account.sql', 'accogliere non scrive l''email di chi scrive sulla scheda di un omonimo',
     exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'accogli_iscrizione' and prosrc like '%case when contatti then coalesce(email, r.email)%'))
