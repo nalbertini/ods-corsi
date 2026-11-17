@@ -235,6 +235,10 @@ ORA** ne fa una subito, prima di un cambiamento grosso. **Scarica** prende una
 copia per metterla su Drive: è cifrata, si apre solo con la password del
 backup.
 
+Se l'ultimo backup è **NON RIUSCITO**, la copia non è completa: di solito il
+database c'è e si scarica lo stesso, ma mancano i certificati medici. Avvisa
+chi cura l'app, che riceve anche una segnalazione da sé.
+
 ### Privacy
 
 - **L'informativa** — lo stato dell'informativa privacy che vede chi si
