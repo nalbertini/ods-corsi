@@ -191,6 +191,7 @@ ok('il controllo con database vuoto dice 1 nuova, non 2', c.totali, { nuova: 1, 
   const d = {
     sale: async () => [], personale: async () => [], corsi: async () => corsiFinti,
     persone: async () => creati.map((p, i) => persona({ ...p, id: 'n' + i })),
+    indiziDoppioni: async () => ({ codiciFiscali: {}, nascite: {}, nonDoppioni: [] }),
     salvaPersona: async (p) => { creati.push(p); return 'n' + (creati.length - 1) },
     iscrivi: async (id, corso) => { iscritte.push([id, corso]) },
     rigenera: async () => {},
@@ -366,7 +367,7 @@ const duePosti = (csv, modulo) => {
   return { ...f, iscritti: u.iscritti, note: [...(f.note ?? []), ...u.note] }
 }
 // Il database finto: chi c'è già (`dentro`), cosa salva importa().
-const provaImporta = async (f, dentro = [], schede = {}) => {
+const provaImporta = async (f, dentro = [], schede = {}, codiciFiscali = {}) => {
   const creati = []
   const iscritte = []
   const salvate = []
@@ -376,6 +377,7 @@ const provaImporta = async (f, dentro = [], schede = {}) => {
     salvaPersona: async (p) => { creati.push(p); return 'n' + (creati.length - 1) },
     iscrivi: async (id, corso, dal) => { iscritte.push([id, corso, dal]) },
     anagraficaDi: async (id) => (schede[id] ? { da: 'segreteria', dati: schede[id] } : null),
+    indiziDoppioni: async () => ({ codiciFiscali, nascite: {}, nonDoppioni: [] }),
     salvaAnagrafica: async (id, a) => { salvate.push([id, a]) },
     rigenera: async () => {},
   }
@@ -457,6 +459,34 @@ const AnnaMod = '13/06/2020 10:00:00,Anna Bianchi,anna@x.it,222,,,Judo 2\n'
   ok('…col telefono del modulo sul primo, e l’altro com’era', [f.iscritti[0].telefono, f.iscritti[1].telefono], ['222', undefined])
   f = duePosti(csv, '13/06/2020 10:00:00,Anna Bianchi,,222,,,Yoga\n')
   ok('due omonimi: il modulo senza email va sul primo', corsiDi(f), [['a1@x.it', ['Judo 2', 'Yoga'], '222'], ['a2@x.it', ['Yoga'], undefined]])
+}
+
+console.log('\nUn codice fiscale diverso è un’altra persona, anche con lo stesso nome')
+{
+  // Come doppioni.ts e il database (`unione_possibile`, `accogli_iscrizione`): due codici fiscali noti e diversi non si legano.
+  const conCf = (cf) => {
+    const t = L.leggiTabella('Informazioni cronologiche,Nome e cognome,Codice fiscale,Corsi\n13/06/2020 10:00:00,Mario Rossi,' + cf + ',Judo 2\n')
+    const r = L.leggiRisposte(t, L.indovinaColonne(t.testa), { 'Judo 2': 'j2' }, [{ id: 'j2', nome: 'Judo 2' }])
+    return { ...L.leggiFogli(null, base, ['Judo 2']), iscritti: r.iscritti }
+  }
+  const gia = persona({ nome: 'Mario', cognome: 'Rossi', id: 'm1' })
+  const ALTRO = cfDa('RSSMRA10A01L219')
+  const f = conCf(CF_MARIO)
+  ok('il controllo: scheda con un altro codice fiscale, la riga è nuova', L.controllaRighe(f, { ...sit([gia]), codiciFiscali: { m1: ALTRO } }).totali, { nuova: 1, in_palestra: 0, da_sistemare: 0 })
+  const a = await provaImporta(f, [gia], {}, { m1: ALTRO })
+  ok('importa: si crea un altro Mario Rossi, e il corso va a lui', [a.creati.map((p) => [p.nome, p.cognome]), a.iscritte.map((x) => x[0])], [[['Mario', 'Rossi']], ['n0']])
+  ok('stesso codice fiscale: è lui', L.controllaRighe(f, { ...sit([gia]), codiciFiscali: { m1: CF_MARIO } }).totali.in_palestra, 1)
+  ok('un codice fiscale che non torna nel foglio non decide: è lui', L.controllaRighe(conCf(CF_MARIO.slice(0, 15) + (CF_MARIO[15] === 'X' ? 'Y' : 'X')), { ...sit([gia]), codiciFiscali: { m1: ALTRO } }).totali.in_palestra, 1)
+  {
+    const t = L.leggiTabella('Informazioni cronologiche,Nome e cognome,Codice fiscale,Corsi\n13/06/2020 10:00:00,Mario Rossi,' + CF_MARIO + ',Judo 2\n14/06/2020 10:00:00,Mario Rossi,' + ALTRO + ',Yoga\n')
+    const r = L.leggiRisposte(t, L.indovinaColonne(t.testa), { 'Judo 2': 'j2', Yoga: 'yo' }, [{ id: 'j2', nome: 'Judo 2' }, { id: 'yo', nome: 'Yoga' }])
+    const due = { ...L.leggiFogli(null, base, ['Judo 2', 'Yoga']), iscritti: r.iscritti }
+    ok('due Mario Rossi con due codici fiscali nello stesso foglio: due righe', due.iscritti.map((x) => x.anagrafica?.codiceFiscale), [CF_MARIO, ALTRO])
+    const b = await provaImporta(due)
+    ok('…e due schede, ognuna col suo corso', [b.creati.length, b.iscritte.map((x) => x.slice(0, 2))], [2, [['n0', 'j2'], ['n1', 'yo']]])
+  }
+  ok('scheda senza codice fiscale: è lui, come prima', L.controllaRighe(f, { ...sit([gia]), codiciFiscali: {} }).totali.in_palestra, 1)
+  ok('nome e cognome scambiati con un altro codice fiscale: nuova, niente dubbio', L.controllaRighe(f, { ...sit([persona({ nome: 'Rossi', cognome: 'Mario', id: 'm2' })]), codiciFiscali: { m2: ALTRO } }).totali, { nuova: 1, in_palestra: 0, da_sistemare: 0 })
 }
 
 console.log('\nChi è già in palestra: il modulo riempie solo i campi vuoti')

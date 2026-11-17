@@ -66,8 +66,10 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
      (**VEDI TUTTE LE RIGHE** le elenca tutte). Chi c'è già si riconosce dal
      nome e cognome, anche scritti con accenti, apostrofi o maiuscole
      diverse («D'Angelo», «Deluca» e «De Luca» sono lo stesso cognome), e gli
-     si aggiungono solo i corsi che mancano. Il telefono di una persona che
-     sta su più righe è il primo che trovi; se due righe ne hanno di diversi
+     si aggiungono solo i corsi che mancano. Se il foglio ha un codice fiscale
+     giusto e la scheda (o un'altra riga con lo stesso nome) un altro, sono
+     due persone: la riga è nuova. Il telefono di una persona che sta su più
+     righe è il primo che trovi; se due righe ne hanno di diversi
      vale l'ultimo e una nota dice quali erano. Le righe di una persona con
      l'email e senza sono una scheda sola (con due omonimi dalle email
      diverse, la riga senza email resta a parte). Chi sta sia nel foglio Excel
