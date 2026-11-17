@@ -293,7 +293,9 @@ console.log('\n5. chi torna non diventa un doppione')
   await s.attivaPersona(vecchia.id, false)
   const base = m.lettereCognome(vecchia.cognome) + m.lettereNome(vecchia.nome) + '96A01L219'
   const id = await r.invia(adulto({ nome: vecchia.nome.toUpperCase(), cognome: vecchia.cognome.toLowerCase(), codiceFiscale: base + m.carattereControllo(base), email: 'torno@esempio.it', corsi: [corso] }))
-  ok('accolta sulla scheda che c’era', await r.accogli(id), vecchia.id)
+  // La scheda non ha email né telefono: niente la lega alla richiesta (come `165-accogli-senza-presa-account.sql`),
+  // la sceglie la segreteria. Senza scelta nascerebbe una scheda nuova (prova 7c).
+  ok('accolta sulla scheda che c’era, scelta dalla segreteria', await r.accogli(id, vecchia.id), vecchia.id)
   const p = (await s.persone()).find((x) => x.id === vecchia.id)
   ok('di nuovo attiva, con l’email', [p.attiva, p.email], [true, 'torno@esempio.it'])
   // Aveva smesso oggi: l'iscrizione c'è ancora, e perde la fine.
@@ -369,10 +371,11 @@ console.log('\n7b. lo stesso nome, un altro codice fiscale: le regole di accogli
   const iscrittoIvo = await r.accogli(await r.invia(adulto({ nome: 'Ivo', cognome: 'Rana', codiceFiscale: cf('Rana', 'Ivo', '96A01L219'), email: 'ivo@esempio.it', telefono: '347 666 0005' })))
   ok('Ivo l’istruttore resta istruttore: l’iscritto è una scheda nuova', [iscrittoIvo !== ivo, a.persone.find((p) => p.id === ivo).ruolo], [true, 'istruttore'])
 
-  // Due Eva senza codice: la più vecchia senza email, la più nuova con un’altra email e lo stesso telefono. Come il database: la più vecchia.
+  // Due Eva senza codice: la più vecchia senza email né telefono, la più nuova con un’altra email e lo stesso telefono.
+  // Come il database (165-accogli-senza-presa-account.sql): il solo nome non lega, vince chi ha un contatto uguale, anche se è la più nuova.
   persona({ id: 'p-eva-1', nome: 'Eva', cognome: 'Rana', creataIl: '2025-01-01' })
   persona({ id: 'p-eva-2', nome: 'Eva', cognome: 'Rana', email: 'eva.vecchia@esempio.it', telefono: '347 666 0006', creataIl: '2026-02-01' })
-  ok('fra due Eva senza la stessa email, la più vecchia', await r.accogli(await r.invia(adulto({ nome: 'Eva', cognome: 'Rana', codiceFiscale: cf('Rana', 'Eva', '96A41L219'), email: 'eva@esempio.it', telefono: '347 666 0006' }))), 'p-eva-1')
+  ok('fra due Eva, quella con lo stesso telefono: la più vecchia senza contatti non conta', await r.accogli(await r.invia(adulto({ nome: 'Eva', cognome: 'Rana', codiceFiscale: cf('Rana', 'Eva', '96A41L219'), email: 'eva@esempio.it', telefono: '347 666 0006' }))), 'p-eva-2')
 
   // Due Zoe: la più vecchia senza email, la più nuova con la stessa della richiesta. Vince la stessa email.
   persona({ id: 'p-zoe-1', nome: 'Zoe', cognome: 'Rana', creataIl: '2025-01-01' })
@@ -408,6 +411,64 @@ console.log('\n7b. lo stesso nome, un altro codice fiscale: le regole di accogli
   const perIvo = await conCertificato('Ivo', 'ivo.rana@esempio.it', '347 666 0013')
   await r.accogli(perIvo, 'p-ivo', '2027-06-01')
   ok('una data senza file non è un certificato: prende il nuovo, con la sua data', a.persone.find((p) => p.id === 'p-ivo').certificato.scade, '2027-06-01')
+}
+
+console.log('\n7c. senza una scheda scelta il solo nome non basta: serve un contatto che torna')
+{
+  // Chi manda dal modulo il nome di un iscritto senza email con la propria email non deve finire sulla sua scheda
+  // (e col suo account vederne i dati): come `accogli_iscrizione` di `165-accogli-senza-presa-account.sql`.
+  const a = m.archivio.dati
+  const cf = (cognome, nome) => {
+    const b = m.lettereCognome(cognome) + m.lettereNome(nome) + '96A01L219'
+    return b + m.carattereControllo(b)
+  }
+  const persona = (p) => {
+    a.persone = [...a.persone, { ruolo: 'iscritto', attiva: true, creataIl: '2026-01-01', ...p }]
+    return p.id
+  }
+  const di = (id) => a.persone.find((p) => p.id === id)
+  const contatti = (id) => [di(id).email ?? null, di(id).telefono ?? null]
+  const manda = (nome, cognome, email, telefono) => r.invia(adulto({ nome, cognome, codiceFiscale: cf(cognome, nome), email, telefono }))
+  const richiesta = async (id) => (await r.richieste()).find((x) => x.id === id)
+
+  // L'attacco: il nome di Tina (scritto in un altro modo), l'email e il telefono di chi scrive.
+  persona({ id: 'p-tina', nome: 'Tina', cognome: 'Neri', telefono: '347 100 0001' })
+  const idTina = await manda('TINA', 'neri', 'Attaccante@Esempio.it', '320 000 0000')
+  const nuovaTina = await r.accogli(idTina)
+  ok('Tina: nasce una scheda nuova, e la richiesta punta a quella', [nuovaTina !== 'p-tina', (await richiesta(idTina)).personaId], [true, nuovaTina])
+  ok('la scheda di Tina resta com’era: senza email, col suo telefono', contatti('p-tina'), [null, '347 100 0001'])
+  ok('la nuova ha i contatti di chi ha scritto', contatti(nuovaTina), ['attaccante@esempio.it', '320 000 0000'])
+  // Anche se la scheda non ha nemmeno il telefono.
+  persona({ id: 'p-gino', nome: 'Gino', cognome: 'Neri' })
+  const nuovoGino = await r.accogli(await manda('gino', 'NERI', 'attaccante2@esempio.it', '320 000 0001'))
+  ok('Gino: nasce una scheda nuova, la vecchia resta senza contatti', [nuovoGino !== 'p-gino', contatti('p-gino')], [true, [null, null]])
+
+  // La stessa persona: un contatto che torna.
+  persona({ id: 'p-elia', nome: 'Elia', cognome: 'Verdi', email: 'elia@esempio.it' })
+  ok('stessa email (anche in maiuscolo): la stessa scheda', await r.accogli(await manda('Elia', 'Verdi', 'ELIA@esempio.it', '347 100 0002')), 'p-elia')
+  ok('e il telefono vuoto si riempie, l’email resta', contatti('p-elia'), ['elia@esempio.it', '347 100 0002'])
+  persona({ id: 'p-fabio', nome: 'Fabio', cognome: 'Bruni', telefono: '+39 347 100 0003' })
+  ok('stesso telefono scritto in un altro modo: la stessa scheda', await r.accogli(await manda('Fabio', 'Bruni', 'fabio@esempio.it', '3471000003')), 'p-fabio')
+  ok('e l’email vuota si riempie, il telefono resta', contatti('p-fabio'), ['fabio@esempio.it', '+39 347 100 0003'])
+  persona({ id: 'p-gina', nome: 'Gina', cognome: 'Bruni', telefono: '1234 5678' })
+  const nuovaGina = await r.accogli(await manda('Gina', 'Bruni', 'gina@esempio.it', '12345678'))
+  ok('un telefono di otto cifre non basta: scheda nuova, la vecchia senza email', [nuovaGina !== 'p-gina', contatti('p-gina')[0]], [true, null])
+
+  // La segreteria sceglie a mano: i contatti vuoti si riempiono.
+  const ugo = await s.salvaPersona({ nome: 'Ugo', cognome: 'Blu' })
+  ok('scheda scelta a mano', await r.accogli(await manda('Ugo', 'Blu', 'mamma.blu@esempio.it', '347 100 0004'), ugo), ugo)
+  ok('email e telefono vuoti si riempiono', contatti(ugo), ['mamma.blu@esempio.it', '347 100 0004'])
+
+  // Il codice fiscale ritrova la scheda ma non le dà un contatto: lo sanno anche gli altri genitori.
+  persona({ id: 'p-rosa', nome: 'Rosa', cognome: 'Gialli' })
+  a.anagrafiche = { ...a.anagrafiche, 'p-rosa': { codiceFiscale: cf('Gialli', 'Rosa') } }
+  ok('Rosa ritrovata dal codice delle anagrafiche', await r.accogli(await manda('Rosa', 'Gialli', 'papa.gialli@esempio.it', '320 111 0001')), 'p-rosa')
+  ok('ma né email né telefono sulla scheda', contatti('p-rosa'), [null, null])
+  persona({ id: 'p-pia', nome: 'Pia', cognome: 'Nera' })
+  await r.accogli(await manda('Pia', 'Nera', 'mamma.nera@esempio.it', '347 100 0005'), 'p-pia')
+  a.persone = a.persone.map((p) => (p.id === 'p-pia' ? { ...p, email: undefined, telefono: undefined } : p))
+  ok('Pia ritrovata dal codice della richiesta già accolta', await r.accogli(await manda('Pia', 'Nera', 'papa.nera@esempio.it', '320 111 0002')), 'p-pia')
+  ok('ma né email né telefono sulla scheda', contatti('p-pia'), [null, null])
 }
 
 console.log('\n8. i dati anagrafici: dalla richiesta, e dalla scheda dopo')

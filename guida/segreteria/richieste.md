@@ -130,8 +130,14 @@ Accolta o rifiutata, la finestra si chiude da sola e si torna all'elenco, alla p
   [Iscritti](iscritti.md)). Nemmeno lo stesso nome basta: se la scheda ha già
   un codice fiscale diverso da quello della richiesta è un'altra persona, e
   ACCOGLI ne fa una nuova anche quando la scheda è senza email o ha la stessa
-  email o lo stesso telefono. Se sapete che è la stessa persona, sceglietela
-  dalla lista **IN ELENCO C'È GIÀ**. Se l'email della richiesta
+  email o lo stesso telefono. E senza codice fiscale lo stesso nome vale solo
+  con la stessa email o lo stesso telefono della scheda: il nome di un
+  iscritto lo può scrivere chiunque, e con l'email si entra nell'app. Se la
+  scheda è senza email e senza quel telefono, ACCOGLI ne fa una nuova. Se
+  sapete che è la stessa persona, sceglietela dalla lista **IN ELENCO C'È
+  GIÀ**: solo così l'email e il telefono della richiesta finiscono su una
+  scheda che non li aveva (riconosciuta dal solo codice fiscale, la scheda
+  tiene i suoi contatti, e quelli nuovi si scrivono a mano). Se l'email della richiesta
   è già di un fratello o del genitore, la nuova scheda entra con la stessa
   email. **Apri la scheda** porta
   alla sua scheda in [Iscritti](iscritti.md).

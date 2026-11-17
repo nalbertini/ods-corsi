@@ -442,8 +442,9 @@ export function creaRichiesteProva(): DatiRichieste {
       const scelta = personaId ? a.persone.find((p) => p.id === personaId) : undefined
       if (personaId && !scelta) throw new Error('Questa scheda non c’è più')
       // Come nel database: prima il codice fiscale di una richiesta già
-      // accolta, poi stesso nome e cognome, e la stessa email, nessuna o lo
-      // stesso telefono. Il codice vale solo con lo stesso nome e cognome: lo
+      // accolta, poi stesso nome e cognome, e la stessa email o lo stesso
+      // telefono: il solo nome lo scrive chiunque, e con l'email si entra
+      // nell'app (165-accogli-senza-presa-account.sql). Il codice vale solo con lo stesso nome e cognome: lo
       // sanno in tanti, e un nome diverso la segreteria lo sceglie a mano.
       // Sempre fra gli iscritti: un istruttore omonimo non è chi si iscrive.
       const stessoNome = (p: { nome: string; cognome: string; ruolo: string }) => p.ruolo === 'iscritto' && stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome)
@@ -457,21 +458,26 @@ export function creaRichiesteProva(): DatiRichieste {
       const altroCf = (id: string) =>
         tutte.some((x) => x.personaId === id && x.stato === 'accolta' && x.codiceFiscale !== r.codiceFiscale) ||
         (!!a.anagrafiche?.[id]?.codiceFiscale && a.anagrafiche[id].codiceFiscale !== r.codiceFiscale)
+      const stessoContatto = (p: { email?: string; telefono?: string }) =>
+        p.email?.toLowerCase() === email || (cifre(r.telefono).length >= 9 && cifre(p.telefono) === cifre(r.telefono))
       const perNome = a.persone
-        .filter((p) => stessoNome(p) && !altroCf(p.id) && (!p.email || p.email.toLowerCase() === email || (cifre(r.telefono).length >= 9 && cifre(p.telefono) === cifre(r.telefono))))
+        .filter((p) => stessoNome(p) && !altroCf(p.id) && stessoContatto(p))
         // Prima chi ha la stessa email, poi la scheda più vecchia.
         .sort((x, y) => Number(y.email?.toLowerCase() === email) - Number(x.email?.toLowerCase() === email) || x.creataIl.localeCompare(y.creataIl))[0]
       const trovata = scelta ?? perCf ?? perAnagrafica ?? perNome
       let id: string
       if (trovata) {
         id = trovata.id
+        // Email e telefono della richiesta finiscono sulla scheda solo se l'ha
+        // scelta la segreteria o se un contatto è già lo stesso.
+        const contatti = !!scelta || stessoContatto(trovata)
         a.persone = a.persone.map((p) =>
           p.id === id
             ? {
                 ...p,
                 attiva: true,
-                telefono: p.telefono ?? r.telefono,
-                email: p.email ?? email,
+                telefono: contatti ? (p.telefono ?? r.telefono) : p.telefono,
+                email: contatti ? (p.email ?? email) : p.email,
               }
             : p,
         )

@@ -243,8 +243,8 @@ console.log('\n7. il modulo online: l\'email della richiesta è quella della sch
   })
   await s.salvaPersona({ nome: 'Elena', cognome: 'Madre', email: 'madre@esempio.it' })
   await s.salvaPersonale({ nome: 'Rita', cognome: 'Istruttrice', email: 'rita.istr@esempio.it', ruolo: 'istruttore' })
-  const accogli = async (nome, cognome, email) => {
-    const id = await r.accogli(await r.invia(richiesta(nome, cognome, email)))
+  const accogli = async (nome, cognome, email, scheda) => {
+    const id = await r.accogli(await r.invia(richiesta(nome, cognome, email)), scheda)
     return di(id)
   }
   const figlio = await accogli('Fabio', 'Gialli', 'Madre@Esempio.it')
@@ -252,9 +252,10 @@ console.log('\n7. il modulo online: l\'email della richiesta è quella della sch
   const istr = await accogli('Gino', 'Gialli', 'rita.istr@esempio.it')
   ok('già di un\'istruttrice: lo stesso', istr.email ?? null, 'rita.istr@esempio.it')
   ok('l\'istruttrice non cambia', (await s.personale()).filter((p) => p.cognome === 'Istruttrice' && p.nome === 'Rita').map((p) => [p.email, p.ruolo]), [['rita.istr@esempio.it', 'istruttore']])
-  // La scheda c'era già (stesso nome, senza email): prende l'email della richiesta, senza duplicarsi.
-  await s.salvaPersona({ nome: 'Ivo', cognome: 'Gialli' })
-  const ivo = await accogli('Ivo', 'Gialli', 'madre@esempio.it')
+  // La scheda c'era già (senza email né telefono) e la segreteria la sceglie: prende l'email della richiesta, senza duplicarsi.
+  // Con il solo nome non si abbinerebbe più (165-accogli-senza-presa-account.sql).
+  const ivoScheda = await s.salvaPersona({ nome: 'Ivo', cognome: 'Gialli' })
+  const ivo = await accogli('Ivo', 'Gialli', 'madre@esempio.it', ivoScheda)
   ok('scheda già in elenco: prende l\'email, una persona sola', [ivo.email?.toLowerCase() ?? null, (await persone()).filter((p) => p.nome === 'Ivo').length], ['madre@esempio.it', 1])
   const libera = await accogli('Hugo', 'Gialli', 'hugo@esempio.it')
   ok('un\'email libera resta l\'email', coppia(libera), ['hugo@esempio.it'])
