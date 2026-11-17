@@ -783,6 +783,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.richieste_con_ricevuta()') is not null),
   -- Rilanciando 102 dopo, `unisci_persone` torna quella senza le tre colonne: il controllo dice «manca».
   ('164-unione-tiene-anagrafica.sql', 'unire due schede tiene provincia, provincia di nascita e IBAN',
-    exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'unisci_persone' and prosrc like '%iban = coalesce(r.iban, v.iban)%'))
+    exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'unisci_persone' and prosrc like '%iban = coalesce(r.iban, v.iban)%')),
+  -- Rifà funzioni di 21 e 145: rilanciando quelli, il controllo torna «manca».
+  ('166-pin-nella-finestra.sql', 'dal tablet col PIN l''appello si segna solo nella finestra della lezione',
+    (select count(*) = 4 from pg_proc where pronamespace = 'public'::regnamespace
+      and proname in ('segna_con_pin', 'aggiungi_prova_con_pin', 'segna_prova_con_pin', 'elenco_sala')
+      and prosrc like '%lezione_nella_finestra%'))
 ) as x(file, cosa, c)
 order by file, cosa;

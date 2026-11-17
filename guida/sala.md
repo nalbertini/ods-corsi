@@ -251,6 +251,10 @@ Anche fare l'appello col PIN, a lezione finita, segna la vostra presenza.
 Rimettere il PIN nella stessa lezione non la segna due volte. Fuori dalle
 lezioni il PIN apre l'area istruttore e basta.
 
+Col PIN l'appello si segna da 30 minuti prima dell'inizio della lezione a 14
+giorni dopo. Per una lezione più vecchia, o ancora lontana, il tablet lo dice
+e non segna niente: scrivete alla segreteria.
+
 ### Uscire dal tablet
 
 Serve solo se il tablet va spostato in un'altra sala o tolto: uscendo si

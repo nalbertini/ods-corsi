@@ -35,6 +35,9 @@ export const PIN_PROVA: Record<string, { personaId: string; nome: string }> = {
 const MIN = 60_000
 const { pinTentativi: PIN_TENTATIVI, pinBloccoMin: PIN_BLOCCO_MIN, annullaMin: ANNULLA_MIN } = REGOLE
 
+/** Lo stesso testo di `166-pin-nella-finestra.sql`: col PIN, fuori finestra, non si segna. */
+const FUORI_FINESTRA = "Questa lezione è troppo vecchia o troppo lontana per segnare l'appello da qui: scrivete alla segreteria"
+
 /** Di quanto è spostato l'orologio della prova, letto una volta dall'indirizzo. */
 function spostamento(): number {
   try {
@@ -83,6 +86,13 @@ export function creaTabletProva(): DatiTablet {
     if (!d) throw new Error('lezione inesistente')
     if (d.sessione.sala !== sala) throw new Error("lezione di un'altra sala")
     return d
+  }
+
+  /** Come `lezione_nella_finestra` (52): da mezz'ora prima dell'inizio a quattordici giorni dopo. */
+  const nellaFinestra = (inizio: string) => {
+    const t = adesso().getTime()
+    const i = Date.parse(inizio)
+    return i >= t - REGOLE.recuperoGiorni * 24 * 60 * MIN && i <= t + REGOLE.primaMin * MIN
   }
 
   /** Come `persona_da_pin`: conta i tentativi, e dopo cinque errori blocca. */
@@ -206,11 +216,7 @@ export function creaTabletProva(): DatiTablet {
 
     async elenco(sessioneId) {
       const d = await lezione(sessioneId)
-      const t = adesso().getTime()
-      const inizio = Date.parse(d.sessione.inizio)
-      if (inizio < t - REGOLE.recuperoGiorni * 24 * 60 * MIN || inizio > t + REGOLE.primaMin * MIN) {
-        throw new Error('lezione fuori dalla finestra del tablet')
-      }
+      if (!nellaFinestra(d.sessione.inizio)) throw new Error('lezione fuori dalla finestra del tablet')
       // Le prove no: le aggiunge chi fa l'appello, già presenti.
       const ordinati = d.elenco.filter((p) => !p.prova).sort((a, b) => a.nome.localeCompare(b.nome, 'it') || a.cognome.localeCompare(b.cognome, 'it'))
       const festeggiati = new Set(d.compleanni ?? [])
@@ -277,6 +283,8 @@ export function creaTabletProva(): DatiTablet {
     async correggi(pin, sessioneId, personaId, stato, prova) {
       const d = await lezione(sessioneId)
       if (!daPin(pin)) return false
+      // Come nel database (166): dopo il PIN, perché uno sbagliato conta anche fuori finestra.
+      if (!nellaFinestra(d.sessione.inizio)) throw new Error(FUORI_FINESTRA)
       // Come `segna_con_pin` (145): già presente a un altro turno di oggi, il segno qui non si scrive.
       if (stato !== null && d.altrove?.some((x) => x.id === personaId)) return true
       const p = d.elenco.find((x) => x.id === personaId && !!x.prova === !!prova)
@@ -308,9 +316,10 @@ export function creaTabletProva(): DatiTablet {
     },
 
     async aggiungiProva(pin, sessioneId, chi) {
-      await lezione(sessioneId)
+      const d = await lezione(sessioneId)
       const da = daPin(pin)
       if (!da) return null
+      if (!nellaFinestra(d.sessione.inizio)) throw new Error(FUORI_FINESTRA)
       const p = mettiProva(sessioneId, chi, da.personaId)
       // Come dall'appello: la presenza non è «dal tablet».
       scrivi(sessioneId, p.id, memoria.segnate[sessioneId]?.[p.id] ?? 'presente', null)

@@ -391,6 +391,45 @@ console.log('\n13. il conto della lezione: gli iscritti presenti, chi prova a pa
   )
 }
 
+console.log('\n14. col PIN, fuori dalla finestra della lezione non si segna (come il database)')
+{
+  // Come `segna_con_pin`, `aggiungi_prova_con_pin` e `segna_prova_con_pin`: la stessa finestra di `elenco`
+  // (da 30 minuti prima a 14 giorni dopo l'inizio), e lo stesso messaggio, che manda alla segreteria.
+  const FUORI = "Questa lezione è troppo vecchia o troppo lontana per segnare l'appello da qui: scrivete alla segreteria"
+  const L = 's@lotta-2@2026-09-14@17:00'
+  const seg = m.creaSegreteriaProva()
+  const dentro = await alle('2026-09-14T16:40')
+  const [iscritto] = await dentro.elenco(L)
+  const prova = await dentro.aggiungiProva('2468', L, { nome: 'Ugo', cognome: 'Dentro' })
+  ok('in finestra si segna come prima', await dentro.correggi('2468', L, iscritto.personaId, 'presente'), true)
+  ok('in finestra si tocca la prova', await dentro.correggi('2468', L, prova, 'assente', true), true)
+  // Cosa c'è nella lezione e fra le presenze degli istruttori (quelle dei compensi), da confrontare dopo.
+  const foto = async () => JSON.stringify([await dentro.appello('2468', L), (await seg.presenzeIstruttori(365)).map((x) => x.id)])
+  const prima = await foto()
+  const fuori = {
+    'quindici giorni dopo': await alle('2026-09-29T18:00'),
+    'due giorni prima': await alle('2026-09-12T17:00'),
+    '31 minuti prima': await alle('2026-09-14T16:29'),
+    'poco più di 14 giorni dopo': await alle('2026-09-28T17:01'),
+  }
+  for (const [quando, t] of Object.entries(fuori)) {
+    ok(`${quando}: correggere un iscritto`, await errore(() => t.correggi('2468', L, iscritto.personaId, 'assente')), FUORI)
+    ok(`${quando}: togliere il segno`, await errore(() => t.correggi('2468', L, iscritto.personaId, null)), FUORI)
+    ok(`${quando}: toccare una prova`, await errore(() => t.correggi('2468', L, prova, 'presente', true)), FUORI)
+    ok(`${quando}: aggiungere una prova`, await errore(() => t.aggiungiProva('2468', L, { nome: 'Ugo', cognome: 'Tardi' })), FUORI)
+  }
+  ok('fuori finestra non cambia niente: né appello, né prove, né presenze degli istruttori', await foto(), prima)
+  // Ai bordi, un minuto dentro funziona.
+  const bordo = await alle('2026-09-14T16:31')
+  ok('29 minuti prima si corregge', await bordo.correggi('2468', L, iscritto.personaId, 'assente'), true)
+  const ultimo = await alle('2026-09-28T16:59')
+  ok('un minuto prima dei 14 giorni dopo si corregge', await ultimo.correggi('2468', L, iscritto.personaId, 'presente'), true)
+  // Un PIN sbagliato resta un «no» silenzioso, anche fuori finestra.
+  const tardi = fuori['quindici giorni dopo']
+  ok('PIN sbagliato fuori finestra: correggere resta false', await tardi.correggi('0000', L, iscritto.personaId, 'presente'), false)
+  ok('PIN sbagliato fuori finestra: aggiungere una prova resta null', await tardi.aggiungiProva('0000', L, { nome: 'Ugo', cognome: 'Pin' }), null)
+}
+
 console.log('\nl’«Attività» di ogni giorno sul tablet di sala')
 // La segreteria dà l'attività del giorno solo alle lezioni future, e «futuro» lo
 // decide l'orologio vero: fermato al 1° ottobre, il 14 resta futuro anche tra un anno.
