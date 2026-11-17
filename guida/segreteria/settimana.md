@@ -12,7 +12,7 @@ orario (es. 17:00–18:00), il colore della disciplina, la sala e l'istruttore. 
 
 | Si vede | Significa |
 |---|---|
-| `8/9` in verde | presenti su iscritti: l'appello è fatto |
+| `8/9` in verde | presenti su iscritti, senza chi prova: l'appello è fatto |
 | `14/16` in grigio | iscritti su posti: l'appello non c'è ancora |
 | **✕ Senza appello** in rosso | la lezione è passata e nessuno ha segnato niente |
 | **… Manca l'istruttore** | la lezione non ha ancora un istruttore: si assegna in CORSI |

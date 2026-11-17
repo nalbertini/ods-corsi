@@ -886,6 +886,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         const altrove = presentiAltrove(turni[n], turni, segniTurni)
         const segni = presenze.filter((p) => p.sessione_id === s.id)
         const sostituto = s.istruttore_id && s.istruttore_id !== s.corsi?.istruttore_id ? s.istruttore_id : undefined
+        const iscritti = new Set(iscrizioni.filter((i) => i.corso_id === s.corso_id && valeIl(i, g) && !altrove.has(i.persona_id)).map((i) => i.persona_id))
         return {
           id: s.id,
           corsoId: s.corso_id,
@@ -899,9 +900,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           fine: s.fine,
           stato: s.stato,
           straordinaria: !s.ricorrenza_id,
-          iscritti: iscrizioni.filter((i) => i.corso_id === s.corso_id && valeIl(i, g) && !altrove.has(i.persona_id)).length,
+          iscritti: iscritti.size,
           capienza: s.corsi?.capienza ?? undefined,
           presenti: segni.filter((p) => p.stato === 'presente').length,
+          prove: segni.filter((p) => p.stato === 'presente' && !iscritti.has(p.persona_id)).length,
           segnati: segni.length,
           attivitaId: s.attivita_id ?? undefined,
           attivita: s.attivita?.nome,
