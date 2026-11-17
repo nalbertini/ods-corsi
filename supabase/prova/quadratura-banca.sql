@@ -237,3 +237,39 @@ select chi('');
 \echo '--- 10. le funzioni nuove dei trigger non si chiamano da fuori ---'
 select atteso('authenticated non esegue saldo_banca_regole', has_function_privilege('authenticated', 'saldo_banca_regole()', 'EXECUTE')::text, 'false');
 select atteso('anon nemmeno saldo_banca_mese_dopo', has_function_privilege('anon', 'saldo_banca_mese_dopo()', 'EXECUTE')::text, 'false');
+
+\echo ''
+\echo '--- 11. il Conto Corrente si conta come in CONTABILITÀ: anche ricevute e pagamenti a mano (165) ---'
+-- Marzo 2025, nessun mese prima. Contano: un POS di una ricevuta (50,00), un bonifico a mano (15,00), un
+-- «pos» scritto minuscolo e con gli spazi (2,50), e due bonifici assegnati (10,00 col pagamento a mano, 8,00
+-- con la ricevuta), una volta sola. Non contano: contanti, Satispay, carta, l'anticipo, un pagamento
+-- annullato, una ricevuta annullata e un POS di aprile. L'app fa 85,50, come `saldoAppDelMese`.
+insert into movimenti (id, tipo, data, importo, voce_id, cassa_id, descrizione) values
+  ('eeeeeeee-0000-0000-0000-000000000001', 'entrata', '2025-03-20', 1000, (select id from voci_contabili where nome = 'Corsi e altri pagamenti'), (select id from casse where nome = 'Conto Corrente'), 'Bonifico assegnato'),
+  ('eeeeeeee-0000-0000-0000-000000000002', 'entrata', '2025-03-22', 800, (select id from voci_contabili where nome = 'Corsi e altri pagamenti'), (select id from casse where nome = 'Conto Corrente'), 'Bonifico con la ricevuta');
+insert into ricevute (anno, numero, data, persona_id, ente, intestatario, voci, totale, pagato, anticipo, annullata_il) values
+  (2025, 901, '2025-03-10', 'aaaaaaaa-0000-0000-0000-000000000007', '{}', '{"nome": "Luca", "cognome": "Rossi"}',
+   '[{"descrizione": "ALTRO", "quantita": 1, "prezzo": 7000, "pagamenti": [{"data": "2025-03-10", "importo": 5000, "metodo": "POS"}, {"data": "2025-03-11", "importo": 2000, "metodo": "Contanti"}]}]', 7000, 7000, 0, null),
+  (2025, 902, '2025-03-12', 'aaaaaaaa-0000-0000-0000-000000000007', '{}', '{"nome": "Luca", "cognome": "Rossi"}',
+   '[{"descrizione": "ALTRO", "quantita": 1, "prezzo": 900, "pagamenti": [{"data": "2025-03-12", "importo": 900, "metodo": "Bonifico"}]}]', 900, 900, 0, now()),
+  (2025, 903, '2025-04-02', 'aaaaaaaa-0000-0000-0000-000000000007', '{}', '{"nome": "Luca", "cognome": "Rossi"}',
+   '[{"descrizione": "ALTRO", "quantita": 1, "prezzo": 300, "pagamenti": [{"data": "2025-04-02", "importo": 300, "metodo": "POS"}]}]', 300, 300, 0, null),
+  (2025, 904, '2025-03-25', 'aaaaaaaa-0000-0000-0000-000000000007', '{}', '{"nome": "Luca", "cognome": "Rossi"}',
+   '[{"descrizione": "ALTRO", "quantita": 1, "prezzo": 2250, "pagamenti": [{"data": "2025-03-25", "importo": 400, "metodo": "Satispay"}, {"data": "2025-03-25", "importo": 600, "metodo": "Carta"}, {"data": "2025-03-25", "importo": 250, "metodo": " pos "}]}]', 2250, 1250, 1000, null);
+insert into ricevute (anno, numero, data, persona_id, ente, intestatario, voci, totale, pagato, anticipo, annullata_il, movimento_id) values
+  (2025, 905, '2025-03-22', 'aaaaaaaa-0000-0000-0000-000000000007', '{}', '{"nome": "Luca", "cognome": "Rossi"}',
+   '[{"descrizione": "ALTRO", "quantita": 1, "prezzo": 800, "pagamenti": [{"data": "2025-03-22", "importo": 800, "metodo": "Bonifico"}]}]', 800, 800, 0, null, 'eeeeeeee-0000-0000-0000-000000000002');
+insert into pagamenti_diretti (persona_id, data, importo, metodo, voce, annullato_il, movimento_id) values
+  ('aaaaaaaa-0000-0000-0000-000000000007', '2025-03-15', 1500, 'Bonifico', 'ALTRO', null, null),
+  ('aaaaaaaa-0000-0000-0000-000000000007', '2025-03-16', 700, 'Bonifico', 'ALTRO', now(), null),
+  ('aaaaaaaa-0000-0000-0000-000000000007', '2025-03-20', 1000, 'Bonifico', 'ALTRO', null, 'eeeeeeee-0000-0000-0000-000000000001');
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('l''estratto di marzo 2025 dice 93,50: il bonifico con la ricevuta contato due volte non torna',
+  tenta($$insert into saldo_banca (mese, saldo_iniziale, entrate, uscite, saldo_finale) values ('2025-03', 0, 9350, 0, 9350)$$) || ' ' || tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'mar' where mese = '2025-03'$$),
+  'FATTO (1 righe) NEGATO: …non torna…');
+select atteso('con 85,50, come CONTABILITÀ, si segna verificato',
+  tenta($$update saldo_banca set entrate = 8550, saldo_finale = 8550 where mese = '2025-03'$$) || ' ' || tenta($$update saldo_banca set verificato_il = now(), impronta_verifica = 'mar' where mese = '2025-03'$$),
+  'FATTO (1 righe) FATTO (1 righe)');
+reset role;
+select chi('');
