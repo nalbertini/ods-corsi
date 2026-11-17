@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.8 — 17 novembre 2026
+
+### Modificato
+
+- La prova della coda offline delle presenze ora può risultare rossa
+
 ## 0.259.7 — 17 novembre 2026
 
 ### Risolto
