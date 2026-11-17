@@ -216,6 +216,10 @@ console.log('\n6. quanto viene ciascuno')
   const chi = (await app.dettaglio(lun.id)).elenco[0].id
   ok('una sulle sei lezioni di Judo 2 dall\'inizio della stagione', f.get(chi), { presenti: 1, dovute: 6 })
   ok('le ultime lezioni, dalla più vecchia', (await s.storico(chi, 12)).map((x) => x.stato), [null, null, null, 'presente', null, null])
+  // Uno presente che non è iscritto a Judo 2 è venuto a provare: sta fra i presenti, e `prove` lo dice.
+  m.memoria.segnate = { ...m.memoria.segnate, [lun.id]: { ...m.memoria.segnate[lun.id], 'p-qualcuno': 'presente' } }
+  const [dopo] = (await s.settimana(...giorno([8, 21]))).filter((l) => l.corsoId === 'judo-2')
+  ok('la lezione conta chi prova fra i presenti, e quanti sono', [dopo.presenti - dopo.iscritti, dopo.prove], [1, 1])
 }
 
 console.log('\n7. archiviare')
