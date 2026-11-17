@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.9 — 17 novembre 2026
+
+### Risolto
+
+- In OGGI e in SETTIMANA chi viene a provare non conta fra i presenti
+
+### Modificato
+
+- Il backup senza certificati finisce rosso e un backup caduto apre una issue
+
 ## 0.259.8 — 17 novembre 2026
 
 ### Modificato
