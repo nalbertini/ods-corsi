@@ -31,7 +31,7 @@ export interface DatiPagina {
 }
 
 /** L'indirizzo per intero: Google vuole via, CAP e provincia, mentre `CONTATTI.indirizzo` è la forma breve che si legge in pagina. Sta qui perché il pannello (`sito.ts`) non si tocca per il sito. */
-const POSTALE = { via: 'Via Vittorio Sassi 26', cap: '10093', comune: 'Collegno', provincia: 'TO' }
+export const POSTALE = { via: 'Via Vittorio Sassi 26', cap: '10093', comune: 'Collegno', provincia: 'TO' }
 
 /** Pagine a cui «corsi» rimanda che non sono corsi. */
 const NON_CORSI = new Set(['home', 'corsi', 'contatti'])

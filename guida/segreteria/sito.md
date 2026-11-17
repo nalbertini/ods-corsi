@@ -93,6 +93,10 @@ rimettono l'ultima modifica.
 
 - **Titolo (anche su Google)**, al massimo 60 lettere, e **Descrizione** (160). Il
   numero sotto dice a quanto sei; oltre il limite diventa rosso e lo dice a parole.
+  Su Google il titolo esce col nome della palestra: «Judo · Officine dello Sport».
+  Un corso prende anche il comune («Judo a Collegno · …»), se non l'hai già scritto;
+  la Home esce come «Officine dello Sport · Arti marziali a Collegno», e la sua frase
+  resta il titolo grande della pagina.
   Titolo e descrizione compaiono anche nell'anteprima di quando qualcuno condivide la
   pagina (WhatsApp, Facebook, Instagram), con l'immagine del sito.
 - **Indirizzo della pagina**: cambialo e premi **Cambia indirizzo**. Vale subito,
