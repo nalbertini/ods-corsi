@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.5 — 17 novembre 2026
+
+### Modificato
+
+- Su Google i corsi e la Home dicono anche dove: «a Collegno»
+
 ## 0.259.4 — 16 novembre 2026
 
 ### Modificato
