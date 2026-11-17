@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.11 — 17 novembre 2026
+
+### Risolto
+
+- Accogliere una richiesta non mette più l'email di chi scrive sulla scheda di un omonimo
+
 ## 0.259.10 — 17 novembre 2026
 
 ### Risolto
