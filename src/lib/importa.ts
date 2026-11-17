@@ -238,6 +238,8 @@ export interface Situazione {
   personale: PersonaleSeg[]
   corsi: CorsoSeg[]
   persone: PersonaSeg[]
+  /** Il codice fiscale delle schede, per id (`indiziDoppioni`): assente, nessun controllo. */
+  codiciFiscali?: Record<string, string>
 }
 
 export interface Anteprima {
@@ -337,7 +339,7 @@ export function anteprima(f: Fogli, s: Situazione, scelte: Scelte = {}): Antepri
   const oggi = chiaveGiorno(new Date())
   for (const x of f.iscritti) {
     const sc = scelte[chiaveRiga(x)]
-    const c = riconosci(x, s.persone, sc)
+    const c = riconosci(x, s.persone, sc, s.codiciFiscali)
     // Chi aspetta una scelta non entra: non si conta.
     if (c.esito === 'da_sistemare') continue
     if (c.esito === 'nuova') {
@@ -400,7 +402,11 @@ const paroleOrdinate = (nome: string, cognome: string) => paroleDelNome(`${nome}
  * va guardata prima. Nome e cognome scambiati («Prudente Manuel» per «Manuel
  * Prudente») non si danno per nuovi in silenzio: la segreteria sceglie.
  */
-function riconosci(x: IscrittoFoglio, persone: PersonaSeg[], scelta?: Scelte[string]): Chi {
+function riconosci(x: IscrittoFoglio, tutte: PersonaSeg[], scelta?: Scelte[string], codiciFiscali: Record<string, string> = {}): Chi {
+  // Due codici fiscali noti e diversi sono due persone, anche con lo stesso nome: come `doppioni.ts` e il database.
+  // Uno che non torna col carattere di controllo è scritto male, e non decide niente.
+  const cf = x.anagrafica?.codiceFiscale
+  const persone = cf && cfValido(cf) ? tutte.filter((q) => !codiciFiscali[q.id] || codiciFiscali[q.id] === cf) : tutte
   const p = trovaPersona(x, persone)
   if (p) return { esito: 'in_palestra', p }
   const doppione = persone.find(
@@ -450,7 +456,7 @@ export function controllaRighe(f: Fogli, s: Situazione): { righe: RigaControllo[
     .filter((x) => x.foglio !== 'corsi.csv')
     .map((x) => ({ foglio: x.foglio, riga: x.riga, nome: x.nome ?? '', esito: 'da_sistemare' as const, motivo: x.motivo, avvisi: [], chiedeScelta: false }))
   for (const x of f.iscritti) {
-    const c = riconosci(x, s.persone)
+    const c = riconosci(x, s.persone, undefined, s.codiciFiscali)
     const avvisi: string[] = []
     let archiviato = false
     let ferme: string[] = []
@@ -552,8 +558,8 @@ export function testoResoconto(a: { daSistemare: RigaSistemare[] }): string {
  */
 export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string) => void, scelte: Scelte = {}): Promise<Resoconto> {
   const leggi = async (): Promise<Situazione> => {
-    const [sale, personale, corsi, persone] = await Promise.all([d.sale(), d.personale(), d.corsi(), d.persone()])
-    return { sale, personale, corsi, persone }
+    const [sale, personale, corsi, persone, indizi] = await Promise.all([d.sale(), d.personale(), d.corsi(), d.persone(), d.indiziDoppioni()])
+    return { sale, personale, corsi, persone, codiciFiscali: indizi.codiciFiscali }
   }
   let s = await leggi()
   const a = anteprima(f, s, scelte)
@@ -598,12 +604,13 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
     .map((x) => ({ foglio: x.foglio, riga: x.riga, nome: x.nome ?? '', motivo: x.motivo }))
   const oggi = chiaveGiorno(new Date())
   const persone = [...s.persone]
+  const codiciFiscali = { ...s.codiciFiscali }
   for (const x of f.iscritti) {
     const riga = x.riga
     const nome = `${x.nome} ${x.cognome}`
     const sc = scelte[chiaveRiga(x)]
     try {
-      const c = riconosci(x, persone, sc)
+      const c = riconosci(x, persone, sc, codiciFiscali)
       if (c.esito === 'da_sistemare') {
         daSistemare.push({ foglio: x.foglio, riga, nome, motivo: c.motivo })
         continue
@@ -623,6 +630,8 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
         const id = await d.salvaPersona({ nome: x.nome, cognome: x.cognome, email: x.email, telefono: x.telefono })
         p = { id, nome: x.nome, cognome: x.cognome, email: x.email, attiva: true, creataIl: '', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' } }
         persone.push(p)
+        // La riga dopo con lo stesso nome e un altro codice fiscale non deve finire su questa.
+        if (x.anagrafica?.codiceFiscale) codiciFiscali[id] = x.anagrafica.codiceFiscale
       }
       const ferme: string[] = []
       for (const nomeCorso of x.corsi) {
@@ -943,7 +952,11 @@ export function leggiRisposte(
       note.push({ foglio: 'risposte', riga, motivo: `${nome} ${cognome}: l'email «${email}» non sembra giusta, entra senza` })
       email = undefined
     }
-    const x = iscritti.get(chi) ?? { nome, cognome, email, corsi: [], soloStessoNome: true, foglio: 'risposte', riga }
+    // Lo stesso nome con due codici fiscali giusti e diversi sono due persone: la seconda ha una chiave sua.
+    const cf = cfDi(cella(r, 'codiceFiscale'))
+    const cfPrima = iscritti.get(chi)?.anagrafica?.codiceFiscale
+    const chiave = cf && cfPrima && cf !== cfPrima && cfValido(cf) && cfValido(cfPrima) ? `${chi} ${cf}` : chi
+    const x = iscritti.get(chiave) ?? { nome, cognome, email, corsi: [], soloStessoNome: true, foglio: 'risposte', riga }
     // Chi ha mandato il modulo due volte: vale l'ultima email e, se i telefoni sono diversi, l'ultimo (con una nota); i corsi si sommano.
     if (email) x.email = email
     aggiungiTelefono(x, cella(r, 'telefono'), riga, 'risposte', note)
@@ -965,7 +978,7 @@ export function leggiRisposte(
     if (Object.keys(an).length) x.anagrafica = { ...x.anagrafica, ...an }
     if (cella(r, 'genitore')) genitoreDi.set(x, cella(r, 'genitore'))
     rigaDi.set(x, riga)
-    iscritti.set(chi, x)
+    iscritti.set(chiave, x)
   })
 
   // Il genitore dopo, quando ci sono tutti: se ha mandato il modulo anche lui

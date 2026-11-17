@@ -108,7 +108,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
     setGuaio(null)
     try {
       // Il backup si legge per il promemoria: se non risponde, l'import non si ferma.
-      const [sale, personale, corsi, persone, backup] = await Promise.all([d.sale(), d.personale(), d.corsi(), d.persone(), d.backup().catch(() => undefined)])
+      const [sale, personale, corsi, persone, indizi, backup] = await Promise.all([d.sale(), d.personale(), d.corsi(), d.persone(), d.indiziDoppioni(), d.backup().catch(() => undefined)])
       const f = leggiFogli(fogli.corsi?.testo ?? null, fogli.iscritti?.testo ?? null, corsi.map((c) => c.nome))
       if (risposte && fogli.risposte) {
         const r = leggiRisposte(risposte.t, risposte.colonne, risposte.abbinamenti, corsi.map((c) => ({ id: c.id, nome: c.nome })), risposte.ordine)
@@ -119,7 +119,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
         f.note = [...(f.note ?? []), ...u.note, ...r.note]
       }
       setScelte({})
-      setControllo({ f, s: { sale, personale, corsi, persone }, backup })
+      setControllo({ f, s: { sale, personale, corsi, persone, codiciFiscali: indizi.codiciFiscali }, backup })
     } catch (e) {
       setGuaio(messaggio(e))
     } finally {
