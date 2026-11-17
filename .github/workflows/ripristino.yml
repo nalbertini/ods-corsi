@@ -3,7 +3,8 @@ name: Prova di ripristino del backup
 # Un backup che non si ripristina non serve a niente, e lo si scoprirebbe il
 # giorno che serve. Ogni lunedì, un'ora dopo il backup (backup.yml), questo
 # prende l'ultima copia, la decifra, la rimette in un Postgres usa e getta e
-# conta le righe. Mai il database vero: non vede nemmeno l'indirizzo.
+# conta le righe. Mai il database vero: non vede nemmeno l'indirizzo. Se cade,
+# si apre una issue (avviso-backup.yml).
 #
 # Il repository è pubblico e i log di Actions li legge chiunque: escono solo
 # numeri (quante persone, quante iscrizioni…), mai testo dei dati né di un
@@ -71,16 +72,19 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: steps.segreti.outputs.pronto == 'si'
 
-      # L'ultima copia riuscita. Se il backup è passato ma non c'è nessun
-      # artefatto (scaduto, o mai fatto), si ferma rosso: è proprio quello che
-      # questa prova deve far vedere.
+      # L'ultimo backup finito, anche rosso: quando mancano i certificati il
+      # backup finisce rosso ma la copia del database l'ha caricata, e con
+      # `--status success` si proverebbe per sempre una copia vecchia. Se
+      # l'ultimo backup non ha lasciato nessun artefatto (caduto prima, o
+      # scaduto), si ferma rosso: è proprio quello che questa prova deve far
+      # vedere.
       - name: Scarica l'ultima copia
         if: steps.segreti.outputs.pronto == 'si'
         run: |
           set -euo pipefail
-          id=$(gh run list --workflow=backup.yml --status success --limit 1 --json databaseId -q '.[0].databaseId')
-          [ -n "$id" ] || { echo "::error::Nessun backup riuscito: niente da ripristinare."; exit 1; }
-          gh run download "$id" --pattern 'backup-*' -D scarico || { echo "::error::Il backup $id non ha nessuna copia (scaduta dopo 90 giorni?)."; exit 1; }
+          id=$(gh run list --workflow=backup.yml --status completed --limit 1 --json databaseId -q '.[0].databaseId')
+          [ -n "$id" ] || { echo "::error::Nessun backup finito: niente da ripristinare."; exit 1; }
+          gh run download "$id" --pattern 'backup-*' -D scarico || { echo "::error::L'ultimo backup ($id) non ha lasciato nessuna copia (caduto prima di caricarla, o scaduta dopo 90 giorni?)."; exit 1; }
           ls -l scarico/*
 
       - name: Decifra

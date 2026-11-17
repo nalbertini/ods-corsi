@@ -15,6 +15,7 @@ import { settimanaDi, type Posto } from '../../lib/indirizzoSegreteria'
 import { annuncio, chiSegnaTuttiPresenti, segnaNonSegnati, contiListe, dividiElenco, dopoIlTocco, LISTE, messaggioVuoto, nomeLista, parolaDiStato, serveConferma, statoDaTocco, tastoIniziale, type Azione, type Lista } from '../../lib/appelloListe'
 import { finestraDelMese, giorniDellaSettimana, giorniStretti, meseDellaSettimana, nomeTitoloSettimana, postoDopoIlGiorno, titoloSettimana, type MeseDelCalendario } from '../../lib/calendarioSettimana'
 import { etichetteLezione } from '../../lib/etichetteLezione'
+import { presentiIscritti } from '../../lib/giornata'
 import { CalendarioSettimana } from './CalendarioSettimana'
 import { chiusoIl, chiusureDellaSettimana, cosaNonVaChiusura, giorniOltreIlCalendario, nelPassato, periodoInLettere, rigaChiusura, SENZA_CHIUSURE, testoConferma, testoTogli, avvisoFatto, avvisoTolta, type Chiusura, type ContoChiusura } from '../../lib/chiusure'
 import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Segmenti, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
@@ -513,7 +514,7 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
       </span>
       <span className="row" style={{ gap: 6, marginTop: 'auto', flexWrap: 'wrap' }}>
         <span className="num" style={{ fontSize: 14, fontWeight: 700, color: fatto ? 'var(--verde-testo)' : 'var(--sec)' }}>
-          {fatto ? `${l.presenti}/${l.iscritti}` : l.capienza ? `${l.iscritti}/${l.capienza}` : l.iscritti}
+          {fatto ? `${presentiIscritti(l)}/${l.iscritti}` : l.capienza ? `${l.iscritti}/${l.capienza}` : l.iscritti}
         </span>
         {etichette.map((e) => (
           <span key={e.testo} className="num sg-tag" data-tipo={e.tipo} title={e.titolo}>

@@ -89,11 +89,14 @@ export function sottotitoloOggi(data: string, lezioni: number, r: ReturnType<typ
   return `${data} · ${lezioni === 1 ? '1 lezione' : `${lezioni} lezioni`}${appelli} · ${r.presenti} ${r.presenti === 1 ? 'presente' : 'presenti'} su ${r.attesi} ${r.attesi === 1 ? 'atteso' : 'attesi'}.`
 }
 
+/** Gli iscritti presenti, senza chi prova: si confronta con `iscritti` («10 su 10», non «11 su 10»), come `contoSala` del tablet. */
+export const presentiIscritti = (l: Pick<LezioneSeg, 'presenti' | 'prove'>) => l.presenti - (l.prove ?? 0)
+
 /** Quanti ci sono, quanti ne aspettiamo e quanti appelli mancano, sulle lezioni non annullate: stessa regola dei blocchi. */
 export function riepilogoGiornata(lezioni: LezioneSeg[], adesso: Date): { presenti: number; attesi: number; appelliDaFare: number } {
   const valide = lezioni.filter((l) => l.stato !== 'annullata')
   return {
-    presenti: valide.reduce((n, l) => n + l.presenti, 0),
+    presenti: valide.reduce((n, l) => n + presentiIscritti(l), 0),
     attesi: valide.reduce((n, l) => n + l.iscritti, 0),
     appelliDaFare: valide.filter((l) => statoDi(l, adesso) === 'appello_non_fatto').length,
   }

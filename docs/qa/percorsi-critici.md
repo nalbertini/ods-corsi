@@ -21,7 +21,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Aspetto del modulo di iscrizione | genitore | modulo illeggibile o col colore del sito sbagliato | `prova:iscrizione-sito`, `prova:look`, `prova:campi`, `prova:iscrizione-pagina`, `prova:tema`, `prova:iscrizione-passi` | sì |
 | Modulo di iscrizione da tastiera e a 320px | genitore, segreteria | chi usa la tastiera non riesce a iscriversi | `prova:accessibilita-iscrizione` | sì |
 | Pagina pubblica `/iscrizioni/` | genitore, segreteria | richiesta mai inviata, prezzo diverso dal listino | `prova:iscrizione-pagina`, `prova:iscrizione-sito`, `prova:iscrizione-passi` | sì |
-| Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste`, `prova:come-paga`, `prova:segreteria`, `prova:coda`, `prova:certificati`, `prova:iscritti`, `prova:scheda-finestra`, `prova:iscrizione-pagina`, `prova:menu` (Copia link), `iscrizioni.sql` | sì |
+| Richieste e coda di approvazione | segreteria | richiesta persa, scheda di un iscritto presa da chi ne scrive il nome nel modulo | `prova:richieste`, `prova:come-paga`, `prova:segreteria`, `prova:coda`, `prova:certificati`, `prova:iscritti`, `prova:scheda-finestra`, `prova:iscrizione-pagina`, `prova:menu` (Copia link), `iscrizioni.sql`, `accogli-senza-presa-account.sql` | sì |
 | Da dove arrivano le richieste (`?da=`) | genitore, segreteria | richiesta fermata da un'etichetta, conteggi sbagliati | `prova:richieste`, `prova:provenienza`, `prova:sito-genera`, `prova:sito-statistiche`, `provenienza-richieste.sql` | sì |
 | Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:istruttori-look`, `prova:appello-browser`, `prova:timer-istruttori`, `prova:coda`, `prova:appello-cerca`, `prova:appello-ordine`, `prova:tablet`, `prova:colleghi`, `prova:segreteria`, `prova:testi`, `prova:etichette-lezione`, `prova:appello-liste`, `prova:frequenza`, `prova:cosa-manca`, `prova:presenze-csv`, `prova:segreteria-ordine`, `prova:turni`, `doppio-turno.sql`, `presenze-istruttori.sql`, `istruttori-dalle-lezioni.sql`, `tablet-conto-prove.sql`, `tablet.sql`, `presenze-finestra.sql`, `pin-nella-finestra.sql`, `istruttore-collega.sql`, `accessi-piu-stretti.sql`, `rls.sql` | sì |
 | Chiusura della palestra (lezioni annullate per un periodo, e tolte) | segreteria | presenze o appelli persi, lezione rimessa com'era sbagliata | `prova:chiusure`, `prova:cosa-manca`, `prova:segreteria`, `chiusure.sql` | sì, da fare |
@@ -91,7 +91,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Calendario e date dei corsi | segreteria, tablet | lezione che non compare | `prova:indirizzi`, `prova:calendario`, `prova:segreteria`, `calendario*.sql`, `date-corsi.sql` | no |
 | Prove (modalità prova) e statistiche | segreteria | numeri sbagliati | `prova:prove`, `prova:segreteria`, `prova:filtri-iscritti`, `prove.sql`, `prove-per-nome.sql`, `statistiche.sql` | no |
 | Segnalazioni | tutti | problema segnalato che sparisce | `prova:segreteria`, `segnalazioni.sql`, `attivita.sql` | no |
-| Backup del database | utente | niente da ripristinare | `scripts/prova-backup.mjs`, `prova:impostazioni` | no |
+| Backup del database | utente | niente da ripristinare, copia senza certificati, caduta che nessuno vede | `scripts/prova-backup.mjs`, `prova:impostazioni` | no |
 | Esporta i dati di una persona | segreteria | file incompleto o con i dati di un altro | `prova:scheda-iscritto`, `prova:segreteria`, `prova:richieste`, `prova:compensi`, `prova:lettere` | sì |
 | Modifiche non salvate | segreteria, amministrazione | modifica persa senza avviso | `prova:scheda-finestra` | sì |
 | Musica, timer, tablet di sala | istruttore, sala | lezione senza timer o musica | `prova:musica`, `prova:timer-istruttori`, `prova:segreteria`, `prova:musica-file`, `prova:tablet`, `prova:scaletta`, `prova:strumenti`, `prova:anteprima`, `prova:discipline`, `musica.sql`, `categorie-esercizi.sql`, `discipline.sql`, `timer.sql`, `timer-lezioni.sql`, `tablet.sql` | sì |
@@ -127,6 +127,12 @@ prova tiene stanno in «Scoperti», in fondo.
 Regole che si possono rompere senza che una prova cada. Si toglie la riga
 quando arriva la prova.
 
+- Backup: la prova di ripristino (`ripristina.sh`) non confronta i certificati
+  nella copia con `schede_iscritti.certificato_file`: una copia senza passa.
+- Backup: senza `SUPABASE_DB_URL` backup e ripristino restano verdi con un
+  avviso solo nel log, e `avviso-backup.yml` non parte.
+- Backup: `avviso-backup.yml` è provato solo con un `gh` finto: una run che non
+  parte affatto non apre nessuna issue.
 - Quadratura: `revoke` su `saldo_banca_chi_verifica()` (123) senza prova: nessun
   controllo che anon e authenticated non abbiano EXECUTE (DA FARE).
 - COMPENSI (`Compensi.tsx`): il doppio clic su «C'era», «Non c'era» e «Segna
