@@ -193,6 +193,10 @@ Chi si iscrive risponde alle domande dal telefono:
     c'è negli stessi casi di Satispay, e solo quando sul database ci sono le
     chiavi PayPal (i segreti della funzione `paypal`): senza, **PAGHI CON**
     resta Satispay e bonifico.
+  - Chi preme **PAGA** molte volte di fila dallo stesso collegamento (per
+    esempio tutta la palestra sullo stesso wifi) può vedere «Troppe
+    richieste: riprova fra qualche minuto»: basta aspettare qualche minuto. Il
+    limite tiene lontani gli abusi; un pagamento già fatto non si perde.
   - Pagato e poi cambiato corso, annuale/trimestre, nome o email, quel
     pagamento non vale per la richiesta: si rimette quello di prima, o si
     chiama la segreteria (**CHIAMA LA SEGRETERIA**). Pagato con Satispay e poi
