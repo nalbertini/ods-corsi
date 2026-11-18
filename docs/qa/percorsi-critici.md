@@ -94,6 +94,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Backup del database | utente | niente da ripristinare, copia senza certificati, caduta che nessuno vede | `scripts/prova-backup.mjs`, `prova:impostazioni` | no |
 | Esporta i dati di una persona | segreteria | file incompleto o con i dati di un altro | `prova:scheda-iscritto`, `prova:segreteria`, `prova:richieste`, `prova:compensi`, `prova:lettere` | sì |
 | Modifiche non salvate | segreteria, amministrazione | modifica persa senza avviso | `prova:scheda-finestra` | sì |
+| Messaggi d'errore (niente testo grezzo delle API) | tutti | messaggio in inglese o codice che non dice cosa fare, nostro messaggio italiano perso | `prova:guaio`, `prova:richieste`, `prova:iscritto-supabase`, `prova:certificato-iscritto`, `prova:iscrizione-passi` | sì |
 | Musica, timer, tablet di sala | istruttore, sala | lezione senza timer o musica | `prova:musica`, `prova:timer-istruttori`, `prova:segreteria`, `prova:musica-file`, `prova:tablet`, `prova:scaletta`, `prova:strumenti`, `prova:anteprima`, `prova:discipline`, `musica.sql`, `categorie-esercizi.sql`, `discipline.sql`, `timer.sql`, `timer-lezioni.sql`, `tablet.sql` | sì |
 | Il Banco | segreteria | un guaio che non si vede | `prova:banco`, `prova:ruoli`, `prova:conteggi-dovuti`, `prova:look` | sì |
 | Scheda dell'iscritto a quattro schede | segreteria | un guaio nascosto su una scheda chiusa | `prova:scheda-iscritto`, `prova:schede-iscritto`, `prova:scheda` | sì |
