@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.13 — 18 novembre 2026
+
+### Risolto
+
+- L'app non accetta più date che non esistono, come il 31 febbraio
+
 ## 0.259.12 — 17 novembre 2026
 
 ### Risolto
