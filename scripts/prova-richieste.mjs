@@ -572,7 +572,7 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     ok('i corsi: li chiede a corsi_aperti, senza argomenti', [await v.corsiAperti(), reg[0]], [[{ id: 'judo-adulti', nome: 'Judo adulti' }], ['rpc', 'corsi_aperti', undefined]])
     ok('i corsi: senza permesso lo dice per la segreteria', await errore(() => finto({ rpc: { corsi_aperti: ERR('42501') } }).v.corsiAperti()), PERMESSO)
     ok('i corsi: funzione assente, dice cosa lanciare', await errore(() => finto({ rpc: { corsi_aperti: ERR('PGRST202') } }).v.corsiAperti()), NON_ATTIVO)
-    ok('i corsi: errore senza testo, il server non risponde', await errore(() => finto({ rpc: { corsi_aperti: { data: null, error: {} } } }).v.corsiAperti()), 'Il server non risponde')
+    ok('i corsi: errore senza testo, la frase di riserva', await errore(() => finto({ rpc: { corsi_aperti: { data: null, error: {} } } }).v.corsiAperti()), 'Non è andata: riprova fra poco')
   }
 
   // --- gli orari: per una proposta in più, mai un guaio che ferma l'iscrizione
@@ -613,7 +613,7 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     ok('invia: il rifiuto del database arriva com’è, è già detto per chi si iscrive', await errore(() => finto({ rpc: { invia_iscrizione: ERR('P0001', 'Mancano: cognome') } }).v.invia(adulto({ cognome: ' ' }))), 'Mancano: cognome')
     ok('invia: la settima email del giorno, stesso messaggio della finta', await errore(() => finto({ rpc: { invia_iscrizione: ERR('P0001', 'Da questa email sono già arrivate 6 richieste oggi: se serve, scrivi alla segreteria') } }).v.invia(adulto())), 'Da questa email sono già arrivate 6 richieste oggi: se serve, scrivi alla segreteria')
     ok('invia: funzione assente, dice cosa lanciare', await errore(() => finto({ rpc: { invia_iscrizione: ERR('PGRST202') } }).v.invia(adulto())), NON_ATTIVO)
-    ok('invia: errore senza testo, il server non risponde', await errore(() => finto({ rpc: { invia_iscrizione: { data: null, error: {} } } }).v.invia(adulto())), 'Il server non risponde')
+    ok('invia: errore senza testo, la frase di riserva', await errore(() => finto({ rpc: { invia_iscrizione: { data: null, error: {} } } }).v.invia(adulto())), 'Non è andata: riprova fra poco')
   }
 
   // --- caricaFile
@@ -670,7 +670,7 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     const senzaLink = finto({ elenco: { 'r-1': nomiFile('modulo.pdf', 'documento.jpg') }, link: { data: [{ path: 'r-1/modulo.pdf', signedUrl: 'https://x/m' }, { path: 'r-1/documento.jpg', signedUrl: null }], error: null } })
     ok('apri file: un link che non è arrivato non entra', (await senzaLink.v.file('r-1')).map((f) => f.tipo), ['modulo'])
     ok('apri file: cartella illeggibile, dice di scrivere alla segreteria', await errore(() => finto({ elenco: { 'r-1': { data: null, error: { message: 'row-level security', statusCode: '403' } } } }).v.file('r-1')), 'Il tempo per caricare i file è scaduto, o sono già arrivati tutti: scrivi alla segreteria')
-    ok('apri file: link negati, stesso modo', await errore(() => finto({ elenco: { 'r-1': nomiFile('modulo.pdf') }, link: { data: null, error: { message: 'x' } } }).v.file('r-1')), 'x')
+    ok('apri file: link negati, il testo grezzo non arriva a video', await errore(() => finto({ elenco: { 'r-1': nomiFile('modulo.pdf') }, link: { data: null, error: { message: 'x' } } }).v.file('r-1')), 'Il file non è partito: riprova')
   }
 
   // --- documenti da stampare
@@ -721,7 +721,7 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     await senza.v.elimina('r-1')
     ok('elimina: senza file, solo la riga', senza.reg.map((x) => x[0]), ['from', 'select', 'eq', 'list', 'from', 'delete', 'eq'])
     const rotto = finto({ elenco: { 'r-1': nomiFile('modulo.pdf') }, rimuovi: { data: null, error: { message: 'down' } } })
-    ok('elimina: se i file non vanno via, la riga resta (un file senza riga non lo ritrova nessuno)', [await errore(() => rotto.v.elimina('r-1')), rotto.reg.some((x) => x[0] === 'delete')], ['down', false])
+    ok('elimina: se i file non vanno via, la riga resta (un file senza riga non lo ritrova nessuno)', [await errore(() => rotto.v.elimina('r-1')), rotto.reg.some((x) => x[0] === 'delete')], ['Il file non è partito: riprova', false])
     ok('elimina: senza permesso sulla riga', await errore(() => finto({ cancella: ERR('42501') }).v.elimina('r-1')), PERMESSO)
   }
 }

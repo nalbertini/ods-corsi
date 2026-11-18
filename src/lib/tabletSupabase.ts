@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
+import { fraseGuaio } from './guaio'
 import { festeggiatiDa } from './compleanni'
 import type { DatiTablet, EsitoTocco, LezioneSala, NomeSala, Origine, PresenzaIstruttore, RigaAppelloTablet, StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
@@ -26,7 +27,7 @@ import { eGiaVenuto, nuovoId, pulisciProva } from './prove'
  * codice, che dice se è un no del server o la rete che manca (vedi `rifiutato`).
  */
 function guaio(e: { message?: string; code?: string } | null): Error {
-  return Object.assign(new Error(e?.message || 'Il server non risponde'), { code: e?.code ?? '' })
+  return Object.assign(new Error(fraseGuaio(e, { per: 'tablet' })), { code: e?.code ?? '' })
 }
 
 export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
@@ -180,7 +181,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     async provati(pin, scritto) {
       const { data, error } = await db.rpc('provati_con_pin', { pin, scritto })
       if (error) {
-        throw new Error(error.code === 'PGRST202' ? 'Le prove non sono ancora attive: va lanciato supabase/34-prove-per-nome.sql.' : error.message || 'Il server non risponde')
+        throw new Error(fraseGuaio(error, { per: 'tablet' }))
       }
       const righe = (data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; corso: string; inizio: string }>
       // Un PIN che non va più non solleva e non restituisce nessuno: se ne

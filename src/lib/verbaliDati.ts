@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { haUnServer } from './dati'
+import { fraseGuaio } from './guaio'
 import { sembraItaliano } from './importa'
 import { cosaNonVaFile, cosaNonVaRettifica, cosaNonVaSostituzione, type Allegato, type Argomento, type Carica, type DatiVerbali, type Delibera, type FilePdf, type TipoAllegato, type TipoVerbale, type Verbale } from './verbali'
 import { creaVerbaliProva } from './verbaliProva'
@@ -32,8 +33,7 @@ export function guaio(e: ErroreDb): Error {
   if (m && (e?.code === 'P0001' || (['22023', '54000'].includes(e?.code ?? '') && sembraItaliano(m)))) return new Error(m)
   if (e?.code === '42501') return new Error('Non hai il permesso, o il verbale è già firmato: un firmato non si cambia, si rettifica')
   if (e?.code === '23503') return new Error('Una persona scelta non c’è più: ricarica la pagina')
-  if (m) console.error(m)
-  return new Error(/failed to fetch|networkerror|load failed/i.test(m) ? 'Non c’è rete: riprova quando torna' : 'Non è andata: riprova fra poco')
+  return new Error(fraseGuaio(e))
 }
 
 function ok<T>(r: { data: T; error: ErroreDb }): T {

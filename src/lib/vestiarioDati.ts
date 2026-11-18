@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { haUnServer, URL_SUPABASE } from './dati'
+import { fraseGuaio } from './guaio'
 import { riduciFoto } from './foto'
 import { sembraItaliano } from './importa'
 import { chiaveGiorno } from './sala'
@@ -47,11 +48,9 @@ function guaio(e: ErroreDb): Error {
   const m = e?.message ?? ''
   if (m && (e?.code === 'P0001' || (['22023', '54000'].includes(e?.code ?? '') && sembraItaliano(m)))) return new Error(m)
   if (e?.code === '42501') return new Error(/segreteria/.test(m) ? m : 'Non hai il permesso: serve un accesso da segreteria')
-  // Il testo del server (in inglese, per chi sviluppa) va solo nella console. Lo stesso di
-  // `sconosciuto` in segreteriaSupabase.ts, che qui non si importa: si tirerebbe dietro tutta
-  // la segreteria nella pagina pubblica degli ordini.
-  if (m) console.error(m)
-  return new Error(/failed to fetch|networkerror|load failed/i.test(m) ? 'Non c’è rete: riprova quando torna' : 'Non è andata: riprova fra poco')
+  // Il testo del server (in inglese, per chi sviluppa) va solo nella console: lo fa fraseGuaio,
+  // che non si tira dietro niente nella pagina pubblica degli ordini.
+  return new Error(fraseGuaio(e))
 }
 
 function ok<T>(r: { data: T; error: ErroreDb }): T {
