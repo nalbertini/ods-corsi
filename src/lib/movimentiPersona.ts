@@ -2,6 +2,7 @@ import { LIMITE_CAMBIO_VOCE, VOCE_CORSI, VOCE_DIFFERENZA, VOCE_QUOTA } from './c
 import type { DatiSegreteria } from './segreteria'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { schedaUnica } from './sicuro'
+import { fraseGuaio } from './guaio'
 
 /**
  * Lo storico del vecchio programma collegato alla persona che ha pagato (`supabase/70-movimenti-persona.sql`).
@@ -271,7 +272,7 @@ export async function collegaTuttiISicuri(
       if (x.restano === 0 || x.collegati === 0) break
     }
   } catch (e) {
-    return { collegati, restano, errore: e instanceof Error && e.message ? e.message : 'Non è cambiato niente in quel pacchetto: riprova.' }
+    return { collegati, restano, errore: fraseGuaio(e, { ripiego: 'Non è cambiato niente in quel pacchetto: riprova.' }) }
   }
   return { collegati, restano }
 }

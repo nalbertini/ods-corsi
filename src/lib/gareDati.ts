@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { oggiARoma } from './contabilita'
 import { haUnServer } from './dati'
+import { fraseGuaio } from './guaio'
 import { aggiungiAtleti, atletiVisibili, cosaNonVaGara, cosaNonVaNota, eliminabile, gareVisibili, pagaGara, totaleQuota, type AtletaGara, type ChiGuarda, type Gara, type VoceGara } from './gare'
 import { sembraItaliano } from './importa'
 import { nuovoId } from './prove'
@@ -42,8 +43,7 @@ export function guaio(e: ErroreDb): Error {
   if (m && (e?.code === 'P0001' || (['22023', '54000'].includes(e?.code ?? '') && sembraItaliano(m)))) return new Error(m)
   if (e?.code === '42501') return new Error('Non hai il permesso: le gare le scrive la segreteria')
   if (e?.code === '23503') return new Error('Questa gara non c’è più: ricarica la pagina')
-  if (m) console.error(m)
-  return new Error(/failed to fetch|networkerror|load failed/i.test(m) ? 'Non c’è rete: riprova quando torna' : 'Non è andata: riprova fra poco')
+  return new Error(fraseGuaio(e))
 }
 
 function ok<T>(r: { data: T; error: ErroreDb }): T {

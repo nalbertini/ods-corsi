@@ -6,6 +6,7 @@ import { ERRORE_SATISPAY, soldi } from '../lib/satispay'
 import { DA_PAGARE, esitoCorso, puoiPagareIlCorso, statoCorsiDi, type ChiPagaCorsi, type Formula } from '../lib/corsoSatispay'
 import type { StatoCorso } from '../lib/corsiDaPagare'
 import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } from './ds'
+import { fraseGuaio } from '../lib/guaio'
 
 /** Ogni quanto si richiede lo stato mentre il pagamento aspetta, e per quanto: poi lo si chiede col tasto CONTROLLA ORA. */
 const OGNI = 4000
@@ -84,7 +85,7 @@ function PagaCorso({ dati, scheda, stato, chi, attivo, online }: { dati: DatiIsc
       u.set('persona', scheda.id)
       window.location.assign(`${window.location.pathname}?${u}`)
     } catch (e) {
-      setGuaio(e instanceof Error ? e.message : ERRORE_SATISPAY)
+      setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: ERRORE_SATISPAY }))
       setConferma(false)
       setVado(false)
     }

@@ -6,6 +6,7 @@ import type { SchedaIscritto } from '../lib/iscritto'
 import { euroBreve } from '../lib/ricevute'
 import { giorniA } from '../lib/vestiario'
 import { Dettaglio, Riquadro, Titoletto } from './ds'
+import { fraseGuaio } from '../lib/guaio'
 
 /**
  * LE MIE GARE nell'area iscritti: le gare a cui la segreteria ha invitato
@@ -30,7 +31,7 @@ export function GareIscritto({ scheda }: { scheda: SchedaIscritto }) {
         }),
       )
       .then(({ gare, atleti }) => vivo && setMie(leMieGare([scheda.id], gare, atleti)))
-      .catch((e: unknown) => vivo && setGuaio(e instanceof Error ? e.message : 'Non è andata: riprova fra poco'))
+      .catch((e: unknown) => vivo && setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: 'Non è andata: riprova fra poco' })))
     return () => {
       vivo = false
     }

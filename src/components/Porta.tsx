@@ -24,6 +24,7 @@ import type { Arrivo } from '../lib/invito'
 import { indirizzo } from '../lib/aree'
 import { areaDelPercorso } from '../lib/percorso'
 import { googleDisponibile, urlPulito } from '../lib/accessoIscritto'
+import { fraseGuaio } from '../lib/guaio'
 
 // Aperta dalla Home dell'iPhone (non dal browser): lì Google non rientra nell'app, si entra con la password.
 const daHome = window.matchMedia('(display-mode: standalone)').matches
@@ -203,7 +204,7 @@ export function Accesso({ onEntrato, collega }: { onEntrato?: (p: Personale) => 
     try {
       await accediConGoogle(window.location.href)
     } catch (x) {
-      setErrore(x instanceof Error ? x.message : 'Accesso non riuscito')
+      setErrore(fraseGuaio(x, { ripiego: 'Accesso non riuscito' }))
       setAspetta(false)
     }
   }
@@ -217,7 +218,7 @@ export function Accesso({ onEntrato, collega }: { onEntrato?: (p: Personale) => 
       await mandaLinkPassword(email.trim())
       setDetto(`Se ${email.trim()} ha un account, fra poco arriva una mail con il link per sceglierne una nuova.`)
     } catch (x) {
-      setErrore(x instanceof Error ? x.message : 'La mail non è partita')
+      setErrore(fraseGuaio(x, { ripiego: 'La mail non è partita' }))
     } finally {
       setAspetta(false)
     }
@@ -233,7 +234,7 @@ export function Accesso({ onEntrato, collega }: { onEntrato?: (p: Personale) => 
       if (e.scegli) setScelta({ persona: e.persona, aree: e.scegli })
       else if (e.persona) onEntrato?.(e.persona)
     } catch (x) {
-      setErrore(x instanceof Error ? x.message : 'Accesso non riuscito')
+      setErrore(fraseGuaio(x, { ripiego: 'Accesso non riuscito' }))
     } finally {
       setAspetta(false)
     }
@@ -348,7 +349,7 @@ export function ScegliPassword({ arrivo }: { arrivo: Arrivo }) {
       if (aree.length > 1) setScelta(p)
       else passaA(aree[0])
     } catch (x) {
-      setErrore(x instanceof Error ? x.message : 'La password non è stata salvata')
+      setErrore(fraseGuaio(x, { ripiego: 'La password non è stata salvata' }))
       setAspetta(false)
     }
   }

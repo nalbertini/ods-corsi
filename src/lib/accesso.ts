@@ -11,6 +11,7 @@ import { entraConGoogle, esitoRitornoGoogle, GOOGLE_ANNULLATO, GOOGLE_NON_RIUSCI
 import { sessione, svuotaBozze } from './segnalazioni'
 import { svuotaTutte } from './coda'
 import { uscita } from './uscita'
+import { fraseGuaio } from './guaio'
 
 export { altreAree, areeDi, nomeDelRuolo, type AreaDiAccount } from './ruoli'
 
@@ -225,7 +226,7 @@ export async function accedi(utente: string, password: string, restaQui = false)
   const a = id ? await accountDi(c, id) : null
   if (a === undefined) {
     await c.auth.signOut()
-    throw new Error('Il server non risponde: c’è rete?')
+    throw new Error(fraseGuaio(new TypeError('Failed to fetch')))
   }
   if (!a) {
     await c.auth.signOut()
@@ -251,7 +252,8 @@ export async function accediConGoogle(indirizzo: string, cliente?: () => Promise
   try {
     await entraConGoogle(indirizzo, cliente)
   } catch (e) {
-    throw new Error(e instanceof Error && e.message !== GOOGLE_NON_RIUSCITO ? e.message : GOOGLE_NON_RIUSCITO_PERSONALE)
+    // Il testo degli iscritti parla del codice via email: per il personale non c'è.
+    throw new Error(e instanceof Error && e.message === GOOGLE_NON_RIUSCITO ? GOOGLE_NON_RIUSCITO_PERSONALE : fraseGuaio(e, { ripiego: GOOGLE_NON_RIUSCITO_PERSONALE }))
   }
 }
 
@@ -290,8 +292,7 @@ function perché(e: { message?: string; code?: string; status?: number }): strin
   if (codice === 'invalid_credentials' || /invalid login credentials/i.test(testo)) return 'Email o password sbagliate'
   if (codice === 'email_not_confirmed' || /not confirmed/i.test(testo))
     return 'L’account non è ancora confermato: in Supabase, Authentication → Users'
-  if (/fetch|network|load failed/i.test(testo)) return 'Il server non risponde: c’è rete?'
-  return `Il server ha rifiutato l’accesso${testo ? `: ${testo}` : ''}`
+  return fraseGuaio(e, { ripiego: 'L’accesso non è andato: controlla email e password e riprova' })
 }
 
 /**
@@ -336,11 +337,10 @@ export async function mandaLinkPassword(email: string): Promise<void> {
 
 function perchéPassword(e: { message?: string; code?: string }): string {
   const testo = e.message ?? ''
-  if (e.code === 'weak_password' || /at least|weak/i.test(testo)) return `La password è troppo debole${testo ? `: ${testo}` : ''}`
+  if (e.code === 'weak_password' || /at least|weak/i.test(testo)) return 'La password è troppo debole: scegline una più lunga, con lettere e numeri'
   if (e.code === 'same_password') return 'È la stessa di prima: scegline una diversa'
   if (e.code === 'session_not_found' || /session/i.test(testo)) return 'Il link non vale più: chiedine un altro'
-  if (/fetch|network|load failed/i.test(testo)) return 'Il server non risponde: c’è rete?'
-  return `La password non è stata salvata${testo ? `: ${testo}` : ''}`
+  return fraseGuaio(e, { ripiego: 'La password non è stata salvata: riprova fra poco' })
 }
 
 /** Esce, e torna alla porta: l'area la sceglie il prossimo account. `dove` è per chi resta sulla sua pagina (il consenso a Claude). */

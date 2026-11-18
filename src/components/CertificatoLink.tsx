@@ -4,6 +4,7 @@ import { codiceDalLink, cosaNonVaScadenza, esitoLink, testiLink, type EsitoLink 
 import { cosaNonVaFileMandato } from '../lib/certificatoIscritto'
 import { datiLink, type AperturaLink } from '../lib/certificatoLinkDati'
 import { chiaveGiorno } from '../lib/sala'
+import { fraseGuaio } from '../lib/guaio'
 
 /**
  * La pagina del link `certificato/?l=…`: senza accesso, per chi deve portare
@@ -22,7 +23,7 @@ export function CertificatoLink() {
     setGuaio(null)
     datiLink()
       .apri(codice)
-      .then(setAperto, (e: unknown) => setGuaio(e instanceof Error ? e.message : 'La pagina non si è aperta: riprova.'))
+      .then(setAperto, (e: unknown) => setGuaio(fraseGuaio(e, { per: 'pubblico', ripiego: 'La pagina non si è aperta: riprova.' })))
   }, [codice, giro])
 
   if (guaio && !aperto)
@@ -95,7 +96,7 @@ function Modulo({ info, codice, onNonVale, onRicevuto }: {
     setInvio(true)
     datiLink()
       .manda(codice, file, scade)
-      .then((e) => (e === 'ricevuto' ? onRicevuto(scade) : onNonVale(e)), (e: unknown) => setGuaio(e instanceof Error ? e.message : 'Non è partito: riprova.'))
+      .then((e) => (e === 'ricevuto' ? onRicevuto(scade) : onNonVale(e)), (e: unknown) => setGuaio(fraseGuaio(e, { per: 'pubblico', ripiego: 'Non è partito: riprova.' })))
       .finally(() => setInvio(false))
   }
 

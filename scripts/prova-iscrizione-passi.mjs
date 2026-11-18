@@ -482,6 +482,19 @@ console.log('\n12. mandare: il PDF, le richieste, i file')
     const d2 = finto()
     d2.guasti.invia = () => new Error('Mancano: nome')
     ok('invia che rifiuta: il messaggio del server', (await m.mandaRichieste(d2, [{ dati: m.risposteDaiPassi(adulto()), file: {} }])).perche, 'Mancano: nome')
+    // Il testo grezzo del browser o dell'API non arriva a chi si iscrive.
+    const consoleErrorVera = console.error
+    console.error = () => {}
+    const d3 = finto()
+    d3.guasti.invia = () => new TypeError('Failed to fetch')
+    ok('invia senza rete: si dice di controllare la connessione', (await m.mandaRichieste(d3, [{ dati: m.risposteDaiPassi(adulto()), file: {} }])).perche, 'Non si collega: controlla la connessione e riprova')
+    const d4 = finto()
+    d4.guasti.invia = () => new Error('Edge Function returned a non-2xx status code')
+    ok('invia con un testo inglese: il ripiego, non il grezzo', (await m.mandaRichieste(d4, [{ dati: m.risposteDaiPassi(adulto()), file: {} }])).perche, 'Il server non risponde: riprova fra poco')
+    const d5 = finto()
+    d5.guasti.file = () => Object.assign(new Error('The object exceeded the maximum allowed size'), { statusCode: '413' })
+    ok('un file troppo grande: lo si dice, non il grezzo', (await m.mandaRichieste(d5, [{ dati: m.risposteDaiPassi(adulto()), file: { documento: F('d.jpg') }, faiPdf: pdf(d5.log, 'Luca') }])).perche, 'Il file è troppo grande: al massimo 10 MB')
+    console.error = consoleErrorVera
   }
   // Un file che non parte: si riprova solo quello.
   {

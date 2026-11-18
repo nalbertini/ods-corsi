@@ -11,6 +11,7 @@ import { SALDO_SPENTO } from './saldoSatispay'
 import { QUOTA_SPENTA } from './quotaSatispay'
 import { CORSO_SPENTO } from './corsoSatispay'
 import { enteDa, type QuotaRicevuta, type Ricevuta } from './ricevute'
+import { fraseGuaio, italiano } from './guaio'
 import { cosaNonVaFileMandato, ESTENSIONI_MANDATO, guaioMandaCertificato } from './certificatoIscritto'
 
 /**
@@ -203,12 +204,15 @@ interface ErroreDb {
  */
 export function guaioIscritto(e: ErroreDb | null, segnalando = false): Error {
   const testo = e?.message ?? ''
-  if (segnalando && (e?.code === '22023' || e?.code === '42501') && testo) return new Error(testo)
+  // Gli stessi codici li usa Postgres da sé, in inglese: passa solo il nostro italiano.
+  if (segnalando && (e?.code === '22023' || e?.code === '42501') && italiano(testo)) return new Error(testo)
   if (e?.code === '42501') return new Error('Non puoi vedere questa persona: esci e rientra con la tua email')
   // PostgREST non trova la funzione: 101-iscritto.sql non è sul database.
   if (e?.code === 'PGRST202') return new Error('L’area degli iscritti non è ancora attiva: chiedi alla segreteria')
-  if (/fetch|network|load failed/i.test(testo)) return new Error('Il server non risponde: c’è rete?')
-  return new Error('Non riesco a leggere i tuoi dati: riprova fra poco')
+  const ripiego = 'Non riesco a leggere i tuoi dati: riprova fra poco'
+  // Le parole di `iscritto_segnala` parlano di una segnalazione: fuori da lì confondono.
+  if (e?.code === '22023') return new Error(ripiego)
+  return new Error(fraseGuaio(e, { per: 'iscritto', ripiego }))
 }
 
 /** Chi ha l'accesso adesso, come persona: `null` senza accesso o se l'account non è di un iscritto. */

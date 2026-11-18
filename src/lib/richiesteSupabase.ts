@@ -1,5 +1,6 @@
 import { FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
+import { fraseGuaio } from './guaio'
 import { ACCOLTA_RESTA, ESTENSIONI, MASSIMO_FILE, siElimina } from './richieste'
 import { tutteLeRighe } from './tutteLeRighe'
 import { cosaNonVaScadenza } from './segreteria'
@@ -59,7 +60,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // La funzione non c'è sul database: 06-iscrizioni.sql non è stato lanciato.
   if (e?.code === 'PGRST202')
     return new Error('Il modulo di iscrizione non è ancora attivo sul database: la segreteria deve lanciare 06-iscrizioni.sql')
-  return new Error(e?.message || 'Il server non risponde')
+  return new Error(fraseGuaio(e))
 }
 
 function ok<T>(r: { data: T; error: { message?: string; code?: string } | null }): T {
@@ -75,7 +76,7 @@ function guaioFile(e: { message?: string; statusCode?: string } | null): Error {
   if (/exceeded|too large|413/i.test(m + (e?.statusCode ?? ''))) return new Error('Il file è troppo grande: al massimo 10 MB')
   if (/mime|type/i.test(m)) return new Error('Questo tipo di file non va: serve una foto o un PDF')
   if (/exists|duplicate/i.test(m)) return new Error('Questo file è già arrivato')
-  return new Error(m || 'Il file non è partito: riprova')
+  return new Error(fraseGuaio(e, { per: 'pubblico', ripiego: 'Il file non è partito: riprova' }))
 }
 
 /** Una Edge Function di pagamento: i suoi errori sono già scritti per chi paga. */

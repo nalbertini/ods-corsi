@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
+import { fraseGuaio } from './guaio'
 import { festeggiatiDa } from './compleanni'
 import type { Dati, IstruttoreLezione } from './dati'
 import { daSenzaIstruttore, type MiaPresenza } from './ore'
@@ -560,13 +561,13 @@ function manca20(e: { code?: string; message?: string }): Error {
   if (e.code === 'PGRST202' || e.code === '42883' || e.code === '42P01') {
     return new Error('Le prove non sono ancora attive: va lanciato supabase/21-prove.sql.')
   }
-  return new Error(e.message || 'Il server non risponde')
+  return new Error(fraseGuaio(e))
 }
 
 /** Il file che crea la ricerca fra tutti non è stato lanciato: `trovateDa` lo dice a chi usa l'app. */
 function manca43(e: { code?: string; message?: string }): Error {
   if (e.code === 'PGRST202' || e.code === '42883') return new Error(RICERCA_NON_ATTIVA)
-  return new Error(e.message || 'Il server non risponde')
+  return new Error(fraseGuaio(e))
 }
 
 async function scriviProva(db: SupabaseClient, sessioneId: string, personaId: string, n: NuovaProva | null) {

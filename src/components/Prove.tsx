@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { ChiProva, GiaProvato } from '../lib/prove'
 import { bastaPerCercare, cosaNonVaProva, daMostrare, provaScritta } from '../lib/prove'
 import { chiaveGiorno, giornoPerEsteso } from '../lib/sala'
+import { fraseGuaio, type Lettore } from '../lib/guaio'
 
 /**
  * Il tasto PROVE dell'appello: chi viene a provare entra nell'appello di
@@ -25,7 +26,7 @@ const CLASSI: Record<Stile, { riquadro: string; etichetta: string; campo: string
   tb: { riquadro: 'tb-riquadro prove-pannello', etichetta: 'tb-etichetta', campo: 'tb-campo', si: 'tb-btn tb-btn-verde', no: 'tb-btn tb-btn-linea', voce: 'prove-gia prove-gia-tb' },
 }
 
-export const scritto = (e: unknown, altrimenti: string) => (e instanceof Error && e.message ? e.message : altrimenti)
+export const scritto = (e: unknown, altrimenti: string, per: Lettore = 'personale') => fraseGuaio(e, { per, ripiego: altrimenti })
 
 export function PannelloProve({
   stile,
@@ -126,7 +127,7 @@ export function PannelloProve({
       primo.current?.focus()
       return true
     } catch (e) {
-      setGuaio(scritto(e, 'Non aggiunto: il server non risponde'))
+      setGuaio(scritto(e, 'Non aggiunto: il server non risponde', stile === 'tb' ? 'tablet' : 'personale'))
       return false
     } finally {
       setAspetta(false)
