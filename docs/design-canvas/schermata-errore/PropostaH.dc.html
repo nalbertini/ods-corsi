@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>H · Segreteria</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- H. Segreteria su schermo largo: la barra di confine dell area prende tutta l area, menu compreso, quindi niente menu. Lo stesso riquadro, al centro. -->
+<div style="position: relative; display: flex; justify-content: center; width: 1440px; height: 900px; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+  <main style="display: flex; flex-direction: column; gap: 16px; width: 560px; padding-top: 160px">
+    <dc-import name="Riquadro" tono="guaio" contesto="segreteria" etichetta="LA PAGINA SI È BLOCCATA" testo="Con RICARICA riparte da capo. Le 2 cose non ancora arrivate restano su questo computer e partono da sole appena c’è rete." hint-size="100%,160px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <dc-import name="Bottone" label="RICARICA" variante="principale" contesto="segreteria"  hint-size="100%,56px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

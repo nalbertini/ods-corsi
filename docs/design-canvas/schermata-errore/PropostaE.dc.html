@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>E · Tablet, sta mandando</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- E. Dopo il tocco su RICARICA o PROVA A MANDARLE: il tasto dice che sta provando e non si ripreme. Al massimo qualche secondo, poi ricarica (C) o torna a D se qualcosa non e partito. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+  <dc-import name="TabletTestata" sala="SALA LOTTA" data="MERCOLEDÌ 18 NOVEMBRE · OFFICINE DELLO SPORT" ora="17:10" hint-size="100%,92px"></dc-import>
+  <main style="display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 64px 40px">
+    <dc-import name="TabletAvviso" tipo="guaio" titolo="LA PAGINA SI È BLOCCATA" testo="Tocca RICARICA e l’appello riparte. Le 3 presenze non ancora arrivate restano su questo tablet e partono da sole appena c’è rete." hint-size="800px,150px"></dc-import>
+    <div style="display: flex; gap: 20px; width: 800px">
+      <dc-import name="TabletTasto" label="STO MANDANDO LE PRESENZE…" variante="verde" grande="{{ true }}" spento="{{ true }}" hint-size="390px,70px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

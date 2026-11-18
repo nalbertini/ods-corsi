@@ -2,6 +2,7 @@ import { lazy, type ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, us
 import { Logo } from './components/Logo'
 import { Sala } from './components/Sala'
 import { NastroProva } from './components/ds'
+import { ConfineErrore } from './components/SchermataErrore'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { apriAspettoModulo } from './lib/aspettoModulo'
 import { vistaIscrizioni } from './lib/paginaIscrizioni'
@@ -70,10 +71,13 @@ export default function App() {
       </div>
     )
   }
+  // Il confine sta fuori dal Suspense: anche un pezzo d'area che non arriva finisce nel riquadro.
   return (
-    <Suspense fallback={<UnAttimo />}>
-      <Aree />
-    </Suspense>
+    <ConfineErrore>
+      <Suspense fallback={<UnAttimo />}>
+        <Aree />
+      </Suspense>
+    </ConfineErrore>
   )
 }
 

@@ -34,6 +34,7 @@
     "prova:musica-file": "node scripts/prova-musica-file.mjs",
     "prova:css-ingresso": "node scripts/prova-css-ingresso.mjs",
     "prova:coda": "node scripts/prova-coda.mjs",
+    "prova:errore": "node scripts/prova-errore.mjs",
     "prova:tablet": "node scripts/prova-tablet.mjs",
     "prova:accesso-google": "node scripts/prova-accesso-google.mjs",
     "prova:righe-dovute": "node scripts/prova-righe-dovute.mjs",

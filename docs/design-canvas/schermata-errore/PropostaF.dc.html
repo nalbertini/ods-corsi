@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>F · Pezzo mancante</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- F. Un pezzo della pagina non arriva (rete, o un aggiornamento appena uscito). Resta il ricaricamento automatico di oggi, al massimo uno ogni 30 secondi; se non basta, questa. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 390px; height: 760px; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+  <dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 16px; padding: 28px 20px">
+    <dc-import name="Riquadro" tono="guaio" contesto="app" etichetta="NON RIESCO A CARICARE LA PAGINA" testo="Di solito è la rete o un aggiornamento appena uscito. Controlla la connessione e tocca RICARICA." hint-size="100%,150px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <dc-import name="Bottone" label="RICARICA" variante="principale" contesto="app"  hint-size="100%,56px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

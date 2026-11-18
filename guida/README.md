@@ -89,6 +89,15 @@ appena torna la rete. Finché aspetta, in cima all'appello compare
 una spia gialla «N NON ANCORA INVIATE». Non chiudete la pagina finché non sparisce, se potete; ma
 anche se la chiudete, la coda riparte alla prossima apertura.
 
+### E se la pagina si blocca?
+
+Al posto della pagina compare un riquadro rosso, **LA PAGINA SI È BLOCCATA**,
+con **RICARICA**. Prima di ricaricare l'app prova a mandare quello che è in
+coda, e quello che non parte resta sul dispositivo: non si perde. Se il
+dispositivo non riesce a tenerlo da parte, il riquadro lo dice e propone
+**PROVA A MANDARLE** prima di **RICARICA LO STESSO**. Se dopo la ricarica si
+blocca di nuovo, compare **SUCCEDE ANCORA**: avvisate la segreteria.
+
 ## Chi può fare cosa
 
 | | Istruttore | Segreteria |

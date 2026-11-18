@@ -481,6 +481,10 @@ musica accesa, YouTube, Spotify e la radio non partono; i file del telefono sì.
   accettato alcune presenze e non le riprova. Avvisate la segreteria.
 - **CALENDARIO NON LETTO** / **LEZIONE NON LETTA**, in rosso: il server non
   ha risposto. Controllate la rete e premete **RIPROVA**.
+- **LA PAGINA SI È BLOCCATA**, in rosso al posto della pagina: toccate
+  **RICARICA**. Le presenze non ancora arrivate restano sul telefono e
+  partono da sole (vedi [E se la pagina si blocca?](README.md#e-se-la-pagina-si-blocca)).
+  Se il timer si blocca, **RICARICA** fa ripartire il timer.
 - **Un allievo manca dall'elenco**: non è iscritto a quel corso. Lo iscrive la
   segreteria.
 - **Una lezione non c'è o è nell'orario sbagliato**: orari, sale e sostituti li
