@@ -257,6 +257,8 @@ input, textarea { font: inherit; color: inherit; }
 .btn-dashed { border: 2px dashed var(--tratteggio); color: var(--tasto); width: 100%; }
 .btn-dashed:hover { border-color: var(--dim); color: var(--text); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Il riquadro del timer bloccato si usa anche da tastiera: il fuoco si vede. */
+.btn:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
 
 /* Le frecce per riordinare una riga: piccole ma con un'area di tocco vera,
    e spente in cima e in fondo all'elenco invece di non fare niente. */
