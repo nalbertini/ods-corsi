@@ -129,7 +129,7 @@ const SESSIONE = {
   personale: 'Accedi di nuovo a ODS Corsi',
   tablet: 'Il tablet va riaperto: chiedi alla segreteria di rientrare. Non ricaricare la pagina finché non è fatto',
   iscritto: "Accedi di nuovo all'area iscritti",
-  pubblico: 'Non è andata: ricarica la pagina e riprova',
+  pubblico: `La pagina è rimasta aperta troppo a lungo: ricaricala e riprova; se non va, chiama la segreteria al ${SEGRETERIA}`,
 }
 perTutti('sessione: JWT expired', { code: 'PGRST301', message: 'JWT expired' }, SESSIONE)
 perTutti('sessione: solo il testo JWT expired', new Error('JWT expired'), SESSIONE)
@@ -142,7 +142,7 @@ perTutti('sessione: 401 con JWT', { status: 401, message: 'Invalid JWT' }, SESSI
 const PERMESSO = {
   personale: "Non hai il permesso di farlo. Esci e rientra; se ricapita, avvisa chi cura l'app",
   tablet: 'Il tablet non può farlo: chiedi alla segreteria',
-  iscritto: `Da qui non si può fare: se ti serve, chiama la segreteria al ${SEGRETERIA}`,
+  iscritto: `Questa operazione non si può fare da qui: se ti serve, chiama la segreteria al ${SEGRETERIA}`,
   pubblico: `Non è andata: chiama la segreteria al ${SEGRETERIA}, ti aiutiamo noi`,
 }
 perTutti('permesso: permission denied for table', { code: '42501', message: 'permission denied for table persone' }, PERMESSO)
@@ -175,7 +175,7 @@ const NON_ATTIVA = {
   personale: 'Questa funzione non è ancora attiva: avvisa chi cura l\'app',
   tablet: 'Questa parte del tablet non è ancora attiva: avvisa la segreteria',
   iscritto: "L'area degli iscritti non è ancora attiva: chiedi alla segreteria",
-  pubblico: `Il modulo non è disponibile in questo momento: chiama la segreteria al ${SEGRETERIA}`,
+  pubblico: `Il modulo non è disponibile in questo momento: riprova più tardi o chiama la segreteria al ${SEGRETERIA}`,
 }
 perTutti('non aggiornato: PGRST202', { code: 'PGRST202', message: 'Could not find the function public.x(a, b) in the schema cache', hint: 'Perhaps you meant to call the function public.y' }, NON_ATTIVA)
 perTutti('non aggiornato: PGRST205', { code: 'PGRST205', message: "Could not find the table 'public.x' in the schema cache" }, NON_ATTIVA)
