@@ -94,7 +94,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Backup del database | utente | niente da ripristinare, copia senza certificati, caduta che nessuno vede | `scripts/prova-backup.mjs`, `prova:impostazioni` | no |
 | Esporta i dati di una persona | segreteria | file incompleto o con i dati di un altro | `prova:scheda-iscritto`, `prova:segreteria`, `prova:richieste`, `prova:compensi`, `prova:lettere` | sì |
 | Modifiche non salvate | segreteria, amministrazione | modifica persa senza avviso | `prova:scheda-finestra` | sì |
-| Messaggi d'errore (niente testo grezzo delle API) | tutti | messaggio in inglese o codice che non dice cosa fare, nostro messaggio italiano perso | `prova:guaio`, `prova:richieste`, `prova:iscritto-supabase`, `prova:certificato-iscritto`, `prova:iscrizione-passi` | sì |
+| Messaggi d'errore (niente testo grezzo delle API) | tutti | testo in inglese o codice a video, nostro messaggio perso | `prova:guaio`, `prova:segreteria`, `prova:richieste`, `prova:iscritto-supabase`, `prova:certificato-iscritto`, `prova:iscrizione-passi` | sì |
 | Musica, timer, tablet di sala | istruttore, sala | lezione senza timer o musica | `prova:musica`, `prova:timer-istruttori`, `prova:segreteria`, `prova:musica-file`, `prova:tablet`, `prova:scaletta`, `prova:strumenti`, `prova:anteprima`, `prova:discipline`, `musica.sql`, `categorie-esercizi.sql`, `discipline.sql`, `timer.sql`, `timer-lezioni.sql`, `tablet.sql` | sì |
 | Il Banco | segreteria | un guaio che non si vede | `prova:banco`, `prova:ruoli`, `prova:conteggi-dovuti`, `prova:look` | sì |
 | Scheda dell'iscritto a quattro schede | segreteria | un guaio nascosto su una scheda chiusa | `prova:scheda-iscritto`, `prova:schede-iscritto`, `prova:scheda` | sì |
@@ -308,6 +308,15 @@ quando arriva la prova.
 - Col PIN su una lezione annullata: `segna_con_pin` e `aggiungi_prova_con_pin`
   non la rifiutano come fa `segna_dal_tablet`; nessuna prova lo guarda.
   DA FARE in `pin-nella-finestra.sql`.
+- Messaggi d'errore: il timer dell'istruttore (`MieiTimer.tsx`, righe 49 e 69,
+  e `mieiTimer.ts` che lancia il testo grezzo) mostra ancora `e.message` a
+  video. Nessuna prova lo guarda. DA FARE in `prova-timer-istruttori.mjs`.
+- Messaggi d'errore: niente impedisce un nuovo `e.message` a video in un
+  componente o in `src/lib`: nessuna prova lo cerca. DA FARE in `prova-guaio.mjs`
+  (una scansione di `src/components` e `src/lib`).
+- Messaggi d'errore: le frasi della password e dell'accesso in `accesso.ts`
+  (`perché`, `perchéPassword`, `mandaLinkPassword`, `scegliPassword`) non le
+  cita nessuna prova. DA FARE in `prova-accesso-google.mjs`, con un finto client.
 
 ## Come si aggiorna
 

@@ -1652,6 +1652,12 @@ console.log('\ngli errori del server e le voci dei tablet, detti per la segreter
   ok('anche con P0002, «non c’è più»', await errore(() => sbaglia({ code: 'P0002', message: 'ricevuta inesistente o già annullata' }).sale()), 'ricevuta inesistente o già annullata')
   ok('anche con 22023', await errore(() => sbaglia({ code: '22023', message: 'La data della ricevuta non si capisce' }).sale()), 'La data della ricevuta non si capisce')
   ok('il permesso resta detto com’era', await errore(() => sbaglia({ code: '42501', message: 'permission denied for table sale' }).sale()), 'Non hai il permesso: serve un accesso da segreteria')
+  // Gli stessi codici li usa anche Postgres da sé, in inglese: quelli non passano.
+  for (const [codice, grezzo] of [['P0002', 'query returned no rows'], ['22023', 'invalid input syntax for type uuid: "x"'], ['54000', 'index row size exceeds maximum']]) {
+    ok(`${codice} in inglese non passa grezzo`, await errore(() => sbaglia({ code: codice, message: grezzo }).sale()), 'Non è andata: riprova fra poco')
+    ok(`${codice} in inglese non passa grezzo neanche dal certificato`, await errore(() => sbaglia({ code: codice, message: grezzo }).rifiutaCertificatoIscritto('p1')), 'Non è andata: riprova fra poco')
+  }
+  ok('il certificato: la regola italiana passa com’è', await errore(() => sbaglia({ code: 'P0002', message: "Non c'è un certificato da confermare" }).rifiutaCertificatoIscritto('p1')), 'Non c’è un certificato da confermare')
   console.error = zitta
 
   const tutte = ['Grandma (Italiano (Italia))', 'Alice (Enhanced)', 'Microsoft Elsa - Italian (Italy)', 'Federica']

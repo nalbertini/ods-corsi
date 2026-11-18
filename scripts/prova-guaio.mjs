@@ -117,7 +117,7 @@ const RETE = {
   personale: 'Non si collega: controlla la connessione e riprova',
   iscritto: 'Non si collega: controlla la connessione e riprova',
   pubblico: 'Non si collega: controlla la connessione e riprova',
-  tablet: 'Non si collega: controlla il Wi-Fi. Quello che hai segnato resta in attesa e si salva quando torna la rete, se non ricarichi la pagina',
+  tablet: 'Non si collega: controlla il Wi-Fi e riprova',
 }
 perTutti('rete: TypeError Failed to fetch', new TypeError('Failed to fetch'), RETE)
 perTutti('rete: Load failed (Safari)', new TypeError('Load failed'), RETE)
@@ -198,6 +198,7 @@ const TROPPI = 'Troppi tentativi di fila: aspetta qualche minuto e riprova'
 perTutti('tentativi: status 429', { name: 'AuthApiError', status: 429, message: 'x' }, TROPPI)
 perTutti('tentativi: Too Many Requests', new Error('Too Many Requests'), TROPPI)
 perTutti('tentativi: email rate limit exceeded', { name: 'AuthApiError', status: 429, code: 'over_email_send_rate_limit', message: 'email rate limit exceeded' }, TROPPI)
+perTutti('tentativi: Rate limited, solo testo', { message: 'Rate limited' }, TROPPI)
 perTutti('tentativi: over_email_send_rate_limit senza status', { code: 'over_email_send_rate_limit', message: 'x' }, TROPPI)
 
 // 10. Sconosciuto: il ripiego, e il grezzo solo in console.error
@@ -209,6 +210,14 @@ for (const [nome, e] of [
   ['null', null],
   ['undefined', undefined],
   ['oggetto vuoto', {}],
+  // Inglese corto: niente accenti né parole italiane, ma non è nostro.
+  ['Service Unavailable', new Error('Service Unavailable')],
+  ['Unavailable', new Error('Unavailable')],
+  ['Gone', new Error('Gone')],
+  ['Unprocessable Entity', new Error('Unprocessable Entity')],
+  ['Storage quota', new Error('Storage quota')],
+  ['No such file', new Error('No such file')],
+  ['Service unavailable: try later', 'Service unavailable: try later'],
 ]) {
   for (const per of LETTORI) ok(`sconosciuto: ${nome} dà il ripiego (${per})`, frase(e, per), RIPIEGO)
   ok(`sconosciuto: ${nome} dà il ripiego passato`, frase(e, 'personale', 'Non si è salvato: riprova'), 'Non si è salvato: riprova')

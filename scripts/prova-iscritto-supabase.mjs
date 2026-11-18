@@ -78,6 +78,8 @@ ok('funzione che non c\'è (101 non lanciato)', dice({ code: 'PGRST202', message
 ok('non è tuo', dice({ code: '42501', message: 'permission denied for x' }), 'Non puoi vedere questa persona: esci e rientra con la tua email')
 ok('altro: niente testo dell\'API', dice({ code: 'XX000', message: 'relation "persone" boom' }), 'Non riesco a leggere i tuoi dati: riprova fra poco')
 ok('segnalando passa la regola già in italiano', dice({ code: '22023', message: 'Questa lezione non è tra le tue' }, true), 'Questa lezione non è tra le tue')
+ok('segnalando, un permesso in inglese non passa grezzo', dice({ code: '42501', message: 'permission denied for table persone' }, true), 'Non puoi vedere questa persona: esci e rientra con la tua email')
+ok('segnalando, un 22023 in inglese non passa grezzo', dice({ code: '22023', message: 'invalid input syntax for type uuid: "x"' }, true), 'Non riesco a leggere i tuoi dati: riprova fra poco')
 ok('non segnalando, la stessa regola non passa', dice({ code: '22023', message: 'Questa lezione non è tra le tue' }, false), 'Non riesco a leggere i tuoi dati: riprova fra poco')
 
 console.log('\nL\'accesso con email e codice')

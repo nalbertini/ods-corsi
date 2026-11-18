@@ -181,7 +181,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     async provati(pin, scritto) {
       const { data, error } = await db.rpc('provati_con_pin', { pin, scritto })
       if (error) {
-        throw new Error(fraseGuaio(error, { per: 'tablet' }))
+        throw new Error(error.code === 'PGRST202' ? 'Le prove non sono ancora attive: va lanciato supabase/34-prove-per-nome.sql.' : fraseGuaio(error, { per: 'tablet' }))
       }
       const righe = (data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; corso: string; inizio: string }>
       // Un PIN che non va più non solleva e non restituisce nessuno: se ne

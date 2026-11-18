@@ -38,7 +38,7 @@ import { cosaNonVaSaldoBanca, cosaNonVaVerifica, mancaSaldoBanca, SENZA_SALDO_BA
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type DatiRicevuta, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { vociCorsiDi } from './corsiDaPagare'
 import { motivoDaErrore, type InvioRicevuta } from './ricevuteEmail'
-import { fraseGuaio } from './guaio'
+import { fraseGuaio, italiano } from './guaio'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
 import { mancaPagatoPrima, type IncassoPrima } from './pagatoPrima'
@@ -428,7 +428,7 @@ export function bastaUnoDai(r: { data: unknown; error: { code?: string; message?
 /** Le regole di `conferma_` e `rifiuta_certificato_iscritto` hanno già le parole giuste (codici P0002 e 22023). */
 function guaioCertificatoIscritto(e: { message?: string; code?: string }): Error {
   if (e.code === 'PGRST202' || e.code === '42883') return new Error(MANCA_CERTIFICATI_ISCRITTO)
-  if ((e.code === 'P0002' || e.code === '22023') && e.message) return new Error(e.message.replace("c'è", 'c’è'))
+  if ((e.code === 'P0002' || e.code === '22023') && e.message && italiano(e.message)) return new Error(e.message.replace("c'è", 'c’è'))
   return guaio(e)
 }
 
@@ -545,8 +545,10 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '42501' && /troppe ricerche/.test(e.message ?? '')) return new Error('Hai fatto troppe ricerche: riprova fra qualche minuto')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
   // I nostri `raise exception` (P0001 quando non hanno un codice; P0002 «non c'è più»; 22023 e 54000)
-  // sono già scritti per la segreteria: passano così come sono.
-  if (e?.message && ['P0001', 'P0002', '22023', '54000'].includes(e.code ?? '')) return new Error(e.message)
+  // sono già scritti per la segreteria: passano così come sono. P0001 è solo nostro; gli altri
+  // li usa anche Postgres da sé, in inglese, e allora non passano.
+  if (e?.message && e.code === 'P0001') return new Error(e.message)
+  if (e?.message && ['P0002', '22023', '54000'].includes(e.code ?? '') && italiano(e.message)) return new Error(e.message)
   return new Error(fraseGuaio(e))
 }
 

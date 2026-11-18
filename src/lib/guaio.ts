@@ -21,7 +21,7 @@ const FRASI: Record<Caso, Partial<Record<Lettore, string>>> = {
     personale: 'Non si collega: controlla la connessione e riprova',
     iscritto: 'Non si collega: controlla la connessione e riprova',
     pubblico: 'Non si collega: controlla la connessione e riprova',
-    tablet: 'Non si collega: controlla il Wi-Fi. Quello che hai segnato resta in attesa e si salva quando torna la rete, se non ricarichi la pagina',
+    tablet: 'Non si collega: controlla il Wi-Fi e riprova',
   },
   tentativi: tutti('Troppi tentativi di fila: aspetta qualche minuto e riprova'),
   troppoGrande: tutti('Il file è troppo grande: al massimo 10 MB'),
@@ -81,18 +81,17 @@ function pezzi(e: unknown): Pezzi {
 const INGLESE = /\b(the|of|for|to|is|not|does|could|cannot|failed|denied|violates|too|many|found|invalid|expired|exceeded|returned|error|from|with|on|table|column|function|relation|requests?|supported|properties|reading|undefined|null|status|code|key|session|payload|duplicate|row|allowed|maximum|exist)\b/i
 
 // Parole italiane frequenti nei nostri messaggi: un testo senza accenti è
-// nostro se ne ha almeno una, o se almeno metà delle parole finisce per
-// vocale, come in italiano («lezione inesistente», «data»): così «boom» resta
-// grezzo. «token» non sta fra le parole inglesi: lo usano i nostri messaggi.
-const ITALIANO = /\b(il|lo|la|le|gli|un|una|uno|non|di|del|della|dei|delle|da|dal|dalla|per|con|che|si|ci|va|manca|mancano|solo|questo|questa|quello|più|già|ancora|prima|dopo|serve|può|sono|hai|ha|deve|richiesta)\b/i
+// nostro solo se ne ha almeno una. Contare le vocali finali faceva passare
+// l'inglese corto («Service Unavailable», «Storage quota»). «token» non sta
+// fra le parole inglesi: lo usano i nostri messaggi.
+const ITALIANO = /\b(il|lo|la|le|gli|un|una|uno|non|di|del|della|dei|delle|da|dal|dalla|per|con|che|si|ci|va|manca|mancano|solo|questo|questa|quello|più|già|ancora|prima|dopo|serve|servono|può|sono|hai|ha|deve|richiesta|chi|come|col|li|te|fra|qualche|riprova|scegli|troppi|troppe|troppo|nessuna|nessun|nessuno|inesistente|annullata|annullato|sconosciuto|sconosciuta|data)\b/i
 
-function italiano(testo: string): boolean {
+/** Vero se il testo è un nostro messaggio italiano, da mostrare com'è. */
+export function italiano(testo: string): boolean {
   // Un codice come «invalid_mime_type» non è una frase; i nostri messaggi
   // nominano solo segreti in maiuscolo (SMTP_PASSWORD).
   if (!testo.trim() || /\b[a-z]+_[a-z_]+\b/.test(testo) || INGLESE.test(testo)) return false
-  if (/[àèéìòùÀÈÉÌÒÙ’]/.test(testo) || ITALIANO.test(testo)) return true
-  const parole = testo.match(/[a-z]+/gi) ?? []
-  return parole.length > 0 && parole.filter((p) => /[aeiou]$/i.test(p)).length * 2 >= parole.length
+  return /[àèéìòùÀÈÉÌÒÙ’]/.test(testo) || ITALIANO.test(testo)
 }
 
 function caso({ testo, codice, stato, nome, errore }: Pezzi): Caso | null {
