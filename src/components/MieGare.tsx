@@ -5,6 +5,7 @@ import { avvisoCertificati, corsiInsegnati, corsoDi, dateGara, gareDaAccompagnar
 import { datiSegreteria } from '../lib/segreteria'
 import { giorniA } from '../lib/vestiario'
 import { Dettaglio, Riquadro, Titoletto } from './ds'
+import { fraseGuaio } from '../lib/guaio'
 
 interface Letto {
   gare: Gara[]
@@ -48,7 +49,7 @@ export function MieGare({ personaId }: { personaId: string }) {
         ]),
       )
       if (vivo) setLetto({ gare: prossime, righe })
-    })().catch((e: unknown) => vivo && setGuaio(e instanceof Error ? e.message : 'Non è andata: riprova fra poco'))
+    })().catch((e: unknown) => vivo && setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: 'Non è andata: riprova fra poco' })))
     return () => {
       vivo = false
     }

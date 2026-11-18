@@ -60,6 +60,7 @@ import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
 import { VERSIONE, VERSIONE_ESTESA } from '../lib/versione'
 import { Tracciati } from './Icons'
 import { ICONE, type NomeIcona } from '../lib/icone'
+import { fraseGuaio } from '../lib/guaio'
 
 /**
  * L'area degli iscritti, dal telefono: le prossime lezioni dei suoi corsi,
@@ -109,7 +110,7 @@ export function AreaIscritti() {
         // In prova la scelta si ricorda; col database vero c'è solo chi è entrato.
         setChi((c) => (c && elenco.some((p) => p.id === c) ? c : (elenco[0]?.id ?? null)))
       })
-      .catch((e: unknown) => vivo && setGuaio(e instanceof Error ? e.message : 'L’app non si è caricata'))
+      .catch((e: unknown) => vivo && setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: 'L’app non si è caricata' })))
     return () => {
       vivo = false
     }
@@ -626,7 +627,7 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
       setNota('')
       setGiro((g) => g + 1)
     } catch (e) {
-      setGuaio(e instanceof Error ? e.message : 'La segnalazione non è partita')
+      setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: 'La segnalazione non è partita' }))
     }
   }
   return (
@@ -785,7 +786,7 @@ function MandaCertificato({ box, dati, personaId, onMandato }: { box: ReturnType
       .mandaCertificato(personaId, file)
       // Il file è partito: se la scheda non si ricarica non è colpa dell'invio, e non si dice «non è partito».
       .then(() => onMandato().catch(() => setGuaio('Il certificato è partito, ma la pagina non si è aggiornata: ricaricala')))
-      .catch((e: unknown) => setGuaio(e instanceof Error ? e.message : 'Il certificato non è partito: riprova fra poco'))
+      .catch((e: unknown) => setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: 'Il certificato non è partito: riprova fra poco' })))
       .finally(() => {
         setInvio(false)
         // Lo stesso file, scelto di nuovo, deve far scattare ancora il change.

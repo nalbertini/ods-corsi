@@ -10,6 +10,7 @@ import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
 import { bonificiPerCompensi, centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, daPagareCompensi, extraDelPagamento, avvisoDelMese, aChePunto, azioneCarta, azioneRiga, gruppiCompensi, senzaImporto, STATI_FERMI, type AzioneCompenso, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type GruppoCompensi, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
 import { chiedi, FiltroMenu, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Segmenti, Testa, useAvviso, useCarica, useDialogo, Tasto } from './comune'
+import { fraseGuaio } from '../../lib/guaio'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 const GIORNI_CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
@@ -895,7 +896,7 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
         try {
           fatte.push(await faiRicevuta(d, r.persona, r.conto, mese))
         } catch (e) {
-          saltati.push(e instanceof Error ? e.message : nomeDi(r.persona))
+          saltati.push(fraseGuaio(e, { ripiego: nomeDi(r.persona) }))
         }
       }
       if (fatte.length && carta) await scarica(fatte, carta)

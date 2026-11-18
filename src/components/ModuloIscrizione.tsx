@@ -21,6 +21,7 @@ import { CampiCarta } from './CampiCarta'
 import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, Etichetta, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
 import { chiaveDelBrowser, chiavePreparo, chiedeRicevuta, comePuoiPagare, cosaNonVaModo, ERRORE_CARTA, ERRORE_SATISPAY, esitoPagamento, modoPagamento, nonSemplice, pagamentoDaMandare, senzaVoceDelCorso, soldi, statoRiquadroPaga, type PagamentoPrima, type Pago } from '../lib/satispay'
+import { fraseGuaio } from '../lib/guaio'
 
 /**
  * Il modulo di iscrizione: le domande che prima stavano su Google Form, e i
@@ -173,7 +174,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         void x.certificatoGiorni().then((g) => vivo && setGiorni(g))
         return x.corsiAperti().then((c) => vivo && setCorsi(c))
       })
-      .catch((e) => vivo && setGuaioCorsi(e instanceof Error ? e.message : 'Il server non risponde'))
+      .catch((e) => vivo && setGuaioCorsi(fraseGuaio(e, { per: 'pubblico', ripiego: 'Il server non risponde' })))
     return () => {
       vivo = false
     }
@@ -277,7 +278,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       setAperto(false)
       setCampiCarta(false)
     } catch (e) {
-      setGuaioSp(e instanceof Error ? e.message : metodo ? ERRORE_CARTA : ERRORE_SATISPAY)
+      setGuaioSp(fraseGuaio(e, { per: 'pubblico', ripiego: metodo ? ERRORE_CARTA : ERRORE_SATISPAY }))
     }
     setPreparo(false)
   }
@@ -424,7 +425,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       setTimeout(() => URL.revokeObjectURL(url), 60_000)
     } catch (e) {
       scheda?.close()
-      setGuaioFirma(`Il modulo non si prepara: ${e instanceof Error ? e.message : 'riprova'}`)
+      setGuaioFirma(fraseGuaio(e, { per: 'pubblico', ripiego: 'Il modulo non si prepara: riprova' }))
     }
   }
 
@@ -439,7 +440,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         await d!.caricaFile(id, tipo, f)
       } catch (e) {
         mancati.push(tipo)
-        perche = e instanceof Error ? e.message : 'Il file non è partito'
+        perche = fraseGuaio(e, { per: 'pubblico', ripiego: 'Il file non è partito' })
       }
     }
     setFase(mancati.length ? { tipo: 'file', id, mancati, perche } : { tipo: 'fatto' })
@@ -468,7 +469,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         tutti = { ...file, modulo: await faiModulo() }
       } catch (e) {
         setFase({ tipo: 'compila' })
-        return setGuaio(`Il modulo firmato non si prepara (${e instanceof Error ? e.message : 'riprova'}): riprova, o caricane la foto`)
+        return setGuaio(fraseGuaio(e, { per: 'pubblico', ripiego: 'Il modulo firmato non si prepara: riprova, o caricane la foto' }))
       }
       setFile(tutti)
     }
@@ -481,7 +482,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       id = await d!.invia({ ...risposte, ...(chiedeScelta && sceltaCert === 'dopo' && { certificatoDopo: true }), ...origineDellaRichiesta(!!nucleo, conosciuto), pagamentoSatispay: pagamentoDaMandare(modo, sp), chiavePagamento: chiaveDelBrowser(), ...(comePagaDi(modo) && { comePaga: comePagaDi(modo) }) })
     } catch (e) {
       setFase({ tipo: 'compila' })
-      return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')
+      return setGuaio(fraseGuaio(e, { per: 'pubblico', ripiego: 'Il server non risponde: riprova fra poco' }))
     }
     if (contare) void contaIscrizione(EVENTI_ISCRIZIONE.fatta)
     await carica(id, daChiedere.map((f) => f.tipo), tutti)

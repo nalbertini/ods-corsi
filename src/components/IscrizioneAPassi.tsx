@@ -20,6 +20,7 @@ import { Casella, ComeCiHaiConosciuto, QuantoCosta, SceltaFile } from './ModuloI
 import { provenienzaDellaVisita } from '../lib/provenienza'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../lib/comuneDalCap'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
+import { fraseGuaio } from '../lib/guaio'
 
 /**
  * Il modulo di iscrizione a passi, solo in prova (`iscrizioni/?prova#nuova`,
@@ -581,7 +582,7 @@ function Flusso({
       nuove = P.aggiungiFamiliare(persone, chiNuovo, firma, io)
     } catch (e) {
       // Le frasi di aggiungiFamiliare sono per chi usa l'app.
-      return setGuaio(e instanceof Error ? e.message : 'Non riesco ad aggiungerlo: chiama la segreteria.')
+      return setGuaio(fraseGuaio(e, { per: 'pubblico', ripiego: 'Non riesco ad aggiungerlo: chiama la segreteria.' }))
     }
     setPersone(nuove)
     setPassi((a) => [...a, 1])

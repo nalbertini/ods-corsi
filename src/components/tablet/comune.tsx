@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { DatiTablet, LezioneSala } from '../../lib/tablet'
 import { oraDi } from '../../lib/sala'
 import { Back } from '../Icons'
+import { fraseGuaio } from '../../lib/guaio'
 
 /** «17:00–18:00». */
 export const orario = (l: Pick<LezioneSala, 'inizio' | 'fine'>) => `${oraDi(l.inizio)}–${oraDi(l.fine)}`
@@ -100,4 +101,4 @@ export function Guaio({ titolo, testo }: { titolo: string; testo: string }) {
   )
 }
 
-export const messaggio = (e: unknown, altrimenti: string) => (e instanceof Error && e.message ? e.message : altrimenti)
+export const messaggio = (e: unknown, altrimenti: string) => fraseGuaio(e, { per: 'tablet', ripiego: altrimenti })

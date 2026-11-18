@@ -3,6 +3,7 @@ import { account, esci, serveAccesso, type Account } from '../lib/accesso'
 import { autorizzazioneDa, chiChiede, cosaPotra, frasiConsenso, puoCollegare, rispondi } from '../lib/collega'
 import { Etichetta, Riquadro, Tasto, Titoletto } from './ds'
 import { Accesso, ChiSei, UnAttimo } from './Porta'
+import { fraseGuaio } from '../lib/guaio'
 
 /**
  * Dove Supabase manda chi collega Claude al suo account (Authentication → OAuth Server, «Authorization Path»
@@ -33,8 +34,8 @@ export function Collega() {
         setHost(r.host)
         setNome(r.nome)
       },
-      // `chiChiede` lancia solo messaggi per chi usa l'app.
-      (x: Error) => setErrore(x.message),
+      // `chiChiede` lancia messaggi per chi usa l'app, ma una rete giù arriva grezza.
+      (x: unknown) => setErrore(fraseGuaio(x)),
     )
   }, [id, chi])
 
@@ -45,7 +46,7 @@ export function Collega() {
     try {
       window.location.replace(await rispondi(id, consenti))
     } catch (x) {
-      setErrore(x instanceof Error ? x.message : 'Il collegamento non è riuscito')
+      setErrore(fraseGuaio(x, { ripiego: 'Il collegamento non è riuscito' }))
       setAspetta(false)
     }
   }

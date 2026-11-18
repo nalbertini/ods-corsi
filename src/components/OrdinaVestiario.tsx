@@ -9,6 +9,7 @@ import { chiedi, useDialogo } from './segreteria/comune'
 import { apertiLetti, datiVestiario } from '../lib/vestiarioDati'
 import { BarraPasso, Campo, Dettaglio, type Nota, Etichetta, Riquadro, Tasti, Tasto, TitoloEsito, Titoletto } from './ds'
 import { Icona } from './Icons'
+import { fraseGuaio } from '../lib/guaio'
 
 /**
  * La pagina degli ordini di vestiario, dal link COPIA LINK ORDINI
@@ -82,8 +83,8 @@ export function OrdinaVestiario() {
         setCatalogo(c)
       })
       // Un messaggio solo: chi apre il link dal telefono non deve leggere il testo del server.
-      // I messaggi di vestiarioDati sono già per chi legge; un pezzo dell'app che non arriva è la rete.
-      .catch((e: unknown) => vivo && setGuaioLettura(e instanceof Error && !/dynamically imported|import/i.test(e.message) ? e.message : 'Non c’è rete: riprova quando torna'))
+      // I messaggi di vestiarioDati sono già per chi legge; un pezzo dell'app che non arriva è la rete, e fraseGuaio lo sa.
+      .catch((e: unknown) => vivo && setGuaioLettura(fraseGuaio(e, { per: 'iscritto', ripiego: 'Non c’è rete: riprova quando torna' })))
     return () => {
       vivo = false
     }
@@ -255,7 +256,7 @@ function Ordina({
       onArrivato(fatto)
     } catch (e) {
       // Le risposte restano: si riprova con lo stesso tasto.
-      setGuaio(e instanceof Error ? e.message : 'Non è andata: riprova fra poco')
+      setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: 'Non è andata: riprova fra poco' }))
     } finally {
       setInVolo(false)
     }
@@ -390,7 +391,7 @@ function Ordina({
         setRighe(applicaScelte(righe, perChi, deiCapi, nuove))
         setGuaio(null)
       } catch (e) {
-        setGuaio(e instanceof Error ? e.message : MAX_RIGHE_DETTO)
+        setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: MAX_RIGHE_DETTO }))
       }
     }
     // La pagina sola non ha un tipo: in cima vanno le tabelle dei tipi che le hanno.

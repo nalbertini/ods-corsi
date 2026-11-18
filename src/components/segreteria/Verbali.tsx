@@ -32,6 +32,7 @@ import {
   type VerbaleNuovo,
 } from '../../lib/verbali'
 import { Bozza, Campo, chiedi, Guaio, lasciare, Riga as Titolo, SchedaPiena, Tag, Tasto, Testa, useAvviso, useCarica } from './comune'
+import { fraseGuaio } from '../../lib/guaio'
 
 /**
  * VERBALI: le riunioni dei soci e del direttivo. Il testo si scrive fuori
@@ -56,7 +57,7 @@ async function apriPdf(a: Allegato, avvisa: Avvisa) {
   try {
     url = await (await datiVerbali()).linkPdf(a)
   } catch (e) {
-    return avvisa(e instanceof Error ? e.message : 'Il PDF non si apre: riprova fra poco', true)
+    return avvisa(fraseGuaio(e, { ripiego: 'Il PDF non si apre: riprova fra poco' }), true)
   }
   if (!url) return avvisa('Il file non si può aprire qui: in prova i PDF non ci sono.', true)
   window.open(url, '_blank', 'noopener')

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { accessoDalLink, codicePulito, emailPulita, entraConCodice, entraConGoogle, GOOGLE_NON_RIUSCITO, googleDisponibile, indirizzoSenzaAccesso, mandaCodice, NON_ISCRITTO } from '../lib/accessoIscritto'
 import type { IscrittoDiProva } from '../lib/iscritto'
 import { chiama } from '../lib/sito'
+import { fraseGuaio } from '../lib/guaio'
 
 // Aperta dalla Home dell'iPhone (non dal browser): lì Google non rientra nell'app, si entra col codice.
 const daHome = window.matchMedia('(display-mode: standalone)').matches
@@ -31,7 +32,7 @@ export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: Iscritt
     setAspetta(true)
     void entraConCodice(link.email, link.codice).then(onEntrato, (x: unknown) => {
       setEmail(link.email)
-      setErrore(x instanceof Error ? x.message : 'Non sono riuscito a farti entrare: riprova')
+      setErrore(fraseGuaio(x, { per: 'iscritto', ripiego: 'Non sono riuscito a farti entrare: riprova' }))
       setAspetta(false)
     })
   }, [onEntrato])
@@ -47,7 +48,7 @@ export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: Iscritt
       setInviata(pulita)
       setCodice('')
     } catch (x) {
-      setErrore(x instanceof Error ? x.message : 'Il codice non è partito: riprova fra poco')
+      setErrore(fraseGuaio(x, { per: 'iscritto', ripiego: 'Il codice non è partito: riprova fra poco' }))
     } finally {
       setAspetta(false)
     }
@@ -59,7 +60,7 @@ export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: Iscritt
     try {
       await entraConGoogle(window.location.href)
     } catch (x) {
-      setErrore(x instanceof Error ? x.message : GOOGLE_NON_RIUSCITO)
+      setErrore(fraseGuaio(x, { per: 'iscritto', ripiego: GOOGLE_NON_RIUSCITO }))
       setAspetta(false)
     }
   }
@@ -73,7 +74,7 @@ export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: Iscritt
     try {
       onEntrato(await entraConCodice(inviata, c))
     } catch (x) {
-      setErrore(x instanceof Error ? x.message : 'Non sono riuscito a farti entrare: riprova')
+      setErrore(fraseGuaio(x, { per: 'iscritto', ripiego: 'Non sono riuscito a farti entrare: riprova' }))
       setAspetta(false)
     }
   }

@@ -8,6 +8,7 @@ import { GuaioConAzione } from '../../lib/cartaPdf'
 import { clicFuoriChiude } from '../../lib/schedaFinestra'
 import { dataLunga } from '../../lib/sala'
 import type { Tono } from '../../lib/segreteria'
+import { fraseGuaio } from '../../lib/guaio'
 
 type Valore = string | number | null | undefined
 
@@ -274,7 +275,7 @@ export function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean, spuntata
 /** Un link-tasto alto quanto un dito (44 px), per le azioni sulle righe dei movimenti. */
 export const DITO = { fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center' } as const
 
-export const messaggio = (e: unknown, altrimenti = 'Il server non risponde') => (e instanceof Error && e.message ? e.message : altrimenti)
+export const messaggio = (e: unknown, altrimenti = 'Il server non risponde') => fraseGuaio(e, { ripiego: altrimenti })
 
 /**
  * Carica qualcosa e lo ricarica a comando. `ricarica` non svuota quello che

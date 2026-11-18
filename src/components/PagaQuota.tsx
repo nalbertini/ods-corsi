@@ -5,6 +5,7 @@ import { ERRORE_SATISPAY, soldi } from '../lib/satispay'
 import type { ChiPaga } from '../lib/saldoSatispay'
 import { esitoQuota, puoiPagareLaQuota } from '../lib/quotaSatispay'
 import { Dettaglio, Tasti, Tasto, TitoloEsito } from './ds'
+import { fraseGuaio } from '../lib/guaio'
 
 /** Ogni quanto si richiede lo stato mentre il pagamento aspetta, e per quanto: poi lo si chiede col tasto CONTROLLA ORA. */
 const OGNI = 4000
@@ -67,7 +68,7 @@ export function PagaQuota({ dati, scheda, io }: { dati: DatiIscritto; scheda: Sc
       u.set('persona', scheda.id)
       window.location.assign(`${window.location.pathname}?${u}`)
     } catch (e) {
-      setGuaio(e instanceof Error ? e.message : ERRORE_SATISPAY)
+      setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: ERRORE_SATISPAY }))
       setConferma(false)
       setVado(false)
     }
@@ -139,7 +140,7 @@ export function RitornoQuota({ dati, persona, onChiudi }: { dati: DatiIscritto; 
       const r = await dati.pagaQuota(persona)
       if (r) return window.location.assign(r.link)
     } catch (e) {
-      setGuaio(e instanceof Error ? e.message : ERRORE_SATISPAY)
+      setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: ERRORE_SATISPAY }))
     }
     setVado(false)
   }

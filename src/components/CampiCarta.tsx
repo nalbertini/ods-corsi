@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { CARTA_RIFIUTATA, ERRORE_CARTA, guaioGoogle, guaioInvio, soldi } from '../lib/satispay'
 import { Dettaglio, Tasto } from './ds'
+import { fraseGuaio } from '../lib/guaio'
 
 // Solo quel che si usa degli SDK di PayPal, Google e Apple: si caricano a runtime, senza pacchetti.
 interface CampoPayPal {
@@ -123,7 +124,7 @@ export function CampiCarta({ clientId, sandbox, ordine, importo, onPaga, onAnnul
       await onPaga()
     } catch (e) {
       setApprovato(true)
-      setGuaio(e instanceof Error ? e.message : ERRORE_CARTA)
+      setGuaio(fraseGuaio(e, { per: 'pubblico', ripiego: ERRORE_CARTA }))
     }
     setOccupato(false)
   }

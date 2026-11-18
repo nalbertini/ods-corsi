@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { datiRichieste, type DatiRichieste } from '../lib/richieste'
 import { ERRORE_SATISPAY, esitoPagamento, ritornoSatispay, soldi, type StatoSatispay } from '../lib/satispay'
 import { Dettaglio, Tasto, TitoloEsito } from './ds'
+import { fraseGuaio } from '../lib/guaio'
 
 /** Ogni quanto si richiede lo stato mentre il pagamento aspetta, e per quanto: poi lo si chiede col tasto. */
 const OGNI = 4000
@@ -33,7 +34,7 @@ export function PagamentoOnline({ richiestaId, onChiudi }: { richiestaId: string
           // Satispay avvisa il server, ma la callback può tardare: intanto si richiede, per un paio di minuti.
           if (s?.stato === 'attesa' && ++volte < VOLTE) timer = setTimeout(() => void leggi(x), OGNI)
         },
-        (e) => vivo && setGuaio(e instanceof Error ? e.message : ERRORE_SATISPAY),
+        (e) => vivo && setGuaio(fraseGuaio(e, { per: 'pubblico', ripiego: ERRORE_SATISPAY })),
       )
     void datiRichieste().then(
       (x) => {
@@ -58,7 +59,7 @@ export function PagamentoOnline({ richiestaId, onChiudi }: { richiestaId: string
       if (r && 'link' in r) return window.location.assign(r.link)
       setP(await d.statoPagamento(richiestaId))
     } catch (e) {
-      setGuaio(e instanceof Error ? e.message : ERRORE_SATISPAY)
+      setGuaio(fraseGuaio(e, { per: 'pubblico', ripiego: ERRORE_SATISPAY }))
     }
     setVado(false)
   }
