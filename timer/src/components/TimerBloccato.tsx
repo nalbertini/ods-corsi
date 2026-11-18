@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { mandaTutto } from '../../../src/lib/coda'
-import { schermataTimer, type Azione } from '../../../src/lib/schermataTimer'
+import { mandaPoiRicarica, schermataTimer, type Azione } from '../../../src/lib/schermataTimer'
 
 type Props = {
   /** Nel tablet: riporta all'appello, che il blocco del timer non tocca. */
@@ -33,8 +33,7 @@ export class TimerBloccato extends Component<Props, { bloccato: boolean; giro: n
     }
     if (this.props.tornaAllAppello) return this.setState((s) => ({ bloccato: false, giro: s.giro + 1 }))
     // Il timer da solo: le scritture in coda restano sul disco, ma prima si prova a mandarle.
-    await mandaTutto(3000)
-    window.location.reload()
+    await mandaPoiRicarica({ manda: mandaTutto, ricarica: () => window.location.reload() })
   }
 
   render() {

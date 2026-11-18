@@ -10,7 +10,7 @@
 import type { Area } from './aree'
 import { RICARICA, tasto, type Schermata } from './schermataTimer'
 
-export { schermataTimer, type Azione, type Schermata, type Tasto } from './schermataTimer'
+export { ATTESA_MANDA, dopoAverMandato, mandaPoiRicarica, schermataTimer, type Azione, type Schermata, type Tasto } from './schermataTimer'
 
 export type Dispositivo = 'telefono' | 'tablet' | 'computer'
 
@@ -29,7 +29,7 @@ export interface StatoErrore {
 }
 
 /** La frase sulla coda: quel che non è arrivato aspetta la rete, non si perde. */
-function frasecoda(s: StatoErrore): string {
+function fraseCoda(s: StatoErrore): string {
   const dove = `su questo ${s.dispositivo}`
   if (s.inCoda === 1) {
     const una = s.cosa === 'presenze' ? 'La presenza' : 'La cosa'
@@ -39,7 +39,7 @@ function frasecoda(s: StatoErrore): string {
 }
 
 const conCoda = (testo: string, s: StatoErrore, senza?: string) =>
-  s.inCoda > 0 ? `${testo} ${frasecoda(s)}` : senza ? `${testo} ${senza}` : testo
+  s.inCoda > 0 ? `${testo} ${fraseCoda(s)}` : senza ? `${testo} ${senza}` : testo
 
 function soloInMemoria(s: StatoErrore): Schermata {
   const uno = s.soloInMemoria === 1
@@ -89,9 +89,24 @@ export function ripetuto(ultima: string | null, ora: number): boolean {
   return Number.isFinite(quando) && ora - quando <= 30_000
 }
 
-/** Dopo PROVA A MANDARLE: si ricarica solo se non resta niente da perdere. */
-export function dopoAverMandato(soloInMemoria: number): 'ricarica' | 'resta' {
-  return soloInMemoria > 0 ? 'resta' : 'ricarica'
+type Sessione = Pick<Storage, 'getItem' | 'setItem'>
+
+/** Il segno che il confine lascia prima di ricaricare, per riconoscere un blocco che torna. */
+export function segnaBlocco(sessione: Sessione, ora: number): void {
+  try {
+    sessione.setItem(CHIAVE_BLOCCO, String(ora))
+  } catch {
+    // Senza il segno si perde solo l'avviso «succede ancora»: la ricarica va fatta lo stesso.
+  }
+}
+
+export function leggiBlocco(sessione: Sessione): string | null {
+  // Senza sessionStorage (navigazione privata) non si sa se si ripete: si tratta come la prima volta.
+  try {
+    return sessione.getItem(CHIAVE_BLOCCO)
+  } catch {
+    return null
+  }
 }
 
 const PEZZO = [

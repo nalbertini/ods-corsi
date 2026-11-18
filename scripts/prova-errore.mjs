@@ -11,6 +11,7 @@
 // limita a mostrare e a chiamare.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
+import { readFileSync } from 'node:fs'
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -171,7 +172,6 @@ if (m) {
   {
     const grezzo = /errore|error|eccezione|bug|undefined/i
     const grezzoCasuale = /null|NaN/
-    const MESSAGGIO = 'Cannot read properties of undefined (reading SEGRETO-DELL-API)'
     const tutte = []
     for (const dispositivo of ['telefono', 'tablet', 'computer'])
       for (const cosa of ['presenze', 'cose'])
@@ -181,15 +181,14 @@ if (m) {
               for (const ripetuto of [false, true])
                 for (const mandando of [false, true])
                   tutte.push(m.schermataErrore({ dispositivo, cosa, inCoda, soloInMemoria, pezzoMancante, ripetuto, mandando }))
-    tutte.push(m.schermataTimer(true), m.schermataTimer(false))
-    const brutte = tutte.filter((x) => {
+    const delTimer = [m.schermataTimer(true), m.schermataTimer(false)]
+    const brutte = [...tutte, ...delTimer].filter((x) => {
       const parole = [x.titolo, x.testo, ...x.tasti.map((t) => t.etichetta)].join(' | ')
       return grezzo.test(parole) || grezzoCasuale.test(parole) || parole.includes('SEGRETO')
     })
     ok(`${tutte.length} combinazioni senza parole tecniche`, brutte.length, 0)
-    ok('ogni schermata ha almeno un tasto', tutte.filter((x) => !x.tasti.length).length, 0)
-    ok('D e E mai con un RICARICA semplice', tutte.filter((x, i) => i < tutte.length - 2 && /NON (SONO|È) ANCORA ARRIVAT/.test(x.titolo) && x.tasti.some((t) => t.azione === 'ricarica')).length, 0)
-    void MESSAGGIO
+    ok('ogni schermata ha almeno un tasto', [...tutte, ...delTimer].filter((x) => !x.tasti.length).length, 0)
+    ok('D e E mai con un RICARICA semplice', tutte.filter((x) => /NON (SONO|È) ANCORA ARRIVAT/.test(x.titolo) && x.tasti.some((t) => t.azione === 'ricarica')).length, 0)
   }
 
   console.log('P10 ripetuto')
@@ -222,6 +221,50 @@ if (m) {
   ok('segreteria larga: computer, cose', dove('segreteria', true), { dispositivo: 'computer', cosa: 'cose', luogo: 'SEGRETERIA' })
   ok('iscritti al telefono', dove('iscritti', false), { dispositivo: 'telefono', cosa: 'cose', luogo: 'ISCRITTI' })
   ok('la scelta dell’area dice CORSI', dove('scelta', false).luogo, 'CORSI')
+
+  console.log('P16 il segno del blocco')
+  {
+    // Il segno si scrive prima di ricaricare e si legge alla pagina nuova: le due metà insieme.
+    const finta = new Map()
+    const sessione = { getItem: (k) => finta.get(k) ?? null, setItem: (k, v) => finta.set(k, v) }
+    const segna = (mem, ora) => (typeof m.segnaBlocco === 'function' ? m.segnaBlocco(mem, ora) : 'manca segnaBlocco')
+    const leggi = (mem) => (typeof m.leggiBlocco === 'function' ? m.leggiBlocco(mem) : 'manca leggiBlocco')
+    ok('prima di ogni blocco non c’è segno', leggi(sessione), null)
+    segna(sessione, ORA)
+    ok('il segno sta sotto CHIAVE_BLOCCO', finta.has(m.CHIAVE_BLOCCO), true)
+    ok('ricaricata 10 secondi dopo: si ripete', m.ripetuto(leggi(sessione), ORA + 10_000), true)
+    ok('ricaricata 31 secondi dopo: è un blocco nuovo', m.ripetuto(leggi(sessione), ORA + 31_000), false)
+    const rotta = { getItem: () => { throw new Error('vietato') }, setItem: () => { throw new Error('vietato') } }
+    let lancia = false
+    try { segna(rotta, ORA) } catch { lancia = true }
+    ok('senza sessionStorage il segno non ferma la ricarica', lancia, false)
+    ok('e senza sessionStorage si legge come la prima volta', leggi(rotta), null)
+  }
+
+  console.log('P17 RICARICA: prima si manda, poi si ricarica')
+  {
+    const prova = async (restano) => {
+      const passi = []
+      const fine = typeof m.mandaPoiRicarica === 'function'
+        ? await m.mandaPoiRicarica({
+            manda: async (ms) => { passi.push(`manda ${ms}`) },
+            soloInMemoria: restano === undefined ? undefined : () => { passi.push('conta'); return restano },
+            ricarica: () => { passi.push('ricarica') },
+          })
+        : 'manca mandaPoiRicarica'
+      return { passi, fine }
+    }
+    ok('si aspetta la rete 3 secondi', m.ATTESA_MANDA, 3000)
+    ok('niente solo in memoria: manda, conta, ricarica', await prova(0), { passi: ['manda 3000', 'conta', 'ricarica'], fine: 'ricaricata' })
+    ok('ne restano 2: manda, conta e resta', await prova(2), { passi: ['manda 3000', 'conta'], fine: 'resta' })
+    ok('il timer da solo: manda e ricarica', await prova(undefined), { passi: ['manda 3000', 'ricarica'], fine: 'ricaricata' })
+    const lento = []
+    await m.mandaPoiRicarica?.({
+      manda: () => new Promise((r) => setTimeout(() => { lento.push('mandato'); r() }, 20)),
+      ricarica: () => lento.push('ricarica'),
+    })
+    ok('non si ricarica prima che mandare sia finito', lento, ['mandato', 'ricarica'])
+  }
 }
 
 // ===========================================================================
@@ -317,6 +360,38 @@ const solo = (c) => (typeof c.soloInMemoriaDiTutte === 'function' ? c.soloInMemo
   await c.mandaTutto(300)
   ok('col server che dà errore le 3 restano in coda', c.inCodaDiTutte(), 3)
   ok('e su disco', sul_disco('ods-corsi:coda-sala'), 3)
+}
+
+{
+  // Il tetto vale anche quando la coda non sta già scaricando: un primo
+  // tentativo fallito la lascia ferma, il secondo resta appeso per sempre.
+  console.log('P18 il tetto di mandaTutto')
+  memoria.clear()
+  const c = await importa(testoCoda)
+  let volte = 0
+  const appesa = new c.Coda(() => (volte++ === 0 ? Promise.reject(new Error('niente rete')) : new Promise(() => {})), 'ods-corsi:coda-sala')
+  appesa.accoda('segna:s1:p1', 'segna', ['s1', 'p1', 'presente'])
+  await attesa()
+  const prima = Date.now()
+  const finita = await Promise.race([c.mandaTutto(300).then(() => true), new Promise((r) => setTimeout(() => r(false), 2000))])
+  ok('torna entro il tempo dato anche col secondo giro appeso', finita && Date.now() - prima < 1000, true)
+  ok('e la presenza resta su disco', sul_disco('ods-corsi:coda-sala'), 1)
+}
+
+{
+  // Il confine sta dove deve: se un giorno si toglie, torna lo schermo bianco.
+  console.log('P19 dove stanno i confini')
+  const leggi = (f) => readFileSync(f, 'utf8')
+  const avvolge = (f, nome) => new RegExp(`<${nome}[\\s>]`).test(leggi(f))
+  ok('main.tsx avvolge tutto in ConfineErrore', avvolge('src/main.tsx', 'ConfineErrore'), true)
+  ok('App.tsx avvolge le aree in ConfineErrore', avvolge('src/App.tsx', 'ConfineErrore'), true)
+  ok('il timer nel tablet sta in TimerBloccato', avvolge('src/components/tablet/TimerSala.tsx', 'TimerBloccato'), true)
+  ok('il timer da solo sta in TimerBloccato', avvolge('timer/src/main.tsx', 'TimerBloccato'), true)
+
+  // La coda si svuota solo uscendo: mai da una schermata d'errore.
+  console.log('P20 il confine non svuota la coda')
+  for (const f of ['src/components/SchermataErrore.tsx', 'timer/src/components/TimerBloccato.tsx'])
+    ok(`${f} non chiama svuota né svuotaTutte`, /\bsvuota(Tutte)?\s*\(/.test(leggi(f)), false)
 }
 
 console.log(guai ? `\n${guai} PROBLEMI` : '\nTUTTO A POSTO')

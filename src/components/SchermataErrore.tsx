@@ -6,39 +6,39 @@ import { useArea, type Area } from '../lib/aree'
 import { useLargo } from '../lib/largo'
 import { inCodaDiTutte, mandaTutto, soloInMemoriaDiTutte } from '../lib/coda'
 import {
-  CHIAVE_BLOCCO,
   doveSiBlocca,
-  dopoAverMandato,
   eErrorePezzo,
+  leggiBlocco,
+  mandaPoiRicarica,
   ripetuto,
   schermataErrore,
+  segnaBlocco,
   type Azione,
   type Schermata,
 } from '../lib/schermataErrore'
-
-/** Quanto si aspetta la rete prima di ricaricare: un server muto non deve tenere ferma la sala. */
-const ATTESA_MANDA = 3000
 
 type Props = { area: Area; largo: boolean; children: ReactNode }
 type Stato = { bloccata: boolean; pezzoMancante: boolean; ripetuto: boolean; mandando: boolean }
 
 const LIBERA: Stato = { bloccata: false, pezzoMancante: false, ripetuto: false, mandando: false }
 
-function leggiBlocco(): string | null {
-  // Senza sessionStorage (navigazione privata) non si sa se si ripete: si tratta come la prima volta.
+// sessionStorage stesso può lanciare (navigazione privata): lo si tocca solo dentro le funzioni di lib.
+const sessione = (): Storage | null => {
   try {
-    return sessionStorage.getItem(CHIAVE_BLOCCO)
+    return sessionStorage
   } catch {
     return null
   }
 }
 
+function leggiBloccoQui(): string | null {
+  const s = sessione()
+  return s ? leggiBlocco(s) : null
+}
+
 function ricarica() {
-  try {
-    sessionStorage.setItem(CHIAVE_BLOCCO, String(Date.now()))
-  } catch {
-    // Senza il segno si perde solo l'avviso «succede ancora»: la ricarica va fatta lo stesso.
-  }
+  const s = sessione()
+  if (s) segnaBlocco(s, Date.now())
   window.location.reload()
 }
 
@@ -52,7 +52,7 @@ class Confine extends Component<Props, Stato> {
   state = LIBERA
 
   static getDerivedStateFromError(e: unknown): Partial<Stato> {
-    return { bloccata: true, pezzoMancante: eErrorePezzo(e), ripetuto: ripetuto(leggiBlocco(), Date.now()) }
+    return { bloccata: true, pezzoMancante: eErrorePezzo(e), ripetuto: ripetuto(leggiBloccoQui(), Date.now()) }
   }
 
   componentDidCatch(e: unknown, info: ErrorInfo) {
@@ -60,13 +60,10 @@ class Confine extends Component<Props, Stato> {
     console.error('La pagina si è bloccata', e, info.componentStack)
   }
 
-  // Anche dopo RICARICA si guarda di nuovo: se intanto il disco ha smesso di
-  // prendere le scritture, ricaricare ora le perderebbe.
   private manda = async () => {
     this.setState({ mandando: true })
-    await mandaTutto(ATTESA_MANDA)
-    if (dopoAverMandato(soloInMemoriaDiTutte()) === 'ricarica') return ricarica()
-    this.setState({ mandando: false })
+    const fine = await mandaPoiRicarica({ manda: mandaTutto, soloInMemoria: soloInMemoriaDiTutte, ricarica })
+    if (fine === 'resta') this.setState({ mandando: false })
   }
 
   private fai = (azione: Azione) => {
