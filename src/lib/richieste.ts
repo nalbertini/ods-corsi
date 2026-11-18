@@ -4,6 +4,7 @@ import type { Conosciuto } from './provenienza'
 import { cfNatoIl, cfTornaColNome, cfTornaConLaData, cfValido } from './codiceFiscale'
 import type { SceltaPaga, StatoSatispay } from './satispay'
 import type { IdMetodo } from './metodiPagamento'
+import { dataVera } from './sala'
 
 // Le forme di email e telefono, le stesse del database: le usano anche gli ordini del vestiario.
 export const FORMA_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
@@ -484,8 +485,8 @@ function guai(d: DatiRichiesta, oggi: Date): Guaio[] {
   const nato = new Date(`${d.natoIl}T12:00:00`)
   const cento = new Date(oggi)
   cento.setFullYear(cento.getFullYear() - 100)
-  const dataOk = /^\d{4}-\d{2}-\d{2}$/.test(d.natoIl) && !Number.isNaN(nato.getTime()) && nato <= oggi && nato >= cento
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(d.natoIl) || Number.isNaN(nato.getTime()))
+  const dataOk = dataVera(d.natoIl) && nato <= oggi && nato >= cento
+  if (!dataVera(d.natoIl))
     metti({ campo: 'natoIl', messaggio: 'La data di nascita non si capisce', testo: 'Non si capisce' })
   else if (!dataOk) metti({ campo: 'natoIl', messaggio: 'La data di nascita non torna', testo: 'Non torna: è nel futuro, o più di cento anni fa' })
 

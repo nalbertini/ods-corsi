@@ -3,6 +3,7 @@ import { piano } from './nomi'
 import { csv } from './vestiario'
 import { righeDaRicevute, righeDirette, type PagamentoDiretto, type RigaPagamento } from './pagamenti'
 import { righeSatispay, type PagamentoSatispay } from './satispay'
+import { dataVera } from './sala'
 
 /**
  * La contabilità di base, per chi cura i conti (`supabase/59-contabilita.sql`):
@@ -675,11 +676,8 @@ export function csvMovimenti(righe: RigaMovimento[], casse: Cassa[]): string {
 
 // Gli stessi rifiuti delle funzioni di 59-contabilita.sql, detti subito sotto al modulo.
 
-/** Una data vera (non il 30 febbraio) in forma `AAAA-MM-GG`. */
-export const dataVera = (data: string) => {
-  const giorno = /^\d{4}-\d{2}-\d{2}$/.test(data) ? new Date(`${data}T00:00:00Z`) : null
-  return !!giorno && !Number.isNaN(giorno.getTime()) && giorno.toISOString().slice(0, 10) === data
-}
+// Sta in `sala.ts`, una sola per tutta l'app: da qui passa per chi la importava già.
+export { dataVera }
 
 /** Importo, data e nota: quello che un movimento e un giroconto hanno in comune. */
 function cosaNonVaIlComune(importo: number, data: string, nota: string | undefined, oggi: string): string | null {

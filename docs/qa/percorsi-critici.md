@@ -57,7 +57,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Gare: chi le vede | segreteria, istruttore, iscritto, titolare del nucleo | gara o atleti visti da chi non deve, figlio di un altro nucleo | `prova:gare`, `gare.sql` | sì, da fare |
 | Firma e informativa | iscritto | consenso non valido | `prova:firma`, `prova:firma-tratti`, `prova:informativa`, `prova:moduli`, `prova:fogli-moduli`, `informativa-mesi.sql` | sì |
 | Importazione persone da CSV | segreteria | persona persa, duplicata o scritta male | `prova:importa` | no |
-| Anagrafiche, nuclei, doppioni | segreteria | persone duplicate o unite male | `prova:iscritti`, `prova:filtri-iscritti`, `prova:cerca-persone`, `prova:email-unica`, `prova:segreteria`, `prova:ricevute-email`, `prova:importa`, `anagrafiche.sql`, `non-doppioni.sql`, `unisci-doppioni.sql`, `cerca-persone.sql`, `email-unica.sql`, `iscrizioni.sql` (lo stesso nome scritto in un altro modo) | no |
+| Anagrafiche, nuclei, doppioni | segreteria | persone duplicate o unite male | `prova:iscritti`, `prova:filtri-iscritti`, `prova:cerca-persone`, `prova:email-unica`, `prova:segreteria`, `prova:ricevute-email`, `prova:importa`, `prova:tariffe` (data di nascita), `anagrafiche.sql`, `non-doppioni.sql`, `unisci-doppioni.sql`, `cerca-persone.sql`, `email-unica.sql`, `iscrizioni.sql` (lo stesso nome scritto in un altro modo) | no |
 | Nucleo familiare | segreteria | figlio nel nucleo di un altro, titolare minorenne | `prova:nucleo`, `nucleo.sql` | sì |
 | Genitore non iscritto, titolare del nucleo dei figli | segreteria, genitore | genitore contato come iscritto o come quota da pagare; figlio senza titolare | `prova:nucleo`, `prova:filtri-iscritti`, `prova:cosa-manca`, `prova:sollecito`, `prova:conteggi-dovuti`, `genitore-non-iscritto.sql`, `nucleo.sql` | sì |
 | Area degli iscritti sul database | iscritto, titolare di un nucleo, segreteria | un iscritto che vede un altro | `prova:iscritto-supabase`, `iscritto.sql`, `certificato-iscritto.sql`, `segreteria.sql` | no |
@@ -180,7 +180,7 @@ quando arriva la prova.
   (`vociDaAggiungere`, `importoProposto`); il link, il menu e «Togli» solo a mano.
 - La chiave della finestra è una per apertura (`useRef` in `ChiEPerCosa.tsx`): provato che
   `scriviChiEPerCosa` la passa, non che il componente la tenga. Solo collaudo a mano.
-- Compensi: `tenuti` in `anagraficaDi` (IBAN e province), `cosaNonVaLettera`,
+- Compensi: `tenuti` in `anagraficaDi` (IBAN e province),
   `lettereDellaScheda` con `sostituitaIl`, il tetto di 100.000 € in
   `paga_compensi`, `bastaUno` in `segreteriaSupabase.ts`.
 - «Vince il più recente» in `unisci_persone` e `segreteriaProva.ts`.

@@ -307,6 +307,8 @@ await sezione('12. le correzioni: esito, invio, scheda, gare, prova', async () =
   const t = (e) => f('cosaNonVaTermineCertificato', e, '2026-11-24')
   ok('cosaNonVaTermineCertificato: ieri e fra 121 giorni no, oggi e fra 120 sì', [t('2026-11-23'), t('2027-03-25'), t('2026-11-24'), t('2027-03-24')],
     ['La data va da oggi a 120 giorni da oggi.', 'La data va da oggi a 120 giorni da oggi.', undefined, undefined])
+  const tf = (e) => f('cosaNonVaTermineCertificato', e, '2026-02-20')
+  ok('cosaNonVaTermineCertificato: il 31 febbraio non esiste, il 28 sì', [tf('2026-02-31'), tf('2026-02-28')], ['La data va da oggi a 120 giorni da oggi.', undefined])
   // In prova come nel database: il termine resta, salvo un certificato valido.
   const s = m.creaSegreteriaProva()
   const id = await s.salvaPersona({ nome: 'Tea', cognome: 'Termine' })

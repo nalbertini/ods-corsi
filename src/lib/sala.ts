@@ -147,6 +147,16 @@ export function dataLunga(g: string, anno = true) {
   return `${d} ${MESI[m - 1]}${anno ? ` ${a}` : ''}`
 }
 
+/**
+ * Una data vera (non il 30 febbraio) in forma `AAAA-MM-GG`. La forma da sola
+ * non basta, e nemmeno `Date.parse`: il 31 febbraio lo fa scorrere al 3 marzo
+ * invece di rifiutarlo. Sta qui perché la usano tutti i `cosaNonVa…`.
+ */
+export const dataVera = (data: string) => {
+  const giorno = /^\d{4}-\d{2}-\d{2}$/.test(data) ? new Date(`${data}T00:00:00Z`) : null
+  return !!giorno && !Number.isNaN(giorno.getTime()) && giorno.toISOString().slice(0, 10) === data
+}
+
 /** La chiave `AAAA-MM-GG` di una data locale, senza passare da UTC. */
 export function chiaveGiorno(d: Date): string {
   const p = (n: number) => String(n).padStart(2, '0')

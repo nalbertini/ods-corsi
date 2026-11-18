@@ -98,6 +98,22 @@ console.log('\n1. le province e l\'IBAN nell\'anagrafica')
   ok("e pulito l'IBAN va bene", m.cosaNonVaAnagrafica(m.pulisciAnagrafica({ iban: 'it60 x054 2811 1010 0000 0123 456', provincia: 'to' })), null)
 }
 
+console.log('\n1 bis. la data di nascita: una data che non esiste non passa')
+{
+  const NONESISTE = 'Questa data di nascita non esiste: controlla giorno e mese'
+  const NONGIUSTA = 'La data di nascita non è giusta'
+  const OGGI = '2026-11-18'
+  const n = (natoIl) => m.cosaNonVaAnagrafica({ natoIl }, OGGI)
+  ok('il 31 febbraio non esiste', n('2026-02-31'), NONESISTE)
+  ok('il 29 febbraio di un anno non bisestile non esiste', n('2025-02-29'), NONESISTE)
+  ok('il 31 aprile non esiste', n('2026-04-31'), NONESISTE)
+  ok('il 29 febbraio di un anno bisestile esiste', n('2024-02-29'), null)
+  ok('una data vera passa ancora', n('2026-02-28'), null)
+  ok('vuota va bene', n(''), null)
+  ok('scritta all\'italiana non è giusta', n('31/02/2026'), NONGIUSTA)
+  ok('una data vera nel futuro non è giusta', n('2026-12-01'), NONGIUSTA)
+}
+
 console.log('\n1 bis. chi ha dati e tariffe: chi insegna, non la segreteria che non insegna')
 {
   const r = await importa("export { insegna } from './src/lib/ruoli'")

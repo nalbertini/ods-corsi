@@ -180,6 +180,9 @@ ok('senza il nome del socio no', m.cosaNonVa({ ...quella, intestatario: { nome: 
 const quota = quella.voci[0].descrizione
 const conPagamento = (data) => ({ ...quella, voci: [{ ...quella.voci[0], pagamenti: [{ data, importo: 5000, metodo: 'Bonifico' }] }, quella.voci[1]] })
 ok('oggi sì', m.cosaNonVa({ ...quella, data: OGGI }, OGGI), null)
+ok('il 31 febbraio non esiste', m.cosaNonVa({ ...quella, data: '2026-02-31' }, OGGI), 'La data della ricevuta non esiste: controlla giorno e mese')
+ok('il 29 febbraio di un anno non bisestile non esiste', m.cosaNonVa({ ...quella, data: '2025-02-29' }, OGGI), 'La data della ricevuta non esiste: controlla giorno e mese')
+ok('una data vera passa ancora', m.cosaNonVa({ ...quella, data: '2026-02-28' }, OGGI), null)
 ok('domani no', m.cosaNonVa({ ...quella, data: '2026-10-22' }, OGGI), 'La data della ricevuta è nel futuro: si fa per quel che è già successo')
 ok('prima del 2000 no', m.cosaNonVa({ ...quella, data: '1999-12-31' }, OGGI), 'La data della ricevuta non torna')
 ok('dopo il 2100 no, anche con un oggi sbagliato', m.cosaNonVa({ ...quella, data: '2101-01-01' }, '2101-12-31'), 'La data della ricevuta non torna')

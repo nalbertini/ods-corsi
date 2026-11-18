@@ -500,5 +500,19 @@ await sezione('10. col database: file di prima e file nuovi si distinguono dalla
   ok('senza file niente di tutto questo', [senza.conFile, !senza.vecchio], [false, true])
 })
 
+console.log('\nLa data di scadenza: una data che non esiste non passa (segreteria.ts)')
+{
+  const NONESISTE = 'Questa data non esiste: controlla giorno e mese'
+  const SERVE = 'Serve la data di scadenza del certificato'
+  const v = (scade) => f('cosaNonVaScadenza', scade, '2026-11-18')
+  ok('il 31 febbraio non esiste', v('2026-02-31'), NONESISTE)
+  ok('il 29 febbraio di un anno non bisestile non esiste', v('2025-02-29'), NONESISTE)
+  ok('il 31 aprile non esiste', v('2026-04-31'), NONESISTE)
+  ok('il 29 febbraio di un anno bisestile passa', v('2028-02-29'), null)
+  ok('una data vera passa ancora', v('2026-12-31'), null)
+  ok('vuota: serve la data', v(''), SERVE)
+  ok('scritta all\'italiana: serve la data', v('31/12/2026'), SERVE)
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

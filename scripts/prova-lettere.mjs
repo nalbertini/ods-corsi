@@ -198,6 +198,16 @@ ok('una tariffa di zero no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, tar
 ok('una tariffa coi decimali di centesimo no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, tariffe: [{ corso: 'Judo kids', centesimi: 15.5 }] })), 'un messaggio')
 ok('la data vuota no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, data: '' })), 'un messaggio')
 ok('una data scritta male no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, dal: '2026-9-1' })), 'un messaggio')
+const NONESISTE = 'Una delle date non esiste: controlla giorno e mese.'
+await prova('il dal che non esiste (31 settembre)', () => l.cosaNonVaLettera({ ...dati, dal: '2026-09-31' }), NONESISTE)
+await prova('il al che non esiste (31 febbraio)', () => l.cosaNonVaLettera({ ...dati, al: '2027-02-31' }), NONESISTE)
+await prova('la data della lettera che non esiste (31 febbraio)', () => l.cosaNonVaLettera({ ...dati, data: '2027-02-31' }), NONESISTE)
+await prova('il 29 febbraio di un anno bisestile passa', () => l.cosaNonVaLettera({ ...dati, stagione: '2027/28', dal: '2027-09-01', al: '2028-02-29', data: '2028-02-29' }), null)
+await prova('le date vere passano ancora', () => l.cosaNonVaLettera({ ...dati, al: '2027-08-31' }), null)
+await prova('campoCheNonVa: il dal che non esiste si segna in rosso', () => l.campoCheNonVa({ ...dati, dal: '2026-09-31' }), 'dal')
+await prova('campoCheNonVa: il al che non esiste si segna in rosso', () => l.campoCheNonVa({ ...dati, al: '2027-02-31' }), 'al')
+await prova('campoCheNonVa: la data che non esiste si segna in rosso', () => l.campoCheNonVa({ ...dati, data: '2026-02-31' }), 'data')
+await prova('campoCheNonVa: date vere, nessun campo', () => l.campoCheNonVa(dati), null)
 await prova('i giorni vuoti sì', () => l.cosaNonVaLettera({ ...dati, giorni: '' }), null)
 await prova('le qualifiche, nell\'ordine della lettera', () => l.QUALIFICHE, [
   'Allenatore', 'Istruttore', 'Direttore tecnico', 'Direttore sportivo', 'Preparatore atletico', 'Direttore di gara', 'Atleta', 'Altro',

@@ -1,4 +1,4 @@
-import { dataLunga } from './sala'
+import { dataLunga, dataVera } from './sala'
 
 /**
  * Il certificato dal link, senza password (`142-certificato-link.sql`, Edge
@@ -16,6 +16,8 @@ export function codiceDalLink(search: string): string | null {
 /** Cosa non va nella data di scadenza scritta da chi carica (come `link_manda_certificato`), o null. */
 export function cosaNonVaScadenza(scade: string, oggi: string): string | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(scade)) return 'Scrivi quando scade il certificato.'
+  // Prima dei confronti: «2026-02-31» come testo viene dopo il 28, e direbbe «troppo lontana» o niente.
+  if (!dataVera(scade)) return 'Questa data non esiste: controlla giorno e mese.'
   if (scade < oggi) return 'Questo certificato è già scaduto: serve quello nuovo.'
   const [a, m, g] = oggi.split('-')
   // Come `oggi + interval '3 years'` in Postgres: dal 29 febbraio si arriva al 28.

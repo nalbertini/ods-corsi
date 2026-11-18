@@ -3,6 +3,7 @@ import { LISTINO_PREDEFINITO, voceDelCorso, type CorsoRef, type Listino } from '
 import { minorenne, type DatiRichiesta } from './richieste'
 import { nomeProprio } from './nomi'
 import { cfNatoIl, cfValido } from './codiceFiscale'
+import { dataVera } from './sala'
 
 /**
  * Le ricevute dei pagamenti: la «ricevuta semplice» dell'associazione, come
@@ -244,6 +245,7 @@ export function avvisoDoppione(r: Pick<DatiRicevuta, 'voci' | 'anticipo'>): stri
  */
 export function cosaNonVa(r: DatiRicevuta, oggi: string, prossimo?: number): string | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(r.data)) return 'Serve la data della ricevuta'
+  if (!dataVera(r.data)) return 'La data della ricevuta non esiste: controlla giorno e mese'
   if (r.data < '2000-01-01' || r.data > '2100-12-31') return 'La data della ricevuta non torna'
   if (r.data > oggi) return 'La data della ricevuta è nel futuro: si fa per quel che è già successo'
   if ((r.note ?? '').length > 500) return 'La nota è troppo lunga: al massimo 500 caratteri'
