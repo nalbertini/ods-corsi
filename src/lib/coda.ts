@@ -45,11 +45,14 @@ const leggi = (dove: string): Operazione[] => {
   }
 }
 
-const scrivi = (dove: string, lista: Operazione[]) => {
+/** Vero se la lista è arrivata su disco. */
+const scrivi = (dove: string, lista: Operazione[]): boolean => {
   try {
     localStorage.setItem(dove, JSON.stringify(lista))
+    return true
   } catch {
     /* Memoria piena o modalità privata: la coda vive comunque in memoria. */
+    return false
   }
 }
 
@@ -62,6 +65,12 @@ export class Coda {
   private lista: Operazione[]
   private sta = false
   private ascoltatori = new Set<(n: number) => void>()
+  /**
+   * L'ultima scrittura su disco è riuscita. Se no, quel che c'è in coda vive
+   * solo in questa pagina, e ricaricarla lo perde: la schermata d'errore lo
+   * deve sapere prima di offrire RICARICA.
+   */
+  private suDisco = true
 
   /**
    * @param esegui Porta davvero a termine l'operazione. Se solleva, l'operazione
@@ -100,6 +109,11 @@ export class Coda {
     return this.lista
   }
 
+  /** Quante scritture si perderebbero ricaricando la pagina. */
+  get soloInMemoria() {
+    return this.suDisco ? 0 : this.lista.length
+  }
+
   /** Avvisa quando la coda si allunga o si accorcia: serve alla spia in alto. */
   guarda(f: (n: number) => void) {
     this.ascoltatori.add(f)
@@ -123,7 +137,7 @@ export class Coda {
   /** Butta le scritture ancora in coda, in memoria e su disco. Solo uscendo: vedi `uscita.ts`. */
   svuota() {
     this.lista = []
-    scrivi(this.dove, this.lista)
+    this.suDisco = scrivi(this.dove, this.lista)
     this.avvisa()
   }
 
@@ -131,7 +145,7 @@ export class Coda {
   accoda(chiave: string, tipo: string, args: unknown[]) {
     this.lista = this.lista.filter((o) => o.chiave !== chiave)
     this.lista.push({ chiave, tipo, args, quando: Date.now() })
-    scrivi(this.dove, this.lista)
+    this.suDisco = scrivi(this.dove, this.lista)
     this.avvisa()
     void this.scarica()
   }
@@ -156,7 +170,7 @@ export class Coda {
         // Può essere stata sostituita mentre il server rispondeva: si toglie
         // per identità, non per posizione.
         this.lista = this.lista.filter((o) => o !== op)
-        scrivi(this.dove, this.lista)
+        this.suDisco = scrivi(this.dove, this.lista)
         this.avvisa()
       }
     } finally {
@@ -176,6 +190,14 @@ export function inCodaDiTutte(): number {
     (tot, dove) => tot + Math.max(leggi(dove).length, ...[...vive].filter((c) => c.dove === dove).map((c) => c.inAttesa)),
     0,
   )
+}
+
+/**
+ * Quante scritture dell'app stanno solo in memoria (il disco non le ha
+ * prese): ricaricando la pagina si perderebbero.
+ */
+export function soloInMemoriaDiTutte(): number {
+  return [...vive].filter((c) => CODE_DELL_APP.includes(c.dove)).reduce((tot, c) => tot + c.soloInMemoria, 0)
 }
 
 /** Prova a mandare tutto ora, per al massimo `ms`: un server muto non deve tenere ferma l'uscita. */

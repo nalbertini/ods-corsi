@@ -518,7 +518,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
             />
           )}
           <Suspense fallback={scheda === 'timer' ? <p className="tb-nota" style={{ padding: 32 }}>Un attimo…</p> : null}>
-            <TimerSala incorporato={incorporato} visibile={scheda === 'timer'} />
+            <TimerSala incorporato={incorporato} visibile={scheda === 'timer'} tornaAllAppello={vaiPresenze} />
           </Suspense>
         </div>
         {conYoutube && <VideoSala />}

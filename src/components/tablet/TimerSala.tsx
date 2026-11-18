@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import TimerApp from '../../../timer/src/App'
+import { TimerBloccato } from '../../../timer/src/components/TimerBloccato'
 import type { Incorporato } from '../../../timer/src/lib/incorporato'
 import cssTimer from '../../../timer/src/styles.css?inline'
 import { perLaSala } from '../../lib/timerNelRiquadro'
@@ -23,9 +24,21 @@ const CSS = RIQUADRO + perLaSala(cssTimer)
  * Ha una sua radice React dentro l'ombra: gli eventi di React non
  * attraversano bene il confine di un'ombra montata da fuori.
  */
-export function TimerSala({ incorporato, visibile }: { incorporato: Incorporato; visibile: boolean }) {
+export function TimerSala({
+  incorporato,
+  visibile,
+  tornaAllAppello,
+}: {
+  incorporato: Incorporato
+  visibile: boolean
+  /** Solo nel tablet di sala: nell'area istruttori non c'è un appello a cui tornare. */
+  tornaAllAppello?: () => void
+}) {
   const host = useRef<HTMLDivElement>(null)
   const radice = useRef<Root | null>(null)
+  // In un ref: la funzione cambia a ogni giro del tablet, e la radice del timer non va ridisegnata per questo.
+  const torna = useRef(tornaAllAppello)
+  torna.current = tornaAllAppello
 
   useLayoutEffect(() => {
     const h = host.current
@@ -49,7 +62,12 @@ export function TimerSala({ incorporato, visibile }: { incorporato: Incorporato;
 
   // Il timer riceve la lezione, la musica, e se si vede: quando cambiano.
   useLayoutEffect(() => {
-    radice.current?.render(<TimerApp incorporato={incorporato} />)
+    // Il confine sta dentro la radice del timer: un blocco del timer non tocca l'appello accanto.
+    radice.current?.render(
+      <TimerBloccato tornaAllAppello={torna.current ? () => torna.current?.() : undefined}>
+        <TimerApp incorporato={incorporato} />
+      </TimerBloccato>,
+    )
   }, [incorporato])
 
   return <div ref={host} className="tb-timer" data-tema="sito" hidden={!visibile} />

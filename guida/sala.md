@@ -273,6 +273,20 @@ Si esce in due modi, e tutti e due chiedono conferma prima di scollegare:
 
 Uscito, il tablet torna alla pagina di accesso di tutta l'app.
 
+## Se lo schermo si blocca
+
+Al posto del bianco compare **LA PAGINA SI È BLOCCATA**: toccate **RICARICA**
+e l'appello riparte. Le presenze non ancora arrivate restano sul tablet e
+partono da sole appena c'è rete; il riquadro dice quante sono. Se il tablet
+non riesce a tenerle da parte, il riquadro lo dice: toccate prima **PROVA A
+MANDARLE**, e solo se non partono **RICARICA LO STESSO**, che le perde. Se
+dopo la ricarica si blocca ancora, compare **SUCCEDE ANCORA**: avvisate la
+segreteria.
+
+Se si blocca solo il timer, l'appello accanto resta in piedi: **TORNA
+ALL'APPELLO** riporta alle presenze, **RICARICA IL TIMER** fa ripartire solo
+il timer.
+
 ## Preparare un tablet (una volta sola)
 
 Lo fa la segreteria:

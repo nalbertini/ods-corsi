@@ -1,0 +1,191 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-18T10:00:00Z"
+  },
+  "title": "Schermata d'errore",
+  "launch": {
+    "view": "canvas",
+    "page": "proposta"
+  },
+  "pages": [
+    {
+      "id": "proposta",
+      "name": "Proposta"
+    },
+    {
+      "id": "libreria",
+      "name": "Libreria"
+    }
+  ],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 760,
+      "title": "Oggi · pagina bianca",
+      "page": "proposta"
+    },
+    "PropostaA.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 760,
+      "title": "A · Telefono, niente in coda",
+      "page": "proposta"
+    },
+    "PropostaB.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 760,
+      "title": "B · Telefono, presenze al sicuro",
+      "page": "proposta"
+    },
+    "PropostaF.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 760,
+      "title": "F · Un pezzo non arriva",
+      "page": "proposta"
+    },
+    "PropostaC.dc.html": {
+      "x": 0,
+      "y": 900,
+      "w": 1280,
+      "h": 800,
+      "title": "C · Tablet, presenze al sicuro",
+      "page": "proposta"
+    },
+    "PropostaE.dc.html": {
+      "x": 1360,
+      "y": 900,
+      "w": 1280,
+      "h": 800,
+      "title": "E · Tablet, sta mandando",
+      "page": "proposta"
+    },
+    "PropostaD.dc.html": {
+      "x": 0,
+      "y": 1840,
+      "w": 1280,
+      "h": 800,
+      "title": "D · Tablet, presenze solo in memoria",
+      "page": "proposta"
+    },
+    "PropostaG.dc.html": {
+      "x": 1360,
+      "y": 1840,
+      "w": 1280,
+      "h": 800,
+      "title": "G · Succede ancora",
+      "page": "proposta"
+    },
+    "PropostaI.dc.html": {
+      "x": 0,
+      "y": 2780,
+      "w": 1280,
+      "h": 800,
+      "title": "I · Si blocca il timer, non l'appello",
+      "page": "proposta"
+    },
+    "PropostaH.dc.html": {
+      "x": 1360,
+      "y": 2780,
+      "w": 1440,
+      "h": 900,
+      "title": "H · Segreteria",
+      "page": "proposta"
+    },
+    "Testata.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 72,
+      "page": "libreria"
+    },
+    "Riquadro.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 358,
+      "h": 150,
+      "page": "libreria"
+    },
+    "Bottone.dc.html": {
+      "x": 910,
+      "y": 0,
+      "w": 358,
+      "h": 56,
+      "page": "libreria"
+    },
+    "TabletTestata.dc.html": {
+      "x": 0,
+      "y": 240,
+      "w": 1280,
+      "h": 92,
+      "page": "libreria"
+    },
+    "TabletAvviso.dc.html": {
+      "x": 0,
+      "y": 420,
+      "w": 800,
+      "h": 150,
+      "page": "libreria"
+    },
+    "TabletTasto.dc.html": {
+      "x": 880,
+      "y": 420,
+      "w": 220,
+      "h": 70,
+      "page": "libreria"
+    },
+    "Icona.dc.html": {
+      "x": 1350,
+      "y": 0,
+      "w": 24,
+      "h": 24,
+      "page": "libreria"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "PropostaA.dc.html",
+    "PropostaB.dc.html",
+    "PropostaF.dc.html",
+    "PropostaC.dc.html",
+    "PropostaE.dc.html",
+    "PropostaD.dc.html",
+    "PropostaG.dc.html",
+    "PropostaI.dc.html",
+    "PropostaH.dc.html",
+    "Testata.dc.html",
+    "Riquadro.dc.html",
+    "Bottone.dc.html",
+    "TabletTestata.dc.html",
+    "TabletAvviso.dc.html",
+    "TabletTasto.dc.html",
+    "Icona.dc.html"
+  ],
+  "notes": {
+    "titolo": {
+      "x": 0,
+      "y": -260,
+      "text": "Se una pagina si blocca: niente più schermo bianco, c'è RICARICA e le presenze non ancora arrivate restano al sicuro",
+      "kind": "title1",
+      "maxW": 1800,
+      "page": "proposta"
+    },
+    "cosa": {
+      "x": 1880,
+      "y": 0,
+      "w": 340,
+      "page": "proposta",
+      "fill": "blue",
+      "text": "Oggi un errore mentre si disegna una pagina lascia lo schermo bianco, anche sul tablet durante l'appello.\n\nLa proposta: un confine per ogni area (e uno attorno a tutto) mostra questa pagina. Mai il testo dell'errore. RICARICA non fa uscire e non svuota la coda: prima prova a mandare per qualche secondo, poi ricarica.\n\nLa riga sulle presenze c'è solo se ce n'è qualcuna in coda. Se il tablet non riesce a tenerle (D), prima di ricaricare chiede.\n\nDOMANDE: chi avvisare quando succede ancora (G); il confine attorno al timer (I); il tablet di sala che ricarica da solo."
+    }
+  },
+  "designSystems": []
+}
