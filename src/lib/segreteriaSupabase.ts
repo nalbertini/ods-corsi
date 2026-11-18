@@ -38,6 +38,7 @@ import { cosaNonVaSaldoBanca, cosaNonVaVerifica, mancaSaldoBanca, SENZA_SALDO_BA
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type DatiRicevuta, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { vociCorsiDi } from './corsiDaPagare'
 import { motivoDaErrore, type InvioRicevuta } from './ricevuteEmail'
+import { fraseGuaio } from './guaio'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
 import { mancaPagatoPrima, type IncassoPrima } from './pagatoPrima'
@@ -392,9 +393,8 @@ const daRigaRicevutaCompenso = (r: RigaRicevutaCompenso): RicevutaCompenso => ({
  * Un errore che non conosciamo: alla segreteria si dice cosa fare, il testo
  * del server (in inglese, per chi sviluppa) va solo nella console.
  */
-function sconosciuto(testo: string | undefined, altrimenti = 'Non è andata: riprova fra poco'): string {
-  if (testo) console.error(testo)
-  return /failed to fetch|networkerror|load failed/i.test(testo ?? '') ? 'Non c’è rete: riprova quando torna' : altrimenti
+function sconosciuto(testo: string | undefined, altrimenti?: string): string {
+  return fraseGuaio(testo, { ripiego: altrimenti })
 }
 
 /** Un errore del database detto in modo che la segreteria lo capisca. */
@@ -443,7 +443,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === 'PGRST200' || e?.code === 'PGRST205' || e?.code === '42P01') {
     const t = TABELLE_DOPO.find(([nome]) => nome.test(e.message ?? ''))
     if (t) return new Error(t[1])
-    return new Error(`Manca una tabella sul database: va lanciato il file che la crea (controllo.sql dice quale). ${e.message ?? ''}`.trim())
+    console.error(e)
+    return new Error('Manca una tabella sul database: va lanciato il file che la crea (controllo.sql dice quale)')
   }
   // Una radio nelle liste della musica: il vincolo del link la ammette dal 39.
   if (e?.code === '23514' && /musica_sale_link_check/.test(e.message ?? ''))
@@ -546,7 +547,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // I nostri `raise exception` (P0001 quando non hanno un codice; P0002 «non c'è più»; 22023 e 54000)
   // sono già scritti per la segreteria: passano così come sono.
   if (e?.message && ['P0001', 'P0002', '22023', '54000'].includes(e.code ?? '')) return new Error(e.message)
-  return new Error(sconosciuto(e?.message))
+  return new Error(fraseGuaio(e))
 }
 
 /**
@@ -1054,7 +1055,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         if (nuovi.length) ok(await db.from('corsi_istruttori').insert(nuovi.map((persona_id) => ({ corso_id: id, persona_id }))))
       } catch (e) {
         // Il corso nuovo c'è già: chi chiama lo deve sapere, per non crearne un altro.
-        if (!c.id) throw Object.assign(new Error(`Corso creato, ma gli istruttori non sono stati salvati: ${e instanceof Error ? e.message : e}`), { id })
+        if (!c.id) throw Object.assign(new Error(`Corso creato, ma gli istruttori non sono stati salvati: ${fraseGuaio(e)}`), { id })
         throw e
       }
       return id

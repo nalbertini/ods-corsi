@@ -1643,9 +1643,10 @@ console.log('\ngli errori del server e le voci dei tablet, detti per la segreter
   console.error = () => {}
   const scaduto = await errore(() => sbaglia({ code: 'XX000', message: 'JWT expired' }).sale())
   ok('un errore sconosciuto non mostra il testo del server', /JWT|expired/.test(scaduto), false)
-  ok('…e dice cosa fare', /riprova/i.test(scaduto), true)
+  // La sessione scaduta: si rientra (la frase decisa in «testi degli errori»).
+  ok('…e dice cosa fare', scaduto, 'Accedi di nuovo a ODS Corsi')
   const senzaRete = await errore(() => sbaglia({ message: 'TypeError: Failed to fetch' }).sale())
-  ok('senza rete lo dice', [/rete/i.test(senzaRete), /fetch/i.test(senzaRete)], [true, false])
+  ok('senza rete lo dice', [/connessione/i.test(senzaRete), /fetch/i.test(senzaRete)], [true, false])
   // I nostri `raise exception` sono già scritti per la segreteria: passano così come sono.
   ok('un messaggio del database in italiano arriva com’è', await errore(() => sbaglia({ code: 'P0001', message: 'Scegli due schede diverse' }).sale()), 'Scegli due schede diverse')
   ok('anche con P0002, «non c’è più»', await errore(() => sbaglia({ code: 'P0002', message: 'ricevuta inesistente o già annullata' }).sale()), 'ricevuta inesistente o già annullata')
