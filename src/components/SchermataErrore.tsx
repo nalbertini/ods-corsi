@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { Logo } from './Logo'
 import { Etichetta, Riquadro, Tasto } from './ds'
+import { Guaio } from './tablet/comune'
 import { useArea, type Area } from '../lib/aree'
 import { useLargo } from '../lib/largo'
 import { inCodaDiTutte, mandaTutto, soloInMemoriaDiTutte } from '../lib/coda'
@@ -59,18 +60,19 @@ class Confine extends Component<Props, Stato> {
     console.error('La pagina si è bloccata', e, info.componentStack)
   }
 
-  private manda = async (poi: 'ricarica' | 'controlla') => {
+  // Anche dopo RICARICA si guarda di nuovo: se intanto il disco ha smesso di
+  // prendere le scritture, ricaricare ora le perderebbe.
+  private manda = async () => {
     this.setState({ mandando: true })
     await mandaTutto(ATTESA_MANDA)
-    if (poi === 'ricarica' || dopoAverMandato(soloInMemoriaDiTutte()) === 'ricarica') return ricarica()
+    if (dopoAverMandato(soloInMemoriaDiTutte()) === 'ricarica') return ricarica()
     this.setState({ mandando: false })
   }
 
   private fai = (azione: Azione) => {
     if (azione === 'ricaricaLoStesso') return ricarica()
-    if (azione === 'manda') return void this.manda('controlla')
-    // RICARICA: prima si prova a mandare quel che è in coda; resta comunque sul disco.
-    if (azione === 'ricarica') return void this.manda('ricarica')
+    // RICARICA e PROVA A MANDARE: prima si prova a mandare quel che è in coda; resta comunque sul disco.
+    return void this.manda()
   }
 
   render() {
@@ -101,9 +103,8 @@ function SuTablet({ s, fai }: { s: Schermata; fai: (a: Azione) => void }) {
         </div>
       </header>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, padding: '64px 40px' }}>
-        <div role="alert" className="tb-riquadro" style={{ borderColor: 'var(--rosso)', width: '100%', maxWidth: 800 }}>
-          <span className="tb-etichetta" style={{ color: 'var(--rosso)' }}>{s.titolo}</span>
-          <span className="tb-riquadro-testo">{s.testo}</span>
+        <div role="alert" style={{ width: '100%', maxWidth: 800 }}>
+          <Guaio titolo={s.titolo} testo={s.testo} />
         </div>
         <div style={{ display: 'flex', gap: 20, width: '100%', maxWidth: 800 }}>
           {s.tasti.map((t) => (

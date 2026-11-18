@@ -284,5 +284,40 @@ const solo = (c) => (typeof c.soloInMemoriaDiTutte === 'function' ? c.soloInMemo
   ok('su disco restano 3 operazioni', sul_disco('ods-corsi:coda-sala'), 3)
 }
 
+{
+  // RICARICA prova a mandare prima di ricaricare: quel che non arriva resta in coda.
+  console.log('P15 mandaTutto')
+  memoria.clear()
+  scritturaRotta = false
+  const c = await importa(testoCoda)
+  const riesce = new c.Coda(async () => {}, 'ods-corsi:coda-sala')
+  for (const p of ['p1', 'p2', 'p3']) riesce.accoda(`segna:s1:${p}`, 'segna', ['s1', p, 'presente'])
+  await c.mandaTutto(1000)
+  ok('col server che risponde la coda si svuota', c.inCodaDiTutte(), 0)
+  ok('e anche il disco', sul_disco('ods-corsi:coda-sala'), 0)
+}
+
+{
+  memoria.clear()
+  const c = await importa(testoCoda)
+  const muto = new c.Coda(() => new Promise(() => {}), 'ods-corsi:coda-sala')
+  for (const p of ['p1', 'p2', 'p3']) muto.accoda(`segna:s1:${p}`, 'segna', ['s1', p, 'presente'])
+  const prima = Date.now()
+  await c.mandaTutto(300)
+  ok('col server muto torna entro il tempo dato', Date.now() - prima < 1000, true)
+  ok('e le 3 restano in coda', c.inCodaDiTutte(), 3)
+  ok('e su disco', sul_disco('ods-corsi:coda-sala'), 3)
+}
+
+{
+  memoria.clear()
+  const c = await importa(testoCoda)
+  const rifiuta = new c.Coda(senzaRete, 'ods-corsi:coda-sala')
+  for (const p of ['p1', 'p2', 'p3']) rifiuta.accoda(`segna:s1:${p}`, 'segna', ['s1', p, 'presente'])
+  await c.mandaTutto(300)
+  ok('col server che dà errore le 3 restano in coda', c.inCodaDiTutte(), 3)
+  ok('e su disco', sul_disco('ods-corsi:coda-sala'), 3)
+}
+
 console.log(guai ? `\n${guai} PROBLEMI` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
