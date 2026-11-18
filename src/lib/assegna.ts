@@ -10,6 +10,7 @@ import type { VoceStorico } from './movimentiPersona'
 import { QUOTA, centesimi, fineTrimestre, vociDelCorso, vociPronte, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { conAnnuale, statoCorsi, type VoceCorso } from './corsiDaPagare'
 import { PIU_CORSI, stagioneDi } from './costi'
+import { fraseGuaio } from './guaio'
 import { ePiuCorsi, scontoDellaVoce, VOCE_PIU_CORSI } from './nucleo'
 import { listinoUsabile, nomeCorso, voceDelCorso, type CorsoRef, type Listino } from './listino'
 import { pagamentoDi, type DatiSegreteria, type PersonaSeg } from './segreteria'
@@ -890,7 +891,7 @@ export async function assegnaDaSoli(
     try {
       await d.assegnaMovimento(p.movimentoId, p.righe, chiave)
     } catch (e) {
-      return { chiavi, errore: e instanceof Error && e.message ? e.message : 'Non si è assegnato: riprova.' }
+      return { chiavi, errore: fraseGuaio(e, { ripiego: 'Non si è assegnato: riprova.' }) }
     }
     chiavi.push(chiave)
     suProgresso?.(chiavi.length)
@@ -927,7 +928,7 @@ export async function assegnaDopoIlCollegamento(
     const x = await assegnaDaSoli(d, pronti)
     return { ...x, restano: ids.length - x.chiavi.length }
   } catch (e) {
-    return { chiavi: [], restano: ids.length, errore: e instanceof Error && e.message ? e.message : 'Non si è assegnato: riprova.' }
+    return { chiavi: [], restano: ids.length, errore: fraseGuaio(e, { ripiego: 'Non si è assegnato: riprova.' }) }
   }
 }
 

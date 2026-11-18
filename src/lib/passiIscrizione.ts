@@ -10,6 +10,7 @@ import { campoComePaga, sceltaDelModulo, type ComePaga } from './comePaga'
 import type { Luoghi } from './codiceFiscale'
 import { cfValido, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { nomeProprio } from './nomi'
+import { fraseGuaio } from './guaio'
 import { elenco, euroBreve } from './ricevute'
 import { pulisciConosciuto, type Conosciuto } from './provenienza'
 
@@ -1622,7 +1623,7 @@ async function mandaDavvero(d: DatiRichieste, daMandare: DaMandare[]): Promise<E
         await d.caricaFile(ids[richiesta], tipo, f)
       } catch (e) {
         mancati.push({ richiesta, tipo })
-        perche = e instanceof Error ? e.message : 'Il file non è partito'
+        perche = fraseGuaio(e, { per: 'pubblico', ripiego: 'Il file non è partito' })
       }
     }
   }
@@ -1645,7 +1646,9 @@ async function mandaDavvero(d: DatiRichieste, daMandare: DaMandare[]): Promise<E
       try {
         ids[i] = await d.invia(dati[i])
       } catch (e) {
-        const motivo = e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco'
+        // Un guasto che non è un Error non ha un testo da leggere: va dritto al ripiego.
+        const ripiego = 'Il server non risponde: riprova fra poco'
+        const motivo = e instanceof Error ? fraseGuaio(e, { per: 'pubblico', ripiego }) : ripiego
         if (i === 0) return { esito: 'fermo', perche: motivo }
         const riprova = unaAlla(() => manda(i))
         if (dati.length === 2) return { esito: 'secondaNo', perche: motivo, ids: ids.slice(0, i), riprova }
