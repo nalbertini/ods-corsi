@@ -60,6 +60,8 @@ const finto = {
         },
       },
       rpc: async (nome, args) => {
+        // Il limite alle richieste a raffica (168) lo prova prova-edge-limite.mjs: qui passa sempre e non conta fra le chiamate.
+        if (nome === 'limite_frequenza') return { data: true, error: null }
         chiamate.push({ chi, nome, args, sessione: opzioni?.global?.headers?.Authorization })
         const k = `${chi}:${nome}`
         volte[k] = (volte[k] ?? 0) + 1

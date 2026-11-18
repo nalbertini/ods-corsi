@@ -43,6 +43,7 @@
 // ---------------------------------------------------------------------------
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { chiavePrivata, intestazioni } from './firma.ts'
+import { passa, perIp, TROPPE } from './limite.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -163,7 +164,8 @@ Deno.serve(async (req) => {
   if (req.method === 'GET') {
     // La callback: si risponde sempre 200, se no Satispay ritenta per niente; lo stato lo chiede `stato` alla pagina.
     const id = new URL(req.url).searchParams.get('payment_id')
-    if (attivo && id) await aggiorna(id)
+    // Un id che Satispay non darebbe mai non va al provider; uno vero al più 30 volte al minuto.
+    if (attivo && id && /^[A-Za-z0-9-]{1,64}$/.test(id) && (await passa(admin, 'satispay:callback', id, 30, 60))) await aggiorna(id)
     return risposta({ ok: true })
   }
   if (req.method !== 'POST') return risposta({ guaio: 'Solo GET e POST' }, 405)
@@ -187,6 +189,8 @@ Deno.serve(async (req) => {
     return risposta({ attivo: error?.code !== 'PGRST202' })
   }
   if (corpo.azione === 'prepara') {
+    // 60 ogni 10 minuti per IP: una famiglia ne fa poche, ma il wifi della palestra è un IP solo per tutti.
+    if (!(await perIp(admin, req, 'satispay:prepara', 60, 600))) return risposta({ guaio: TROPPE }, 429)
     // Oltre le misure delle colonne il database direbbe un vincolo, non una frase: 80 per nome e cognome, 254 per l'email.
     const testo = (x: unknown, quanto = 80) => (typeof x === 'string' ? x.slice(0, quanto) : '')
     const corso = typeof corpo.corso === 'string' && UUID.test(corpo.corso) ? corpo.corso : null
@@ -218,7 +222,11 @@ Deno.serve(async (req) => {
     const { data, error } = await admin.rpc('satispay_stato_pagamento', { pagamento })
     if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: NON_RISPONDE }, 502)
     const s = data as { stato: string; importo: number; pagato_il?: string; satispay_id?: string } | null
-    if (s?.stato === 'attesa' && s.satispay_id) return risposta({ pagamento: (await aggiorna(s.satispay_id)) ?? s })
+    if (s?.stato === 'attesa' && s.satispay_id) {
+      // La pagina chiede lo stato ogni 4 secondi (15 al minuto): oltre i 60 risponde il database, senza Satispay.
+      if (!(await passa(admin, 'satispay:stato_pagamento', pagamento, 60, 60))) return risposta({ pagamento: s })
+      return risposta({ pagamento: (await aggiorna(s.satispay_id)) ?? s })
+    }
     return risposta({ pagamento: s })
   }
 
@@ -341,11 +349,17 @@ Deno.serve(async (req) => {
     // PGRST202: 73-satispay.sql non c'è ancora.
     if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: NON_RISPONDE }, 502)
     const s = data as { stato: string; importo: number; pagato_il?: string; satispay_id?: string } | null
-    if (s?.stato === 'attesa' && s.satispay_id) return risposta({ pagamento: (await aggiorna(s.satispay_id)) ?? s })
+    if (s?.stato === 'attesa' && s.satispay_id) {
+      // Come per stato_pagamento: oltre i 60 al minuto risponde il database, senza Satispay.
+      if (!(await passa(admin, 'satispay:stato', richiesta, 60, 60))) return risposta({ pagamento: s })
+      return risposta({ pagamento: (await aggiorna(s.satispay_id)) ?? s })
+    }
     return risposta({ pagamento: s })
   }
 
   if (corpo.azione !== 'paga') return risposta({ guaio: 'Azione sconosciuta' }, 400)
+  // Ogni paga può creare un pagamento in Satispay: 30 ogni 10 minuti per IP.
+  if (!(await perIp(admin, req, 'satispay:paga', 30, 600))) return risposta({ guaio: TROPPE }, 429)
   const { data, error } = await admin.rpc('satispay_prepara', { richiesta })
   if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: detto(error) }, 409)
   const p = data as { stato: string; id?: string; importo: number; satispay_id?: string | null; link?: string | null }

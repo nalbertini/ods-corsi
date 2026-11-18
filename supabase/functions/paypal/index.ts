@@ -26,6 +26,7 @@
 // ---------------------------------------------------------------------------
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { catturaOrdine } from './cattura.ts'
+import { passa, perIp, TROPPE } from '../satispay/limite.ts'
 import { statoCarta } from './stato.ts'
 
 const CORS = {
@@ -171,6 +172,8 @@ Deno.serve(async (req) => {
   }
 
   if (corpo.azione === 'prepara') {
+    // Come in satispay: 60 ogni 10 minuti per IP, larghe per il wifi della palestra.
+    if (!(await perIp(admin, req, 'paypal:prepara', 60, 600))) return risposta({ guaio: TROPPE }, 429)
     // Oltre le misure delle colonne il database direbbe un vincolo, non una frase: 80 per nome e cognome, 254 per l'email.
     const testo = (x: unknown, quanto = 80) => (typeof x === 'string' ? x.slice(0, quanto) : '')
     const corso = typeof corpo.corso === 'string' && UUID.test(corpo.corso) ? corpo.corso : null
@@ -226,6 +229,8 @@ Deno.serve(async (req) => {
   const pagamento = typeof corpo.pagamento === 'string' && UUID.test(corpo.pagamento) ? corpo.pagamento : null
   if (corpo.azione !== 'cattura' && corpo.azione !== 'stato_pagamento') return risposta({ guaio: 'Azione sconosciuta' }, 400)
   if (!pagamento) return risposta({ guaio: 'Manca il pagamento' }, 400)
+  // Ogni cattura chiama PayPal: 30 ogni 10 minuti per IP.
+  if (corpo.azione === 'cattura' && !(await perIp(admin, req, 'paypal:cattura', 30, 600))) return risposta({ guaio: TROPPE }, 429)
 
   const { data, error } = await admin.rpc('carta_stato_pagamento', { pagamento })
   if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: NON_RISPONDE }, 502)
@@ -235,6 +240,8 @@ Deno.serve(async (req) => {
   const ordine = s.paypal_id
 
   if (corpo.azione === 'stato_pagamento') {
+    // La pagina lo chiede a ripetizione: oltre i 60 al minuto risponde il database, senza PayPal.
+    if (!(await passa(admin, 'paypal:stato_pagamento', pagamento, 60, 60))) return risposta({ pagamento: perIlBrowser(s) })
     const nuovo = await aggiorna(ordine, s.creato_il)
     return risposta({ pagamento: nuovo ? { ...perIlBrowser(s), ...nuovo } : perIlBrowser(s) })
   }

@@ -794,6 +794,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
       and prosrc like '%lezione_nella_finestra%')),
   -- Rifà `accogli_iscrizione` di 148: rilanciando 06, 44, 45, 53, 90, 95, 99, 100 o 148 dopo, il controllo torna «manca».
   ('167-accogli-senza-presa-account.sql', 'accogliere non scrive l''email di chi scrive sulla scheda di un omonimo',
-    exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'accogli_iscrizione' and prosrc like '%case when contatti then coalesce(email, r.email)%'))
+    exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'accogli_iscrizione' and prosrc like '%case when contatti then coalesce(email, r.email)%')),
+  ('168-limite-frequenza.sql', 'un limite alle richieste a raffica sui pagamenti online',
+    exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'limite_frequenza'))
 ) as x(file, cosa, c)
 order by file, cosa;
