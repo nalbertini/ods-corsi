@@ -208,7 +208,7 @@ await prova(async () => {
   ok('un tipo che non va', non(file('application/zip', MB)), 'Questo tipo di file non va: serve una foto o un PDF')
   ok('un file vuoto', non(file('application/pdf', 0)), 'Il file è vuoto: scegline un altro')
   const dice = (e) => f('guaioMandaCertificato')(e).message
-  ok('senza rete', dice({ message: 'TypeError: Failed to fetch' }), 'Il server non risponde: c’è rete? Riprova fra poco')
+  ok('senza rete', dice({ message: 'TypeError: Failed to fetch' }), 'Non si collega: controlla la connessione e riprova')
   ok('la funzione non c’è sul database: dice di andare in segreteria', dice({ code: 'PGRST202', message: 'Could not find the function public.iscritto_manda_certificato' }), 'Mandare il certificato da qui non è ancora attivo: portalo in segreteria')
   ok('non è una persona sua', dice({ code: '42501', message: 'permission denied' }), 'Non puoi mandare il certificato di questa persona')
   ok('tre file in attesa: aspettare la segreteria', dice({ code: '54000', message: 'Hai già mandato troppi file: aspetta che la segreteria li guardi' }), 'Hai già mandato tre file: aspetta che la segreteria li guardi, poi potrai mandarne altri')

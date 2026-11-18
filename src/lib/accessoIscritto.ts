@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { IscrittoDiProva } from './iscritto'
 import { guaioIscritto, ioDa, leggiIo, type RigaIo } from './iscrittoSupabase'
+import { fraseGuaio } from './guaio'
 
 /**
  * Come entra un iscritto: con l'email, senza password. Supabase manda un
@@ -23,7 +24,7 @@ export const GOOGLE_NON_RIUSCITO = 'Qualcosa non ha funzionato. Riprova o usa il
 
 export const LINK_NON_VALE = 'Il link nella mail non è completo: scrivi qui l’email e chiedine un’altra'
 
-export const NO_RETE = 'Il server non risponde: c’è rete?'
+export const NO_RETE = 'Non si collega: controlla la connessione e riprova'
 
 /** L'email scritta, senza spazi e in minuscolo; `null` se non sembra un indirizzo. */
 export function emailPulita(testo: string): string | null {
@@ -197,6 +198,6 @@ export async function riprendiDaGoogle(
   try {
     return { io: await entraDopoGoogle(c, data.session.user.id) }
   } catch (e) {
-    return { errore: e instanceof Error ? e.message : GOOGLE_NON_RIUSCITO }
+    return { errore: fraseGuaio(e, { per: 'iscritto', ripiego: GOOGLE_NON_RIUSCITO }) }
   }
 }

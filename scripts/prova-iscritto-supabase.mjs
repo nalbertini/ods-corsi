@@ -73,7 +73,7 @@ ok('nessuna scheda', m.ioDa(null), null)
 
 console.log('\nI messaggi: mai il testo grezzo')
 const dice = (e, seg) => m.guaioIscritto(e, seg).message
-ok('rete', dice({ message: 'TypeError: Failed to fetch' }), 'Il server non risponde: c’è rete?')
+ok('rete', dice({ message: 'TypeError: Failed to fetch' }), 'Non si collega: controlla la connessione e riprova')
 ok('funzione che non c\'è (101 non lanciato)', dice({ code: 'PGRST202', message: 'Could not find the function public.iscritto_scheda' }), 'L’area degli iscritti non è ancora attiva: chiedi alla segreteria')
 ok('non è tuo', dice({ code: '42501', message: 'permission denied for x' }), 'Non puoi vedere questa persona: esci e rientra con la tua email')
 ok('altro: niente testo dell\'API', dice({ code: 'XX000', message: 'relation "persone" boom' }), 'Non riesco a leggere i tuoi dati: riprova fra poco')
@@ -103,7 +103,7 @@ console.log('\nEntra con Google')
 ok('i testi di Google', [m.GOOGLE_ANNULLATO, m.GOOGLE_NON_RIUSCITO, m.NO_RETE], [
   'Accesso annullato. Puoi riprovare o usare il codice via email.',
   'Qualcosa non ha funzionato. Riprova o usa il codice via email.',
-  'Il server non risponde: c’è rete?',
+  'Non si collega: controlla la connessione e riprova',
 ])
 const base = 'https://app.officinedellosport.it/iscritti/'
 const ritorno = (u) => m.esitoRitornoGoogle(u)

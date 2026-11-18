@@ -1,5 +1,6 @@
 import { AVVISO_CERTIFICATO, dalCertificato, spostaGiorno, statoCertificato, type CertificatoSeg, type StatoCertificato } from './segreteria'
 import { dataLunga } from './sala'
+import { fraseGuaio } from './guaio'
 
 /**
  * Il certificato medico che l'iscritto manda dall'area iscritti
@@ -34,13 +35,12 @@ interface ErroreDb {
 /** Mai il testo grezzo dell'API: cosa fare, in parole di chi usa l'app. */
 export function guaioMandaCertificato(e: ErroreDb | null): Error {
   const testo = e?.message ?? ''
-  if (/fetch|network|load failed/i.test(testo)) return new Error('Il server non risponde: c’è rete? Riprova fra poco')
   // PostgREST non trova la funzione: 102-certificato-iscritto.sql non è sul database.
   if (e?.code === 'PGRST202') return new Error('Mandare il certificato da qui non è ancora attivo: portalo in segreteria')
   // Il tetto di 110-tetto-certificato-messaggio.sql: Storage non passa il codice, solo il testo.
   if (e?.code === '54000' || /troppi file/.test(testo)) return new Error('Hai già mandato tre file: aspetta che la segreteria li guardi, poi potrai mandarne altri')
   if (e?.code === '42501') return new Error('Non puoi mandare il certificato di questa persona')
-  return new Error('Il certificato non è partito: riprova fra poco')
+  return new Error(fraseGuaio(e, { per: 'iscritto', ripiego: 'Il certificato non è partito: riprova fra poco' }))
 }
 
 export interface BoxCertificato {
