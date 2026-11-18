@@ -377,6 +377,28 @@ for (const [guasto, f] of guasti) {
   await chiama(sp, null, { metodo: 'GET', url: 'https://x/f?payment_id=sp-6', ip: IP1 })
   ok(`${guasto}: la callback legge lo stesso Satispay`, rete.length, 1)
 }
+// Un limite che non risponde sparisce: almeno si deve leggere nei log, senza l'IP.
+riparti(true)
+PER_IP[0].semina()
+risposteDb['admin:limite_frequenza'] = guasti[0][1]
+await chiama(PER_IP[0].g, PER_IP[0].corpo, { ip: IP1 })
+ok('il guasto del limite si legge nel log, con l\'ambito e il codice', log.some((r) => r.includes('satispay:prepara') && r.includes('XX000')), true)
+ok('…e nel log non c\'è l\'IP', log.some((r) => r.includes(IP1)), false)
+// Anche l'impronta dell'IP può guastarsi (crypto.subtle che lancia): la richiesta passa lo stesso.
+{
+  const vero = crypto.subtle.importKey
+  crypto.subtle.importKey = async () => { throw new Error('crypto giù') }
+  try {
+    for (const a of PER_IP) {
+      riparti(true)
+      a.semina()
+      const r = await chiama(a.g, a.corpo, { ip: IP1 })
+      ok(`impronta che non si fa: ${a.nome} passa lo stesso`, [r.stato, dominio().length > 0], [200, true])
+    }
+  } finally {
+    crypto.subtle.importKey = vero
+  }
+}
 
 // ===========================================================================
 dire('\n7. la chiave per IP: niente IP in chiaro, stabile, diversa tra IP')
@@ -410,12 +432,11 @@ dire('\n7. la chiave per IP: niente IP in chiaro, stabile, diversa tra IP')
   ok('PayPal: lo stesso IP dà una chiave esadecimale, e non l\'IP', [/^[0-9a-f]{64}$/.test(kp ?? ''), (kp ?? '').includes(IP1)], [true, false])
   ok('IPv6: impronta esadecimale, senza l\'indirizzo', [/^[0-9a-f]{64}$/.test((await chiave(sp, null, { ip: IP6 })) ?? ''), (await chiave(sp, null, { ip: IP6 }))?.includes('db8')], [true, false])
 
-  // Da dove si legge l'IP: cf-connecting-ip, poi il primo di x-forwarded-for.
+  // Da dove si legge l'IP: solo cf-connecting-ip, che mette il proxy.
+  // x-forwarded-for lo scrive chi chiama: se contasse, cambiandolo a ogni richiesta il limite per IP sparirebbe.
   ok('cf-connecting-ip vince su x-forwarded-for', await chiave(sp, null, { ip: IP1, xff: `${IP2}, 10.0.0.1` }), k1)
-  ok('senza cf-connecting-ip, il primo valore di x-forwarded-for', await chiave(sp, null, { xff: `${IP1}, 10.0.0.1, 10.0.0.2` }), k1)
-  ok('…anche con gli spazi attorno', await chiave(sp, null, { xff: `  ${IP1}  ,10.0.0.1` }), k1)
-  ok('…e uno solo, senza virgole', await chiave(sp, null, { xff: IP1 }), k1)
-  ok('…un altro primo valore dà un\'altra chiave', await chiave(sp, null, { xff: `${IP2}, ${IP1}` }), k2)
+  ok('…anche con gli spazi attorno', await chiave(sp, null, { ip: `  ${IP1}  ` }), k1)
+  ok('x-forwarded-for da solo non dà una chiave', await chiave(sp, null, { xff: `${IP1}, 10.0.0.1` }), undefined)
 
   // Senza un IP non c'è niente da contare: non si inventa una chiave comune a tutti (e non si blocca nessuno).
   for (const a of PER_IP) {
@@ -427,8 +448,8 @@ dire('\n7. la chiave per IP: niente IP in chiaro, stabile, diversa tra IP')
   }
   riparti(false)
   PER_IP[0].semina()
-  await chiama(sp, PER_IP[0].corpo, { xff: '   ' })
-  ok('un x-forwarded-for vuoto vale come nessun IP', limiti().length, 0)
+  await chiama(sp, PER_IP[0].corpo, { ip: '   ' })
+  ok('un cf-connecting-ip vuoto vale come nessun IP', limiti().length, 0)
 }
 
 // ===========================================================================

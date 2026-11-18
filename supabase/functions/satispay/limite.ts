@@ -17,8 +17,13 @@ type Rpc = { rpc: (nome: string, argomenti: Record<string, unknown>) => PromiseL
 export async function passa(admin: Rpc, ambito: string, chiave: string, massimo: number, secondi: number) {
   try {
     const { data, error } = await admin.rpc('limite_frequenza', { ambito, chiave, massimo, secondi })
-    return error ? true : data !== false
+    if (!error) return data !== false
+    // Nel log l'ambito e il codice, mai la chiave: è l'impronta di un IP o l'id di un pagamento.
+    // `as`: l'errore di supabase-js ha `code`, ma il tipo Rpc lo lascia `unknown` per le prove.
+    console.warn(`limite ${ambito}: ${(error as { code?: string }).code ?? 'errore'}`)
+    return true
   } catch {
+    console.warn(`limite ${ambito}: database non raggiunto`)
     return true
   }
 }
@@ -30,13 +35,21 @@ export async function passa(admin: Rpc, ambito: string, chiave: string, massimo:
  * Senza IP non si conta: meglio un buco nel limite che un pagamento fermato.
  */
 export async function perIp(admin: Rpc, req: Request, ambito: string, massimo: number, secondi: number) {
-  // cf-connecting-ip lo mette il proxy davanti alle Edge Function; x-forwarded-for se manca.
-  const ip = req.headers.get('cf-connecting-ip')?.trim() || req.headers.get('x-forwarded-for')?.split(',')[0].trim() || ''
+  // Solo cf-connecting-ip, che mette il proxy: x-forwarded-for lo scrive chi chiama,
+  // e cambiandolo a ogni richiesta il limite non scatterebbe mai.
+  const ip = req.headers.get('cf-connecting-ip')?.trim() || ''
   if (!ip) return true
   // Senza un segreto suo se ne deriva uno dalla chiave di servizio, che sta solo qui.
   const segreto = Deno.env.get('LIMITE_SEGRETO') || `${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''}:limite`
-  const testo = new TextEncoder()
-  const k = await crypto.subtle.importKey('raw', testo.encode(segreto), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
-  const impronta = new Uint8Array(await crypto.subtle.sign('HMAC', k, testo.encode(ip)))
-  return passa(admin, ambito, [...impronta].map((b) => b.toString(16).padStart(2, '0')).join(''), massimo, secondi)
+  let chiave: string
+  try {
+    const testo = new TextEncoder()
+    const k = await crypto.subtle.importKey('raw', testo.encode(segreto), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+    const impronta = new Uint8Array(await crypto.subtle.sign('HMAC', k, testo.encode(ip)))
+    chiave = [...impronta].map((b) => b.toString(16).padStart(2, '0')).join('')
+  } catch {
+    console.warn(`limite ${ambito}: impronta non calcolata`)
+    return true
+  }
+  return passa(admin, ambito, chiave, massimo, secondi)
 }

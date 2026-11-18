@@ -795,7 +795,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Rifà `accogli_iscrizione` di 148: rilanciando 06, 44, 45, 53, 90, 95, 99, 100 o 148 dopo, il controllo torna «manca».
   ('167-accogli-senza-presa-account.sql', 'accogliere non scrive l''email di chi scrive sulla scheda di un omonimo',
     exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'accogli_iscrizione' and prosrc like '%case when contatti then coalesce(email, r.email)%')),
+  -- Rilanciando 02 dopo, la tabella torna con i grant ad authenticated (l'RLS la tiene chiusa lo stesso): il controllo dice «manca».
   ('168-limite-frequenza.sql', 'un limite alle richieste a raffica sui pagamenti online',
-    exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'limite_frequenza'))
+    exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'limite_frequenza')
+    and not has_function_privilege('authenticated', 'public.limite_frequenza(text, text, integer, integer)', 'execute')
+    and not has_table_privilege('authenticated', 'public.limite_frequenza_conti', 'select, insert, update, delete'))
 ) as x(file, cosa, c)
 order by file, cosa;
