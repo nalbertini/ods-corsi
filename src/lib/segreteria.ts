@@ -1,7 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import type { Ordine } from './vestiario'
 import type { SollecitiCertificato, SollecitoAMano } from './sollecitiCertificato'
-import { chiaveGiorno, dataLunga, oraDi } from './sala'
+import { chiaveGiorno, dataLunga, dataVera, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
 import type { IdMetodo } from './metodiPagamento'
 import type { Chiusura, ContoChiusura } from './chiusure'
@@ -311,7 +311,8 @@ export const conProvincia = (luogo?: string, provincia?: string) => [luogo, prov
 
 /** I limiti di `anagrafiche` (18-anagrafiche.sql), detti prima di salvare. `null` se va bene. */
 export function cosaNonVaAnagrafica(a: Anagrafica, oggi = chiaveGiornoOggi()): string | null {
-  if (a.natoIl && (!/^\d{4}-\d{2}-\d{2}$/.test(a.natoIl) || Number.isNaN(Date.parse(a.natoIl)) || a.natoIl > oggi)) return 'La data di nascita non è giusta'
+  if (a.natoIl && /^\d{4}-\d{2}-\d{2}$/.test(a.natoIl) && !dataVera(a.natoIl)) return 'Questa data di nascita non esiste: controlla giorno e mese'
+  if (a.natoIl && (!dataVera(a.natoIl) || a.natoIl > oggi)) return 'La data di nascita non è giusta'
   if (a.codiceFiscale && !/^[A-Z0-9]{16}$/.test(a.codiceFiscale)) return 'Il codice fiscale ha sedici lettere e cifre'
   if (a.genitoreCodiceFiscale && !/^[A-Z0-9]{16}$/.test(a.genitoreCodiceFiscale)) return 'Il codice fiscale del genitore ha sedici lettere e cifre'
   if (a.cap && !/^\d{5}$/.test(a.cap)) return 'Il CAP ha cinque cifre'
@@ -1197,7 +1198,7 @@ export const GIORNI_CERTIFICATO_MAX = 120
 
 /** «Cambia la data»: da oggi a 120 giorni da oggi, come `cambia_termine_certificato` (141). */
 export const cosaNonVaTermineCertificato = (entro: string, oggi: string): string | undefined =>
-  /^\d{4}-\d{2}-\d{2}$/.test(entro) && entro >= oggi && entro <= spostaGiorno(oggi, GIORNI_CERTIFICATO_MAX) ? undefined : 'La data va da oggi a 120 giorni da oggi.'
+  dataVera(entro) && entro >= oggi && entro <= spostaGiorno(oggi, GIORNI_CERTIFICATO_MAX) ? undefined : 'La data va da oggi a 120 giorni da oggi.'
 
 /** Il numero di IMPOSTAZIONI › GLI AVVISI: lo stesso check del database. */
 export const cosaNonVaGiorniCertificato = (n: number): string | undefined =>
@@ -1384,7 +1385,8 @@ export function cosaNonVaCertificato(file: Pick<File, 'type' | 'size'>, scade: s
 
 /** La data di scadenza: una data vera, e non più di tre anni avanti (quasi sempre vuol dire l'anno sbagliato). Come `salva_certificato`. */
 export function cosaNonVaScadenza(scade: string, oggi = chiaveGiorno(new Date())): string | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(scade) || Number.isNaN(Date.parse(scade))) return 'Serve la data di scadenza del certificato'
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(scade)) return 'Serve la data di scadenza del certificato'
+  if (!dataVera(scade)) return 'Questa data non esiste: controlla giorno e mese'
   if (scade > `${Number(oggi.slice(0, 4)) + 3}${oggi.slice(4)}`) return "La data è troppo lontana: controlla l'anno."
   return null
 }

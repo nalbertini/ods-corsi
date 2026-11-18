@@ -23,6 +23,7 @@ import type { LezioneSenzaIstruttore, PresenzaIstruttoreSeg, Tariffa } from './s
 import { giornoChiuso, NOME_CASSA_CONTO, type Cassa, type ChiusuraCassa, type MovimentoManuale, type VoceContabile } from './contabilita'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { paroleCercate, somiglia } from './nomi'
+import { dataVera } from './sala'
 
 export interface RigaCompenso {
   corso: string
@@ -532,6 +533,7 @@ export function cosaNonVaPagamento({
 }): string | null {
   if (!ricevute.length) return 'Scegli almeno una ricevuta da pagare'
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return 'Scrivi il giorno del pagamento'
+  if (!dataVera(data)) return 'Questa data non esiste: controlla giorno e mese.'
   if (data > oggi) return 'La data del pagamento non può essere nel futuro'
   const cassa = casse.find((c) => c.id === cassaId)
   if (!cassa) return 'Scegli la cassa'

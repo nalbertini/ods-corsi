@@ -14,7 +14,7 @@
  */
 import { euro } from './ricevute'
 import { cfDonna } from './codiceFiscale'
-import { dataLunga } from './sala'
+import { dataLunga, dataVera } from './sala'
 
 export const QUALIFICHE = ['Allenatore', 'Istruttore', 'Direttore tecnico', 'Direttore sportivo', 'Preparatore atletico', 'Direttore di gara', 'Atleta', 'Altro'] as const
 
@@ -122,6 +122,7 @@ export function cosaNonVaLettera(d: Pick<DatiLettera, 'stagione' | 'dal' | 'al' 
     return 'La stagione si scrive come 2026/27'
   const giorno = /^\d{4}-\d{2}-\d{2}$/
   if (!giorno.test(d.dal) || !giorno.test(d.al) || !giorno.test(d.data)) return 'Scrivi le date per intero'
+  if (!dataVera(d.dal) || !dataVera(d.al) || !dataVera(d.data)) return 'Una delle date non esiste: controlla giorno e mese.'
   if (d.al < d.dal) return "La fine viene prima dell'inizio"
   if (d.al === d.dal) return "La fine è lo stesso giorno dell'inizio"
   const da = Number(d.stagione.slice(0, 4))
@@ -282,10 +283,9 @@ export function nomeFileLettera(l: Pick<DatiLettera, 'stagione' | 'data' | 'tecn
 
 /** Il campo da segnare in rosso quando `cosaNonVaLettera` dice di no per una data. */
 export function campoCheNonVa(d: Pick<DatiLettera, 'stagione' | 'dal' | 'al' | 'data'>): 'dal' | 'al' | 'data' | null {
-  const giorno = /^\d{4}-\d{2}-\d{2}$/
-  if (!giorno.test(d.dal)) return 'dal'
-  if (!giorno.test(d.al) || d.al <= d.dal) return 'al'
-  if (!giorno.test(d.data)) return 'data'
+  if (!dataVera(d.dal)) return 'dal'
+  if (!dataVera(d.al) || d.al <= d.dal) return 'al'
+  if (!dataVera(d.data)) return 'data'
   const da = Number(d.stagione.slice(0, 4))
   if (d.dal < `${da}-09-01`) return 'dal'
   if (d.al > `${da + 1}-08-31`) return 'al'

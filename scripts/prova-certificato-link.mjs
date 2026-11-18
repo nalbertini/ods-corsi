@@ -86,6 +86,11 @@ ok('fra un anno', cosaNonVaScadenza('2027-11-11', OGGI), null)
 ok('fra 3 anni esatti va bene', cosaNonVaScadenza('2029-11-11', OGGI), null)
 ok('fra 3 anni e un giorno: troppo lontana', cosaNonVaScadenza('2029-11-12', OGGI), LONTANO)
 ok('l\'anno scritto male (2207)', cosaNonVaScadenza('2207-11-11', OGGI), LONTANO)
+const NONESISTE = 'Questa data non esiste: controlla giorno e mese.'
+ok('il 31 febbraio non esiste', cosaNonVaScadenza('2026-02-31', '2026-02-20'), NONESISTE)
+ok('il 31 aprile non esiste', cosaNonVaScadenza('2027-04-31', '2026-11-18'), NONESISTE)
+ok('il 29 febbraio di un anno bisestile passa', cosaNonVaScadenza('2028-02-29', '2026-11-18'), null)
+ok('una data vera passa ancora', cosaNonVaScadenza('2026-12-31', '2026-11-18'), null)
 
 console.log('\n3. testiLink: titolo, etichetta e testo')
 const marco = { nome: 'Marco', iniziale: 'R', tipo: 'normale', entro: '2026-12-12' }
