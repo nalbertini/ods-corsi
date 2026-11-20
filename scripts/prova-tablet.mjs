@@ -571,5 +571,115 @@ console.log('\nLa home del tablet')
   ok('annullata esclusa (anche dalla prossima)', h([l('a', '08', '17:00', '18:00', 'annullata'), l('x', '09', '17:00', '18:00', 'annullata'), l('y', '10', '17:00', '18:00')], '17:10'), [[], null, false, 'y'])
 }
 
+// ---------------------------------------------------------------------------
+// La coda dei tocchi legata all'account: i tocchi di un'altra postazione non
+// partono e non si buttano.
+// ---------------------------------------------------------------------------
+console.log('\nLa coda del tablet è dell\'account che l\'ha scritta')
+{
+  // `codaDelTablet` tiene una coda sola per pagina, con i dati del primo che la chiama:
+  // ogni caso la rifà da zero con una copia nuova del modulo (come una pagina ricaricata).
+  let copia = 0
+  const nuovo = () => import('data:text/javascript;base64,' + Buffer.from(`${outputFiles[0].text}\n// copia ${++copia}`).toString('base64'))
+  const QUI = 'ods-corsi:coda-sala'
+  const A = { id: 'a', nome: 'Anna Bianchi' }
+  const B = { id: 'b', nome: 'Marco Rossi' }
+  const X = { id: 'x', nome: 'Xena Neri' }
+  const disco = () => JSON.parse(memoria.get(QUI) ?? '[]')
+  const tocco = (persona, autore, quando) => ({ chiave: `tocco:L:${persona}`, tipo: 'segna', args: ['L', persona], quando, ...(autore ? { autore } : {}) })
+  const autoreDi = (o) => [o.autore?.id, o.autore?.nome]
+  const pausa = () => new Promise((r) => setTimeout(r, 15))
+  const rete = () => Object.assign(new Error('Failed to fetch'), { code: '' })
+  /** Un tablet finto: `chiE` dice chi è collegato (si cambia dal di fuori). */
+  const postazione = (chi, { giù = false, conChiE = true } = {}) => {
+    const fatte = []
+    const d = {
+      modo: 'supabase',
+      stato: { chi, giù },
+      async conAccesso() { return d.stato.chi !== null },
+      async segna(s, p) { if (d.stato.giù) throw rete(); fatte.push(`segna ${p}`); return 'segnata' },
+      async annulla(s, p) { if (d.stato.giù) throw rete(); fatte.push(`annulla ${p}`); return true },
+      ...(conChiE ? { async chiE() { return d.stato.chi } } : {}),
+    }
+    return { d, fatte }
+  }
+  // Una prova che non trova la funzione si dice, senza fermare le altre.
+  const prova = async (nome, f) => {
+    try { await f() } catch (e) { ok(nome, e.message, 'nessun errore') }
+  }
+
+  await prova('R1: il tocco porta l\'autore', async () => {
+    memoria.delete(QUI)
+    const { d } = postazione(A, { giù: true })
+    const coda = (await nuovo()).codaDelTablet(d)
+    coda.accoda('tocco:L:elena', 'segna', ['L', 'elena'])
+    await pausa()
+    ok('un tocco accodato su disco porta l\'autore', disco().map(autoreDi), [['a', 'Anna Bianchi']])
+    d.stato.chi = null
+    coda.accoda('tocco:L:giulia', 'segna', ['L', 'giulia'])
+    await pausa()
+    ok('a sessione scaduta resta di chi era collegato', disco().map(autoreDi), [['a', 'Anna Bianchi'], ['a', 'Anna Bianchi']])
+    coda.svuota()
+  })
+
+  await prova('R2/R3: i tocchi di un altro non partono e non spariscono', async () => {
+    memoria.set(QUI, JSON.stringify([tocco('elena', A, 1000), tocco('giulia', A, 2000)]))
+    const { d, fatte } = postazione(B)
+    const coda = (await nuovo()).codaDelTablet(d)
+    await pausa()
+    await coda.scarica()
+    ok('con un altro account non parte niente', fatte, [])
+    ok('i tocchi sono ancora in coda', coda.inAttesa, 2)
+    ok('e ancora su disco', disco().length, 2)
+    ok('per questa postazione non ce n\'è nessuno in attesa', coda.stato.inAttesa, 0)
+    ok('la spia sa di chi sono', coda.stato.diAltri?.map((x) => [x.nome, x.quante, x.dal]), [['Anna Bianchi', 2, 1000]])
+    coda.svuota()
+  })
+
+  await prova('R7: i tocchi di B partono anche se quello di A è in testa', async () => {
+    memoria.set(QUI, JSON.stringify([tocco('elena', A, 1000), tocco('giulia', B, 2000)]))
+    const { d, fatte } = postazione(B)
+    const coda = (await nuovo()).codaDelTablet(d)
+    await pausa()
+    await coda.scarica()
+    ok('parte quello di B', fatte, ['segna giulia'])
+    ok('resta quello di A', disco().map((o) => o.args[1]), ['elena'])
+    coda.svuota()
+  })
+
+  await prova('R10: i tocchi senza autore diventano del primo che apre', async () => {
+    memoria.set(QUI, JSON.stringify([tocco('elena', null, 1000), tocco('giulia', null, 2000)]))
+    const { d, fatte } = postazione(X, { giù: true })
+    const coda = (await nuovo()).codaDelTablet(d)
+    await pausa()
+    await coda.scarica()
+    ok('su disco ora sono di chi ha aperto', disco().map(autoreDi), [['x', 'Xena Neri'], ['x', 'Xena Neri']])
+    ok('nessuno si è perso', coda.inAttesa, 2)
+    d.stato.giù = false
+    await coda.scarica()
+    ok('tornata la rete, partono in ordine', fatte, ['segna elena', 'segna giulia'])
+    ok('e la coda si svuota', coda.inAttesa, 0)
+    // Senza sessione non si sa di chi siano: restano come sono.
+    memoria.set(QUI, JSON.stringify([tocco('elena', null, 1000)]))
+    const senza = postazione(null)
+    const coda2 = (await nuovo()).codaDelTablet(senza.d)
+    await pausa()
+    await coda2.scarica()
+    ok('senza sessione restano senza autore', disco().map(autoreDi), [[undefined, undefined]])
+    ok('e non si perdono', [senza.fatte, coda2.inAttesa], [[], 1])
+    coda2.svuota()
+  })
+
+  await prova('senza chiE il tablet fa quel che ha sempre fatto', async () => {
+    memoria.set(QUI, JSON.stringify([tocco('elena', A, 1000)]))
+    const { d, fatte } = postazione(B, { conChiE: false })
+    const coda = (await nuovo()).codaDelTablet(d)
+    await pausa()
+    await coda.scarica()
+    ok('parte anche un tocco firmato da altri', [fatte, coda.inAttesa], [['segna elena'], 0])
+  })
+  memoria.delete(QUI)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -519,5 +519,280 @@ const ok = (cosa, avuto, voluto) => { if (avuto !== voluto) dimmi(`${cosa}: avut
   memoria.delete('ods-corsi:coda:illeggibile')
 }
 
+// ---------------------------------------------------------------------------
+// La coda legata all'account: una coda scritta da A non parte con B sullo
+// stesso dispositivo (il tablet della palestra è di tutti).
+// ---------------------------------------------------------------------------
+{
+  const U = await import('data:text/javascript;base64,' + Buffer.from(fuori[0].text).toString('base64'))
+  const P = await import(modulo)
+  const A = { id: 'a', nome: 'Anna Bianchi' }
+  const B = { id: 'b', nome: 'Marco Rossi' }
+  const X = { id: 'x', nome: 'Xena Neri' }
+  const QUI = 'ods-corsi:prova-coda-account'
+  const giù = async () => { throw new Error('niente rete') }
+  const disco = (dove = QUI) => JSON.parse(memoria.get(dove) ?? '[]')
+  const autoreDi = (o) => [o.autore?.id, o.autore?.nome]
+  const scritta = (chiave, autore, quando) => ({ chiave, tipo: 'segna', args: ['s1', chiave, 'presente'], quando, ...(autore ? { autore } : {}) })
+  const ugual = (cosa, avuto, voluto) => ok(cosa, JSON.stringify(avuto), JSON.stringify(voluto))
+  const altri = (s) => s?.diAltri?.map((x) => [x.nome, x.quante, x.dal])
+  // Una prova che non trova la funzione si dice, non ferma le altre.
+  const prova = async (nome, f) => {
+    try { await f() } catch (e) { dimmi(`${nome}: ${e.message}`) }
+  }
+  const A_SOLE = (n, quando = 1000) => Array.from({ length: n }, (_, i) => scritta(`a${i + 1}`, A, quando + i))
+
+  await prova('21', async () => {
+    // R1: chi è collegato firma quel che accoda; a sessione scaduta resta l'ultimo conosciuto.
+    memoria.clear()
+    let sessione = A
+    const c = new Coda(giù, QUI, async () => sessione)
+    c.accoda('k1', 'segna', ['s1', 'p1', 'presente'])
+    await attesa()
+    ugual('21: la presenza su disco porta l\'autore', disco().map(autoreDi), [['a', 'Anna Bianchi']])
+    sessione = null
+    c.accoda('k2', 'segna', ['s1', 'p2', 'presente'])
+    await attesa()
+    ugual('21: segnata a sessione scaduta, resta di chi era collegato', disco().map(autoreDi), [['a', 'Anna Bianchi'], ['a', 'Anna Bianchi']])
+    c.svuota()
+  })
+
+  await prova('22', async () => {
+    // R2/R3: la coda di A con B collegato non parte e non sparisce.
+    memoria.clear()
+    memoria.set(QUI, JSON.stringify(A_SOLE(2)))
+    const fatte = []
+    const c = new Coda(async (op) => { fatte.push(op.chiave) }, QUI, async () => B)
+    await attesa()
+    await c.scarica()
+    ok('22: con un altro account non parte niente', fatte.length, 0)
+    ok('22: il totale in coda resta uguale', c.inAttesa, 2)
+    ok('22: su disco ci sono ancora tutte', disco().length, 2)
+    ok('22: per me non c\'è niente in attesa', c.stato.inAttesa, 0)
+    ugual('22: la spia sa di chi sono, e da quando', altri(c.stato), [['Anna Bianchi', 2, 1000]])
+    c.svuota()
+  })
+
+  await prova('23', async () => {
+    // R4: A, la sessione scade, A rientra: partono in ordine.
+    memoria.clear()
+    let sessione = A
+    let rete = false
+    const fatte = []
+    const c = new Coda(async (op) => {
+      if (sessione === null) throw Object.assign(new Error('permesso negato'), { code: '42501' })
+      if (!rete) throw new Error('niente rete')
+      fatte.push(op.chiave)
+    }, QUI, async () => sessione)
+    c.accoda('k1', 'segna', ['s1', 'p1', 'presente'])
+    c.accoda('k2', 'segna', ['s1', 'p2', 'presente'])
+    await attesa()
+    sessione = null
+    await c.scarica()
+    ugual('23: sessione scaduta, resta tutto', [fatte.length, c.inAttesa], [0, 2])
+    sessione = A
+    rete = true
+    await c.scarica()
+    ok('23: A rientra: partono in ordine', fatte.join(), 'k1,k2')
+    ok('23: e la coda si svuota', c.inAttesa, 0)
+  })
+
+  await prova('24', async () => {
+    // R5: la rete che torna non fa partire la coda di A con B collegato.
+    memoria.clear()
+    memoria.set(QUI, JSON.stringify(A_SOLE(2)))
+    const fatte = []
+    const c = new Coda(async (op) => { fatte.push(op.chiave) }, QUI, async () => B)
+    await attesa()
+    rete('online')
+    await attesa()
+    for (let i = 0; i < 3; i++) await c.scarica()
+    ok('24: dopo `online` e più giri non parte niente', fatte.length, 0)
+    ok('24: la coda di A è ancora intera', [c.inAttesa, disco().length].join(), '2,2')
+    c.svuota()
+  })
+
+  await prova('25', async () => {
+    // R7: quella di B parte anche se quella di A è in testa; quella di A resta.
+    memoria.clear()
+    memoria.set(QUI, JSON.stringify([scritta('a1', A, 1000), scritta('b1', B, 2000)]))
+    const fatte = []
+    const c = new Coda(async (op) => { fatte.push(op.chiave) }, QUI, async () => B)
+    await attesa()
+    await c.scarica()
+    ok('25: parte quella di B, non quella di A', fatte.join(), 'b1')
+    ugual('25: su disco resta quella di A', disco().map((o) => o.chiave), ['a1'])
+    // Si ferma al primo errore, come prima: saltare quelle di A non cambia l'ordine delle mie.
+    memoria.clear()
+    memoria.set(QUI, JSON.stringify([scritta('a1', A, 1000), scritta('b1', B, 2000), scritta('b2', B, 3000)]))
+    const tentate = []
+    const d = new Coda(async (op) => { tentate.push(op.chiave); throw new Error('niente rete') }, QUI, async () => B)
+    await attesa()
+    tentate.length = 0
+    await d.scarica()
+    ok('25: la prima mia non passa: si prova solo quella', tentate.join(), 'b1')
+    ok('25: e non si perde niente', d.inAttesa, 3)
+    c.svuota()
+    d.svuota()
+  })
+
+  await prova('26', async () => {
+    // R10: quelle senza autore (versione vecchia) diventano del primo che apre.
+    memoria.clear()
+    memoria.set(QUI, JSON.stringify([scritta('k1', null, 1000), scritta('k2', null, 2000)]))
+    let rete = false
+    const fatte = []
+    const c = new Coda(async (op) => { if (!rete) throw new Error('niente rete'); fatte.push(op.chiave) }, QUI, async () => X)
+    await attesa()
+    await c.scarica()
+    ugual('26: su disco ora sono di chi ha aperto', disco().map(autoreDi), [['x', 'Xena Neri'], ['x', 'Xena Neri']])
+    ok('26: nessuna si è persa', c.inAttesa, 2)
+    rete = true
+    await c.scarica()
+    ok('26: partono in ordine', fatte.join(), 'k1,k2')
+    // Sessione scaduta: non si sa di chi sono, restano come sono.
+    memoria.clear()
+    memoria.set(QUI, JSON.stringify([scritta('k1', null, 1000), scritta('k2', null, 2000)]))
+    const senza = new Coda(async () => { throw Object.assign(new Error('permesso negato'), { code: '42501' }) }, QUI, async () => null)
+    await attesa()
+    await senza.scarica()
+    ugual('26: senza sessione restano senza autore', disco().map(autoreDi), [[undefined, undefined], [undefined, undefined]])
+    ok('26: e non si perdono', senza.inAttesa, 2)
+    ok('26: senza sapere chi sono, le conto tutte come mie', senza.stato.inAttesa, 2)
+    senza.svuota()
+  })
+
+  await prova('27', async () => {
+    // R11: un JSON rotto resta messo da parte e segnalato, anche con `chiE`.
+    memoria.clear()
+    memoria.set(QUI, '{rotto')
+    const c = new Coda(giù, QUI, async () => A)
+    await attesa()
+    ok('27: coda illeggibile, avvisata', c.stato?.illeggibile, true)
+    ok('27: la copia è tenuta', JSON.parse(memoria.get(`${QUI}:illeggibile`) ?? '[]')[0], '{rotto')
+    c.svuota()
+  })
+
+  await prova('28', async () => {
+    // La spia conta le mie; il getter resta il totale.
+    memoria.clear()
+    memoria.set(QUI, JSON.stringify([scritta('a1', A, 1000), scritta('b1', B, 2000), scritta('b2', B, 3000)]))
+    const visti = []
+    const c = new Coda(giù, QUI, async () => B)
+    await attesa()
+    c.guarda((n) => visti.push(n))
+    ok('28: guarda passa solo le mie', visti.at(-1), 2)
+    ok('28: stato.inAttesa sono le mie', c.stato.inAttesa, 2)
+    ok('28: il getter resta il totale', c.inAttesa, 3)
+    ugual('28: quelle di A sono «di altri»', altri(c.stato), [['Anna Bianchi', 1, 1000]])
+    c.svuota()
+  })
+
+  await prova('29', async () => {
+    // Senza `chiE` (il timer) la coda fa quel che ha sempre fatto: anche con operazioni firmate.
+    memoria.clear()
+    memoria.set(QUI, JSON.stringify(A_SOLE(2)))
+    const fatte = []
+    const c = new Coda(async (op) => { fatte.push(op.chiave) }, QUI)
+    await attesa()
+    await c.scarica()
+    ok('29: senza chiE parte tutto, in ordine', fatte.join(), 'a1,a2')
+    c.accoda('k1', 'segna', ['s1', 'p1', 'presente'])
+    await attesa()
+    ok('29: senza chiE non si firma niente', 'autore' in (c.operazioni[0] ?? disco()[0] ?? {}), false)
+    c.svuota()
+  })
+
+  await prova('30', async () => {
+    // R6: le frasi della spia per le presenze di un altro account.
+    const dal = new Date(2026, 8, 24, 10, 0).getTime()
+    const stato = (inAttesa, diAltri) => ({ inAttesa, soloInMemoria: 0, illeggibile: false, diAltri })
+    const due = avvisiCoda(stato(1, [{ nome: 'Marco Rossi', quante: 2, dal }]))
+    ok('30: una mia e due di Marco: due avvisi', due.length, 2)
+    ok('30: il primo è quello di sempre', due[0]?.titolo, 'UNA PRESENZA DA INVIARE')
+    ok('30: il primo non è «di altri»', due[0]?.altri === true, false)
+    ok('30: il titolo del secondo', due[1]?.titolo, '2 PRESENZE DI MARCO ROSSI')
+    ugual('30: tono attesa e segnato come di altri', [due[1]?.tono, due[1]?.altri], ['attesa', true])
+    ok('30: la frase del secondo', due[1]?.frase, 'Segnate dal 24 settembre, non ancora arrivate: partono quando Marco Rossi entra di nuovo con il suo account. Le tue non sono toccate.')
+    ok('30: nessun testo dice «stesso account»', due.some((a) => /stesso account/.test(`${a.titolo} ${a.frase}`)), false)
+    const una = avvisiCoda(stato(0, [{ nome: 'Marco Rossi', quante: 1, dal }]))
+    ok('30: nessuna mia: solo l\'avviso dell\'altro', una.length, 1)
+    ok('30: una sola, al singolare', una[0]?.titolo, 'UNA PRESENZA DI MARCO ROSSI')
+    ok('30: la frase al singolare', una[0]?.frase, 'Segnata il 24 settembre, non ancora arrivata: parte quando Marco Rossi entra di nuovo con il suo account. Le tue non sono toccate.')
+    const oggi = avvisiCoda(stato(0, [{ nome: 'Marco Rossi', quante: 3, dal: Date.now() }]))
+    ok('30: segnate oggi', oggi[0]?.frase?.startsWith('Segnate oggi, non ancora arrivate: partono quando Marco Rossi'), true)
+    const oggiUna = avvisiCoda(stato(0, [{ nome: 'Marco Rossi', quante: 1, dal: Date.now() }]))
+    ok('30: segnata oggi', oggiUna[0]?.frase?.startsWith('Segnata oggi, non ancora arrivata: parte quando Marco Rossi'), true)
+    const anonime = avvisiCoda(stato(0, [{ nome: '', quante: 2, dal }]))
+    ok('30: senza nome, il titolo', anonime[0]?.titolo, '2 PRESENZE DI UN ALTRO ACCOUNT')
+    ok('30: senza nome, la frase', anonime[0]?.frase, 'Segnate dal 24 settembre, non ancora arrivate: partono quando chi le ha segnate entra di nuovo con il suo account. Le tue non sono toccate.')
+    ugual('30: senza nome, una sola', [avvisiCoda(stato(0, [{ nome: '', quante: 1, dal }]))[0]?.titolo, avvisiCoda(stato(0, [{ nome: '', quante: 1, dal }]))[0]?.frase],
+      ['UNA PRESENZA DI UN ALTRO ACCOUNT', 'Segnata il 24 settembre, non ancora arrivata: parte quando chi l\'ha segnata entra di nuovo con il suo account. Le tue non sono toccate.'])
+    const due2 = avvisiCoda(stato(0, [{ nome: 'Marco Rossi', quante: 1, dal }, { nome: 'Xena Neri', quante: 2, dal }]))
+    ugual('30: due altri account, due avvisi', due2.map((a) => a.titolo), ['UNA PRESENZA DI MARCO ROSSI', '2 PRESENZE DI XENA NERI'])
+  })
+
+  await prova('31', async () => {
+    // R8: ESCI conta anche le presenze di un altro, lo dice, e le toglie solo con ESCI LO STESSO.
+    U.svuotaTutte()
+    memoria.clear()
+    let sessione = A
+    const c = new U.Coda(giù, 'ods-corsi:coda', async () => sessione)
+    for (const k of ['k1', 'k2', 'k3']) c.accoda(k, 'segna', ['s1', k, 'presente'])
+    await attesa()
+    const dal = Math.min(...JSON.parse(memoria.get('ods-corsi:coda')).map((o) => o.quando))
+    sessione = B
+    let uscito = 0
+    let pendenza = null
+    const smetti = U.guardaUscita((p) => { if (p) pendenza = p })
+    await U.uscita(async () => { uscito++ }, 50)
+    ok('31: con presenze di un altro non esce da solo', uscito, 0)
+    ok('31: le conta nel totale', U.inCodaDiTutte(), 3)
+    ugual('31: la pendenza dice di chi sono', altri(pendenza), [['Anna Bianchi', 3, dal]])
+    ok('31: nessuna è mia', pendenza?.quante, 0)
+    ok('31: finora non si è toccato niente', JSON.parse(memoria.get('ods-corsi:coda') ?? '[]').length, 3)
+    await pendenza?.esciComunque()
+    smetti()
+    ok('31: ESCI LO STESSO è uscito', uscito, 1)
+    ok('31: toglie anche quelle degli altri, da disco', JSON.parse(memoria.get('ods-corsi:coda') ?? '[]').length, 0)
+    ok('31: e dal totale', U.inCodaDiTutte(), 0)
+    ugual('31: e non ne resta traccia come «di altri»', U.diAltriDiTutte(), [])
+  })
+
+  await prova('32', async () => {
+    // Le parole del dialogo «Uscire adesso?».
+    const marco = { nome: 'Marco Rossi', quante: 3, dal: 1000 }
+    ok('32: senza altri, com\'è oggi', U.testoUscita({ quante: 3, diAltri: [] }), `${U.avvisoUscita(3)} Se torna la rete partono da sole: premi TORNA e aspetta.`)
+    ok('32: una mia e tre di Marco', U.testoUscita({ quante: 1, diAltri: [marco] }),
+      'Ci sono 1 presenza tua e 3 presenze di Marco Rossi non ancora arrivate: ESCI LO STESSO le perde tutte. Se torna la rete le tue partono da sole: premi TORNA e aspetta.')
+    ok('32: nessuna mia, tre di Marco', U.testoUscita({ quante: 0, diAltri: [marco] }),
+      'Ci sono 3 presenze di Marco Rossi non ancora arrivate: ESCI LO STESSO le perde tutte. Partono solo quando Marco Rossi entra di nuovo: premi TORNA per lasciarle qui.')
+    ok('32: una sola di Marco, al singolare', U.testoUscita({ quante: 0, diAltri: [{ ...marco, quante: 1 }] }).startsWith('C’è 1 presenza di Marco Rossi non ancora arrivata: ESCI LO STESSO la perde.'), true)
+    const tre = U.testoUscita({ quante: 0, diAltri: [marco, { nome: 'Anna Bianchi', quante: 1, dal: 1 }, { nome: 'Xena Neri', quante: 2, dal: 1 }] })
+    ok('32: tre autori, uniti con virgola e «e»', tre.includes('Marco Rossi, Anna Bianchi e Xena Neri'), true)
+    ok('32: due autori, uniti con «e»', U.testoUscita({ quante: 0, diAltri: [marco, { nome: 'Anna Bianchi', quante: 1, dal: 1 }] }).includes('Marco Rossi e Anna Bianchi'), true)
+  })
+
+  await prova('33', async () => {
+    // Le code dell'app (telefono e sala) si sommano per nome.
+    U.svuotaTutte()
+    memoria.clear()
+    let sessione = A
+    const telefono = new U.Coda(giù, 'ods-corsi:coda', async () => sessione)
+    const sala = new U.Coda(giù, 'ods-corsi:coda-sala', async () => sessione)
+    telefono.accoda('k1', 'segna', ['s1', 'p1', 'presente'])
+    telefono.accoda('k2', 'segna', ['s1', 'p2', 'presente'])
+    sala.accoda('k3', 'segna', ['s1', 'p3', 'presente'])
+    await attesa()
+    const dal = Math.min(...['ods-corsi:coda', 'ods-corsi:coda-sala'].flatMap((d) => JSON.parse(memoria.get(d) ?? '[]')).map((o) => o.quando))
+    ugual('33: con A collegato non ce ne sono di altri', U.diAltriDiTutte(), [])
+    sessione = B
+    await U.mandaTutto(50)
+    ugual('33: con B, tre di Anna, sommate', U.diAltriDiTutte().map((x) => [x.nome, x.quante, x.dal]), [['Anna Bianchi', 3, dal]])
+    ok('33: il totale conta tutto', U.inCodaDiTutte(), 3)
+    U.svuotaTutte()
+  })
+}
+
 console.log(guai ? `\n${guai} PROBLEMI` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -174,6 +174,11 @@ export function creaTabletProva(): DatiTablet {
       return sala ? { nome: `Tablet ${sala}`, sala } : null
     },
 
+    // Una postazione per sala, come sul vero: cambiando sala si vede la spia dei tocchi dell'altra.
+    async chiE() {
+      return sala ? { id: `prova:${sala}`, nome: `Tablet ${sala}` } : null
+    },
+
     async scegliSala(s) {
       sala = s
       try {

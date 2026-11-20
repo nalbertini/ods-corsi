@@ -182,7 +182,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   // Il bollino basta finché i tocchi aspettano la rete; se rischiano di
   // perdersi (memoria piena, coda illeggibile) serve un avviso che si legga.
   const [statoCoda, setStatoCoda] = useState<StatoCoda>({ inAttesa: 0, soloInMemoria: 0, illeggibile: false })
-  const guaiCoda = avvisiCoda(statoCoda, 'tablet').filter((a) => a.tono === 'guaio')
+  const guaiCoda = avvisiCoda(statoCoda, 'tablet').filter((a) => a.tono === 'guaio' || a.altri)
   useEffect(() => {
     const smetti = codaDelTablet(d).guarda((n, stato) => {
       setInCoda(n)

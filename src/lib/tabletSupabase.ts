@@ -60,6 +60,15 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
       return !!(await db.auth.getSession()).data.session
     },
 
+    async chiE() {
+      const { data: s } = await db.auth.getSession()
+      if (!s.session) return null
+      const id = s.session.user.id
+      // Il nome è solo da leggere sulla spia: senza rete basta l'id, che decide.
+      const { data } = await db.from('postazioni').select('nome').eq('utente_id', id).maybeSingle()
+      return { id, nome: (data as { nome: string } | null)?.nome ?? '' }
+    },
+
     async scollega() {
       await db.auth.signOut()
     },

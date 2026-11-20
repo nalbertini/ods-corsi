@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Conferma } from './segreteria/comune'
-import { avvisoUscita, guardaUscita, type Pendenza } from '../lib/uscita'
+import { guardaUscita, testoUscita, type Pendenza } from '../lib/uscita'
 
 /**
  * Il «ESCI» che trova scritture non ancora arrivate (presenze, chiusure,
@@ -18,7 +18,7 @@ export default function AvvisoUscita() {
   return (
     <Conferma
       d={{
-        testo: `Uscire adesso?\n${avvisoUscita(p.quante)} Se torna la rete partono da sole: premi TORNA e aspetta.`,
+        testo: `Uscire adesso?\n${testoUscita(p)}`,
         si: 'ESCI LO STESSO',
         no: 'TORNA',
         pericolo: true,

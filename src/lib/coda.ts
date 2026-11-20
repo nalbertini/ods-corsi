@@ -18,6 +18,26 @@ export interface Operazione {
   tipo: string
   args: unknown[]
   quando: number
+  /**
+   * Chi l'ha scritta. Un tablet o un telefono passano di mano: senza, la coda
+   * partirebbe col token di chi entra dopo, rifiutata o attribuita a lui.
+   * Manca nelle code di prima e in quelle che non sanno chi è collegato (il timer).
+   */
+  autore?: Autore
+}
+
+/** L'account che ha scritto un'operazione: `nome` è quel che si legge sulla spia. */
+export interface Autore {
+  id: string
+  nome: string
+}
+
+/** Le presenze in coda di un altro account: aspettano lui, e la spia dice chi e da quando. */
+export interface DiAltri {
+  nome: string
+  quante: number
+  /** Quando è stata segnata la prima. */
+  dal: number
 }
 
 // Prefisso `ods-corsi:` e non `ods-timer:`: le due app stanno sullo stesso
@@ -127,6 +147,8 @@ export interface StatoCoda {
   soloInMemoria: number
   /** Su disco c'era una coda che non si è letta: messa da parte, non mandata. */
   illeggibile: boolean
+  /** Le presenze di altri account, che con questo non partono. */
+  diAltri?: DiAltri[]
 }
 
 export class Coda {
@@ -145,15 +167,23 @@ export class Coda {
    * deve sapere prima di offrire RICARICA.
    */
   private suDisco = true
+  /**
+   * L'ultimo account visto collegato. Resta anche a sessione scaduta: quel che
+   * si segna mentre il rinnovo non arriva è ancora suo.
+   */
+  private io: Autore | null = null
 
   /**
    * @param esegui Porta davvero a termine l'operazione. Se solleva, l'operazione
    *   resta in coda e si riprova più tardi.
    * @param dove La chiave in `localStorage`: una per app.
+   * @param chiE Chi è collegato adesso, `null` se nessuno o non si sa. Senza,
+   *   la coda non firma niente e parte tutta, come il timer.
    */
   constructor(
     private esegui: (op: Operazione) => Promise<void>,
     readonly dove = DOVE,
+    private chiE?: () => Autore | null | Promise<Autore | null>,
   ) {
     vive.add(this)
     const letta = leggi(dove)
@@ -178,7 +208,7 @@ export class Coda {
     }, 60_000)
   }
 
-  /** Quante scritture non sono ancora arrivate. */
+  /** Quante scritture non sono ancora arrivate, anche quelle di altri account. */
   get inAttesa() {
     return this.lista.length
   }
@@ -198,8 +228,25 @@ export class Coda {
     return this.suDisco ? 0 : this.lista.length
   }
 
+  /** Di chi è collegato. Finché non si sa chi è, tutte: meglio dirle in attesa che di nessuno. */
+  private mia = (o: Operazione) => !this.io || !o.autore || o.autore.id === this.io.id
+
   get stato(): StatoCoda {
-    return { inAttesa: this.inAttesa, soloInMemoria: this.soloInMemoria, illeggibile: this.illeggibile }
+    const altri = new Map<string, DiAltri>()
+    for (const o of this.lista) {
+      if (this.mia(o) || !o.autore) continue
+      const a = altri.get(o.autore.id)
+      if (a) {
+        a.quante++
+        a.dal = Math.min(a.dal, o.quando)
+      } else altri.set(o.autore.id, { nome: o.autore.nome, quante: 1, dal: o.quando })
+    }
+    return {
+      inAttesa: this.lista.filter(this.mia).length,
+      soloInMemoria: this.soloInMemoria,
+      illeggibile: this.illeggibile,
+      diAltri: [...altri.values()],
+    }
   }
 
   /**
@@ -208,12 +255,14 @@ export class Coda {
    */
   guarda(f: (n: number, stato: StatoCoda) => void) {
     this.ascoltatori.add(f)
-    f(this.inAttesa, this.stato)
+    const s = this.stato
+    f(s.inAttesa, s)
     return () => this.ascoltatori.delete(f)
   }
 
   private avvisa() {
-    for (const f of this.ascoltatori) f(this.inAttesa, this.stato)
+    const s = this.stato
+    for (const f of this.ascoltatori) f(s.inAttesa, s)
   }
 
   /** Scrive su disco, se si può: una coda illeggibile non messa da parte non si sovrascrive. */
@@ -245,24 +294,53 @@ export class Coda {
   /** Mette in coda e prova subito. Non aspetta il server: l'interfaccia va avanti. */
   accoda(chiave: string, tipo: string, args: unknown[]) {
     this.lista = this.lista.filter((o) => o.chiave !== chiave)
-    this.lista.push({ chiave, tipo, args, quando: Date.now() })
+    this.lista.push({ chiave, tipo, args, quando: Date.now(), ...(this.io ? { autore: this.io } : {}) })
     this.salva()
     this.avvisa()
     void this.scarica()
   }
 
   /**
+   * Chi è collegato adesso, e se c'è lo ricorda. Le operazioni senza autore
+   * (le code di prima) diventano sue: il primo che apre se le prende, invece
+   * di lasciarle a nessuno. Un `chiE` che non risponde vale «non si sa».
+   */
+  private async chiEAdesso(): Promise<Autore | null> {
+    if (!this.chiE) return null
+    let chi: Autore | null = null
+    try {
+      chi = await this.chiE()
+    } catch {
+      return null
+    }
+    if (!chi) return null
+    const cambiato = this.io?.id !== chi.id
+    this.io = chi
+    if (this.lista.some((o) => !o.autore)) {
+      this.lista = this.lista.map((o) => (o.autore ? o : { ...o, autore: chi }))
+      this.salva()
+    } else if (!cambiato) return chi
+    this.avvisa()
+    return chi
+  }
+
+  /**
    * Svuota la coda, in ordine. Si ferma al primo errore invece di andare
    * avanti: se il server non risponde, insistere sulle successive è solo modo
    * di consumare batteria, e l'ordine fra due scritture sulla stessa lezione
-   * conta.
+   * conta. Con un account collegato partono solo le sue: quelle di un altro
+   * aspettano lui, né mandate col token sbagliato né buttate.
    */
   async scarica(): Promise<void> {
     if (this.sta) return
     this.sta = true
     try {
-      while (this.lista.length) {
-        const op = this.lista[0]
+      for (;;) {
+        const chi = await this.chiEAdesso()
+        // Senza nessuno collegato, una scrittura di qualcuno non ha il token giusto e aspetta;
+        // una senza autore la prova chi esegue, che sa tenerla finché torna l'accesso.
+        const op = !this.chiE ? this.lista[0] : this.lista.find((o) => (chi ? o.autore?.id === chi.id : !o.autore))
+        if (!op) return
         try {
           await this.esegui(op)
         } catch {
@@ -324,6 +402,22 @@ export async function mandaTutto(ms: number): Promise<void> {
 }
 
 /** Dimentica le scritture ancora in coda, di tutte le code dell'app. */
+/**
+ * Le presenze di altri account in tutte le code dell'app, sommate per nome:
+ * il telefono e la sala dello stesso dispositivo sono una cosa sola per chi esce.
+ */
+export function diAltriDiTutte(): DiAltri[] {
+  const per = new Map<string, DiAltri>()
+  for (const c of vive) {
+    if (!CODE_DELL_APP.includes(c.dove)) continue
+    for (const a of c.stato.diAltri ?? []) {
+      const prima = per.get(a.nome)
+      per.set(a.nome, prima ? { nome: a.nome, quante: prima.quante + a.quante, dal: Math.min(prima.dal, a.dal) } : { ...a })
+    }
+  }
+  return [...per.values()]
+}
+
 export function svuotaTutte(): void {
   for (const c of vive) if (CODE_DELL_APP.includes(c.dove)) c.svuota()
   for (const dove of CODE_DELL_APP) {
@@ -349,6 +443,8 @@ export interface AvvisoCoda {
   tono: 'attesa' | 'guaio'
   titolo: string
   frase: string
+  /** Presenze di un altro account: aspettano lui, non la rete. */
+  altri?: true
 }
 
 const quante = (n: number) => (n === 1 ? 'UNA PRESENZA DA INVIARE' : `${n} PRESENZE DA INVIARE`)
@@ -377,7 +473,23 @@ export function avvisiCoda(s: StatoCoda, dispositivo: 'telefono' | 'tablet' = 't
   } else if (s.inAttesa > 0) {
     avvisi.push({ tono: 'attesa', titolo: quante(s.inAttesa), frase: `Sono salvate sul ${dispositivo}: partono da sole appena c’è rete.` })
   }
+  for (const a of s.diAltri ?? []) avvisi.push(avvisoDiAltri(a))
   return avvisi
+}
+
+const giornoDi = (t: number) => new Date(t).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })
+
+/** «Le tue non sono toccate»: chi vede la seconda spia deve sapere che le sue partono lo stesso. */
+function avvisoDiAltri(a: DiAltri): AvvisoCoda {
+  const una = a.quante === 1
+  const quando = giornoDi(a.dal) === giornoDi(Date.now()) && Date.now() - a.dal < 86_400_000 ? 'oggi' : `${una ? 'il' : 'dal'} ${giornoDi(a.dal)}`
+  const chi = a.nome || (una ? 'chi l\'ha segnata' : 'chi le ha segnate')
+  return {
+    tono: 'attesa',
+    altri: true,
+    titolo: `${una ? 'UNA PRESENZA' : `${a.quante} PRESENZE`} DI ${(a.nome || 'un altro account').toUpperCase()}`,
+    frase: `${una ? 'Segnata' : 'Segnate'} ${quando}, non ancora ${una ? 'arrivata' : 'arrivate'}: ${una ? 'parte' : 'partono'} quando ${chi} entra di nuovo con il suo account. Le tue non sono toccate.`,
+  }
 }
 
 /**
@@ -398,7 +510,7 @@ export function avvisoPerChiRientra(n: number, dispositivo: 'tablet' | 'disposit
   return {
     tono: 'attesa',
     titolo: n === 1 ? 'UNA MODIFICA DA INVIARE' : `${n} MODIFICHE DA INVIARE`,
-    // Con un altro account partirebbero col suo nome, e il server le rifiuterebbe.
+    // Con un altro account restano qui, e partono solo quando rientra chi le ha segnate.
     frase: `Sono salvate su questo ${dispositivo}: entra di nuovo con lo stesso account e partono da sole.`,
   }
 }

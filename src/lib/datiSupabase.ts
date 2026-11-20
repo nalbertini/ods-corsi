@@ -10,7 +10,8 @@ import type { StatoPresenzaIstruttore } from './tablet'
 import { contiDellAppello, giornoDi, valeIl } from './sala'
 import { presentiAltrove, type Turno } from './turni'
 import { contaPresenze, lezioniContate, ordinaPerPresenze } from './frequenza'
-import { aspettaLAccesso, Coda } from './coda'
+import { aspettaLAccesso, Coda, type Autore } from './coda'
+import { PERSONA_VISTA } from './sessioni'
 import { eFuoriFinestra } from './finestra'
 import { tutteLeRighe } from './tutteLeRighe'
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
@@ -149,7 +150,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       }
       throw e
     }
-  })
+  }, undefined, () => chiE(db))
 
   /**
    * Un errore è definitivo quando riprovare darebbe di nuovo lo stesso esito:
@@ -599,3 +600,21 @@ async function chiudiSessione(db: SupabaseClient, sessioneId: string) {
   if (error) throw error
 }
 
+
+/**
+ * Chi è collegato, per firmare le presenze in coda. Il nome viene dall'ultima
+ * persona vista (`accesso.ts` la ricorda a ogni accesso): così si legge anche
+ * senza rete, e una domanda in più al server a ogni giro della coda non serve.
+ */
+async function chiE(db: SupabaseClient): Promise<Autore | null> {
+  const utente = (await db.auth.getSession()).data.session?.user
+  if (!utente) return null
+  let nome = ''
+  try {
+    const r = JSON.parse(localStorage.getItem(PERSONA_VISTA) ?? 'null') as { utente?: string; nome?: string; cognome?: string } | null
+    if (r?.utente === utente.id) nome = `${r.nome ?? ''} ${r.cognome ?? ''}`.trim()
+  } catch {
+    // Una memoria rotta toglie solo il nome dalla spia: chi è lo dice l'id.
+  }
+  return { id: utente.id, nome: nome || utente.email || '' }
+}
