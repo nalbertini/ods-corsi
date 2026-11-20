@@ -592,6 +592,16 @@ function guaioVoce(e: unknown): Error {
   return new Error(sconosciuto(m, 'La clip non è partita: riprova'))
 }
 
+/** La tabella o la vista non c'è ancora (il suo file SQL non è passato): un ripiego voluto, non un guasto. */
+const nonCeAncora = (e: { code?: string } | null) => ['42P01', 'PGRST205', 'PGRST200'].includes(e?.code ?? '')
+
+/**
+ * Una lettura che decide chi ha pagato (o a chi serve il certificato) non è riuscita: meglio niente elenco che uno
+ * che sembra completo e non lo è, dove chi ha pagato risulta ancora da incassare.
+ */
+const datiIncompleti = (cosa: string) =>
+  new Error(`Dati incompleti: non sono riuscito a leggere ${cosa}. Ricarica la pagina; se torna, avvisa chi cura l'app.`)
+
 export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
   const ok = <T>(r: { data: T; error: { message?: string; code?: string } | null }): T => {
     if (r.error) throw guaio(r.error)
@@ -1171,8 +1181,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Se ha pagato lo dicono le quote delle ricevute (27-pagamento-dalle-ricevute.sql);
       // finché quel file non è passato, le stesse righe si ricavano dalle ricevute qui.
       // Le ricevute servono per le voci dei corsi, e per le quote se la vista non c'è. null: non si sono lette.
+      let ricevuteNonLette: { code?: string } | null = null
       const leRicevute = (async () => {
         const r = await tutteLeRighe((prima, ultima) => db.from('ricevute').select('persona_id, anno, numero, data, voci, anticipo').is('annullata_il', null).not('persona_id', 'is', null).order('id').range(prima, ultima))
+        ricevuteNonLette = r.error
         // as: le righe sono quelle del select qui sopra, con i campi che leggono `conti` e `quoteDi`.
         return r.error ? null : (r.data as unknown as Array<Ricevuta & { persona_id: string }>)
       })()
@@ -1185,16 +1197,22 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             metti(q.persona_id, { anno: q.anno, numero: q.numero, dal: q.dal ?? undefined, al: q.al ?? undefined, mancano: q.mancano })
           return perPersona
         }
+        // Solo senza la vista (27 non lanciato) le quote si ricavano dalle ricevute: un altro errore non si tace.
+        if (!nonCeAncora(vista.error)) throw datiIncompleti('le quote pagate')
+        const ricevute = await leRicevute
         // Senza ricevute sul database (16-ricevute.sql) resta l'eccezione scritta a mano.
-        for (const x of (await leRicevute) ?? []) for (const q of quoteDi([x])) metti(x.persona_id, q)
+        if (!ricevute && !nonCeAncora(ricevuteNonLette)) throw datiIncompleti('le quote pagate')
+        for (const x of ricevute ?? []) for (const q of quoteDi([x])) metti(x.persona_id, q)
         return perPersona
       })()
-      // La data di nascita decide se il certificato serve (sotto i 6 anni no). Senza queste tabelle, o senza il permesso,
-      // nessuna data: il certificato serve a tutti, come prima. A pagine, per il tetto di righe di PostgREST.
+      // La data di nascita decide se il certificato serve (sotto i 6 anni no). Senza queste tabelle nessuna data: il
+      // certificato serve a tutti, come prima. Un altro errore non si tace. A pagine, per il tetto di righe di PostgREST.
       const nati = (async (): Promise<Map<string, string>> => {
-        const tutte = async (r: Promise<{ data: unknown[]; error: unknown }>) => {
+        const tutte = async (r: Promise<{ data: unknown[]; error: { code?: string } | null }>) => {
           const { data, error } = await r
-          return error ? [] : data
+          if (!error) return data
+          if (nonCeAncora(error)) return []
+          throw datiIncompleti('le date di nascita')
         }
         const [an, rich] = await Promise.all([
           tutte(tutteLeRighe((prima, ultima) => db.from('anagrafiche').select('persona_id, nato_il, cambiata_il').order('persona_id').range(prima, ultima))),
@@ -1259,7 +1277,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const perPersona = new Map<string, Ricevuta[]>()
       for (const x of ricevute ?? []) perPersona.set(x.persona_id, [...(perPersona.get(x.persona_id) ?? []), x])
       const natiIl = await nati
-      const arrivati = await leggiSatispay().catch(() => [])
+      // Senza 73-satispay.sql `leggiSatispay` dà già nessun pagamento; un altro errore farebbe sembrare da incassare chi ha pagato.
+      const arrivati = await leggiSatispay().catch(() => {
+        throw datiIncompleti('i pagamenti Satispay')
+      })
       const conSatispay = satispayPerPersona(arrivati)
       const conCarta = cartaPerPersona(arrivati)
       const conSaldo = saldoPerPersona(arrivati)

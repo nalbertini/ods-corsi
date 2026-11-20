@@ -201,7 +201,8 @@
     "prova:edge-certificato": "node scripts/prova-edge-certificato.mjs",
     "prova:edge-limite": "node scripts/prova-edge-limite.mjs",
     "prova:a11y-axe": "node scripts/prova-a11y-axe.mjs",
-    "prova:appello-browser": "node scripts/prova-appello-browser.mjs"
+    "prova:appello-browser": "node scripts/prova-appello-browser.mjs",
+    "prova:persone-incomplete": "node scripts/prova-persone-incomplete.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.24.0",
