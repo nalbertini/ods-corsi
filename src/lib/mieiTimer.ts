@@ -1,5 +1,6 @@
 import type { Workout } from '../../timer/src/types'
 import { haUnServer } from './dati'
+import { fraseGuaio } from './guaio'
 
 /**
  * I MIEI TIMER: quale timer parte con quale corso, e con quale lezione.
@@ -98,9 +99,11 @@ type Client = ReturnType<typeof import('./supabase').clientSupabase>
 /** La tabella non c'è: `11-timer-lezioni.sql` non è ancora stato lanciato. */
 const manca = (e: { code?: string } | null) => !!e && (e.code === '42P01' || e.code === 'PGRST205')
 
-function conDatabase(db: Client, io: string | undefined): DatiMieiTimer {
+/** Esportata per `scripts/prova-mieitimer.mjs`, che la prova con un database finto. */
+export function conDatabase(db: Client, io: string | undefined): DatiMieiTimer {
+  // L'errore sale fino a video (MieiTimer.tsx): va già tradotto per chi legge.
   const fallito = (e: { message?: string } | null) => {
-    if (e) throw new Error(e.message ?? 'Il server non risponde')
+    if (e) throw new Error(fraseGuaio(e))
   }
   return {
     async timer() {

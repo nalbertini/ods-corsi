@@ -16,6 +16,7 @@
     "moduli:genera": "node scripts/genera-moduli.mjs",
     "prova:musica": "node scripts/prova-musica.mjs",
     "prova:guaio": "node scripts/prova-guaio.mjs",
+    "prova:mieitimer": "node scripts/prova-mieitimer.mjs",
     "prova:finestre": "node scripts/prova-finestre.mjs",
     "prova:icone": "node scripts/prova-icone.mjs",
     "prova:a11y-iscritti": "node scripts/prova-a11y-iscritti.mjs",
