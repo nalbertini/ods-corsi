@@ -20,6 +20,7 @@
 //   · il genitore non iscritto (`113-genitore-non-iscritto.sql`, provato da
 //     `supabase/prova/genitore-non-iscritto.sql`): le sezioni 14-17.
 // ---------------------------------------------------------------------------
+import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({
@@ -684,6 +685,18 @@ console.log('\n15. il nucleo per lo sconto della ricevuta (nucleoPerRicevuta)')
   ok('chi ha lasciato la palestra non conta', ids(f2).includes('ugo'), false)
   ok('chi non ha nucleo: nessuno', ids(solo), [])
   ok('un titolare che non c\'è più: nessuno', m.nucleo.nucleoPerRicevuta({ id: 'x', nucleo: 'manca', attiva: true }, tutti), [])
+}
+
+console.log('\n16. quanto vale lo sconto famiglia (importoSconto), lo stesso per la segreteria e per l\'area iscritti')
+{
+  // I valori veri, in centesimi: il 20% di un annuale, arrotondato al centesimo.
+  ok('annuale da 280,00 €: lo sconto è 56,00 €', m.nucleo.importoSconto(28000), 5600)
+  ok('annuale da 340,00 €: lo sconto è 68,00 €', m.nucleo.importoSconto(34000), 6800)
+  ok('annuale da 333,33 €: lo sconto è 66,67 €, arrotondato', m.nucleo.importoSconto(33333), 6667)
+  // Una regola dentro un `.tsx` non si prova: il conto lo fa solo `nucleo.ts`.
+  for (const f of ['src/components/segreteria/Iscritti.tsx', 'src/components/AreaIscritti.tsx', 'src/components/segreteria/Ricevute.tsx']) {
+    ok(`${f} non calcola lo sconto da sé`, /\*\s*(SCONTO_FAMIGLIA\b|0?\.2\b)/.test(readFileSync(new URL(`../${f}`, import.meta.url), 'utf8')), false)
+  }
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
