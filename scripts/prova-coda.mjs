@@ -21,9 +21,14 @@ const modulo = 'data:text/javascript;base64,' + Buffer.from(outputFiles[0].text)
 
 // Finge il minimo browser che `coda.ts` tocca: localStorage e window.
 const memoria = new Map()
+// `pieno` finge la memoria del telefono piena: `setItem` solleva, come fa il browser.
+let pieno = false
 globalThis.localStorage = {
   getItem: (k) => (memoria.has(k) ? memoria.get(k) : null),
-  setItem: (k, v) => memoria.set(k, String(v)),
+  setItem: (k, v) => {
+    if (pieno) throw Object.assign(new Error('QuotaExceededError'), { name: 'QuotaExceededError' })
+    memoria.set(k, String(v))
+  },
   removeItem: (k) => memoria.delete(k),
 }
 const ascoltatori = {}
@@ -32,7 +37,7 @@ globalThis.window = {
 }
 const rete = (e) => (ascoltatori[e] ?? []).forEach((f) => f())
 
-const { Coda } = await import(modulo)
+const { Coda, aspettaLAccesso, avvisiCoda, avvisoPerChiRientra } = await import(modulo)
 
 // `uscita.ts` importa `coda.ts`: va compilata a parte, con la stessa copia
 // (un solo bundle) perché il registro delle code sia quello di `Coda`.
@@ -318,6 +323,182 @@ const dimmi = (s) => { console.log('  ✗', s); guai++ }
   if (!/^C’è 1 cosa non ancora arrivata/.test(uno)) dimmi('il singolare è sbagliato')
   if (!/^Ci sono 3 cose non ancora arrivate/.test(tre)) dimmi('il plurale è sbagliato')
   if (!/ESCI LO STESSO/.test(tre)) dimmi('l\'avviso non dice cosa fa ESCI LO STESSO')
+}
+
+// --- 13. una coda illeggibile non diventa una coda vuota -------------------
+{
+  memoria.clear()
+  memoria.set('ods-corsi:coda', '[{"chiave":"k1","tipo":"segna","args":["s1","p1"')
+  const c = new Coda(async () => { throw new Error('niente rete') })
+  await attesa()
+  const copia = [...memoria].find(([k]) => k.startsWith('ods-corsi:coda:illeggibile'))
+  console.log(`13 coda illeggibile: avvisata ${c.stato?.illeggibile}, copia ${copia ? 'tenuta' : 'persa'}`)
+  if (c.stato?.illeggibile !== true) dimmi('una coda illeggibile si legge come vuota, senza dirlo')
+  // La copia è una lista: più code illeggibili, una dopo l'altra, non si coprono.
+  if (JSON.parse(copia?.[1] ?? '[]')[0] !== '[{"chiave":"k1","tipo":"segna","args":["s1","p1"') dimmi('il contenuto illeggibile non è stato messo da parte')
+  c.accoda('k2', 'segna', ['s1', 'p2', 'presente'])
+  const ancora = [...memoria].find(([k]) => k.startsWith('ods-corsi:coda:illeggibile'))
+  if (!ancora) dimmi('la scrittura dopo ha cancellato la copia')
+  c.svuota()
+}
+
+// --- 13b. se la copia non si può fare, l'originale non si tocca -----------
+{
+  memoria.clear()
+  memoria.set('ods-corsi:coda', '{rotto')
+  pieno = true
+  const c = new Coda(async () => { throw new Error('niente rete') })
+  c.accoda('k1', 'segna', ['s1', 'p1', 'presente'])
+  await attesa()
+  pieno = false
+  console.log(`13b copia impossibile: originale «${memoria.get('ods-corsi:coda')}», solo in memoria ${c.soloInMemoria}`)
+  if (memoria.get('ods-corsi:coda') !== '{rotto') dimmi('la coda illeggibile è stata sovrascritta senza copia')
+  if (c.soloInMemoria !== 1) dimmi('la presenza nuova doveva risultare solo in memoria')
+  c.svuota()
+}
+
+// --- 13c. una riga rotta accanto a righe buone: avviso e copia ------------
+// Le righe buone ripartono, ma quella rotta non si butta in silenzio.
+{
+  memoria.clear()
+  const grezzo = '[{"chiave":"k1","tipo":"segna","args":["s1","p1","presente"]},{"rotta":1}]'
+  memoria.set('ods-corsi:coda', grezzo)
+  const c = new Coda(async () => { throw new Error('niente rete') })
+  await attesa()
+  const copia = [...memoria].find(([k]) => k.startsWith('ods-corsi:coda:illeggibile'))
+  console.log(`13c riga rotta: avvisata ${c.stato?.illeggibile}, in attesa ${c.stato?.inAttesa}, copia ${copia ? 'tenuta' : 'persa'}`)
+  if (c.stato?.illeggibile !== true) dimmi('una riga rotta accanto a righe buone si butta senza dirlo')
+  if (JSON.parse(copia?.[1] ?? '[]')[0] !== grezzo) dimmi('la coda con la riga rotta non è stata messa da parte')
+  if (c.stato?.inAttesa !== 1) dimmi('la riga buona accanto a quella rotta doveva restare in coda')
+  c.svuota()
+}
+
+// --- 14. la memoria piena si dice a chi guarda la coda --------------------
+{
+  memoria.clear()
+  const visti = []
+  const c = new Coda(async () => { throw new Error('niente rete') })
+  c.guarda((n, stato) => visti.push(stato?.soloInMemoria))
+  pieno = true
+  c.accoda('k1', 'segna', ['s1', 'p1', 'presente'])
+  pieno = false
+  await attesa()
+  console.log(`14 memoria piena: la spia ha saputo ${JSON.stringify(visti)}`)
+  if (visti.at(-1) !== 1) dimmi('la spia non sa che la presenza sta solo in memoria')
+  c.svuota()
+}
+
+// --- 15. il 42501 senza accesso aspetta, con l'accesso si butta -----------
+{
+  const casi = [
+    [{ code: '42501' }, false, true],
+    [{ code: '42501' }, true, false],
+    [{ code: '23505' }, false, false],
+    [new Error('niente rete'), false, false],
+  ]
+  const avuti = await Promise.all(casi.map(([e, conAccesso]) => aspettaLAccesso(e, () => conAccesso)))
+  // Per la rete che manca la sessione non si chiede.
+  let chiesta = false
+  await aspettaLAccesso(new Error('niente rete'), () => (chiesta = true))
+  if (chiesta) dimmi('per un errore di rete si è chiesta la sessione')
+  console.log(`15 42501: ${JSON.stringify(avuti)}`)
+  casi.forEach(([e, conAccesso, voluto], i) => {
+    if (avuti[i] !== voluto) dimmi(`${e.code ?? e.message} ${conAccesso ? 'con' : 'senza'} accesso: voluto ${voluto}, avuto ${avuti[i]}`)
+  })
+}
+
+// Per i casi che confrontano un valore con quello voluto.
+const ok = (cosa, avuto, voluto) => { if (avuto !== voluto) dimmi(`${cosa}: avuto ${JSON.stringify(avuto)}, voluto ${JSON.stringify(voluto)}`) }
+
+// 16. Le frasi della spia: chi usa l'app deve sapere se le presenze sono al
+// sicuro sul telefono, se si perdono chiudendo, o se qualcosa non si legge più.
+{
+  ok('16: coda vuota, nessun avviso', avvisiCoda({ inAttesa: 0, soloInMemoria: 0, illeggibile: false }).length, 0)
+  const attesa = avvisiCoda({ inAttesa: 2, soloInMemoria: 0, illeggibile: false })
+  ok('16: in attesa, un avviso', attesa.length, 1)
+  ok('16: in attesa, tono attesa', attesa[0]?.tono, 'attesa')
+  ok('16: in attesa, dice che sono sul telefono', /salvate sul telefono/.test(attesa[0]?.frase ?? ''), true)
+  const memoria = avvisiCoda({ inAttesa: 2, soloInMemoria: 2, illeggibile: false })
+  ok('16: memoria piena, tono guaio', memoria[0]?.tono, 'guaio')
+  // Dire «salvate sul telefono» quando il disco non le ha prese è falso: chi chiude l'app le perde.
+  ok('16: memoria piena, non dice che sono salvate', /salvate sul telefono/.test(memoria[0]?.frase ?? ''), false)
+  ok('16: memoria piena, dice di non chiudere', /non chiudere/i.test(memoria[0]?.frase ?? ''), true)
+  const rotta = avvisiCoda({ inAttesa: 0, soloInMemoria: 0, illeggibile: true })
+  ok('16: coda illeggibile, un avviso anche a coda vuota', rotta.length, 1)
+  ok('16: coda illeggibile, tono guaio', rotta[0]?.tono, 'guaio')
+  ok('16: coda illeggibile, dice di ricontrollare', /ricontrolla/i.test(rotta[0]?.frase ?? ''), true)
+  ok('16: illeggibile e in attesa, due avvisi', avvisiCoda({ inAttesa: 1, soloInMemoria: 0, illeggibile: true }).length, 2)
+  ok('16: una sola, al singolare', avvisiCoda({ inAttesa: 1, soloInMemoria: 0, illeggibile: false })[0]?.titolo, 'UNA PRESENZA DA INVIARE')
+  ok('16: due, al plurale', attesa[0]?.titolo, '2 PRESENZE DA INVIARE')
+  // Sul tablet di sala «questo telefono» è falso: chi legge cerca un telefono che non c'è.
+  const tablet = avvisiCoda({ inAttesa: 2, soloInMemoria: 2, illeggibile: true }, 'tablet')
+  ok('16: sul tablet, si dice tablet', tablet.every((a) => /tablet/.test(a.frase) && !/telefono/.test(a.frase)), true)
+}
+
+// 17. Alla porta, dopo la sessione scaduta: chi rientra sa che qualcosa aspetta lui.
+{
+  ok('17: niente in coda, niente avviso', avvisoPerChiRientra(0), null)
+  const a = avvisoPerChiRientra(3)
+  ok('17: tre in coda, dice quante', /3/.test(a?.titolo ?? ''), true)
+  ok('17: tre in coda, dice di entrare', /entra/i.test(a?.frase ?? ''), true)
+  ok('17: una sola, al singolare', /^UNA /.test(avvisoPerChiRientra(1)?.titolo ?? ''), true)
+}
+
+// 18. La coda illeggibile non si perde per strada: né uscendo, né ricaricando.
+{
+  // Gli array si confrontano per contenuto: `ok` guarda l'identità.
+  const uguali = (cosa, avuto, voluto) => ok(cosa, JSON.stringify(avuto), JSON.stringify(voluto))
+  const copie = (dove = 'ods-corsi:coda') => JSON.parse(memoria.get(`${dove}:illeggibile`) ?? '[]')
+
+  // Chi esce la cancellerebbe insieme alle altre: ESCI deve chiedere.
+  memoria.clear()
+  memoria.set('ods-corsi:coda', '{rotto')
+  const u = new CodaDiUscita(async () => { throw new Error('niente rete') }, 'ods-corsi:coda')
+  await attesa()
+  let uscito = 0
+  let chiesto = 0
+  const smetti = guardaUscita((p) => { if (p) chiesto++ })
+  await uscita(async () => { uscito++ }, 20)
+  smetti()
+  ok('18: con la coda illeggibile ESCI chiede', chiesto, 1)
+  ok('18: e non esce da solo', uscito, 0)
+  ok('18: la copia resta', copie().length, 1)
+  u.svuota()
+
+  // Ogni ricarica rileggeva lo stesso JSON rotto e ne aggiungeva un'altra copia.
+  memoria.clear()
+  memoria.set('ods-corsi:coda', '{rotto')
+  new Coda(async () => { throw new Error('niente rete') })
+  new Coda(async () => { throw new Error('niente rete') })
+  await attesa()
+  uguali('18: ricaricata due volte, una copia sola', copie(), ['{rotto'])
+  ok('18: messa da parte, la coda rotta non resta al suo posto', memoria.get('ods-corsi:coda'), '[]')
+
+  // Due code rotte diverse, una dopo l'altra: si tengono tutte e due.
+  memoria.set('ods-corsi:coda', '{rotto due')
+  new Coda(async () => { throw new Error('niente rete') })
+  await attesa()
+  uguali('18: due code rotte diverse, due copie', copie(), ['{rotto', '{rotto due'])
+
+  // Una riga buona e una no: la buona parte, la rotta si mette da parte.
+  memoria.clear()
+  const mista = '[{"chiave":"k1","tipo":"segna","args":["s1","p1","presente"]},42]'
+  memoria.set('ods-corsi:coda', mista)
+  const c = new Coda(async () => { throw new Error('niente rete') })
+  await attesa()
+  ok('18: lista mista, la riga buona resta in coda', c.inAttesa, 1)
+  ok('18: lista mista, si dice illeggibile', c.stato?.illeggibile, true)
+  uguali('18: lista mista, la copia c\'è', copie(), [mista])
+  c.svuota()
+}
+
+// 19. Chi rientra deve sapere su quale dispositivo, e con quale account.
+{
+  const t = avvisoPerChiRientra(2, 'tablet')
+  ok('19: sul tablet si dice tablet', /tablet/.test(t?.frase ?? ''), true)
+  // Con un altro account le scritture partirebbero col token sbagliato, e il server le rifiuterebbe.
+  ok('19: si dice di rientrare con lo stesso account', /stesso account/.test(t?.frase ?? ''), true)
+  ok('19: sul telefono di chi insegna, questo dispositivo', /questo dispositivo/.test(avvisoPerChiRientra(1)?.frase ?? ''), true)
 }
 
 console.log(guai ? `\n${guai} PROBLEMI` : '\nTUTTO A POSTO')

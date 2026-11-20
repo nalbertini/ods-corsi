@@ -162,6 +162,13 @@ riavvia; in alto la spia **IN ATTESA DI RETE · …** dice quante ne aspettano.
 Non serve ritoccare il nome. Una presenza che arriva dopo la fine della
 lezione risulta **SEGNATO DOPO**.
 
+Sotto la testata, sopra qualunque cosa sia aperta, un riquadro rosso avvisa
+dei guai: **il tablet non ha più spazio per salvarle** (non chiudete l'app
+finché non partono) o **PRESENZE DA RICONTROLLARE** (le presenze salvate non si
+leggono più: l'istruttore riguardi l'appello delle ultime lezioni). Se il tablet
+perde l'accesso con delle presenze in attesa, **COLLEGA IL TABLET** dice quante
+sono: ricollegatelo e partono da sole.
+
 Chi non trova il suo nome non è iscritto a quel corso: va detto alla segreteria.
 Se il corso ha due lezioni lo stesso giorno, chi si è già segnato all'altra non
 c'è fra i nomi: è giusto così, conta quella. Se il nome arriva toccato lo

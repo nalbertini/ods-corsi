@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+  </style>
+</helmet>
+<!-- PROPOSTA tablet: il bollino resta; quando il tablet non ha spazio o la coda non si legge, sotto la testata c'e' l'avviso rosso, con «tablet» al posto di «telefono». -->
+<div style="display:flex;flex-direction:column;width:1280px;min-height:420px;background:#0d2a3d">
+  <dc-import name="TabletTestataSala" rete="3" hint-size="100%,92px"></dc-import>
+  <div style="padding:24px 32px;display:flex;flex-direction:column;gap:16px;align-items:flex-start">
+    <dc-import name="TabletAvviso" tipo="guaio" titolo="3 PRESENZE DA INVIARE" testo="Il tablet non ha più spazio per salvarle: non chiudere l’app finché non partono." hint-size="800px,150px"></dc-import>
+    <dc-import name="TabletAvviso" tipo="guaio" titolo="PRESENZE DA RICONTROLLARE" testo="Alcune presenze salvate su questo tablet non si leggono più: ricontrolla l’appello delle ultime lezioni." hint-size="800px,150px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":420}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

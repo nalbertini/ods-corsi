@@ -462,6 +462,13 @@ telefono. Dentro la lezione, sotto quanti restano da segnare, compare in giallo
 Spariscono quando è tutto arrivato. Se toccate più volte la stessa persona
 mentre la rete non c'è, parte solo l'ultimo segno.
 
+Se il telefono non ha più spazio per salvarle, la riga diventa rossa e dice
+**non chiudere l'app finché non partono**: restano solo nella pagina aperta.
+Se le presenze salvate non si leggono più, compare **PRESENZE DA RICONTROLLARE**:
+riguardate l'appello delle ultime lezioni. Se l'accesso scade mentre qualcosa
+aspetta, non si perde niente: la pagina d'accesso dice **N MODIFICHE DA
+INVIARE**, e partono da sole appena entrate di nuovo.
+
 **ESCI** prima prova a mandare quello che aspetta, ancora col vostro account.
 Se qualcosa non riesce ad arrivare (manca la rete), non esce da solo: un avviso
 dice quante cose mancano. **TORNA** lascia tutto com'è e le scritture

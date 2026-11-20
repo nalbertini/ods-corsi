@@ -309,9 +309,10 @@ console.log('\n7. col database: la coda delle scritture')
   const inCoda = () => JSON.parse(memoria.get(DOVE) ?? '[]').map((o) => [o.tipo, ...o.args])
   const attesa = () => new Promise((r) => setTimeout(r, 10))
   const rete = () => (ascoltatori.online ?? []).forEach((f) => f())
-  const finto = (risposta) => {
+  const finto = (risposta, sessione = {}) => {
     const chiamate = []
-    const db = { rpc: async (nome, args) => (chiamate.push([nome, args]), risposta(nome, args)), from: () => { throw new Error('qui non si legge') } }
+    // Con l'accesso, come il client vero: un 42501 senza sessione aspetta il nuovo accesso (vedi prova-coda).
+    const db = { rpc: async (nome, args) => (chiamate.push([nome, args]), risposta(nome, args)), from: () => { throw new Error('qui non si legge') }, auth: { getSession: async () => ({ data: { session: sessione } }) } }
     return { db, chiamate }
   }
   const senzaRete = { data: null, error: { code: '', message: 'TypeError: Failed to fetch' } }
@@ -343,6 +344,29 @@ console.log('\n7. col database: la coda delle scritture')
   let scartate3 = 0
   d3.guardaScartate?.((n) => { scartate3 = n })
   await prova('un rifiuto vero sì: si dice', async () => (await d3.segnaCollega('s1', 'p2', true), await attesa(), [inCoda().length, scartate3]), [0, 1])
+
+  // Sessione scaduta sul telefono: lo stesso 42501 non è un no, è un accesso che manca.
+  memoria.delete(DOVE)
+  const sc = finto(() => ({ data: null, error: { code: '42501', message: 'permission denied for function segna_collega' } }), null)
+  const dScaduta = m.creaDatiSupabase(sc.db)
+  let scartateScaduta = 0
+  dScaduta.guardaScartate?.((n) => { scartateScaduta = n })
+  await prova('sessione scaduta: il segno resta in coda fino al nuovo accesso', async () => (await dScaduta.segnaCollega('s1', 'p2', true), await attesa(), [inCoda().length, scartateScaduta]), [1, 0])
+  memoria.delete(DOVE)
+
+  // Togliere una presenza senza sessione: le policy non lasciano cancellare niente, ma senza errore.
+  // Zero righe cancellate e nessun accesso non è «fatto»: la presenza resta da togliere.
+  const cancellaSenzaRighe = (sessione) => ({
+    rpc: async () => ({ data: null, error: null }),
+    from: () => ({ delete: () => ({ match: () => ({ select: async () => ({ data: [], error: null }) }) }) }),
+    auth: { getSession: async () => ({ data: { session: sessione } }) },
+  })
+  const dTogli = m.creaDatiSupabase(cancellaSenzaRighe(null))
+  await prova('sessione scaduta: togliere una presenza resta in coda', async () => (await dTogli.segna('s1', 'p1', null), await attesa(), inCoda()), [['segna', 's1', 'p1', null]])
+  memoria.delete(DOVE)
+  const dTogliCon = m.creaDatiSupabase(cancellaSenzaRighe({}))
+  await prova('con l\'accesso, una presenza già tolta non resta in coda', async () => (await dTogliCon.segna('s1', 'p1', null), await attesa(), inCoda().length), 0)
+  memoria.delete(DOVE)
 
   const rispondi = (data, error = null) => finto(() => ({ data, error })).db
   await prova('gli istruttori della lezione, dal database', async () =>

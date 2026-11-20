@@ -31,17 +31,58 @@ export interface Operazione {
 // prova sul dispositivo: non tracciano nessuno, e si tolgono ripartendo.
 const DOVE = 'ods-corsi:coda'
 
-const leggi = (dove: string): Operazione[] => {
+const eOperazione = (o: unknown): o is Operazione => {
+  // Un oggetto qualsiasi letto dal disco: si guardano i campi uno per uno.
+  const x = o as Partial<Operazione> | null
+  return !!x && typeof x.chiave === 'string' && typeof x.tipo === 'string' && Array.isArray(x.args)
+}
+
+interface Letta {
+  lista: Operazione[]
+  /**
+   * Quel che c'era su disco, se non si è letto tutto: un JSON rotto o una riga
+   * che non è un'operazione. Erano presenze anche loro, e una coda che le
+   * leggesse come vuota le cancellerebbe alla prima scrittura senza dirlo.
+   */
+  illeggibile: string | null
+}
+
+const leggi = (dove: string): Letta => {
+  let grezzo: string | null = null
   try {
-    const grezzo = localStorage.getItem(dove)
+    grezzo = localStorage.getItem(dove)
     const lista: unknown = grezzo ? JSON.parse(grezzo) : []
-    if (!Array.isArray(lista)) return []
-    return lista.filter(
-      (o): o is Operazione =>
-        !!o && typeof o.chiave === 'string' && typeof o.tipo === 'string' && Array.isArray(o.args),
-    )
+    if (!Array.isArray(lista)) return { lista: [], illeggibile: grezzo }
+    const buone = lista.filter(eOperazione)
+    return { lista: buone, illeggibile: buone.length === lista.length ? null : grezzo }
   } catch {
-    return []
+    return { lista: [], illeggibile: grezzo }
+  }
+}
+
+/** Dove si mette da parte una coda illeggibile, perché la si possa ancora guardare. */
+const daParte = (dove: string) => `${dove}:illeggibile`
+
+/**
+ * Aggiunge `grezzo` alle code illeggibili già messe da parte, senza toccare
+ * quelle di prima. Vero se è arrivato su disco: solo allora l'originale si
+ * può sovrascrivere.
+ */
+const metteDaParte = (dove: string, grezzo: string): boolean => {
+  try {
+    let prima: unknown = []
+    try {
+      prima = JSON.parse(localStorage.getItem(daParte(dove)) ?? '[]')
+    } catch {
+      // Anche la copia è rotta: la si tiene com'è, dentro la lista nuova.
+      prima = [localStorage.getItem(daParte(dove))]
+    }
+    const copie = Array.isArray(prima) ? prima : [prima]
+    // Due pagine aperte, o una ricarica prima che l'originale sia riscritto, rileggono la stessa coda rotta.
+    if (!copie.includes(grezzo)) localStorage.setItem(daParte(dove), JSON.stringify([...copie, grezzo]))
+    return true
+  } catch {
+    return false
   }
 }
 
@@ -59,12 +100,45 @@ const scrivi = (dove: string, lista: Operazione[]): boolean => {
 /** Le code che questa pagina ha aperto: serve a mandarle o a svuotarle quando si esce. */
 const vive = new Set<Coda>()
 
+/** Vero se c'è una coda illeggibile messa da parte e non ancora guardata. */
+const haCopia = (dove: string): boolean => {
+  try {
+    return localStorage.getItem(daParte(dove)) !== null
+  } catch {
+    return false
+  }
+}
+
+/** Toglie la copia di una coda illeggibile. */
+const dimentica = (dove: string) => {
+  try {
+    localStorage.removeItem(daParte(dove))
+  } catch {
+    // Niente da fare: al più resta una copia che nessuno legge.
+  }
+}
+
 const pausa = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+
+/** Quel che la spia della coda deve sapere, oltre al numero. */
+export interface StatoCoda {
+  inAttesa: number
+  /** Quante si perderebbero ricaricando: il disco non le ha prese. */
+  soloInMemoria: number
+  /** Su disco c'era una coda che non si è letta: messa da parte, non mandata. */
+  illeggibile: boolean
+}
 
 export class Coda {
   private lista: Operazione[]
   private sta = false
-  private ascoltatori = new Set<(n: number) => void>()
+  private ascoltatori = new Set<(n: number, stato: StatoCoda) => void>()
+  private illeggibile = false
+  /**
+   * La coda illeggibile non è stata messa da parte (memoria piena): finché è
+   * così il disco non si sovrascrive, e la coda vive solo in questa pagina.
+   */
+  private bloccata = false
   /**
    * L'ultima scrittura su disco è riuscita. Se no, quel che c'è in coda vive
    * solo in questa pagina, e ricaricarla lo perde: la schermata d'errore lo
@@ -82,7 +156,17 @@ export class Coda {
     readonly dove = DOVE,
   ) {
     vive.add(this)
-    this.lista = leggi(dove)
+    const letta = leggi(dove)
+    this.lista = letta.lista
+    if (letta.illeggibile !== null) {
+      this.illeggibile = true
+      this.bloccata = !metteDaParte(dove, letta.illeggibile)
+      // Messa da parte, al suo posto va quel che si è letto: se no ogni ricarica la ritrova rotta.
+      this.suDisco = !this.bloccata && scrivi(dove, this.lista)
+    } else {
+      // La copia di una volta precedente resta da guardare: la spia lo dice finché non si svuota.
+      this.illeggibile = haCopia(dove)
+    }
     window.addEventListener('online', () => void this.scarica())
     // Quello rimasto dall'ultima volta (l'app chiusa senza rete, o ricaricata
     // per un aggiornamento) parte appena si riapre, senza aspettare un tocco.
@@ -114,15 +198,27 @@ export class Coda {
     return this.suDisco ? 0 : this.lista.length
   }
 
-  /** Avvisa quando la coda si allunga o si accorcia: serve alla spia in alto. */
-  guarda(f: (n: number) => void) {
+  get stato(): StatoCoda {
+    return { inAttesa: this.inAttesa, soloInMemoria: this.soloInMemoria, illeggibile: this.illeggibile }
+  }
+
+  /**
+   * Avvisa quando la coda si allunga o si accorcia, o quando il disco smette
+   * (o riprende) di prenderla: serve alla spia in alto.
+   */
+  guarda(f: (n: number, stato: StatoCoda) => void) {
     this.ascoltatori.add(f)
-    f(this.inAttesa)
+    f(this.inAttesa, this.stato)
     return () => this.ascoltatori.delete(f)
   }
 
   private avvisa() {
-    for (const f of this.ascoltatori) f(this.inAttesa)
+    for (const f of this.ascoltatori) f(this.inAttesa, this.stato)
+  }
+
+  /** Scrive su disco, se si può: una coda illeggibile non messa da parte non si sovrascrive. */
+  private salva() {
+    this.suDisco = !this.bloccata && scrivi(this.dove, this.lista)
   }
 
   /** Come `scarica`, ma se ne sta già scaricando un'altra giro aspetta che finisca. */
@@ -136,8 +232,13 @@ export class Coda {
 
   /** Butta le scritture ancora in coda, in memoria e su disco. Solo uscendo: vedi `uscita.ts`. */
   svuota() {
+    // Chi esce lo stesso ha scelto di perdere quel che c'è, anche quel che non
+    // si leggeva: il prossimo account non deve ritrovarselo.
     this.lista = []
-    this.suDisco = scrivi(this.dove, this.lista)
+    this.bloccata = false
+    this.illeggibile = false
+    dimentica(this.dove)
+    this.salva()
     this.avvisa()
   }
 
@@ -145,7 +246,7 @@ export class Coda {
   accoda(chiave: string, tipo: string, args: unknown[]) {
     this.lista = this.lista.filter((o) => o.chiave !== chiave)
     this.lista.push({ chiave, tipo, args, quando: Date.now() })
-    this.suDisco = scrivi(this.dove, this.lista)
+    this.salva()
     this.avvisa()
     void this.scarica()
   }
@@ -170,7 +271,7 @@ export class Coda {
         // Può essere stata sostituita mentre il server rispondeva: si toglie
         // per identità, non per posizione.
         this.lista = this.lista.filter((o) => o !== op)
-        this.suDisco = scrivi(this.dove, this.lista)
+        this.salva()
         this.avvisa()
       }
     } finally {
@@ -184,12 +285,17 @@ export class Coda {
 // ritroverebbe e rieseguirebbe col suo token.
 const CODE_DELL_APP = ['ods-corsi:coda', 'ods-corsi:coda-sala']
 
-/** Quante scritture non sono arrivate, su disco o in memoria (la memoria piena non le fa sparire). */
+/**
+ * Quante scritture non sono arrivate, su disco o in memoria (la memoria piena
+ * non le fa sparire). Una coda illeggibile conta per una: non si sa quante
+ * presenze tiene, ma uscendo si cancellerebbe, e chi esce deve poter dire no.
+ */
 export function inCodaDiTutte(): number {
-  return CODE_DELL_APP.reduce(
-    (tot, dove) => tot + Math.max(leggi(dove).length, ...[...vive].filter((c) => c.dove === dove).map((c) => c.inAttesa)),
-    0,
-  )
+  return CODE_DELL_APP.reduce((tot, dove) => {
+    const qui = [...vive].filter((c) => c.dove === dove)
+    const rotta = haCopia(dove) || qui.some((c) => c.stato.illeggibile) ? 1 : 0
+    return tot + Math.max(leggi(dove).lista.length, ...qui.map((c) => c.inAttesa)) + rotta
+  }, 0)
 }
 
 /**
@@ -208,5 +314,71 @@ export async function mandaTutto(ms: number): Promise<void> {
 /** Dimentica le scritture ancora in coda, di tutte le code dell'app. */
 export function svuotaTutte(): void {
   for (const c of vive) if (CODE_DELL_APP.includes(c.dove)) c.svuota()
-  for (const dove of CODE_DELL_APP) scrivi(dove, [])
+  for (const dove of CODE_DELL_APP) {
+    scrivi(dove, [])
+    dimentica(dove)
+  }
+}
+
+/**
+ * Un permesso negato (42501) senza nessun accesso non è un no del server: la
+ * richiesta è partita come anonima perché la sessione è scaduta, e il
+ * rinnovo non è riuscito. Buttarla perderebbe la presenza: resta in coda
+ * finché qualcuno rientra. Con l'accesso, invece, il no è vero. La sessione
+ * si chiede solo per un 42501: per la rete che manca non serve.
+ */
+export async function aspettaLAccesso(e: unknown, conAccesso: () => boolean | Promise<boolean>): Promise<boolean> {
+  const codice = (e as { code?: unknown } | null)?.code
+  return codice === '42501' && !(await conAccesso())
+}
+
+/** Una riga della spia della coda: il tono decide il colore, il resto si legge. */
+export interface AvvisoCoda {
+  tono: 'attesa' | 'guaio'
+  titolo: string
+  frase: string
+}
+
+const quante = (n: number) => (n === 1 ? 'UNA PRESENZA DA INVIARE' : `${n} PRESENZE DA INVIARE`)
+
+/**
+ * Cosa dire a chi ha la coda davanti. Tre casi diversi, e chi li confonde
+ * sbaglia: «salvate sul telefono» a memoria piena è falso (chiudendo l'app si
+ * perdono), e una coda che non si legge non aspetta la rete, aspetta qualcuno
+ * che ricontrolli l'appello.
+ */
+export function avvisiCoda(s: StatoCoda, dispositivo: 'telefono' | 'tablet' = 'telefono'): AvvisoCoda[] {
+  const avvisi: AvvisoCoda[] = []
+  if (s.illeggibile) {
+    avvisi.push({
+      tono: 'guaio',
+      titolo: 'PRESENZE DA RICONTROLLARE',
+      frase: `Alcune presenze salvate su questo ${dispositivo} non si leggono più: ricontrolla l’appello delle ultime lezioni.`,
+    })
+  }
+  if (s.soloInMemoria > 0) {
+    avvisi.push({
+      tono: 'guaio',
+      titolo: quante(s.inAttesa),
+      frase: `Il ${dispositivo} non ha più spazio per salvarle: non chiudere l’app finché non partono.`,
+    })
+  } else if (s.inAttesa > 0) {
+    avvisi.push({ tono: 'attesa', titolo: quante(s.inAttesa), frase: `Sono salvate sul ${dispositivo}: partono da sole appena c’è rete.` })
+  }
+  return avvisi
+}
+
+/**
+ * Alla porta, quando la sessione è scaduta con qualcosa in coda: quelle
+ * scritture aspettano un nuovo accesso (vedi `aspettaLAccesso`), e chi è
+ * davanti al modulo deve saperlo per non pensarle perse.
+ */
+export function avvisoPerChiRientra(n: number, dispositivo: 'tablet' | 'dispositivo' = 'dispositivo'): AvvisoCoda | null {
+  if (n <= 0) return null
+  return {
+    tono: 'attesa',
+    titolo: n === 1 ? 'UNA MODIFICA DA INVIARE' : `${n} MODIFICHE DA INVIARE`,
+    // Con un altro account partirebbero col suo nome, e il server le rifiuterebbe.
+    frase: `Sono salvate su questo ${dispositivo}: entra di nuovo con lo stesso account e partono da sole.`,
+  }
 }

@@ -282,9 +282,11 @@ console.log('\n11. i tocchi senza rete')
   ok('in prova ogni errore è un no', m.rifiutato(new Error('x'), 'prova'), true)
 
   let rete = false
+  let accesso = true
   const fatte = []
   const finto = {
     modo: 'supabase',
+    async conAccesso() { return accesso },
     async segna(s, p) {
       if (!rete) throw Object.assign(new Error('Failed to fetch'), { code: '' })
       if (p === 'nessuno') throw Object.assign(new Error('non è iscritto a questo corso'), { code: '42501' })
@@ -314,6 +316,21 @@ console.log('\n11. i tocchi senza rete')
   }
   ok('torna la rete: partono in ordine', fatte, ['segna elena', 'annulla giulia'])
   ok('e il no del server si butta, non blocca la coda', coda.inAttesa, 0)
+
+  // La postazione ha perso l'accesso: lo stesso 42501 non è un no, il tocco aspetta il nuovo accesso.
+  accesso = false
+  coda.accoda(m.chiaveTocco('L', 'nessuno'), 'segna', ['L', 'nessuno'])
+  for (let i = 0; i < 5; i++) {
+    await new Promise((r) => setTimeout(r, 0))
+    await coda.scarica()
+  }
+  ok('senza accesso il tocco resta in coda', [...m.inAttesa(coda, 'L')], ['nessuno'])
+  accesso = true
+  for (let i = 0; i < 5 && coda.inAttesa; i++) {
+    await new Promise((r) => setTimeout(r, 0))
+    await coda.scarica()
+  }
+  ok('rientrata, il no del server si butta', coda.inAttesa, 0)
 
   m.ricordaTocco('L', 'elena')
   ok('appena toccato si annulla', m.siAnnulla('L', 'elena'), true)

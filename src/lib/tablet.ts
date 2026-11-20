@@ -6,7 +6,7 @@ import type { ListaMusica } from './musica'
 import type { ImpostazioniSala, TimerSala } from '../../timer/src/lib/impostazioniSala'
 import type { FonteClip } from '../../timer/src/lib/voice'
 import type { ChiProva, GiaProvato } from './prove'
-import { Coda } from './coda'
+import { aspettaLAccesso, Coda } from './coda'
 
 /**
  * Il tablet di sala.
@@ -157,6 +157,8 @@ export interface DatiTablet {
   scegliSala?(sala: string): Promise<void>
   /** Il tablet smette di essere il tablet di una sala. */
   scollega(): Promise<void>
+  /** Vero se il tablet ha ancora il suo accesso. Senza, un permesso negato vuol dire solo che è scaduto. */
+  conAccesso?(): Promise<boolean>
 
   /** Le lezioni della sala fra due giorni, estremi inclusi. */
   lezioni(da: Date, a: Date): Promise<LezioneSala[]>
@@ -432,6 +434,8 @@ export function codaDelTablet(d: DatiTablet): Coda {
       if (op.tipo === 'segna') await d.segna(sessioneId, personaId)
       else if (op.tipo === 'annulla') await d.annulla(sessioneId, personaId)
     } catch (e) {
+      // La postazione che ha perso l'accesso tiene i tocchi finché la si rifà entrare.
+      if (await aspettaLAccesso(e, async () => (await d.conAccesso?.()) ?? true)) throw e
       if (rifiutato(e, d.modo)) return // scartato: il server non lo vuole, e non lo vorrà
       throw e
     }
