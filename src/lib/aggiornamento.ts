@@ -14,16 +14,19 @@
  * le presenze non serve — ogni presenza è scritta su disco prima di partire
  * (`coda.ts`), quindi un ricaricamento a metà appello non perde niente — ma il
  * tablet di sala ha il timer dentro, e lì vale ancora (`trattieniAggiornamento`).
+ * Vale anche per il modulo d'iscrizione: quello che c'è scritto sta solo in
+ * pagina, e un ricaricamento lo cancellerebbe.
  */
 
 let giàRicaricata = false
-let trattenuta = false
+/** Chi trattiene adesso: il timer del tablet, uno o più moduli aperti. */
+let trattenitori = 0
 let inAttesa = false
 
 function ricarica() {
   if (giàRicaricata) return
-  // Il timer del tablet di sala a metà allenamento: si ricarica dopo.
-  if (trattenuta) {
+  // Un allenamento a metà o un modulo aperto: si ricarica dopo.
+  if (trattenitori > 0) {
     inAttesa = true
     return
   }
@@ -32,13 +35,27 @@ function ricarica() {
 }
 
 /**
- * Il ricaricamento aspetta finché serve: sul tablet di sala il timer sta
- * nella stessa pagina, e un allenamento a metà vale più di una versione nuova
- * subito. Quando il timer si ferma, se era arrivata, la versione nuova entra.
+ * Il ricaricamento aspetta finché serve: un allenamento a metà, o un modulo
+ * compilato a metà, valgono più di una versione nuova subito. Restituisce la
+ * funzione che lascia; quando lascia l'ultimo, se era arrivata, la versione
+ * nuova entra. È un conteggio e non un sì/no perché tablet e modulo, o due
+ * moduli, possono trattenere insieme: chi lascia per primo non deve far
+ * ricaricare la pagina sotto l'altro.
  */
-export function trattieniAggiornamento(si: boolean) {
-  trattenuta = si
-  if (!si && inAttesa) ricarica()
+export function trattieniAggiornamento(): () => void {
+  trattenitori++
+  let lasciato = false
+  return () => {
+    // Lo stesso rilascio chiamato due volte (React in sviluppo) conta una.
+    if (lasciato) return
+    lasciato = true
+    trattenitori--
+    if (trattenitori === 0 && inAttesa) ricarica()
+  }
+}
+
+export function aggiornamentoTrattenuto(): boolean {
+  return trattenitori > 0
 }
 
 const CHIAVE_PEZZO = 'ods-ricaricata-per-pezzo'
@@ -60,6 +77,9 @@ export function ricaricarePerPezzoMancante(ultima: string | null, ora: number): 
  */
 export function ricaricaSePezzoMancante() {
   window.addEventListener('vite:preloadError', (e) => {
+    // Con un modulo aperto ricaricare cancellerebbe quel che c'è scritto:
+    // l'errore arriva a chi ha chiesto il pezzo, che dice di riprovare.
+    if (aggiornamentoTrattenuto()) return
     try {
       if (!ricaricarePerPezzoMancante(sessionStorage.getItem(CHIAVE_PEZZO), Date.now())) return
       sessionStorage.setItem(CHIAVE_PEZZO, String(Date.now()))
