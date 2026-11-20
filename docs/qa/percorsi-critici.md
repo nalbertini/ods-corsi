@@ -322,9 +322,6 @@ quando arriva la prova.
 - Errore di pagina (appello): il confine in `main.tsx`, `App.tsx`, `TimerSala.tsx` e `TimerBloccato.tsx` non ha prova. Se cade, torna lo schermo bianco. Solo collaudo a mano. DA FARE in `prova-errore.mjs`, con un controllo sui sorgenti.
 - Errore di pagina (appello): i tasti RICARICA e PROVA A MANDARLE (`SchermataErrore.tsx`) non hanno prova. Se RICARICA ricarica senza aver mandato, o senza ricontrollare la memoria, nessuna prova cade. DA FARE.
 - Errore di pagina (appello): il tetto di 3 secondi di `mandaTutto` non cade se lo si toglie: il server muto di `prova-errore.mjs` non esercita quel caso. DA FARE.
-- ERO PRESENTE, doppio tocco (`Presenze` in `AreaIscritti.tsx`): la guardia `unToccoAllaVolta`
-  è provata (`prova:tocco`), e il doppione lo rifiutano `segnalate.ts` e il database. Non provato
-  che il componente la chiami: solo collaudo a mano.
 
 ## Come si aggiorna
 
