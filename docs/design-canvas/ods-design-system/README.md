@@ -172,7 +172,7 @@ Google, e vale solo per i mockup.
 | `TabletPiedeMusica` | La barra in basso: PRESENZE / TIMER e la musica (`MusicaSala.tsx`): suona, pausa, errore, spenta; Spotify, radio, YouTube |
 | `TabletListeMusica` | Il pannello LA MUSICA DELLA SALA (`.tb-liste`): filtri per categoria e liste accese o spente |
 | `TabletTimerCard` | La scheda di un timer nella lista del timer, col solo tasto ▶ |
-| `TabletAvviso` | `Riquadro` e `Guaio` di `comune.tsx`: riquadro normale o errore rosso a tutta colonna; il guaio anche sotto la testata, per la coda dei tocchi a rischio (PRESENZE DA RICONTROLLARE, memoria piena) |
+| `TabletAvviso` | `Riquadro`, `Guaio` e `Attesa` di `comune.tsx`: riquadro normale, errore rosso o attesa gialla (presenze di un altro account) a tutta colonna; il guaio anche sotto la testata, per la coda dei tocchi a rischio (PRESENZE DA RICONTROLLARE, memoria piena) |
 | `TabletCampo` | `.tb-campo`, il campo di testo del tablet: segnaposto, valore, password, fuoco |
 | `TabletPinSchermata` | La schermata del PIN (`TabletPin.tsx`) com'è nell'app: pallini a sinistra, tastierino a destra |
 | `TimerAnelloAttrezzo` | L'anello di cronometro e conto alla rovescia con tre scritte a scelta (`Ring` e `DentroAnello` di `Quadrante.tsx`); `TimerAnello` ha GIRO e RESTA fissi |

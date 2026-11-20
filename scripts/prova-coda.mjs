@@ -792,6 +792,93 @@ const ok = (cosa, avuto, voluto) => { if (avuto !== voluto) dimmi(`${cosa}: avut
     ok('33: il totale conta tutto', U.inCodaDiTutte(), 3)
     U.svuotaTutte()
   })
+
+  await prova('34', async () => {
+    // Si cambia account senza ricaricare la pagina: la presenza dopo è di chi entra, non di chi è uscito.
+    memoria.clear()
+    let sessione = A
+    const fatte = []
+    let rete = false
+    const c = new Coda(async (op) => {
+      if (!rete) throw new Error('niente rete')
+      fatte.push([op.chiave, op.autore?.id])
+    }, QUI, async () => sessione)
+    c.accoda('k1', 'segna', ['s1', 'p1', 'presente'])
+    await attesa()
+    sessione = B
+    c.accoda('k2', 'segna', ['s1', 'p2', 'presente'])
+    await attesa()
+    ugual('34: la seconda è di chi è entrato', disco().map(autoreDi), [['a', 'Anna Bianchi'], ['b', 'Marco Rossi']])
+    rete = true
+    await c.scarica()
+    ugual('34: con B parte solo la sua', fatte, [['k2', 'b']])
+    ok('34: quella di A aspetta lei', c.inAttesa, 1)
+    c.svuota()
+  })
+
+  // Il `chiE` vero dell'app: è lui a dire di chi sono le presenze, e l'esecutore a non mandarle col token sbagliato.
+  const { outputFiles: conDb } = await build({
+    stdin: { contents: "export { creaDatiSupabase } from './src/lib/datiSupabase'", resolveDir: '.', loader: 'ts' },
+    bundle: true, format: 'esm', write: false, logLevel: 'error', define: { 'import.meta.env': '{}' },
+  })
+  const { creaDatiSupabase } = await import('data:text/javascript;base64,' + Buffer.from(conDb[0].text).toString('base64'))
+  const APP = 'ods-corsi:coda'
+  const utente = (id) => ({ user: { id, email: `${id}@esempio.it` } })
+  /** Un database finto: `sessioni` dice chi è collegato a ogni domanda, `scritte` cosa è arrivato. */
+  const dbFinto = (sessioni) => {
+    const db = { giù: true, scritte: [], volte: 0 }
+    db.auth = { getSession: async () => ({ data: { session: sessioni(db.volte++) } }) }
+    db.from = () => ({
+      upsert: async (riga) => {
+        if (db.giù) throw Object.assign(new Error('Failed to fetch'), { code: '' })
+        db.scritte.push(riga.persona_id)
+        return { error: null }
+      },
+    })
+    return db
+  }
+
+  await prova('35', async () => {
+    memoria.clear()
+    memoria.set('ods-corsi:personale', JSON.stringify({ utente: 'a', nome: 'Anna', cognome: 'Bianchi' }))
+    let chi = 'a'
+    const db = dbFinto(() => (chi ? utente(chi) : null))
+    const dati = creaDatiSupabase(db)
+    await dati.segna('s1', 'p1', 'presente')
+    await attesa()
+    ugual('35: la presenza porta chi è collegato, col nome che si è visto entrare', disco(APP).map(autoreDi), [['a', 'Anna Bianchi']])
+    chi = 'b'
+    db.giù = false
+    rete('online')
+    await attesa()
+    ugual('35: con B collegato quella di A non parte', db.scritte, [])
+    ok('35: e resta su disco', disco(APP).length, 1)
+    chi = null
+    rete('online')
+    await attesa()
+    ugual('35: a sessione scaduta nemmeno', [db.scritte, disco(APP).length], [[], 1])
+    svuotaTutte()
+  })
+
+  await prova('36', async () => {
+    // La coda sceglie la presenza quando c'è ancora A; quando parte, il token è già di B.
+    memoria.clear()
+    memoria.set(APP, JSON.stringify([{ chiave: 'segna:s1:p1', tipo: 'segna', args: ['s1', 'p1', 'presente'], quando: 1, autore: A }]))
+    let dopo = false
+    const db = dbFinto((n) => utente(dopo && n > 0 ? 'b' : 'a'))
+    const dati = creaDatiSupabase(db)
+    await attesa()
+    // Da qui la prima domanda (la scelta della coda) trova A, le altre B.
+    db.volte = 0
+    dopo = true
+    db.giù = false
+    rete('online')
+    await attesa()
+    ugual('36: non parte col token di B', db.scritte, [])
+    ok('36: e resta in coda', disco(APP).length, 1)
+    void dati
+    svuotaTutte()
+  })
 }
 
 console.log(guai ? `\n${guai} PROBLEMI` : '\nTUTTO A POSTO')

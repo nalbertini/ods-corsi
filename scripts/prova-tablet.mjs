@@ -678,6 +678,34 @@ console.log('\nLa coda del tablet è dell\'account che l\'ha scritta')
     await coda.scarica()
     ok('parte anche un tocco firmato da altri', [fatte, coda.inAttesa], [['segna elena'], 0])
   })
+  await prova('il tocco firmato da A non parte col token di B, anche se B entra mentre parte', async () => {
+    memoria.set(QUI, JSON.stringify([tocco('elena', A, 1000)]))
+    const { d, fatte } = postazione(A, { giù: true })
+    const coda = (await nuovo()).codaDelTablet(d)
+    await pausa()
+    // La coda sceglie il tocco quando c'è ancora A; quando parte, sul tablet c'è B.
+    let volte = 0
+    d.chiE = async () => (volte++ === 0 ? A : B)
+    d.stato.giù = false
+    await coda.scarica()
+    ok('non parte', fatte, [])
+    ok('e resta in coda', disco().map(autoreDi), [['a', 'Anna Bianchi']])
+    coda.svuota()
+  })
+
+  // Il `chiE` vero: decide di chi sono i tocchi, e se dice sì a una postazione spenta il no del server li butta.
+  const tabletVero = (session, { riga = null, error = null } = {}) => m.creaTabletSupabase({
+    auth: { getSession: async () => ({ data: { session } }) },
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: riga, error }) }) }) }),
+  })
+  await prova('chiE del tablet vero', async () => {
+    ok('collegata e attiva: id della sessione e nome della postazione',
+      await tabletVero({ user: { id: 't1' } }, { riga: { nome: 'Sala grande', attiva: true } }).chiE(), { id: 't1', nome: 'Sala grande' })
+    ok('senza sessione: nessuno', await tabletVero(null).chiE(), null)
+    ok('postazione spenta: nessuno', await tabletVero({ user: { id: 't1' } }, { riga: { nome: 'Sala grande', attiva: false } }).chiE(), null)
+    ok('senza la sua riga: nessuno', await tabletVero({ user: { id: 't1' } }).chiE(), null)
+    ok('se la riga non si legge: non si sa', await tabletVero({ user: { id: 't1' } }, { error: { code: '', message: 'Failed to fetch' } }).chiE(), null)
+  })
   memoria.delete(QUI)
 }
 

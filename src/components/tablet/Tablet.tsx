@@ -23,7 +23,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Logo } from '../Logo'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { accedi, account, passaA } from '../../lib/accesso'
-import { giornoDopo, Guaio, messaggio, useAdesso, useInattivo, useSchermoAcceso } from './comune'
+import { Attesa, giornoDopo, Guaio, messaggio, useAdesso, useInattivo, useSchermoAcceso } from './comune'
 import { TabletHome } from './TabletHome'
 import { TabletPresenza } from './TabletPresenza'
 import { TabletRecupero } from './TabletRecupero'
@@ -182,7 +182,10 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   // Il bollino basta finché i tocchi aspettano la rete; se rischiano di
   // perdersi (memoria piena, coda illeggibile) serve un avviso che si legga.
   const [statoCoda, setStatoCoda] = useState<StatoCoda>({ inAttesa: 0, soloInMemoria: 0, illeggibile: false })
-  const guaiCoda = avvisiCoda(statoCoda, 'tablet').filter((a) => a.tono === 'guaio' || a.altri)
+  const avvisi = avvisiCoda(statoCoda, 'tablet')
+  const guaiCoda = avvisi.filter((a) => a.tono === 'guaio')
+  // I tocchi di un'altra postazione aspettano lei: si dicono in giallo, senza interrompere chi legge.
+  const diAltri = avvisi.filter((a) => a.altri)
   useEffect(() => {
     const smetti = codaDelTablet(d).guarda((n, stato) => {
       setInCoda(n)
@@ -462,14 +465,22 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
         </button>
       </header>
 
-      {guaiCoda.length > 0 && (
+      {guaiCoda.length + diAltri.length > 0 && (
         <div
           className="tb-corpo"
-          role="alert"
           // I margini di lato del corpo, ma fuori dall'area che scorre: chi sta in sala lo vede qualunque cosa sia aperta. Senza una classe sua perché il CSS iniziale è al limite (prova:css-ingresso).
           style={{ flex: 'none', overflowY: 'visible', paddingBottom: 0, display: 'grid', gap: 12 }}
         >
-          {guaiCoda.map((a) => <Guaio key={a.titolo} titolo={a.titolo} testo={a.frase} />)}
+          {guaiCoda.length > 0 && (
+            <div role="alert" style={{ display: 'grid', gap: 12 }}>
+              {guaiCoda.map((a) => <Guaio key={a.titolo} titolo={a.titolo} testo={a.frase} />)}
+            </div>
+          )}
+          {diAltri.length > 0 && (
+            <div role="status" style={{ display: 'grid', gap: 12 }}>
+              {diAltri.map((a) => <Attesa key={a.titolo} titolo={a.titolo} testo={a.frase} />)}
+            </div>
+          )}
         </div>
       )}
 

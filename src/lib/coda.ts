@@ -294,10 +294,24 @@ export class Coda {
   /** Mette in coda e prova subito. Non aspetta il server: l'interfaccia va avanti. */
   accoda(chiave: string, tipo: string, args: unknown[]) {
     this.lista = this.lista.filter((o) => o.chiave !== chiave)
-    this.lista.push({ chiave, tipo, args, quando: Date.now(), ...(this.io ? { autore: this.io } : {}) })
+    const op: Operazione = { chiave, tipo, args, quando: Date.now(), ...(this.io ? { autore: this.io } : {}) }
+    this.lista.push(op)
     this.salva()
     this.avvisa()
-    void this.scarica()
+    void this.firma(op).then(() => this.scarica())
+  }
+
+  /**
+   * `io` è l'ultimo visto da `scarica`: se intanto si è cambiato account senza
+   * ricaricare la pagina, la presenza appena segnata è di chi è entrato.
+   * Si cambia sul posto, non con una copia: `scarica` toglie per identità.
+   */
+  private async firma(op: Operazione) {
+    const chi = await this.chiEAdesso()
+    if (!chi || op.autore?.id === chi.id || !this.lista.includes(op)) return
+    op.autore = chi
+    this.salva()
+    this.avvisa()
   }
 
   /**
@@ -401,7 +415,6 @@ export async function mandaTutto(ms: number): Promise<void> {
   await Promise.race([Promise.all([...vive].map((c) => c.scaricaEAspetta(ms))), pausa(ms)])
 }
 
-/** Dimentica le scritture ancora in coda, di tutte le code dell'app. */
 /**
  * Le presenze di altri account in tutte le code dell'app, sommate per nome:
  * il telefono e la sala dello stesso dispositivo sono una cosa sola per chi esce.
@@ -418,6 +431,7 @@ export function diAltriDiTutte(): DiAltri[] {
   return [...per.values()]
 }
 
+/** Dimentica le scritture ancora in coda, di tutte le code dell'app. */
 export function svuotaTutte(): void {
   for (const c of vive) if (CODE_DELL_APP.includes(c.dove)) c.svuota()
   for (const dove of CODE_DELL_APP) {

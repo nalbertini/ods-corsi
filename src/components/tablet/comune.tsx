@@ -101,4 +101,14 @@ export function Guaio({ titolo, testo }: { titolo: string; testo: string }) {
   )
 }
 
+/** Una cosa che aspetta, non un errore: come la spia della coda, gialla, perché niente è perso. */
+export function Attesa({ titolo, testo }: { titolo: string; testo: string }) {
+  return (
+    <div className="tb-riquadro" style={{ borderColor: 'var(--giallo)' }}>
+      <span className="tb-etichetta" style={{ color: 'var(--giallo-testo)' }}>{titolo}</span>
+      <span className="tb-riquadro-testo">{testo}</span>
+    </div>
+  )
+}
+
 export const messaggio = (e: unknown, altrimenti: string) => fraseGuaio(e, { per: 'tablet', ripiego: altrimenti })

@@ -18,22 +18,24 @@
   <sc-if value="{{conTitolo}}" hint-placeholder-val="{{ true }}">
     <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.03em">{{titolo}}</span>
   </sc-if>
-  <sc-if value="{{guaio}}" hint-placeholder-val="{{ false }}">
-    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: {{c.rosso}}">{{etichetta}}</span>
+  <sc-if value="{{conEtichetta}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: {{coloreEtichetta}}">{{etichetta}}</span>
   </sc-if>
   <sc-if value="{{haTesto}}" hint-placeholder-val="{{ true }}">
     <span style="font-size: 18px; line-height: 1.5; color: {{c.sec}}">{{testo}}</span>
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["riquadro","guaio"],"default":"riquadro"},"titolo":{"editor":"text","default":"OGGI QUI NON CI SONO CORSI"},"testo":{"editor":"text","default":"La prossima lezione è mercoledì 7 ottobre alle 16:30: Judo baby, con Maurizio."},"$preview":{"width":800,"height":150}}'>
-// Riproduzione 1:1 di `Riquadro` e `Guaio` di src/components/tablet/comune.tsx (righe 69-83) con .tb-riquadro* di src/styles.css (righe
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["riquadro","guaio","attesa"],"default":"riquadro"},"titolo":{"editor":"text","default":"OGGI QUI NON CI SONO CORSI"},"testo":{"editor":"text","default":"La prossima lezione è mercoledì 7 ottobre alle 16:30: Judo baby, con Maurizio."},"$preview":{"width":800,"height":150}}'>
+// Riproduzione 1:1 di `Riquadro`, `Guaio` e `Attesa` di src/components/tablet/comune.tsx (righe 69-83) con .tb-riquadro* di src/styles.css (righe
 // 867-875): il riquadro che il tablet usa per dire una cosa a tutta colonna.
 // - tipo riquadro: titolo da 34px obliquo (OGGI QUI NON CI SONO CORSI, PER OGGI QUI E' FINITO) e il testo da 18px in `sec`, padding 28px,
 //   bordo `line`. Senza titolo o senza testo quella parte non c'e'.
 // - tipo guaio: un errore del server detto in chiaro: bordo rosso, il titolo e' un'etichetta spaziata in rosso (CALENDARIO NON LETTO,
 //   ELENCO NON LETTO) e sotto il testo. Lo stesso guaio sta anche sotto la testata (Tablet.tsx, `avvisiCoda(…, 'tablet')`) quando i tocchi in coda
 //   rischiano di perdersi: PRESENZE DA RICONTROLLARE, N PRESENZE DA INVIARE con «non ha più spazio». Nella colonna stretta dell'area istruttore c'e' TabletRiquadro, che ha il padding da 18px.
+// - tipo attesa: come il guaio ma giallo (bordo `giallo`, etichetta in `gialloTesto`), perche' niente e' perso: sotto la testata quando
+//   in memoria ci sono presenze di un altro account, che partono quando rientra lui (2 PRESENZE DI ANNA BIANCHI, e nel testo da quando).
 const T = {
   sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#14709f', suColore: '#0d2a3d', suRosso: '#ffffff', tasto: '#0d2a3d', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
 };
@@ -43,17 +45,19 @@ class Component extends DCLogic {
     const p = this.props;
     const c = T.sito;
     const guaio = p.tipo === 'guaio';
+    const attesa = p.tipo === 'attesa';
     const titolo = p.titolo ?? 'OGGI QUI NON CI SONO CORSI';
     const testo = p.testo ?? 'La prossima lezione è mercoledì 7 ottobre alle 16:30: Judo baby, con Maurizio.';
     return {
       c,
-      guaio,
-      conTitolo: !guaio && titolo !== '',
+      conEtichetta: guaio || attesa,
+      coloreEtichetta: attesa ? c.gialloTesto : c.rosso,
+      conTitolo: !guaio && !attesa && titolo !== '',
       haTesto: testo !== '',
       titolo: titolo.toUpperCase(),
       etichetta: titolo.toUpperCase(),
       testo,
-      bordo: guaio ? c.rosso : c.line,
+      bordo: guaio ? c.rosso : attesa ? c.giallo : c.line,
       gap: '10px',
       spazio: '28px',
     };
