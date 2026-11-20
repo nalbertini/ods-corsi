@@ -632,6 +632,16 @@ const NOMI_CAMPI: Partial<Record<CampoModulo, string>> = {
   telefono: 'telefono',
 }
 
+/**
+ * Il link «scrivi a» per l'email di una richiesta. L'email la scrive chi si
+ * iscrive e il database ammette ? & # dentro: senza encode, `a@b.it?cc=…&body=…`
+ * aprirebbe la mail con altri destinatari o un testo non suo. La @ resta com'è
+ * perché qualche programma di posta non legge %40.
+ */
+export function linkEmail(email: string): string {
+  return `mailto:${encodeURIComponent(email).replace(/%40/g, '@')}`
+}
+
 let unico: Promise<DatiRichieste> | null = null
 
 export function datiRichieste(): Promise<DatiRichieste> {

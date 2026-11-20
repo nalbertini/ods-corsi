@@ -619,7 +619,13 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
   }, [dati, personaId, giro])
 
   const daVedere = segnalate.filter((x) => x.stato === 'da_vedere').length
+  // Il ref ferma il secondo tocco prima che il tasto si spenga: se no il secondo invio torna «L'hai già segnalata».
+  const inVolo = useRef(false)
+  const [invio, setInvio] = useState(false)
   const manda = async (sessioneId: string) => {
+    if (inVolo.current) return
+    inVolo.current = true
+    setInvio(true)
     setGuaio(null)
     try {
       await dati.segnala(personaId, sessioneId, nota)
@@ -628,6 +634,9 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
       setGiro((g) => g + 1)
     } catch (e) {
       setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: 'La segnalazione non è partita' }))
+    } finally {
+      inVolo.current = false
+      setInvio(false)
     }
   }
   return (
@@ -718,7 +727,7 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
                           />
                           {guaio && <Dettaglio tono="guaio">{guaio}</Dettaglio>}
                           <Tasti>
-                            <Tasto variante="principale" onClick={() => void manda(p.sessioneId)}>
+                            <Tasto variante="principale" disabled={invio} onClick={() => void manda(p.sessioneId)}>
                               ERO PRESENTE
                             </Tasto>
                             <Tasto onClick={() => setAperta(null)}>LASCIA STARE</Tasto>

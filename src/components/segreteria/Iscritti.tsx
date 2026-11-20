@@ -2103,6 +2103,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   const apri = () => {
     // La finestra si apre subito, col clic: dopo l'attesa del link il browser la bloccherebbe.
     const w = window.open('', '_blank')
+    if (w) w.opener = null // senza 'noopener', che farebbe tornare null: la pagina aperta non deve poter guidare questa
     void fai(async () => {
       const f = await d.apriCertificato(p.id).catch((e: unknown) => {
         w?.close()
@@ -2195,6 +2196,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
               className="num sg-chip"
               onClick={() => {
                 const w = window.open('', '_blank')
+                if (w) w.opener = null // senza 'noopener', che farebbe tornare null: la pagina aperta non deve poter guidare questa
                 void fai(async () => {
                   const f = await d.apriCertificatoInAttesa(p.id).catch((e: unknown) => {
                     w?.close()
