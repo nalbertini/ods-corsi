@@ -313,9 +313,9 @@ quando arriva la prova.
 - Messaggi d'errore: `MieiTimer.tsx` (i due catch, righe 50 e 70) passa l'errore
   a `fraseGuaio`, ma nessuna prova lo guarda: la logica è in `prova:mieitimer`,
   il collegamento al componente no. Solo collaudo a mano.
-- Messaggi d'errore: niente impedisce un nuovo `e.message` a video in un
-  componente o in `src/lib`: nessuna prova lo cerca. DA FARE in `prova-guaio.mjs`
-  (una scansione di `src/components` e `src/lib`).
+- Messaggi d'errore: `prova:guaio` non guarda `src/lib` né le lib del timer, e
+  non vede un errore mostrato senza `.message` (per esempio `String(e)`) in un
+  componente. Solo rilettura.
 - Messaggi d'errore: le frasi della password e dell'accesso in `accesso.ts`
   (`perché`, `perchéPassword`, `mandaLinkPassword`, `scegliPassword`) non le
   cita nessuna prova. DA FARE in `prova-accesso-google.mjs`, con un finto client.

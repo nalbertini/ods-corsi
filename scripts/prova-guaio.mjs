@@ -272,6 +272,35 @@ for (const t of INGLESE) {
 }
 ok('dal grezzo inglese non esce il testo d\'ingresso né JWT, PGRST, schema cache, violates, fetch', sporchi, [])
 
+// 12. Nessun componente mostra il testo grezzo di un errore. Le schermate
+// (i .tsx dell'app e del timer) non leggono `.message` se non per
+// confrontarlo con un testo nostro: per mostrarlo c'è fraseGuaio. In src/lib
+// e nelle lib del timer `.message` serve (guaio.ts lo legge per tradurlo):
+// lì la scansione non guarda.
+const CONFRONTO = /^\s*(?:===|!==|\.(?:includes|startsWith|endsWith)\()/
+const letture = (testo) =>
+  testo
+    .split('\n')
+    .flatMap((riga, i) => [...riga.matchAll(/\.message\b/g)].filter((m) => !CONFRONTO.test(riga.slice(m.index + m[0].length))).map(() => `${i + 1}: ${riga.trim()}`))
+ok('trova {e.message} a video', letture('<p>{e.message}</p>').length, 1)
+ok('trova setErrore(err.message)', letture('setErrore(err.message)').length, 1)
+ok('trova un ripiego con ??', letture("avvisa(e.message ?? 'riprova')").length, 1)
+ok('lascia un confronto con ===', letture('e.message === TROPPO_GRANDE ? TROPPO_GRANDE : NON_SI_APRE').length, 0)
+ok('lascia un confronto con includes', letture("e.message.includes('87-')").length, 0)
+// Le letture che restano, col perché: ognuna mostra solo testo scritto da noi.
+const AMMESSE = new Map([
+  // Il testo con «87-» lo scrive segreteriaSupabase.ts (togliSollecito): dice di lanciare 87-solleciti-elenco.sql.
+  ['src/components/segreteria/Sollecito.tsx', 1],
+])
+const schermate = [...file('src/components', (n) => n.endsWith('.tsx')), ...file('timer/src', (n) => n.endsWith('.tsx'))]
+const aVideo = []
+for (const p of schermate) {
+  const l = letture(readFileSync(p, 'utf8'))
+  if (l.length > (AMMESSE.get(p) ?? 0)) aVideo.push(...l.map((x) => `${p}:${x}`))
+}
+ok(`nessuno dei ${schermate.length} componenti mostra .message di un errore`, aVideo, [])
+ok('ci sono davvero componenti da guardare', schermate.length > 50, true)
+
 console.error = consoleError
 if (nonPassano.length) console.log('\nTesti veri che non passano:\n' + nonPassano.map((t) => '  - ' + t).join('\n'))
 if (guai) {
