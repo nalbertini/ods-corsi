@@ -128,7 +128,7 @@ console.log('\n7. Chi cura l\'app trova in console.error perché la lettura non 
   // Senza rete `leggiSatispay` dà già la sua frase (guaio): è quella che il .catch sostituiva senza lasciarne traccia.
   const s = await conLaConsole({ pagamenti_satispay: { error: RETE } })
   ok('Satispay senza rete: a video la stessa frase', s.r, frase('i pagamenti Satispay'))
-  ok('Satispay senza rete: in console l\'errore della lettura', s.scritti.some((x) => x instanceof Error && !/Dati incompleti/.test(x.message)), true)
+  ok('Satispay senza rete: in console l\'errore della lettura', s.scritti.some((x) => x instanceof Error && /^Non si collega/.test(x.message)), true)
 
   for (const [come, errore] of [['senza rete', RETE], ['il server sbaglia', SERVER]]) {
     const q = await conLaConsole({ quote_ricevute: { error: errore } })
@@ -142,5 +142,5 @@ console.log('\n7. Chi cura l\'app trova in console.error perché la lettura non 
   ok('ricevute senza rete (vista che non c\'è): in console l\'errore delle ricevute', r.scritti.some((x) => testo(x).includes(RETE.message)), true)
 }
 
-console.log(guai ?`\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
+console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
