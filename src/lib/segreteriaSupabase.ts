@@ -599,8 +599,11 @@ const nonCeAncora = (e: { code?: string } | null) => ['42P01', 'PGRST205', 'PGRS
  * Una lettura che decide chi ha pagato (o a chi serve il certificato) non è riuscita: meglio niente elenco che uno
  * che sembra completo e non lo è, dove chi ha pagato risulta ancora da incassare.
  */
-const datiIncompleti = (cosa: string) =>
-  new Error(`Dati incompleti: non sono riuscito a leggere ${cosa}. Ricarica la pagina; se torna, avvisa chi cura l'app.`)
+const datiIncompleti = (cosa: string, causa: unknown) => {
+  // A video va solo la frase; il perché resta in console per chi cura l'app, come in `guaio` e `fraseGuaio`.
+  console.error(causa)
+  return new Error(`Dati incompleti: non sono riuscito a leggere ${cosa}. Ricarica la pagina; se torna, avvisa chi cura l'app.`)
+}
 
 export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
   const ok = <T>(r: { data: T; error: { message?: string; code?: string } | null }): T => {
@@ -1198,10 +1201,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           return perPersona
         }
         // Solo senza la vista (27 non lanciato) le quote si ricavano dalle ricevute: un altro errore non si tace.
-        if (!nonCeAncora(vista.error)) throw datiIncompleti('le quote pagate')
+        if (!nonCeAncora(vista.error)) throw datiIncompleti('le quote pagate', vista.error)
         const ricevute = await leRicevute
         // Senza ricevute sul database (16-ricevute.sql) resta l'eccezione scritta a mano.
-        if (!ricevute && !nonCeAncora(ricevuteNonLette)) throw datiIncompleti('le quote pagate')
+        if (!ricevute && !nonCeAncora(ricevuteNonLette)) throw datiIncompleti('le quote pagate', ricevuteNonLette)
         for (const x of ricevute ?? []) for (const q of quoteDi([x])) metti(x.persona_id, q)
         return perPersona
       })()
@@ -1212,7 +1215,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           const { data, error } = await r
           if (!error) return data
           if (nonCeAncora(error)) return []
-          throw datiIncompleti('le date di nascita')
+          throw datiIncompleti('le date di nascita', error)
         }
         const [an, rich] = await Promise.all([
           tutte(tutteLeRighe((prima, ultima) => db.from('anagrafiche').select('persona_id, nato_il, cambiata_il').order('persona_id').range(prima, ultima))),
@@ -1281,8 +1284,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       for (const x of ricevute ?? []) perPersona.set(x.persona_id, [...(perPersona.get(x.persona_id) ?? []), x])
       const natiIl = await nati
       // Senza 73-satispay.sql `leggiSatispay` dà già nessun pagamento; un altro errore farebbe sembrare da incassare chi ha pagato.
-      const arrivati = await leggiSatispay().catch(() => {
-        throw datiIncompleti('i pagamenti Satispay')
+      const arrivati = await leggiSatispay().catch((e: unknown) => {
+        throw datiIncompleti('i pagamenti Satispay', e)
       })
       const conSatispay = satispayPerPersona(arrivati)
       const conCarta = cartaPerPersona(arrivati)
