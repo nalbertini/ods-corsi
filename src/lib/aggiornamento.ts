@@ -79,6 +79,8 @@ export function ricaricaSePezzoMancante() {
   window.addEventListener('vite:preloadError', (e) => {
     // Con un modulo aperto ricaricare cancellerebbe quel che c'è scritto:
     // l'errore arriva a chi ha chiesto il pezzo, che dice di riprovare.
+    // Al rilascio non si ricarica per questo: ci pensa la versione nuova,
+    // quando arriva, o il prossimo caricamento.
     if (aggiornamentoTrattenuto()) return
     try {
       if (!ricaricarePerPezzoMancante(sessionStorage.getItem(CHIAVE_PEZZO), Date.now())) return

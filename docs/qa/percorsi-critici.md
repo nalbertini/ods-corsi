@@ -148,9 +148,6 @@ quando arriva la prova.
 - Modulo a passi, cablaggio nel `.tsx` (`IscrizioneAPassi.tsx`): quale campo
   mostra «Manca» e la barra dopo AVANTI. Le regole sono provate
   (`prova:iscrizione-passi`, sezione 49); il collegamento no. Solo collaudo a mano.
-- Trattenuta dell'aggiornamento sul tablet (`Tablet.tsx`): tenerla sempre accesa
-  o non rilasciarla mai toglie gli aggiornamenti al tablet, e nessuna prova cade.
-  DA FARE in `prova-aggiornamento.mjs`.
 - `prova-csp.mjs`: il filtro «paypal|google|apple» è largo, un host che lo
   contiene passa. Va stretto agli host esatti.
 - `update-con-where.sql`: il controllo cerca un WHERE dopo l'UPDATE, nello

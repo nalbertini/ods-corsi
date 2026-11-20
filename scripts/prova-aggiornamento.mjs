@@ -40,7 +40,7 @@ ok('valore illeggibile: si ricarica', m.ricaricarePerPezzoMancante('boh', ORA), 
 // diverso nel data URL, così parte da un'istanza nuova, coi suoi finti.
 // ---------------------------------------------------------------------------
 let istanza = 0
-async function nuova({ controllata = true } = {}) {
+async function nuova() {
   const f = { ascoltatori: {}, ricariche: 0, scritture: 0, sw: {} }
   const registra = (dove) => (nome, fn) => { dove[nome] = fn }
   Object.defineProperty(globalThis, 'window', {
@@ -54,7 +54,7 @@ async function nuova({ controllata = true } = {}) {
   Object.defineProperty(globalThis, 'navigator', {
     value: {
       serviceWorker: {
-        controller: controllata ? {} : null,
+        controller: {},
         addEventListener: registra(f.sw),
         register: () => Promise.resolve({ update: () => Promise.resolve() }),
       },
@@ -152,6 +152,8 @@ const pezzoMancante = (f) => {
   ok('senza trattenitori un pezzo mancante è gestito (preventDefault)', e.defaultPrevented, true)
   ok('senza trattenitori un pezzo mancante ricarica una volta', f.ricariche, 1)
 }
+// Controlli sul sorgente, non di comportamento: dicono che i componenti sono
+// collegati alla trattenuta come le prove sopra si aspettano.
 {
   const modulo = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
   const tablet = readFileSync('src/components/tablet/Tablet.tsx', 'utf8')
@@ -162,6 +164,13 @@ const pezzoMancante = (f) => {
     true,
   )
   ok('il tablet non passa più un argomento a trattieniAggiornamento', /trattieniAggiornamento\(\s*[^)\s]/.test(tablet), false)
+  // Il tablet trattiene solo a timer in corso e lascia quando si ferma: senza
+  // il controllo non si aggiornerebbe mai, senza il return la trattenuta resta.
+  ok(
+    'il tablet trattiene solo ad allenamento in corso e lascia quando finisce',
+    /useEffect\(\s*\(\)\s*=>\s*\{\s*if\s*\(\s*allenamentoInCorso\s*\)\s*return\s+trattieniAggiornamento\(\)\s*\}\s*,\s*\[\s*allenamentoInCorso\s*\]\s*\)/.test(tablet),
+    true,
+  )
 }
 
 if (guai) process.exit(1)
