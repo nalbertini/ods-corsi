@@ -113,5 +113,34 @@ console.log('\n6. Se non si leggono nemmeno le persone, le altre letture non res
   ok('nessun rifiuto senza gestore', senzaGestore, 0)
 }
 
+console.log('\n7. Chi cura l\'app trova in console.error perché la lettura non è riuscita; a video la stessa frase di prima')
+{
+  // Cosa finisce in console.error durante una lettura; la console vera resta pulita.
+  const conLaConsole = async (tabelle) => {
+    const scritti = []
+    const prima = console.error
+    console.error = (...a) => scritti.push(...a)
+    try { return { r: await leggi(tabelle), scritti } } finally { console.error = prima }
+  }
+  const frase = (cosa) => `errore: Dati incompleti: non sono riuscito a leggere ${cosa}. Ricarica la pagina; se torna, avvisa chi cura l'app.`
+  const testo = (x) => (x instanceof Error ? x.message : typeof x === 'string' ? x : JSON.stringify(x))
+
+  // Senza rete `leggiSatispay` dà già la sua frase (guaio): è quella che il .catch sostituiva senza lasciarne traccia.
+  const s = await conLaConsole({ pagamenti_satispay: { error: RETE } })
+  ok('Satispay senza rete: a video la stessa frase', s.r, frase('i pagamenti Satispay'))
+  ok('Satispay senza rete: in console l\'errore della lettura', s.scritti.some((x) => x instanceof Error && /^Non si collega/.test(x.message)), true)
+
+  for (const [come, errore] of [['senza rete', RETE], ['il server sbaglia', SERVER]]) {
+    const q = await conLaConsole({ quote_ricevute: { error: errore } })
+    ok(`quote ${come}: a video la stessa frase`, q.r, frase('le quote pagate'))
+    ok(`quote ${come}: in console l'errore del database`, q.scritti.some((x) => testo(x).includes(errore.message)), true)
+    const n = await conLaConsole({ anagrafiche: { error: errore } })
+    ok(`date di nascita ${come}: a video la stessa frase`, n.r, frase('le date di nascita'))
+    ok(`date di nascita ${come}: in console l'errore del database`, n.scritti.some((x) => testo(x).includes(errore.message)), true)
+  }
+  const r = await conLaConsole({ quote_ricevute: { error: NONCE }, ricevute: { error: RETE } })
+  ok('ricevute senza rete (vista che non c\'è): in console l\'errore delle ricevute', r.scritti.some((x) => testo(x).includes(RETE.message)), true)
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
