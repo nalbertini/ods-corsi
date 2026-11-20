@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { dati as caricaDati } from '../lib/dati'
+import { fraseGuaio } from '../lib/guaio'
 import { type Collegamenti, type DatiMieiTimer, NOMI_MODO, type TimerDaScegliere, datiMieiTimer } from '../lib/mieiTimer'
 import { type SessioneVista, chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 
@@ -46,7 +47,7 @@ export function MieiTimer({ soloDi, onTimer }: { soloDi?: string; onTimer: () =>
         setLezioni(l.filter((s) => !soloDi || s.insegnanti?.includes(soloDi)))
         await leggi(x)
       })
-      .catch((e: unknown) => vivo && setGuaio(e instanceof Error ? e.message : 'Non riesco a leggere i timer'))
+      .catch((e: unknown) => vivo && setGuaio(fraseGuaio(e)))
     return () => {
       vivo = false
     }
@@ -66,7 +67,7 @@ export function MieiTimer({ soloDi, onTimer }: { soloDi?: string; onTimer: () =>
       await leggi(d)
       setDetto(fatto)
     } catch (e) {
-      setGuaio(e instanceof Error ? e.message : 'Non è andata')
+      setGuaio(fraseGuaio(e))
     }
   }
 
