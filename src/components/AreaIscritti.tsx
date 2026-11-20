@@ -18,7 +18,7 @@ import { comePaga, pagamentoDi, statoCertificato } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { indirizzoPagina } from '../lib/guida'
 import { cartaSePuoi } from '../lib/cartaPdf'
-import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
+import { abbonamentiDalleRicevute, doveVaLoSconto, importoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
 import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 import { AccessoIscritto } from './AccessoIscritto'
 import { GareIscritto } from './GareIscritto'
@@ -948,8 +948,8 @@ function Nucleo({
             {minimo ? (
               <Dettaglio>
                 {minimo.scontato
-                  ? `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% su ${minimo.corso} di ${minimo.chi}, cioè ${euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €: è già nella sua ricevuta.`
-                  : `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% sull’annuale che costa meno, ${minimo.corso} di ${minimo.chi}, cioè ${euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €. Se non l’hai avuto, chiedilo in segreteria.`}
+                  ? `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% su ${minimo.corso} di ${minimo.chi}, cioè ${euro(importoSconto(minimo.importo))} €: è già nella sua ricevuta.`
+                  : `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% sull’annuale che costa meno, ${minimo.corso} di ${minimo.chi}, cioè ${euro(importoSconto(minimo.importo))} €. Se non l’hai avuto, chiedilo in segreteria.`}
               </Dettaglio>
             ) : (
               <Dettaglio>Con due annuali nel nucleo, quello che costa meno ha il {Math.round(SCONTO_FAMIGLIA * 100)}% di sconto (la quota associativa no).</Dettaglio>
