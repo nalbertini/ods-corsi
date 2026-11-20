@@ -10,6 +10,24 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.19 — 20 novembre 2026
+
+### Risolto
+
+- Se i pagamenti o le quote non si leggono, l'elenco degli iscritti dice che i dati sono incompleti invece di mostrare chi ha pagato come da incassare
+
+## 0.259.18 — 20 novembre 2026
+
+### Risolto
+
+- Link e schede più sicuri, e ERO PRESENTE non parte due volte
+
+## 0.259.17 — 20 novembre 2026
+
+### Modificato
+
+- Lo sconto famiglia si calcola in un posto solo
+
 ## 0.259.16 — 18 novembre 2026
 
 ### Modificato

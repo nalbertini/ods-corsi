@@ -18,7 +18,7 @@ import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni,
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
 import type { Ricercata } from '../../lib/ricerca'
-import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, fratelliDaProporre, maggiorenneDal, nucleoPerRicevuta, propostaGenitore, SCONTO_FAMIGLIA } from '../../lib/nucleo'
+import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, fratelliDaProporre, importoSconto, maggiorenneDal, nucleoPerRicevuta, propostaGenitore, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { minorenne } from '../../lib/richieste'
 import { euro, voceQuota } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, cosaPassa, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
@@ -1869,8 +1869,8 @@ function NucleoFamiliare({
       {minimo ? (
         <span style={{ fontSize: 12, color: 'var(--sec)' }}>
           {minimo.scontato
-            ? `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% su ${minimo.corso} di ${minimo.chi}, cioè ${euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €, già sulla sua ricevuta.`
-            : `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% sull’annuale che costa meno, ${minimo.corso} di ${minimo.chi}, cioè ${euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €. Se è già pagato senza, si rende a parte; se no lo mette la ricevuta.`}
+            ? `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% su ${minimo.corso} di ${minimo.chi}, cioè ${euro(importoSconto(minimo.importo))} €, già sulla sua ricevuta.`
+            : `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% sull’annuale che costa meno, ${minimo.corso} di ${minimo.chi}, cioè ${euro(importoSconto(minimo.importo))} €. Se è già pagato senza, si rende a parte; se no lo mette la ricevuta.`}
         </span>
       ) : (
         nucleo.length > 1 && (
@@ -2103,6 +2103,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   const apri = () => {
     // La finestra si apre subito, col clic: dopo l'attesa del link il browser la bloccherebbe.
     const w = window.open('', '_blank')
+    if (w) w.opener = null // senza 'noopener', che farebbe tornare null: la pagina aperta non deve poter guidare questa
     void fai(async () => {
       const f = await d.apriCertificato(p.id).catch((e: unknown) => {
         w?.close()
@@ -2195,6 +2196,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
               className="num sg-chip"
               onClick={() => {
                 const w = window.open('', '_blank')
+                if (w) w.opener = null // senza 'noopener', che farebbe tornare null: la pagina aperta non deve poter guidare questa
                 void fai(async () => {
                   const f = await d.apriCertificatoInAttesa(p.id).catch((e: unknown) => {
                     w?.close()

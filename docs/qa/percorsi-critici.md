@@ -17,7 +17,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Corso con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo sbagliato, corso pagato due volte o per un altro | `prova:corso-satispay`, `prova:pagato-in-segreteria`, `prova:edge`, `scripts/prova-iscritto-supabase.mjs`, `corso-satispay.sql`, `pagato-in-segreteria.sql`, `corso-gia-pagato.sql` | sì |
 | Saldo della quota con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | resto calcolato male o pagato due volte, nucleo sbagliato | `prova:saldo-satispay`, `prova:satispay`, `prova:pagato-in-segreteria`, `prova:edge`, `saldo-satispay.sql`, `pagato-in-segreteria.sql` | sì |
 | Come paga nell'iscrizione online (bonifico o contanti, ricevuta facoltativa) | genitore, segreteria | scelta persa o letta male, quota attesa dove non c'è, modulo che non si chiude | `prova:come-paga`, `prova:iscrizione-passi`, `prova:richieste`, `prova:satispay`, `prova:iscrizione-pagina`, `come-paga.sql` | sì |
-| Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:come-paga`, `prova:campi`, `prova:listino`, `prova:moduli`, `prova:fogli-moduli`, `prova:richieste`, `prova:ricevuta`, `prova:avvisi-segreteria`, `prova:aggiornamento`, `iscrizioni.sql`, `listino.sql`, `orari-aperti.sql`, `rls.sql` | sì |
+| Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:come-paga`, `prova:campi`, `prova:listino`, `prova:moduli`, `prova:fogli-moduli`, `prova:richieste`, `prova:ricevuta`, `prova:avvisi-segreteria`, `prova:finestre`, `prova:aggiornamento`, `iscrizioni.sql`, `listino.sql`, `orari-aperti.sql`, `rls.sql` | sì |
 | Aspetto del modulo di iscrizione | genitore | modulo illeggibile o col colore del sito sbagliato | `prova:iscrizione-sito`, `prova:look`, `prova:campi`, `prova:iscrizione-pagina`, `prova:tema`, `prova:iscrizione-passi` | sì |
 | Modulo di iscrizione da tastiera e a 320px | genitore, segreteria | chi usa la tastiera non riesce a iscriversi | `prova:accessibilita-iscrizione` | sì |
 | Pagina pubblica `/iscrizioni/` | genitore, segreteria | richiesta mai inviata, prezzo diverso dal listino | `prova:iscrizione-pagina`, `prova:iscrizione-sito`, `prova:iscrizione-passi` | sì |
@@ -35,7 +35,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Certificato dal link, senza password | genitore, segreteria | link che apre il dato di un altro, file visibile, link che vale dopo la conferma | `prova:certificato-link`, `prova:edge-certificato`, `certificato-link.sql` | sì |
 | Solleciti del certificato per email | genitore, segreteria | mail a chi l'ha già portato, mail doppie, dati sanitari, sollecito perso | `prova:solleciti-certificato`, `prova:avvisi-segreteria`, `solleciti-certificato.sql` | sì |
 | Striscia COSA MANCA | segreteria | un «a posto» falso | `prova:dafare`, `prova:cosa-manca`, `prova:certificati`, `prova:segreteria`, `prova:conteggi-dovuti`, `prova:look` | sì |
-| Chi deve pagare, in tutte le schermate | segreteria | numeri diversi fra le schermate, chi deve non chiamato | `prova:conteggi-dovuti`, `prova:righe-dovute`, `prova:dafare`, `prova:cosa-manca`, `prova:iscritti`, `prova:filtri-iscritti`, `prova:banco` | sì |
+| Chi deve pagare, in tutte le schermate | segreteria | numeri diversi fra le schermate, chi deve non chiamato | `prova:conteggi-dovuti`, `prova:righe-dovute`, `prova:dafare`, `prova:cosa-manca`, `prova:iscritti`, `prova:filtri-iscritti`, `prova:banco`, `prova:persone-incomplete` | sì |
 | Storico dei pagamenti | segreteria | pagamento che non compare o conta due volte | `prova:schede-iscritto`, `prova:pagamenti`, `prova:segreteria`, `pagamenti-diretti.sql`, `ricevuta-pagamento-perso.sql` | sì |
 | Ricevuta da un pagamento a mano | segreteria, amministrazione | incasso contato due volte o perso | `prova:pagamenti`, `prova:satispay`, `pagamento-una-volta.sql`, `pagamento-diventa-ricevuta.sql`, `ricevuta-pagamento-perso.sql` | sì |
 | Contanti di un giorno di cassa chiusa | segreteria, amministrazione | chiusura rotta senza che nessuno lo sappia | `prova:contabilita`, `prova:pagamenti`, `ricevuta-cassa-chiusa.sql` | sì |
@@ -87,7 +87,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Conti letti dalla chat con Claude | amministrazione | totale diverso da BILANCIO, nomi verso Claude | `prova:mcp`, `prova:bilancio`, `prova:contabilita`, `prova:segreteria`, `claude-dalla-porta.sql` | sì |
 | Segreteria dalla chat con Claude (spenta) | segreteria | dati di un minore verso Claude | `prova:mcp`, `prova:frequenza`, `prova:segreteria`, `prova:certificati`, `75-chat-segreteria.sql`, `finto-supabase.sql` | sì, quando si accende |
 | Il token di Claude solo dalla sua porta | tutti | token che legge persone o certificati | `prova:mcp`, `claude-dalla-porta.sql`, `rls.sql`, `contabilita.sql` | sì |
-| Elenco ISCRITTI | segreteria | un guaio in elenco, un minore contato da adulto, famiglia fuori filtro | `prova:iscritti`, `prova:filtri-iscritti`, `prova:pagato-prima`, `prova:segreteria-ordine` | sì |
+| Elenco ISCRITTI | segreteria | pagamento letto male, minore da adulto, famiglia fuori filtro | `prova:iscritti`, `prova:filtri-iscritti`, `prova:pagato-prima`, `prova:segreteria-ordine`, `prova:persone-incomplete` | sì |
 | Tab ISCRITTI nella scheda del corso | segreteria | iscritto mancante, «a posto» falso | `prova:iscritti-corso`, `prova:indirizzi` | sì |
 | Calendario e date dei corsi | segreteria, tablet | lezione che non compare | `prova:indirizzi`, `prova:calendario`, `prova:segreteria`, `calendario*.sql`, `date-corsi.sql` | no |
 | Prove (modalità prova) e statistiche | segreteria | numeri sbagliati | `prova:prove`, `prova:segreteria`, `prova:filtri-iscritti`, `prove.sql`, `prove-per-nome.sql`, `statistiche.sql` | no |
@@ -322,6 +322,9 @@ quando arriva la prova.
 - Errore di pagina (appello): il confine in `main.tsx`, `App.tsx`, `TimerSala.tsx` e `TimerBloccato.tsx` non ha prova. Se cade, torna lo schermo bianco. Solo collaudo a mano. DA FARE in `prova-errore.mjs`, con un controllo sui sorgenti.
 - Errore di pagina (appello): i tasti RICARICA e PROVA A MANDARLE (`SchermataErrore.tsx`) non hanno prova. Se RICARICA ricarica senza aver mandato, o senza ricontrollare la memoria, nessuna prova cade. DA FARE.
 - Errore di pagina (appello): il tetto di 3 secondi di `mandaTutto` non cade se lo si toglie: il server muto di `prova-errore.mjs` non esercita quel caso. DA FARE.
+- ERO PRESENTE, doppio tocco (`Presenze` in `AreaIscritti.tsx`): il doppione è rifiutato
+  da `segnalate.ts` e dal database (provati); la guardia `inVolo` nel `.tsx` no. Se cade,
+  il secondo tocco dice «L'hai già segnalata». Solo collaudo a mano.
 
 ## Come si aggiorna
 
