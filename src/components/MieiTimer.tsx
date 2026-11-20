@@ -47,7 +47,7 @@ export function MieiTimer({ soloDi, onTimer }: { soloDi?: string; onTimer: () =>
         setLezioni(l.filter((s) => !soloDi || s.insegnanti?.includes(soloDi)))
         await leggi(x)
       })
-      .catch((e: unknown) => vivo && setGuaio(fraseGuaio(e, { ripiego: 'Non riesco a leggere i timer: riprova fra poco' })))
+      .catch((e: unknown) => vivo && setGuaio(fraseGuaio(e)))
     return () => {
       vivo = false
     }

@@ -80,6 +80,39 @@ for (const [nome, errore, frase] of casi) {
   ok('scollegarlo dalla lezione dà la frase', await messaggio(() => d.collegaLezione('l1', 't1', false)), frase)
 }
 
+// Una tabella per volta può dare il suo errore: le altre rispondono vuote.
+function dbPer(errori) {
+  const catena = (error) =>
+    new Proxy(
+      {},
+      {
+        get(_, nome) {
+          if (nome === 'then') return (fatto) => fatto({ data: error ? null : [], error })
+          return () => catena(error)
+        },
+      },
+    )
+  return { from: (tabella) => catena(errori[tabella] ?? null) }
+}
+
+const MANCA = { message: 'relation "public.sessioni_timer" does not exist', details: null, hint: null, code: '42P01' }
+
+console.log('\nI miei timer, prima che ci sia 11-timer-lezioni.sql')
+{
+  const d = conDatabase(dbPer({ sessioni_timer: MANCA }), 'io')
+  ok('senza la tabella delle lezioni i collegamenti si leggono, senza lezioni', await d.collegamenti(), { corsi: {}, lezioni: {}, lezioniPronte: false })
+  const c = conDatabase(dbPer({ corsi_timer: { ...MANCA, message: 'relation "public.corsi_timer" does not exist' } }), 'io')
+  ok('senza la tabella dei corsi dice che la funzione non è attiva', await messaggio(() => c.collegamenti()), fraseGuaio({ code: '42P01' }))
+}
+
+console.log('\nI miei timer, un errore che guaio.ts non conosce')
+{
+  const d = conDatabase(dbCon({ message: 'JSON object requested, multiple (or no) rows returned', details: null, hint: null, code: 'PGRST116' }), 'io')
+  const m = await messaggio(() => d.timer())
+  ok('non mostra il testo del database', m.includes('JSON object'), false)
+  ok('mostra la frase di ripiego', m, 'Non è andata: riprova fra poco')
+}
+
 console.log('\nLe frasi sono quelle giuste, non il ripiego')
 ok('senza rete dice di controllare la connessione', RETE, 'Non si collega: controlla la connessione e riprova')
 ok('senza permesso dice di uscire e rientrare', PERMESSO, "Non hai il permesso di farlo. Esci e rientra; se ricapita, avvisa chi cura l'app")
