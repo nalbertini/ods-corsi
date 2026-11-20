@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+  </style>
+</helmet>
+<!-- OGGI: tre presenze in coda. Una sola frase per ogni caso, anche quando il telefono non ha spazio o la coda non si legge: lì la spia non c'è o dice il falso. -->
+<div style="display:flex;flex-direction:column;width:390px;min-height:420px;background:#eef5fa">
+  <dc-import name="BarraTelefono" luogo="ISTRUTTORI" da-fare="0" hint-size="100%,62px"></dc-import>
+  <div style="padding:12px 16px 0">
+    <dc-import name="SpiaCoda" titolo="3 PRESENZE DA INVIARE" testo="Sono salvati sul telefono: partono da soli appena c’è rete." tono="attesa" hint-size="100%,100px"></dc-import>
+  </div>
+  <div style="padding:20px 16px;display:flex;flex-direction:column;gap:10px">
+    <span class="et">MEMORIA PIENA</span>
+    <span class="frase">Nessun avviso: la scrittura fallisce in silenzio e chiudendo l'app le presenze si perdono.</span>
+    <span class="et">CODA ILLEGGIBILE</span>
+    <span class="frase">Nessun avviso: la coda si legge come vuota e le presenze spariscono.</span>
+    <span class="et">SESSIONE SCADUTA</span>
+    <span class="frase">Le presenze tornano col permesso negato e si buttano.</span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":420}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

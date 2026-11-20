@@ -7,6 +7,7 @@ import { AppelloScreen, type Conto } from './AppelloScreen'
 import { useLargo } from '../lib/largo'
 import type { SegnalataVista } from '../lib/segnalate'
 import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
+import { avvisiCoda, type AvvisoCoda, type StatoCoda } from '../lib/coda'
 
 /**
  * Il calendario, e dentro una lezione l'appello.
@@ -26,6 +27,7 @@ export function Sala({ soloDi, senzaLimiti = soloDi === undefined, onTimer, onAp
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
+  const [statoCoda, setStatoCoda] = useState<StatoCoda>({ inAttesa: 0, soloInMemoria: 0, illeggibile: false })
   const [conti, setConti] = useState<Record<string, Conto>>({})
   // Le presenze segnalate si rileggono quando se ne gestisce una dall'appello.
   const [giroSegnalate, setGiroSegnalate] = useState(0)
@@ -86,7 +88,7 @@ export function Sala({ soloDi, senzaLimiti = soloDi === undefined, onTimer, onAp
     }
   }, [tentativo])
 
-  useEffect(() => d?.guardaCoda?.(setInCoda), [d])
+  useEffect(() => d?.guardaCoda?.((n, stato) => { setInCoda(n); setStatoCoda(stato) }), [d])
   useEffect(() => d?.guardaScartate?.(setScartate), [d])
 
   if (!d && guaio)
@@ -115,7 +117,7 @@ export function Sala({ soloDi, senzaLimiti = soloDi === undefined, onTimer, onAp
       {d.modo === 'prova' && <NastroProva testo="DATI DI PROVA · ISCRITTI INVENTATI" onEsci={inProvaScelta ? () => scegliProva(false) : undefined} />}
       {/* Con un appello aperto la coda la dice la sua testa: qui sopra,
           comparendo, farebbe scendere i nomi sotto il dito. */}
-      {inCoda > 0 && !chiuso && !aperta && <SpiaCoda n={inCoda} />}
+      {!chiuso && !aperta && <SpiaCoda avvisi={avvisiCoda(statoCoda)} />}
       {scartate > 0 && !chiuso && !aperta && (
         <div className="pad" style={{ paddingTop: 12 }}>
           <div className="spia-coda" data-tono="guaio" role="alert">
@@ -173,13 +175,17 @@ export function Sala({ soloDi, senzaLimiti = soloDi === undefined, onTimer, onAp
  * solo dentro la lezione: chi esce dall'appello senza rete deve sapere che
  * aspettano, e che partono da sole.
  */
-function SpiaCoda({ n }: { n: number }) {
+function SpiaCoda({ avvisi }: { avvisi: AvvisoCoda[] }) {
+  if (avvisi.length === 0) return null
   return (
-    <div className="pad" style={{ paddingTop: 12 }}>
-      <div className="spia-coda" role="status">
-        <span className="num spia-coda-quante">{n === 1 ? 'UNA PRESENZA DA INVIARE' : `${n} PRESENZE DA INVIARE`}</span>
-        <span>Sono salvati sul telefono: partono da soli appena c’è rete.</span>
-      </div>
+    <div className="pad" style={{ paddingTop: 12, display: 'grid', gap: 8 }}>
+      {avvisi.map((a) => (
+        // Un guaio interrompe chi legge (le presenze si possono perdere), l'attesa no.
+        <div key={a.titolo + a.tono} className="spia-coda" data-tono={a.tono} role={a.tono === 'guaio' ? 'alert' : 'status'}>
+          <span className="num spia-coda-quante">{a.titolo}</span>
+          <span>{a.frase}</span>
+        </div>
+      ))}
     </div>
   )
 }

@@ -10,7 +10,7 @@ import type { StatoPresenzaIstruttore } from './tablet'
 import { contiDellAppello, giornoDi, valeIl } from './sala'
 import { presentiAltrove, type Turno } from './turni'
 import { contaPresenze, lezioniContate, ordinaPerPresenze } from './frequenza'
-import { Coda } from './coda'
+import { aspettaLAccesso, Coda } from './coda'
 import { eFuoriFinestra } from './finestra'
 import { tutteLeRighe } from './tutteLeRighe'
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
@@ -125,6 +125,9 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
   const chiFuori = new Set<(sessioneId: string) => boolean>()
   const coda = new Coda(async (op) => {
     const [a, b, c] = op.args as [string, string, StatoPresenza | null]
+    // Senza sessione non si prova nemmeno: le policy risponderebbero «niente righe» o «zero
+    // cambiate» senza errore, e la coda crederebbe fatta (o da buttare) una scrittura mai arrivata.
+    if (!(await db.auth.getSession()).data.session) throw Object.assign(new Error('accesso scaduto'), { code: '42501' })
     try {
       if (op.tipo === 'segna') await scriviPresenza(db, a, b, c)
       else if (op.tipo === 'segnaTutti') await scriviTutti(db, a, b as unknown as StatoPresenza)
@@ -136,6 +139,8 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
     } catch (e) {
       // Se nessun appello di quella lezione è aperto a dirlo, resta una presenza rifiutata come le altre.
       if (eFuoriFinestra(e) && [...chiFuori].map((f) => f(a)).some(Boolean)) return
+      // Senza accesso il no non è del server: resta in coda fino al nuovo accesso.
+      if (await aspettaLAccesso(e, async () => !!(await db.auth.getSession()).data.session)) throw e
       if (definitivo(e)) {
         // Scartata: riprovarla non cambierebbe niente.
         scartate++
@@ -474,8 +479,11 @@ async function scriviPresenza(
   stato: StatoPresenza | null,
 ) {
   if (stato === null) {
-    const { error } = await db.from('presenze').delete().match({ sessione_id: sessioneId, persona_id: personaId })
+    const { data, error } = await db.from('presenze').delete().match({ sessione_id: sessioneId, persona_id: personaId }).select('id')
     if (error) throw error
+    // Senza accesso le policy non lasciano cancellare niente, e non dicono errore: zero righe e
+    // nessuna sessione è un permesso negato, e la presenza resta da togliere fino al nuovo accesso.
+    if (!data?.length && !(await db.auth.getSession()).data.session) throw Object.assign(new Error('accesso scaduto'), { code: '42501' })
     return
   }
   // `upsert` sul vincolo unico: è quello che fa convergere due tablet sulla

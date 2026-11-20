@@ -14,7 +14,7 @@ import { leggiLinkSpotify, suonaLista } from '../../../timer/src/lib/spotify'
 import { PlayerYoutube } from '../../../timer/src/components/PlayerYoutube'
 import { PlayerAudio } from '../../../timer/src/components/PlayerAudio'
 import { fonteDelLink, listaRicordata, musicaScelta, ricordaLista, ricordaSpenta, spentaRicordata, type ListaMusica } from '../../lib/musica'
-import { svuotaTutte } from '../../lib/coda'
+import { avvisiCoda, avvisoPerChiRientra, illeggibileDiTutte, inCodaDiTutte, svuotaTutte, type StatoCoda } from '../../lib/coda'
 import { uscita } from '../../lib/uscita'
 import { trattieniAggiornamento } from '../../lib/aggiornamento'
 import { Accensione, Cronometro, Icona, Nota, Persone } from '../Icons'
@@ -23,7 +23,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Logo } from '../Logo'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { accedi, account, passaA } from '../../lib/accesso'
-import { giornoDopo, messaggio, useAdesso, useInattivo, useSchermoAcceso } from './comune'
+import { giornoDopo, Guaio, messaggio, useAdesso, useInattivo, useSchermoAcceso } from './comune'
 import { TabletHome } from './TabletHome'
 import { TabletPresenza } from './TabletPresenza'
 import { TabletRecupero } from './TabletRecupero'
@@ -179,8 +179,15 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   const adesso = useAdesso(d)
   // I tocchi segnati senza rete, che aspettano di partire: la spia in testata.
   const [inCoda, setInCoda] = useState(0)
+  // Il bollino basta finché i tocchi aspettano la rete; se rischiano di
+  // perdersi (memoria piena, coda illeggibile) serve un avviso che si legga.
+  const [statoCoda, setStatoCoda] = useState<StatoCoda>({ inAttesa: 0, soloInMemoria: 0, illeggibile: false })
+  const guaiCoda = avvisiCoda(statoCoda, 'tablet').filter((a) => a.tono === 'guaio')
   useEffect(() => {
-    const smetti = codaDelTablet(d).guarda(setInCoda)
+    const smetti = codaDelTablet(d).guarda((n, stato) => {
+      setInCoda(n)
+      setStatoCoda(stato)
+    })
     return () => void smetti()
   }, [d])
   const [vista, setVista] = useState<Vista>({ s: 'home' })
@@ -455,6 +462,17 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
         </button>
       </header>
 
+      {guaiCoda.length > 0 && (
+        <div
+          className="tb-corpo"
+          role="alert"
+          // I margini di lato del corpo, ma fuori dall'area che scorre: chi sta in sala lo vede qualunque cosa sia aperta. Senza una classe sua perché il CSS iniziale è al limite (prova:css-ingresso).
+          style={{ flex: 'none', overflowY: 'visible', paddingBottom: 0, display: 'grid', gap: 12 }}
+        >
+          {guaiCoda.map((a) => <Guaio key={a.titolo} titolo={a.titolo} testo={a.frase} />)}
+        </div>
+      )}
+
       <div className="tb-centro" data-scheda={scheda} data-timer={timer ? 'aperto' : undefined}>
         <div className="tb-area">
           {scheda === 'presenze' && (
@@ -633,6 +651,8 @@ function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | n
   const [password, setPassword] = useState('')
   const [errore, setErrore] = useState<string | null>(guaio)
   const [aspetta, setAspetta] = useState(false)
+  // Letta una volta: i tocchi rimasti aspettano proprio questo accesso per partire.
+  const [rientro] = useState(() => avvisoPerChiRientra(inCodaDiTutte(), 'tablet', illeggibileDiTutte()))
 
   const invia = async (e: FormEvent) => {
     e.preventDefault()
@@ -677,6 +697,12 @@ function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | n
           </>
         ) : (
           <form className="stack" style={{ gap: 12 }} onSubmit={(e) => void invia(e)}>
+            {rientro && (
+              <div className="spia-coda" data-tono={rientro.tono} role="status">
+                <span className="num spia-coda-quante">{rientro.titolo}</span>
+                <span>{rientro.frase}</span>
+              </div>
+            )}
             <span className="tb-sotto" style={{ fontSize: 18, lineHeight: 1.5 }}>
               Si fa una volta sola, con l'account della sala che ha preparato la segreteria. Poi il tablet resta collegato.
               È la stessa porta di tutta l'app: con l'account di un istruttore o della segreteria si va nella propria area.

@@ -162,7 +162,8 @@ console.log('\n3. col database: il rifiuto non lascia il segno «salvato»')
     upsert: async () => esito,
     delete: () => ({ match: async () => esito }),
   })
-  const database = (esito) => ({ from: () => tabella(esito), rpc: async () => esito })
+  // Con l'accesso, come il client vero: un 42501 senza sessione aspetta il nuovo accesso (vedi prova-coda).
+  const database = (esito) => ({ from: () => tabella(esito), rpc: async () => esito, auth: { getSession: async () => ({ data: { session: {} } }) } })
   const fuori = { error: { code: '42501', message: FRASE } }
   const negato = { error: { code: '42501', message: 'new row violates row-level security policy for table "presenze"' } }
 

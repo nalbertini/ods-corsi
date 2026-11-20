@@ -25,6 +25,7 @@ import { indirizzo } from '../lib/aree'
 import { areaDelPercorso } from '../lib/percorso'
 import { googleDisponibile, urlPulito } from '../lib/accessoIscritto'
 import { fraseGuaio } from '../lib/guaio'
+import { avvisoPerChiRientra, illeggibileDiTutte, inCodaDiTutte } from '../lib/coda'
 
 // Aperta dalla Home dell'iPhone (non dal browser): lì Google non rientra nell'app, si entra con la password.
 const daHome = window.matchMedia('(display-mode: standalone)').matches
@@ -182,6 +183,8 @@ export function Accesso({ onEntrato, collega }: { onEntrato?: (p: Personale) => 
   const [errore, setErrore] = useState<string | null>(null)
   const [detto, setDetto] = useState<string | null>(null)
   const [aspetta, setAspetta] = useState(false)
+  // Letta una volta: finché il modulo è aperto la coda non si muove, aspetta proprio questo accesso.
+  const [rientro] = useState(() => avvisoPerChiRientra(inCodaDiTutte(), 'dispositivo', illeggibileDiTutte()))
 
   useEffect(() => {
     const da = arrivoGoogle
@@ -249,6 +252,12 @@ export function Accesso({ onEntrato, collega }: { onEntrato?: (p: Personale) => 
         <div className="rule-line" />
       </div>
       <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void invia(e)}>
+        {rientro && (
+          <div className="spia-coda" data-tono={rientro.tono} role="status">
+            <span className="num spia-coda-quante">{rientro.titolo}</span>
+            <span>{rientro.frase}</span>
+          </div>
+        )}
         <span className="passo-dettaglio" style={{ fontSize: 15 }}>
           {collega
             ? 'Claude chiede di collegarsi a ODS Corsi. Entra con il tuo account: dopo ti diciamo cosa potrà fare, e decidi tu.'

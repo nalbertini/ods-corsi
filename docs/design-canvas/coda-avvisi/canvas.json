@@ -1,0 +1,13 @@
+{
+ "pages": [{ "id": "page-1", "name": "Coda senza rete · proposta" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "1 · Oggi · una sola frase, anche quando è falsa", "x": 0, "y": 140, "w": 390, "h": 420, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "2 · Proposta · tre casi: rete, spazio finito, coda illeggibile", "x": 520, "y": 140, "w": 390, "h": 520, "page": "page-1" },
+  { "file": "Porta.dc.html", "title": "3 · Proposta · sessione scaduta: le modifiche aspettano il nuovo accesso", "x": 1040, "y": 140, "w": 390, "h": 600, "page": "page-1" },
+  { "file": "Tablet.dc.html", "title": "4 · Proposta · tablet di sala, i due guai sotto la testata", "x": 0, "y": 820, "w": 1280, "h": 420, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1400, "text": "Coda senza rete: le presenze non si perdono più in silenzio, e la spia dice il vero" },
+  { "id": "nota", "kind": "body", "x": 1560, "y": 140, "maxW": 420, "text": "Se la sessione scade, le presenze in coda non si buttano più: aspettano che qualcuno rientri, e la porta lo dice. Se il telefono non ha spazio, la spia diventa rossa e chiede di non chiudere l'app. Se la coda salvata non si legge, la si mette da parte (non si cancella) e la spia chiede di ricontrollare l'appello. Il caso normale resta giallo, con il testo corretto al femminile." }
+ ]
+}

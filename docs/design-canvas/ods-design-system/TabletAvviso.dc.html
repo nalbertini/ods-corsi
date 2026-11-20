@@ -32,7 +32,8 @@
 // - tipo riquadro: titolo da 34px obliquo (OGGI QUI NON CI SONO CORSI, PER OGGI QUI E' FINITO) e il testo da 18px in `sec`, padding 28px,
 //   bordo `line`. Senza titolo o senza testo quella parte non c'e'.
 // - tipo guaio: un errore del server detto in chiaro: bordo rosso, il titolo e' un'etichetta spaziata in rosso (CALENDARIO NON LETTO,
-//   ELENCO NON LETTO) e sotto il testo. Nella colonna stretta dell'area istruttore c'e' TabletRiquadro, che ha il padding da 18px.
+//   ELENCO NON LETTO) e sotto il testo. Lo stesso guaio sta anche sotto la testata (Tablet.tsx, `avvisiCoda(…, 'tablet')`) quando i tocchi in coda
+//   rischiano di perdersi: PRESENZE DA RICONTROLLARE, N PRESENZE DA INVIARE con «non ha più spazio». Nella colonna stretta dell'area istruttore c'e' TabletRiquadro, che ha il padding da 18px.
 const T = {
   sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#14709f', suColore: '#0d2a3d', suRosso: '#ffffff', tasto: '#0d2a3d', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
 };

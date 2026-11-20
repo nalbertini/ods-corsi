@@ -56,6 +56,10 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
       return { nome: riga.nome, sala: riga.sale?.nome ?? '' }
     },
 
+    async conAccesso() {
+      return !!(await db.auth.getSession()).data.session
+    },
+
     async scollega() {
       await db.auth.signOut()
     },

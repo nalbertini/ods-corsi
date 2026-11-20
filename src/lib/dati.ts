@@ -5,6 +5,7 @@ import type { MiaPresenza } from './ore'
 import type { ComePresenzaIstruttore, LezioneSenzaIstruttore } from './segreteria'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { ListaMusica } from './musica'
+import type { StatoCoda } from './coda'
 
 /**
  * Da dove arrivano corsi, lezioni e presenze.
@@ -74,7 +75,7 @@ export interface Dati {
    */
   segnaCollega(sessioneId: string, personaId: string, presente: boolean): Promise<void>
   /** Quante scritture non sono ancora arrivate al server. Sempre 0 in prova. */
-  guardaCoda?(f: (n: number) => void): () => void
+  guardaCoda?(f: (n: number, stato: StatoCoda) => void): () => void
   /**
    * Avvisa quante scritture il server ha rifiutato per sempre (un permesso,
    * un dato che non va) da quando l'app è aperta: sono uscite dalla coda, ma
