@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.17 — 20 novembre 2026
+
+### Modificato
+
+- Lo sconto famiglia si calcola in un posto solo
+
 ## 0.259.16 — 18 novembre 2026
 
 ### Modificato
