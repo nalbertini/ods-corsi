@@ -244,9 +244,11 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   // Le IMPOSTAZIONI del timer aperte col PIN: vedi più sotto, vicino all'inattività.
   const [sbloccato, setSbloccato] = useState(false)
   const [settingsTimer, setSettingsTimer] = useState<Settings>(() => loadSettings())
+  // Dipende dal sì/no e non dal timer: a ogni secondo lascerebbe e riprenderebbe.
+  const allenamentoInCorso = inCorso(timer)
   useEffect(() => {
-    trattieniAggiornamento(inCorso(timer))
-  }, [timer])
+    if (allenamentoInCorso) return trattieniAggiornamento()
+  }, [allenamentoInCorso])
 
   // La lezione in cui ci si segna adesso (al cambio, quella che comincia): il
   // timer mette in cima i suoi timer, e la barra ne conta i segnati.

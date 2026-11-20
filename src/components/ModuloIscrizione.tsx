@@ -3,6 +3,7 @@ import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile }
 import { anniScritti, avvisoCertificato, certificatoDaPortare, domandaCertificato, fraseCertificatoFinale, mancaCertificato, testoCertificatoDopo, type SceltaCertificato, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, DETTAGLIO_RICEVUTA, domandaUscita, ESTENSIONI, FILE, fileObbligatori, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante, tipiDaChiedere } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
+import { trattieniAggiornamento } from '../lib/aggiornamento'
 import { CONOSCIUTO, domandaConosciuto, origineDellaRichiesta, pulisciConosciuto, SCEGLI_SE_VUOI, type Conosciuto } from '../lib/provenienza'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO } from '../lib/iscrizione'
@@ -155,6 +156,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
 
   // Finché il modulo è aperto ha l'aspetto del sito.
   useEffect(() => apriAspettoModulo(), [])
+  // Finché il modulo è aperto, esito compreso, una versione nuova aspetta:
+  // ricaricando si perderebbe quel che c'è scritto. Entra alla chiusura.
+  useEffect(() => trattieniAggiornamento(), [])
 
   // Si contano solo le richieste vere dalla pagina pubblica: né la prova né l'area degli iscritti (`nucleo`).
   const contare = haUnServer && !nucleo
