@@ -17,7 +17,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Corso con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | importo sbagliato, corso pagato due volte o per un altro | `prova:corso-satispay`, `prova:pagato-in-segreteria`, `prova:edge`, `scripts/prova-iscritto-supabase.mjs`, `corso-satispay.sql`, `pagato-in-segreteria.sql`, `corso-gia-pagato.sql` | sì |
 | Saldo della quota con Satispay dall'area iscritti | iscritto, titolare del nucleo, segreteria | resto calcolato male o pagato due volte, nucleo sbagliato | `prova:saldo-satispay`, `prova:satispay`, `prova:pagato-in-segreteria`, `prova:edge`, `saldo-satispay.sql`, `pagato-in-segreteria.sql` | sì |
 | Come paga nell'iscrizione online (bonifico o contanti, ricevuta facoltativa) | genitore, segreteria | scelta persa o letta male, quota attesa dove non c'è, modulo che non si chiude | `prova:come-paga`, `prova:iscrizione-passi`, `prova:richieste`, `prova:satispay`, `prova:iscrizione-pagina`, `come-paga.sql` | sì |
-| Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:come-paga`, `prova:campi`, `prova:listino`, `prova:moduli`, `prova:fogli-moduli`, `prova:richieste`, `prova:ricevuta`, `prova:avvisi-segreteria`, `iscrizioni.sql`, `listino.sql`, `orari-aperti.sql`, `rls.sql` | sì |
+| Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:come-paga`, `prova:campi`, `prova:listino`, `prova:moduli`, `prova:fogli-moduli`, `prova:richieste`, `prova:ricevuta`, `prova:avvisi-segreteria`, `prova:finestre`, `iscrizioni.sql`, `listino.sql`, `orari-aperti.sql`, `rls.sql` | sì |
 | Aspetto del modulo di iscrizione | genitore | modulo illeggibile o col colore del sito sbagliato | `prova:iscrizione-sito`, `prova:look`, `prova:campi`, `prova:iscrizione-pagina`, `prova:tema`, `prova:iscrizione-passi` | sì |
 | Modulo di iscrizione da tastiera e a 320px | genitore, segreteria | chi usa la tastiera non riesce a iscriversi | `prova:accessibilita-iscrizione` | sì |
 | Pagina pubblica `/iscrizioni/` | genitore, segreteria | richiesta mai inviata, prezzo diverso dal listino | `prova:iscrizione-pagina`, `prova:iscrizione-sito`, `prova:iscrizione-passi` | sì |
@@ -322,6 +322,9 @@ quando arriva la prova.
 - Errore di pagina (appello): il confine in `main.tsx`, `App.tsx`, `TimerSala.tsx` e `TimerBloccato.tsx` non ha prova. Se cade, torna lo schermo bianco. Solo collaudo a mano. DA FARE in `prova-errore.mjs`, con un controllo sui sorgenti.
 - Errore di pagina (appello): i tasti RICARICA e PROVA A MANDARLE (`SchermataErrore.tsx`) non hanno prova. Se RICARICA ricarica senza aver mandato, o senza ricontrollare la memoria, nessuna prova cade. DA FARE.
 - Errore di pagina (appello): il tetto di 3 secondi di `mandaTutto` non cade se lo si toglie: il server muto di `prova-errore.mjs` non esercita quel caso. DA FARE.
+- ERO PRESENTE, doppio tocco (`Presenze` in `AreaIscritti.tsx`): il doppione è rifiutato
+  da `segnalate.ts` e dal database (provati); la guardia `inVolo` nel `.tsx` no. Se cade,
+  il secondo tocco dice «L'hai già segnalata». Solo collaudo a mano.
 
 ## Come si aggiorna
 

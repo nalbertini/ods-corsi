@@ -4,7 +4,7 @@ import type { Ricercata } from '../../lib/ricerca'
 import { useState, type ReactNode } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
-import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato, siElimina } from '../../lib/richieste'
+import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, linkEmail, minorenne, problemiCertificato, siElimina } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
 import { cosaNonVaNucleo, fratelliPerGenitore } from '../../lib/nucleo'
 import { attesoRicevuta, RICEVUTA_NON_PAGA } from '../../lib/passiIscrizione'
@@ -461,7 +461,7 @@ function Scheda({
           </div>
         )}
         <Dato etichetta={minore ? 'EMAIL DEL GENITORE' : 'EMAIL'}>
-          <a href={`mailto:${x.email}`} style={{ color: 'var(--sec)' }}>{x.email}</a>
+          <a href={linkEmail(x.email)} style={{ color: 'var(--sec)' }}>{x.email}</a>
         </Dato>
         <Dato etichetta="TELEFONO">
           <a href={`tel:${x.telefono.replace(/[^\d+]/g, '')}`} style={{ color: 'var(--sec)' }}>{x.telefono}</a>

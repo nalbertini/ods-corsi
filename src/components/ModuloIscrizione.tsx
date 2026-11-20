@@ -418,6 +418,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     if (manca) return
     // La scheda si apre subito, al tocco: dopo un'attesa il telefono la bloccherebbe.
     const scheda = window.open('', '_blank')
+    if (scheda) scheda.opener = null // senza 'noopener', che farebbe tornare null: la pagina aperta non deve poter guidare questa
     try {
       const url = URL.createObjectURL(await faiModulo())
       if (scheda) scheda.location.href = url

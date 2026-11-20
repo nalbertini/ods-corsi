@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { siElimina, ACCOLTA_RESTA, daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'; export { archivio } from './src/lib/archivioProva'; export { aggiungiRichiesteProva, scordaRichiesteProva, richiesteContateProva } from './src/lib/richiesteProva'; export { seminaEsempi } from './src/lib/esempiProva'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { siElimina, ACCOLTA_RESTA, daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA, linkEmail } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'; export { archivio } from './src/lib/archivioProva'; export { aggiungiRichiesteProva, scordaRichiesteProva, richiesteContateProva } from './src/lib/richiesteProva'; export { seminaEsempi } from './src/lib/esempiProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -972,6 +972,15 @@ console.log('\n17. i conteggi della prova: una chiave loro, riletta a ogni uso, 
   m.aggiungiRichiesteProva(esempi)
   ok('gli esempi caricati due volte contano una volta sola', [m.richiesteContateProva().length, prima], [esempi.length, esempi.length])
   ok('il periodo al contrario: lo stesso errore del database', await errore(() => s.richiesteDaDove(new Date(2026, 8, 26), new Date(2026, 8, 1))), 'il periodo è al contrario')
+}
+
+console.log('\nil link per scrivere all\'email della richiesta')
+{
+  // L'email la scrive chi si iscrive, e il database la ammette con ? e & dentro:
+  // nel link «Scrivi» non deve aggiungere un oggetto, un testo o altri destinatari.
+  ok('un\'email normale resta com\'è', m.linkEmail('luca.rossi@esempio.it'), 'mailto:luca.rossi@esempio.it')
+  ok('? e & non aprono parametri del link', m.linkEmail('a@b.it?cc=x%40y.it&body=ciao'), 'mailto:a@b.it%3Fcc%3Dx%2540y.it%26body%3Dciao')
+  ok('# e gli spazi non tagliano il link', m.linkEmail('a#b @c.it'), 'mailto:a%23b%20@c.it')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
