@@ -17,6 +17,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 import { comePaga, pagamentoDi, statoCertificato } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { indirizzoPagina } from '../lib/guida'
+import { unToccoAllaVolta } from '../lib/tocco'
 import { cartaSePuoi } from '../lib/cartaPdf'
 import { abbonamentiDalleRicevute, doveVaLoSconto, importoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
 import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from './ds'
@@ -619,26 +620,23 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
   }, [dati, personaId, giro])
 
   const daVedere = segnalate.filter((x) => x.stato === 'da_vedere').length
-  // Il ref ferma il secondo tocco prima che il tasto si spenga: se no il secondo invio torna «L'hai già segnalata».
-  const inVolo = useRef(false)
+  const [tocca] = useState(unToccoAllaVolta)
   const [invio, setInvio] = useState(false)
-  const manda = async (sessioneId: string) => {
-    if (inVolo.current) return
-    inVolo.current = true
-    setInvio(true)
-    setGuaio(null)
-    try {
-      await dati.segnala(personaId, sessioneId, nota)
-      setAperta(null)
-      setNota('')
-      setGiro((g) => g + 1)
-    } catch (e) {
-      setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: 'La segnalazione non è partita' }))
-    } finally {
-      inVolo.current = false
-      setInvio(false)
-    }
-  }
+  const manda = (sessioneId: string) =>
+    tocca(async () => {
+      setInvio(true)
+      setGuaio(null)
+      try {
+        await dati.segnala(personaId, sessioneId, nota)
+        setAperta(null)
+        setNota('')
+        setGiro((g) => g + 1)
+      } catch (e) {
+        setGuaio(fraseGuaio(e, { per: 'iscritto', ripiego: 'La segnalazione non è partita' }))
+      } finally {
+        setInvio(false)
+      }
+    })
   return (
     <section>
       <Titoletto
