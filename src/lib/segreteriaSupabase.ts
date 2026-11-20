@@ -1231,6 +1231,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         )
         return nascitaDelleFonti([...dalleAnagrafiche, ...dalleRichieste])
       })()
+      // Le tre letture partono prima delle persone e si aspettano dopo: se le persone non si leggono, un loro errore
+      // resterebbe un rifiuto senza gestore. Qui lo si guarda soltanto; l'errore vero esce dagli await più sotto.
+      for (const p of [leRicevute, quote, nati]) p.catch(() => {})
       // `nucleo`: le colonne del nucleo che il database ha già (100-nucleo.sql, 113-genitore-non-iscritto.sql).
       const campi = (nucleo: string) => `id, nome, cognome, email, ${nucleo}telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )`
       const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'

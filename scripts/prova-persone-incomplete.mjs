@@ -101,5 +101,17 @@ console.log('\n5. Le tabelle che il database non ha ancora restano un ripiego: l
   ok('senza vista né ricevute sul database: Laura c\'è, senza quote', Array.isArray(senzaRicevute) ? senzaRicevute.map((p) => [p.id, p.quote]) : senzaRicevute, [['laura', []]])
 }
 
+console.log('\n6. Se non si leggono nemmeno le persone, le altre letture non restano rifiuti senza nessuno che li guardi')
+{
+  let senzaGestore = 0
+  const conta = () => senzaGestore++
+  process.on('unhandledRejection', conta)
+  const r = await leggi({ persone: { error: SERVER }, quote_ricevute: { error: SERVER }, anagrafiche: { error: SERVER } })
+  await new Promise((fatto) => setTimeout(fatto, 50))
+  process.off('unhandledRejection', conta)
+  ok('l\'elenco non si legge: lo dice', typeof r === 'string' && r.startsWith('errore:'), true)
+  ok('nessun rifiuto senza gestore', senzaGestore, 0)
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
