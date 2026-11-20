@@ -698,8 +698,18 @@ console.log('\n16. quanto vale lo sconto famiglia (importoSconto), lo stesso per
   const tsx = readdirSync(new URL('../src', import.meta.url), { recursive: true }).filter((f) => f.endsWith('.tsx')).map((f) => `src/${f}`)
   // Se la lettura non trovasse più i file, la prova passerebbe senza guardare niente.
   ok('fra i .tsx letti ci sono quelli che mostrano lo sconto', ['src/components/segreteria/Iscritti.tsx', 'src/components/AreaIscritti.tsx', 'src/components/segreteria/Ricevute.tsx'].every((f) => tsx.includes(f)), true)
+  // Il conto a mano in ogni forma: importo per sconto, sconto per importo, importo diviso 5.
+  // Passa solo `SCONTO_FAMIGLIA * 100`, che scrive la percentuale.
+  const contoAMano = /\*\s*(SCONTO_FAMIGLIA\b|0?\.2\b)|(\bSCONTO_FAMIGLIA|(?<![\w.])0?\.2)\s*\*(?!\s*100\b)|(?<![/*])\/\s*5\b(?![.\d])/
+  for (const [riga, voluto] of [
+    ['pieno * SCONTO_FAMIGLIA', true], ['pieno * 0.2', true], ['pieno *.2', true],
+    ['SCONTO_FAMIGLIA * pieno', true], ['0.2 * pieno', true], ['pieno / 5', true], ['pieno/5', true],
+    ['Math.round(SCONTO_FAMIGLIA * 100)', false], ['// 5 minuti', false], ['pieno / 50', false], ['pieno / 5.5', false],
+  ]) {
+    ok(`lo schema ${voluto ? 'vede' : 'lascia passare'} «${riga}»`, contoAMano.test(riga), voluto)
+  }
   for (const f of tsx) {
-    ok(`${f} non calcola lo sconto da sé`, /\*\s*(SCONTO_FAMIGLIA\b|0?\.2\b)/.test(readFileSync(new URL(`../${f}`, import.meta.url), 'utf8')), false)
+    ok(`${f} non calcola lo sconto da sé`, contoAMano.test(readFileSync(new URL(`../${f}`, import.meta.url), 'utf8')), false)
   }
 }
 
