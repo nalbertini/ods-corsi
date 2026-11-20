@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.29 — 20 novembre 2026
+
+### Risolto
+
+- Le presenze non inviate restano dell'account che le ha scritte, e non partono con un altro account sullo stesso dispositivo
+
 ## 0.259.28 — 20 novembre 2026
 
 ### Risolto
