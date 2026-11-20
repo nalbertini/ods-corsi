@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.27 — 20 novembre 2026
+
+### Modificato
+
+- Una prova controlla che nessuna schermata mostri il testo grezzo di un errore
+
 ## 0.259.26 — 20 novembre 2026
 
 ### Modificato
