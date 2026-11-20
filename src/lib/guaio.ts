@@ -84,7 +84,7 @@ const INGLESE = /\b(the|of|for|to|is|not|does|could|cannot|failed|denied|violate
 // nostro solo se ne ha almeno una. Contare le vocali finali faceva passare
 // l'inglese corto («Service Unavailable», «Storage quota»). «token» non sta
 // fra le parole inglesi: lo usano i nostri messaggi.
-const ITALIANO = /\b(il|lo|la|le|gli|un|una|uno|non|di|del|della|dei|delle|da|dal|dalla|per|con|che|si|ci|va|manca|mancano|solo|questo|questa|quello|più|già|ancora|prima|dopo|serve|servono|può|sono|hai|ha|deve|richiesta|chi|come|col|li|te|fra|qualche|riprova|scegli|troppi|troppe|troppo|nessuna|nessun|nessuno|inesistente|annullata|annullato|sconosciuto|sconosciuta|data)\b/i
+const ITALIANO = /\b(il|lo|la|le|gli|un|una|uno|non|di|del|della|dei|delle|da|dal|dalla|per|con|che|si|ci|va|manca|mancano|solo|questo|questa|quello|più|già|ancora|prima|dopo|serve|servono|può|sono|hai|ha|deve|richiesta|chi|come|col|li|te|fra|qualche|riprova|scegli|troppi|troppe|troppo|nessuna|nessun|nessuno|inesistente|annullata|annullato|sconosciuto|sconosciuta)\b/i
 
 /** Vero se il testo è un nostro messaggio italiano, da mostrare com'è. */
 export function italiano(testo: string): boolean {
