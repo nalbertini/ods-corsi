@@ -1,0 +1,12 @@
+{
+ "pages": [{ "id": "page-1", "name": "Coda legata all'account · proposta" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "1 · Oggi · la coda parte con chi entra", "x": 0, "y": 140, "w": 390, "h": 480, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "2 · Proposta · le presenze di un altro aspettano lui", "x": 520, "y": 140, "w": 390, "h": 560, "page": "page-1" },
+  { "file": "Uscita.dc.html", "title": "3 · Proposta · ESCI distingue le tue da quelle di un altro", "x": 1040, "y": 140, "w": 390, "h": 420, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1400, "text": "Coda legata all'account: le presenze partono solo con chi le ha segnate" },
+  { "id": "nota", "kind": "body", "x": 1560, "y": 140, "maxW": 420, "text": "Ogni presenza salvata senza rete ricorda chi l'ha segnata. Se sul telefono entra un altro, le sue partono come sempre; quelle dell'altro non partono e non si buttano, e una seconda spia dice di chi sono e da quando. Rientrando lui, partono. ESCI le conta tutte e dice di chi sono. Sul tablet vale lo stesso, per postazione. La porta resta com'è." }
+ ]
+}

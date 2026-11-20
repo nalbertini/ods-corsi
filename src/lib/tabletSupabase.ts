@@ -60,6 +60,18 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
       return !!(await db.auth.getSession()).data.session
     },
 
+    async chiE() {
+      const { data: s } = await db.auth.getSession()
+      if (!s.session) return null
+      const id = s.session.user.id
+      // Come `postazione`: una postazione spenta, o che non si sa, non è nessuno. Se no un
+      // tocco partirebbe, il server direbbe no e la coda lo butterebbe; così aspetta.
+      const { data, error } = await db.from('postazioni').select('nome, attiva').eq('utente_id', id).maybeSingle()
+      const riga = data as { nome: string; attiva: boolean } | null
+      if (error || !riga?.attiva) return null
+      return { id, nome: riga.nome }
+    },
+
     async scollega() {
       await db.auth.signOut()
     },

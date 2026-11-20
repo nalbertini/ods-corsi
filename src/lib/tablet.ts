@@ -6,7 +6,7 @@ import type { ListaMusica } from './musica'
 import type { ImpostazioniSala, TimerSala } from '../../timer/src/lib/impostazioniSala'
 import type { FonteClip } from '../../timer/src/lib/voice'
 import type { ChiProva, GiaProvato } from './prove'
-import { aspettaLAccesso, Coda } from './coda'
+import { aspettaLAccesso, Coda, type Autore } from './coda'
 
 /**
  * Il tablet di sala.
@@ -162,6 +162,12 @@ export interface DatiTablet {
    * Facoltativa: la modalità prova non scade, e senza si tratta come un accesso che c'è.
    */
   conAccesso?(): Promise<boolean>
+  /**
+   * La postazione collegata e attiva adesso, `null` se nessuna o se non si sa. I tocchi in coda
+   * partono solo con lei: dopo un SCOLLEGA, quelli della sala di prima
+   * aspettano che rientri. Facoltativa: senza, la coda parte tutta.
+   */
+  chiE?(): Promise<Autore | null>
 
   /** Le lezioni della sala fra due giorni, estremi inclusi. */
   lezioni(da: Date, a: Date): Promise<LezioneSala[]>
@@ -433,6 +439,14 @@ let coda: Coda | null = null
 export function codaDelTablet(d: DatiTablet): Coda {
   return (coda ??= new Coda(async (op) => {
     const [sessioneId, personaId] = op.args as [string, string]
+    // Senza una postazione collegata non c'è un token a cui darlo: il tocco resta qui, intero.
+    // E un tocco firmato da un'altra postazione non parte col suo token, anche se è entrata
+    // fra la scelta della coda e l'invio.
+    if (d.chiE) {
+      const chi = await d.chiE()
+      if (!chi) throw new Error('nessuna postazione collegata')
+      if (op.autore && op.autore.id !== chi.id) throw new Error('tocco di un\'altra postazione')
+    }
     try {
       if (op.tipo === 'segna') await d.segna(sessioneId, personaId)
       else if (op.tipo === 'annulla') await d.annulla(sessioneId, personaId)
@@ -442,7 +456,7 @@ export function codaDelTablet(d: DatiTablet): Coda {
       if (rifiutato(e, d.modo)) return // scartato: il server non lo vuole, e non lo vorrà
       throw e
     }
-  }, 'ods-corsi:coda-sala'))
+  }, 'ods-corsi:coda-sala', d.chiE && (() => d.chiE?.() ?? null)))
 }
 
 /** Chi è in coda per questa lezione, cioè segnato sul tablet ma non ancora sul server. */

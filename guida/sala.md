@@ -170,6 +170,11 @@ perde l'accesso con delle presenze in attesa, **COLLEGA IL TABLET** dice quante
 sono: ricollegatelo e partono da sole. Se non si leggono più, dice **PRESENZE
 DA RICONTROLLARE**.
 
+Ogni presenza in attesa ricorda da quale postazione è stata segnata. Se il
+tablet viene collegato come un'altra postazione, quelle della prima non
+partono e non si buttano: una seconda spia dice di chi sono e da quando, e
+partono quando il tablet torna a essere quella postazione.
+
 Chi non trova il suo nome non è iscritto a quel corso: va detto alla segreteria.
 Se il corso ha due lezioni lo stesso giorno, chi si è già segnato all'altra non
 c'è fra i nomi: è giusto così, conta quella. Se il nome arriva toccato lo
