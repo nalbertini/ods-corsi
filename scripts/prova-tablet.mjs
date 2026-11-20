@@ -281,6 +281,11 @@ console.log('\n11. i tocchi senza rete')
   ok('un raise senza codice è un no', m.rifiutato({ code: 'P0001' }, 'supabase'), true)
   ok('in prova ogni errore è un no', m.rifiutato(new Error('x'), 'prova'), true)
 
+  // Il vero `conAccesso`: se dicesse sempre sì, un tocco a sessione scaduta si butterebbe come un no del server.
+  const conSessione = (session) => m.creaTabletSupabase({ auth: { getSession: async () => ({ data: { session } }) } })
+  ok('sessione scaduta: il tablet sa di non avere accesso', await conSessione(null).conAccesso(), false)
+  ok('con la sessione: il tablet ha accesso', await conSessione({ user: { id: 't1' } }).conAccesso(), true)
+
   let rete = false
   let accesso = true
   const fatte = []

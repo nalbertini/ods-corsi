@@ -25,7 +25,7 @@ import { indirizzo } from '../lib/aree'
 import { areaDelPercorso } from '../lib/percorso'
 import { googleDisponibile, urlPulito } from '../lib/accessoIscritto'
 import { fraseGuaio } from '../lib/guaio'
-import { avvisoPerChiRientra, inCodaDiTutte } from '../lib/coda'
+import { avvisoPerChiRientra, illeggibileDiTutte, inCodaDiTutte } from '../lib/coda'
 
 // Aperta dalla Home dell'iPhone (non dal browser): lì Google non rientra nell'app, si entra con la password.
 const daHome = window.matchMedia('(display-mode: standalone)').matches
@@ -184,7 +184,7 @@ export function Accesso({ onEntrato, collega }: { onEntrato?: (p: Personale) => 
   const [detto, setDetto] = useState<string | null>(null)
   const [aspetta, setAspetta] = useState(false)
   // Letta una volta: finché il modulo è aperto la coda non si muove, aspetta proprio questo accesso.
-  const [rientro] = useState(() => avvisoPerChiRientra(inCodaDiTutte()))
+  const [rientro] = useState(() => avvisoPerChiRientra(inCodaDiTutte(), 'dispositivo', illeggibileDiTutte()))
 
   useEffect(() => {
     const da = arrivoGoogle

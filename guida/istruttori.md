@@ -467,7 +467,8 @@ Se il telefono non ha più spazio per salvarle, la riga diventa rossa e dice
 Se le presenze salvate non si leggono più, compare **PRESENZE DA RICONTROLLARE**:
 riguardate l'appello delle ultime lezioni. Se l'accesso scade mentre qualcosa
 aspetta, non si perde niente: la pagina d'accesso dice **N MODIFICHE DA
-INVIARE**, e partono da sole appena entrate di nuovo.
+INVIARE**, e partono da sole appena entrate di nuovo; se non si leggono più,
+dice **PRESENZE DA RICONTROLLARE**.
 
 **ESCI** prima prova a mandare quello che aspetta, ancora col vostro account.
 Se qualcosa non riesce ad arrivare (manca la rete), non esce da solo: un avviso

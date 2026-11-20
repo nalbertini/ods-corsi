@@ -23,7 +23,7 @@
 </x-dc>
 <script data-dc-script data-props='{"titolo":{"editor":"text","default":"LEZIONE TROPPO VECCHIA"},"testo":{"editor":"text","default":"Questa lezione è troppo vecchia per cambiare le presenze: scrivete alla segreteria."},"tono":{"editor":"enum","options":["attesa","guaio"],"default":"attesa"},"$preview":{"width":358,"height":100}}'>
 // Riproduzione 1:1 di `.spia-coda` e `.spia-coda-quante` (src/styles.css righe 870-874 e 791-792), usata per N PRESENZE DA INVIARE (Sala.tsx, `SpiaCoda`, testi di `avvisiCoda`
-// in src/lib/coda.ts), PRESENZE RIFIUTATE, PRESENZE DA RICONTROLLARE e N PRESENZE con «non ha più spazio» (data-tono="guaio"), N MODIFICHE DA INVIARE in cima all'accesso
+// in src/lib/coda.ts), PRESENZE RIFIUTATE, PRESENZE DA RICONTROLLARE e N PRESENZE con «non ha più spazio» (data-tono="guaio"), N MODIFICHE DA INVIARE in cima all'accesso (PRESENZE DA RICONTROLLARE, guaio, se resta una coda illeggibile)
 // (Porta.tsx, `avvisoPerChiRientra`) e, nell'appello, per la frase di una lezione in SOLA LETTURA (AppelloScreen.tsx, `etichettaFuoriFinestra` + `fraseFuoriFinestra` di src/lib/finestra.ts).
 // Una colonna: il titolo in maiuscolo (cond 15px 700 0.12em, `giallo-testo`; rosso-testo con guaio) e la frase (14px, interlinea 1.4, `dim`); padding 10px 14px, bordo 2px `giallo` (`rosso` con guaio).
 // look sito (COSTRUITO, `:root[data-look='sito'] .spia-coda` in src/styles.css): «aspetta», cioe' bordo e titolo giallo scuro #8f6a00 su BIANCO, mai un riempimento giallo; raggio 6px; titolo in Inter 15px 700 con 0.02em e «… » davanti

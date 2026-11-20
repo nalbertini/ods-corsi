@@ -167,7 +167,8 @@ dei guai: **il tablet non ha più spazio per salvarle** (non chiudete l'app
 finché non partono) o **PRESENZE DA RICONTROLLARE** (le presenze salvate non si
 leggono più: l'istruttore riguardi l'appello delle ultime lezioni). Se il tablet
 perde l'accesso con delle presenze in attesa, **COLLEGA IL TABLET** dice quante
-sono: ricollegatelo e partono da sole.
+sono: ricollegatelo e partono da sole. Se non si leggono più, dice **PRESENZE
+DA RICONTROLLARE**.
 
 Chi non trova il suo nome non è iscritto a quel corso: va detto alla segreteria.
 Se il corso ha due lezioni lo stesso giorno, chi si è già segnato all'altra non

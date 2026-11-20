@@ -157,7 +157,10 @@ export interface DatiTablet {
   scegliSala?(sala: string): Promise<void>
   /** Il tablet smette di essere il tablet di una sala. */
   scollega(): Promise<void>
-  /** Vero se il tablet ha ancora il suo accesso. Senza, un permesso negato vuol dire solo che è scaduto. */
+  /**
+   * Vero se il tablet ha ancora il suo accesso. Senza, un permesso negato vuol dire solo che è scaduto.
+   * Facoltativa: la modalità prova non scade, e senza si tratta come un accesso che c'è.
+   */
   conAccesso?(): Promise<boolean>
 
   /** Le lezioni della sala fra due giorni, estremi inclusi. */

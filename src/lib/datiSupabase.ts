@@ -125,6 +125,9 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
   const chiFuori = new Set<(sessioneId: string) => boolean>()
   const coda = new Coda(async (op) => {
     const [a, b, c] = op.args as [string, string, StatoPresenza | null]
+    // Senza sessione non si prova nemmeno: le policy risponderebbero «niente righe» o «zero
+    // cambiate» senza errore, e la coda crederebbe fatta (o da buttare) una scrittura mai arrivata.
+    if (!(await db.auth.getSession()).data.session) throw Object.assign(new Error('accesso scaduto'), { code: '42501' })
     try {
       if (op.tipo === 'segna') await scriviPresenza(db, a, b, c)
       else if (op.tipo === 'segnaTutti') await scriviTutti(db, a, b as unknown as StatoPresenza)

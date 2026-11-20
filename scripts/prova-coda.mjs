@@ -37,7 +37,7 @@ globalThis.window = {
 }
 const rete = (e) => (ascoltatori[e] ?? []).forEach((f) => f())
 
-const { Coda, aspettaLAccesso, avvisiCoda, avvisoPerChiRientra } = await import(modulo)
+const { Coda, aspettaLAccesso, avvisiCoda, avvisoPerChiRientra, illeggibileDiTutte, svuotaTutte } = await import(modulo)
 
 // `uscita.ts` importa `coda.ts`: va compilata a parte, con la stessa copia
 // (un solo bundle) perché il registro delle code sia quello di `Coda`.
@@ -472,6 +472,9 @@ const ok = (cosa, avuto, voluto) => { if (avuto !== voluto) dimmi(`${cosa}: avut
   new Coda(async () => { throw new Error('niente rete') })
   await attesa()
   uguali('18: ricaricata due volte, una copia sola', copie(), ['{rotto'])
+  // Riaperta l'app, la copia è ancora lì: chi ha la coda davanti deve saperlo ancora.
+  const riaperta = new Coda(async () => { throw new Error('niente rete') })
+  ok('18: riaperta con la copia da parte, si dice ancora illeggibile', riaperta.stato?.illeggibile, true)
   ok('18: messa da parte, la coda rotta non resta al suo posto', memoria.get('ods-corsi:coda'), '[]')
 
   // Due code rotte diverse, una dopo l'altra: si tengono tutte e due.
@@ -499,6 +502,21 @@ const ok = (cosa, avuto, voluto) => { if (avuto !== voluto) dimmi(`${cosa}: avut
   // Con un altro account le scritture partirebbero col token sbagliato, e il server le rifiuterebbe.
   ok('19: si dice di rientrare con lo stesso account', /stesso account/.test(t?.frase ?? ''), true)
   ok('19: sul telefono di chi insegna, questo dispositivo', /questo dispositivo/.test(avvisoPerChiRientra(1)?.frase ?? ''), true)
+}
+
+// 20. Alla porta, se resta solo una coda illeggibile: niente da inviare, c'è da ricontrollare.
+{
+  const r = avvisoPerChiRientra(1, 'tablet', true)
+  ok('20: coda illeggibile, non si dice «da inviare»', /DA INVIARE/.test(r?.titolo ?? ''), false)
+  ok('20: coda illeggibile, si dice di ricontrollare', /ricontrolla/i.test(r?.frase ?? ''), true)
+  ok('20: coda illeggibile, tono guaio', r?.tono, 'guaio')
+  ok('20: coda illeggibile, sul tablet si dice tablet', /tablet/.test(r?.frase ?? ''), true)
+  svuotaTutte()
+  ok('20: senza copie da parte, nessuna coda illeggibile', illeggibileDiTutte(), false)
+  // Come al riavvio: la copia è rimasta su disco, e nessuna coda l'ha ancora aperta.
+  memoria.set('ods-corsi:coda:illeggibile', JSON.stringify(['{rotto']))
+  ok('20: con la sola copia su disco, la porta lo sa', illeggibileDiTutte(), true)
+  memoria.delete('ods-corsi:coda:illeggibile')
 }
 
 console.log(guai ? `\n${guai} PROBLEMI` : '\nTUTTO A POSTO')

@@ -293,9 +293,21 @@ const CODE_DELL_APP = ['ods-corsi:coda', 'ods-corsi:coda-sala']
 export function inCodaDiTutte(): number {
   return CODE_DELL_APP.reduce((tot, dove) => {
     const qui = [...vive].filter((c) => c.dove === dove)
-    const rotta = haCopia(dove) || qui.some((c) => c.stato.illeggibile) ? 1 : 0
-    return tot + Math.max(leggi(dove).lista.length, ...qui.map((c) => c.inAttesa)) + rotta
+    return tot + Math.max(leggi(dove).lista.length, ...qui.map((c) => c.inAttesa)) + (rotta(dove) ? 1 : 0)
   }, 0)
+}
+
+/** Una coda dell'app non si è letta: la copia è da parte, su disco o appena scoperta. */
+function rotta(dove: string): boolean {
+  return haCopia(dove) || [...vive].some((c) => c.dove === dove && c.stato.illeggibile)
+}
+
+/**
+ * Vero se una coda dell'app è illeggibile: alla porta non c'è niente «da
+ * inviare» che parta da solo, c'è da ricontrollare a mano.
+ */
+export function illeggibileDiTutte(): boolean {
+  return CODE_DELL_APP.some(rotta)
 }
 
 /**
@@ -373,8 +385,16 @@ export function avvisiCoda(s: StatoCoda, dispositivo: 'telefono' | 'tablet' = 't
  * scritture aspettano un nuovo accesso (vedi `aspettaLAccesso`), e chi è
  * davanti al modulo deve saperlo per non pensarle perse.
  */
-export function avvisoPerChiRientra(n: number, dispositivo: 'tablet' | 'dispositivo' = 'dispositivo'): AvvisoCoda | null {
+export function avvisoPerChiRientra(n: number, dispositivo: 'tablet' | 'dispositivo' = 'dispositivo', illeggibile = false): AvvisoCoda | null {
   if (n <= 0) return null
+  // Una coda che non si legge non riparte col nuovo accesso: dirlo «da inviare» la farebbe credere al sicuro.
+  if (illeggibile) {
+    return {
+      tono: 'guaio',
+      titolo: 'PRESENZE DA RICONTROLLARE',
+      frase: `Alcune presenze salvate su questo ${dispositivo} non si leggono più: entra e ricontrolla l’appello delle ultime lezioni.`,
+    }
+  }
   return {
     tono: 'attesa',
     titolo: n === 1 ? 'UNA MODIFICA DA INVIARE' : `${n} MODIFICHE DA INVIARE`,

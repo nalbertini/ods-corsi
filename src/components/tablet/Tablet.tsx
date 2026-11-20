@@ -14,7 +14,7 @@ import { leggiLinkSpotify, suonaLista } from '../../../timer/src/lib/spotify'
 import { PlayerYoutube } from '../../../timer/src/components/PlayerYoutube'
 import { PlayerAudio } from '../../../timer/src/components/PlayerAudio'
 import { fonteDelLink, listaRicordata, musicaScelta, ricordaLista, ricordaSpenta, spentaRicordata, type ListaMusica } from '../../lib/musica'
-import { avvisiCoda, avvisoPerChiRientra, inCodaDiTutte, svuotaTutte, type StatoCoda } from '../../lib/coda'
+import { avvisiCoda, avvisoPerChiRientra, illeggibileDiTutte, inCodaDiTutte, svuotaTutte, type StatoCoda } from '../../lib/coda'
 import { uscita } from '../../lib/uscita'
 import { trattieniAggiornamento } from '../../lib/aggiornamento'
 import { Accensione, Cronometro, Icona, Nota, Persone } from '../Icons'
@@ -650,7 +650,7 @@ function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | n
   const [errore, setErrore] = useState<string | null>(guaio)
   const [aspetta, setAspetta] = useState(false)
   // Letta una volta: i tocchi rimasti aspettano proprio questo accesso per partire.
-  const [rientro] = useState(() => avvisoPerChiRientra(inCodaDiTutte(), 'tablet'))
+  const [rientro] = useState(() => avvisoPerChiRientra(inCodaDiTutte(), 'tablet', illeggibileDiTutte()))
 
   const invia = async (e: FormEvent) => {
     e.preventDefault()

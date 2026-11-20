@@ -368,6 +368,29 @@ console.log('\n7. col database: la coda delle scritture')
   await prova('con l\'accesso, una presenza già tolta non resta in coda', async () => (await dTogliCon.segna('s1', 'p1', null), await attesa(), inCoda().length), 0)
   memoria.delete(DOVE)
 
+  // Senza sessione le policy non fanno vedere la lezione (PGRST116) e non lasciano chiuderla
+  // (zero righe, nessun errore): né l'uno né l'altro è un no del server, è un accesso che manca.
+  const senzaAccesso = {
+    rpc: async () => ({ data: null, error: null }),
+    from: () => {
+      const q = {
+        select: () => q, eq: () => q, update: () => q,
+        single: async () => ({ data: null, error: { code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned' } }),
+        then: (r) => r({ data: null, error: null }),
+      }
+      return q
+    },
+    auth: { getSession: async () => ({ data: { session: null } }) },
+  }
+  const dSenza = m.creaDatiSupabase(senzaAccesso)
+  let scartateSenza = 0
+  dSenza.guardaScartate?.((n) => { scartateSenza = n })
+  await prova('sessione scaduta: TUTTI PRESENTI resta in coda', async () => (await dSenza.segnaTutti('s1', 'presente'), await attesa(), [inCoda(), scartateSenza]), [[['segnaTutti', 's1', 'presente']], 0])
+  memoria.delete(DOVE)
+  const dSenza2 = m.creaDatiSupabase(senzaAccesso)
+  await prova('sessione scaduta: chiudere la lezione resta in coda', async () => (await dSenza2.chiudi('s1'), await attesa(), [inCoda(), scartateSenza]), [[['chiudi', 's1']], 0])
+  memoria.delete(DOVE)
+
   const rispondi = (data, error = null) => finto(() => ({ data, error })).db
   await prova('gli istruttori della lezione, dal database', async () =>
     (await m.creaDatiSupabase(rispondi([
