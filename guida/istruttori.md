@@ -474,9 +474,15 @@ dice **PRESENZE DA RICONTROLLARE**.
 Se qualcosa non riesce ad arrivare (manca la rete), non esce da solo: un avviso
 dice quante cose mancano. **TORNA** lascia tutto com'è e le scritture
 partono appena la rete torna; **ESCI LO STESSO** le butta: se potete,
-aspettate la rete prima di uscire. Le presenze e le altre scritture dell'appello
-rimaste in coda non passano mai al prossimo che entra sullo stesso dispositivo. Lo stesso vale per **ESCI** sul
-tablet di sala.
+aspettate la rete prima di uscire. Se fra quelle che aspettano ce ne sono di un
+altro account, l'avviso dice di chi sono.
+
+Ogni presenza salvata sul telefono ricorda chi l'ha segnata, e parte solo col
+suo account. Se sullo stesso telefono entra un collega, le sue partono come
+sempre; quelle dell'altro non partono e non si buttano: sopra il calendario una
+seconda spia dice di chi sono e da quando (**2 PRESENZE DI MARCO ROSSI**), e
+partono quando lui entra di nuovo. Si buttano solo con **ESCI LO STESSO**.
+Lo stesso vale per **ESCI** sul tablet di sala.
 
 Il timer, aperto dentro l'app, lo dice quando manca la rete: un riquadro giallo
 **SENZA RETE** sopra l'elenco. Le illustrazioni di Maurizio non compaiono e la
