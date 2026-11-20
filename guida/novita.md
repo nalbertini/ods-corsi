@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.21 — 20 novembre 2026
+
+### Modificato
+
+- ERO PRESENTE parte una volta sola anche col doppio tocco, ora con la sua prova
+
 ## 0.259.20 — 20 novembre 2026
 
 ### Risolto
