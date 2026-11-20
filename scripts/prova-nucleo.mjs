@@ -20,7 +20,7 @@
 //   · il genitore non iscritto (`113-genitore-non-iscritto.sql`, provato da
 //     `supabase/prova/genitore-non-iscritto.sql`): le sezioni 14-17.
 // ---------------------------------------------------------------------------
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({
@@ -694,7 +694,11 @@ console.log('\n16. quanto vale lo sconto famiglia (importoSconto), lo stesso per
   ok('annuale da 340,00 €: lo sconto è 68,00 €', m.nucleo.importoSconto(34000), 6800)
   ok('annuale da 333,33 €: lo sconto è 66,67 €, arrotondato', m.nucleo.importoSconto(33333), 6667)
   // Una regola dentro un `.tsx` non si prova: il conto lo fa solo `nucleo.ts`.
-  for (const f of ['src/components/segreteria/Iscritti.tsx', 'src/components/AreaIscritti.tsx', 'src/components/segreteria/Ricevute.tsx']) {
+  // I `.tsx` si leggono dal disco, così un componente nuovo è controllato da sé.
+  const tsx = readdirSync(new URL('../src', import.meta.url), { recursive: true }).filter((f) => f.endsWith('.tsx')).map((f) => `src/${f}`)
+  // Se la lettura non trovasse più i file, la prova passerebbe senza guardare niente.
+  ok('fra i .tsx letti ci sono quelli che mostrano lo sconto', ['src/components/segreteria/Iscritti.tsx', 'src/components/AreaIscritti.tsx', 'src/components/segreteria/Ricevute.tsx'].every((f) => tsx.includes(f)), true)
+  for (const f of tsx) {
     ok(`${f} non calcola lo sconto da sé`, /\*\s*(SCONTO_FAMIGLIA\b|0?\.2\b)/.test(readFileSync(new URL(`../${f}`, import.meta.url), 'utf8')), false)
   }
 }
