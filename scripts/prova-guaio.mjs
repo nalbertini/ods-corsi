@@ -91,10 +91,13 @@ const file = (dir, ok_) => {
   return fuori
 }
 const veri = new Set()
+// Segnali che il database ferma da sé e non mandano mai all'app: in
+// 61-tessere.sql 'data' lo raccoglie subito `exception when others`.
+const interni = new Set(['data'])
 for (const nome of readdirSync('supabase').filter((n) => n.endsWith('.sql'))) {
   const sql = readFileSync(join('supabase', nome), 'utf8')
   for (const m of sql.matchAll(/raise\s+exception\s+'((?:[^']|'')*)'(\s*\|\|)?/gi)) {
-    if (m[2] || m[1].includes('%')) continue
+    if (m[2] || m[1].includes('%') || interni.has(m[1])) continue
     veri.add(m[1].replace(/''/g, "'"))
   }
 }
@@ -218,6 +221,9 @@ for (const [nome, e] of [
   ['Storage quota', new Error('Storage quota')],
   ['No such file', new Error('No such file')],
   ['Service unavailable: try later', 'Service unavailable: try later'],
+  // «data» è anche inglese: da sola non fa italiano un testo dell'API.
+  ['Missing data', new Error('Missing data')],
+  ['Invalid data', { code: 'XX000', message: 'Invalid data' }],
 ]) {
   for (const per of LETTORI) ok(`sconosciuto: ${nome} dà il ripiego (${per})`, frase(e, per), RIPIEGO)
   ok(`sconosciuto: ${nome} dà il ripiego passato`, frase(e, 'personale', 'Non si è salvato: riprova'), 'Non si è salvato: riprova')
