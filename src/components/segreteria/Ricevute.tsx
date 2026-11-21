@@ -1,5 +1,5 @@
 import { accesi } from '../../lib/metodiPagamento'
-import { cosaNonVaMetodo, cosaNonVaSatispay, cosaNonVaSatispayAMano, fraseDalModulo, metodiRicevuta, metodoDi, satispayDaUsare, soldi } from '../../lib/satispay'
+import { cosaNonVaMetodo, cosaNonVaSatispay, cosaNonVaSatispayAMano, fraseDalModulo, metodiRicevuta, satispayDaUsare, soldi } from '../../lib/satispay'
 import { cartaSePuoi } from '../../lib/cartaPdf'
 import { pagatoNellaStagione, primeRighe, righeDaAssegnare, storicoPagamenti, type RigaBonifico, type RigaDaAssegnare } from '../../lib/schedeIscritto'
 import { StoricoPersona } from './CollegaPersona'
@@ -198,7 +198,7 @@ export function StoricoIscritto({
       {daAssegnare.map((x) => <RigaDaAssegnareVista key={x.movimentoId} x={x} onAssegna={onMovimento ? () => onMovimento(x.movimentoId) : undefined} />)}
       {vuoto &&
         (p.satispay ? (
-          <span className="sg-sotto" data-tono="fatto">{fraseDalModulo(p.satispay, p.carta)}</span>
+          <span className="sg-sotto" data-tono="fatto">{fraseDalModulo(p.satispay)}</span>
         ) : (
           <span className="sg-sotto">Nessun pagamento registrato. Fai la ricevuta quando paga, o aggiungi un incasso già fatto: lo trovi qui.</span>
         ))}
@@ -439,7 +439,7 @@ export function RegistraPagamento({
 }: {
   d: DatiSegreteria
   /** `satispay`: i centesimi arrivati dal modulo e non ancora in una ricevuta, se la scheda li conosce. */
-  p: { id: string; nome: string; cognome: string; satispay?: number; carta?: number }
+  p: { id: string; nome: string; cognome: string; satispay?: number }
   corsi: string[]
   fai: Fai
   onFatto: () => void
@@ -466,7 +466,7 @@ export function RegistraPagamento({
   // Lasciarlo a metà chiede prima di perderlo, come il resto della scheda.
   useBozza(importo !== '' || nota !== '', 'Il pagamento a mano')
   const cent = centesimi(importo)
-  const guaio = importo === '' ? null : cent === null ? 'L’importo non si capisce: scrivi un numero, per esempio 40,00.' : (cosaNonVaDiretto({ personaId: p.id, data, importo: cent, metodo, voce, nota }, oggi, fino) ?? cosaNonVaSatispayAMano(metodo, (p.satispay ?? 0) - (p.carta ?? 0), p.carta))
+  const guaio = importo === '' ? null : cent === null ? 'L’importo non si capisce: scrivi un numero, per esempio 40,00.' : (cosaNonVaDiretto({ personaId: p.id, data, importo: cent, metodo, voce, nota }, oggi, fino) ?? cosaNonVaSatispayAMano(metodo, p.satispay))
   const manca = cent === null || !!guaio || !voce.trim()
   return (
     <section aria-label="Pagamento fatto a mano" className="sg-riquadro">
@@ -731,11 +731,11 @@ export function NuovaRicevuta({
   const [abbinaA, setAbbinaA] = useState<string | null>(null)
   useEffect(() => {
     // Da un pagamento a mano il modo è quello del modulo: se c'è anche un Satispay, lo dice `cosaNonVaMetodo`.
-    if (sp && !daPagamento) setMetodo(metodoDi(sp))
+    if (sp && !daPagamento) setMetodo('Satispay')
   }, [sp?.id])
-  // Il pagamento da mettere in questa ricevuta: c'è, e si paga col suo metodo (Satispay o Carta).
+  // Il pagamento Satispay da mettere in questa ricevuta: c'è, e si paga con Satispay.
   // Dal pagamento a mano i soldi sono quelli: un Satispay arrivato non entra nella stessa ricevuta.
-  const conSatispay = sp && metodo === metodoDi(sp) && !daPagamento?.pagamentoId ? sp : undefined
+  const conSatispay = sp && metodo === 'Satispay' && !daPagamento?.pagamentoId ? sp : undefined
 
   const listino = partenza.dato?.[3].listino
   const gruppi = listino ? vociInDueGruppi(corsi, data, listino) : { primi: [], altri: [] }

@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------
 // Il limite alle richieste a raffica dei pagamenti online (168-limite-frequenza.sql).
 //
-// Le funzioni `satispay` e `paypal` sono aperte e ogni chiamata costa una
-// chiamata al provider: il conto sta nel database, perché in memoria ogni
-// istanza della funzione avrebbe il suo. Lo usa anche `paypal`.
+// La funzione `satispay` è aperta e ogni chiamata costa una chiamata al
+// provider: il conto sta nel database, perché in memoria ogni istanza della
+// funzione avrebbe il suo.
 //
 // Il limite protegge il provider, non deve mai fermare chi paga: se il
 // database non risponde, o 168 non c'è ancora, la richiesta passa.

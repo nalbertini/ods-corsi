@@ -5,7 +5,6 @@
 
 export const METODI_PAGAMENTO = [
   { id: 'satispay', nome: 'Satispay', riga: 'Chi si iscrive o paga la quota, il saldo e i corsi dall’app.' },
-  { id: 'carta', nome: 'Carta', riga: 'Chi si iscrive dal modulo, con la carta.' },
   { id: 'bonifico', nome: 'Bonifico', riga: 'L’IBAN e la causale nel modulo; in segreteria nelle ricevute e nei pagamenti.' },
   { id: 'contanti', nome: 'Contanti', riga: 'In segreteria, nelle ricevute e nei pagamenti.' },
   { id: 'pos', nome: 'POS', riga: 'In segreteria, nelle ricevute e nei pagamenti.' },

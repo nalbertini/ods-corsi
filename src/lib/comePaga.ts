@@ -1,9 +1,9 @@
-// «Come paga» nell'iscrizione online (decisione del 2026-11-14): chi si iscrive sceglie fra Satispay, carta,
+// «Come paga» nell'iscrizione online (decisione del 2026-11-14): chi si iscrive sceglie fra Satispay,
 // bonifico e contanti in segreteria; la ricevuta del bonifico è facoltativa; la segreteria vede la scelta e
 // non la cambia. Qui i testi e i segni, provati da scripts/prova-come-paga.mjs.
 import { soldi, type Pago } from './satispay'
 
-/** Quel che resta scritto nella richiesta: Satispay e carta hanno già i loro pagamenti, il nucleo paga come prima. */
+/** Quel che resta scritto nella richiesta: Satispay ha già i suoi pagamenti, il nucleo paga come prima. */
 export type ComePaga = 'bonifico' | 'contanti'
 
 /** Un modo fra quelli da scegliere nel modulo, col testo del design approvato. */
@@ -11,7 +11,6 @@ export type ModoOfferto = { id: Pago; testo: string; riga: string }
 
 const MODI: ModoOfferto[] = [
   { id: 'satispay', testo: 'Satispay', riga: 'Paghi subito, dall’app: l’importo è già scritto' },
-  { id: 'carta', testo: 'Carta di credito o di debito', riga: 'Paghi subito qui, senza app e senza aprire conti' },
   { id: 'bonifico', testo: 'Bonifico', riga: 'La ricevuta la carichi se ce l’hai, se no la porti dopo' },
   { id: 'contanti', testo: 'In contanti', riga: 'Paghi in segreteria, in palestra' },
 ]
@@ -63,7 +62,7 @@ export function frasiPagamentoFinale(modo: Pago | null, cent: number | undefined
 }
 
 /**
- * Il segno nelle righe di RICHIESTE ONLINE. Le richieste senza scelta (Satispay, carta, nucleo, vecchie) non ne
+ * Il segno nelle righe di RICHIESTE ONLINE. Le richieste senza scelta (Satispay, nucleo, vecchie) non ne
  * hanno. `conRicevuta` undefined: le ricevute non sono ancora lette (o 163 manca), e il segno non dice che manca.
  */
 export function segnoComePaga(comePaga: ComePaga | null | undefined, conRicevuta: boolean | undefined): string | null {

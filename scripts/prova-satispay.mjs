@@ -357,7 +357,6 @@ console.log('\n7b. il Satispay a mano con soldi Satispay ancora liberi (cosaNonV
   ok('i centesimi si dicono', prova(() => s.cosaNonVaSatispayAMano('Satispay', 3050)),
     `Con Satispay sono già arrivati ${prova(() => s.soldi(3050))} dal modulo: fai la ricevuta con quelli`)
   ok('contanti: niente', prova(() => s.cosaNonVaSatispayAMano('Contanti', 31000)), null)
-  ok('carta: niente', prova(() => s.cosaNonVaSatispayAMano('Carta', 31000)), null)
   ok('niente di libero (0): niente', prova(() => s.cosaNonVaSatispayAMano('Satispay', 0)), null)
   ok('niente di libero (undefined, come satispayPerPersona per chi non c\'è): niente', prova(() => s.cosaNonVaSatispayAMano('Satispay', undefined)), null)
 }
@@ -506,6 +505,10 @@ console.log('\n10. il modulo: il tasto PAGA è un link già pronto')
   ok('le etichette del tasto non sono scritte nel modulo', /RIPROVA CON SATISPAY|PREPARO IL PAGAMENTO/.test(tsx), false)
   ok('nome e cognome hanno al massimo 80 caratteri', (tsx.match(/maxLength=\{80\}/g) ?? []).length >= 2, true)
 }
+
+console.log('\nLa frase dal modulo in PAGAMENTI (fraseDalModulo)')
+ok('pagato con Satispay dal modulo: la frase dice quanto e il metodo', s.fraseDalModulo?.(4500), `Ha pagato ${s.soldi?.(4500)} con Satispay dal modulo: fai la ricevuta, con PAGATO CON «Satispay».`)
+ok('niente Satispay: nessuna frase', [s.fraseDalModulo?.(undefined), s.fraseDalModulo?.(0)], [null, null])
 
 if (guai) {
   console.log(`\n${guai} cose non tornano`)

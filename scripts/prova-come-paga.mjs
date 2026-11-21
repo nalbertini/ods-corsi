@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // «Come paga» nell'iscrizione online, senza browser: chi si iscrive sceglie
-// fra Satispay, carta, bonifico e contanti (in segreteria, in palestra); la
+// fra Satispay, bonifico e contanti (in segreteria, in palestra); la
 // ricevuta del bonifico è facoltativa; la segreteria vede la scelta.
 //
 //   node scripts/prova-come-paga.mjs
@@ -82,7 +82,7 @@ const pa = await carica("export * from './src/lib/paginaIscrizioni'")
 const pi = await carica("export { nuovoStato, mancaNelPasso, risposteDaiPassi, conModiAccesi, righeRiepilogo, aggiungiFamiliare, conComePaga } from './src/lib/passiIscrizione'")
 const ri = await carica("export { fileObbligatori, FILE } from './src/lib/richieste'")
 
-const si = { satispay: true, carta: true }
+const si = { satispay: true }
 const nessuno = { pronto: false, giaPagato: false }
 
 console.log('1. il modo che vale: i contanti sono il quarto')
@@ -118,9 +118,9 @@ console.log('\n3. cosa ferma il modulo')
   ok('bonifico senza ricevuta: parte', prova(() => s.cosaNonVaModo('bonifico', false, false, nessuno)), null)
   ok('bonifico con la ricevuta: parte', prova(() => s.cosaNonVaModo('bonifico', false, true, nessuno)), null)
   ok('contanti: parte', prova(() => s.cosaNonVaModo('contanti', false, false, nessuno)), null)
-  ok('contanti con la carta accesa: parte', prova(() => s.cosaNonVaModo('contanti', false, false, nessuno, true)), null)
   ok('senza scelta dalla pagina pubblica: si sceglie, come oggi', prova(() => s.cosaNonVaModo(null, false, false, nessuno)), 'Manca come paghi: Satispay o bonifico')
-  ok('senza scelta, con la carta: come oggi', prova(() => s.cosaNonVaModo(null, false, false, nessuno, true)), 'Manca come paghi: Satispay, carta o bonifico')
+  ok('senza scelta, la carta non c’è più: Satispay o bonifico', prova(() => s.cosaNonVaModo(null, false, false, nessuno, true)), 'Manca come paghi: Satispay o bonifico')
+  ok('«carta» non è più un modo: è il bonifico', prova(() => s.modoPagamento('carta', si, false)), 'bonifico')
   ok('dal nucleo non si sceglie', prova(() => s.cosaNonVaModo(null, true, false, nessuno)), null)
   // Pagato con Satispay e poi scelti i contanti: i soldi ci sono già, in un altro modo si pagherebbe due volte.
   ok('pagato con Satispay e poi scelti i contanti: non parte, lo dice', prova(() => s.cosaNonVaModo('contanti', false, false, { pronto: false, giaPagato: true })), s.GIA_PAGATO_SATISPAY)
@@ -128,19 +128,18 @@ console.log('\n3. cosa ferma il modulo')
 
 console.log('\n4. i modi da offrire, nell’ordine')
 {
-  const tutti = { satispay: true, carta: true, bonifico: true, contanti: true }
+  const tutti = { satispay: true, bonifico: true, contanti: true }
   const id = (o) => prova(() => c.modiDaOffrire(o).map((x) => x.id))
-  ok('tutti: Satispay, carta, bonifico, contanti', id(tutti), ['satispay', 'carta', 'bonifico', 'contanti'])
-  ok('contanti spenti: non ci sono', id({ ...tutti, contanti: false }), ['satispay', 'carta', 'bonifico'])
-  ok('senza Satispay e carta: bonifico e contanti', id({ ...tutti, satispay: false, carta: false }), ['bonifico', 'contanti'])
-  ok('solo i contanti', id({ satispay: false, carta: false, bonifico: false, contanti: true }), ['contanti'])
-  ok('niente acceso: nessuna scelta', id({ satispay: false, carta: false, bonifico: false, contanti: false }), [])
+  ok('tutti: Satispay, bonifico, contanti (la carta non c’è più)', id(tutti), ['satispay', 'bonifico', 'contanti'])
+  ok('contanti spenti: non ci sono', id({ ...tutti, contanti: false }), ['satispay', 'bonifico'])
+  ok('senza Satispay: bonifico e contanti', id({ ...tutti, satispay: false }), ['bonifico', 'contanti'])
+  ok('solo i contanti', id({ satispay: false, bonifico: false, contanti: true }), ['contanti'])
+  ok('niente acceso: nessuna scelta', id({ satispay: false, bonifico: false, contanti: false }), [])
   const testo = (o, i) => prova(() => c.modiDaOffrire(o).find((x) => x.id === i))
   ok('bonifico: il testo del design', testo(tutti, 'bonifico')?.riga, 'La ricevuta la carichi se ce l’hai, se no la porti dopo')
   ok('contanti: il testo del design', testo(tutti, 'contanti')?.riga, 'Paghi in segreteria, in palestra')
   ok('contanti: si chiama «In contanti»', testo(tutti, 'contanti')?.testo, 'In contanti')
   ok('Satispay: il testo di oggi', testo(tutti, 'satispay')?.riga, 'Paghi subito, dall’app: l’importo è già scritto')
-  ok('carta: il testo di oggi', testo(tutti, 'carta')?.riga, 'Paghi subito qui, senza app e senza aprire conti')
   // Il modulo a passi offre solo bonifico e contanti: con uno solo acceso è già scelto, con nessuno non si chiede.
   const scelta = (accesi, prima) => prova(() => c.sceltaDelModulo(accesi, prima))
   ok('a passi, nessun modo acceso: null, non si chiede', scelta({ bonifico: false, contanti: false }), null)
@@ -165,7 +164,7 @@ console.log('\n5. la pagina finale (RICHIESTA ARRIVATA)')
   ok('bonifico senza ricevuta: dice di portare la ricevuta in segreteria', /ricevuta/.test(senza?.[0] ?? '') && /in segreteria/.test(senza?.[0] ?? ''), true)
   ok('bonifico senza ricevuta: il bonifico vale quando la segreteria lo vede sul conto', /vale come pagato quando la segreteria lo vede sul conto/.test(senza?.[0] ?? ''), true)
   ok('bonifico con la ricevuta: nessuna frase in più', frasi('bonifico', 18000, true), [])
-  ok('Satispay e carta: nessuna frase in più', [frasi('satispay', 18000, false), frasi('carta', 18000, false)], [[], []])
+  ok('Satispay: nessuna frase in più', frasi('satispay', 18000, false), [])
   ok('dal nucleo (nessun modo): nessuna frase in più', frasi(null, 18000, false), [])
   // Le frasi del passo QUANTO PAGHI stanno in src/lib, come quelle della pagina finale.
   ok('il passo, contanti: quanto, dove, quando', prova(() => c.fraseContantiDelPasso(18000)), `Porti ${importo} in segreteria, in palestra. Ti iscrivi lo stesso: puoi venire a lezione, e la quota la paghi entro la prima. La ricevuta te la dà la segreteria.`)
@@ -186,7 +185,7 @@ console.log('\n6. la segreteria: RICHIESTE ONLINE')
   ok('contanti: la ricevuta, se c’è, non cambia il segno', segno('contanti', true), 'Contanti')
   ok('bonifico con la ricevuta caricata', segno('bonifico', true), 'Bonifico · ricevuta')
   ok('bonifico senza ricevuta', segno('bonifico', false), 'Bonifico · senza ricevuta')
-  ok('null (Satispay, carta, nucleo, richieste vecchie): nessun segno', segno(null, false), null)
+  ok('null (Satispay, nucleo, richieste vecchie): nessun segno', segno(null, false), null)
   ok('campo non scritto: nessun segno', segno(undefined, true), null)
   ok('bonifico, ricevute non ancora lette: «Bonifico», senza dire che manca', segno('bonifico', undefined), 'Bonifico')
   ok('l’elenco non dice «senza ricevuta» prima di averle lette', /conRicevuta=\{!!/.test(readFileSync('src/components/segreteria/Richieste.tsx', 'utf8')), false)
@@ -240,7 +239,7 @@ console.log('\n7. i dati: invia manda comePaga, la richiesta lo rilegge')
   ok('Supabase: invia manda come_paga, bonifico', reg[0]?.[1]?.dati?.come_paga, 'bonifico')
   reg.length = 0
   await aspetta(() => rs.creaRichiesteSupabase(db).invia(adulto()))
-  ok('Supabase: senza scelta (Satispay, carta, nucleo) non manda niente o null', reg[0]?.[1]?.dati?.come_paga ?? null, null)
+  ok('Supabase: senza scelta (Satispay, nucleo) non manda niente o null', reg[0]?.[1]?.dati?.come_paga ?? null, null)
   const riga = { id: 'r-2', creata_il: '2026-11-14T10:00:00Z', stato: 'nuova', nome: 'Luca', cognome: 'Rossi', nato_il: '1996-01-01', nato_a: 'Torino', codice_fiscale: 'RSSLCU96A01L219K', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'l@e.it', telefono: '347', telefono_2: null, genitore_nome: null, genitore_cognome: null, genitore_codice_fiscale: null, corsi: [], formula: 'annuale', note: null, regolamento: true, persona_id: null, gestita_il: null, gestore: null }
   const leggi = (righe) => {
     const q = { select: () => q, order: () => q, range: (a) => (a ? { then: (bene) => bene({ data: [], error: null }) } : { then: (bene) => bene({ data: righe, error: null }) }) }

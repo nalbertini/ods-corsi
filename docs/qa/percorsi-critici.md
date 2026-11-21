@@ -48,8 +48,8 @@ prova tiene stanno in «Scoperti», in fondo.
 | Documenti sulla carta intestata | segreteria, amministrazione, genitore | cifra coperta, voci perse fra le pagine | `prova:carta`, `prova:ricevuta`, `prova:compensi`, `prova:bilancio`, `prova:chiusura-pdf`, `prova:ore` | sì |
 | Satispay dal modulo di iscrizione | genitore, segreteria, amministrazione | importo diverso dal listino, pagato perso o doppio | `prova:edge-limite`, `limite-frequenza.sql`, `prova:satispay`, `prova:edge`, `satispay.sql` | sì |
 | Satispay: prima paghi, poi mandi | genitore, segreteria, amministrazione | soldi presi e richiesta che non arriva | `prova:edge-limite`, `limite-frequenza.sql`, `prova:satispay`, `satispay.sql` | sì |
-| Carta dal modulo di iscrizione (PayPal) | genitore, segreteria, amministrazione | soldi senza richiesta, pagato due volte, importo sbagliato, dati della carta | `prova:edge-limite`, `limite-frequenza.sql`, `prova:pagamento-carta`, `prova:paypal-cattura`, `prova:satispay`, `prova:csp`, `prova:contabilita`, `carta.sql`, `satispay.sql`, `contabilita.sql` | sì |
-| Limite alle chiamate di pagamento senza accesso | genitore, segreteria, amministrazione | provider chiamato a raffica, o chi paga fermato dal limite | `prova:edge-limite`, `limite-frequenza.sql`, `prova:satispay`, `prova:paypal-cattura` | no |
+| Niente carta dal modulo di iscrizione | genitore, segreteria, amministrazione | un pagamento con la carta che riparte, domini della carta aperti | `senza-carta.sql`, `metodo-spento-nel-database.sql`, `prova:metodi-pagamento`, `prova:come-paga`, `prova:csp`, `prova:satispay`, `satispay.sql` | sì |
+| Limite alle chiamate di pagamento senza accesso | genitore, segreteria, amministrazione | provider chiamato a raffica, o chi paga fermato dal limite | `prova:edge-limite`, `limite-frequenza.sql`, `prova:satispay` | no |
 | Satispay: chi ha pagato, l'incasso è il versamento | amministrazione, segreteria | incasso contato due volte, pagamento non riconosciuto che nessuno vede | `prova:satispay-scarico`, `prova:suggerimento-movimento`, `prova:importazioni`, `prova:importa-banca`, `prova:avvisi-segreteria`, `prova:contabilita`, `prova:pagamenti`, `prova:segreteria`, `satispay-scarico.sql`, `importazioni.sql`, `116-satispay-separato.sql`, `avvisi-scarico-satispay.sql`, `chiusura-cassa.sql`, `contabilita.sql`, `update-con-where.sql` | sì |
 | Tessere | segreteria | non tesserato che frequenta, tessera alla persona sbagliata | `prova:tessere`, `prova:cosa-manca`, `prova:indirizzi`, `prova:filtri-iscritti`, `prova:menu`, `tessere.sql` | sì |
 | Ordini di vestiario | genitore, segreteria | ordine perso, totale sbagliato | `prova:vestiario`, `prova:menu` (Copia link), `vestiario.sql`, `rls.sql` | sì |
@@ -139,17 +139,9 @@ quando arriva la prova.
   controllo che anon e authenticated non abbiano EXECUTE (DA FARE).
 - COMPENSI (`Compensi.tsx`): il doppio clic su «C'era», «Non c'era» e «Segna
   firmata» è bloccato per tutto l'elenco. Senza prova (serve il browser): a mano.
-- Edge Function `paypal`: hanno una prova la cattura (`prova:paypal-cattura`) e il
-  limite di `prepara` e `stato_pagamento` (`prova:edge-limite`). Non ce l'hanno le
-  righe che `prepara` scrive nel database né la rilettura dello stato da PayPal.
-- Carta: la richiesta del browser non contiene campi della carta
-  (`CampiCarta.tsx`, `ModuloIscrizione.tsx`): nessuna prova. Il database non ha
-  colonne per la carta, ma è l'unica metà coperta.
 - Modulo a passi, cablaggio nel `.tsx` (`IscrizioneAPassi.tsx`): quale campo
   mostra «Manca» e la barra dopo AVANTI. Le regole sono provate
   (`prova:iscrizione-passi`, sezione 49); il collegamento no. Solo collaudo a mano.
-- `prova-csp.mjs`: il filtro «paypal|google|apple» è largo, un host che lo
-  contiene passa. Va stretto agli host esatti.
 - `update-con-where.sql`: il controllo cerca un WHERE dopo l'UPDATE, nello
   stesso `;`. Un UPDATE senza WHERE con una sottoquery che ha il suo WHERE
   (`set x = (select … where …)`) passa (DA FARE).
