@@ -74,7 +74,7 @@ export interface DatiRichiesta {
   certificatoDopo?: boolean
   /**
    * Come paga chi si iscrive dalla pagina pubblica, quando paga dopo: col bonifico o in contanti in
-   * segreteria (`163-come-paga.sql`). La segreteria lo legge e non lo cambia; Satispay, carta, nucleo e
+   * segreteria (`163-come-paga.sql`). La segreteria lo legge e non lo cambia; Satispay, nucleo e
    * le richieste di prima non l'hanno (`null`).
    */
   comePaga?: ComePaga | null
@@ -169,23 +169,9 @@ export interface DatiRichieste {
    * link per aprirlo; già pagato e non ancora preso da una richiesta (la
    * pagina ricaricata), senza link. L'importo lo calcola il database.
    */
-  prepara(
-    scelta: SceltaPaga,
-    /** Con la carta: un pagamento suo, mai quello di Satispay; al posto del link l'ordine PayPal per i campi carta. */
-    metodo?: 'carta',
-  ): Promise<{ stato: StatoSatispay; id: string; importo: number; link?: string; ordine?: string; pagatoIl?: string }>
-  /** Lo stato di un pagamento per il suo id, riletto da Satispay (o da PayPal, con la carta) se è in attesa; `null` se non c'è. */
-  statoSatispay(pagamentoId: string, metodo?: 'carta'): Promise<{ stato: StatoSatispay; importo: number; pagatoIl?: string; /** già preso da una richiesta */ collegato?: boolean } | null>
-  /**
-   * Il client id PayPal se il modulo può offrire la carta, e se è la sandbox
-   * (Google Pay lo vuole sapere); mai un errore: senza servizio o senza rete è `null`.
-   */
-  cartaAttiva(): Promise<{ clientId: string; sandbox: boolean } | null>
-  /**
-   * Incassa il pagamento con la carta dopo che chi paga ha confermato nei
-   * campi carta (o Apple Pay, Google Pay). Rifarlo non incassa due volte.
-   */
-  pagaCarta(pagamentoId: string): Promise<{ stato: StatoSatispay; importo: number; pagatoIl?: string }>
+  prepara(scelta: SceltaPaga): Promise<{ stato: StatoSatispay; id: string; importo: number; link?: string; pagatoIl?: string }>
+  /** Lo stato di un pagamento per il suo id, riletto da Satispay se è in attesa; `null` se non c'è. */
+  statoSatispay(pagamentoId: string): Promise<{ stato: StatoSatispay; importo: number; pagatoIl?: string; /** già preso da una richiesta */ collegato?: boolean } | null>
 
   // Per la segreteria.
   richieste(): Promise<Richiesta[]>

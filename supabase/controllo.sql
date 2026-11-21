@@ -589,10 +589,13 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('113-genitore-non-iscritto.sql', 'la segreteria aggiunge il genitore non iscritto come titolare del nucleo dei figli',
     exists (select 1 from dentro where nome = 'aggiungi_genitore' and corpo like '%genitore_non_iscritto%')
     and exists (select 1 from pg_trigger where tgname = 'iscrizioni_togli_genitore_non_iscritto' and not tgisinternal)),
-  ('115-carta.sql', 'si paga anche con la carta nel modulo di iscrizione (PayPal)',
-    to_regprocedure('public.carta_esito(text, text)') is not null
-    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%con la carta%')
-    and to_regprocedure('public.pagamento_prima(text, uuid, text, text, text, text, uuid)') is not null),
+  -- La carta l'ha tolta il 169: dopo, del 115 resta la chiave dei pagamenti (che usa anche Satispay) e la cassa «Carta».
+  ('115-carta.sql', 'si paga anche con la carta nel modulo di iscrizione (PayPal), tolta dal 169',
+    (to_regprocedure('public.carta_esito(text, text)') is not null
+     and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%con la carta%')
+     and to_regprocedure('public.pagamento_prima(text, uuid, text, text, text, text, uuid)') is not null)
+    or (exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'pagamenti_satispay' and column_name = 'chiave')
+        and exists (select 1 from casse where nome = 'Carta'))),
   ('117-gare.sql', 'le gare, con la quota a voci, chi accompagna, gli atleti e l''incasso in CONTABILITÀ',
     exists (select 1 from dentro where nome = 'incassa_gara' and corpo like '%registra_pagamento_diretto%')
     and exists (select 1 from pg_trigger where tgname = 'gare_atleti_unione' and not tgisinternal)),
@@ -799,6 +802,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('168-limite-frequenza.sql', 'un limite alle richieste a raffica sui pagamenti online',
     exists (select 1 from pg_proc where pronamespace = 'public'::regnamespace and proname = 'limite_frequenza')
     and not has_function_privilege('authenticated', 'public.limite_frequenza(text, text, integer, integer)', 'execute')
-    and not has_table_privilege('authenticated', 'public.limite_frequenza_conti', 'select, insert, update, delete'))
+    and not has_table_privilege('authenticated', 'public.limite_frequenza_conti', 'select, insert, update, delete')),
+  -- Rifà funzioni di 115, 125, 128, 129 e 149: rilanciando quelli, la carta torna e il controllo dice «manca».
+  ('169-via-la-carta.sql', 'via la carta (PayPal): si paga online solo con Satispay',
+    to_regprocedure('public.carta_esito(text, text)') is null
+    and to_regprocedure('public.pagamento_prima(uuid, text, text, text, text, uuid)') is not null
+    and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'pagamenti_satispay' and column_name in ('circuito', 'paypal_id'))
+    and not exists (select 1 from dentro where corpo ilike '%paypal%' or corpo ilike '%circuito%'))
 ) as x(file, cosa, c)
 order by file, cosa;

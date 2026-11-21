@@ -532,7 +532,7 @@ vedere che ha pagato basta la scheda della persona: la quota dice quanto manca.
 - **I contanti** con la data di un giorno in cui la cassa contanti è già
   chiusa non entrano: sotto il modulo si legge «Quel giorno la cassa è già
   chiusa: scegli una data dopo la chiusura», e **FAI LA RICEVUTA** resta
-  spento. Carta, bonifico e Satispay vanno sempre. Fa eccezione **FANNE LA
+  spento. Bonifico e Satispay vanno sempre. Fa eccezione **FANNE LA
   RICEVUTA** su un pagamento a mano già registrato: quei soldi sono già nei
   conti di quel giorno.
 - **ANTICIPO** — quello che si era già dato prima, fuori da queste voci.

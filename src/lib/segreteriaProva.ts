@@ -1,3 +1,4 @@
+import { spentiDa } from './metodiPagamento'
 import { cosaNonVaSolleciti, SOLLECITI_PROPOSTI, ultimoMomentoArrivato } from './sollecitiCertificato'
 import { datiVestiario } from './vestiarioDati'
 import { indirizziDaSalvare } from './avvisoSegreteria'
@@ -35,7 +36,7 @@ import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sito
 import { FOTO_NON_DEL_SITO, PUNTO_FUORI, nomeValido, puntoValido } from './sitoFoto'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, cosaNonVaSuggerito, esitiCollegamenti, nomeDallaCausale, personeNelTesto, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
-import { cartaPerPersona, cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
+import { cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
 import { applicaScarico, NOME_CASSA_SATISPAY, SCARICO_FERMO, scaricoFermo, scollegaScarico, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
@@ -822,7 +823,6 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async persone() {
       potaCertificati()
       const conSatispay = satispayPerPersona(pagamentiSatispayProva())
-      const conCarta = cartaPerPersona(pagamentiSatispayProva())
       const conSaldo = saldoPerPersona(pagamentiSatispayProva())
       const corsiSatispay = satispayCorsiPerPersona(pagamentiSatispayProva())
       const quotaSatispay = satispayQuotaPerPersona(pagamentiSatispayProva())
@@ -856,7 +856,6 @@ export function creaSegreteriaProva(): DatiSegreteria {
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
             vociCorsi: vociCorsiDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
             satispay: conSatispay.get(p.id),
-            carta: conCarta.get(p.id),
             saldo: conSaldo.get(p.id),
             satispayQuota: quotaSatispay.get(p.id),
             satispayCorsi: corsiSatispay.get(p.id),
@@ -2413,9 +2412,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
         throw new Error('La ricevuta non si capisce: ricarica la pagina')
       const gia = chiave ? (a().ricevute ?? []).find((x) => x.chiave === chiave && x.personaId === dati.personaId && !x.annullataIl) : undefined
       if (gia) throw new Error(`Questo pagamento è già nella ricevuta n. ${gia.numero}/${gia.anno}: non va registrato di nuovo`)
-      const tutti = pagamentiSatispayProva()
-      // Come registra_pagamento_diretto (115-carta.sql): Satispay e la carta si controllano ognuno coi suoi soldi.
-      const sp = cosaNonVaSatispayAMano(dati.metodo, satispayPerPersona(tutti.filter((x) => x.circuito !== 'carta')).get(dati.personaId), cartaPerPersona(tutti).get(dati.personaId))
+      // Come registra_pagamento_diretto (169-via-la-carta.sql): un Satispay arrivato dal modulo va nella sua ricevuta.
+      const sp = cosaNonVaSatispayAMano(dati.metodo, satispayPerPersona(pagamentiSatispayProva()).get(dati.personaId))
       if (sp) throw new Error(sp)
       const nuovo: PagamentoDiretto = { ...dati, chiaveRicevuta: chiave, metodo: dati.metodo.trim(), voce: dati.voce.trim(), nota: dati.nota?.trim() || undefined, id: `pd-${unico()}`, creatoIl: new Date().toISOString() }
       a().pagamentiDiretti = [...(a().pagamentiDiretti ?? []), nuovo]
@@ -3099,13 +3097,16 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async impostazioni() {
-      return { inizioCorsi: null, fineCorsi: null, metodiSpenti: [], certificatoGiorni: GIORNI_CERTIFICATO, sollecitiCertificato: SOLLECITI_PROPOSTI, ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }) }
+      const salvate = a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }
+      // Un archivio di prima può avere ancora la carta fra gli spenti: si legge come il database, con `spentiDa`.
+      return { inizioCorsi: null, fineCorsi: null, metodiSpenti: [], certificatoGiorni: GIORNI_CERTIFICATO, sollecitiCertificato: SOLLECITI_PROPOSTI, ...salvate, ...(salvate.metodiSpenti ? { metodiSpenti: spentiDa(salvate.metodiSpenti) } : {}) }
     },
 
     async salvaImpostazioni(i) {
       const guasto = (i.certificatoGiorni !== undefined ? cosaNonVaGiorniCertificato(i.certificatoGiorni) : undefined) ?? (i.sollecitiCertificato && cosaNonVaSolleciti(i.sollecitiCertificato))
       if (guasto) throw new Error(guasto)
-      scriviImpostazioni(i)
+      // Come il vincolo di `impostazioni` nel database (169): solo metodi che ci sono, la carta di prima no.
+      scriviImpostazioni(i.metodiSpenti ? { ...i, metodiSpenti: spentiDa(i.metodiSpenti) } : i)
     },
 
     async contaDateCorsi(inizio, fine) {

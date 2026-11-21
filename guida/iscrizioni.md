@@ -161,7 +161,7 @@ Chi si iscrive risponde alle domande dal telefono:
   segreteria.
 - **Il pagamento**, dopo aver scelto un corso: **QUANTO PAGHI**, quota e
   corso dal listino, e **PAGHI CON**, da scegliere fra **Satispay**,
-  **Carta** (quando c'è, vedi sotto), **Bonifico** e **In contanti** (nessuno
+  **Bonifico** e **In contanti** (nessuno
   è già scelto; un modo spento in IMPOSTAZIONI non c'è).
   - Con **Satispay** si paga **prima** di mandare, in fondo al modulo: dopo
     **ALTRO** c'è **PAGA** con l'importo, quello che calcola il database dal
@@ -180,19 +180,6 @@ Chi si iscrive risponde alle domande dal telefono:
     prende. Satispay
     riporta a una pagina (`iscrizioni/?satispay=…`) che dice com'è andata e di
     tornare alla scheda del modulo.
-  - Con la **Carta** (di credito o di debito, tramite PayPal) si paga anche
-    lei **prima** di mandare, nello stesso riquadro **PAGA**: il tasto
-    **PAGA … CON LA CARTA** apre al suo posto i campi della carta (numero,
-    scadenza, codice di sicurezza, nome sulla carta), sopra **Paga con Apple
-    Pay** o **Paga con Google Pay** se il telefono li sa usare. **PAGA …**
-    conferma, **ANNULLA** torna indietro. I dati della carta li scrive e li
-    tiene PayPal: l'app non li vede e non li salva. Se la carta non passa, una
-    frase dice cosa controllare e c'è **RIPROVA CON LA CARTA**. Un pagamento
-    che resta in attesa più di 30 minuti diventa «non andato»; se poi arriva
-    la conferma, resta pagato. La commissione la paga la palestra. La Carta
-    c'è negli stessi casi di Satispay, e solo quando sul database ci sono le
-    chiavi PayPal (i segreti della funzione `paypal`): senza, **PAGHI CON**
-    resta Satispay e bonifico.
   - Chi preme **PAGA** molte volte di fila dallo stesso collegamento (per
     esempio tutta la palestra sullo stesso wifi) può vedere «Troppe
     richieste: riprova fra qualche minuto»: basta aspettare qualche minuto. Il
