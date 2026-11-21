@@ -75,6 +75,8 @@ export interface DatoImportBanca {
 
 export const PREFISSO_CHIAVE_BANCA = 'banca:'
 export const GIORNI_DI_DIFFERENZA = 2
+/** Chi è nominato nel testo (nome intero o genitore) si cerca più lontano: il nome basta a riconoscerlo. */
+const GIORNI_SE_C_E_IL_NOME = 15
 const LUNGHEZZA_MASSIMA = 200
 
 const NON_E_QUELLO_GIUSTO = 'Nel file non trovo l’elenco dei movimenti del conto. Scarica dall’home banking «Lista movimenti» in formato CSV e riprova.'
@@ -409,6 +411,18 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
   const daDecidere: AnteprimaBanca['daDecidere'] = []
   const righeDelFile: RigaAnteprima[] = []
   const riga = (r: Pick<RigaAnteprima, 'riga' | 'stato'> & Partial<RigaAnteprima>): RigaAnteprima => ({ movimento: null, voce: null, rifiutabile: false, candidati: [], preselezionato: null, come: {}, testo: '', motivo: '', ...r })
+  const candidatiDi = (mv: MovimentoBanca, figli: string[]) => {
+    const vicini = possibili
+      .filter((r) => libero(r) && r.tipo === mv.tipo && r.importo === mv.importo && giorniTra(r.data, mv.data) <= GIORNI_SE_C_E_IL_NOME)
+      .sort((a, b) => giorniTra(a.data, mv.data) - giorniTra(b.data, mv.data))
+    const { come } = inCimaChiSembra(mv, vicini, figli)
+    return vicini.filter((r) => giorniTra(r.data, mv.data) <= GIORNI_DI_DIFFERENZA || r.id in come)
+  }
+  // Le righe che un bonifico del file nomina per intero: un bonifico senza nome, prima nel file, non se le prende.
+  const nominate = new Set(validi.filter((mv) => !giaImportate.has(mv.chiave) && !scelte[mv.chiave]).flatMap((mv) => {
+    const { preselezionato, come } = inCimaChiSembra(mv, candidatiDi(mv, []), [])
+    return preselezionato && come[preselezionato] === 'nome intero' ? [preselezionato] : []
+  }))
 
   for (const mv of lettura.movimenti) {
     if (mv.data > oggi) {
@@ -421,29 +435,33 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
       righeDelFile.push(riga({ riga: mv.riga, stato: 'duplicata', movimento: mv, voce: righe.find((r) => r.origineImport === mv.chiave || r.bancaChiave === mv.chiave) ?? null }))
       continue
     }
-    const candidati = possibili
-      .filter((r) => libero(r) && r.tipo === mv.tipo && r.importo === mv.importo && giorniTra(r.data, mv.data) <= GIORNI_DI_DIFFERENZA)
-      .sort((a, b) => giorniTra(a.data, mv.data) - giorniTra(b.data, mv.data))
+    const candidati = candidatiDi(mv, perGenitore[mv.chiave] ?? [])
     const scelta = scelte[mv.chiave]
     if (scelta === 'nessuno' || candidati.length === 0) {
       entrano.push(mv)
       righeDelFile.push(riga({ riga: mv.riga, stato: 'nuova', movimento: mv }))
       continue
     }
-    const migliori = candidati.filter((r) => giorniTra(r.data, mv.data) === giorniTra(candidati[0].data, mv.data))
+    const sembra = inCimaChiSembra(mv, candidati, perGenitore[mv.chiave] ?? [])
+    // Uno solo per nome intero vince anche se non è il più vicino di data; per genitore o più di uno, si chiede.
+    const perNome = candidati.find((r) => r.id === sembra.preselezionato && sembra.come[r.id] === 'nome intero' && (!eGruppo(r) || nomeNelTesto(r, mv)))
+    const nessunNome = Object.keys(sembra.come).length === 0
+    // Le righe nominate da un altro bonifico non contano, neanche per dire qual è la più vicina.
+    const liberi = candidati.filter((r) => !nominate.has(r.id))
+    const migliori = liberi.filter((r) => giorniTra(r.data, mv.data) === giorniTra(liberi[0].data, mv.data))
     // Candidati dello stesso giorno sono intercambiabili: non serve chiedere. Una ricevuta intera no: è un'altra cosa.
-    const unico = migliori.every((r) => r.data === migliori[0].data) && (migliori.length === 1 || !migliori.some(eGruppo))
+    const unico = migliori.length > 0 && migliori.every((r) => r.data === migliori[0].data) && (migliori.length === 1 || !migliori.some(eGruppo))
     // Una ricevuta intera si prende da sola solo se il nome è quello del testo: se no la somma può tornare per caso.
-    const daSolo = unico && (!eGruppo(migliori[0]) || nomeNelTesto(migliori[0], mv))
-    const scelto = candidati.find((r) => r.id === scelta) ?? (daSolo ? migliori[0] : undefined)
+    const daSolo = nessunNome && unico && (!eGruppo(migliori[0]) || nomeNelTesto(migliori[0], mv))
+    const scelto = candidati.find((r) => r.id === scelta) ?? perNome ?? (daSolo ? migliori[0] : undefined)
     if (scelto) {
       usa(scelto)
       coperti.push({ movimento: mv, con: scelto })
       righeDelFile.push(riga({ riga: mv.riga, stato: 'duplicata', movimento: mv, voce: scelto, rifiutabile: true }))
     } else {
-      const d = { movimento: mv, ...inCimaChiSembra(mv, candidati, perGenitore[mv.chiave] ?? []) }
+      const d = { movimento: mv, ...sembra }
       daDecidere.push(d)
-      righeDelFile.push(riga({ riga: mv.riga, stato: 'da-decidere', ...d, motivo: unico ? NOME_DIVERSO : '' }))
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'da-decidere', ...d, motivo: unico && !sembra.preselezionato ? NOME_DIVERSO : '' }))
     }
   }
 

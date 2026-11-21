@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.30 — 21 novembre 2026
+
+### Risolto
+
+- Un bonifico che nomina solo il genitore chiede conferma, con il figlio già scelto
+
 ## 0.259.29 — 20 novembre 2026
 
 ### Risolto

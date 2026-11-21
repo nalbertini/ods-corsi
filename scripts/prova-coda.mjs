@@ -879,6 +879,79 @@ const ok = (cosa, avuto, voluto) => { if (avuto !== voluto) dimmi(`${cosa}: avut
     void dati
     svuotaTutte()
   })
+
+  await prova('37', async () => {
+    // Due colleghi con lo stesso nome sono due account: le loro presenze non si sommano in una riga.
+    U.svuotaTutte()
+    memoria.clear()
+    const B2 = { id: 'b2', nome: 'Marco Rossi' }
+    memoria.set('ods-corsi:coda', JSON.stringify([
+      { chiave: 'k1', tipo: 'segna', args: ['s1', 'p1', 'presente'], quando: 1, autore: B },
+      { chiave: 'k2', tipo: 'segna', args: ['s1', 'p2', 'presente'], quando: 2, autore: B2 },
+    ]))
+    const c = new U.Coda(giù, 'ods-corsi:coda', async () => A)
+    await attesa()
+    ugual('37: due righe, una per account', U.diAltriDiTutte().map((x) => [x.id, x.nome, x.quante]), [['b', 'Marco Rossi', 1], ['b2', 'Marco Rossi', 1]])
+    const avvisi = U.avvisiCoda(c.stato).filter((a) => a.altri)
+    ok('37: la spia ha due avvisi', avvisi.length, 2)
+    ok('37: ognuno con la sua chiave', new Set(avvisi.map((a) => a.chiaveRiga)).size, 2)
+    // Le spie danno a React la chiave dell'avviso, non il titolo: due omonimi hanno lo stesso titolo.
+    const { readFileSync } = await import('node:fs')
+    const sala = readFileSync('src/components/Sala.tsx', 'utf8')
+    const tablet = readFileSync('src/components/tablet/Tablet.tsx', 'utf8')
+    ok('37: la spia del telefono usa la chiave', /<div key=\{a\.chiaveRiga\} className="spia-coda"/.test(sala), true)
+    ok('37: i guai del tablet usano la chiave', /<Guaio key=\{a\.chiaveRiga\}/.test(tablet), true)
+    ok('37: le attese del tablet usano la chiave', /<Attesa key=\{a\.chiaveRiga\}/.test(tablet), true)
+    U.svuotaTutte()
+  })
+
+  await prova('38', async () => {
+    // La coda della sala sta su disco, ma questa pagina (il telefono) non l'ha aperta:
+    // i tocchi della postazione non sono di chi esce, e non partono col suo token.
+    // Una copia nuova del modulo: le code della sala aperte dalle prove di prima sono ancora vive in `U`.
+    U.svuotaTutte()
+    memoria.clear()
+    const F = await import('data:text/javascript;base64,' + Buffer.from(fuori[0].text + '\n// 38').toString('base64'))
+    const SALA = { id: 'sala1', nome: 'Sala grande' }
+    memoria.set('ods-corsi:coda-sala', JSON.stringify([
+      { chiave: 't1', tipo: 'segna', args: ['s1', 'p1'], quando: 5, autore: SALA },
+      { chiave: 't2', tipo: 'segna', args: ['s1', 'p2'], quando: 7, autore: SALA },
+      // Una di chi esce e una di prima, senza autore: restano sue.
+      { chiave: 't3', tipo: 'segna', args: ['s1', 'p4'], quando: 8, autore: A },
+      { chiave: 't4', tipo: 'segna', args: ['s1', 'p5'], quando: 9 },
+    ]))
+    const c = new F.Coda(giù, 'ods-corsi:coda', async () => A)
+    c.accoda('k1', 'segna', ['s1', 'p3', 'presente'])
+    await attesa()
+    let pendenza = null
+    const smetti = F.guardaUscita((p) => { if (p) pendenza = p })
+    await F.uscita(async () => {}, 50)
+    smetti()
+    ok('38: il totale conta tutto', F.inCodaDiTutte(), 5)
+    ok('38: tre sono di chi esce', pendenza?.quante, 3)
+    ugual('38: le due della sala sono della postazione', altri(pendenza), [['Sala grande', 2, 5]])
+    F.svuotaTutte()
+  })
+
+  await prova('39', async () => {
+    // Senza nessuno visto collegato non si sa chi è «altro»; e un autore rotto su disco non rompe la spia.
+    memoria.clear()
+    const G = await import('data:text/javascript;base64,' + Buffer.from(fuori[0].text + '\n// 39').toString('base64'))
+    memoria.set('ods-corsi:coda-sala', JSON.stringify([
+      { chiave: 't1', tipo: 'segna', args: ['s1', 'p1'], quando: 5, autore: { id: 'sala1', nome: 'Sala grande' } },
+      { chiave: 't2', tipo: 'segna', args: ['s1', 'p2'], quando: 6, autore: { id: 'x' } },
+      { chiave: 't3', tipo: 'segna', args: ['s1', 'p3'], quando: 7, autore: 'rotto' },
+    ]))
+    let sessione = null
+    const c = new G.Coda(giù, 'ods-corsi:coda', async () => sessione)
+    await attesa()
+    ugual('39: senza account visto, nessuna «di altri»', G.diAltriDiTutte(), [])
+    sessione = A
+    await c.scarica()
+    ugual('39: con A, solo l\'autore intero conta come altro', G.diAltriDiTutte().map((x) => [x.id, x.nome, x.quante]), [['sala1', 'Sala grande', 1]])
+    ok('39: e il totale le tiene tutte', G.inCodaDiTutte(), 3)
+    G.svuotaTutte()
+  })
 }
 
 console.log(guai ? `\n${guai} PROBLEMI` : '\nTUTTO A POSTO')
