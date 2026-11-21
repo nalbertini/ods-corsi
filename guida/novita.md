@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.259.31 — 21 novembre 2026
+
+### Risolto
+
+- Le presenze in attesa di due colleghi con lo stesso nome restano separate, e uscendo quelle della sala non si contano come tue
+
 ## 0.259.30 — 21 novembre 2026
 
 ### Risolto
