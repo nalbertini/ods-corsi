@@ -690,7 +690,12 @@ console.log('\n17. Più quote uguali nello stesso giorno: il bonifico va a chi n
   ok('due quote col nome intero (omonimi): resta da decidere', prova(() => { const a = m.anteprimaBanca(m.leggiBanca(piccolo(giorgis)), [quota('aresca', 'ARESCA PAOLO'), quota('g1', 'GIORGIS NICOLO'), quota('g2', 'NICOLO GIORGIS')], 'conto', OGGI); return [a.coperti.length, a.daDecidere[0]?.candidati.slice(0, 2).map((c) => c.id).sort(), a.daDecidere[0]?.preselezionato] }), [0, ['g1', 'g2'], null])
   ok('un bonifico senza nome, prima nel file, non si prende la quota che un altro bonifico nomina', su([quota('giorgis', 'GIORGIS NICOLO'), quota('aresca', 'ARESCA PAOLO')], senzaNome, giorgis), [['duplicata', 'aresca'], ['duplicata', 'giorgis']])
   ok('…e se resta solo quella, il bonifico senza nome resta da decidere', su([quota('giorgis', 'GIORGIS NICOLO')], senzaNome, giorgis), [['da-decidere', null], ['duplicata', 'giorgis']])
+  ok('se la segreteria ha scelto «nessuno» per chi nomina, la quota non è riservata', prova(() => { const l = m.leggiBanca(piccolo(senzaNome, giorgis)); return m.anteprimaBanca(l, [quota('giorgis', 'GIORGIS NICOLO')], 'conto', OGGI, { [l.movimenti[1].chiave]: 'nessuno' }).righe.map((x) => [x.stato, x.voce?.id ?? null]) }), [['duplicata', 'giorgis'], ['nuova', null]])
   ok('senza nomi nel file, come prima: la prima quota del giorno', su(quote, senzaNome), [['duplicata', 'aresca']])
+  ok('col nome, la quota di 10 giorni prima si prende', su([quota('giorgis', 'GIORGIS NICOLO', '2026-09-05')], giorgis), [['duplicata', 'giorgis']])
+  ok('…senza nome no: entra nuovo', su([quota('giorgis', 'GIORGIS NICOLO', '2026-09-05')], senzaNome), [['nuova', null]])
+  ok('…oltre i 15 giorni nemmeno col nome', su([quota('giorgis', 'GIORGIS NICOLO', '2026-08-30')], giorgis), [['nuova', null]])
+  ok('…e la quota nominata 10 giorni prima resta riservata a chi la nomina', su([quota('giorgis', 'GIORGIS NICOLO', '2026-09-05')], mov('06/09/2026', '', '50,00', 'BONIFICO SEPA quota', 'BONIFICO SEPA'), giorgis), [['da-decidere', null], ['duplicata', 'giorgis']])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
