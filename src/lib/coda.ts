@@ -230,12 +230,12 @@ export class Coda {
     return this.suDisco ? 0 : this.lista.length
   }
 
-  /** Di chi è collegato. Finché non si sa chi è, tutte: meglio dirle in attesa che di nessuno. */
   /** L'ultimo account visto collegato: serve a dire di chi sono le code che questa pagina non ha aperto. */
   get chi(): Autore | null {
     return this.io
   }
 
+  /** Di chi è collegato. Finché non si sa chi è, tutte: meglio dirle in attesa che di nessuno. */
   private mia = (o: Operazione) => !this.io || !o.autore || o.autore.id === this.io.id
 
   get stato(): StatoCoda {
