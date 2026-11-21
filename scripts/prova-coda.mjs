@@ -895,6 +895,13 @@ const ok = (cosa, avuto, voluto) => { if (avuto !== voluto) dimmi(`${cosa}: avut
     const avvisi = U.avvisiCoda(c.stato).filter((a) => a.altri)
     ok('37: la spia ha due avvisi', avvisi.length, 2)
     ok('37: ognuno con la sua chiave', new Set(avvisi.map((a) => a.chiave)).size, 2)
+    // Le spie danno a React la chiave dell'avviso, non il titolo: due omonimi hanno lo stesso titolo.
+    const { readFileSync } = await import('node:fs')
+    const sala = readFileSync('src/components/Sala.tsx', 'utf8')
+    const tablet = readFileSync('src/components/tablet/Tablet.tsx', 'utf8')
+    ok('37: la spia del telefono usa la chiave', /<div key=\{a\.chiave\} className="spia-coda"/.test(sala), true)
+    ok('37: i guai del tablet usano la chiave', /<Guaio key=\{a\.chiave\}/.test(tablet), true)
+    ok('37: le attese del tablet usano la chiave', /<Attesa key=\{a\.chiave\}/.test(tablet), true)
     U.svuotaTutte()
   })
 
