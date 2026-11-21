@@ -219,7 +219,7 @@ console.log('\n9. «Da decidere»: la persona giusta in cima; se è una sola, il
   const vaccaro = 'Da VACCARO ANDREA TRN 99 BONIFICO SEPA'
   const fs = [entrata('gallo', 'Cliente GALLO MARTA per CORSO', '2026-10-04'), entrata('sofia', 'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA', '2026-10-06')]
   const g = (ids) => prova(() => { const x = decidi(vaccaro, fs, ids === null ? {} : { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', vaccaro, 'ACCREDITO'))).movimenti[0].chiave]: ids }); return x })
-  ok('nessun candidato col nome, uno solo è figlio di Andrea Vaccaro (lo dice il database): il bonifico va a lui', g(['sofia']).coperto, 'sofia')
+  ok('nessun candidato col nome, uno solo è figlio di Andrea Vaccaro (lo dice il database): resta da decidere, con lui già scelto', (({ coperto, preselezionato, ordine }) => [coperto, preselezionato, ordine?.[0]])(g(['sofia'])), [undefined, 'sofia', 'sofia'])
   ok('senza risposta del database (funzione assente o niente) l\'ordine resta quello per data', [g(null).ordine, g(null).preselezionato, g(null).come], [['gallo', 'sofia'], null, {}])
   ok('due figli dello stesso genitore: salgono tutti e due, a scegliere a mano', prova(() => { const x = decidi(vaccaro, [...fs, entrata('elia', 'Cliente BRUNO ELIA per QUOTA ASSOCIATIVA', '2026-10-04')], { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', vaccaro, 'ACCREDITO'))).movimenti[0].chiave]: ['sofia', 'elia'] }); return [x.ordine.slice(0, 2).sort(), x.preselezionato] }), [['elia', 'sofia'], null])
   ok('nome di uno e genitore di un altro: salgono tutti e due, il nome prima, nessuno preselezionato (troppo vicini)', prova(() => {

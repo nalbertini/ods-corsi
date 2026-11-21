@@ -443,8 +443,8 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
       continue
     }
     const sembra = inCimaChiSembra(mv, candidati, perGenitore[mv.chiave] ?? [])
-    // Uno solo per nome (o per genitore) vince anche se non è il più vicino di data; più di uno, si chiede.
-    const perNome = candidati.find((r) => r.id === sembra.preselezionato && (!eGruppo(r) || nomeNelTesto(r, mv)))
+    // Uno solo per nome intero vince anche se non è il più vicino di data; per genitore o più di uno, si chiede.
+    const perNome = candidati.find((r) => r.id === sembra.preselezionato && sembra.come[r.id] === 'nome intero' && (!eGruppo(r) || nomeNelTesto(r, mv)))
     const nessunNome = Object.keys(sembra.come).length === 0
     // Le righe nominate da un altro bonifico non contano, neanche per dire qual è la più vicina.
     const liberi = candidati.filter((r) => !nominate.has(r.id))
@@ -461,7 +461,7 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
     } else {
       const d = { movimento: mv, ...sembra }
       daDecidere.push(d)
-      righeDelFile.push(riga({ riga: mv.riga, stato: 'da-decidere', ...d, motivo: unico ? NOME_DIVERSO : '' }))
+      righeDelFile.push(riga({ riga: mv.riga, stato: 'da-decidere', ...d, motivo: unico && !sembra.preselezionato ? NOME_DIVERSO : '' }))
     }
   }
 
