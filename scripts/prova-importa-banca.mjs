@@ -197,7 +197,7 @@ console.log('\n8. il codice fiscale letto dalla causale: si tiene a parte, la de
   }), [1, false])
 }
 
-console.log('\n9. «Da decidere»: la persona giusta in cima, e preselezionata se è una sola')
+console.log('\n9. «Da decidere»: la persona giusta in cima; se è una sola, il bonifico va a lei')
 {
   // Candidati a pari distanza (un giorno prima e un giorno dopo), se no il più vicino sarebbe già coperto.
   const entrata = (id, descrizione, data) => riga({ id, tipo: 'entrata', importo: 5000, data, descrizione })
@@ -205,24 +205,21 @@ console.log('\n9. «Da decidere»: la persona giusta in cima, e preselezionata s
     const l = m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', testo, 'ACCREDITO')))
     const a = m.anteprimaBanca(l, candidati, 'conto', OGGI, {}, perGenitore)
     const d = a.daDecidere[0]
-    return { ordine: d?.candidati.map((c) => c.id), preselezionato: d?.preselezionato, come: d?.come, chiave: l.movimenti[0].chiave }
+    return { ordine: d?.candidati.map((c) => c.id), preselezionato: d?.preselezionato, come: d?.come, chiave: l.movimenti[0].chiave, coperto: a.coperti[0]?.con.id }
   }
   const prudente = 'Da PRUDENTE DOMENICO,MANCA FEDERICA PAOLA, TRN 1 per Quota associativa 2026/2027 Prudente Manuel BONIFICO SEPA'
   const cs = [entrata('rossi', 'Cliente ROSSI LUCA per QUOTA ASSOCIATIVA', '2026-10-04'), entrata('luca', 'Cliente PRUDENTE LUCA per QUOTA ASSOCIATIVA', '2026-10-04'), entrata('manuel', 'Cliente PRUDENTE MANUEL per QUOTA ASSOCIATIVA', '2026-10-06')]
   const r = prova(() => decidi(prudente, cs))
-  ok('nome e cognome interi nel testo: Manuel Prudente primo (Domenico è il genitore, e un cognome solo non basta)', r.ordine, ['manuel', 'rossi', 'luca'])
-  ok('…preselezionato, col segno «nome intero»', [r.preselezionato, r.come], ['manuel', { manuel: 'nome intero' }])
-  ok('…resta da decidere: niente si scrive senza conferma', prova(() => m.anteprimaBanca(m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', prudente, 'ACCREDITO'))), cs, 'conto', OGGI).coperti.length), 0)
-  ok('gli altri restano nell\'ordine di prima, per vicinanza di data', prova(() => decidi('Da PRUDENTE MANUEL BONIFICO', cs).ordine.slice(1)), ['rossi', 'luca'])
-  ok('nome e cognome in altro ordine, senza maiuscole né accenti', prova(() => decidi('da manuél prudente trn', cs).ordine[0]), 'manuel')
+  ok('nome e cognome interi nel testo, uno solo: il bonifico va a Manuel Prudente (Domenico è il genitore, e un cognome solo non basta)', [r.coperto, r.ordine], ['manuel', undefined])
+  ok('gli altri restano nell\'ordine di prima, per vicinanza di data', prova(() => decidi('Da PRUDENTE MANUEL BONIFICO', [...cs, entrata('omonimo', 'Cliente MANUEL PRUDENTE per CORSO', '2026-10-04')]).ordine.slice(2)), ['rossi', 'luca'])
+  ok('nome e cognome in altro ordine, senza maiuscole né accenti', prova(() => decidi('da manuél prudente trn', cs).coperto), 'manuel')
   ok('un cognome solo (Prudente) non basta: nessuno sale, nessuno è preselezionato', prova(() => { const x = decidi('Da PRUDENTE DOMENICO TRN 1', cs); return [x.ordine, x.preselezionato, x.come] }), [['rossi', 'luca', 'manuel'], null, {}])
   ok('due con nome e cognome interi (omonimi): salgono tutti e due, nessuno preselezionato', prova(() => { const x = decidi(prudente, [...cs, entrata('omonimo', 'Cliente MANUEL PRUDENTE per CORSO', '2026-10-04')]); return [x.ordine.slice(0, 2).sort(), x.preselezionato] }), [['manuel', 'omonimo'], null])
 
   const vaccaro = 'Da VACCARO ANDREA TRN 99 BONIFICO SEPA'
   const fs = [entrata('gallo', 'Cliente GALLO MARTA per CORSO', '2026-10-04'), entrata('sofia', 'Cliente BRUNO SOFIA per QUOTA ASSOCIATIVA', '2026-10-06')]
   const g = (ids) => prova(() => { const x = decidi(vaccaro, fs, ids === null ? {} : { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', vaccaro, 'ACCREDITO'))).movimenti[0].chiave]: ids }); return x })
-  ok('nessun candidato col nome, uno è figlio di Andrea Vaccaro (lo dice il database): sale in cima, «genitore»', [g(['sofia']).ordine, g(['sofia']).come], [['sofia', 'gallo'], { sofia: 'genitore' }])
-  ok('…se è l\'unico, preselezionato', g(['sofia']).preselezionato, 'sofia')
+  ok('nessun candidato col nome, uno solo è figlio di Andrea Vaccaro (lo dice il database): il bonifico va a lui', g(['sofia']).coperto, 'sofia')
   ok('senza risposta del database (funzione assente o niente) l\'ordine resta quello per data', [g(null).ordine, g(null).preselezionato, g(null).come], [['gallo', 'sofia'], null, {}])
   ok('due figli dello stesso genitore: salgono tutti e due, a scegliere a mano', prova(() => { const x = decidi(vaccaro, [...fs, entrata('elia', 'Cliente BRUNO ELIA per QUOTA ASSOCIATIVA', '2026-10-04')], { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', vaccaro, 'ACCREDITO'))).movimenti[0].chiave]: ['sofia', 'elia'] }); return [x.ordine.slice(0, 2).sort(), x.preselezionato] }), [['elia', 'sofia'], null])
   ok('nome di uno e genitore di un altro: salgono tutti e due, il nome prima, nessuno preselezionato (troppo vicini)', prova(() => {
@@ -230,10 +227,10 @@ console.log('\n9. «Da decidere»: la persona giusta in cima, e preselezionata s
     const x = decidi(t, fs, { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', t, 'ACCREDITO'))).movimenti[0].chiave]: ['sofia'] })
     return [x.ordine, x.preselezionato, x.come]
   }), [['gallo', 'sofia'], null, { gallo: 'nome intero', sofia: 'genitore' }])
-  ok('nome e genitore della stessa persona: lei sola, preselezionata, «nome intero»', prova(() => {
+  ok('nome e genitore della stessa persona: il bonifico va a lei', prova(() => {
     const x = decidi(prudente, cs, { [m.leggiBanca(piccolo(mov('05/10/2026', '', '50,00', prudente, 'ACCREDITO'))).movimenti[0].chiave]: ['manuel'] })
-    return [x.ordine[0], x.preselezionato, x.come]
-  }), ['manuel', 'manuel', { manuel: 'nome intero' }])
+    return x.coperto
+  }), 'manuel')
   ok('un movimento senza nomi né genitori non cambia: stesso ordine di oggi (per data), niente preselezionato', prova(() => { const x = decidi('Bonifico generico TRN 5', cs); return [x.ordine, x.preselezionato] }), [['rossi', 'luca', 'manuel'], null])
 }
 
@@ -678,6 +675,22 @@ console.log('\n16. all\'import, il bonifico collegato a una persona entra già a
   ok('riga che non si ritrova tra gli scritti: fuori dal piano', piano(a1, new Set(), new Set(['mov-1']), []), [])
   ok('riga ritrovata solo annullata: fuori dal piano', piano(a1, new Set(), new Set(['mov-1']), [{ id: 'mov-1', origineImport: KI, annullatoIl: '2026-11-11T10:00:00Z' }]), [])
   ok('…se c\'è anche una copia non annullata, vale quella', piano(a1, new Set(), new Set(['mov-1']), [{ id: 'mov-0', origineImport: KI, annullatoIl: '2026-11-11T10:00:00Z' }, { id: 'mov-1', origineImport: KI }]), [{ chiave: KI, movimentoId: 'mov-1', ricevutaId: '324' }])
+}
+
+console.log('\n17. Più quote uguali nello stesso giorno: il bonifico va a chi nomina')
+{
+  // Come le quote associative da 50,00 del 15/09: tante righe uguali, il nome decide.
+  const quota = (id, nome, data = '2026-09-15') => riga({ id, tipo: 'entrata', importo: 5000, data, descrizione: `Cliente ${nome} per QUOTA ASSOCIATIVA` })
+  const quote = [quota('aresca', 'ARESCA PAOLO'), quota('giorgis', 'GIORGIS NICOLO'), quota('bianchi', 'BIANCHI ANNA')]
+  const giorgis = mov('15/09/2026', '', '50,00', 'DA FABIO GIORGIS PER Quota Nicolò', 'BONIFICO SEPA')
+  const senzaNome = mov('15/09/2026', '', '50,00', 'BONIFICO SEPA quota associativa', 'BONIFICO SEPA')
+  const su = (righe, ...file) => prova(() => m.anteprimaBanca(m.leggiBanca(piccolo(...file)), righe, 'conto', OGGI).righe.map((x) => [x.stato, x.voce?.id ?? null]))
+  ok('«DA FABIO GIORGIS PER Quota Nicolò» va sulla quota di Giorgis Nicolò, non sulla prima del giorno', su(quote, giorgis), [['duplicata', 'giorgis']])
+  ok('…anche se Giorgis è un giorno più in là di un\'altra quota', su([quota('aresca', 'ARESCA PAOLO'), quota('giorgis', 'GIORGIS NICOLO', '2026-09-16')], giorgis), [['duplicata', 'giorgis']])
+  ok('due quote col nome intero (omonimi): resta da decidere', prova(() => { const a = m.anteprimaBanca(m.leggiBanca(piccolo(giorgis)), [quota('aresca', 'ARESCA PAOLO'), quota('g1', 'GIORGIS NICOLO'), quota('g2', 'NICOLO GIORGIS')], 'conto', OGGI); return [a.coperti.length, a.daDecidere[0]?.candidati.slice(0, 2).map((c) => c.id).sort(), a.daDecidere[0]?.preselezionato] }), [0, ['g1', 'g2'], null])
+  ok('un bonifico senza nome, prima nel file, non si prende la quota che un altro bonifico nomina', su([quota('giorgis', 'GIORGIS NICOLO'), quota('aresca', 'ARESCA PAOLO')], senzaNome, giorgis), [['duplicata', 'aresca'], ['duplicata', 'giorgis']])
+  ok('…e se resta solo quella, il bonifico senza nome resta da decidere', su([quota('giorgis', 'GIORGIS NICOLO')], senzaNome, giorgis), [['da-decidere', null], ['duplicata', 'giorgis']])
+  ok('senza nomi nel file, come prima: la prima quota del giorno', su(quote, senzaNome), [['duplicata', 'aresca']])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
