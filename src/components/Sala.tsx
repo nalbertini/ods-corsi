@@ -181,7 +181,7 @@ function SpiaCoda({ avvisi }: { avvisi: AvvisoCoda[] }) {
     <div className="pad" style={{ paddingTop: 12, display: 'grid', gap: 8 }}>
       {avvisi.map((a) => (
         // Un guaio interrompe chi legge (le presenze si possono perdere), l'attesa no.
-        <div key={a.titolo + a.tono} className="spia-coda" data-tono={a.tono} role={a.tono === 'guaio' ? 'alert' : 'status'}>
+        <div key={a.chiave} className="spia-coda" data-tono={a.tono} role={a.tono === 'guaio' ? 'alert' : 'status'}>
           <span className="num spia-coda-quante">{a.titolo}</span>
           <span>{a.frase}</span>
         </div>

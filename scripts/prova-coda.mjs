@@ -879,6 +879,49 @@ const ok = (cosa, avuto, voluto) => { if (avuto !== voluto) dimmi(`${cosa}: avut
     void dati
     svuotaTutte()
   })
+
+  await prova('37', async () => {
+    // Due colleghi con lo stesso nome sono due account: le loro presenze non si sommano in una riga.
+    U.svuotaTutte()
+    memoria.clear()
+    const B2 = { id: 'b2', nome: 'Marco Rossi' }
+    memoria.set('ods-corsi:coda', JSON.stringify([
+      { chiave: 'k1', tipo: 'segna', args: ['s1', 'p1', 'presente'], quando: 1, autore: B },
+      { chiave: 'k2', tipo: 'segna', args: ['s1', 'p2', 'presente'], quando: 2, autore: B2 },
+    ]))
+    const c = new U.Coda(giù, 'ods-corsi:coda', async () => A)
+    await attesa()
+    ugual('37: due righe, una per account', U.diAltriDiTutte().map((x) => [x.id, x.nome, x.quante]), [['b', 'Marco Rossi', 1], ['b2', 'Marco Rossi', 1]])
+    const avvisi = U.avvisiCoda(c.stato).filter((a) => a.altri)
+    ok('37: la spia ha due avvisi', avvisi.length, 2)
+    ok('37: ognuno con la sua chiave', new Set(avvisi.map((a) => a.chiave)).size, 2)
+    U.svuotaTutte()
+  })
+
+  await prova('38', async () => {
+    // La coda della sala sta su disco, ma questa pagina (il telefono) non l'ha aperta:
+    // i tocchi della postazione non sono di chi esce, e non partono col suo token.
+    // Una copia nuova del modulo: le code della sala aperte dalle prove di prima sono ancora vive in `U`.
+    U.svuotaTutte()
+    memoria.clear()
+    const F = await import('data:text/javascript;base64,' + Buffer.from(fuori[0].text + '\n// 38').toString('base64'))
+    const SALA = { id: 'sala1', nome: 'Sala grande' }
+    memoria.set('ods-corsi:coda-sala', JSON.stringify([
+      { chiave: 't1', tipo: 'segna', args: ['s1', 'p1'], quando: 5, autore: SALA },
+      { chiave: 't2', tipo: 'segna', args: ['s1', 'p2'], quando: 7, autore: SALA },
+    ]))
+    const c = new F.Coda(giù, 'ods-corsi:coda', async () => A)
+    c.accoda('k1', 'segna', ['s1', 'p3', 'presente'])
+    await attesa()
+    let pendenza = null
+    const smetti = F.guardaUscita((p) => { if (p) pendenza = p })
+    await F.uscita(async () => {}, 50)
+    smetti()
+    ok('38: il totale conta tutto', F.inCodaDiTutte(), 3)
+    ok('38: una sola è di chi esce', pendenza?.quante, 1)
+    ugual('38: le due della sala sono della postazione', altri(pendenza), [['Sala grande', 2, 5]])
+    F.svuotaTutte()
+  })
 }
 
 console.log(guai ? `\n${guai} PROBLEMI` : '\nTUTTO A POSTO')
