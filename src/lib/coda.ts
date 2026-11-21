@@ -53,6 +53,12 @@ export interface DiAltri {
 // prova sul dispositivo: non tracciano nessuno, e si tolgono ripartendo.
 const DOVE = 'ods-corsi:coda'
 
+/** Un autore letto dal disco: senza `id` e `nome` non si sa di chi è, e la spia non saprebbe che nome dire. */
+const eAutore = (a: unknown): a is Autore => {
+  const x = a as Partial<Autore> | null
+  return !!x && typeof x.id === 'string' && typeof x.nome === 'string'
+}
+
 const eOperazione = (o: unknown): o is Operazione => {
   // Un oggetto qualsiasi letto dal disco: si guardano i campi uno per uno.
   const x = o as Partial<Operazione> | null
@@ -444,7 +450,7 @@ export function diAltriDiTutte(): DiAltri[] {
     if (aperte.some((c) => c.dove === dove)) continue
     for (const o of leggi(dove).lista) {
       // Una senza autore la prende il primo che apre quella coda: non si sa ancora di chi è.
-      if (o.autore && o.autore.id !== io.id) somma({ id: o.autore.id, nome: o.autore.nome, quante: 1, dal: o.quando })
+      if (eAutore(o.autore) && o.autore.id !== io.id) somma({ id: o.autore.id, nome: o.autore.nome, quante: 1, dal: o.quando })
     }
   }
   return [...per.values()]
@@ -479,7 +485,7 @@ export interface AvvisoCoda {
   /** Presenze di un altro account: aspettano lui, non la rete. */
   altri?: true
   /** Unica fra gli avvisi di una spia, per React: due colleghi con lo stesso nome hanno lo stesso titolo. */
-  chiave: string
+  chiaveRiga: string
 }
 
 const quante = (n: number) => (n === 1 ? 'UNA PRESENZA DA INVIARE' : `${n} PRESENZE DA INVIARE`)
@@ -495,7 +501,7 @@ export function avvisiCoda(s: StatoCoda, dispositivo: 'telefono' | 'tablet' = 't
   if (s.illeggibile) {
     avvisi.push({
       tono: 'guaio',
-      chiave: 'illeggibile',
+      chiaveRiga: 'illeggibile',
       titolo: 'PRESENZE DA RICONTROLLARE',
       frase: `Alcune presenze salvate su questo ${dispositivo} non si leggono più: ricontrolla l’appello delle ultime lezioni.`,
     })
@@ -503,12 +509,12 @@ export function avvisiCoda(s: StatoCoda, dispositivo: 'telefono' | 'tablet' = 't
   if (s.soloInMemoria > 0) {
     avvisi.push({
       tono: 'guaio',
-      chiave: 'memoria',
+      chiaveRiga: 'memoria',
       titolo: quante(s.inAttesa),
       frase: `Il ${dispositivo} non ha più spazio per salvarle: non chiudere l’app finché non partono.`,
     })
   } else if (s.inAttesa > 0) {
-    avvisi.push({ tono: 'attesa', chiave: 'mie', titolo: quante(s.inAttesa), frase: `Sono salvate sul ${dispositivo}: partono da sole appena c’è rete.` })
+    avvisi.push({ tono: 'attesa', chiaveRiga: 'mie', titolo: quante(s.inAttesa), frase: `Sono salvate sul ${dispositivo}: partono da sole appena c’è rete.` })
   }
   for (const a of s.diAltri ?? []) avvisi.push(avvisoDiAltri(a))
   return avvisi
@@ -524,7 +530,7 @@ function avvisoDiAltri(a: DiAltri): AvvisoCoda {
   return {
     tono: 'attesa',
     altri: true,
-    chiave: `altri:${a.id}`,
+    chiaveRiga: `altri:${a.id}`,
     titolo: `${una ? 'UNA PRESENZA' : `${a.quante} PRESENZE`} DI ${(a.nome || 'un altro account').toUpperCase()}`,
     frase: `${una ? 'Segnata' : 'Segnate'} ${quando}, non ancora ${una ? 'arrivata' : 'arrivate'}: ${una ? 'parte' : 'partono'} quando ${chi} entra di nuovo con il suo account. Le tue non sono toccate.`,
   }
@@ -541,14 +547,14 @@ export function avvisoPerChiRientra(n: number, dispositivo: 'tablet' | 'disposit
   if (illeggibile) {
     return {
       tono: 'guaio',
-      chiave: 'illeggibile',
+      chiaveRiga: 'illeggibile',
       titolo: 'PRESENZE DA RICONTROLLARE',
       frase: `Alcune presenze salvate su questo ${dispositivo} non si leggono più: entra e ricontrolla l’appello delle ultime lezioni.`,
     }
   }
   return {
     tono: 'attesa',
-    chiave: 'rientro',
+    chiaveRiga: 'rientro',
     titolo: n === 1 ? 'UNA MODIFICA DA INVIARE' : `${n} MODIFICHE DA INVIARE`,
     // Con un altro account restano qui, e partono solo quando rientra chi le ha segnate.
     frase: `Sono salvate su questo ${dispositivo}: entra di nuovo con lo stesso account e partono da sole.`,

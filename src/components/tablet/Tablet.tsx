@@ -473,12 +473,12 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
         >
           {guaiCoda.length > 0 && (
             <div role="alert" style={{ display: 'grid', gap: 12 }}>
-              {guaiCoda.map((a) => <Guaio key={a.chiave} titolo={a.titolo} testo={a.frase} />)}
+              {guaiCoda.map((a) => <Guaio key={a.chiaveRiga} titolo={a.titolo} testo={a.frase} />)}
             </div>
           )}
           {diAltri.length > 0 && (
             <div role="status" style={{ display: 'grid', gap: 12 }}>
-              {diAltri.map((a) => <Attesa key={a.chiave} titolo={a.titolo} testo={a.frase} />)}
+              {diAltri.map((a) => <Attesa key={a.chiaveRiga} titolo={a.titolo} testo={a.frase} />)}
             </div>
           )}
         </div>
