@@ -122,7 +122,7 @@ ricevute si fanno dalla scheda di un iscritto (vedi
 
 ## Come si paga
 
-Un interruttore per metodo: **Satispay**, **Carta**, **Bonifico**, **Contanti**, **POS**, **Assegno**.
+Un interruttore per metodo: **Satispay**, **Bonifico**, **Contanti**, **POS**, **Assegno**.
 Un metodo spento sparisce dalle scelte in tutta l'app: il modulo di iscrizione, l'area degli iscritti,
 le ricevute, i pagamenti e le gare. Spegnere il bonifico toglie anche l'IBAN e la causale dal modulo.
 Spegnere Satispay ferma anche lo scarico dei pagamenti del negozio in IMPORTAZIONI.

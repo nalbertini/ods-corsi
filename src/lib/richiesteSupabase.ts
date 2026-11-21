@@ -5,8 +5,7 @@ import { ACCOLTA_RESTA, ESTENSIONI, MASSIMO_FILE, siElimina } from './richieste'
 import { tutteLeRighe } from './tutteLeRighe'
 import { cosaNonVaScadenza } from './segreteria'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
-import { CARTA_SPENTA, ERRORE_CARTA, ERRORE_SATISPAY, SATISPAY_SPENTO, type StatoSatispay } from './satispay'
-import { SERVE_RETE } from './saldoSatispay'
+import { ERRORE_SATISPAY, SATISPAY_SPENTO, type StatoSatispay } from './satispay'
 import { spentiDa } from './metodiPagamento'
 
 /**
@@ -79,26 +78,21 @@ function guaioFile(e: { message?: string; statusCode?: string } | null): Error {
   return new Error(fraseGuaio(e, { per: 'pubblico', ripiego: 'Il file non è partito: riprova' }))
 }
 
-/** Una Edge Function di pagamento: i suoi errori sono già scritti per chi paga. */
-async function chiamaPagamento(db: SupabaseClient, funzione: 'satispay' | 'paypal', corpo: Record<string, string>, guasto: string, senzaRete: string): Promise<Record<string, unknown>> {
-  const { data, error } = await db.functions.invoke(funzione, { body: corpo })
-  // `as`: la risposta è il JSON della funzione (supabase/functions/<funzione>), letto campo per campo da chi chiama.
+/** La Edge Function `satispay`: i suoi errori sono già scritti per chi paga; senza rete, l'errore di sempre. */
+export async function chiamaSatispay(db: SupabaseClient, corpo: Record<string, string>): Promise<Record<string, unknown>> {
+  const { data, error } = await db.functions.invoke('satispay', { body: corpo })
+  // `as`: la risposta è il JSON della funzione (supabase/functions/satispay), letto campo per campo da chi chiama.
   if (!error) return (data ?? {}) as Record<string, unknown>
-  if (!(error instanceof FunctionsHttpError)) throw new Error(senzaRete)
+  if (!(error instanceof FunctionsHttpError)) throw new Error(ERRORE_SATISPAY)
   // La funzione non c'è ancora sul progetto: si paga come prima.
   if (error.context.status === 404) return { attivo: false }
   const detto: unknown = await error.context.json().catch(() => null)
   const guaio = typeof detto === 'object' && detto !== null && 'guaio' in detto ? detto.guaio : null
-  throw new Error(typeof guaio === 'string' ? guaio : guasto)
+  throw new Error(typeof guaio === 'string' ? guaio : ERRORE_SATISPAY)
 }
-
-/** La Edge Function `satispay`; senza rete, l'errore di sempre. */
-export const chiamaSatispay = (db: SupabaseClient, corpo: Record<string, string>) => chiamaPagamento(db, 'satispay', corpo, ERRORE_SATISPAY, ERRORE_SATISPAY)
 
 export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
   const satispay = (corpo: Record<string, string>) => chiamaSatispay(db, corpo)
-  // La carta passa da PayPal: senza rete lo si dice, perché i campi carta non si aprono.
-  const paypal = (corpo: Record<string, string>) => chiamaPagamento(db, 'paypal', corpo, ERRORE_CARTA, SERVE_RETE)
 
   const vista = (r: Riga): Richiesta => ({
     id: r.id,
@@ -233,42 +227,18 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       return { link: r.link }
     },
 
-    async prepara(x, metodo) {
-      const carta = metodo === 'carta'
-      const errore = carta ? ERRORE_CARTA : ERRORE_SATISPAY
-      const r = await (carta ? paypal : satispay)({ azione: 'prepara', corso: x.corso, formula: x.formula, nome: x.nome, cognome: x.cognome, email: x.email, chiave: x.chiave ?? '' })
-      // Senza il file SQL (83-satispay-prima, 115-carta) la funzione dice che il servizio non c'è: si paga col bonifico.
-      if (r.attivo === false) throw new Error(carta ? CARTA_SPENTA : SATISPAY_SPENTO)
-      if (typeof r.id !== 'string' || typeof r.importo !== 'number') throw new Error(errore)
+    async prepara(x) {
+      const r = await satispay({ azione: 'prepara', corso: x.corso, formula: x.formula, nome: x.nome, cognome: x.cognome, email: x.email, chiave: x.chiave ?? '' })
+      // Senza il file SQL (83-satispay-prima) la funzione dice che il servizio non c'è: si paga col bonifico.
+      if (r.attivo === false) throw new Error(SATISPAY_SPENTO)
+      if (typeof r.id !== 'string' || typeof r.importo !== 'number') throw new Error(ERRORE_SATISPAY)
       if (r.stato === 'pagato') return { stato: 'pagato', id: r.id, importo: r.importo, pagatoIl: typeof r.pagato_il === 'string' ? r.pagato_il : undefined }
-      if (carta) {
-        if (typeof r.ordine !== 'string') throw new Error(errore)
-        return { stato: 'attesa', id: r.id, importo: r.importo, ordine: r.ordine }
-      }
-      if (typeof r.link !== 'string') throw new Error(errore)
+      if (typeof r.link !== 'string') throw new Error(ERRORE_SATISPAY)
       return { stato: 'attesa', id: r.id, importo: r.importo, link: r.link }
     },
 
-    async cartaAttiva() {
-      try {
-        const r = await paypal({ azione: 'attivo' })
-        return r.attivo === true && typeof r.clientId === 'string' ? { clientId: r.clientId, sandbox: r.sandbox !== false } : null
-      } catch {
-        return null
-      }
-    },
-
-    async pagaCarta(pagamentoId) {
-      const r = await paypal({ azione: 'cattura', pagamento: pagamentoId })
-      if (r.attivo === false) throw new Error(CARTA_SPENTA)
-      // `as`: la forma è quella di `carta_stato_pagamento` (115-carta.sql), riletta dalla funzione dopo la cattura.
-      const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null } | null | undefined
-      if (!p) throw new Error(ERRORE_CARTA)
-      return { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined }
-    },
-
-    async statoSatispay(pagamentoId, metodo) {
-      const r = await (metodo === 'carta' ? paypal : satispay)({ azione: 'stato_pagamento', pagamento: pagamentoId })
+    async statoSatispay(pagamentoId) {
+      const r = await satispay({ azione: 'stato_pagamento', pagamento: pagamentoId })
       // `as`: la forma è quella di `satispay_stato_pagamento` (83-satispay-prima.sql), riletta dalla funzione.
       const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null; collegato?: boolean } | null | undefined
       return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined, collegato: p.collegato === true } : null

@@ -1363,7 +1363,7 @@ function Flusso({
                   id="n-comePaga"
                   etichetta="Come paghi"
                   una
-                  voci={modiDaOffrire({ satispay: false, carta: false, bonifico, contanti })}
+                  voci={modiDaOffrire({ satispay: false, bonifico, contanti })}
                   scelti={come ? [come] : []}
                   onScegli={(id) => setPersone((ps) => P.conComePaga(ps, id === 'contanti' ? 'contanti' : 'bonifico'))}
                 />

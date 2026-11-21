@@ -1,6 +1,5 @@
--- Il limite di frequenza delle Edge Function pubbliche dei pagamenti (satispay,
--- paypal): `limite_frequenza(ambito, chiave, massimo, secondi)` conta le
--- richieste in una finestra fissa, nel database, e dice se la prossima passa.
+-- Il limite di frequenza della Edge Function pubblica dei pagamenti (satispay):
+-- `limite_frequenza(ambito, chiave, massimo, secondi)` conta le richieste in una finestra fissa, nel database, e dice se la prossima passa.
 -- Lo chiama solo il server (service_role): chi ha la chiave anon non lo vede.
 -- Si lancia dopo finto-supabase.sql e i file dello schema, 168-limite-frequenza.sql
 -- compreso. Le prove edge che lo usano: scripts/prova-edge-limite.mjs.

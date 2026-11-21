@@ -634,9 +634,9 @@ select atteso('…ma con la chiave di un altro non ritrova la richiesta di chi h
   '22023 Questo pagamento Satispay non vale più: paga di nuovo in fondo al modulo');
 
 -- Un pagamento di prima del rilascio (chiave null): non si ritrova più da fuori, ma chi ha l'id lo manda come prima.
-insert into pagamenti_satispay (chi, importo, stato, corso_id, formula, nome, cognome, email, circuito, satispay_id, link, pagato_il)
+insert into pagamenti_satispay (chi, importo, stato, corso_id, formula, nome, cognome, email, satispay_id, link, pagato_il)
   values ('Rossi Luca', 40000, 'pagato', 'cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'dino.vecchio@esempio.it',
-    'satispay', 'SP-VECCHIO', 'https://online.satispay.com/pay/SP-VECCHIO', now()) returning id as vecchio \gset
+    'SP-VECCHIO', 'https://online.satispay.com/pay/SP-VECCHIO', now()) returning id as vecchio \gset
 set role service_role;
 select atteso('un pagamento di prima, senza chiave: prepara non lo ritrova',
   (satispay_prepara_prima('cccccccc-0000-0000-0000-000000000001', 'annuale', 'Luca', 'Rossi', 'dino.vecchio@esempio.it',

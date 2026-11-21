@@ -1,18 +1,18 @@
 // ---------------------------------------------------------------------------
-// Il limite di frequenza delle Edge Function pubbliche dei pagamenti
-// (`satispay` e `paypal`), senza Deno, senza rete e senza database.
+// Il limite di frequenza della Edge Function pubblica dei pagamenti
+// (`satispay`), senza Deno, senza rete e senza database.
 //
 //   node scripts/prova-edge-limite.mjs
 //
-// Chi non ha un accesso può chiamare `prepara`, `paga`, `cattura`, `stato`,
+// Chi non ha un accesso può chiamare `prepara`, `paga`, `stato`,
 // `stato_pagamento` e la callback quante volte vuole, e ogni volta la funzione
-// parla col database e con Satispay o PayPal. Il limite sta nel database
+// parla col database e con Satispay. Il limite sta nel database
 // (`limite_frequenza`, 168-limite-frequenza.sql; le sue regole le prova
 // `supabase/prova/limite-frequenza.sql`); qui c'è quello che decide la
 // funzione: quando lo chiede, con che chiave, cosa risponde se è finito e che
 // non blocca mai chi paga davvero (limite che non risponde = passa).
 //
-// Si impacchettano i veri `index.ts`; il client Supabase, `fetch` e `Deno` sono
+// Si impacchetta il vero `index.ts`; il client Supabase, `fetch` e `Deno` sono
 // finti e `limite_frequenza` risponde true o false a comando.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
@@ -111,10 +111,8 @@ const ENV_S = {
   APP_URL: 'https://app.esempio.it/iscrizioni/',
   LIMITE_SEGRETO: 'segreto-di-prova',
 }
-const ENV_P = { ...ENV_S, PAYPAL_CLIENT_ID: 'client', PAYPAL_SECRET: 'segreto-paypal' }
 const { generateKeyPairSync } = await import('node:crypto')
 ENV_S.SATISPAY_CHIAVE = generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey.export({ type: 'pkcs8', format: 'pem' })
-ENV_P.SATISPAY_CHIAVE = ENV_S.SATISPAY_CHIAVE
 
 const retePagamenti = (metodo, percorso) => {
   if (percorso.startsWith('/g_business/v1/payments')) {
@@ -122,10 +120,7 @@ const retePagamenti = (metodo, percorso) => {
       ? { stato: 200, json: { id: 'sp-1', status: 'PENDING', redirect_url: 'https://satispay.it/paga/1' } }
       : { stato: 200, json: { id: 'sp-9', status: 'ACCEPTED' } }
   }
-  if (percorso === '/v1/oauth2/token') return { stato: 200, json: { access_token: 'tok', expires_in: 32400 } }
-  if (percorso === '/v2/checkout/orders') return { stato: 200, json: { id: 'ORD-1', status: 'CREATED' } }
-  if (percorso.endsWith('/capture')) return { stato: 200, json: { id: 'ORD-1', status: 'COMPLETED', purchase_units: [{ payments: { captures: [{ status: 'COMPLETED' }] } }] } }
-  return { stato: 200, json: { id: 'ORD-1', status: 'APPROVED' } }
+  return { stato: 404, json: {} }
 }
 // `limite` è quel che risponde limite_frequenza: true passa, false è finito.
 const riparti = (limite = true) => {
@@ -151,17 +146,14 @@ const chiama = async (gestore, corpo, { token = '', metodo = 'POST', url = 'http
 }
 
 const limiti = () => chiamate.filter((c) => c.nome === 'limite_frequenza')
-// Le chiamate al database che non sono né il limite né «Satispay (o la carta) è spenta?».
+// Le chiamate al database che non sono né il limite né «Satispay è spento?».
 const dominio = () => chiamate.filter((c) => !['limite_frequenza', 'metodi_spenti'].includes(c.nome))
 const senzaFare = () => [dominio().map((c) => c.nome), rete.length]
 
 const SATISPAY = await impacchetta('supabase/functions/satispay/index.ts')
-const PAYPAL = await impacchetta('supabase/functions/paypal/index.ts')
 const sp = await carica(SATISPAY, ENV_S)
-const pp = await carica(PAYPAL, ENV_P)
 
-// Le quattro azioni per IP: il database di dominio e la rete che servono perché vadano a buon fine.
-const adesso = () => new Date().toISOString()
+// Le due azioni per IP: il database di dominio e la rete che servono perché vadano a buon fine.
 const PER_IP = [
   {
     nome: 'satispay prepara', g: sp, ambito: 'satispay:prepara', corpo: { azione: 'prepara', corso: A, formula: 'annuale', nome: 'Anna', cognome: 'Rossi', email: 'a@e.it' },
@@ -177,24 +169,9 @@ const PER_IP = [
     },
     buono: { stato: 200, corpo: { link: 'https://satispay.it/paga/1' } },
   },
-  {
-    nome: 'paypal prepara', g: pp, ambito: 'paypal:prepara', corpo: { azione: 'prepara', corso: A, formula: 'annuale', nome: 'Anna', cognome: 'Rossi', email: 'a@e.it' },
-    semina: () => {
-      risposteDb['admin:carta_prepara_prima'] = () => ({ data: { stato: 'attesa', id: P, importo: 23000, paypal_id: null, creato_il: adesso() }, error: null })
-    },
-    buono: { stato: 200, corpo: { stato: 'attesa', id: P, importo: 23000, ordine: 'ORD-1' } },
-  },
-  {
-    nome: 'paypal cattura', g: pp, ambito: 'paypal:cattura', corpo: { azione: 'cattura', pagamento: P },
-    semina: () => {
-      risposteDb['admin:carta_stato_pagamento'] = () => ({ data: { stato: 'attesa', importo: 23000, pagato_il: null, collegato: true, paypal_id: 'ORD-1', creato_il: adesso() }, error: null })
-      risposteDb['admin:carta_esito'] = () => ({ data: { stato: 'pagato', importo: 23000, pagato_il: '2026-10-20T10:00:00Z' }, error: null })
-    },
-    buono: { stato: 200 },
-  },
 ]
 
-// Le cinque che rileggono da Satispay o da PayPal: il limite è per id e si chiede solo quando si sta per farlo.
+// Le due che rileggono da Satispay: il limite è per id e si chiede solo quando si sta per farlo.
 const PER_ID = [
   {
     nome: 'satispay stato', g: sp, ambito: 'satispay:stato', corpo: { azione: 'stato', richiesta: A },
@@ -210,26 +187,16 @@ const PER_ID = [
     letto: (c) => [c.pagamento?.stato, c.pagamento?.importo], dallaFinta: ['attesa', 23000],
     provider: (r) => r.host.includes('satispay'),
   },
-  {
-    nome: 'paypal stato_pagamento', g: pp, ambito: 'paypal:stato_pagamento', corpo: { azione: 'stato_pagamento', pagamento: P },
-    db: 'carta_stato_pagamento', attesa: () => ({ stato: 'attesa', importo: 23000, pagato_il: null, collegato: true, paypal_id: 'ORD-1', creato_il: adesso() }),
-    pagato: { stato: 'pagato', importo: 23000, pagato_il: '2026-10-20T10:00:00Z', collegato: true, paypal_id: 'ORD-1', creato_il: adesso() },
-    senzaProvider: { stato: 'attesa', importo: 23000, pagato_il: null, collegato: false, paypal_id: null, creato_il: adesso() },
-    letto: (c) => [c.pagamento?.stato, c.pagamento?.importo], dallaFinta: ['attesa', 23000],
-    provider: (r) => r.host.includes('paypal'),
-  },
 ]
 const valore = (x) => (typeof x === 'function' ? x() : x)
 const dalDb = (p, dato) => {
   risposteDb[`admin:${p.db}`] = () => ({ data: valore(dato), error: null })
   risposteDb['admin:satispay_esito'] = () => ({ data: { stato: 'pagato', importo: 23000, pagato_il: '2026-10-20T10:00:00Z' }, error: null })
-  risposteDb['admin:carta_esito'] = () => ({ data: { stato: 'attesa', importo: 23000, pagato_il: null }, error: null })
   risposteDb['admin:satispay_creato'] = () => ({ data: null, error: null })
-  risposteDb['admin:carta_creato'] = () => ({ data: null, error: null })
 }
 
 // ===========================================================================
-dire('\n1. prepara, paga, cattura: il limite per IP, all\'ingresso')
+dire('\n1. prepara e paga: il limite per IP, all\'ingresso')
 for (const a of PER_IP) {
   riparti(true)
   a.semina()
@@ -267,7 +234,7 @@ for (const p of PER_ID) {
   ok(`${p.nome}: …e non si chiama il provider`, rete.length, 0)
   ok(`${p.nome}: …il limite si è chiesto per «${p.ambito}»`, limiti().map((c) => c.args.ambito), [p.ambito])
   ok(`${p.nome}: …non è un 429: chi aspetta di sapere se ha pagato non si spaventa`, r.stato === 429, false)
-  ok(`${p.nome}: …l'esito non si scrive (non si è chiesto a nessuno)`, chiamate.filter((c) => ['satispay_esito', 'carta_esito'].includes(c.nome)).length, 0)
+  ok(`${p.nome}: …l'esito non si scrive (non si è chiesto a nessuno)`, chiamate.filter((c) => c.nome === 'satispay_esito').length, 0)
 
   riparti(true)
   dalDb(p, p.attesa)
@@ -406,7 +373,6 @@ dire('\n7. la chiave per IP: niente IP in chiaro, stabile, diversa tra IP')
   const chiave = async (g, corpo, opzioni, amb = 'prepara') => {
     riparti(true)
     risposteDb['admin:satispay_prepara_prima'] = () => ({ data: { stato: 'pagato', id: P, importo: 1 }, error: null })
-    risposteDb['admin:carta_prepara_prima'] = () => ({ data: { stato: 'pagato', id: P, importo: 1, creato_il: adesso() }, error: null })
     await chiama(g, corpo ?? { azione: 'prepara', corso: A, formula: 'annuale' }, opzioni)
     return limiti()[0]?.args.chiave
   }
@@ -428,8 +394,6 @@ dire('\n7. la chiave per IP: niente IP in chiaro, stabile, diversa tra IP')
   ok('…diversa da quella col segreto, e stabile', [kd !== k1, kd === (await chiave(derivato, null, { ip: IP1 }))], [true, true])
   ok('…e anche così l\'IP non c\'è', (kd ?? '').includes(IP1), false)
 
-  const kp = await chiave(pp, { azione: 'prepara', corso: A }, { ip: IP1 })
-  ok('PayPal: lo stesso IP dà una chiave esadecimale, e non l\'IP', [/^[0-9a-f]{64}$/.test(kp ?? ''), (kp ?? '').includes(IP1)], [true, false])
   ok('IPv6: impronta esadecimale, senza l\'indirizzo', [/^[0-9a-f]{64}$/.test((await chiave(sp, null, { ip: IP6 })) ?? ''), (await chiave(sp, null, { ip: IP6 }))?.includes('db8')], [true, false])
 
   // Da dove si legge l'IP: solo cf-connecting-ip, che mette il proxy.
@@ -473,20 +437,20 @@ dire('\n8. l\'ambito dice quale azione')
   riparti(true)
   await chiama(sp, null, { metodo: 'GET', url: 'https://x/f?payment_id=sp-6', ip: IP1 })
   for (const c of limiti()) visti.add(c.args.ambito)
-  ok('gli otto ambiti, uno per azione e nessun altro', [...visti].sort(), [
-    'paypal:cattura', 'paypal:prepara', 'paypal:stato_pagamento', 'satispay:callback', 'satispay:paga', 'satispay:prepara', 'satispay:stato', 'satispay:stato_pagamento',
+  ok('i cinque ambiti, uno per azione e nessun altro', [...visti].sort(), [
+    'satispay:callback', 'satispay:paga', 'satispay:prepara', 'satispay:stato', 'satispay:stato_pagamento',
   ])
 }
 
 // ===========================================================================
 dire('\n9. «attivo» non conta')
-for (const [nome, g] of [['satispay', sp], ['paypal', pp]]) {
+for (const [nome, g] of [['satispay', sp]]) {
   riparti(false)
   const r = await chiama(g, { azione: 'attivo' }, { ip: IP1 })
   ok(`${nome} attivo: risponde com'è oggi, anche con un limite che direbbe di no`, [r.stato, r.corpo.attivo === true || r.corpo.attivo === false], [200, true])
   ok(`${nome} attivo: nessun limite`, limiti().length, 0)
   riparti(false)
-  risposteDb['admin:metodi_spenti'] = () => ({ data: ['satispay', 'carta'], error: null })
+  risposteDb['admin:metodi_spenti'] = () => ({ data: ['satispay'], error: null })
   await chiama(g, { azione: 'attivo' }, { ip: IP1 })
   ok(`${nome} attivo, metodo spento: nessun limite`, limiti().length, 0)
 }
@@ -539,9 +503,7 @@ dire('\n11. il limite si tocca solo dove deve')
     ['satispay: azione che non c\'è', sp, { azione: 'boh', richiesta: A }],
     ['satispay: il saldo senza login', sp, { azione: 'saldo', persona: A, ricevuta: P }],
     ['satispay: la quota senza login', sp, { azione: 'quota', persona: A }],
-    ['paypal attivo', pp, { azione: 'attivo' }],
-    ['paypal: azione che non c\'è', pp, { azione: 'boh', pagamento: P }],
-    ['paypal: senza pagamento', pp, { azione: 'stato_pagamento' }],
+    ['satispay: stato_pagamento senza pagamento', sp, { azione: 'stato_pagamento' }],
   ]
   for (const [nome, g, corpo] of SENZA_LIMITE) {
     riparti(false)
@@ -560,9 +522,6 @@ dire('\n11. il limite si tocca solo dove deve')
   riparti(false)
   const storta = await chiama(sp, { azione: 'stato' }, { ip: IP1 })
   ok('stato senza richiesta: 400 e nessun limite', [storta.stato, limiti().length], [400, 0])
-  riparti(true)
-  const storta2 = await chiama(pp, { azione: 'cattura', pagamento: 'non-un-uuid' }, { ip: IP1 })
-  ok('cattura con un pagamento storto: 400 e nessuna chiamata al database di dominio', [storta2.stato, dominio().length], [400, 0])
   // OPTIONS e metodi che non servono non toccano il database.
   riparti(false)
   const opz = await sp(new Request('https://x/f', { method: 'OPTIONS', headers: { 'cf-connecting-ip': IP1 } }))

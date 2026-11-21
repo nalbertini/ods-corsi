@@ -363,5 +363,18 @@ console.log('\n5. la modalità prova: pagaCorsoProva')
   li.scordaListinoProva?.()
 }
 
+console.log('\nUn pagamento con la carta di prima (169-via-la-carta.sql)')
+{
+  const dove = 'ods-corsi:prova-satispay'
+  const prima = memoria.get(dove)
+  memoria.set(dove, JSON.stringify([
+    { id: 'sp-1', chi: 'Anna Rossi', importo: 50, stato: 'pagato', creatoIl: '2026-11-01T10:00:00Z' },
+    { id: 'pp-1', chi: 'Anna Rossi', importo: 50, stato: 'pagato', creatoIl: '2026-11-01T10:00:00Z', circuito: 'carta' },
+  ]))
+  ok('non vale come Satispay: resta solo quello di Satispay', (pr.pagamentiSatispayProva?.() ?? []).map((x) => x.id), ['sp-1'])
+  if (prima === undefined) memoria.delete(dove)
+  else memoria.set(dove, prima)
+}
+
 console.log(guai ? `\n${guai} da sistemare` : '\nTutto a posto')
 process.exit(guai ? 1 : 0)
