@@ -555,6 +555,8 @@ console.log('\n14. un bonifico che paga una ricevuta in più rate: la ricevuta i
   ok('un movimento a mano uguale ma più vicino della ricevuta: copre quello', prova(() => { const x = una(GIUSTO, [...rata, riga({ id: 'mano-vicino', tipo: 'entrata', data: '2026-10-04', importo: 22000 })], '04/10/2026').r; return [x.stato, x.voce?.id] }), ['duplicata', 'mano-vicino'])
   ok('scelto a mano il singolo fra i due: il gruppo resta libero e il singolo copre', prova(() => { const x = una(GIUSTO, [...rata, singolo], '03/10/2026', '220,00', { [s1.l.movimenti[0].chiave]: `incasso:${RB}:0:0` }); return [x.r.stato, x.r.voce.id, x.a.coperti.length] }), ['duplicata', `incasso:${RB}:0:0`, 1])
 
+  ok('una ricevuta intera riconosciuta solo per genitore, con un altro nome nel testo, resta da decidere', prova(() => { const l = file(['03/10/2026', '220,00', SBAGLIATO]); return m.anteprimaBanca(l, rata, 'conto', OGGI, {}, { [l.movimenti[0].chiave]: ['p-luca'] }).righe[0].stato }), 'da-decidere')
+
   console.log('  — usati una volta sola, in qualunque ordine')
   const due = (prima, dopo) => prova(() => { const a = m.anteprimaBanca(file(prima, dopo), rata, 'conto', OGGI); return { a, st: a.righe.map((x) => [x.stato, x.voce?.id ?? null]) } })
   const R220 = ['03/10/2026', '220,00', GIUSTO], R50 = ['03/10/2026', '50,00', 'Da ROSSI LUCA quota BONIFICO SEPA']
@@ -689,6 +691,7 @@ console.log('\n17. Più quote uguali nello stesso giorno: il bonifico va a chi n
   ok('…anche se Giorgis è un giorno più in là di un\'altra quota', su([quota('aresca', 'ARESCA PAOLO'), quota('giorgis', 'GIORGIS NICOLO', '2026-09-16')], giorgis), [['duplicata', 'giorgis']])
   ok('due quote col nome intero (omonimi): resta da decidere', prova(() => { const a = m.anteprimaBanca(m.leggiBanca(piccolo(giorgis)), [quota('aresca', 'ARESCA PAOLO'), quota('g1', 'GIORGIS NICOLO'), quota('g2', 'NICOLO GIORGIS')], 'conto', OGGI); return [a.coperti.length, a.daDecidere[0]?.candidati.slice(0, 2).map((c) => c.id).sort(), a.daDecidere[0]?.preselezionato] }), [0, ['g1', 'g2'], null])
   ok('un bonifico senza nome, prima nel file, non si prende la quota che un altro bonifico nomina', su([quota('giorgis', 'GIORGIS NICOLO'), quota('aresca', 'ARESCA PAOLO')], senzaNome, giorgis), [['duplicata', 'aresca'], ['duplicata', 'giorgis']])
+  ok('la quota nominata è la più vicina: il bonifico senza nome prende la libera del giorno dopo', su([quota('giorgis', 'GIORGIS NICOLO'), quota('aresca', 'ARESCA PAOLO', '2026-09-16')], senzaNome, giorgis), [['duplicata', 'aresca'], ['duplicata', 'giorgis']])
   ok('…e se resta solo quella, il bonifico senza nome resta da decidere', su([quota('giorgis', 'GIORGIS NICOLO')], senzaNome, giorgis), [['da-decidere', null], ['duplicata', 'giorgis']])
   ok('se la segreteria ha scelto «nessuno» per chi nomina, la quota non è riservata', prova(() => { const l = m.leggiBanca(piccolo(senzaNome, giorgis)); return m.anteprimaBanca(l, [quota('giorgis', 'GIORGIS NICOLO')], 'conto', OGGI, { [l.movimenti[1].chiave]: 'nessuno' }).righe.map((x) => [x.stato, x.voce?.id ?? null]) }), [['duplicata', 'giorgis'], ['nuova', null]])
   ok('senza nomi nel file, come prima: la prima quota del giorno', su(quote, senzaNome), [['duplicata', 'aresca']])

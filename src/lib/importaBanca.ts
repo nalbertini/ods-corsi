@@ -76,7 +76,7 @@ export interface DatoImportBanca {
 export const PREFISSO_CHIAVE_BANCA = 'banca:'
 export const GIORNI_DI_DIFFERENZA = 2
 /** Chi è nominato nel testo (nome intero o genitore) si cerca più lontano: il nome basta a riconoscerlo. */
-export const GIORNI_SE_C_E_IL_NOME = 15
+const GIORNI_SE_C_E_IL_NOME = 15
 const LUNGHEZZA_MASSIMA = 200
 
 const NON_E_QUELLO_GIUSTO = 'Nel file non trovo l’elenco dei movimenti del conto. Scarica dall’home banking «Lista movimenti» in formato CSV e riprova.'
@@ -446,7 +446,9 @@ export function anteprimaBanca(lettura: LetturaBanca, righe: RigaMovimento[], co
     // Uno solo per nome (o per genitore) vince anche se non è il più vicino di data; più di uno, si chiede.
     const perNome = candidati.find((r) => r.id === sembra.preselezionato && (!eGruppo(r) || nomeNelTesto(r, mv)))
     const nessunNome = Object.keys(sembra.come).length === 0
-    const migliori = candidati.filter((r) => giorniTra(r.data, mv.data) === giorniTra(candidati[0].data, mv.data) && !nominate.has(r.id))
+    // Le righe nominate da un altro bonifico non contano, neanche per dire qual è la più vicina.
+    const liberi = candidati.filter((r) => !nominate.has(r.id))
+    const migliori = liberi.filter((r) => giorniTra(r.data, mv.data) === giorniTra(liberi[0].data, mv.data))
     // Candidati dello stesso giorno sono intercambiabili: non serve chiedere. Una ricevuta intera no: è un'altra cosa.
     const unico = migliori.length > 0 && migliori.every((r) => r.data === migliori[0].data) && (migliori.length === 1 || !migliori.some(eGruppo))
     // Una ricevuta intera si prende da sola solo se il nome è quello del testo: se no la somma può tornare per caso.
