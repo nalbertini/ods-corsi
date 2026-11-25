@@ -80,6 +80,8 @@ console.log('\nPercorsi: un file per pagina')
   ok('niente di più: 3 pagine + 5 file fissi', Object.keys(r).sort(), ['404.html', 'google4c8602c048a4cfb5.html', 'index.html', 'judo/index.html', 'llms.txt', 'orari/index.html', 'robots.txt', 'sitemap.xml'])
   // Search Console verifica il sito cercando questo file, con questo testo preciso.
   ok('il file di verifica di Google ha il suo testo', c(r, 'google4c8602c048a4cfb5.html'), 'google-site-verification: google4c8602c048a4cfb5.html')
+  // Search Console (proprietà https://www.officinedellosport.it/) verifica col meta tag nella home.
+  ok('la home ha il meta tag di verifica di Google', c(r, 'index.html').includes('<meta name="google-site-verification" content="cpWqxDtnkEs4u0XHjY_jReD-CgQOhorDBaiiZ82AoA4">'), true)
 }
 {
   const cattivi = ['../x', 'a b', 'Admin', 'x/y', '', '..', '/x', 'a\\b', 'é', 'x.html']
